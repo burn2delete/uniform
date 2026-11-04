@@ -654,6 +654,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual AI/Workflow semantics, policy/review/eval and schema/migration/projection outcomes through the existing owners; callable adapters are not a second domain implementation. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply actual selected crypto/provider/secret/constant-time and UI/component/schema/taint/source-map products. Broader passkeys/private computation and DOM6 browser/ticket-list outcomes stay separately Open; callable library facades do not accept those domains. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

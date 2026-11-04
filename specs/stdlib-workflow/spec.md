@@ -86,6 +86,8 @@ The [testing and meta library source criteria](plan.md#complete-testing-and-meta
 
 The [platform and hardware library source criteria](plan.md#complete-platform-and-hardware-library-source-criteria) refine callable STD16/STD17 behavior: explicit platform policies and target/host facts, actual MMIO/interrupt/DMA/clock safety, complete example context and profile-specific adapters. Existing Runtime, Platform, Auth, Effects, Lower/Backends, audit and independent suite owners keep their distinct products and evidence; no target or Product adoption follows. Tasks, historical evidence and held execution remain unchanged.
 
+The [crypto UI and stability library source criteria](plan.md#complete-crypto-ui-and-stability-library-source-criteria) refine callable STD18/STD19 crypto and component APIs and STD20 compatibility products over existing domain, schema, Runtime, Auth, Effects, Opt, Backend, Build, Governance and Release authorities. Genuine algorithm/lifecycle/hybrid/secret/side-channel, UI schema/trust/accessibility/adapter and old/new compatibility evidence remain distinct from manifests or labels. Tasks, historical evidence and execution holds persist.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

@@ -312,6 +312,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Track actual source/compiler/package/target/map/provider/grant/policy and input/output artifacts; separate target facts from build/runtime host probes. Invalidate stale contexts and provider/schema/target-dependent evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual module/export stability, opt-in/visibility, compatibility/lifecycle and exact source/build/provenance/signature/SBOM records. Reject internal or unauthorized experimental imports; package metadata alone grants no stability or release approval. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

@@ -263,6 +263,17 @@ At actual permitted device/FFI boundaries enforce target/device ownership/lifeti
 <!-- library-platform-hardware-source-hardware-runtime-boundaries:end -->
 
 
+
+<!-- library-crypto-ui-stability-source-crypto-ui-runtime-boundary:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-ui-runtime-boundary criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Supply actual permitted typed FFI/host-provider/UI adapter boundaries with authentic current operation scope, provider/adapter identity/version, ownership/resource/lifetime, failure/cleanup and redaction. Preserve Gravity error/source mapping, secret policy and selected target/schema/profile behavior. Exercise genuine permitted results and provider/adapter/key/grant mismatch, unauthorized secret access, malformed output and partial cleanup cases at the actual boundary. Fakes, typed wrapper names and static denial do not prove live before-action enforcement or constant-time internals; held signing/key/native/callback/provider/UI execution remains unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-ui-runtime-boundary:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open

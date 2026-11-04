@@ -367,6 +367,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual callable platform/hardware fixtures, exact target/device/profile/provider subjects, genuine audits and independent results. Simulator agreement claims retain exact live-target artifact scope and unavailable physical operations; no API name accepts a target or Product. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual vectors, provider/policy/audit and component/snapshot/interaction plus old/new stability fixtures for exact subjects. Independent suites, full-language/bootstrap/seed retirement, signed distribution and release acceptance keep separate actual evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

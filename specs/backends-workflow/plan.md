@@ -437,6 +437,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Emit actual selected target artifacts preserving volatile, order, source and target constraints or explicitly refuse unsupported lowering. Artifact labels or equal sampled results establish no hardware semantics. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Produce actual selected source-mapped JS/mobile/native artifacts and typed host boundaries. Library components do not imply a renderer for every target, provider support, app launch, signing or distribution. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

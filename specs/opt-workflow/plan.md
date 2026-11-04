@@ -194,6 +194,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Actual pass output preserves or invalidates/regenerates required facts with accepted proof/verifier evidence. Library pass declarations and equal sampled values alone prove no legal rewrite. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Preserve actual secret and constant-time facts or invalidate/reverify against genuine selected input/output subjects. Equal sampled results, declarations and proof filenames do not establish side-channel properties. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

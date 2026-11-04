@@ -239,6 +239,17 @@ Check direct and latent platform/hardware effects and authentic grants for activ
 <!-- library-platform-hardware-source-platform-hardware-effects:end -->
 
 
+
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-ui-effect-admission criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Check direct/latent crypto/random/key/provider and UI event/command/navigation/host-service effects with actual grants, active profile, phase and generated checking. Pure crypto policy/digest/view data cannot conceal secret provider calls, host mutation or tool authority. Exercise real checked positive/refusal for missing scope, forbidden profile, undeclared callback/handler effect and secret-in-compile-time capture. Static admission establishes neither provider execution, constant-time proof nor mounted UI behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

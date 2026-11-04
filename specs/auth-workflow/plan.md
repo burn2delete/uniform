@@ -399,6 +399,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Produce authentic operation-specific key/redaction, process command/args/cwd/output, clock/random, terminal/signal and device/register/range/interrupt grants with attenuation, revocation and lifetime. Actual Runtime/provider enforces before the action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply authentic current key/random/provider/tool/host scopes with intersection, attenuation, revocation and lifetime. Package/provider identity or pure policy data grants no actual operation; Runtime enforces at the protected boundary. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -469,6 +469,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Check direct/latent platform and hardware effects, active profile and genuine grants, including handler callbacks, no-runtime and interrupt restrictions. Static admission establishes no live operation or physical safety. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Check actual crypto and UI handler/command/navigation direct/latent effects, active profile and grants. Pure digests, policy, component/view data and generated code confer no live authority or bypass. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

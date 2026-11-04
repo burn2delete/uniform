@@ -226,3 +226,7 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 ## Platform and hardware library source interface
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Retain distinct exact-island source/owner/profile/target unsafe audits, hardware-specific waiver conditions and actual admission/stability decisions. Library declarations and compatible metadata do not perform security review. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep real GOV2 compatibility, GOV3 module admission, GOV8 lifecycle and distinct security/unsafe audits as their existing sole authorities. Library compatibility and signed manifests do not create approval, migration execution or a policy exception. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

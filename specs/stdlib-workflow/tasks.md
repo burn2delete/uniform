@@ -142,6 +142,28 @@ Bind every named gravity.platform and gravity.hardware export to actual callable
 <!-- library-platform-hardware-source-callable-exports:end -->
 
 
+
+<!-- library-crypto-ui-stability-source-callable-exports:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library callable-exports criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Bind the full named gravity.crypto and gravity.ui surfaces to actual callable implementations or explicit remaining work, with exact namespace/version, signatures, profile/target/provider/adapter, effects/grants, allocation/error, artifacts and per-export stability. STD20 defines policy, not an invented callable API. Exercise accepted/refused imports and actual calls with matching manifests; catalogues, lifecycle strings and target labels prove no callable behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-callable-exports:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-stability-levels-and-imports:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library stability-levels-and-imports criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV3](../../docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md), [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md).
+
+Expose every actual module/export stability entry: experimental explicit source/package opt-in with isolation from stable consumers; draft changes with release notes/fixture updates; stable compatibility protection; deprecated support/diagnostics for governed window; removed only through compatibility/migration/historical contexts; internal unavailable to user imports. Exercise accepted and denied import/opt-in/isolation/removed/internal cases through actual Build/package consumers, with missing-level and misleading-stable refusals. STD20's illustrative policy form is a record example, not a new API or stability approval. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-stability-levels-and-imports:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -1357,6 +1379,193 @@ Enforce full meta syntax/macro/IR/pass/plugin APIs, ordinary immutable Core synt
 <!-- library-testing-meta-source-meta-profile-contract:end -->
 
 
+
+<!-- library-crypto-ui-stability-source-hashes-signatures-and-key-agreement:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library hashes-signatures-and-key-agreement criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement hash/digest/hmac/mac/verify-mac/hash-policy; keypair/public-key/sign/verify/signature/ml-dsa/slh-dsa/signature-policy/signature-lifecycle; derive-key/key-exchange/ml-kem/kdf/hkdf/password-hash/salt using explicit algorithm, mode, provider, key type, nonce/IV policy, randomness and output format as applicable to the operation. Exercise actual selected algorithm/parameter test vectors, success/failure and mismatched key/provider/format cases; no opaque default, provider-chosen algorithm, forged verify flag or missing boundary evidence is accepted. Actual signing/key/provider actions remain held. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-hashes-signatures-and-key-agreement:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-encryption-and-nonce-policy:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library encryption-and-nonce-policy criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement encrypt/decrypt/aead-encrypt/aead-decrypt/nonce/associated-data/ciphertext under actual selected algorithm/provider/key and nonce/IV policy, binding authenticated data and output schema. Exercise accepted vectors, wrong key/AAD, authentication failure, nonce reuse and absent random/provider refusals without exposing secret data or treating failed authentication as plaintext. The seal example obtains genuine randomness/provider authority and nonce/output policy from its selected capability and algorithm policy; omissions do not license implicit provider defaults. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-encryption-and-nonce-policy:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-typed-secrets-and-key-handles:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library typed-secrets-and-key-handles criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [DOM15](../../docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md).
+
+Implement secret/with-secret/zeroize/key-handle/redact-secret/secret-scope with typed secret labels, explicit custody and restricted lifetime, memory, copying, retention and serialization. Preserve scope teardown/zeroization guarantees actually supplied by the selected provider/target and reject unsupported guarantees rather than claiming them from a flag. Exercise real allowed secret handling and denied log/prompt/trace/diagnostic/test-report/package serialization or copy/retention paths. Key handles, signatures and public metadata never expose raw secret material or grant key access. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-typed-secrets-and-key-handles:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-randomness:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-randomness criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement crypto-random/random-bytes/random-provider/entropy-source with actual declared cryptographic provider, entropy availability, capability and policy. Distinguish deterministic PRNG/test seed from cryptographic randomness and retain genuine provider errors. Exercise selected vectors/delegation and unavailable entropy, wrong-kind, missing grant or unsupported restricted-profile provider cases. Deterministic test bytes do not establish secure live randomness or replay-safe key access. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-randomness:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-constant-time-and-hazardous-primitives:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library constant-time-and-hazardous-primitives criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [DOM15](../../docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md).
+
+Implement constant-time=/ct-select/ct-copy/constant-time-proof and high-level approved constructions; isolate hazardous low-level primitives behind approved wrappers. Reject custom algorithms by default unless actual governing policy allows audited experimental use. Preserve secret-dependent branch/access/timing/diagnostic restrictions and require applicable actual analysis, external verification or audit evidence for selected sensitive/formal operations. Exercise real vectors and secret-branch/access/leak/unsafe-wrapper refusals. Equal sampled results, a constant-time annotation or proof filename proves no side-channel property; Opt owns actual preservation/reverification. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-constant-time-and-hazardous-primitives:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-algorithm-lifecycle:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library algorithm-lifecycle criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement algorithm-policy/provider-policy/allowed-algorithm?/algorithm-lifecycle/crypto-artifact with machine-readable stable algorithm identities, parameter sets, provider policy, output schema, lifecycle and migration guidance. Preserve approved, transitional with required migration/hybrid evidence, deprecated read/verify-only, audited experimental, reserved future and forbidden with only explicit recovery-policy read-only exceptions. Exercise every active profile/lifecycle combination and absent/ambiguous/stale/inconsistent policy, generic default/secure and undeclared parameter refusals. A provider string or comment is not lifecycle authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-algorithm-lifecycle:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-post-quantum-families:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library post-quantum-families criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Expose actual ML-KEM, ML-DSA and SLH-DSA family/parameter/provider/serialization contracts with key-generation, serialization, success/failure, redaction and policy test vectors. Preserve FN-DSA/FALCON/HQC as future or experimental until an actual governing algorithm-policy upgrade; default use rejects and any permitted experimental use requires explicit audited policy. Bind vectors and conformance to the declared family and exact provider/parameters. Named families are not implemented algorithms, provider selection or permission to update the canonical lifecycle from external current events. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-post-quantum-families:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-hybrid-key-establishment:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library hybrid-key-establishment criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement hybrid-key-exchange with declared classical component and post-quantum KEM, approved KDF combiner, both public keys and ciphertexts, transcript context, provider identities and error paths bound before deriving application keys. Preserve explicit failure and downgrade policy. Exercise actual selected success vectors and component substitution, transcript omission, partial failure, downgrade, wrong provider/parameter/combiner refusals; two algorithm labels or independently passing component samples do not establish a bound hybrid protocol. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-hybrid-key-establishment:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-migration-inventory:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library migration-inventory criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Implement migration-inventory over every algorithm-bearing source/generated-code, package/SBOM/provider, serialized key/certificate/signature/ciphertext/transcript/protocol, persisted database/wire schema and test/interop/formal/audit surface. Record replacement target, lifecycle deadline, compatibility mode, verification evidence and old-artifact read-only/re-sign/re-encrypt/unrecoverable disposition. Exercise complete selected inventories and omitted/wrong/stale surface/evidence refusals. Crypto-agile replacement preserves application schemas unless policy explicitly records a deliberate migration break; inventory publication performs no private-store migration, key rotation or signing. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-migration-inventory:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-provider-and-profile:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-provider-and-profile criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Preserve Core pure hashing/digest/constant-time comparison/policy without secret provider, constrained firmware/kernel, capability-bearing native, recorded hosted delegation, distributed replay-safe or activity-isolated randomness/time/key access, policy-approved AI tools, meta policy inspection without secret exposure and selected formal proofs. Host providers record identity/version, relevant FIPS or policy mode, target, supported parameters, side-channel claims and Gravity error mapping. Exercise actual selected permitted/unsupported/provider-mismatch and hidden allocation cases with exact proof/audit scope; no unspecified universal FIPS requirement or native/provider execution grant is invented. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-provider-and-profile:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-component-and-state-apis:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library component-and-state-apis criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement defcomponent/component/props/state/view/slot/fragment and signal/atom-state/derived/reducer/store/state-schema with actual props, state, emitted events, handled commands, effects and target availability. Boundary-crossing persistence/workflow/AI/network state has genuine STD10 schema/serialization/taint facts. Exercise Counter component definitions and real selected state/event/view products, missing metadata, untyped external state and invalid boundary refusals. Component data or TypeScript declarations alone do not validate untrusted runtime input or imply a shared renderer for every target. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-component-and-state-apis:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-events-commands-and-effects:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library events-commands-and-effects criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement event/on/emit/command/dispatch/effect-handler/event-contract with typed untrusted input, declared handler effects and actual capabilities. Preserve schema validation before trusted UI/HTML/URL/CSS/script/storage/network sinks and authenticated command/handler context. Exercise valid selected interactions and malformed event, undeclared effect, missing grant and unsafe sink refusals; the Counter click event is a checked event contract, not an unchecked privileged host callback. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-events-commands-and-effects:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-rendering-and-lifecycle:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library rendering-and-lifecycle criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Implement render/hydrate/mount/unmount/portal/view-tree/render-artifact with distinct escaped text, trusted markup, binary media and target-native views. Enforce actual trust/escaping policy and selected adapter lifecycle/hooks/resource cleanup, including failure/partial initialization. Exercise accepted text/trusted/native products and tainted markup, missing adapter, invalid lifecycle or false target support refusals. Core pure view trees, rendered artifacts and live mounted UI retain distinct scopes; no generic renderer or physical app run follows from a view descriptor. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-rendering-and-lifecycle:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-routing-and-styling:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library routing-and-styling criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement route/router/navigate/link/route-param/route-schema with parameter schemas and declared navigation effects. Implement style/class/theme-token/layout/media-query/target-style with deterministic tokens or explicit target-delegation records. Exercise valid selected routes/styles and missing/wrong parameter schemas, hidden navigation effect, unsafe style/URL sink and absent/mismatched delegation refusals. Preserve actual source/target/adapter/schema identities rather than accepting unchecked browser globals or host-framework internals. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-routing-and-styling:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-accessibility-artifacts:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library accessibility-artifacts criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Implement label/role/focus/keyboard/announce/accessibility-tree and preserve supported-target accessibility metadata in actual component artifacts. Exercise interactive elements with usable labels/roles, focus and keyboard/announcement/tree products and missing required label/metadata or unsupported target cases. Formal invariant checks and live accessibility interactions require their actual evidence; an accessibility field or snapshot name alone proves no behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-accessibility-artifacts:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-target-adapters-and-generated-ui:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library target-adapters-and-generated-ui criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement web-adapter/desktop-adapter/mobile-adapter/terminal-adapter/native-view with explicit target, host services, lifecycle hooks and unsupported features. Preserve hosted web/managed/dev adapters, native where implemented, schema-backed distributed dashboards, policy-checked schema-bound AI tools/actions, Core data/views, constrained firmware/kernel capability adapters, conditional backend-supported static hardware display, meta generation and formal invariant verification. Generated UI undergoes ordinary compiler/profile/safety/schema/policy checks. Exercise selected valid adapters and absent/unsupported features, ambient browser globals, untyped imports, generated bypass or false all-target claims; Backend JS/mobile and Runtime own actual emitted and running products. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-target-adapters-and-generated-ui:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-snapshot-and-interaction-products:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library snapshot-and-interaction-products criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Produce actual component prop/state/event/command/accessibility/render, route/schema, style/delegation and adapter artifacts consumable by existing STD14 snapshot and interaction APIs. Tests consume those artifacts rather than raw host internals. Exercise real selected Counter/example snapshots and interactions, mismatched component/schema/adapter/source provenance and missing required artifacts. UI library fixture implementation remains distinct from independent UI/domain/browser/Release suite runs and application/product acceptance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-snapshot-and-interaction-products:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 
 Status: Open
@@ -1594,6 +1803,39 @@ Platform/hardware library library-platform-conformance criterion (Open). Sources
 
 Compose actual callable API/profile examples, complete process and target/host/clock/random cases, register maps/interrupt tables, MMIO volatile/order preservation, DMA ownership/coherence, CDC and genuine unsafe-audit products for exact source/compiler/runtime/provider/target/device subjects. Preserve each STD16001-STD16008 and STD17001-STD17008 meaning at its actual boundary with expected/observed source-bound positives and refusals. Compile run-tool/ready? under genuine selected complete policy/map/profile conditions and separately refuse missing example facts. Compare simulator with live-target artifact semantics where live hardware is unavailable, retaining explicit unavailable physical cases. Independent Release suites and Governance audits remain separate; no module inventory, simulator report or narrow receipt accepts whole Platform, hardware, library or Product. Current implementation and independent source/interface acceptance remain unassessed.
 <!-- library-platform-hardware-source-library-platform-conformance:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-eight-dimension-compatibility:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library eight-dimension-compatibility criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md).
+
+Assemble exact baseline/current source, behavior, effect, capability, profile, diagnostic, artifact and conformance comparisons, preserving actual source API/arity/macro/type/protocol, results/errors/order/equality/hash/resource lifetime/replay/side effects, effect renames/narrowing, authority shape, delegation, ids/spans/fields/remediation, schema/content-addressing/provenance/signing/metadata, fixtures/negatives/benchmarks/release-gate changes. Include safety guarantees and performance contracts. Run actual old/new subject fixtures through their owning producers; refuse silent drift, omitted profile/target/artifact scope and compatibility inferred only from compiling source or a manifest. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-eight-dimension-compatibility:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-change-classification-and-release:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library change-classification-and-release criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md), [GOV3](../../docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md), [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md).
+
+Consume actual classified additive-compatible, already-invalid safety-compatible tightening, draft-break with notes/fixtures/downstream scan, stable-break with impact/migration/conformance/governance, deprecation, scheduled removal or explicit security-emergency records. Treat profile removal/narrowing and safety/capability/schema tightening by real source/artifact impact; stable-breaking changes retain actual approved migration/deprecation path. Keep deprecated tests until approved removal and structured replacement/rationale plus warning/error/removal schedules visible to compiler/docs/package/migration tools. Bind per-release compatibility, profile/diagnostic/artifact deltas and signed source/build/conformance/release provenance to exact subjects. Existing Governance owns decisions, Build actual records and Release distribution/acceptance; a signature or policy classification is no implementation or release grant. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-change-classification-and-release:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-library-crypto-ui-conformance:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library library-crypto-ui-conformance criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Compose real callable crypto/UI exports, selected vectors/lifecycles/PQ/hybrid/migration/redaction/constant-time audit, Counter/component/route/style/accessibility/adapter/snapshot/interaction and stability/old-new/opt-in/internal/deprecation products for exact source/compiler/runtime/provider/profile/target/schema/adapter/algorithm/parameter/policy subjects. Preserve every STD18001-STD18013, STD19001-STD19008 and STD20001-STD20008 refusal meaning with expected/observed facts at actual boundaries. Compile seal/Counter only under actual required capability/policy/adapter contexts. Independent Release/domain/crypto/UI/Formal/Governance evidence retains its scope; no catalogue, narrow receipt or mock accepts full library, domain, self-hosted compiler or project. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-library-crypto-ui-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

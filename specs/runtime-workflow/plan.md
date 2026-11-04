@@ -447,6 +447,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Provide actual permitted services and device/FFI boundaries, redacted provider/error and cleanup observations, authentic before-action denials and recorded activity products. Simulation/recorded/live scopes remain explicit and unavailable operations unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Implement actual permitted typed crypto-provider/UI adapter boundaries, before-action enforcement, lifetime/cleanup, redaction and Gravity error/source mapping. Fakes and static acceptance are no live operation or mounted UI result. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

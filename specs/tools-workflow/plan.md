@@ -181,6 +181,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual target/module/host-delegation/redaction/replay/maps/interrupt/DMA/clock/audit artifacts with exact source and provider identities. A report viewer or descriptor is no executed process, device operation or proof. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume component/schema/route/style/accessibility, crypto policy/migration and lifecycle/provenance artifacts for diagnostics/docs/snapshots/migration. Artifact readers and report hooks are no provider execution, UI test or signed release. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

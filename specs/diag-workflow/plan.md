@@ -255,6 +255,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve individual STD16001-STD16008 and STD17001-STD17008 plus owning profile/Runtime/safety meanings, expected/actual facts, source origins and redaction. Missing working-directory/alignment example facts retain their errors. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Preserve STD18001-STD18013, STD19001-STD19008, STD20001-STD20008 and owning domain/governance meanings with source/generated/call context, expected/observed facts and secret redaction; compare structured diagnostics against actual compatibility baselines. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

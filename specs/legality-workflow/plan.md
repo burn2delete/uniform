@@ -984,6 +984,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve actual profile/no-runtime, ownership/resource/unsafe/taint and interrupt constraints. Reject hidden allocation, dynamic firmware assumptions and unchecked generated forms without restoring retired project quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep actual secret/resource/taint/unsafe and generated-program checks, sink-specific UI trust and profile rules. Secret-safe policy metadata is no proof of provider behavior or constant-time internals. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority
