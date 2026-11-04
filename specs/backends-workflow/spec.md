@@ -60,6 +60,8 @@ shared checks. Preserve all current writers, restricted C12/domain/provider
 operations, signing custody and publication restrictions. Portfolio navigation,
 fixture strings and existing record builders establish no family acceptance.
 
+The [complete B1-B3 source criteria](plan.md#complete-b1-b3-source-criteria) refine the common interface, C and LLVM obligations under four existing task owners. Seven earlier predicates are restored exactly, with no review renewal. Thirteen new criteria make target assumptions, actual outputs, memory/numeric/concurrency/helper/pass behavior and refusal evidence explicit. Current source/interface entailment and implementation acceptance remain pending; B4-B14 and AI remain separate broader work.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Backends family task authority
