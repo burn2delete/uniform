@@ -17,7 +17,7 @@ The library surface is safe only when those effects are declared and the relevan
 
 ## Requirements
 
-- AI exports MUST be legal only in `:ai`, workflow-integrated `:distributed`, or explicitly enabled hosted development profiles.
+- AI exports MUST be legal only in `:ai`, workflow-integrated `:distributed`, or explicitly enabled hosted development profiles, except for the scoped native local-model APIs defined under Profile Availability.
 - Model calls MUST declare provider identity, model identity, input schema, output schema, budget, and fallback policy.
 - Prompt APIs MUST preserve authority partitions, taint, structured output schema, and refusal behavior.
 - Tool APIs MUST require capability manifests, input/output schemas, idempotency policy, and `:ai/human-review` policy where needed.
@@ -74,6 +74,11 @@ Tool calls require capabilities and may require `:ai/human-review` before execut
 - `:distributed` receives AI APIs only when integrated through workflow artifacts and replay policy.
 - `:hosted` may run development providers or local adapters with explicit capabilities and policy.
 - `:native` may call local models only through provider records and capability gates.
+  This exception is scoped to explicitly declared local-model providers and their
+  actual call authority. It retains applicable AI effects, provider/model
+  identities, input/output schemas, policy, taint/secret, failure, replay/audit
+  and ordinary native safety/runtime requirements. It does not permit ambient
+  access or unrestricted native agent/tool APIs.
 - `:core` receives schema and data helpers only.
 - `:kernel`, `:firmware`, `:hardware`, and unrestricted `:formal` do not receive live model-call APIs.
 - `:meta` may generate AI artifacts but generated code must pass all downstream checks.
@@ -102,6 +107,10 @@ Tool calls require capabilities and may require `:ai/human-review` before execut
 ## Conformance Criteria
 
 - AI examples compile only in profiles that permit AI effects.
+- Native local-model fixtures cover the declared local-provider/capability
+  exception, preserve applicable schema/effect/policy and native safety contracts,
+  and reject missing grants, mismatched provider/model identities, nonlocal
+  provider execution, unchecked outputs and unrestricted native agent/tool access.
 - Model fixtures record provider, model, schemas, budget, fallback, and nondeterminism.
 - Prompt fixtures preserve authority boundaries and taint propagation.
 - Tool fixtures enforce capabilities, `:ai/human-review`, idempotency, and schema validation.
