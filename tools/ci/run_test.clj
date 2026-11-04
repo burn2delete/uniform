@@ -301,7 +301,8 @@
     (is (thrown? RuntimeException (read-string "#=(+ 1 1)")))
     (is (thrown? IllegalArgumentException (read-string "^String \".\"")))
     (doseq [file (file-seq (io/file "tools/ci"))
-            :when (.endsWith (.getName file) ".clj")]
+            :when (and (.isFile file)
+                       (.endsWith (.getName file) ".clj"))]
       (with-open [reader (java.io.PushbackReader. (io/reader file))]
         (let [eof (Object.)]
           (is (pos? (loop [forms 0]
