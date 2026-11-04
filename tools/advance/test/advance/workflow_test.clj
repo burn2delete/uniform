@@ -7,14 +7,17 @@
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
+            [simplify.main :as simplify-main]
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]
             [simplify.workflow-test :as git-fixture]))
+
+(use-fixtures :each fixture/no-github-network)
 
 (def source-path "specs/demo/tasks.md")
 (def source-key (str source-path "#demo/value"))
@@ -37,6 +40,93 @@
                   coordination/unregister! (fn [_] (swap! sequence conj :unregister))]
       (is (thrown-with-msg? Exception #"Setup failure" (workflow/campaign! ctx)))
       (is (= [:register :setup :unregister] @sequence)))))
+
+(deftest retained-inflight-claims-stop-before-all-provider-setup
+  (doseq [status [:implementing :review] command [:setup :campaign :simplify-setup]]
+    (let [ctx (fixture/context) writes (atom [])
+          key "retained" identity [(:state-file ctx) key]
+          legacy (io/file (:coordination-dir ctx) "claims.edn")
+          original {:identity identity :state-file (:state-file ctx) :key key :paths ["src/owned.clj"]}]
+      (.mkdirs (.getParentFile legacy))
+      (rt/write-edn! legacy {:claims {identity original}})
+      (rt/update! ctx assoc-in [:tasks key] {:key key :status status :paths (:paths original) :implementation-job "preserved-author"})
+      (let [before @(:state ctx)]
+        (with-redefs [project/setup! (fn [& _] (swap! writes conj :project))
+                      workflow/ensure-campaign! (fn [& _] (swap! writes conj :campaign))
+                      gh/setup! (fn [& _] (swap! writes conj :shared-project))
+                      gh/status! (fn [& _] (swap! writes conj :status))
+                      gh/api (fn [& _] (swap! writes conj :api))]
+          (is (thrown-with-msg? Exception #"Retained worker requires inspected handover"
+                               (case command
+                                 :setup (main/dispatch! ctx "setup" [])
+                                 :simplify-setup (simplify-main/dispatch! ctx "setup" [])
+                                 :campaign (workflow/campaign! ctx)))))
+        (is (empty? @writes))
+        (is (= (dissoc before :tasks) (dissoc @(:state ctx) :tasks)))
+        (is (= :attention (get-in @(:state ctx) [:tasks key :status])))
+        (is (= status (get-in @(:state ctx) [:tasks key :resume-status])))
+        (is (= (select-keys (get-in before [:tasks key]) [:status :resume-status :error :implementation-job])
+               (last (get-in @(:state ctx) [:tasks key :handover-history])))))
+      (let [shared (rt/read-edn (:coordination-file ctx)) lease (first (vals (:writers shared)))]
+        (is (= :needs-inspection (:status lease)))
+        (is (= original (:legacy-claim lease)))
+        (is (empty? (:controllers shared)))))))
+
+(deftest retained-worker-recovers-through-inspected-release-and-existing-retry
+  (let [ctx (fixture/context) key "retained" original-error {:message "Original failure" :details {:fixture true}}
+        original {:key key :status :implementing :paths ["src/owned.clj"] :implementation-job "preserved-author" :error original-error}
+        lease (rt/claim-paths! ctx key (:paths original) :implementing)
+        lease-file (str (io/file (:state-dir ctx) "lease.edn"))
+        inspection-file (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:tasks key] original)
+    (is (thrown? Exception (rt/with-claimed-paths ctx lease #(throw (ex-info "Unknown writer termination" {})))))
+    (with-redefs [project/setup! (fn [& _] (throw (AssertionError. "No provider setup before inspected recovery")))
+                  gh/api (fn [& _] (throw (AssertionError. "No provider call during local recovery")))]
+      (is (thrown-with-msg? Exception #"Retained worker requires inspected handover" (main/dispatch! ctx "setup" [])))
+      (rt/write-edn! lease-file lease)
+      (rt/write-edn! inspection-file {:evidence "Fixture original owner inspected scoped writer as ended; no denied action retried"})
+      (simplify-main/dispatch! ctx "release-writer" [lease-file inspection-file])
+      (simplify-main/dispatch! ctx "retry" [key]))
+    (is (= :repair (get-in @(:state ctx) [:tasks key :status])))
+    (is (= "preserved-author" (get-in @(:state ctx) [:tasks key :implementation-job])))
+    (is (= original-error (get-in @(:state ctx) [:tasks key :error])))
+    (is (= :implementing (get-in @(:state ctx) [:tasks key :handover-history 0 :status])))
+    (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))
+
+(deftest own-unresolved-main-effect-stops-before-provider-setup
+  (doseq [command [:setup :campaign :simplify-setup]]
+    (let [ctx (fixture/context) writes (atom 0)
+          original {:status :uncertain :message "Preserved lost provider response"}]
+      (rt/update! ctx assoc-in [:effects "merge/retained"] original)
+      (with-redefs [project/setup! (fn [& _] (swap! writes inc))
+                    gh/setup! (fn [& _] (swap! writes inc))
+                    workflow/ensure-campaign! (fn [& _] (swap! writes inc))]
+        (is (thrown-with-msg? Exception #"Unresolved main effect requires inspected handover"
+                             (case command
+                               :setup (main/dispatch! ctx "setup" [])
+                               :simplify-setup (simplify-main/dispatch! ctx "setup" [])
+                               :campaign (workflow/campaign! ctx)))))
+      (is (zero? @writes))
+      (is (= original (get-in @(:state ctx) [:effects "merge/retained"])))
+      (is (seq (:main-effects (rt/read-edn (:coordination-file ctx))))))))
+
+(deftest scoped-attention-and-foreign-holds-do-not-block-independent-setup
+  (let [ctx (fixture/context) other (fixture/context)
+        other (merge other (rt/coordination (.getParent (io/file (:coordination-file ctx))) (:config other)))
+        own (rt/claim-paths! ctx "held" ["src/held.clj"] :checking)
+        foreign (rt/claim-paths! other "foreign" ["src/foreign.clj"] :checking)
+        calls (atom [])]
+    (rt/update! ctx assoc-in [:tasks "held"] {:key "held" :status :attention :paths ["src/held.clj"]})
+    (doseq [[owner lease] [[ctx own] [other foreign]]]
+      (is (thrown? Exception (rt/with-claimed-paths owner lease #(throw (ex-info "Preserved unknown cleanup" {}))))))
+    (with-redefs [project/setup! (fn [& _] (swap! calls conj :project))
+                  workflow/ensure-campaign! (fn [& _] (swap! calls conj :campaign))]
+      (main/dispatch! ctx "setup" []))
+    (is (= [:project :campaign] @calls))
+    (let [shared (rt/read-edn (:coordination-file ctx))]
+      (is (= 2 (count (:writers shared))))
+      (is (every? #(= :needs-inspection (:status %)) (vals (:writers shared))))
+      (is (empty? (:controllers shared))))))
 
 (deftest selection-sees-other-open-candidates-without-claiming-their-work
   (let [ctx (fixture/context)
@@ -74,12 +164,11 @@
         _ (rt/git ctx repo "add" source-path)
         _ (rt/git ctx repo "commit" "-m" "Current task authority")
         _ (rt/git ctx repo "push" "origin" "main")
-        config (merge main/defaults {:repo-dir repo :repository "fixture/repo" :parallelism 1 :poll-ms 1
+        config (merge main/defaults {:repo-dir repo :state-dir (:state-dir ctx) :repository "fixture/repo" :parallelism 1 :poll-ms 1
                                      :worktree-root (str (io/file (:state-dir ctx) "workers"))
                                      :checks [["clojure" "-M" "fixture-check.clj"]]})
-        ctx (assoc ctx :config config :before-implement workflow/validate-source!
-                       :coordination-dir (str (io/file (:state-dir ctx) "coordination"))
-                       :lock-file (str (io/file (:state-dir ctx) "advance-harness.lock")))
+        ctx (merge (assoc ctx :config config :before-implement workflow/validate-source!)
+                   (rt/coordination (str (io/file repo ".git")) config))
         pr (atom nil) sequence (atom []) selections (atom 0) implementations (atom 0) checks (atom 0) readies (atom 0)
         issues (atom {}) closed (atom []) original-command rt/command
         response (fn [value] {:exit 0 :out (json/write-str value) :err ""})]
@@ -87,6 +176,8 @@
       [project/setup! (fn [_] nil)
        project/open-prs (fn [_] [])
        project/settings (fn [_] {})
+       gh/review-threads-clear? (fn [& _] true)
+       gh/head-workflow-state (fn [& _] {:state :passed :runs []})
        gh/status! (fn [& _] nil)
        gh/relation! (fn [& _] nil)
        gh/comment! (fn [& _] nil)
@@ -120,7 +211,7 @@
                      (cond
                        (= "clojure" (first argv)) (do (swap! sequence conj :preflight) {:exit 0 :out "fixture preflight" :err ""})
                        (= ["gh" "pr" "view"] (vec (take 3 argv)))
-                       (response (merge {:baseRefName "main" :reviewDecision "APPROVED"
+                       (response (merge {:baseRefName "main" :reviewDecision "APPROVED" :mergeable "MERGEABLE" :mergeStateStatus "CLEAN"
                                          :statusCheckRollup [{:status "COMPLETED" :conclusion "SUCCESS"}]}
                                         @pr {:state (if (= "merged" (:state @pr)) "MERGED" "OPEN")}))
                        (= ["gh" "pr" "merge"] (vec (take 3 argv)))
@@ -141,7 +232,7 @@
                         (swap! sequence conj :checked)
                         (let [n (swap! checks inc)]
                           (when (or (and local-failure? (= 1 n)) (and composition-failure? (= 2 n)))
-                            (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1}}))))
+                            (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1} :writer-ended? true}))))
                         {:exitCode 0})
        codex/job! (fn [c job cwd _ _ _ _]
                     (cond
@@ -200,6 +291,7 @@
   (let [ctx (fixture/context) t {:key "unaccepted" :base "base" :candidate "candidate" :tree "tree"}]
     (with-redefs [flow/pr-info (fn [& _] {:state "MERGED" :headRefOid "candidate" :mergeCommit {:oid "external"}
                                          :statusCheckRollup [{:state "SUCCESS"}]})
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs []})
                   gh/status! (fn [& _] (throw (AssertionError. "Unaccepted merge cannot be marked Done")))]
       (is (thrown-with-msg? Exception #"evidence does not match" (flow/integrate! ctx t))))
     (is (nil? (get-in @(:state ctx) [:tasks "unaccepted" :merged])))))

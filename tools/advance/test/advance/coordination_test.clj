@@ -1,6 +1,6 @@
 (ns advance.coordination-test
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is use-fixtures]]
             [simplify.coordination :as coordination]
             [simplify.codex :as codex]
             [simplify.core-test :as fixture]
@@ -10,11 +10,13 @@
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]))
 
+(use-fixtures :each fixture/no-github-network)
+
 (defn pair []
   (let [a (fixture/context) b (fixture/context)
-        directory (str (io/file (:state-dir a) "shared"))]
-    [(assoc a :coordination-dir directory :lock-file (str (io/file (:state-dir a) "simplify-harness.lock")))
-     (assoc b :coordination-dir directory :lock-file (str (io/file (:state-dir a) "advance-harness.lock")))]))
+        common (fixture/temp-dir)]
+    [(merge a (rt/coordination common (:config a)))
+     (merge b (rt/coordination common (:config b)))]))
 
 (deftest actual-path-conflicts-are-shared-and-survive-a-controller-exit
   (let [[a b] (pair)]
@@ -37,6 +39,17 @@
     (is (= [:first] @effects))
     (coordination/with-merge b #(swap! effects conj :second))
     (is (= [:first :second] @effects))))
+
+(deftest only-known-ended-ordinary-checks-enter-repair
+  (doseq [[details expected] [[{:writer-ended? true} :repair]
+                              [{:writer-ended? false} :attention]
+                              [{} :attention]
+                              [{:writer-ended? true :restricted true} :attention]]]
+    (let [ctx (fixture/context)]
+      (rt/update! ctx assoc-in [:tasks "check"] {:key "check" :status :implementing})
+      (with-redefs [gh/status! (fn [& _] nil) gh/comment! (fn [& _] nil)]
+        (workflow/failure! ctx "check" (ex-info "Sandboxed check failed" details)))
+      (is (= expected (get-in @(:state ctx) [:tasks "check" :status]))))))
 
 (deftest denials-cannot-transfer-to-another-harness-or-campaign
   (let [[a b] (pair) calls (atom 0)]
