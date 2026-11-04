@@ -31,7 +31,7 @@ Task bodies/statuses and finite review subjects stay unchanged. Current source/i
 
 ## Complete compile-time evaluation interface
 
-Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); actual L12 premises remain conjunctive, and grants alone waive none of them. Canonical L6 wording clarification remains separate work.
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); actual L12 premises remain conjunctive, and grants alone waive none of them. Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed.
 
 Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
 
@@ -132,7 +132,7 @@ are required; missing, mismatched, reordered and extra records are L6 errors.
 Retain the existing R6 qualification only outside stricter R7/R8 recorded-output
 segments. This source plan neither authorizes live calls nor reruns held replay.
 
-The [L12 hermetic refinement](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds) requires explicit declared-key/value policy, configured replayable providers or pinned results, recorded clock values/deterministic seeds, declared target manifests and hashed generated inputs where applicable. A grant alone cannot supply those premises. The user selected [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) for this wording difference. Build/Expand require real declared-key/value-policy and other applicable premise evidence before live acceptance. The retained canonical L6 text requires a separate source clarification and authenticated successor; this policy selection renews no source review or implementation acceptance.
+The [L12 hermetic refinement](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds) requires explicit declared-key/value policy, configured replayable providers or pinned results, recorded clock values/deterministic seeds, declared target manifests and hashed generated inputs where applicable. A grant alone cannot supply those premises. The user selected [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) for this wording difference. Build/Expand require real declared-key/value-policy and other applicable premise evidence before live acceptance. The ef88 checkpoint recorded a future L6 clarification; it was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`, while authenticated current-source succession, `main` integration and implementation remain separate; this policy selection renews no source review or implementation acceptance.
 
 Nine finite profile74 predicates retain the frozen review/applicability/receipt
 already recorded with the source-memory proposal. Restore seven missing exact
@@ -225,8 +225,7 @@ status, owner, evidence receipt or ordinary construction permission changes.
    Check both effectful-P/pure-Q and pure-P/effectful-Q cases. This staging does
    not let P obtain its own prior admission from Q or confer migration authority.
    Exact L12 hermetic premises under [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs)
-   remain; a grant alone is not a hermetic exception. Canonical L6 wording
-   clarification is separate required source work.
+   remain; a grant alone is not a hermetic exception. Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed.
 7. Runtime2's early service/panic/failure/cleanup contract precedes Runtime3 use.
    Runtime3 produces actual selected continuation/resource/scheduler primitives;
    later Runtime2 resumable-error execution consumes those real primitives and
