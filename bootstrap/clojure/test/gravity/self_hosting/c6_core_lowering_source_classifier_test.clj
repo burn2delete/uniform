@@ -632,3 +632,161 @@
                         :encoding "UTF-8")))
            (:expected-source-hash failure)))
     (is (= "sha256:wrong" (:actual-source-hash failure)))))
+
+(deftest development-current-route-witnesses-unbound-real-c5-and-sh06
+  (let [source-path (repository-path
+                     "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.gravity")
+        source-text (slurp source-path :encoding "UTF-8")
+        original-c5 bootstrap/compiler-c5-resolution-source-artifact
+        c5-arguments (atom [])
+        c5-artifact (atom nil)
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        artifact
+        (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
+                      (fn [& args]
+                        (swap! c5-arguments conj (vec args))
+                        (let [result (apply original-c5 args)]
+                          (reset! c5-artifact result)
+                          result))
+                      lowering/c6-form->core-form fallback
+                      lowering/c6-eval-order fallback]
+          (bootstrap/compiler-c6-lowering-source-artifact-development-current
+           source-path source-text @repository-root))]
+    (is (= 1 (count @c5-arguments)))
+    (is (= 5 (count (first @c5-arguments))))
+    (is (= source-path (first (first @c5-arguments))))
+    (is (str/ends-with? (nth (first @c5-arguments) 3) "reader.gravity"))
+    (is (= :development-current
+           (get-in (first @c5-arguments) [4 :macro-source-mode])))
+    (is (= :accepted (:status @c5-artifact)))
+    (is (= :gravity/sh06-resolution-artifact (:kind @c5-artifact)))
+    (is (= source-path (get-in @c5-artifact [:provenance :source-path])))
+    (is (= :complete (get-in artifact [:c6-lowering-results :status])))
+    (is (= :passed (get-in artifact [:core-verifier-report :status])))))
+
+(deftest development-current-route-rejects-invalid-utf8-before-host-fallback
+  (let [root (temporary-current-source-root)
+        source-file (.resolve root source-adapter/source-relative-path)
+        c5-calls (atom 0)
+        host-fallback-calls (atom 0)
+        fallback (fn [& _]
+                   (swap! host-fallback-calls inc)
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        failure
+        (try
+          (java.nio.file.Files/write
+           source-file
+           (byte-array [-61 40])
+           (make-array java.nio.file.OpenOption 0))
+          (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
+                        (fn [& args]
+                          (swap! c5-calls inc)
+                          (apply development-route-c5-artifact (take 2 args)))
+                        bootstrap/read-source-form-records
+                        (fn [path text]
+                          (bootstrap/read-source-form-records-host-oracle path text))
+                        lowering/c6-form->core-form fallback
+                        lowering/c6-eval-order fallback]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             development-route-source-path development-route-source-text root))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error))
+          (finally
+            (delete-tree! root)))]
+    (is (= "C6-SOURCE-CLASSIFIER-SOURCE" (:id failure)))
+    (is (= :invalid-utf8 (:failure-reason failure)))
+    (is (= 1 @c5-calls))
+    (is (zero? @host-fallback-calls))))
+
+(deftest development-current-route-rejects-c6-source-symlink-before-host-fallback
+  (let [root (temporary-current-source-root)
+        source-file (.resolve root source-adapter/source-relative-path)
+        source-target (.resolve
+                       ^java.nio.file.Path @repository-root
+                       source-adapter/source-relative-path)
+        c5-calls (atom 0)
+        host-fallback-calls (atom 0)
+        fallback (fn [& _]
+                   (swap! host-fallback-calls inc)
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        failure
+        (try
+          (java.nio.file.Files/deleteIfExists source-file)
+          (java.nio.file.Files/createSymbolicLink
+           source-file source-target
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
+                        (fn [& args]
+                          (swap! c5-calls inc)
+                          (apply development-route-c5-artifact (take 2 args)))
+                        bootstrap/read-source-form-records
+                        (fn [path text]
+                          (bootstrap/read-source-form-records-host-oracle path text))
+                        lowering/c6-form->core-form fallback
+                        lowering/c6-eval-order fallback]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             development-route-source-path development-route-source-text root))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error))
+          (finally
+            (delete-tree! root)))]
+    (is (= "C6-SOURCE-CLASSIFIER-SOURCE" (:id failure)))
+    (is (= :not-regular-source-file (:failure-reason failure)))
+    (is (= 1 @c5-calls))
+    (is (zero? @host-fallback-calls))))
+
+(deftest development-current-route-rejects-c6-source-change-during-plan
+  (let [root (temporary-current-source-root)
+        source-file (.resolve root source-adapter/source-relative-path)
+        original (slurp (.toFile source-file) :encoding "UTF-8")
+        original-plan-builder bootstrap/p15-s23-stage2-compiler-artifact-plan
+        c5-calls (atom 0)
+        host-fallback-calls (atom 0)
+        fallback (fn [& _]
+                   (swap! host-fallback-calls inc)
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        failure
+        (try
+          (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
+                        (fn [& args]
+                          (swap! c5-calls inc)
+                          (apply development-route-c5-artifact (take 2 args)))
+                        bootstrap/read-source-form-records
+                        (fn [path text]
+                          (bootstrap/read-source-form-records-host-oracle path text))
+                        bootstrap/p15-s23-stage2-compiler-artifact-plan
+                        (fn [emitter source-path source-text]
+                          (let [plan (original-plan-builder
+                                      emitter source-path source-text)]
+                            (java.nio.file.Files/write
+                             source-file
+                             (.getBytes (str original "\n") "UTF-8")
+                             (make-array java.nio.file.OpenOption 0))
+                            plan))
+                        lowering/c6-form->core-form fallback
+                        lowering/c6-eval-order fallback]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             development-route-source-path development-route-source-text root))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error))
+          (finally
+            (delete-tree! root)))]
+    (is (= "C6-SOURCE-CLASSIFIER-SOURCE-DRIFT" (:id failure)))
+    (is (= 1 @c5-calls))
+    (is (zero? @host-fallback-calls))))

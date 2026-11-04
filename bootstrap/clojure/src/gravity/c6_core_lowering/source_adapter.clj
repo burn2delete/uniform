@@ -6,7 +6,12 @@
    one-way: a development caller supplies the current-source plan machinery,
    while the normal hosted Clojure operation remains the default route."
   (:require [clojure.java.io :as io]
-            [gravity.digest :as digest]))
+            [gravity.digest :as digest])
+  (:import [java.nio ByteBuffer]
+           [java.nio.charset CharacterCodingException CodingErrorAction
+            StandardCharsets]
+           [java.nio.file Files LinkOption]
+           [java.nio.file.attribute BasicFileAttributes]))
 
 (def source-relative-path
   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")
@@ -17,6 +22,9 @@
 
 (def ^:private source-engine
   :gravity-c6-core-lowering-source-classifier)
+
+(def ^:private no-follow-options
+  (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
 
 (defn- fail! [id message data]
   (throw (ex-info message (assoc (or data {}) :id id))))
@@ -31,6 +39,83 @@
   [repository-root]
   (.getCanonicalPath (io/file (repository-file repository-root)
                               source-relative-path)))
+
+(defn- source-failure! [source-path reason message data]
+  (fail! "C6-SOURCE-CLASSIFIER-SOURCE"
+         message
+         (merge {:source-path source-path
+                 :failure-reason reason}
+                data)))
+
+(defn- source-attributes [^java.nio.file.Path path source-path]
+  (try
+    (Files/readAttributes path BasicFileAttributes no-follow-options)
+    (catch java.io.IOException error
+      (source-failure!
+       source-path :unreadable
+       "Current C6 source file cannot be inspected"
+       {:cause-message (.getMessage error)}))))
+
+(defn- validate-source-file! [^BasicFileAttributes attributes source-path]
+  (when-not (and (.isRegularFile attributes)
+                 (not (.isSymbolicLink attributes)))
+    (source-failure!
+     source-path :not-regular-source-file
+     "Current C6 source must be a regular non-symlink file"
+     {:regular-file? (.isRegularFile attributes)
+      :symbolic-link? (.isSymbolicLink attributes)}))
+  attributes)
+
+(defn- strict-source-text [source-path ^bytes bytes]
+  (try
+    (let [decoder
+          (doto (.newDecoder StandardCharsets/UTF_8)
+            (.onMalformedInput CodingErrorAction/REPORT)
+            (.onUnmappableCharacter CodingErrorAction/REPORT))]
+      (.toString (.decode decoder (ByteBuffer/wrap bytes))))
+    (catch CharacterCodingException error
+      (source-failure!
+       source-path :invalid-utf8
+       "Current C6 source is not valid UTF-8"
+       {:cause-message (.getMessage error)}))))
+
+(defn- source-snapshot! [^java.io.File source-file source-path]
+  (let [path (.toPath source-file)
+        before (validate-source-file!
+                (source-attributes path source-path) source-path)
+        bytes (try
+                (Files/readAllBytes path)
+                (catch java.io.IOException error
+                  (source-failure!
+                   source-path :unreadable
+                   "Current C6 source bytes cannot be read"
+                   {:cause-message (.getMessage error)})))
+        after (validate-source-file!
+               (source-attributes path source-path) source-path)
+        source-hash (str "sha256:" (digest/sha256-bytes-hex bytes))]
+    (when-not (and (= (.fileKey before) (.fileKey after))
+                   (= (.size before) (.size after))
+                   (= (.size after) (alength bytes))
+                   (= (.lastModifiedTime before)
+                      (.lastModifiedTime after)))
+      (source-failure!
+       source-path :source-changed-during-read
+       "Current C6 source changed while being read"
+       {:initial-byte-count (.size before)
+        :observed-byte-count (alength bytes)}))
+    {:source-path source-path
+     :source-text (strict-source-text source-path bytes)
+     :source-byte-count (alength bytes)
+     :source-hash source-hash
+     :file-key (.fileKey before)
+     :last-modified-time (.lastModifiedTime before)}))
+
+(defn- same-source-snapshot? [left right]
+  (and (= (:source-path left) (:source-path right))
+       (= (:source-byte-count left) (:source-byte-count right))
+       (= (:source-hash left) (:source-hash right))
+       (= (:file-key left) (:file-key right))
+       (= (:last-modified-time left) (:last-modified-time right))))
 
 (defn- validate-source-plan! [source-path plan]
   (when-not (= :gravity/stage2-compiler-artifact-plan (:kind plan))
@@ -81,13 +166,9 @@
              {:source-path source-path
               :required [:c-backend-stage2-plan-emitter-source-rule!
                          :p15-s23-stage2-compiler-artifact-plan]}))
-    (when-not (.isFile source-file)
-      (fail! "C6-SOURCE-CLASSIFIER-SOURCE"
-             "Current C6 source classifier file is missing"
-             {:source-path source-path
-              :source-relative-path source-relative-path}))
-    (let [source (slurp source-file :encoding "UTF-8")
-          source-hash (str "sha256:" (digest/sha256-hex source))
+    (let [before (source-snapshot! source-file source-path)
+          source (:source-text before)
+          source-hash (:source-hash before)
           emitter-result
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
           emitter (:emitter emitter-result)]
@@ -97,13 +178,22 @@
                {:source-path source-path
                 :emitter-result (select-keys emitter-result [:kind :target])}))
       (let [plan (p15-s23-stage2-compiler-artifact-plan
-                  emitter source-path source)]
+                  emitter source-path source)
+            after (source-snapshot! source-file source-path)]
         (when-not (= source-hash (get-in plan [:source :sha256]))
           (fail! "C6-SOURCE-CLASSIFIER-SOURCE-DRIFT"
                  "Current C6 source plan does not describe the read source"
                  {:source-path source-path
                   :expected-source-hash source-hash
                   :actual-source-hash (get-in plan [:source :sha256])}))
+        (when-not (same-source-snapshot? before after)
+          (fail! "C6-SOURCE-CLASSIFIER-SOURCE-DRIFT"
+                 "Current C6 source changed while its plan was built"
+                 {:source-path source-path
+                  :expected-source-hash (:source-hash before)
+                  :actual-source-hash (:source-hash after)
+                  :expected-source-byte-count (:source-byte-count before)
+                  :actual-source-byte-count (:source-byte-count after)}))
         (validate-source-plan! source-path plan)))))
 
 (defn c6-form->core-form-operation
