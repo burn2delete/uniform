@@ -53,7 +53,7 @@
 
 (defn engine-contract [public-api]
   {:contract-boundary :hosted-stage0-c13-optimization
-   :dependency-direction {:requires ['gravity.digest 'gravity.optimization-lowering]
+   :dependency-direction {:requires ['gravity.digest 'gravity.optimization-lowering 'gravity.optimization]
                           :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :owns [:hosted-stage0-c13-optimization-adapter :hosted-stage0-c13-evidence]
    :does-not-own [:canonical-c13-authority :source-authentication
