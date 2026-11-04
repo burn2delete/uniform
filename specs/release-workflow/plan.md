@@ -344,6 +344,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Compose actual B14 shared/per-family matrices and exact diagnostic/metadata/artifact/differential-reference/replay packs, including accepted/refused and partial-output cases. Target availability explains only justified skips; required shared checks remain and a default-target run cannot accept wider support. Preserve TEST6's original conditional scope without weakening B14. Actual policy-required conformance/reproduction and content provenance govern stabilization/release; final self-hosting/seedless work is not the first family fixture gate.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

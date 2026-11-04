@@ -183,6 +183,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Selected transformations preserve actual source/domain semantics, numeric modes, ownership/alias/order/effect/grant/profile facts, source/audit and certificate identities or perform required accepted invalidation/repair/regeneration. MLIR passes need actual before/after verifiers and downstream legality; strict GPU reductions, host/null boundaries and database predicate movement cannot inherit host/dialect defaults. Optional paths remain optional and actual required certificate/reference evidence is not a metadata flag.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

@@ -424,6 +424,13 @@ handoff or denied advisory reviewer wake. No aggregate adoption, main merge or
 implementation acceptance is claimed. Reader contract coverage remains the first
 actual implementation increment.
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Expose real selected embedder/managed/JS/async-component/host-device/workflow/database/mobile helper, ABI, ownership/rooting/drop/cancel/error/order/replay contracts before checking, then actual linked/permitted behavior where claimed. GC/host promises/logging/default schedulers cannot replace deterministic cleanup, typed completion/backpressure, normalized failure or grants. Preserve native/callback/device/provider/replay/migration/private-store restrictions and no-runtime paths.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

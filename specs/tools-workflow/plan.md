@@ -158,6 +158,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Use stable common artifact-kind schemas and genuine source/generated/IR/target/proof/dependency graphs without loading backend implementation code. Queries and diagnostic views must resolve actual emitted constructs to source and justifying evidence, preserving current toolchain/profile/target/provider/fixture identity and invalidation. A graph-shaped supplied record, hash or equal execution result cannot establish provenance or conformance.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

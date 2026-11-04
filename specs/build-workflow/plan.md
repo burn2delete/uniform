@@ -289,6 +289,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Resolve actual declared family/runtime/toolchain/dialect/ABI/schema/module/feature/pass/helper/resource/provider inputs before compilation and invalidate affected products on changes. Actual content bytes/canonical representation, common provenance graph, hashes, output-affecting environment and nondeterminism/timestamp policy precede claimed package/reproduction results. Final signing/release is not first artifact schema or authority.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

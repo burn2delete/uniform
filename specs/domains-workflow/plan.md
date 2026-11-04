@@ -639,6 +639,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual EFIR/math/GPU/hardware/workflow/query/schema/UI/AI source semantics and verified domain anchor/schema/entry/verifier/exit products distinct from backend family implementation. Selected consumers need real typed/lifetime/order/numeric/policy facts, independent certificate results where required and current source/provenance. Core-only paths need no invented domain IR. Preserve every existing future declaration/source binding and C12/provider/device/migration/replay restriction.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

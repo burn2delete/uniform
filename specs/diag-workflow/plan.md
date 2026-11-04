@@ -232,6 +232,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Carry every B4-B14 diagnostic identity and its distinct owning source/generated/IR/domain/host/world/ABI/async/kernel/clock/workflow/query/platform/artifact/fixture context through success and rejected partial outputs. Common emission cannot suppress upstream failures; independent metadata faults must remain observable even when values agree. Redaction preserves refusal meaning.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

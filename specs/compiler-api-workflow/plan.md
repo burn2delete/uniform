@@ -299,6 +299,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Preserve actual verified selected MIR/domain/anchor and current correlated type/effect/grant/profile/ownership/safety/proof inputs at family handoffs. MLIR dialect/verifier success, target attributes and manifest flags cannot establish source facts. Optional pipelines and later conformance packs do not become first schema inputs; preserve current source-order issues and C12/plugin restrictions.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

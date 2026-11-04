@@ -191,6 +191,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Actual selected family feature/ABI/layout/provider/helper/schema/verifier interfaces precede construction, then real verified MIR or required domain input/current proofs precede actual lowering and legal fallback. Preserve source/effects/grants/safety/audit/numeric/order into C/Wasm/managed/MLIR/GPU/HDL/graph/query/mobile outputs and common emission. Optional MLIR/Opt and unselected families are not universal prerequisites; real selected claims still require their actual products.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

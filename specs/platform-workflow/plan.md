@@ -169,6 +169,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Backend declarations for hardware/GPU/mobile capabilities, ABI/clock/reset/timing/permissions/lifecycle/store metadata do not choose a product ISA, device, kernel/app platform or provider. Real selected schemas and admitted target artifacts support bounded family work; simulator/synthesis/device/startup and final product/release claims keep their actual evidence and restrictions. Preserve all existing Product future records and signing/publication custody.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration
