@@ -237,7 +237,6 @@ inspection. Only that exact source tuple can receive a new transaction ID;
 the old attempt stays recorded. A restricted action cannot take this path.
 An own unresolved main effect requires Attention before another provider read;
 another campaign's fence remains ordinary integration waiting.
-reconciliation remains a separate observation when it is needed.
 
 ## Validation and references
 
