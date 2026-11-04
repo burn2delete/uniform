@@ -40,6 +40,48 @@
         (recur (rest remaining)
           (if (= key removed-key) result (assoc result key (get input key))))))))
 
+(defn runtime-map-key-domain-valid? [input]
+  (if (map? input)
+    (loop [remaining (keys input)]
+      (if (= 0 (count remaining)) true
+        (if (keyword? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn runtime-merge-map-arguments [arguments]
+  (let [valid? (loop [remaining arguments]
+                 (if (= 0 (count remaining)) true
+                   (let [candidate (first remaining)]
+                     (if (= nil candidate)
+                       (recur (rest remaining))
+                       (if (runtime-map-key-domain-valid? candidate)
+                         (recur (rest remaining))
+                         false)))))
+        has-map? (loop [remaining arguments]
+                   (if (= 0 (count remaining)) false
+                     (if (map? (first remaining)) true
+                       (recur (rest remaining)))))]
+    (if valid?
+      (if has-map?
+        {:status :accepted
+         :value
+         (loop [remaining (rest arguments)
+                result (if (map? (first arguments)) (first arguments) {})]
+           (if (= 0 (count remaining)) result
+             (let [candidate (first remaining)]
+               (recur
+                (rest remaining)
+                (if (map? candidate)
+                  (loop [entries (keys candidate) merged result]
+                    (if (= 0 (count entries)) merged
+                      (let [key (first entries)]
+                        (recur (rest entries) (assoc merged key (get candidate key))))))
+                  result)))))}
+        {:status :accepted :value nil})
+      {:status :rejected
+       :reason :map-merge-map-or-nil-with-keyword-keys-required})))
+
 (defn p15-s23-runtime-println-output
   [values output]
   (if (= (count values) 0)
@@ -1318,6 +1360,8 @@
                                                 (if (string? id)
                                                   (if (> (count id) 0)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
+                  (if (= function 'merge)
+                    (if (= fields #{:op :function :args}) (vector? arguments) false)
                   (if (contains? '#{nth conj contains? dissoc quot *} function)
                     (if (= fields #{:op :function :args})
                       (if (= 2 (count arguments)) (if (map? (first arguments)) (map? (second arguments)) false) false) false)
@@ -1343,7 +1387,7 @@
                         (loop [remaining arguments]
                           (if (= 0 (count remaining)) true
                             (if (map? (first remaining)) (recur (rest remaining)) false))) false)
-                      (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))))) false) false) false)
+                      (if (= function 'str) (contains? #{1 2} (count arguments)) false))))))))))) false) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
               (if (vector? arguments)
@@ -1448,6 +1492,12 @@
        (second arguments-result) :rejected]))
   [{:diagnostic "P15S23X002" :reason :map-keys-map-required :operation operation}
    (second arguments-result) :rejected])
+(if (= function 'merge)
+  (let [merged (runtime-merge-map-arguments values)]
+    (if (= :accepted (get merged :status))
+      [(get merged :value) (second arguments-result) :normal]
+      [{:diagnostic "P15S23X002" :reason (get merged :reason) :operation operation}
+       (second arguments-result) :rejected]))
 (if (contains? '#{set string? keyword? map? integer? number? char? seq? even? vector? first rest empty? set? symbol? boolean? list?} function)
                 (if (= function 'set)
                   (let [conversion (if (list? left)
@@ -1854,7 +1904,7 @@
                          (>= left right)))))))
                (second arguments-result) :normal]
                [{:diagnostic "P15S23X002" :reason :invalid-integer-comparison :operation operation}
-                (second arguments-result) :rejected])))))))))))))))))
+                (second arguments-result) :rejected]))))))))))))))))))
               arguments-result))
             (if (= operation :println)
               (let [arguments-result

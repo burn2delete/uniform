@@ -549,6 +549,50 @@
            (invoke [{:op :literal :value 2}
                     {:op :literal :value 4}])))))
 
+(deftest gravity-runtime-map-merge-preserves-variadic-map-domain-and-order
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [arguments output]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-evaluate-closed-instruction
+                  [{:op :builtin-call :function 'merge :args arguments} {} output]))
+        left (with-meta {:a 1 :shared :left} {:origin :left})
+        right (with-meta {:b 2 :shared :right} {:origin :right})
+        merged (invoke [{:op :literal :value left}
+                        {:op :literal :value right}]
+                       "prefix")]
+    (is (= [nil "" :normal] (invoke [] "")))
+    (is (= [nil "" :normal] (invoke [{:op :literal :value nil}] "")))
+    (is (= [nil "" :normal]
+           (invoke [{:op :literal :value nil}
+                    {:op :literal :value nil}] "")))
+    (is (= {:a 1 :b 2 :shared :right} (first merged)))
+    (is (= "prefix" (second merged)))
+    (is (= :normal (nth merged 2)))
+    (is (= {:origin :left} (meta (first merged))))
+    (is (= {:a 1 :b 2 :shared :right}
+           (first (invoke [{:op :literal :value nil}
+                           {:op :literal :value left}
+                           {:op :literal :value right}] ""))))
+    (is (nil? (meta (first (invoke [{:op :literal :value nil}
+                                    {:op :literal :value left}] "")))))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :map-merge-map-or-nil-with-keyword-keys-required}
+            "prefix" :rejected]
+           (invoke [{:op :literal :value left}
+                    {:op :literal :value "not-a-map"}] "prefix")))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :map-merge-map-or-nil-with-keyword-keys-required}
+            "" :rejected]
+           (invoke [{:op :literal :value {"bad-key" 1}}] "")))
+    (is (= [:left "prefix" :thrown]
+           (invoke [{:op :throw
+                     :value {:op :literal :value :left}}
+                    {:op :literal :value "unreached"}]
+                   "prefix")))))
+
 (defn- builtin-operations []
   (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
 
