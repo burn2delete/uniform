@@ -102,6 +102,62 @@
         (is (= {:base "base" :tree "tree" :admitted false} (select-keys rejection [:base :tree :admitted])))
         (is (re-find message (:message rejection)))))))
 
+(deftest production-job-validation-failure-retains-an-immutable-response-reference
+  (let [original (fixture/context)
+        ctx (assoc original :log-file (str (io/file (:state-dir original) "events.jsonl")))
+        response {:summary "Environment issue" :coverage [] :increments []
+                  :blockers [{:task "local Git inspection" :reason "Denied cache write"}]}
+        attempts (atom 0)
+        previous {:base "previous" :output {:summary "Previously accepted selection"}}
+        history [{:job "select-23" :status :rejected :restriction "No denied Git/cache write replay"
+                  :output {:original "retained"}}]
+        pending {:job "select-23" :admitted false :status :rejected}]
+    (rt/update! ctx assoc :selection previous :operator-planning history :pending-selection pending)
+    ;; Keep the real job! parser, validator and failure recording. Only its
+    ;; transport is a deterministic response fixture; no model or tools run.
+    (with-redefs [coordination/claims (fn [_] [])
+                  rt/command (fn [& _] (throw (AssertionError. "No command replay")))
+                  codex/open! (fn [c job _] {:ctx c :job job})
+                  codex/close! (fn [& _] nil)
+                  codex/send! (fn [& _] nil)
+                  codex/request! (fn [_ method _]
+                                   (case method
+                                     "initialize" {}
+                                     "thread/start" {:thread {:id "fixture-thread"} :model "fixture-no-inference"}
+                                     "turn/start" {:turn {:id "fixture-turn"}}))
+                  codex/await-turn! (fn [client _]
+                                      (swap! attempts inc)
+                                      (let [raw (json/write-str response)]
+                                        (rt/event! (:ctx client) :rpc-receive
+                                                   {:job (:job client) :message {:method "item/completed"
+                                                                               :params {:item {:type "agentMessage" :text raw}}}})
+                                        raw))
+                  gh/comment! (fn [& _] (throw (AssertionError. "No provider write")))
+                  workflow/admit! (fn [& _] (throw (AssertionError. "No admission")))]
+      (is (thrown-with-msg? Exception #"Invalid structured output enum"
+                           (workflow/select! ctx {:base "base" :tree "tree" :worktree (:state-dir ctx)
+                                                  :catalog {:tasks [{:key source-key}]}} {} []))))
+    (is (= 1 @attempts))
+    (is (= previous (:selection @(:state ctx))))
+    (is (= history (:operator-planning @(:state ctx))))
+    (is (= pending (:pending-selection @(:state ctx))))
+    (let [rejection (last (:selection-rejections @(:state ctx)))
+          reference (:response-reference rejection)
+          job (get-in @(:state ctx) [:jobs (:job rejection)])]
+      (is (= {:base "base" :tree "tree" :admitted false :output nil}
+             (select-keys rejection [:base :tree :admitted :output])))
+      (is (= :attention (:status job)))
+      (is (re-find #"Invalid structured output enum" (:message rejection)))
+      (is (= {:thread "fixture-thread" :turn "fixture-turn"} (:identity reference)))
+      (is (= (:state-file ctx) (:state-file reference)))
+      (is (= (:job rejection) (:job reference)))
+      (is (= response (-> (slurp (:log-file reference)) str/split-lines first
+                                          (json/read-str :key-fn keyword)
+                                          (get-in [:message :params :item :text])
+                                          (json/read-str :key-fn keyword)))))
+    (is (= (:selection-rejections @(:state ctx))
+           (:selection-rejections (rt/read-edn (:state-file ctx)))))))
+
 (deftest snapshot-supplies-its-observed-tree-without-an-extra-read
   (let [ctx (fixture/context) reads (atom []) snapshot {:tasks [] :files []}
         base "0123456789abcdef0123456789abcdef01234567"]

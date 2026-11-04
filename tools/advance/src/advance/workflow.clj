@@ -132,8 +132,7 @@
 (defn select! [ctx {:keys [base tree worktree catalog]} settings pulls]
   (let [output-schema (selection-output-schema catalog)
         job (flow/next-job! ctx :select)
-        output (codex/job! ctx job worktree :read selector-instructions
-                 (str "Select independently useful implementation increments from the current task catalog. "
+        prompt (str "Select independently useful implementation increments from the current task catalog. "
                       "Read owning spec/plan/task/evidence and actual source; the index is navigation. "
                       "Prioritize configured task keys, then Project priority, actual prerequisites and work that unblocks completion. "
                       "Respect Project Control Paused/Blocked on both campaign, source tasks and increments. "
@@ -153,21 +152,27 @@
                       "\nShared writer claims: " (pr-str (coordination/claims ctx))
                       "\nRetained rejected planning notes (history, never retry authorization): "
                       (pr-str (mapv #(select-keys % [:job :status :validation-error :restriction])
-                                    (:operator-planning @(:state ctx))))) output-schema)]
-    (try
-      (schema/validate! output-schema output)
-      (doseq [increment (:increments output)]
-        (let [number (get-in @(:state ctx) [:source-tasks (:task increment) :issue :number])]
-          (when-not (project/runnable? settings number)
-            (rt/fail! "Selector chose an operator-paused or blocked task" {:task (:task increment)}))))
-      (doseq [blocker (:blockers output)]
-        (when-not (some #(= (:task blocker) (:key %)) (:tasks catalog))
-          (rt/fail! "Blocker names an unknown source task" {:blocker blocker})))
-      (catch Exception e
-        (rt/update! ctx update :selection-rejections (fnil conj [])
-                    {:job job :base base :tree tree :output output :admitted false
-                     :message (.getMessage e) :details (ex-data e)})
-        (throw e)))
+                                    (:operator-planning @(:state ctx)))))
+        response (volatile! nil)
+        output (try
+                 (let [output (codex/job! ctx job worktree :read selector-instructions prompt output-schema)]
+                   (vreset! response output)
+                   (schema/validate! output-schema output)
+                   (doseq [increment (:increments output)]
+                     (let [number (get-in @(:state ctx) [:source-tasks (:task increment) :issue :number])]
+                       (when-not (project/runnable? settings number)
+                         (rt/fail! "Selector chose an operator-paused or blocked task" {:task (:task increment)}))))
+                   (doseq [blocker (:blockers output)]
+                     (when-not (some #(= (:task blocker) (:key %)) (:tasks catalog))
+                       (rt/fail! "Blocker names an unknown source task" {:blocker blocker})))
+                   output)
+                 (catch Exception e
+                   (rt/update! ctx update :selection-rejections (fnil conj [])
+                               {:job job :base base :tree tree :output @response :admitted false
+                                :response-reference {:state-file (:state-file ctx) :log-file (:log-file ctx)
+                                                     :job job :identity (select-keys (get-in @(:state ctx) [:jobs job]) [:thread :turn])}
+                                :message (.getMessage e) :details (ex-data e)})
+                   (throw e)))]
     (rt/update! ctx assoc :selection {:base base :output output})
     (gh/comment! ctx (:campaign-issue @(:state ctx)) (str "selection/" (flow/next-job! ctx :record))
                  (str "Selection at `" base "`: " (:summary output) "\n\nBlockers: " (pr-str (:blockers output))))
