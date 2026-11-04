@@ -246,6 +246,36 @@
     (is (zero? merges))
     (is (= 1 audits))))
 
+(deftest current-review-and-ci-failures-are-repaired-together-without-stale-review-redispatch
+  (let [ctx (update (fixture/context) :config merge {:repository "fixture/repo" :base-branch "main" :repair-github-review true})
+        t {:key "review" :status :ci :candidate "head" :base "base" :tree "tree" :pr {:number 3}}
+        failed [{:state "FAILURE"}]
+        workflows (atom {:state :failed :runs [{:id 1 :conclusion "failure"}]})
+        info (atom {:state "OPEN" :baseRefName "main" :headRefOid "head" :reviewDecision "CHANGES_REQUESTED" :statusCheckRollup failed})]
+    (rt/update! ctx assoc-in [:tasks "review"] t)
+    (with-redefs [flow/pr-info (fn [& _] @info)
+                  gh/head-workflow-state (fn [& _] @workflows)
+                  gh/status! (fn [& _] nil)
+                  gh/pages (fn [_ endpoint]
+                             (if (str/ends-with? endpoint "/reviews")
+                               [{:id 1 :user {:id 10} :state "CHANGES_REQUESTED" :commit_id "head"}]
+                               [{:id 2 :pull_request_review_id 1 :body "Current review finding"}]))]
+      (flow/integrate! ctx t)
+      (is (= :repair (:status (flow/task ctx "review"))))
+      (is (= failed (get-in (flow/task ctx "review") [:feedback :ci])))
+      (is (= @workflows (get-in (flow/task ctx "review") [:feedback :workflows])))
+      (is (= [2] (mapv :id (get-in (flow/task ctx "review") [:feedback :inline-comments]))))
+      (flow/task! ctx "review" :status :ci :candidate "new-head")
+      (swap! info assoc :headRefOid "new-head" :statusCheckRollup [{:state "SUCCESS"}])
+      (reset! workflows {:state :passed :runs []})
+      (flow/integrate! ctx (flow/task ctx "review"))
+      (is (= :ci (:status (flow/task ctx "review"))) "Old review requests wait for required reapproval")
+      (swap! info assoc :statusCheckRollup failed)
+      (reset! workflows {:state :failed :runs []})
+      (flow/integrate! ctx (flow/task ctx "review"))
+      (is (= :repair (:status (flow/task ctx "review"))))
+      (is (nil? (get-in (flow/task ctx "review") [:feedback :github-reviews]))))))
+
 (deftest rejects-stale-review-before-merge
   (let [ctx (fixture/context)
         t {:key "a" :status :ci :candidate "candidate" :base "base" :tree "tree" :worktree (:state-dir ctx)

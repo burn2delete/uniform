@@ -233,6 +233,24 @@
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}
          (rt/redact {:apiKey "private" :message "Bearer abc.def.ghi" :value "ghp_somecredential"}))))
 
+(deftest review-feedback-binds-latest-opinion-to-current-head
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")
+        reviews (atom [{:id 1 :user {:id 10} :state "CHANGES_REQUESTED" :commit_id "head"}
+                       {:id 2 :user {:id 10} :state "APPROVED" :commit_id "head"}
+                       {:id 3 :user {:id 20} :state "CHANGES_REQUESTED" :commit_id "head"}
+                       {:id 4 :user {:id 20} :state "COMMENTED" :commit_id "head"}
+                       {:id 5 :user {:id 30} :state "CHANGES_REQUESTED" :commit_id "old"}])]
+    (with-redefs [gh/pages (fn [_ endpoint]
+                            (if (str/ends-with? endpoint "/reviews") @reviews
+                                [{:id 30 :pull_request_review_id 3 :body "Current actionable finding"}
+                                 {:id 50 :pull_request_review_id 5 :body "Old finding"}]))]
+      (let [feedback (gh/requested-review-feedback ctx "head" 3)]
+        (is (= [3] (mapv :id (:github-reviews feedback))))
+        (is (= [30] (mapv :id (:inline-comments feedback)))))
+      (is (nil? (gh/requested-review-feedback ctx "new-head" 3)))
+      (swap! reviews conj {:id 6 :user {:id 20} :state "DISMISSED" :commit_id "head"})
+      (is (nil? (gh/requested-review-feedback ctx "head" 3))))))
+
 (deftest checks-are-observed-not-inferred
   (is (= :missing (flow/check-state [])))
   (is (= :pending (flow/check-state [{:status "IN_PROGRESS"}])))

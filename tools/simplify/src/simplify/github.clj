@@ -55,6 +55,21 @@
 
 (defn repo-path [ctx suffix] (str "repos/" (get-in ctx [:config :repository]) (when (seq suffix) (str "/" suffix))))
 
+(defn requested-review-feedback [ctx candidate number]
+  (let [reviews (pages ctx (repo-path ctx (str "pulls/" number "/reviews")))
+        latest (vals (reduce (fn [by-user review]
+                               (if (#{"APPROVED" "CHANGES_REQUESTED" "DISMISSED"} (:state review))
+                                 (let [reviewer (or (get-in review [:user :id]) (get-in review [:user :login]))]
+                                   (when-not reviewer (rt/fail! "Review has no observed reviewer identity" {:review review}))
+                                   (assoc by-user reviewer review))
+                                 by-user)) {} (sort-by :id reviews)))
+        current (vec (filter #(and (= "CHANGES_REQUESTED" (:state %)) (= candidate (:commit_id %))) latest))]
+    (when (seq current)
+      (let [ids (set (map :id current))]
+        {:github-reviews current
+         :inline-comments (vec (filter #(contains? ids (:pull_request_review_id %))
+                                       (pages ctx (repo-path ctx (str "pulls/" number "/comments")))))}))))
+
 (defn head-workflow-state [ctx candidate]
   (let [runs (loop [page 1 result []]
                (let [response (api ctx (repo-path ctx (str "actions/runs?head_sha=" candidate "&per_page=100&page=" page)))

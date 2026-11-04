@@ -363,22 +363,26 @@
               {:effect (:id pending) :effect-status (:status pending)}))
   (let [info (pr-info ctx t)]
     (assert-pr-identity! ctx t info)
-    (let [workflows (gh/head-workflow-state ctx (:candidate t))]
+    (let [workflows (gh/head-workflow-state ctx (:candidate t))
+          review-feedback (when (and (= "OPEN" (:state info)) (= "CHANGES_REQUESTED" (:reviewDecision info))
+                                     (get-in ctx [:config :repair-github-review]))
+                            (gh/requested-review-feedback ctx (:candidate t) (get-in t [:pr :number])))]
     (cond
       (= "MERGED" (:state info)) (finish-merge! ctx t info)
       (not= "OPEN" (:state info)) (rt/fail! "PR was closed without merge" {:pr info})
-      (= "CHANGES_REQUESTED" (:reviewDecision info))
-      (if (get-in ctx [:config :repair-github-review])
+      review-feedback
         (do (task! ctx (:key t) :feedback
-                   {:github-reviews (gh/pages ctx (gh/repo-path ctx (str "pulls/" (get-in t [:pr :number]) "/reviews")))
-                    :inline-comments (gh/pages ctx (gh/repo-path ctx (str "pulls/" (get-in t [:pr :number]) "/comments")))
-                    :instruction "Address actionable requested changes; preserve required human review and all restrictions."})
+                   (assoc review-feedback :ci (:statusCheckRollup info) :workflows workflows
+                          :instruction "Address current-head requested changes and any failing checks; preserve required human review and all restrictions."))
             (transition! ctx (:key t) :repair))
-        (rt/fail! "GitHub review requests changes" {:pr info}))
+      (and (= "CHANGES_REQUESTED" (:reviewDecision info)) (not (get-in ctx [:config :repair-github-review])))
+      (rt/fail! "GitHub review requests changes" {:pr info})
       (or (= :failed (check-state (:statusCheckRollup info))) (= :failed (:state workflows)))
       (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info) :workflows workflows
                                         :instruction "Repair the failing checks; do not weaken or skip them."})
           (transition! ctx (:key t) :repair))
+      (= "CHANGES_REQUESTED" (:reviewDecision info))
+      (rt/event! ctx :waiting {:finding (:key t) :reason :awaiting-current-head-reapproval})
       (not= :passed (:state workflows))
       (rt/event! ctx :waiting {:finding (:key t) :reason :current-head-workflows-incomplete :workflows workflows})
       (= :missing (check-state (:statusCheckRollup info)))
