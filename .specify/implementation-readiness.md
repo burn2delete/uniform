@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: L19 interoperability and migration source proposal.
-The [current checkpoint](#complete-l19-interoperability-and-migration-source-continuation)
+Latest source continuation: L19 interoperability and migration source and dependency
+proposals. The [current checkpoint](#complete-l19-selected-result-dependency-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6655,6 +6655,177 @@ proof/selfhost/release conformance or independent acceptance.
 
 Final conservation/navigation passes 91 changed files, 85 Markdown files,
 4,187 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. Reconciliation, implementation, independent
+acceptance and integration remain separate and unfinished.
+
+## Complete L19 selected-result dependency continuation
+
+Dependency source `e1da3261959a13e1917c85a01bbedc8fbaf47c33` follows complete
+L19 source checkpoint `f316b0ea3210cdd81dda86b646248b2871cd94be`. Use the
+[interoperability producer and consumer order](../specs/runtime-workflow/plan.md#interoperability-producer-and-consumer-order)
+and [sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Twenty-two existing plans expose 565 proposed selected input subjects. Sixty-eight
+selected routes retain every one of the 2,743 preceding input joins and all
+ninety unaffected route meanings. Fifty-seven rows already existed; eleven
+existing backend tasks gain their missing rows. Add 224 inputs for 2,967 joins
+over 158 routes, 118 current parents and forty future records. Selected
+composition inputs increase from 1,611 to 1,835. All twenty-five direct L19
+criterion consumers already had routes; no task identity or status is added.
+
+The original 128-member feedback set survives entirely. Eleven existing backend
+keys enter: backend-ai, backend-c, backend-emission, backend-js, backend-jvm,
+backend-llvm, backend-mlir, backend-mobile, backend-query, backend-wasm and
+backend-workflow. None leave; the same source graph now has one 139-task feedback
+set. All fifteen existing backend-family task owners have consuming rows. Those
+fifteen keys differ from the fourteen canonical B1-B14 documents. This selected
+L19 input review does not establish whole backend-source or implementation
+acceptance. The graph is not an executable whole-task ordering; genuine earlier/
+later interfaces remain necessary. PKG2 acyclicity and its explicitly governed
+bootstrap fixed point still permit no unmarked namespace/build cycle.
+
+Actual early incumbent/header/schema/IDL/host-type/package/symbol/provider/ABI/
+protocol/version/support declarations and locks precede resolution and checking.
+Future complete wrappers, generated bindings and Runtime traces cannot supply
+their own first declaration, identity or policy. Early actual generator/type/
+codec/validator/namespace and incumbent-oracle interfaces permit construction;
+available checked P plus actual effects/grants precede invocation and real Q
+then receives normal checks. Initial C wrapper declarations are not accepted
+safe APIs. Final parity, independent suites and stability decisions are no first
+generator inputs. Core schema data needs no universal foreign runtime.
+
+Actual independent source/preliminary type premises precede effect/resource
+inference. Real inferred requirements, independent allowances/profile/service/
+resource premises, genuine applicable wrapper/check/proof facts and separate
+authentic grants precede checked export and actions. Auth keeps original foreign
+admission without replacing other owners. Six directional mappings keep explicit
+loss/failure and legal Option absence; applicable round trips do not impose
+bidirectionality on lossy maps. Seven ownership modes and six pointer fact groups
+keep actual borrow/transfer/shared/allocator/release/alias/thread obligations.
+Unrepresentable facts stay unsafe rather than ordinary safe references.
+
+Early ABI/wire/layout/root/thread/lifetime/error/release/service rules and
+independent preliminary types precede needed concrete layouts. Actual applicable
+invariant proof/checks, current target assumptions, policy and owner verdicts
+precede safe reliance. A copied review name or one successful call is no invariant
+proof. Actual admitted selected boundaries/layouts/services/grants precede real
+conversion/call/root/transfer/release and the six translated failure families;
+future execution is no first lifetime/schema rule. Host GC, a release name or
+process exit cannot prove cleanup. Process/network/model/tool/state/replay/audit
+interfaces precede construction and real admitted execution follows. No
+uncontrolled repeat is permitted; any source-permitted reissue requires actual
+explicit replay-safe/idempotent graph and event-log policy. Source artifacts
+supply no live action authority and held services remain unavailable work.
+
+Early real selected-family ABI/feature/availability/helper/schema/evidence
+interfaces support layout/runtime/emitter construction, then actual verified
+raw MIR or selected anchored domain IR and current required facts precede target
+eligibility and claimed output. Actual runtime availability or no-runtime evidence
+is needed, not whole Runtime completion before the first backend declaration.
+Valid unoptimized paths, optional MLIR and Core-only schema paths remain; no
+invented domain IR, whole registry or generic native gate is added.
+
+C retains declared dialects and safe-code UB avoidance; LLVM retains justified
+attributes and the adopted native candidate. Wasm distinguishes core/component/
+world/canonical/async/resource claims with actual selected host/replay services;
+JVM/JS retain their distinct runtime/null/root/error/thread/numeric/global facts.
+MLIR preserves real verifier/legal conversion and selected downstream interfaces/
+results, without becoming universal. GPU/HDL retain actual address/transfer/sync
+or port/bus/clock/reset/width interfaces, not host semantics. Workflow/AI/Query/
+Mobile preserve selected schema/provider/replay/permission/lifecycle/error and
+compatibility products, not universal live execution. No target, device, ISA,
+store or signing/publication action is adopted.
+
+Early common B13 schemas precede writers; actual selected admitted bytes and
+current required evidence precede manifests/readback. Later actual conformance
+packs apply before required release-grade claims, not the first development
+writer or fixture. Intentional unavailable development evidence remains explicitly
+non-release with affected downstream operations blocked; metadata cannot launder
+absent safety or conformance. Content identity precedes governed signing/packaging.
+Changed source/schema/provider/ABI/runtime/layout/compiler/generator/profile/
+target/lock/effect/grant inputs invalidate affected bindings/codecs/wrappers/
+facts/proofs/errors/origins/parity before real regeneration/current-policy reuse.
+Actual repeated outputs and permitted nondeterminism comparison establish
+reproducibility; final packages are no first comparison schema.
+
+Tools consume actual current foreign/source/generated/host-frame artifacts and
+eleven-family/ten-context diagnostics; a future valid artifact is no first error
+interface. Early old/new compatibility/deprecation/owner/stability/policy facts
+precede actual required scoped promotion/stable-change decisions and checked
+migration or justified infeasibility. Final migrated output is no first review
+input, and compatible local work gains no per-run approval/migration-proof gate.
+Actual owner cases/incumbent oracles and availability/property/checker interfaces
+precede real independent language/compiler/profile/runtime/safety/library/backend
+results. All eight compatibility-evidence families and at least one incumbent
+parity report remain. Sensitive replacement claims need actual compared envelopes/
+measurements; this is no universal benchmark or project work quota. Execution
+equality alone cannot replace preserved metadata, exact refusals and manifests;
+required shared checks still run with truthful unavailable-target dispositions.
+
+The complete L19 source record remains exact: 31 criteria, 114 facets, 78
+occurrences, seventeen section conjunctions, six original owner obligations,
+2,251 restored and 3,322 unchanged predicate bytes. All 149 current keys, 25
+authorities, forty identical / 99 amended original bodies and forty future
+records/source bindings remain. Backend task bodies/statuses are unchanged;
+Domains/Release/Platform task sources change neither, so no future-binding
+successor is introduced. No historical receipt or review is renewed/consumed.
+
+The L19 source regression reads its entire frozen `f316b0ea3` bridge, projection
+and source readers. Existing L14 and L17 dependency tests retain their exact
+original assertion-body bytes inside local wrappers that read their recorded
+107-parent tool declarations and check those source hashes. The earlier library
+106-parent wrapper remains unchanged. Current 118-parent/backend coverage stays
+outside those scopes in the new regression. A separate read-only reverse audit
+proves these changes plus the source freeze/new test account for the complete
+test-file delta. All remaining prior test bytes stay unchanged. The preserved
+local census is still required; aggregate remote availability/adoption and
+fresh-clone reproducibility remain unestablished.
+
+Temporary apply/regression preparation had extra closing delimiters; readers
+rejected them before their affected repository writes. Corrected source preparation
+and test installation retain their actual outcomes. Historical assertions are
+not globally renumbered; only the current dependency suite's parent/cycle and
+Legality-input census assertions change to the actual current declarations.
+Failed attempts receive no passing or acceptance credit.
+
+Next is substantive whole B1-B14 backend source/task reconciliation. The direct
+source reading and selected interfaces here supply context, not that broader
+coverage. Wider library/support obligations, global current source/owner/task/
+interface conjunctions, recorded architecture/product decisions, actual
+implementation, current independent review and integration remain open. Reader
+contract coverage remains the first actual implementation increment. No held
+execution, other-chat message, reviewer wake, preserved aggregate publication,
+merge or migration operation occurs.
+
+The first read-only scope audit compared regeneration-specific anonymous names
+and reader regex objects; the corrected audit checks generated binding structure
+and regex source/flags, preserves original assertion bytes and directly reverses
+the installed file delta. Literal-replacement conservation guards refused a
+temporary escaped replacement. Two generated whitespace-only lines were removed.
+The final read-only audit and whitespace check pass; failed attempts receive no
+passing or acceptance credit.
+
+The initial five-test run passed 15,682 assertions with 566 new failures and no
+errors: the copied L17 scope label failed for each of 565 L19 stages, and one
+new expected role name used incumbent-schema where the source says source-schema.
+All failures were in the new test. Only those two new-test constants changed;
+dependency declarations/stages and every historical assertion remain exact.
+The corrected five-test run passes 16,248 assertions with a 512 MB host heap.
+
+Current proposal fingerprint:
+`bc66970ea40371ac421c3011967f200464127841531c11c3ed368c7a5afff25f`.
+All applying source pins verify against local Git. All 23 dependency tests /
+7,735 assertions and both current projection checks pass. The language-boundary
+gate passes six tests / eleven assertions. Canonical validation passes all 240
+documents / nineteen phase indexes; roadmap structural validation passes with
+its dated counts non-authoritative. The full current 87-test crosswalk suite
+was not rerun. The prior complete 68-test / 44,978-assertion run remains bound
+to `25a96a0c03536270001449c00676e644ea353521`. These are planning/traceability
+checks, not compiler/backend/foreign/provider/parity/migration/proof/selfhost/
+release conformance, independent acceptance or integration.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,212 local references, 139 original routes, 48 historical spec/plan suffixes
 and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. Reconciliation, implementation, independent
 acceptance and integration remain separate and unfinished.
