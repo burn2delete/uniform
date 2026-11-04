@@ -104,9 +104,9 @@
         (is (= [context/bootstrap old-path new-path] (:paths plan)))
         (is (not (contains? (:namespace-by-path plan) manifest)))))
     (doseq [unlisted [(str context/source-root "gravity/bootstrap_impl/unlisted.clj")
-                     (str context/source-root "gravity/bootstrap_impl/unlisted.edn")]]
+                      (str context/source-root "gravity/bootstrap_impl/unlisted.edn")]]
       (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Changed fragment is absent"
-                           (context/selected-plan! read-bytes [unlisted] loader-sha))))))
+                            (context/selected-plan! read-bytes [unlisted] loader-sha))))))
 
 (deftest archived-loader-and-prefix-boundaries-fail-closed
   (let [changed-loader (assoc bootstrap-base context/loader (utf8 "(def changed-loader true)\n"))
