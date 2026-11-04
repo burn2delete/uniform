@@ -335,7 +335,8 @@
     (is (= (set (map :path contracts)) (set (:paths view))))
     (doseq [mutated [(vec (butlast contracts))
                      (assoc-in contracts [0 :role] :migration-authority)
-                     (assoc-in contracts [1 :path] "specs/core-workflow/tasks.md")]]
+                     (assoc-in contracts [1 :path] "specs/core-workflow/tasks.md")
+                     (conj contracts (first contracts))]]
       (is (thrown? Exception
                    (dependencies/current-source-transition-view mutated slurp))))))
 

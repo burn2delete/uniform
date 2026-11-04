@@ -1154,6 +1154,7 @@
           (current-source-transition-view
            (:current-source-transitions readiness-source-version)
            read-text))
+        current-source-transition-paths (set (:paths current-source-transition))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1214,7 +1215,8 @@
         ;; report drift separately; current task/acceptance inputs stay exact.
         _ (doseq [[path digest] (:source-digests crosswalk)
                   :when (not (or (navigation-source-path? path)
-                                 (historical-sh-source-path? path)))]
+                                 (historical-sh-source-path? path)
+                                 (contains? current-source-transition-paths path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.

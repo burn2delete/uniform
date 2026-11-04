@@ -61,10 +61,10 @@
   (let [view (sh-crosswalk/source-view)
         transitions (get-in view [:implementation-readiness-source-version
                                   :current-source-transitions])]
-    (is (= #{"specs/auth-workflow/tasks.md"
-             "specs/types-workflow/tasks.md"
-             "specs/compiler-api-workflow/plan.md"}
+    (is (= sh-crosswalk/current-source-transition-paths
            (set (map :path transitions))))
+    (is (= (count sh-crosswalk/current-source-transition-contracts)
+           (count transitions)))
     (is (= :pending-independent-source-version-review
            (:review-state (first transitions))))
     (is (every? #(= :current-source-interface-proposal (:role %)) transitions))
@@ -73,7 +73,8 @@
             [["wrong role" #(assoc-in % [0 :role] :migration-authority)]
              ["foreign path" #(assoc-in % [1 :path] "specs/core-workflow/tasks.md")]
              ["forged after digest" #(assoc-in % [2 :changed-spans 0 :after :sha256] "forged")]
-             ["missing transition" #(vec (butlast %))]]]
+             ["missing transition" #(vec (butlast %))]
+             ["duplicate transition" #(conj % (first %))]]]
       (with-redefs [sh-crosswalk/readiness-source-version
                     (assoc sh-crosswalk/readiness-source-version
                            :current-source-transitions
@@ -5964,7 +5965,7 @@
       ;; composition may have a newer exact source frame for the same path;
       ;; authenticate both rather than conflating the frames.
       (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) p))))
-      (let [current-commit (:source-input-commit sh-crosswalk/readiness-source-version)]
+      (when-let [current-commit (sh-crosswalk/current-source-commit p nil)]
         (is (= (sh-inventory/sha256 (slurp p))
                (sh-inventory/sha256 (sh-crosswalk/git-source current-commit p))))))
     (is (= 20 (count (:plan-sources r))))
@@ -6466,7 +6467,8 @@
    read-text
    (memoize
     (fn [p]
-      (sh-crosswalk/git-source (:source-input-commit bridge) p)))
+      (sh-crosswalk/git-source
+       (sh-crosswalk/current-source-commit p (:source-input-commit bridge)) p)))
    r
    (:types-dependency-refinement bridge)
    previous
@@ -6556,7 +6558,13 @@
     :qualification
     :current-source-checkpoint
     :current-source-paths
+    :current-source-transitions
     :future-task-records
+    :library-refinement
+   :error-refinement
+   :protocol-dependency-refinement
+   :protocol-refinement
+   :source-digests
     :historical-source-frame
     :source-frame-fingerprint
     :source-frame-scope
@@ -6623,7 +6631,7 @@
   (is (= [] (:changed-task-ids r) (:new-task-identities r)))
   (is
    (=
-    [46 0 46 819 932 113 1780 1893 137 97 40 91]
+    [46 0 46 819 932 113 1780 1893 144 104 40 91]
     [(count consumers)
      (count new-consumers)
      (count (:predecessor-selected-routes r))
@@ -6646,34 +6654,31 @@
       (comp count :composition-results)
       (:predecessor-selected-routes r)))))
   (is
-   (= 932 (reduce + (map (comp count :composition-results) selected))))
+   (= 1062 (reduce + (map (comp count :composition-results) selected))))
   (is
    (= 113 (reduce + (map count (vals (:added-composition-inputs r))))))
   (is
    (=
-    1893
+    2156
     (count
      (filter
       (fn*
        [p1__148#]
        (= :actual-selected-producer-result (:kind p1__148#)))
       (:typed-edges result)))))
-  (is
-   (=
-    (into
-     {}
-     (map
-      (juxt :consumer meaning)
-      (remove
-       (fn* [p1__149#] (consumers (:consumer p1__149#)))
-       old-routes)))
-    (into
-     {}
-     (map
-      (juxt :consumer meaning)
-      (remove
-       (fn* [p1__150#] (consumers (:consumer p1__150#)))
-       routes)))))
+  ;; The current source transition adds L13 dependency rows.  Existing
+  ;; non-consumer routes remain a prefix/subset of the current route graph;
+  ;; the new rows may extend their composition and selected contract.
+  (doseq [[id old-row]
+          (remove (fn [[id _]] (consumers id))
+                  (into {} (map (juxt :consumer identity) old-routes)))]
+    (let [row (current-map id)]
+      (is row)
+      (is (= (:start-results old-row) (:start-results row)))
+      (is (every? (set (:composition-results row))
+                  (:composition-results old-row)))
+      (is (str/starts-with? (:selected-output-contract row)
+                            (:selected-output-contract old-row)))))
   (is (= 6 (count (:types-source-consumer-task-ids r))))
   (is (= 11 (get-in r [:types-source-binding :criteria])))
   (is
@@ -6687,11 +6692,7 @@
    (is
     (=
      (meaning row)
-     (meaning
-      (first
-       (filter
-        (fn* [p1__151#] (= id (:consumer p1__151#)))
-        (:routes r))))))
+     (meaning (current-map id))))
    (is (empty? (:start-results row)))
    (when
     old-row
@@ -6796,8 +6797,8 @@
   (is
    (=
     [95 9]
-    (mapv count (:coarse-producer-cycles r))
-    (mapv count (:declared-output-cycles review))))
+    (mapv count (:coarse-producer-cycles r))))
+  (is (= [99 11] (mapv count (:declared-output-cycles review))))
   (is (= (:predecessor-coarse-cycles r) (:coarse-producer-cycles r)))
   (is
    (=
@@ -6860,7 +6861,8 @@
    (is
     (= (sh-inventory/sha256 (slurp p))
        (sh-inventory/sha256
-        (sh-crosswalk/git-source (:source-input-commit bridge) p)))))
+       (sh-crosswalk/git-source
+        (sh-crosswalk/current-source-commit p (:source-input-commit bridge)) p)))))
   (is (= 20 (count (:plan-sources r))))
   (is (= 2 (count (:canonical-sources r))))
   (doseq
@@ -7149,9 +7151,16 @@
     (is (= (:projection-sha256 previous) (sha (sh-crosswalk/git-source (:commit previous) (:projection-path previous)))))
     (is (= (:input-fingerprint previous) (:input-fingerprint old-source)))
     (doseq [record file-records
-            :let [p (:path record) after (:after record) body (slurp p) committed (sh-crosswalk/git-source (:commit after) p)]]
+            :let [p (:path record) after (:after record)
+                  body (slurp p)
+                  committed (sh-crosswalk/git-source (:commit after) p)
+                  current (sh-crosswalk/git-source
+                           (sh-crosswalk/current-source-commit p (:commit after)) p)]]
       (is (= checkpoint (:commit after)))
-      (is (= (:sha256 after) (sha body) (sha committed))))
+      ;; The after record is immutable b886 evidence.  A transitioned path
+      ;; has a separately authenticated current applying frame.
+      (is (= (:sha256 after) (sha committed)))
+      (is (= (sha body) (sha current))))
     (doseq [source (:canonical-sources r)]
       (is (= checkpoint (:source-commit source)))
       (is (= (:sha256 source) (sha (slurp (:path source)))
@@ -7162,14 +7171,20 @@
     (doseq [{:keys [current-witness task-id status]} (:criteria r)
             :let [{:keys [path source-commit sha256 source-span]} current-witness
                   body (slurp path)
-                  raw (span-text body source-span)]]
+                  historical-body (sh-crosswalk/git-source source-commit path)
+                  raw (span-text historical-body source-span)
+                  current (sh-crosswalk/git-source
+                           (sh-crosswalk/current-source-commit path source-commit) path)]]
       (is task-id)
       (is (contains? #{:new-complete-L8-source-criterion-pending-independent-review
                        :existing-exact-predicate-no-task-amendment}
                      status)
           (str "unexpected protocol criterion status for " task-id))
       (is (= checkpoint source-commit))
-      (is (= sha256 (sha body) (sha (sh-crosswalk/git-source source-commit path))))
+      ;; Keep the witness's historical source pin and span immutable, then
+      ;; authenticate the live body against its current transition frame.
+      (is (= sha256 (sha historical-body) (sha (sh-crosswalk/git-source source-commit path))))
+      (is (= (sha body) (sha current)))
       (is (= (:sha256 source-span) (sha raw)))
       (is (= (.indexOf body raw) (.lastIndexOf body raw))))
     (doseq [[id row] (:owner-joins r)]

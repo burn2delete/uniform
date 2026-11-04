@@ -460,79 +460,819 @@
    :authority "PR564 Stdlib task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
    :qualification "Only the five named Stdlib task rows transfer from the frozen historical SH source view to the applying task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or library-release acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
 
-;; PR767's current-source proposal adds three source-only interface regions to
-;; files that were pinned to the b886 composition. Keep this separate from
+;; PR767's current-source proposal adds source-only interface regions to files
+;; that were pinned to the b886 composition. Keep this separate from
 ;; the historical Platform/Stdlib authority bridges above: it authenticates a
 ;; current development view and does not rebind an applying migration pin.
 (def current-source-transition-kind
   :authenticated-current-source-file-transition-v1)
 (def current-source-transition-contracts
-  [{:kind current-source-transition-kind
-    :role :current-source-interface-proposal
-    :document-id "auth-task-source-interface"
-    :path "specs/auth-workflow/tasks.md"
-    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
-    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
-    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
-    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
-    :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"
-    :applying-blob "d582303b169feaaa8c67586ac3114fab3379fb4c"
-    :baseline-sha256 "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"
-    :live-sha256 "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514"
-    :changed-spans
-    [{:id "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
-      :kind :task-row
-      :before {:start-byte 6658 :end-byte 27922 :start-line 54 :end-line 122
-               :sha256 "a261f396233dd4898d6316aac44dde41a0ea86c9eae83159931563499a33478b"}
-      :after {:start-byte 6658 :end-byte 29186 :start-line 54 :end-line 130
-              :sha256 "22c8d497e3db8560c68013f51fe2c6bad7cfc9a677a80cf9d0b1f405283b39b4"}}]
-    :review-state :pending-independent-source-version-review
-    :authority :current-source-interface-only
-    :qualification "Only the named Auth task row is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}
-   {:kind current-source-transition-kind
-    :role :current-source-interface-proposal
-    :document-id "types-task-source-interface"
-    :path "specs/types-workflow/tasks.md"
-    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
-    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
-    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
-    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
-    :baseline-blob "816b12cfff602f21d22730ad0da486c12450a945"
-    :applying-blob "ba31872977698abe7e6ec91403f2a2092f2d7656"
-    :baseline-sha256 "95b9209126992f006296a090569d10b22b7dac68f6c6883c63ab7f3d78827022"
-    :live-sha256 "0ba3ef45bdaf8de19b9f1027463f7d8b1d98a08e059cee34f92fcdc27ff82acc"
-    :changed-spans
-    [{:id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
-      :kind :task-row
-      :before {:start-byte 13711 :end-byte 28244 :start-line 74 :end-line 172
-               :sha256 "11c77b2a90631429e405ccc09658765828019ae5994d202ceb52988721797926"}
-      :after {:start-byte 13711 :end-byte 29516 :start-line 74 :end-line 180
-              :sha256 "3af6c2e15eb8f54081edd9090e6ae3c6e3efdd69d002e85f40316af8ee0f1c63"}}]
-    :review-state :pending-independent-source-version-review
-    :authority :current-source-interface-only
-    :qualification "Only the named Types task row is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}
-   {:kind current-source-transition-kind
-    :role :current-source-interface-proposal
-    :document-id "compiler-api-plan-source-interface"
-    :path "specs/compiler-api-workflow/plan.md"
-    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
-    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
-    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
-    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
-    :baseline-blob "ccc8158489430c9c52f7669e192c6a69e045fe73"
-    :applying-blob "c2b12582a7a0dda6b02d115acab71a3e0838ea2c"
-    :baseline-sha256 "0df35668340a97676b7356c365e38196fe969359991c8b25ada55e107ec00028"
-    :live-sha256 "c0f615433fe9b26b5a65e0cfe24896681cea097827930bf827f37f3c1235c06f"
-    :changed-spans
-    [{:id "compiler-api/complete-library-principles-source-interface"
-      :kind :plan-section
-      :before {:start-byte 31413 :end-byte 31413 :line 274
-               :sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
-      :after {:start-byte 31413 :end-byte 32017 :start-line 274 :end-line 280
-              :sha256 "6a6f0cc3688165711102c3abe0525b43f1fe3f57d7d47f840f8e8b7d841a939b"}}]
-    :review-state :pending-independent-source-version-review
-    :authority :current-source-interface-only
-    :qualification "Only the named Compiler API plan section is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}])
+  [{:role :current-source-interface-proposal,
+  :path "specs/auth-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/auth-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 37498,
+     :start-line 1,
+     :end-line 426,
+     :sha256
+     "40b8fa53f98cee5e7939d738f000cbe388fd109d7babc840e16cc6819aa46999"},
+    :after
+    {:start-byte 0,
+     :end-byte 38081,
+     :start-line 1,
+     :end-line 433,
+     :sha256
+     "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c"}}],
+  :live-sha256
+  "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c",
+  :applying-blob "e8c486581086c204f9c6502766607ea88fc06606",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-auth-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/auth-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "40b8fa53f98cee5e7939d738f000cbe388fd109d7babc840e16cc6819aa46999",
+  :baseline-blob "6102c9015800502f241a8d4826632abcad674c3b"}
+ {:role :current-source-interface-proposal,
+  :path "specs/auth-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/auth-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 37340,
+     :start-line 1,
+     :end-line 205,
+     :sha256
+     "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"},
+    :after
+    {:start-byte 0,
+     :end-byte 38604,
+     :start-line 1,
+     :end-line 213,
+     :sha256
+     "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514"}}],
+  :live-sha256
+  "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+  :applying-blob "d582303b169feaaa8c67586ac3114fab3379fb4c",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-auth-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/auth-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2",
+  :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"}
+ {:role :current-source-interface-proposal,
+  :path "specs/build-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/build-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 31429,
+     :start-line 1,
+     :end-line 324,
+     :sha256
+     "53c04cef6f0f9835d7b1a7c07e60039033ad684d8da783073c27791d6d4748f5"},
+    :after
+    {:start-byte 0,
+     :end-byte 32078,
+     :start-line 1,
+     :end-line 331,
+     :sha256
+     "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f"}}],
+  :live-sha256
+  "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f",
+  :applying-blob "58913132545af334181d7a642dd968eec0febd65",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-build-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/build-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "53c04cef6f0f9835d7b1a7c07e60039033ad684d8da783073c27791d6d4748f5",
+  :baseline-blob "1aabad4df6496b4d1cf948d80d22ef899b6a2be8"}
+ {:role :current-source-interface-proposal,
+  :path "specs/compiler-api-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/compiler-api-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 36341,
+     :start-line 1,
+     :end-line 344,
+     :sha256
+     "0df35668340a97676b7356c365e38196fe969359991c8b25ada55e107ec00028"},
+    :after
+    {:start-byte 0,
+     :end-byte 36945,
+     :start-line 1,
+     :end-line 351,
+     :sha256
+     "c0f615433fe9b26b5a65e0cfe24896681cea097827930bf827f37f3c1235c06f"}}],
+  :live-sha256
+  "c0f615433fe9b26b5a65e0cfe24896681cea097827930bf827f37f3c1235c06f",
+  :applying-blob "c2b12582a7a0dda6b02d115acab71a3e0838ea2c",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id
+  "l13-specs-compiler-api-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/compiler-api-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "0df35668340a97676b7356c365e38196fe969359991c8b25ada55e107ec00028",
+  :baseline-blob "ccc8158489430c9c52f7669e192c6a69e045fe73"}
+ {:role :current-source-interface-proposal,
+  :path "specs/diag-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/diag-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 25308,
+     :start-line 1,
+     :end-line 284,
+     :sha256
+     "677c20b6bf8799d53a524668ee0f460be2e521c16a3aedfc4bbe3cf29351fa2a"},
+    :after
+    {:start-byte 0,
+     :end-byte 25909,
+     :start-line 1,
+     :end-line 291,
+     :sha256
+     "3209d86ff5cf391b38d50cde134eb900c87d5f118de44141b2be369f2acdf9fc"}}],
+  :live-sha256
+  "3209d86ff5cf391b38d50cde134eb900c87d5f118de44141b2be369f2acdf9fc",
+  :applying-blob "6cd1ef0b0501a532147166accef5044e5254ffd6",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-diag-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/diag-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "677c20b6bf8799d53a524668ee0f460be2e521c16a3aedfc4bbe3cf29351fa2a",
+  :baseline-blob "9105a521c25b6bf293e4942fc38ce816bb05cc96"}
+ {:role :current-source-interface-proposal,
+  :path "specs/diag-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/diag-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 14651,
+     :start-line 1,
+     :end-line 111,
+     :sha256
+     "0ab4aa75a0f694cfad605b7f959acc89d471ee7eb1cfc231b190a27f8c1a5dbd"},
+    :after
+    {:start-byte 0,
+     :end-byte 15844,
+     :start-line 1,
+     :end-line 119,
+     :sha256
+     "5695e3359c2df12471d72670b7b322986263cedb7eba3e85e612081ea633348d"}}],
+  :live-sha256
+  "5695e3359c2df12471d72670b7b322986263cedb7eba3e85e612081ea633348d",
+  :applying-blob "21d5db8ee470733955fc5e8281cbbac74b09d846",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-diag-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/diag-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "0ab4aa75a0f694cfad605b7f959acc89d471ee7eb1cfc231b190a27f8c1a5dbd",
+  :baseline-blob "f3c4685dfa534e7ed8ff88040bc66917ebaf5c53"}
+ {:role :current-source-interface-proposal,
+  :path "specs/effects-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/effects-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 44810,
+     :start-line 1,
+     :end-line 503,
+     :sha256
+     "0364c080cc8f141e7d4b33e8a7042763663539a84a06817c62a8adf3532e6005"},
+    :after
+    {:start-byte 0,
+     :end-byte 45410,
+     :start-line 1,
+     :end-line 510,
+     :sha256
+     "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf"}}],
+  :live-sha256
+  "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf",
+  :applying-blob "0f1c2d796f322f451c999c6b429a66374ce566e7",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-effects-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/effects-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "0364c080cc8f141e7d4b33e8a7042763663539a84a06817c62a8adf3532e6005",
+  :baseline-blob "82b8db0ca49c7f78edb0a2738a45e448de4cbbc6"}
+ {:role :current-source-interface-proposal,
+  :path "specs/effects-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/effects-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 32799,
+     :start-line 1,
+     :end-line 236,
+     :sha256
+     "753a8a59e29deccfee5b4b141a2114f280fc52c3d618527027e0bcf89392fd52"},
+    :after
+    {:start-byte 0,
+     :end-byte 34088,
+     :start-line 1,
+     :end-line 244,
+     :sha256
+     "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913"}}],
+  :live-sha256
+  "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913",
+  :applying-blob "7b855d0e04658fe5392239523ac0486a1a1e2b9c",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-effects-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/effects-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "753a8a59e29deccfee5b4b141a2114f280fc52c3d618527027e0bcf89392fd52",
+  :baseline-blob "a0b9c482bca84847ed46cdfa015610889a6ad290"}
+ {:role :current-source-interface-proposal,
+  :path "specs/evolution-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/evolution-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 17632,
+     :start-line 1,
+     :end-line 190,
+     :sha256
+     "2b10c83aee87ffcc1a8a858c8c3cb57cf8b100f8773b5629abce85265753db56"},
+    :after
+    {:start-byte 0,
+     :end-byte 18234,
+     :start-line 1,
+     :end-line 196,
+     :sha256
+     "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182"}}],
+  :live-sha256
+  "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182",
+  :applying-blob "b07fc872f2516ea3b7cf247660cdf5d2a54073d3",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-evolution-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/evolution-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "2b10c83aee87ffcc1a8a858c8c3cb57cf8b100f8773b5629abce85265753db56",
+  :baseline-blob "68552848d86e8b6f93d31a5049197daa5cbb390b"}
+ {:role :current-source-interface-proposal,
+  :path "specs/expand-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/expand-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 77744,
+     :start-line 1,
+     :end-line 587,
+     :sha256
+     "2429ede413743211cf939ae969ee7a9d96db058f52f3800d5dcd1c0820af0abe"},
+    :after
+    {:start-byte 0,
+     :end-byte 78334,
+     :start-line 1,
+     :end-line 594,
+     :sha256
+     "4d262903ea074ac5def9ffa2c63635776df291dba0f8dd1d0184fe49386420fd"}}],
+  :live-sha256
+  "4d262903ea074ac5def9ffa2c63635776df291dba0f8dd1d0184fe49386420fd",
+  :applying-blob "f665f72241e06a4d90e6a56e8ac564a6bd415759",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-expand-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/expand-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "2429ede413743211cf939ae969ee7a9d96db058f52f3800d5dcd1c0820af0abe",
+  :baseline-blob "843809051226666787fe47e3cacfa2aacaefe0af"}
+ {:role :current-source-interface-proposal,
+  :path "specs/legality-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/legality-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 92271,
+     :start-line 1,
+     :end-line 1032,
+     :sha256
+     "347a9d2d863700faaf97a2a6c913fc841854700dab4a513a031cb5aeb9bcbb6d"},
+    :after
+    {:start-byte 0,
+     :end-byte 92851,
+     :start-line 1,
+     :end-line 1039,
+     :sha256
+     "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392"}}],
+  :live-sha256
+  "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392",
+  :applying-blob "1cd71fc26d5fb575e6218f2428fe47ae95371b2f",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-legality-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/legality-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "347a9d2d863700faaf97a2a6c913fc841854700dab4a513a031cb5aeb9bcbb6d",
+  :baseline-blob "153b922cce858ca37492aa72572e834b6065ccc3"}
+ {:role :current-source-interface-proposal,
+  :path "specs/legality-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/legality-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 123915,
+     :start-line 1,
+     :end-line 624,
+     :sha256
+     "2f0435aac8e3c74f58d0aba4e7c440e16bf0065323aed7e67e89be43fffe84eb"},
+    :after
+    {:start-byte 0,
+     :end-byte 125266,
+     :start-line 1,
+     :end-line 632,
+     :sha256
+     "40062124ec129164cb77d24a7bfc1407227355c22ea7a8e77d284ed78db2980a"}}],
+  :live-sha256
+  "40062124ec129164cb77d24a7bfc1407227355c22ea7a8e77d284ed78db2980a",
+  :applying-blob "a17283368ade8349f962c03c40a85d8bc78b0b9d",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-legality-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/legality-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "2f0435aac8e3c74f58d0aba4e7c440e16bf0065323aed7e67e89be43fffe84eb",
+  :baseline-blob "714d16623a9f8cc6657e45a6d3eefd3405c748ce"}
+ {:role :current-source-interface-proposal,
+  :path "specs/opt-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/opt-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 21102,
+     :start-line 1,
+     :end-line 233,
+     :sha256
+     "c3a25ee646489793dffa2c750ea28b0619d3ead4bc63cd71e85b040539aa7c42"},
+    :after
+    {:start-byte 0,
+     :end-byte 21715,
+     :start-line 1,
+     :end-line 240,
+     :sha256
+     "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910"}}],
+  :live-sha256
+  "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910",
+  :applying-blob "9d04daad2cee4387cef1efb6836bee11d48aeebd",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-opt-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/opt-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "c3a25ee646489793dffa2c750ea28b0619d3ead4bc63cd71e85b040539aa7c42",
+  :baseline-blob "40fa4b9294b5e33e86d5a3dcce36f2186136979f"}
+ {:role :current-source-interface-proposal,
+  :path "specs/opt-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/opt-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 14572,
+     :start-line 1,
+     :end-line 123,
+     :sha256
+     "4d9ddc9361a6f5338bd2867f37459b604bc64ec92caa9d696052c7928f12903d"},
+    :after
+    {:start-byte 0,
+     :end-byte 15884,
+     :start-line 1,
+     :end-line 131,
+     :sha256
+     "d66dca422fe4688e323521761a33869ccd99a2bfecfc388d7be9f23b2e54714c"}}],
+  :live-sha256
+  "d66dca422fe4688e323521761a33869ccd99a2bfecfc388d7be9f23b2e54714c",
+  :applying-blob "14113f1844ba8cb2533321e9359dc985fb587f05",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-opt-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/opt-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "4d9ddc9361a6f5338bd2867f37459b604bc64ec92caa9d696052c7928f12903d",
+  :baseline-blob "f10d98ef4c2700541e73cbe4a5a07821abc8fd27"}
+ {:role :current-source-interface-proposal,
+  :path "specs/release-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/release-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 35941,
+     :start-line 1,
+     :end-line 390,
+     :sha256
+     "1fe02987c27cf42ebf7190b929551664de91b652ea8208c10aa4a8b60ec55f42"},
+    :after
+    {:start-byte 0,
+     :end-byte 36577,
+     :start-line 1,
+     :end-line 397,
+     :sha256
+     "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a"}}],
+  :live-sha256
+  "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a",
+  :applying-blob "92ed8a4228d0a280167597c9575b3e483892ad17",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-release-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/release-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "1fe02987c27cf42ebf7190b929551664de91b652ea8208c10aa4a8b60ec55f42",
+  :baseline-blob "8083d042621a2ed298a33a688ff287478e33da76"}
+ {:role :current-source-interface-proposal,
+  :path "specs/resolve-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/resolve-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 79913,
+     :start-line 1,
+     :end-line 460,
+     :sha256
+     "5786a4ad3dd83a6ec93e40539d70d154b3250493cc05d23a79c6e978c7a26bae"},
+    :after
+    {:start-byte 0,
+     :end-byte 80566,
+     :start-line 1,
+     :end-line 467,
+     :sha256
+     "f3345068597572cabc8b2a2cbc4649bca8123a58900a697c541e0a5beef5cc5a"}}],
+  :live-sha256
+  "f3345068597572cabc8b2a2cbc4649bca8123a58900a697c541e0a5beef5cc5a",
+  :applying-blob "5382df80049f05210c4ed3702c5fbbf6f73fd42f",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-resolve-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/resolve-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "5786a4ad3dd83a6ec93e40539d70d154b3250493cc05d23a79c6e978c7a26bae",
+  :baseline-blob "5e7546d272564e07e6b53bb83604c6da93ad2677"}
+ {:role :current-source-interface-proposal,
+  :path "specs/resolve-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/resolve-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 17589,
+     :start-line 1,
+     :end-line 155,
+     :sha256
+     "226a95f25d40367b897db1aa2935bc45d545ab673ae4084a71181b6f5fd9e838"},
+    :after
+    {:start-byte 0,
+     :end-byte 18891,
+     :start-line 1,
+     :end-line 163,
+     :sha256
+     "9b8dc5df7eb26303debc6a54f54df13e97edab8482e78804569bcb5519e65fc8"}}],
+  :live-sha256
+  "9b8dc5df7eb26303debc6a54f54df13e97edab8482e78804569bcb5519e65fc8",
+  :applying-blob "cea1bd281528f5e84831cd676c4b48a48036c6df",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-resolve-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/resolve-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "226a95f25d40367b897db1aa2935bc45d545ab673ae4084a71181b6f5fd9e838",
+  :baseline-blob "177f74794a67b2cc2f16ab1c45ec8da83dbb7407"}
+ {:role :current-source-interface-proposal,
+  :path "specs/stdlib-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/stdlib-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 27646,
+     :start-line 1,
+     :end-line 238,
+     :sha256
+     "e6f1cb158fc406ebb6cb4b506a8a81a68192ff62f7e89abf08c65f0c90c62ef5"},
+    :after
+    {:start-byte 0,
+     :end-byte 37921,
+     :start-line 1,
+     :end-line 288,
+     :sha256
+     "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8"}}],
+  :live-sha256
+  "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8",
+  :applying-blob "c960d1a487d87eaebf774512bfb39e0ed5302d69",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-stdlib-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/stdlib-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "e6f1cb158fc406ebb6cb4b506a8a81a68192ff62f7e89abf08c65f0c90c62ef5",
+  :baseline-blob "f6036c3d503c7efe73132c63451e9ab607526762"}
+ {:role :current-source-interface-proposal,
+  :path "specs/stdlib-workflow/spec.md",
+  :changed-spans
+  [{:id "L13/specs/stdlib-workflow/spec.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 14135,
+     :start-line 1,
+     :end-line 138,
+     :sha256
+     "6e408abbd3dc98601395b50858addd16cdb6da71d009a2e1be154ee5e43e1057"},
+    :after
+    {:start-byte 0,
+     :end-byte 14689,
+     :start-line 1,
+     :end-line 140,
+     :sha256
+     "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232"}}],
+  :live-sha256
+  "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232",
+  :applying-blob "8107efb4c0d1d448867accc9104b06e2d824c2b8",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-stdlib-workflow-spec-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/stdlib-workflow/spec.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "6e408abbd3dc98601395b50858addd16cdb6da71d009a2e1be154ee5e43e1057",
+  :baseline-blob "4bf6511ce08722c07fa25a0fb18e54ab4f1f17a2"}
+ {:role :current-source-interface-proposal,
+  :path "specs/stdlib-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/stdlib-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 16965,
+     :start-line 1,
+     :end-line 133,
+     :sha256
+     "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055"},
+    :after
+    {:start-byte 0,
+     :end-byte 38854,
+     :start-line 1,
+     :end-line 276,
+     :sha256
+     "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb"}}],
+  :live-sha256
+  "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb",
+  :applying-blob "e2933a343359c2032086e34c996d02393e86b355",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-stdlib-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/stdlib-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055",
+  :baseline-blob "256b28deeca97929fe7240c1b8672ce42dbf3d2a"}
+ {:role :current-source-interface-proposal,
+  :path "specs/types-workflow/plan.md",
+  :changed-spans
+  [{:id "L13/specs/types-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 52460,
+     :start-line 1,
+     :end-line 357,
+     :sha256
+     "cc0b0038c6f0b7849ca37bf8f682bdd63f24c272f7cd2ffa60e05bc5c9c8baf8"},
+    :after
+    {:start-byte 0,
+     :end-byte 53049,
+     :start-line 1,
+     :end-line 364,
+     :sha256
+     "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827"}}],
+  :live-sha256
+  "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827",
+  :applying-blob "d3f15f60e2886d993275db9a9871c6d8466c5158",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-types-workflow-plan-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/types-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "cc0b0038c6f0b7849ca37bf8f682bdd63f24c272f7cd2ffa60e05bc5c9c8baf8",
+  :baseline-blob "8f275c3786fcc52977ef8296fdee10a680fb2f39"}
+ {:role :current-source-interface-proposal,
+  :path "specs/types-workflow/tasks.md",
+  :changed-spans
+  [{:id "L13/specs/types-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 46760,
+     :start-line 1,
+     :end-line 299,
+     :sha256
+     "95b9209126992f006296a090569d10b22b7dac68f6c6883c63ab7f3d78827022"},
+    :after
+    {:start-byte 0,
+     :end-byte 48032,
+     :start-line 1,
+     :end-line 307,
+     :sha256
+     "0ba3ef45bdaf8de19b9f1027463f7d8b1d98a08e059cee34f92fcdc27ff82acc"}}],
+  :live-sha256
+  "0ba3ef45bdaf8de19b9f1027463f7d8b1d98a08e059cee34f92fcdc27ff82acc",
+  :applying-blob "ba31872977698abe7e6ec91403f2a2092f2d7656",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-specs-types-workflow-tasks-md-source-interface",
+  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :qualification
+  "Only the complete authenticated L13 source file specs/types-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "95b9209126992f006296a090569d10b22b7dac68f6c6883c63ab7f3d78827022",
+  :baseline-blob "816b12cfff602f21d22730ad0da486c12450a945"}
+ {:role :current-source-interface-proposal,
+  :path "docs/acceptance-dependencies.md",
+  :changed-spans
+  [{:id "L13/docs/acceptance-dependencies.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 535278,
+     :start-line 1,
+     :end-line 703,
+     :sha256
+     "765e1ea7aaec6c263d6bec7e2bbfd0cf71f6238cca5e4b80f65bbc64c0379a94"},
+    :after
+    {:start-byte 0,
+     :end-byte 539166,
+     :start-line 1,
+     :end-line 706,
+     :sha256
+     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
+  :live-sha256
+  "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+  :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "l13-docs-acceptance-dependencies-md-source-interface",
+  :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+  :qualification
+  "Only the complete authenticated L13 source file docs/acceptance-dependencies.md is transferred from the b886 current-source frame to the reviewed f79 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "765e1ea7aaec6c263d6bec7e2bbfd0cf71f6238cca5e4b80f65bbc64c0379a94",
+  :baseline-blob "9a31beeaff7e83413085f43826fd55e47e393d7f"}])
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
 
@@ -546,8 +1286,15 @@
     (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")))
 
 (defn- utf8-line-number [text offset]
-  (inc (count (filter #(= 10 (aget ^bytes (.getBytes ^String text "UTF-8") %))
-                     (range offset)))))
+  (let [bytes (.getBytes ^String text "UTF-8")]
+    (loop [index 0
+           line 1]
+      (if (< index offset)
+        (recur (inc index)
+               (if (= 10 (aget ^bytes bytes index))
+                 (inc line)
+                 line))
+        line))))
 
 (defn- replace-utf8-span [text span replacement require!]
   (let [bytes (.getBytes ^String text "UTF-8")
