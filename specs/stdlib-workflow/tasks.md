@@ -60,6 +60,15 @@ Apply the [complete library-principles source criteria](plan.md#complete-library
 Decision criterion interface/language/library/publish-public-contract: Publish machine-readable namespace/operation contracts for profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics; bind them to actual exports. Reject: Reject missing/false export metadata, hidden host behavior, untracked authority and public declarations inconsistent with callable implementations. Required outputs: Versioned public API/export/profile manifests and contract-to-implementation conformance/denial evidence.
 <!-- stdlib-library-source-finite-publish-public-contract:end -->
 
+
+<!-- collections-source-module:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current module criterion (Open): Bind the actual gravity.collections namespace, artifact and every supported public constructor/query/update/traversal/builder/protocol/bounded API to callable Gravity exports with type/effect/allocation/error/profile/stability, representation/provider/ownership and target metadata. Include the complete required surface, not just compiler-reachable exports; leave unsupported required operations Open. Refuse declaration-only or host-substituted availability and false manifest/package/example claims. Evidence: exact per-export implementation and accepted/refused profile/API/diagnostic/artifact joins, including required example, representation, benchmark and schema-boundary products.
+<!-- collections-source-module:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -157,6 +166,204 @@ Apply the [complete library-principles source criteria](plan.md#complete-library
 
 Decision criterion interface/language/library/validate-and-slice-string: Preserve Unicode validity, encoded byte representation, legal slicing and profile memory semantics for String operations. Reject: Reject malformed encoding, invalid byte/scalar boundaries, illegal indices and hidden allocation/provider assumptions forbidden by the active profile. Required outputs: String encoding/slice/API contract, Unicode/byte/scalar/persistence fixtures and boundary/profile diagnostics.
 <!-- stdlib-library-source-finite-validate-and-slice-string:end -->
+
+
+<!-- collections-source-surface:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current surface criterion (Open): Implement the complete STD3 constructor, query, update, traversal, builder, protocol and bounded-system surfaces, with actual supported overloads stated separately from the language laws. Preserve old values, Gravity equality/hash and any promised ordering; carry explicit allocation, provider, checked/proven bounds, unsafe audit and borrow/copy/retain/stream policy. Traversal callbacks retain their declared effects; inert payload laws do not prohibit explicitly requested callbacks. Refuse host-null/identity/order/coercion shortcuts, hidden allocation, invalid views/builders or unsupported profile claims. Evidence: real callable positives and exact STD3001-STD3008 refusals, per-profile examples, proof/check/audit and representation-specific benchmark/schema-boundary results.
+<!-- collections-source-surface:end -->
+
+
+
+<!-- collections-source-families:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current families criterion (Open): Implement unary list?, vector?, map? and set? as actual evaluated value-family classification; include empty persistent Lists and distinguish traversal views or other convertible carriers. Preserve once-only L2 operand effects and transfers, inert stored keys/values/payloads and original values. Classification does not construct a collection or establish member types, cardinality, presence, bounds, order or flow refinements. Refuse spelling/carrier/host coercion and invented facts or new profile/target permission. Evidence: actual family/nonfamily, empty, false/nil payload, effect/transfer and owner-diagnostic cases, with compatibility bindings kept distinct from implemented module exports.
+<!-- collections-source-families:end -->
+
+
+
+<!-- collections-source-set-conversion:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current set-conversion criterion (Open): Implement finite Vector/List-to-persistent-Set conversion using supported Gravity equality/hash classes, including empty and duplicate inputs, preserving the old input and inert payloads without promising order, identity or sharing. The initial List subset is exactly a homogeneous Keyword List returning bare Set, with no static member-domain/cardinality refinement. Complete first/rest termination and every physical Keyword validation before comparison, formatting, hashing or insertion; partial or skipped census cannot pass. Declare temporary/output allocation even when empty, shallow persistent value lifetimes and no borrowed List spine. A Never operand does not invoke conversion or directly allocate, while latent allocation and ordinary source/profile/target/binding/effect checks survive. Refuse nil/arbitrary views, unsupported members and malformed tails. Evidence: actual complete-census, duplicate/empty, late-invalid, transfer/Never and allocation/profile results; removed project work/element/depth allowances are not prerequisites.
+<!-- collections-source-set-conversion:end -->
+
+
+
+<!-- collections-source-set-query:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current set-query criterion (Open): Implement Set count as the nonnegative number of distinct stored members and binary contains? as applicable Gravity member value equality, including empty/present/absent cases. Operands evaluate once in ordinary order; transfers abort invocation, original Sets and inert payloads survive, and membership does not construct a collection. Refuse identity/enumeration-order substitutes, truthiness and unestablished member/equality/profile support. Evidence: actual distinct-count and present/absent/nested supported-member cases, ordinary effect/transfer preservation and exact owning refusals; no iteration, cardinality-analysis or flow policy is inferred from membership.
+<!-- collections-source-set-query:end -->
+
+
+
+<!-- collections-source-set-insert:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current set-insert criterion (Open): Implement binary Set conj by retaining all old value-equality classes and adding the new class only when absent. An equal member is accepted and leaves a value-equivalent Set. Preserve L2 order/transfers, inert payloads and the old Set; declare allocation/storage/lifetime even for present members. Refuse host equality/hash substitutions and invented cardinality/member/order/identity facts or variadic/arbitrary-member/profile support. Evidence: actual empty/present/absent, equal-but-distinct supported values, effects/transfers, persistence and allocation/refusal fixtures.
+<!-- collections-source-set-insert:end -->
+
+
+
+<!-- collections-source-set-equality:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current set-equality criterion (Open): Implement binary persistent Set equality by absence of unmatched members under applicable member equality; empty Sets are equal. Preserve once-only ordered operand effects/transfers, originals and inert payloads. Equality does not construct a collection. Refuse enumeration/object-identity/sharing substitutes and unselected numeric conversion, cross-collection equality, hashing, representation or profile claims. Evidence: actual empty/reordered/equal/different-membership and supported nested-value cases plus transfer and unsupported-domain refusals.
+<!-- collections-source-set-equality:end -->
+
+
+
+<!-- collections-source-vector-append:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-append criterion (Open): Implement binary Vector conj as the original ordered prefix followed by one stored value, with heterogeneous values permitted by the language law. Preserve the original, inert payloads and once-only ordered operand effects/transfers; declare possible allocation/storage/lifetime including empty input. Refuse coercion, variadic extension, invented static type/cardinality facts, or unsupported representation/profile behavior. Evidence: actual empty/nonempty/heterogeneous/false/nil append, persistence, transfer, allocation and supported-subset diagnostic cases.
+<!-- collections-source-vector-append:end -->
+
+
+
+<!-- collections-source-vector-equality:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-equality criterion (Open): Implement persistent Vector equality by equal counts and corresponding supported Gravity stored-value equality in order. Preserve originals, inert payloads and ordinary operand effects/transfers. Refuse identity/sharing, reordered comparison and unselected numeric conversion/cross-family/representation/profile behavior. Evidence: actual equal, reordered, changed, unequal-length and nested supported values, including transfers and explicit unsupported-domain refusals.
+<!-- collections-source-vector-equality:end -->
+
+
+
+<!-- collections-source-list-equality:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current list-equality criterion (Open): Implement binary persistent List equality by equal counts and corresponding supported stored-value equality in order, including equal empty Lists. Preserve originals, inert payloads and once-only ordered operand effects/transfers without constructing a collection. Refuse object/type identity, sharing or order-independent substitutes and unselected numeric/cross-family/variadic/profile behavior. Evidence: actual empty/equal/reordered/changed/unequal-length/nested supported values and explicit compiler equality-domain/refusal records.
+<!-- collections-source-list-equality:end -->
+
+
+
+<!-- collections-source-vector-get:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-get criterion (Open): Implement binary Vector get only with independently established integer 0 <= index < count, returning that stored value without evaluating it or changing the Vector. Preserve eager ordered operand effects and transfers. Bounds require the owning proof or runtime check; the type family alone is insufficient. Refuse unjustified in-range facts and invented out-of-range/host-null policies or representation/profile support. Evidence: actual valid first/middle/last/false/nil lookup, proof/check products, transfers and exact unestablished-bound/subset diagnostics.
+<!-- collections-source-vector-get:end -->
+
+
+
+<!-- collections-source-vector-slice:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-slice criterion (Open): Implement ternary subvec for independently established integer 0 <= start <= end <= count, returning the ordered persistent half-open slice, including equal-index empty ranges. Preserve the old Vector, inert payloads and eager once-only operand effects/transfers. Declare allocation even for empty/full slices and whether storage retains, borrows or copies under actual lifetime/effect/profile rules. Refuse missing proof/check and invented out-of-range fallback, host exception, two-argument/variadic, literal-only or sharing policy. Evidence: actual empty/full/prefix/middle/suffix, dynamic supported operands, transfer and bound/allocation refusals.
+<!-- collections-source-vector-slice:end -->
+
+
+
+<!-- collections-source-vector-empty:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-empty criterion (Open): Implement unary Vector empty? as zero stored elements, independently of stored false/nil or inert payloads. Preserve once-only operand effects/transfers and the original without constructing a collection. Refuse truthiness, payload execution and invented member/extent/nonempty-branch/flow facts or internal allocation-free/complexity/profile claims. Evidence: actual empty/nonempty/false/nil, effect/transfer and supported-representation cases with owning refusals.
+<!-- collections-source-vector-empty:end -->
+
+
+
+<!-- collections-source-vector-first:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-first criterion (Open): Implement unary Vector first under independently established permitted nonempty evidence, returning stored index zero including false/nil without evaluating payloads or changing the Vector. Preserve once-only operand evaluation/transfers. Refuse absent nonempty proof/check and invented empty-Vector result, host-sequence/coercion, literal-only, identity/sharing or allocation-free behavior. Evidence: actual singleton/multiple/false/nil/dynamic supported operands, accepted nonempty facts and exact missing-fact/transfer cases; state the compiler's supported operand/member subset.
+<!-- collections-source-vector-first:end -->
+
+
+
+<!-- collections-source-vector-rest:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current vector-rest criterion (Open): Implement unary Vector rest as the ordered persistent List suffix after index zero; empty/singleton Vectors produce empty List. Preserve false/nil, inert payloads, original Vector and once-only operand effects/transfers. Declare possible allocation including empty results, copied List spine, shallow shared values with independent persistent lifetimes and no borrowed Vector backing storage. Validate the actual input before construction without inventing facts. Refuse unsupported operand/member/profile cases and identity/sharing/allocation-free/complexity promises. Evidence: actual suffix/order/lifetime/copy/allocation and late-invalid/transfer cases without reinstating removed construction-work accounting.
+<!-- collections-source-vector-rest:end -->
+
+
+
+<!-- collections-source-map-keys:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current map-keys criterion (Open): Implement unary keys as each stored Map key once in a persistent List, including empty Map, preserving stronger declared provider order while default order stays unspecified. Evaluate the operand once in non-tail position; effects/capabilities/transfers survive, Never prevents enumeration/construction/direct allocation, stored values remain inert and the Map unchanged. The checked subset validates a complete finite literal Map's even physical member-types slots, every Keyword key and every value type. A private bare Map needs the separate complete Types entry/use/caller proof; no presence/shape/cardinality/refinement follows. Validate ignored values and malformed tails and enumerate all actual physical keys before fresh copied List construction. Declare allocation including empty, shallow key sharing and persistent lifetimes without borrowed Map storage. Evidence: actual complete census, empty/late-invalid/default-versus-provider order, Never, allocation and caller-proof refusals; removed width/depth/work limits cannot replace validation.
+<!-- collections-source-map-keys:end -->
+
+
+
+<!-- collections-source-map-default:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current map-default criterion (Open): Implement ternary Map get by actual key presence: return the associated value including false/nil, otherwise the default. Evaluate Map, key and default eagerly in order even for a present key; transfers abort invocation. Preserve the Map and STD2 key equality. Refuse truthiness, lazy/default-thunk or host-null substitutes and unsupported representation/profile claims. Evidence: actual present/missing/false/nil and effectful/default-transfer order cases with owning type/domain refusals.
+<!-- collections-source-map-default:end -->
+
+
+
+<!-- collections-source-map-present:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current map-present criterion (Open): Implement binary Map get only under independent evidence that the evaluated key is present, returning the stored value including false/nil without evaluating it or changing the Map. Preserve eager Map-then-key evaluation and transfers; a nonreturning operand requires no returned value/presence fact. Refuse presence inferred from member families alone and invented absent/host-null policies or representation/profile claims. Evidence: actual independent-presence and missing-fact cases, false/nil, effects/transfers and explicit unsupported-subset diagnostics.
+<!-- collections-source-map-present:end -->
+
+
+
+<!-- collections-source-map-remove:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current map-remove criterion (Open): Implement binary dissoc by removing the association matching applicable STD2 key equality; an absent key yields a value-equivalent Map. Preserve all other associations, original Map and inert payloads, with ordinary ordered operand effects/transfers. Declare possible allocation/storage/lifetime for both present and absent keys. Refuse truthiness, host equality and identity/sharing/allocation-free/variadic/arbitrary-key claims. Evidence: actual present/absent/empty/false/nil persistence, transfer and allocation/profile cases.
+<!-- collections-source-map-remove:end -->
+
+
+
+<!-- collections-source-list-queries:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current list-queries criterion (Open): Implement persistent List first as its first stored value or nil when empty; rest as its ordered List suffix or empty List; empty? as zero elements; count as its nonnegative stored-element count. Evaluate the operand normally, preserve effects/transfers, original Lists and inert payloads, including false/nil. Declare whether suffix storage retains, borrows or copies under actual memory/profile rules; allocation-free claims need selected representation evidence. Refuse host sequence substitutes, payload execution and ungrounded storage/profile claims. Evidence: actual empty/singleton/multiple/order/count/false/nil, lifetime/storage and transfer cases for each API.
+<!-- collections-source-list-queries:end -->
+
+
+
+<!-- collections-source-list-prepend:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current list-prepend criterion (Open): Implement binary List conj by prepending the new stored value to the old ordered values, preserving the original and inert payloads. Evaluate operands once in ordinary order and preserve transfers. Declare construction allocation/storage/lifetime under actual effect/ownership/profile rules; no identical suffix storage is promised. Refuse variadic/arbitrary-sequence extension, host mutation and undeclared allocation/profile behavior. Evidence: actual empty/nonempty/order/false/nil, persistence/lifetime and effect/transfer/refusal cases.
+<!-- collections-source-list-prepend:end -->
+
+
+
+<!-- collections-source-ordering:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current ordering criterion (Open): Require actual comparator totality for ordered maps/sorted sets and preserve each provider's promised iteration order; default Map/Set contracts gain no implicit order. Equality/hash follow STD2 and survive target/host delegation. Refuse non-total comparators, host identity/equality drift and claimed order without its contract. Evidence: actual comparator acceptance/refusal, ordered versus unordered traversal, cross-target equality/hash and exact STD3005/STD3006 diagnostics.
+<!-- collections-source-ordering:end -->
+
+
+
+<!-- collections-source-builders:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current builders criterion (Open): Implement transient/builders as linear or scope-bound APIs unusable after persistent conversion; iterator/sequence views declare retention, borrowing, copying, streaming and invalidation. Bounded systems variants expose actual physical representation/allocation/lifetime policy; this is not a compiler work allowance. Refuse scope escape, use-after-freeze/invalidation, hidden allocation and unsafe optimized internals without checked/proved wrappers and audits. Evidence: actual builder/freeze/iterator/view mutation and lifetime cases, restricted-profile refusals, safe-wrapper records and owning STD3001-STD3004/STD3008 diagnostics.
+<!-- collections-source-builders:end -->
+
 
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` Complete resource/concurrency/IO/network APIs
 

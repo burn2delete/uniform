@@ -72,6 +72,8 @@ and final seedless compiler release remain separate.
 
 The [complete library-principles source criteria](plan.md#complete-library-principles-source-criteria) bind full L13 public contracts, five layers, seven API classes, actual data/numeric/resource/compiler behavior, profile/type/effect/grant/safety checks, all artifacts/diagnostics and executable examples to existing owners. Ten earlier exact predicates are restored without review renewal; generated-source checking remains with Expand. Wider STD1-STD20 source/task entailment, implementation acceptance and current independent review remain pending.
 
+The [complete current collections criteria](plan.md#complete-current-collections-source-criteria) bind current STD3 operation, profile/allocation, full physical validation and private caller-proof semantics to four existing task owners. The older source census remains explicit history; removed work/width/depth allowances are not current prerequisites, while full input/type/ownership validation remains. No finite prior receipt, compatibility spelling or summary status establishes complete module support. Independent current whole-source/interface acceptance remains pending.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

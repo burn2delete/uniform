@@ -581,6 +581,12 @@ Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14
 
 All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Runtime supplies actual chosen representation/provider storage, retention/borrow/copy/stream, allocation/failure, persistent shared-value lifetimes and explicit cleanup behavior. Vector-rest and Map-keys Lists own copied spines and borrow no input backing storage; List-to-Set temporary/output storage has the declared independent lifetimes. GC, native capacity or old work counters cannot replace these facts.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

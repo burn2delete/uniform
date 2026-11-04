@@ -385,6 +385,12 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Core retains ordinary left-to-right, eager, once-only evaluation, effects, transfers and explicit linear builder/scope/cleanup lowering. Inert stored payload laws do not erase explicitly requested traversal callbacks. Never prevents invocation/direct allocation while latent signature requirements and ordinary legality still apply.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

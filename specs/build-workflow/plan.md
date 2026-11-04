@@ -311,6 +311,12 @@ Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14
 
 All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Build binds actual module exports, representation/provider/profile/target/effect/allocation metadata, compiler/toolchain/lock/source and examples to genuine artifact identities. Changed collection source, caller/use proofs or representation facts invalidate affected products; an old receipt or compatibility binding proves no current callable module. Signing/publication remains separate.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

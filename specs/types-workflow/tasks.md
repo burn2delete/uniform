@@ -79,6 +79,15 @@ Apply the [complete alternative type system source criteria](plan.md#complete-al
 L17 actual selected alternative-checker execution criterion (Open): Invoke the authentic selected checker on real resolved/expanded source and independently derive or check its declared inference (including dependent fragments and effect-polymorphic inference where claimed), constraints, refinements, gradual, ownership/borrow, region, linear, nullability, taint, schema-synthesis, hardware-width, workflow-state and agent-tool-schema features where claimed. Preserve all thirteen replacement families while retaining core evaluation, effect legality, capability checks, memory safety, profiles, unsafe rules, provenance and actual exported backend-layout contracts. A checker can strengthen facts or restrict acceptance under its declared claim, but cannot weaken the same profile or invent facts from expected results, host defaults or supplied success records. Required evidence: real selected source/constraints/solutions/refusals and common typed-Core products, with unknown or unsupported features explicit and no original C7 publication, provider callback or other held operation performed by this planning clause.
 <!-- types-alternative-types-source-solve:end -->
 
+
+<!-- collections-source-private-domain:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current private-domain criterion (Open): For the immutable bare-Map keys exception, reconstruct the complete closed private function/use/call census at each compiler consumer, with actual argument sources/types, bare-Map compatibility and complete normal-entry whole Keyword-key/value validation. Different entry shapes/value types and empty Map witnesses are allowed; the parameter remains bare Map and the result homogeneous Keyword List. At least one normal entry is required; any Never coordinate makes a call non-invoking. Refuse unknown/circular/unaccounted/all-non-invoking witnesses and omitted public entry/escape/mutation/re-entry. Retain function/parameter/use/caller dependencies and invalidations; selected-key presence is insufficient and no shape/presence/cardinality/flow fact is added. Evidence: actual positive and late-invalid caller/type products and exact refusals, with no removed 512-pair/depth/work allowances reintroduced.
+<!-- collections-source-private-domain:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure

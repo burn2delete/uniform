@@ -379,6 +379,12 @@ Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14
 
 All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Independent library conformance consumes actual callable module/profile/representation fixtures, expected STD3001-STD3008 diagnostics, complete-census and invalid tail/value cases, type/flow and lifetime/proof products, property/benchmark/schema-boundary results and real selected target comparisons. Source inventory, p16 summary status flags and an injected fixture do not establish module acceptance. Preserve finite receipt scopes and actual holds.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

@@ -983,6 +983,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Legality supplies actual profile, ownership/lifetime, bounds/check/proof, builder linearity, invalidation and safe-wrapper/audit verdicts before admitted collection operations. A family, bare type, schema, digest or actual result is no replacement proof; constraints concern actual representation and semantics, not removed project admission quotas.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

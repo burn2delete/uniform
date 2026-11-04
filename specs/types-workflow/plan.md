@@ -613,6 +613,12 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Types retains independently established bounds, nonempty and Map-presence premises and the complete private whole-key-domain caller/use proof. Family labels and the result of keys cannot create their own input facts. Current STD3 has no removed pair/depth/work allowance; complete physical key and value validation, invalidation and each consumer's reconstruction remain.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

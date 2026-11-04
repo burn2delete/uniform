@@ -644,6 +644,12 @@ Canonical B10 project accounting portions stay superseded; real external-account
 
 Every current task identity/status, historical receipt/review scope, source criterion and future binding is unchanged. No review is renewed or consumed. Held Reader/Gravity/bootstrap/C12/paired/provider/native/callback/device/probe/replay/migration/private-store/signing/publication operations and the stopped C7 handoff remain held. No other chat, reviewer or automation is messaged/woken. No implementation runs. Current complete source/owner/interface entailment, implementation acceptance and global conjunctions remain unassessed. The first implementation increment remains [Reader contract coverage](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Actual selected backend/provider products preserve current collection semantics, including false/nil, inert payloads, ordinary transfers, representation-specific allocation and complete validation. Supported overload/member/operand subsets are declared separately from language laws. Target conformance uses actual outputs and current metadata, and optional/unavailable execution never becomes a pass or an initial whole-backend gate.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority
