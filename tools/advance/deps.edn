@@ -1,0 +1,5 @@
+{:paths ["src"]
+ :deps {uniform/simplify {:local/root "../simplify"}}
+ :aliases {:run {:main-opts ["-m" "advance.main"]}
+           :test {:extra-paths ["test" "../simplify/test"]
+                  :main-opts ["-m" "advance.test-runner"]}}}
