@@ -45,7 +45,7 @@
 (deftest native-metadata-contract-covers-all-public-operations
   (let [publics (ns-publics 'gravity.tooling)
         contract (:gravity/namespace-contract (meta #'tooling/native-validate-tooling!))]
-    (is (= 42 (count publics)))
+    (is (= 51 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= :stage0-tooling-compiled-gate (:native-metadata-boundary contract)))
     (doseq [[name operation] publics]
@@ -56,6 +56,39 @@
     (is (false? (:performs-tool-services? contract)))
     (is (false? (:issues-certificates? contract)))
     (is (true? (:trusted-native-operation-suppliers? contract)))))
+
+(deftest native-catalog-derivation-retains-order-duplicates-and-case-mapping
+  (is (= ["B2" "SHARED" "A1" "P13-MANIFEST" "P13-ACCEPTED"
+          "P13-REJECTED" "P13-CONFORMANCE"]
+         (tooling/native-diagnostic-ids {"A" ["A1" "SHARED"] "B" ["B2" "SHARED"]}
+                                       ["B" "A" "B"])))
+  (is (= ["P13-MANIFEST" "P13-ACCEPTED" "P13-REJECTED" "P13-CONFORMANCE"]
+         (tooling/native-diagnostic-ids {} ["MISSING"])))
+  (is (= {:mixed "MIXED" :p13-manifest "P13-MANIFEST"}
+         (tooling/native-override-diagnostics ["MiXeD" "MIXED" "P13-MANIFEST"])))
+  (is (= {} (tooling/native-override-diagnostics []))))
+
+(deftest native-catalog-values-retain-compatibility-snapshots-and-diagnostic-associations
+  (doseq [[stage caller] [[#'tooling/native-documents #'bootstrap/p13-tooling-documents]
+                          [#'tooling/native-governing-documents #'bootstrap/p13-tooling-phase-governing-documents]
+                          [#'tooling/native-diagnostics-by-document #'bootstrap/p13-tooling-diagnostics-by-document]
+                          [#'tooling/native-rejected-diagnostics #'bootstrap/p13-tooling-rejected-diagnostics]
+                          [#'tooling/native-rejected-fixture-names #'bootstrap/p13-tooling-rejected-fixture-names]
+                          [#'tooling/native-artifact-keys #'bootstrap/p13-tooling-artifact-keys]
+                          [#'tooling/native-document-summaries #'bootstrap/p13-tooling-document-summaries]]]
+    (let [original (var-get caller)
+          contract (:gravity/namespace-contract (meta stage))]
+      (is (identical? original (var-get stage)))
+      (is (= :catalog-data (get-in contract [:public-api (:name (meta stage)) :kind])))
+      (with-redefs-fn {stage :later-stage-root}
+        #(is (identical? original (var-get caller))))))
+  (is (= "T1003" (tooling/native-rejected-diagnostics "T1")))
+  (is (= "T13002" (tooling/native-rejected-diagnostics "T13")))
+  (is (= :ir-inspector-bundle (get-in tooling/native-document-summaries ["T10" :owned-surface])))
+  (is (= bootstrap/p13-tooling-diagnostic-ids
+         (tooling/native-diagnostic-ids tooling/native-diagnostics-by-document tooling/native-documents)))
+  (is (= bootstrap/p13-tooling-override-diagnostics
+         (tooling/native-override-diagnostics bootstrap/p13-tooling-diagnostic-ids))))
 
 (deftest native-record-refusals-match-the-existing-wrappers
   (let [module {:source-path "native-tooling.gravity" :profile :hosted :target :jvm}]

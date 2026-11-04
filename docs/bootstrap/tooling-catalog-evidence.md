@@ -10,8 +10,13 @@ document, diagnostic, fixture, artifact-key and summary catalogs into
 gravity.tooling. Keep compatibility Vars and their initialization order in
 the existing Bootstrap fragment.
 
-The stage will expose seven native catalog data Vars and two explicit-input
-builders for the existing ordered diagnostic-id vector and override map.
+The stage exposes native-documents, native-governing-documents,
+native-diagnostics-by-document, native-rejected-diagnostics,
+native-rejected-fixture-names, native-artifact-keys and
+native-document-summaries as catalog data Vars. Its native-diagnostic-ids
+builder takes the diagnostic catalog and document order and returns the
+existing ordered distinct diagnostic-id vector. native-override-diagnostics
+takes diagnostic ids and returns the existing lower-case keyword override map.
 Bootstrap retains its catalog Vars; derived definitions must consume their
 current preceding Bootstrap values at the original initialization positions.
 Existing runtime consumers continue to select those Vars through their late
@@ -39,8 +44,25 @@ conservation, preserved compatibility initialization and late Var behavior,
 forty-two unchanged prior stage bodies, independent positive/negative
 catalog and actual artifact tests, language/ownership and lint checks,
 contract validators, independent adversarial review, own CI/artifact audit
-and exact clean current-main integration preflight. Implementation and all
-candidate evidence remain outstanding at this initial draft checkpoint.
+and exact clean current-main integration preflight. Clean committed
+candidate capture, committed lint, independent acceptance, own CI and
+integration evidence remain outstanding.
+
+The working extraction passes 28 owning tests / 525 assertions. Tests retain
+actual paired programs and physical refusals, diagnostic collection order,
+duplicate removal and case-collision behavior, exact catalog alias identity,
+and compatibility snapshots when the stage Var root changes. Pinned stage/test
+lint reports zero errors or warnings. Exact source checks preserve all nine
+catalog expressions, original compatibility initialization positions,
+forty-two earlier stage functions and every surrounding source byte.
+Language/ownership gates pass 48 / 1190 with zero skipped namespaces;
+document, roadmap and workstream validators pass.
+The existing Bootstrap P13 controls also pass 3 / 156.
+
+The extraction helper first attempted to update a list as an associative
+collection. It failed before repository mutation; the original helper and
+nonpass log remain retained. The corrected helper constructs the same exact
+definition form and compares all planned forms before writing any source.
 
 ## Unsupported boundaries
 
