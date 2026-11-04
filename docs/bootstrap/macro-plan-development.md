@@ -21,15 +21,22 @@ compiler, a native backend, or a self-hosting proof.
 - Existing plan identity computation must agree with the reloaded plan body.
   The insertion-order function-name digest is recorded but is not compared
   after EDN map reload because that order is not a semantic identity.
+- The persisted `:plan-id` must be recomputed from the canonical plan body and
+  a substituted or tampered ID must be rejected before execution.
 - The producer summary, persisted plan bytes, source identity, and child
   execution input are bound before the execution child starts.
 - The accepted and rejected fixture bytes are checked against their declared
-  SHA-256 identities before invoking the loaded entry.
+  SHA-256 identities, decoded once as an explicit lossless UTF-8 snapshot, and
+  that same snapshot is passed to C3 before invoking the loaded entry.
 - The accepted fixture must retain the exact `(def add-one (fn [x] (+ x 1)))`
   expansion datum.
+- The rejected fixture must retain the complete C4 diagnostic rule, severity,
+  and stage, and the record must bind the source/compiler/toolchain inputs
+  while they remain stable across producer and execution children.
 - Outputs are created with CREATE_NEW, read back, hashed, and removed on a
-  failed run only when this run successfully owns them. Existing and raced
-  output files are never overwritten or removed.
+  failed run only when this run's file key, size, and digest still match the
+  recorded ownership snapshot. Existing, raced, and replacement output files
+  are never overwritten or removed.
 
 ## Dependencies
 
@@ -57,6 +64,8 @@ requests, the exact accepted expansion datum, and the rejected C4-RETURN
 observation. It records the loaded plan ID/hash, the producer's observed
 compiler revision and dirty status, and the child seed/toolchain facts. It does
 not claim digest resolution, downstream artifact assembly, or native execution.
+The provenance also records the authenticated macro source identity and the
+stable-input result checked around both child processes.
 The record labels the producer as Clojure stage0 and the fresh consumer as the
 generic Clojure stage2 rule runner; both labels are live-worktree development
 provenance, not self-hosting authority.
@@ -65,10 +74,11 @@ provenance, not self-hosting authority.
 
 The focused test namespace is
 gravity.bootstrap.rebuild.macro-plan-test. It checks plan identity
-substitution, exact function-shape rejection, exact accepted expansion output,
-child observation/summary substitution, output-collision and raced-output
-preservation, EDN readback, accepted template output, and the rejected
-C4-RETURN path.
+substitution and canonical plan-ID tampering, exact function-shape rejection,
+lossless UTF-8 fixture snapshots, exact accepted expansion output, child
+observation/summary substitution, full structured diagnostics and stable
+provenance, output-collision/race/replacement preservation, EDN readback,
+accepted template output, and the rejected C4-RETURN path.
 
 For a direct development run:
 

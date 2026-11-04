@@ -14,7 +14,8 @@
             [gravity.macro :as macro])
   (:import [java.io File]
            [java.nio.charset StandardCharsets]
-           [java.nio.file Files LinkOption]))
+           [java.nio.file Files LinkOption]
+           [java.nio.file.attribute BasicFileAttributes]))
 
 (def schema :gravity/bootstrap-macro-plan-v1)
 (def component-id :gravity/sh05-macro-expansion-plan)
@@ -43,11 +44,16 @@
 (def ^:private accepted-fixture
   {:path "bootstrap/clojure/fixtures/self-hosting/sh-05/accepted/defn-basic.gravity"
    :sha256 "sha256:b840a6da3225c88aca70cb9e3234d509a2729d312d876192856aafe5622e2ed2"
+   :byte-count 290
    :expected-expanded-forms '[(def add-one (fn [x] (+ x 1)))]})
+(def ^:private rejected-diagnostic
+  {:rule "C4-RETURN" :severity :error :stage :macro-expansion})
 (def ^:private rejected-fixture
   {:path "bootstrap/clojure/fixtures/self-hosting/sh-05/rejected/return-non-syntax.gravity"
    :sha256 "sha256:b5e68ccf6f7acc74f6b5054d38896fb6a24c81a07ea0b4eaf139caa43409b9a8"
-   :diagnostic "C4-RETURN"})
+   :byte-count 565
+   :diagnostic (:rule rejected-diagnostic)
+   :diagnostics rejected-diagnostic})
 
 (def ^:private default-component
   {:component-id component-id
@@ -124,9 +130,25 @@
              {:cause-class (some-> error class .getName)
               :cause-message (.getMessage error)}))))
 
+(defn- canonical-plan-id
+  [plan]
+  (let [canonicalize (:c-backend-canonical-value (macro-operations))
+        plan-base (dissoc plan :plan-id)]
+    (str "sha256:" (digest/sha256-hex (pr-str (canonicalize plan-base))))))
+
 (defn- bytes-text
-  [bytes]
-  (String. ^bytes bytes StandardCharsets/UTF_8))
+  [^bytes bytes]
+  (String. bytes StandardCharsets/UTF_8))
+
+(defn- utf8-snapshot
+  [^bytes bytes label]
+  (let [text (bytes-text bytes)]
+    (when-not (java.util.Arrays/equals
+               bytes (.getBytes ^String text StandardCharsets/UTF_8))
+      (fail! :utf8-snapshot
+             "authenticated fixture bytes are not one lossless UTF-8 snapshot"
+             {:label label}))
+    text))
 
 (defn- sha256-id
   [^bytes bytes]
@@ -263,6 +285,11 @@
                "persisted macro plan identities do not match the existing compiler identity computation"
                {:declared (select-keys identities plan-identity-keys)
                 :recomputed recomputed})))
+    (let [expected-plan-id (canonical-plan-id plan)]
+      (when-not (= expected-plan-id (:plan-id plan))
+        (fail! :plan-id
+               "persisted macro plan ID is not the canonical plan identity"
+               {:declared (:plan-id plan) :expected expected-plan-id})))
     payload))
 
 (defn- source-identity!
@@ -296,13 +323,27 @@
                                             ["git" "rev-parse" "HEAD^{tree}"]
                                             :compiler-revision))))
         status (command-output! project-root
-                                ["git" "status" "--porcelain"]
+                                ["git" "status" "--porcelain" "--untracked-files=no"]
                                 :compiler-revision)
         status-text (bytes-text (:stdout-bytes status))]
     {:commit commit
      :tree tree
      :tracked-source-state (if (str/blank? status-text) :clean :dirty)
      :tracked-source-status status-text}))
+
+(defn- source-compiler-inputs
+  [source compiler-revision]
+  {:source source :compiler-revision compiler-revision})
+
+(defn- assert-stable-inputs!
+  [before project-root phase]
+  (let [after (source-compiler-inputs (source-identity! project-root)
+                                      (compiler-revision! project-root))]
+    (when-not (= before after)
+      (fail! :provenance-drift
+             "source or compiler inputs changed during macro plan run"
+             {:phase phase :before before :after after}))
+    after))
 
 (defn- classpath-entry
   [root raw]
@@ -387,7 +428,7 @@
 
 (defn- execution-expression
   [plan-path record-path expected-plan-sha256 expected-plan-id
-   compiler-revision toolchain]
+   source compiler-revision toolchain]
   (str
    "(do "
    "(require '[clojure.edn :as edn] '[clojure.java.io :as io] "
@@ -431,8 +472,13 @@
    " (str \"sha256:\" (b/sha256-bytes-hex fixture-bytes)))"
    " (throw (ex-info \"macro fixture bytes do not match its declaration\""
    " {:reason :fixture-identity :fixture fixture})))"
+   " fixture-text (String. fixture-bytes java.nio.charset.StandardCharsets/UTF_8)"
+   " _ (when-not (java.util.Arrays/equals fixture-bytes"
+   " (.getBytes fixture-text java.nio.charset.StandardCharsets/UTF_8))"
+   " (throw (ex-info \"macro fixture bytes are not a lossless UTF-8 snapshot\""
+   " {:reason :utf8-snapshot :fixture fixture})))"
    " source (.getCanonicalPath fixture-file)"
-   " c3 (b/compiler-c3-syntax-source-artifact source (slurp source)"
+   " c3 (b/compiler-c3-syntax-source-artifact source fixture-text"
    " (b/reader-project-context-for-source source) nil nil reader invocation)"
    " forms (get-in c3 [:c2-reader-artifact :parsed-semantic-values])"
    " module (b/parse-module source forms)"
@@ -450,7 +496,10 @@
    " template (:expansion-template result)"
    " expanded-forms (when (contains? fixture :expected-expanded-forms)"
    " (mapv #(m/expanded-form % operations) [form]))]"
-   " {:status (:status result) :fixture (select-keys fixture [:path :sha256])"
+   " {:status (:status result) :fixture (select-keys fixture [:path :sha256 :byte-count])"
+   " :source-byte-count (alength fixture-bytes)"
+   " :source-content-hash (str \"sha256:\" (b/sha256-bytes-hex fixture-bytes))"
+   " :utf8-snapshot? true"
    " :artifact (:artifact result) :schema-version (:schema-version result)"
    " :expansion-template template"
    " :digest-requests (:digest-requests result)"
@@ -462,8 +511,9 @@
    " :diagnostic (get-in result [:diagnostics 0 :rule])"
    " :diagnostics (select-keys (first (:diagnostics result)) [:rule :severity :stage])}))"
    " accepted (run-fixture " (literal (select-keys accepted-fixture
-                                                   [:path :sha256 :expected-expanded-forms])) ")"
-   " rejected (run-fixture " (literal (select-keys rejected-fixture [:path :sha256])) ")"
+                                                   [:path :sha256 :byte-count :expected-expanded-forms])) ")"
+   " rejected (run-fixture " (literal (select-keys rejected-fixture
+                                                    [:path :sha256 :byte-count])) ")"
    " record {:schema " (literal schema)
    " :component-id " (literal component-id)
    " :execution-child {:loaded-plan? true :fresh-c3-request? true"
@@ -471,8 +521,9 @@
    " :loaded-plan-id (:plan-id plan) :loaded-plan-sha256 plan-sha256}"
    " :accepted accepted :rejected rejected"
    " :provenance {:compiler-revision " (literal compiler-revision)
+   " :source " (literal source)
    " :toolchain " (literal toolchain)
-   " :live-worktree? true :authority :non-authoritative}"
+   " :live-worktree? true :input-stability :stable :authority :non-authoritative}"
    " :boundary {:host-language :clojure :seed-hosted? true"
    " :compiled-by :clojure-stage0-seed"
    " :executed-by :clojure-stage2-generic-rule-runner"
@@ -516,14 +567,16 @@
                             (str "macro " label " child summary")))))
 
 (defn- expected-provenance
-  [compiler-revision toolchain]
-  {:compiler-revision compiler-revision
+  [source compiler-revision toolchain]
+  {:source source
+   :compiler-revision compiler-revision
    :toolchain toolchain
    :live-worktree? true
+   :input-stability :stable
    :authority :non-authoritative})
 
 (defn- validate-fixture-record!
-  [record compiler-revision toolchain]
+  [record source compiler-revision toolchain]
   (let [accepted (:accepted record)
         rejected (:rejected record)]
     (when-not (and (= {:loaded-plan? true
@@ -533,7 +586,7 @@
                        :loaded-plan-id (:loaded-plan-id (:execution-child record))
                        :loaded-plan-sha256 (:loaded-plan-sha256 (:execution-child record))}
                       (:execution-child record))
-                   (= (expected-provenance compiler-revision toolchain)
+                   (= (expected-provenance source compiler-revision toolchain)
                       (:provenance record))
                    (= {:host-language :clojure
                        :seed-hosted? true
@@ -546,8 +599,14 @@
                        :authority :non-authoritative}
                       (:boundary record))
                    (= :accepted (:status accepted))
-                   (= (select-keys accepted-fixture [:path :sha256])
+                   (= (select-keys accepted-fixture [:path :sha256 :byte-count])
                       (:fixture accepted))
+                   (= (:byte-count accepted-fixture)
+                      (:source-byte-count accepted))
+                   (= (:sha256 accepted-fixture)
+                      (:source-content-hash accepted))
+                   (true? (:utf8-snapshot? accepted))
+                   (= {} (:diagnostics accepted))
                    (= :gravity/sh05-macro-template-result (:artifact accepted))
                    (= 1 (:schema-version accepted))
                    (map? (:expansion-template accepted))
@@ -564,8 +623,13 @@
                    (= (:expected-expanded-forms accepted-fixture)
                       (:expanded-forms accepted))
                    (= :rejected (:status rejected))
-                   (= (select-keys rejected-fixture [:path :sha256])
+                   (= (select-keys rejected-fixture [:path :sha256 :byte-count])
                       (:fixture rejected))
+                   (= (:byte-count rejected-fixture)
+                      (:source-byte-count rejected))
+                   (= (:sha256 rejected-fixture)
+                      (:source-content-hash rejected))
+                   (true? (:utf8-snapshot? rejected))
                    (= :gravity/sh05-macro-template-result (:artifact rejected))
                    (= 1 (:schema-version rejected))
                    (nil? (:expansion-template rejected))
@@ -575,7 +639,8 @@
                       (:digest-request-count rejected))
                    (= 1 (:digest-request-count rejected))
                    (false? (:expansion-template? rejected))
-                   (= (:diagnostic rejected-fixture) (:diagnostic rejected)))
+                   (= (:diagnostic rejected-fixture) (:diagnostic rejected))
+                   (= (:diagnostics rejected-fixture) (:diagnostics rejected)))
       (fail! :conformance "macro execution child produced unexpected fixture outcomes"
              {:accepted (select-keys accepted
                                      [:status :artifact :schema-version
@@ -603,15 +668,49 @@
             :record-execution (select-keys (:execution-child record)
                                            [:loaded-plan-id :loaded-plan-sha256])})))
 
+(defn- output-attributes
+  [^File file]
+  (let [path (.toPath file)
+        no-follow-links (into-array LinkOption [LinkOption/NOFOLLOW_LINKS])]
+    (when (Files/isRegularFile path no-follow-links)
+      (Files/readAttributes path BasicFileAttributes no-follow-links))))
+
+(defn- output-ownership
+  [^File file]
+  (let [canonical (.getCanonicalFile file)
+        attributes (output-attributes canonical)]
+    (when-not (and attributes (.isRegularFile attributes)
+                   (some? (.fileKey attributes)))
+      (fail! :output-ownership
+             "bootstrap macro output is not an owned regular file"
+             {:path (.getPath canonical)}))
+    {:file canonical
+     :file-key (.fileKey attributes)
+     :size (.size attributes)
+     :sha256 (file-sha256 canonical)}))
+
+(defn- output-still-owned?
+  [{:keys [^File file file-key size sha256]}]
+  (try
+    (when-let [attributes (output-attributes file)]
+      (and (.isRegularFile attributes)
+           (some? file-key)
+           (= file-key (.fileKey attributes))
+           (= size (.size attributes))
+           (= sha256 (file-sha256 file))))
+    (catch Exception _
+      false)))
+
 (defn- remember-output!
   [owned ^File file]
-  (swap! owned conj (.getCanonicalFile file))
+  (swap! owned conj (output-ownership file))
   file)
 
 (defn- cleanup-owned-outputs!
   [owned]
-  (doseq [^File file @owned]
-    (Files/deleteIfExists (.toPath file))))
+  (doseq [{:keys [^File file] :as ownership} @owned]
+    (when (output-still-owned? ownership)
+      (Files/deleteIfExists (.toPath file)))))
 
 (defn run-development-macro-plan!
   "Build, persist, reload, and execute the current macro plan.
@@ -627,6 +726,7 @@
          source (source-identity! project-root)
          revision (compiler-revision! project-root)
          toolchain (toolchain-record! project-root)
+         inputs (source-compiler-inputs source revision)
          output-root (.getCanonicalFile (io/file (str output-root)))
          plan-file (canonical-file output-root (:output-plan-path component))
          record-file (canonical-file output-root (:output-record-path component))]
@@ -641,6 +741,7 @@
                                     (producer-expression (.getPath plan-file))
                                     :producer)
                _ (remember-output! owned-outputs plan-file)
+               _ (assert-stable-inputs! inputs project-root :after-producer)
                payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))
                producer-summary (:summary producer)
                plan-sha256 (file-sha256 plan-file)
@@ -671,10 +772,12 @@
                                                              (.getPath record-file)
                                                              plan-sha256
                                                              (get-in payload [:plan :plan-id])
+                                                             source
                                                              revision
                                                              toolchain)
                                        :execution)
                  _ (remember-output! owned-outputs record-file)
+                 _ (assert-stable-inputs! inputs project-root :after-execution)
                  record (read-edn-file! record-file "macro execution record")
                  record-sha256 (file-sha256 record-file)
                  execution-summary (:summary execution)
@@ -682,7 +785,7 @@
                     execution-summary record (get-in payload [:plan :plan-id])
                     plan-sha256 record-sha256)
                  result (do
-                          (validate-fixture-record! record revision toolchain)
+                          (validate-fixture-record! record source revision toolchain)
                           {:component component
                            :source source
                            :compiler-revision revision

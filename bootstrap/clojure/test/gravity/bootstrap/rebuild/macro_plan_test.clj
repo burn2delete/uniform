@@ -3,7 +3,7 @@
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.bootstrap.rebuild.macro-plan :as macro-plan])
-  (:import [java.nio.file Files]))
+  (:import [java.nio.file Files StandardCopyOption]))
 
 (def ^:private macro-source
   "language/compiler/src/gravity/macro.gravity")
@@ -56,6 +56,9 @@
                             assoc
                             'tampered
                             {:arity 0 :params [] :instructions []})
+        tampered-plan-id (assoc-in payload
+                                   [:plan :plan-id]
+                                   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         wrong-shape (assoc-in payload
                               [:plan :functions 'sh05-expand-macro-template
                                :params]
@@ -68,6 +71,10 @@
            (:reason (ex-data (caught #(macro-plan/validate-persisted-plan!
                                        tampered)))))
         "a changed plan body cannot retain copied identity labels")
+    (is (= :plan-id
+           (:reason (ex-data (caught #(macro-plan/validate-persisted-plan!
+                                       tampered-plan-id)))))
+        "a copied or substituted plan ID is rejected by canonical recomputation")
     (is (= :plan-shape
            (:reason (ex-data (caught #(macro-plan/validate-persisted-plan!
                                        wrong-shape)))))
@@ -119,6 +126,8 @@
                (get-in record [:provenance :toolchain])))
         (is (= true (get-in record [:provenance :live-worktree?])))
         (is (= :non-authoritative (get-in record [:provenance :authority])))
+        (is (= (:source result) (get-in record [:provenance :source])))
+        (is (= :stable (get-in record [:provenance :input-stability])))
         (is (= (:record-sha256 (:execution-summary result))
                (get-in result [:output-sha256 :record])))
         (is (= :gravity/sh05-macro-template-result (:artifact accepted)))
@@ -128,11 +137,22 @@
         (is (= 2 (:digest-request-count accepted)))
         (is (= :accepted (:status accepted)))
         (is (= 'gravity.core/defn (:macro accepted)))
+        (is (= 290 (:source-byte-count accepted)))
+        (is (= "sha256:b840a6da3225c88aca70cb9e3234d509a2729d312d876192856aafe5622e2ed2"
+               (:source-content-hash accepted)))
+        (is (true? (:utf8-snapshot? accepted)))
+        (is (= {} (:diagnostics accepted)))
         (is (= :gravity/sh05-macro-template-result (:artifact rejected)))
         (is (nil? (:expansion-template rejected)))
         (is (= 1 (count (:digest-requests rejected))))
         (is (= 1 (:digest-request-count rejected)))
         (is (= "C4-RETURN" (:diagnostic rejected)))
+        (is (= 565 (:source-byte-count rejected)))
+        (is (= "sha256:b5e68ccf6f7acc74f6b5054d38896fb6a24c81a07ea0b4eaf139caa43409b9a8"
+               (:source-content-hash rejected)))
+        (is (true? (:utf8-snapshot? rejected)))
+        (is (= {:rule "C4-RETURN" :severity :error :stage :macro-expansion}
+               (:diagnostics rejected)))
         (let [validate-record! (private-function 'validate-fixture-record!)
               validate-summary! (private-function 'validate-execution-summary!)
               record-sha256 (get-in result [:output-sha256 :record])
@@ -143,15 +163,36 @@
               wrong-observation (assoc-in record
                                           [:execution-child :loaded-plan-id]
                                           :substituted-plan)
+              wrong-diagnostic (assoc-in record
+                                         [:rejected :diagnostics :severity]
+                                         :warning)
+              wrong-provenance (assoc-in record
+                                         [:provenance :input-stability]
+                                         :unknown)
               wrong-summary (assoc (:execution-summary result)
                                    :record-sha256
                                    "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
           (is (= :conformance
                  (:reason (ex-data
                            (caught #(validate-record! wrong-expansion
+                                                      (:source result)
                                                       (:compiler-revision result)
                                                       (:toolchain result))))))
               "the accepted fixture must retain its exact expansion datum")
+          (is (= :conformance
+                 (:reason (ex-data
+                           (caught #(validate-record! wrong-diagnostic
+                                                      (:source result)
+                                                      (:compiler-revision result)
+                                                      (:toolchain result))))))
+              "the rejected fixture must retain its full structured diagnostic")
+          (is (= :conformance
+                 (:reason (ex-data
+                           (caught #(validate-record! wrong-provenance
+                                                      (:source result)
+                                                      (:compiler-revision result)
+                                                      (:toolchain result))))))
+              "the execution record must retain stable source/compiler provenance")
           (is (= :execution-summary
                  (:reason (ex-data
                            (caught #(validate-summary! (:execution-summary result)
@@ -175,14 +216,57 @@
   (let [root (temporary-root)
         owned-file (io/file root "owned.edn")
         raced-file (io/file root "raced.edn")
-        owned (atom #{(.getCanonicalFile owned-file)})
+        owned (atom #{})
+        remember! (private-function 'remember-output!)
         cleanup! (private-function 'cleanup-owned-outputs!)]
     (try
       (io/make-parents owned-file)
       (spit owned-file "owned-by-this-run")
+      (remember! owned owned-file)
       (spit raced-file "created-after-precheck")
       (cleanup! owned)
       (is (not (.exists owned-file)))
       (is (= "created-after-precheck" (slurp raced-file)))
       (finally
         (delete-tree! root)))))
+
+(deftest replacement-output-cleanup-preserves-replacement
+  (let [root (temporary-root)
+        owned-file (io/file root "owned.edn")
+        replacement-file (io/file root "replacement.edn")
+        owned (atom #{})
+        remember! (private-function 'remember-output!)
+        cleanup! (private-function 'cleanup-owned-outputs!)]
+    (try
+      (io/make-parents owned-file)
+      (spit owned-file "owned-by-this-run")
+      (remember! owned owned-file)
+      (spit replacement-file "replacement-after-write")
+      (Files/move (.toPath replacement-file)
+                  (.toPath owned-file)
+                  (into-array StandardCopyOption
+                              [StandardCopyOption/REPLACE_EXISTING]))
+      (cleanup! owned)
+      (is (= "replacement-after-write" (slurp owned-file)))
+      (finally
+        (delete-tree! root)))))
+
+(deftest invalid-utf8-fixture-snapshot-is-rejected
+  (let [utf8-snapshot! (private-function 'utf8-snapshot)
+        invalid (byte-array [(unchecked-byte 0xC3)
+                             (unchecked-byte 0x28)])
+        error (caught #(utf8-snapshot! invalid :invalid-fixture))]
+    (is (= :utf8-snapshot (-> error ex-data :reason)))))
+
+(deftest source-compiler-input-drift-is-rejected
+  (let [assert-stable! (private-function 'assert-stable-inputs!)
+        before {:source {:path macro-source :byte-count 1 :sha256 "sha256:old"}
+                :compiler-revision {:commit "old" :tree "old"}}
+        error (with-redefs-fn
+                {#'gravity.bootstrap.rebuild.macro-plan/source-identity!
+                 (fn [_] {:path macro-source :byte-count 2 :sha256 "sha256:new"})
+                 #'gravity.bootstrap.rebuild.macro-plan/compiler-revision!
+                 (fn [_] {:commit "new" :tree "new"})}
+                (fn [] (caught (fn [] (assert-stable! before "." :after-producer)))))]
+    (is (= :provenance-drift (-> error ex-data :reason)))
+    (is (= :after-producer (-> error ex-data :phase)))))
