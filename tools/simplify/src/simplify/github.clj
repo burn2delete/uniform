@@ -54,6 +54,24 @@
       (if (empty? items) result (recur (inc page) (into result items))))))
 
 (defn repo-path [ctx suffix] (str "repos/" (get-in ctx [:config :repository]) (when (seq suffix) (str "/" suffix))))
+
+(defn review-threads-clear? [ctx pr-number]
+  (let [[owner repository] (str/split (get-in ctx [:config :repository]) #"/")]
+    (loop [cursor nil]
+      (let [connection (get-in (graphql ctx "query($owner:String!,$name:String!,$number:Int!,$after:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100,after:$after){nodes{isResolved}pageInfo{hasNextPage endCursor}}}}}"
+                                       {:owner owner :name repository :number pr-number :after cursor})
+                               [:repository :pullRequest :reviewThreads])]
+        (when-not (and (vector? (:nodes connection)) (boolean? (get-in connection [:pageInfo :hasNextPage])))
+          (rt/fail! "PR review-thread evidence is unavailable" {:pr pr-number}))
+        (cond
+          (not-every? #(true? (:isResolved %)) (:nodes connection)) false
+          (get-in connection [:pageInfo :hasNextPage])
+          (let [next-cursor (get-in connection [:pageInfo :endCursor])]
+            (when (or (nil? next-cursor) (= cursor next-cursor))
+              (rt/fail! "PR review-thread cursor did not advance" {:pr pr-number}))
+            (recur next-cursor))
+          :else true)))))
+
 (defn owner-info [ctx]
   (get (graphql ctx "query($login:String!){repositoryOwner(login:$login){id __typename}}"
                 {:login (first (str/split (get-in ctx [:config :repository]) #"/"))}) :repositoryOwner))

@@ -299,7 +299,23 @@
   (let [result (rt/try-with-main-lock ctx #(verify-merge! ctx t merged))]
     (when (:commit result) (finalize-merge! ctx (task ctx (:key t))))))
 
+(defn main-intent [t]
+  (let [tuple (select-keys t [:base :candidate :tree])]
+    (if (= tuple (select-keys (:merge-intent t) [:base :candidate :tree]))
+      (:merge-intent t)
+      (merge tuple {:id (str "merge/" (:candidate t)) :method :squash :pr-url (get-in t [:pr :html_url])}))))
+
+(defn merge-ready? [ctx t info]
+  (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
+       (= (get-in ctx [:config :base-branch]) (:baseRefName info))
+       (= :passed (check-state (:statusCheckRollup info)))
+       (= "MERGEABLE" (:mergeable info)) (= "CLEAN" (:mergeStateStatus info))
+       (not (:isDraft info)) (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info)))))
+
 (defn integrate! [ctx t]
+  (when-let [pending (:pending (rt/main-merge-state ctx (:id (main-intent t))))]
+    (rt/fail! "Own main mutation needs inspected reconciliation before further integration"
+              {:effect (:id pending) :effect-status (:status pending)}))
   (let [info (pr-info ctx t)]
     (assert-pr-identity! ctx t info)
     (cond
@@ -324,11 +340,8 @@
                          {:keys [repo-dir repository]} (:config ctx)]
                      (cond
                        (not= base current-base) {:compose current-base}
-                       (not (and (= "OPEN" (:state current-info)) (= (:candidate t) (:headRefOid current-info))
-                                 (= (get-in ctx [:config :base-branch]) (:baseRefName current-info))
-                                 (= :passed (check-state (:statusCheckRollup current-info)))
-                                 (not (:isDraft current-info))
-                                 (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision current-info)))))
+                       (not (and (merge-ready? ctx t current-info)
+                                 (gh/review-threads-clear? ctx (get-in t [:pr :number]))))
                        (rt/event! ctx :waiting {:finding (:key t) :reason :pr-evidence-changed})
                        :else
                        (do
@@ -345,13 +358,18 @@
                                   ["clojure" "-M" "tools/check_worktree_preflight.clj"
                                    "--repo" (:worktree t) "--mode" "integration" "--base-ref" base
                                    "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
-                         (let [observed-main (fresh-main! ctx)]
-                         (if (not= base observed-main)
-                           {:compose observed-main}
-                           (let [intent {:id (str "merge/" (:candidate t)) :base base :candidate (:candidate t)
-                                         :tree (:tree t) :method :squash :pr-url (get-in t [:pr :html_url])}]
+                         (let [threads-clear? (gh/review-threads-clear? ctx (get-in t [:pr :number]))
+                               observed-main (fresh-main! ctx)
+                               observed-info (pr-info ctx t)]
+                         (cond
+                           (not= base observed-main) {:compose observed-main}
+                           (not (and threads-clear? (merge-ready? ctx t observed-info)))
+                           (rt/event! ctx :waiting {:finding (:key t) :reason :post-preflight-pr-evidence-changed})
+                           :else
+                           (let [intent (main-intent t)]
                              (rt/effect! ctx (:id intent)
-                                         #(do (rt/begin-main-merge! ctx intent)
+                                         #(do (task! ctx (:key t) :merge-intent intent)
+                                              (rt/begin-main-merge! ctx intent)
                                               (rt/run! ctx repo-dir ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" repository
                                                                      "--squash" "--match-head-commit" (:candidate t)])))
                              (verify-merge! ctx t (pr-info ctx t) intent)))))))))]

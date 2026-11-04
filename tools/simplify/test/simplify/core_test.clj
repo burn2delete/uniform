@@ -72,6 +72,23 @@
       (is (thrown-with-msg? Exception #"reconciliation before retry" (main/dispatch! ctx "retry" ["recovery"])))
       (is (= :attention (:status (flow/task ctx "recovery")))))))
 
+(deftest review-thread-pagination-never-assumes-the-first-page-is-complete
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")]
+    (doseq [last-resolved? [true false]]
+      (let [seen (atom [])]
+        (with-redefs [gh/graphql (fn [_ _ variables]
+                                  (swap! seen conj (:after variables))
+                                  {:repository {:pullRequest {:reviewThreads
+                                                               {:nodes [{:isResolved (if (:after variables) last-resolved? true)}]
+                                                                :pageInfo {:hasNextPage (nil? (:after variables)) :endCursor "next"}}}}})]
+          (is (= last-resolved? (gh/review-threads-clear? ctx 3)))
+          (is (= [nil "next"] @seen)))))
+    (with-redefs [gh/graphql (fn [& _] {})]
+      (is (thrown-with-msg? Exception #"evidence is unavailable" (gh/review-threads-clear? ctx 3))))
+    (with-redefs [gh/graphql (fn [& _] {:repository {:pullRequest {:reviewThreads
+                                                                 {:nodes [] :pageInfo {:hasNextPage true :endCursor "same"}}}}})]
+      (is (thrown-with-msg? Exception #"cursor did not advance" (gh/review-threads-clear? ctx 3))))))
+
 (deftest retained-uncertain-effects-do-not-trigger-attention-writes
   (let [ctx (context) calls (atom 0)]
     (doseq [status [:pending :uncertain :restricted]]

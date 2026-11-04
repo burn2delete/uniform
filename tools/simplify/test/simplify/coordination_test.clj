@@ -133,6 +133,8 @@
         (is (= (:id intent) (:effect (ex-data e))))
         (is (= :uncertain (:effect-status (ex-data e))))))
     (is (= :fenced (rt/try-with-main-lock b #(swap! calls inc))))
+    (is (:pending (rt/main-merge-state a (:id intent))))
+    (is (= {:pending nil :inspection nil} (rt/main-merge-state b (:id intent))))
     (is (= 1 @calls))
     (is (= :uncertain (:status (first (vals (:main-effects (shared-state b)))))))
     (is (thrown? Exception (rt/reconcile-main-merge! b (:id intent) {:evidence "Foreign owner" :outcome :not-applied})))
@@ -140,11 +142,64 @@
                  (rt/reconcile-main-merge! a (:id intent) {:evidence "Wrong result" :outcome :merged
                                                         :actual (assoc actual :parents [candidate base])})))
     (rt/reconcile-main-merge! a (:id intent) {:evidence "Fixture provider/Git inspection proves actual merge" :outcome :merged :actual actual})
+    (is (= :merged (get-in (rt/main-merge-state a (:id intent)) [:inspection :inspection :outcome])))
     (rt/import-state-coordination! a)
     (is (empty? (:main-effects (shared-state a))) "An inspected shared effect is not reimported as a legacy unknown")
     (is (= 2 (rt/try-with-main-lock b #(swap! calls inc))))
     (is (= :uncertain (get-in @(:state a) [:effects (:id intent) :status]))
         "Shared reconciliation never clears/replays the original native effect")))
+
+(deftest inspected-recovery-never-rearms-restricted-or-mismatched-evidence
+  (doseq [restricted? [true false]]
+    (let [[a b] (pair)
+          t (merge (select-keys intent [:base :candidate :tree])
+                   {:key "recovery" :status :attention :resume-status :merge :merge-intent intent
+                    :error {:details {:effect (:id intent) :restricted restricted?}}})
+          result-file (str (io/file (:state-dir a) "inspection-result.edn"))]
+      (rt/update! a assoc :repository "fixture/repo" :campaign "Simplify" :tasks {"recovery" t})
+      (is (thrown? Exception
+                   (rt/try-with-main-lock a
+                     #(rt/effect! a (:id intent) (fn [] (rt/begin-main-merge! a intent)
+                                                  (throw (ex-info "Fixture provider failure" {:restricted restricted?})))))))
+      (rt/reconcile-main-merge! a (:id intent) {:outcome :not-applied :evidence "Fixture original owner inspected no remote mutation"})
+      (rt/write-edn! result-file {:evidence "Fixture original effect inspected against no applied mutation" :result {:not-applied true}})
+      (if restricted?
+        (do
+          (is (thrown? Exception (main/dispatch! a "reconcile" [(:id intent) result-file])))
+          (is (thrown-with-msg? Exception #"Restricted actions" (main/dispatch! a "retry" ["recovery"])))
+          (is (= :restricted (get-in @(:state a) [:effects (:id intent) :status]))))
+        (do
+          (is (thrown-with-msg? Exception #"reconciliation before retry" (main/dispatch! a "retry" ["recovery"])))
+          (main/dispatch! a "reconcile" [(:id intent) result-file])
+          (is (= :uncertain (get-in @(:state a) [:effects (:id intent) :prior :status])))
+          (flow/task! a "recovery" :tree base)
+          (is (thrown-with-msg? Exception #"matching local reconciliation" (main/dispatch! a "retry" ["recovery"])))
+          (flow/task! a "recovery" :tree tree)
+          (rt/shared-restrict! b :commands (rt/digest (pr-str ["gh-pr-merge" "fixture/repo"])) {:error "Retained fixture merge permission refusal"})
+          (is (thrown-with-msg? Exception #"Repository merge action remains restricted" (main/dispatch! a "retry" ["recovery"])))))
+      (is (= intent (:merge-intent (flow/task a "recovery"))))
+      (is (= {:pending nil :inspection nil} (rt/main-merge-state b (:id intent)))))))
+
+(deftest interrupted-inspection-successor-import-retains-the-exact-tuple
+  (let [[a b] (pair)
+        successor (assoc intent :id (str (:id intent) "/inspection/retained"))]
+    (rt/update! a assoc :effects {(:id successor) {:status :pending}}
+                :tasks {"source" {:candidate candidate :base base :tree tree :merge-intent successor}})
+    (rt/import-state-coordination! a)
+    (is (= (select-keys successor [:id :base :candidate :tree :method])
+           (select-keys (:pending (rt/main-merge-state a (:id successor))) [:id :base :candidate :tree :method])))
+    (is (= :fenced (rt/try-with-main-lock b (fn [] :must-not-run))))))
+
+(deftest incomplete-legacy-intent-retains-the-operators-inspected-source-tuple
+  (let [[a _] (pair)
+        inspected (assoc intent :method :squash)]
+    (rt/update! a assoc :effects {(:id inspected) {:status :uncertain}})
+    (rt/import-state-coordination! a)
+    (rt/reconcile-main-merge! a (:id inspected)
+                              {:outcome :not-applied :evidence "Original owner inspected the legacy source identity and no applied merge"
+                               :original-intent inspected})
+    (is (= inspected (select-keys (get-in (rt/main-merge-state a (:id inspected)) [:inspection :intent]) (keys inspected))))
+    (is (= :uncertain (get-in @(:state a) [:effects (:id inspected) :status])))))
 
 (deftest actual-verification-clears-only-the-exact-main-intent
   (let [[a b] (pair)]
@@ -243,11 +298,15 @@
       (rt/with-lock ctx
         #(do
            (rt/update! ctx assoc :owner-marker :fresh)
-           (doseq [[command exit] [["status" 0] ["pause" 0] ["run" 1] ["resume" 1]]]
-             (let [before (rt/read-edn (:state-file ctx))
+           (doseq [[command exit] [["status" 0] ["pause" 0] ["doctor" 1] ["run" 1] ["resume" 1]]]
+             (let [before (slurp (:state-file ctx))
                    result (rt/command ctx repo (java-command "-m" "simplify.main" command config-file))]
                (is (= exit (:exit result)))
-               (is (= before (rt/read-edn (:state-file ctx))))))))
+               (is (= before (slurp (:state-file ctx))))))))
+      (with-redefs [rt/command (fn [& _] {:exit 1 :err "HTTP 403: Permission denied" :out ""})]
+        (is (thrown? Exception (main/dispatch! stale "doctor" []))))
+      (is (= :fresh (:owner-marker (rt/read-edn (:state-file ctx)))))
+      (is (seq (:restricted-commands (rt/read-edn (:state-file ctx)))))
       (main/controller! stale #(is (= :fresh (:owner-marker @(:state stale)))))
       (is (thrown? Exception (main/controller! stale #(throw (ex-info "Owned failure" {})))))
       (is (= :attention (:status (rt/read-edn (:state-file ctx))))))))

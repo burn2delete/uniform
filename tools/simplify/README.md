@@ -107,7 +107,10 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
 6. Serialize merges. When main moves, compose it into the candidate, rerun checks,
    obtain fresh review and await the new head's CI. Run the repository's exact
    integration preflight immediately before merging.
-7. Recheck main after preflight and match the remote PR head when merging. The
+7. Recheck main and PR head/base, CI, review and mergeability after preflight.
+   Review threads are read with complete cursor pagination; unresolved threads
+   wait before preflight and are rechecked before mutation. Match the remote
+   PR head when merging. The
    coordinator must own the shared main-integration lock. Other desktop writers
    must use the same integration protocol; it cannot control uncooperative
    external applications. Existing GitHub branch protection and reviews still apply.
@@ -227,7 +230,13 @@ A legacy incomplete tuple also needs its inspected `:original-intent`.
 Writer inspection contains `:evidence`; the lease file is the original shared
 lease, including its token. These commands do not rerun a denied operation,
 clear its native refusal/effect record or confer acceptance. Native effect
-reconciliation remains a separate observation when it is needed.
+reconciliation is still separate. For an inspected `:not-applied` main result,
+run `reconcile` with the observed original result and evidence, then explicitly
+run `retry`. The local receipt retains `:prior` and binds the accepted shared
+inspection. Only that exact source tuple can receive a new transaction ID;
+the old attempt stays recorded. A restricted action cannot take this path.
+An own unresolved main effect requires Attention before another provider read;
+another campaign's fence remains ordinary integration waiting.
 
 ## Validation and references
 
