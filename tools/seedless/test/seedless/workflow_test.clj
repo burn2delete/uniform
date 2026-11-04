@@ -434,35 +434,43 @@
                  (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx))))))))))
 
 (deftest external-review-repairs-current-head-and-waits-for-reapproval
-  (harness :normal
-           (fn [ctx events phases _]
-             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
-             (let [t (w/task ctx "a") original shared/pr-info
-                   request {:id 17 :user {:id 3} :state "CHANGES_REQUESTED" :commit_id (:candidate t)
-                            :submitted_at "2026-11-04T12:00:00Z" :body "Preserve the rejected case"}
-                   comments [{:pull_request_review_id 17 :path "module.clj" :body "Add the missing rejection"}]]
-               (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED"))
-                             gh/pages (fn [_ endpoint]
-                                        (cond
-                                          (str/ends-with? endpoint "/reviews") [request]
-                                          (str/ends-with? endpoint "/comments") comments
-                                          :else (throw (ex-info "Unexpected fixture page" {:endpoint endpoint}))))]
-                 (w/integrate! ctx t)
-                 (is (= :repair (:status (w/task ctx "a"))))
-                 (is (= [request] (get-in (w/task ctx "a") [:feedback :github-reviews])))
-                 (is (= comments (get-in (w/task ctx "a") [:feedback :comments])))
-                 (is (= (select-keys t [:base :candidate :tree]) (get-in (w/task ctx "a") [:feedback :candidate])))
-                 (w/prepare! ctx "a")
-                 (is (not= (:candidate t) (:candidate (w/task ctx "a"))))
-                 (let [authors @phases]
-                   (w/integrate! ctx (w/task ctx "a"))
-                   (is (= :ci (:status (w/task ctx "a"))))
-                   (is (= authors @phases))
-                   (is (not-any? #(= :merge (first %)) @events)))
-                 (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "APPROVED"))]
-                   (w/integrate! ctx (w/task ctx "a")))
-                 (is (= :done (:status (w/task ctx "a"))))
-                 (is (= 1 (count (filter #(= :merge (first %)) @events)))))))))
+  (doseq [ci-failed? [false true]]
+    (harness :normal
+             (fn [ctx events phases _]
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (let [t (w/task ctx "a") original shared/pr-info
+                     request {:id 17 :user {:id 3} :state "CHANGES_REQUESTED" :commit_id (:candidate t)
+                              :submitted_at "2026-11-04T12:00:00Z" :body "Preserve the rejected case"}
+                     comments [{:pull_request_review_id 17 :path "module.clj" :body "Add the missing rejection"}]
+                     failed-checks [{:status "COMPLETED" :conclusion "FAILURE"}]]
+                 (with-redefs [shared/pr-info (fn [context task]
+                                                (cond-> (assoc (original context task) :reviewDecision "CHANGES_REQUESTED")
+                                                  (and ci-failed? (= (:candidate t) (:candidate task)))
+                                                  (assoc :statusCheckRollup failed-checks)))
+                               gh/pages (fn [_ endpoint]
+                                          (cond
+                                            (str/ends-with? endpoint "/reviews") [request]
+                                            (str/ends-with? endpoint "/comments") comments
+                                            :else (throw (ex-info "Unexpected fixture page" {:endpoint endpoint}))))]
+                   (w/integrate! ctx t)
+                   (is (= :repair (:status (w/task ctx "a"))))
+                   (is (= [request] (get-in (w/task ctx "a") [:feedback :github-reviews])))
+                   (is (= comments (get-in (w/task ctx "a") [:feedback :comments])))
+                   (is (= (select-keys t [:base :candidate :tree]) (get-in (w/task ctx "a") [:feedback :candidate])))
+                   (when ci-failed?
+                     (is (= failed-checks (get-in (w/task ctx "a") [:feedback :ci])))
+                     (is (= :external-or-unavailable (get-in (w/task ctx "a") [:feedback :diagnostics 0 :logs]))))
+                   (w/prepare! ctx "a")
+                   (is (not= (:candidate t) (:candidate (w/task ctx "a"))))
+                   (let [authors @phases]
+                     (w/integrate! ctx (w/task ctx "a"))
+                     (is (= :ci (:status (w/task ctx "a"))))
+                     (is (= authors @phases))
+                     (is (not-any? #(= :merge (first %)) @events)))
+                   (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "APPROVED"))]
+                     (w/integrate! ctx (w/task ctx "a")))
+                   (is (= :done (:status (w/task ctx "a"))))
+                   (is (= 1 (count (filter #(= :merge (first %)) @events))))))))))
 
 (deftest superseded-review-opinions-wait-and-foreign-base-refuses-feedback
   (harness :normal

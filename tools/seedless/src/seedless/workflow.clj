@@ -680,7 +680,13 @@
                        (throw (ex-info (.getMessage e)
                                        (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e))))))))))))))
 
-(defn- github-review! [ctx t info]
+(defn- ci-feedback! [ctx t info]
+  {:ci (:statusCheckRollup info)
+   :workflows (:head-workflows (task ctx (:key t)))
+   :diagnostics (ci-evidence! ctx t (:statusCheckRollup info))
+   :instruction "Read the captured job evidence and repair the actual failure; retain timeouts/unavailable logs as such. Never weaken the test or retry unchanged code."})
+
+(defn- github-review! [ctx t info ci]
   (assert-candidate-acceptance! t)
   (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
   (when-not (= (pr-base ctx t) (:baseRefName info))
@@ -692,11 +698,13 @@
                              {} (sort-by (juxt #(or (:submitted_at %) "") #(or (:id %) 0))
                                          (filter #(#{"APPROVED" "CHANGES_REQUESTED" "DISMISSED"} (:state %)) reviews))))
         requests (filterv #(and (= "CHANGES_REQUESTED" (:state %)) (= (:candidate t) (:commit_id %))) latest)]
-    (if (seq requests)
-      (let [comments (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/comments")))]
+    (if (or (seq requests) (= :failed ci))
+      (let [comments (when (seq requests) (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/comments"))))]
         (task! ctx (:key t) :feedback
-               {:candidate (select-keys t [:base :candidate :tree]) :github-reviews requests :comments comments
-                :instruction "Address the current-head review findings within this slice. Preserve scope, checks and required GitHub reapproval; never dismiss or resolve reviews dishonestly."})
+               (merge (when (= :failed ci) (ci-feedback! ctx t info))
+                      (when (seq requests)
+                        {:candidate (select-keys t [:base :candidate :tree]) :github-reviews requests :comments comments
+                         :instruction "Address the current-head review findings and captured CI failures within this slice. Preserve scope, checks and required GitHub reapproval; never weaken tests or dismiss/resolve reviews dishonestly."})))
         (transition! ctx (:key t) :repair))
       (rt/event! ctx :waiting {:slice (:key t) :reason :github-review-reapproval :candidate (:candidate t)}))))
 
@@ -716,12 +724,9 @@
             (rt/event! ctx :waiting {:slice (:key t) :reason :merged-pr-ci :ci ci})))
         (not= "OPEN" (:state info)) (rt/fail! "PR closed without a verified merge" {:pr info})
         (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote head changed outside this controller" {:pr info})
-        (= :failed ci) (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info)
-                                                          :workflows (:head-workflows (task ctx (:key t)))
-                                                          :diagnostics (ci-evidence! ctx t (:statusCheckRollup info))
-                                                          :instruction "Read the captured job evidence and repair the actual failure; retain timeouts/unavailable logs as such. Never weaken the test or retry unchanged code."})
+        (= "CHANGES_REQUESTED" (:reviewDecision info)) (github-review! ctx t info ci)
+        (= :failed ci) (do (task! ctx (:key t) :feedback (ci-feedback! ctx t info))
                            (transition! ctx (:key t) :repair))
-        (= "CHANGES_REQUESTED" (:reviewDecision info)) (github-review! ctx t info)
         :else
         (let [base (fresh-main! ctx)]
           (cond
