@@ -210,4 +210,3 @@
         (is (= 1 (count @calls)))
         (is (= identity (second (re-find #"(<!-- uniform-seedless:issue/[0-9a-f]+ -->)" (get-in @calls [0 2 :body]))))))
       (finally (delete-tree! (:root ctx))))))
-
