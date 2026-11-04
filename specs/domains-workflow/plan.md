@@ -658,6 +658,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply actual selected crypto/provider/secret/constant-time and UI/component/schema/taint/source-map products. Broader passkeys/private computation and DOM6 browser/ticket-list outcomes stay separately Open; callable library facades do not accept those domains. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual AI/workflow/schema model/prompt/tool/memory/policy/review, recorded/live-only traces and source-bound schema facts. Specialist tools consume these rather than redefining domain engines or provider authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

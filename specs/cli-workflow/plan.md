@@ -46,6 +46,10 @@ release nor permits held execution. The existing task remains Open.
 
 Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Use the existing five CLI tasks for normalized requests, actual specialist/compiler routing, structured outputs/exits and entrypoints. The selected compiler recipe and wider T1 command families retain separate scope; metadata-only success cannot close either. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Normalize actual requests and consume genuine selected specialist service outputs with stable structured diagnostics/exits. Public routing does not implement the editor, debugger, docs, dev, registry, inspector, profiler, audit or AI engine. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: CLI workflow migration

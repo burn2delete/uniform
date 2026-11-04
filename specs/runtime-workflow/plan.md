@@ -455,6 +455,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual permitted interactive evaluation, ledger, replay, cleanup and hot-load decisions. Source/session metadata or injected complete rows are no execution; current authority precedes every protected action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual permitted debug/interactive/process/replay and source-linked measurement/provider observations with before-action enforcement and cleanup. Static records and target descriptors are no live frames, samples or device activity. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

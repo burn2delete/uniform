@@ -230,3 +230,7 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 ## Crypto UI and stability library source interface
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep real GOV2 compatibility, GOV3 module admission, GOV8 lifecycle and distinct security/unsafe audits as their existing sole authorities. Library compatibility and signed manifests do not create approval, migration execution or a policy exception. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual distinct unsafe/security review and yank/advisory/governance records with exact conditions, evidence and missing/revalidation state. Registry and safety views cannot synthesize acceptance or change policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

@@ -407,6 +407,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply authentic current operation-specific grants with attenuation, revocation and lifetime. Visible CLI/REPL grants and package identity do not create host/network/shell/secret/model/database authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply authentic current operation-specific inspection, mutation, tool, provider, profiler and endpoint grants with scope/revocation/lifetime; views and session identity issue no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

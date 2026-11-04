@@ -263,6 +263,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual stable structured rule/command/session errors, source/manifest facts, explanations and redaction. CLI owns T1 exit presentation; tool-service diagnostics retain their own T2/T3/T4 meanings. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply genuine codes/spans/manifest and generated origins and preserve compiler/CLI/editor agreement. Redaction, failure-stage and stale/unsupported context remain explicit in actual structured exports. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

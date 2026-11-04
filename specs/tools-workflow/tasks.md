@@ -114,6 +114,39 @@ Remaining implementation tasks: Implement transport/document state and cancellat
 
 Closing evidence and governing contract: Incremental state converges to CLI checks? Visibility/profile rules preserved? Stale edits and unsafe rename rejected? [Language server](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md)
 
+
+<!-- tooling-specialist-services-lsp-current-state-and-queries:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service lsp-current-state-and-queries criterion (Open). Sources: [T5](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md).
+
+Implement real open-document, syntax, namespace/expansion, type/effect, profile/target, diagnostic, package/artifact and cancellation/incremental state per workspace. Actual open/change/save updates converge to CLI check on identical project/document revisions. Expose diagnostics with matching codes/spans, hover facts/docs when known, namespace/visibility/profile/target-correct completion, semantic tokens and artifact/safety navigation. Exercise actual protocol fixtures, multi-profile/target changes and stale/cancelled state, fabricated facts, illegal completion or diagnostic mismatch refusals; a capability matrix is not an editor service. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-lsp-current-state-and-queries:end -->
+
+
+
+<!-- tooling-specialist-services-lsp-checked-edits:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service lsp-checked-edits criterion (Open). Sources: [T5](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md).
+
+Implement code actions with safe defaults and explicit required checks, rename preserving real namespace/binding/macro identities, and formatter delegation under T3. Generated files are marked with actual source-artifact origins and reject edits without source policy. Exercise genuine patches/edits and ambiguous generated binding, bypassed compiler checks, stale revision and generated-file denial cases; no editor-only semantics, unvalidated fix or string rename substitutes for source-aware behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-lsp-checked-edits:end -->
+
+
+
+<!-- tooling-specialist-services-lsp-protocol-and-traces:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service lsp-protocol-and-traces criterion (Open). Sources: [T5](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md).
+
+Emit actual cancellable protocol responses, compiler-consistent diagnostics, semantic tokens, code-action records and conformance transcripts for open/change/save/diagnostics/hover/completion/rename/actions. Trace logs are disabled or genuinely scoped by user policy and redact protected manifest/runtime data. Exercise real selected stdio/request/response and cancellation flows plus secret trace, wrong source/session and unsupported transport/target cases; source-only queries do not require absent later runtime facts. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-lsp-protocol-and-traces:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer` Debug / debugger maintainer
 
 Status: Open
@@ -121,6 +154,39 @@ Status: Open
 Remaining implementation tasks: Implement artifact-bound sessions, source breakpoints and state inspection; implement separately authorized mutation; connect target and replay adapters
 
 Closing evidence and governing contract: Source maps resolve? Unavailable versus optimized-away values distinguished? Unauthorized mutation and secret inspection rejected? [Debugger](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md)
+
+
+<!-- tooling-specialist-services-debug-subjects-and-breakpoints:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service debug-subjects-and-breakpoints criterion (Open). Sources: [T6](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md).
+
+Bind each actual debug session to exact artifact/profile/target/debug-data version, source/symbol/type/layout/MIR/effect/grant and available ownership/lifetime/stack data. Implement genuine source/artifact breakpoint mapping and stopping where target support exists. Exercise matching mappings/stops and missing/mismatched metadata, unmappable breakpoints and unavailable target features; distinguish optimized-away from unavailable and live values. Static frame or passed source-map rows do not prove a running debug session. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-debug-subjects-and-breakpoints:end -->
+
+
+
+<!-- tooling-specialist-services-debug-inspect-versus-mutate:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service debug-inspect-versus-mutate criterion (Open). Sources: [T6](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md).
+
+Implement inspection under actual redaction/capability policy and separately authorized state mutation; debugging creates no program authority. Preserve native/kernel raw-memory unsafe/audit context. Exercise permitted selected observations and missing mutation authority, redacted secret/no-store access, stale frame and unsupported mutation refusals with actual no-action denial. A read grant, debug UI or unsafe marker cannot authorize writes, reveal secrets or manufacture optimized-away values. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-debug-inspect-versus-mutate:end -->
+
+
+
+<!-- tooling-specialist-services-debug-workflow-ai-and-reports:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service debug-workflow-ai-and-reports criterion (Open). Sources: [T6](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md).
+
+Implement workflow event-log replay/node stepping without repeating effects, and AI trace linkage across model/prompt/tool/memory/policy/human-review products. Emit real session/breakpoint/frame/variable/replay/denial/source-map structured reports with explicit partial-support degradation. Exercise valid selected trace views and side-effecting replay, missing/wrong links, no-store prompt leakage and invented live-state refusals. Historical traces and simulators retain exact scope; held debug/native/replay/provider actions stay unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-debug-workflow-ai-and-reports:end -->
+
 
 - [ ] `tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer` REPL / interactive-runtime tooling maintainer
 
@@ -189,6 +255,39 @@ Foundation requirement gravity/tooling-semantic-consistency: Make formatter/LSP/
 <!-- tools-foundation-inspection:end -->
 
 
+
+<!-- tooling-specialist-services-ir-real-stage-views:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ir-real-stage-views criterion (Open). Sources: [T10](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md).
+
+Expose actual Reader/syntax/expansion/resolution/typed-effect-Core/ownership-safety/MIR/domain/optimized/backend/artifact products with compiler version/project hash/profile/target/stage/upstream identities, current applicable facts and source/generated/macro origins. Exercise genuine selected structured views and failed-stage reporting, missing/stale/wrong-subject identity and lost origin refusals. A simplified parallel model or display metadata cannot invent compiler state, and source-only inspection needs no unavailable later facts. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ir-real-stage-views:end -->
+
+
+
+<!-- tooling-specialist-services-ir-diff-and-preservation:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ir-diff-and-preservation criterion (Open). Sources: [T10](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md).
+
+Compare actual pass input/output artifacts, distinguishing semantic changes from stable nonsemantic formatting/id renumbering, and display genuine preservation, proof/analysis and invalidation results. Check removal/elision claims cite matching actual evidence; backend views name target/ABI/runtime/assumptions. Exercise valid selected diffs and absent/stale proof, semantic change hidden as renumbering, dropped source or omitted target assumptions. A preserves field or equal sampled values does not prove legality. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ir-diff-and-preservation:end -->
+
+
+
+<!-- tooling-specialist-services-ir-exports-and-reproduction:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ir-exports-and-reproduction criterion (Open). Sources: [T10](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md).
+
+Emit real stage views, IR JSON, pass/preservation/source-map reports and redacted explorer bundles reproducible from exact artifact ids. Exercise actual request-to-export/reload consistency and missing/wrong subject, generated-origin gap or protected-data failures. Preserve scriptable CI comparison interfaces without authorizing compiler mutation, pass execution or proof engines through a read-only view. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ir-exports-and-reproduction:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer` Profile / performance-tool maintainer
 
 Status: Open
@@ -196,6 +295,39 @@ Status: Open
 Remaining implementation tasks: Capture real supported target samples; bind environment and source/artifact identity; report overhead, comparisons and safety-check evidence
 
 Closing evidence and governing contract: Samples measured rather than generated? Unavailable counters explicit? No unrelated grant or proofless elision? [Profiler](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md)
+
+
+<!-- tooling-specialist-services-profiler-measurements-and-identity:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service profiler-measurements-and-identity criterion (Open). Sources: [T11](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md).
+
+Measure actual selected wall/CPU, allocations, supported cache/branch/latency/throughput/energy/device, GC/service and specialization/layout/check-elision data as applicable. Bind run/artifact/benchmark/environment/compiler/profile/target and hardware/firmware/GPU device identity; link real samples to source/MIR/artifact when possible. Declare measured profiler overhead or unknown. Exercise genuine selected runs and missing identity, unsupported counters or supplied/fabricated samples; target support is explicit and no unrelated runtime authority is granted. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-profiler-measurements-and-identity:end -->
+
+
+
+<!-- tooling-specialist-services-profiler-comparisons-and-regressions:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service profiler-comparisons-and-regressions criterion (Open). Sources: [T11](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md).
+
+Compare actual matching benchmark identities and environments under declared threshold/benchmark policy, permitting normalization only where policy declares it. Emit structured reproducible trend artifacts, environment/sample/comparison/regression decisions and threshold-exceeded failures. Exercise genuine equal/changed baselines, incompatible subjects, unsupported normalization and exceeded thresholds; quality/performance policy thresholds remain semantic constraints, distinct from removed project work accounting. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-profiler-comparisons-and-regressions:end -->
+
+
+
+<!-- tooling-specialist-services-profiler-ai-replay-and-safety:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service profiler-ai-replay-and-safety criterion (Open). Sources: [T11](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md).
+
+Separate actual AI/distributed provider/model/tool latency and external cost, retries, replay and human-review time. Show actual check-elision proof/analysis and selected specialization/layout evidence, not silent unsafe speedups. Exercise genuine scoped reports and missing proof, mixed latency/replay subjects or unrelated grant requirements. External billing/account restrictions and target physical limits remain; neither cost records nor a proof filename grants execution or accepts a benchmark. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-profiler-ai-replay-and-safety:end -->
+
 
 - [ ] `tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer` Docs / documentation-tool maintainer
 
@@ -205,6 +337,39 @@ Remaining implementation tasks: Generate human/structured API docs from compiler
 
 Closing evidence and governing contract: Signatures/effects/profiles match exports? Failing examples and stale docs rejected? [Documentation generator](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md)
 
+
+<!-- tooling-specialist-services-docs-real-inputs-and-api:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service docs-real-inputs-and-api criterion (Open). Sources: [T7](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md).
+
+Generate from actual source/docstrings/syntax/public namespace APIs and applicable compiler type/effect/capability/profile/target, schema, package/artifact, diagnostic and safety metadata. Emit real HTML/JSON docs, search/API indexes, source links, schema docs and artifact manifest with source hash/compiler/package version and applicable compiler identity/hash. Show known signatures/availability, actual effects/grants, schema artifact ids and unsafe/FFI audit links. Exercise selected real generation and missing facts/audit/schema-link or unsupported claims; source reading is legal without inventing absent semantic analysis. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-docs-real-inputs-and-api:end -->
+
+
+
+<!-- tooling-specialist-services-docs-examples-and-freshness:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service docs-examples-and-freshness criterion (Open). Sources: [T7](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md).
+
+Route examples marked runnable to the genuine owning test/doc-check runner and retain actual checked/failed/unrun outcomes and exact source/artifact/compiler/package subjects. Detect stale docs via genuine source/artifact hashes, refusing mismatched package publication and failing runnable examples. Exercise actual current versus changed-source/changed-artifact checks and source-span/example failure cases; an example-validation count or filename is not a run and documentation generation does not authorize held execution or publication. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-docs-examples-and-freshness:end -->
+
+
+
+<!-- tooling-specialist-services-docs-generated-and-protected-data:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service docs-generated-and-protected-data criterion (Open). Sources: [T7](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md).
+
+Mark AI-generated documentation, compare its claims against actual compiler/source facts and preserve generated provenance. Redact secrets and no-store data from HTML/JSON/search/index/manifests and other generated outputs. Exercise true source-supported generated docs and contradictory claims, secret/no-store exposure and missing source provenance refusals. Unknown facts stay unknown; generated prose, signatures or metadata do not confer safety, stability or conformance approval. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-docs-generated-and-protected-data:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer` Dev Server / development-session maintainer
 
 Status: Open
@@ -212,6 +377,39 @@ Status: Open
 Remaining implementation tasks: Implement watcher-to-incremental updates; implement legal reload versus safe restart; expose artifact/status events and redacted sessions
 
 Closing evidence and governing contract: Changes produce actual updated artifacts? Incompatible hot reload restarts? Grants remain explicit? [Dev server](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md)
+
+
+<!-- tooling-specialist-services-dev-session-and-incremental-services:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service dev-session-and-incremental-services criterion (Open). Sources: [T8](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md).
+
+Implement actual project/profile/target/grant-bound file watching, deterministic incremental check/build, CLI-consistent diagnostic streaming, artifact events and structured status. Every event carries actual artifact id/path/profile/target/build node. Coordinate existing REPL/debug/replay/AI trace endpoints with explicit authority/redaction rather than parallel engines. Exercise real selected changes and CLI convergence, missing profile/target, stale input/event and hidden-grant refusals; fixed converged/session rows prove no server or watcher. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-dev-session-and-incremental-services:end -->
+
+
+
+<!-- tooling-specialist-services-dev-supervision-and-reload:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service dev-supervision-and-reload criterion (Open). Sources: [T8](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md).
+
+Supervise actual permitted runtime processes with only declared development grants and genuine cleanup/restart outcomes. Hot reload preserves current type/effect/profile assumptions or safely restarts; invalidated assumptions reject unsafe replacement. Keep dev-only artifacts from satisfying release verification or altering release artifacts. Exercise actual selected safe reload/restart, authority denial, stale assumptions and dev/release contamination cases; a restart decision row is not a supervised process result. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-dev-supervision-and-reload:end -->
+
+
+
+<!-- tooling-specialist-services-dev-endpoint-replay-and-bug-bundles:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service dev-endpoint-replay-and-bug-bundles criterion (Open). Sources: [T8](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md).
+
+Apply actual endpoint authentication where policy requires it and record AI/workflow replay-relevant nondeterminism. Emit real process/diagnostic/event/reload/replay logs and exportable bug-state bundles with protected data redacted from logs/browser payloads/status and bundles. Exercise genuine permitted endpoint/session outputs plus unauthenticated remote calls, missing replay events and secret leakage refusals. Declared endpoints or fixed ledger links do not provide access, replay safety or authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-dev-endpoint-replay-and-bug-bundles:end -->
+
 
 - [ ] `tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer` Registry View / package-tool maintainer
 
@@ -221,6 +419,39 @@ Remaining implementation tasks: Implement structured package search/detail and u
 
 Closing evidence and governing contract: CLI/API package facts agree? Capability changes visible before install? Unauthorized package existence not disclosed? [Registry UX](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md)
 
+
+<!-- tooling-specialist-services-registry-facts-and-update-diffs:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service registry-facts-and-update-diffs criterion (Open). Sources: [T9](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md).
+
+Render actual shared structured package facts consistently in CLI/editor/web/API: overview/history/dependency graph/profile/target/capabilities/unsafe-audit/provenance-signing/SBOM/advisory/update/policy/private-latent views. Show capabilities before install/update, actual unsafe/audit metadata and complete capability/safety/dependency/target/provenance/license-policy deltas. Exercise matching human/JSON facts and genuine changed-package diffs; hidden expansion, inconsistent views or policy-incompatible install recommendations reject without changing governing package decisions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-registry-facts-and-update-diffs:end -->
+
+
+
+<!-- tooling-specialist-services-registry-verification-private-and-latent:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service registry-verification-private-and-latent criterion (Open). Sources: [T9](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md).
+
+Show machine-verifiable signature/SBOM/provenance/revocation evidence and current policy result; no badge is accepted without actual matching reports. Deny unauthorized private requests without revealing existence or metadata. Show genuine latent package state, generator provenance and required review before resolution; presentation cannot grant review or resolve a private/latent package. Exercise matching reports and absent/stale/wrong-subject verification, private leakage and missing latent-state/review refusals; held registry/private-store/signing/publication actions stay unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-registry-verification-private-and-latent:end -->
+
+
+
+<!-- tooling-specialist-services-registry-search-and-automation:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service registry-search-and-automation criterion (Open). Sources: [T9](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md).
+
+Implement actual profile/target/capability/safety search filters and structured package detail/update/verification/search/access-denial/policy reports consumable by CI without screen scraping. Exercise real selected filtered results, deny-capability policies and actual view/report identity. Refuse ignored filters, incompatible recommendations, missing review and unauthorized metadata; empty fixtures or supplied respected:true flags do not prove search or noninterference. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-registry-search-and-automation:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer` Safety Explorer / safety-tool maintainer
 
 Status: Open
@@ -229,6 +460,39 @@ Remaining implementation tasks: Expose unsafe/grant/taint/FFI/proof graphs from 
 
 Closing evidence and governing contract: Requested/granted/denied/used authority distinguished? Missing evidence visible? Certificate/checker identities retained? [Safety audit](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md)
 
+
+<!-- tooling-specialist-services-safety-evidence-views:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service safety-evidence-views criterion (Open). Sources: [T12](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md).
+
+Display actual complete known unsafe islands with source/owner/reason/review/evidence, checked safe-wrapper and ownership/lifetime/region/arena facts, FFI ABI/ownership/lifetime/error assumptions, and source-linked capability/taint/AI/supply-chain/proof/check-elision views. Distinguish requested/granted/denied/used authority, taint source/sink/validation/policy and prompt/tool/memory/denial facts. Exercise genuine selected unsafe/FFI/taint products and omitted known islands/sinks, collapsed grants or unsupported wrapper claims. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-safety-evidence-views:end -->
+
+
+
+<!-- tooling-specialist-services-safety-proof-and-missing-evidence:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service safety-proof-and-missing-evidence criterion (Open). Sources: [T12](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md).
+
+Show actual certificate and checker identity, current proof/analysis/audit scope and package unsafe/provenance/SBOM facts. Missing evidence is explicitly missing and fails configured required-evidence audit gates; summaries cannot supply a specialist Governance verdict. Exercise actual evidence/index and wrong/stale/absent checker, missing wrapper precondition, omitted known evidence or false pass refusals. A zero-length supplied unsafe list or proof id proves no safety. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-safety-proof-and-missing-evidence:end -->
+
+
+
+<!-- tooling-specialist-services-safety-structured-audit-products:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service safety-structured-audit-products criterion (Open). Sources: [T12](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md).
+
+Produce stable actual redacted JSON safety/unsafe reports, capability/taint graphs, certificate index, missing-evidence and decision summaries consumed by existing review/CLI authorities. Preserve exact source/artifact/profile/target/policy subjects and genuine accepted/denied outcomes. Exercise real graph/report generation and protected-data export refusal; explorer rendering does not perform independent security/unsafe review, change policy or accept a release. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-safety-structured-audit-products:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer` AI Development / AI-tool maintainer
 
 Status: Open
@@ -236,6 +500,39 @@ Status: Open
 Remaining implementation tasks: Use declared AI artifacts to propose schema-validated patches/tests; compile-check generated source; enforce human-review policy before write and retain provenance
 
 Closing evidence and governing contract: Repository/tool-output instructions remain untrusted data? Unreviewed writes rejected? Applied change has model/prompt/tool/reviewer identity? [AI tooling](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md)
+
+
+<!-- tooling-specialist-services-ai-development-modes-and-boundaries:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ai-development-modes-and-boundaries criterion (Open). Sources: [T13](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md).
+
+Implement Phase11 typed agents for diagnostic/search/explanation/patch/test/docs/refactoring/package-review/audit-assistance/performance/replay-analysis modes with actual model/toolset/memory/policy/output schemas and required checks. Treat repository files/docs/issues/package metadata/tool outputs as untrusted prompt data; authentic current grants constrain every tool call. Exercise actual selected typed mode products and injected authority, hidden/overbroad tool and unsupported provider cases. Scoped native local-model permission does not authorize unrestricted agents/tools, writes or compiler bypass. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ai-development-modes-and-boundaries:end -->
+
+
+
+<!-- tooling-specialist-services-ai-patches-generated-checking-and-review:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ai-patches-generated-checking-and-review criterion (Open). Sources: [T13](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md).
+
+Emit genuine schema-valid plan/patch artifacts and generated-test/source provenance tied to prompts/inputs. Parse and normally check generated source through Reader/macro/type/effect/profile/safety plus applicable package/tests before use; package updates include actual capability/safety diffs. Write actions use explicit human-review policy and required matching actual review before application. Exercise selected valid proposals and invalid schema, unchecked source, missing generated-test provenance, package diff or required review refusals; a validated flag or approved unrelated review cannot authorize a patch. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ai-patches-generated-checking-and-review:end -->
+
+
+
+<!-- tooling-specialist-services-ai-traces-and-applied-provenance:start -->
+
+Apply the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Specialist tool service ai-traces-and-applied-provenance criterion (Open). Sources: [T13](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md).
+
+Record actual plan/patch/output validation, model/prompt/tool/memory/policy/human-review links and final applied-change provenance. Traces are genuinely replayable or explicitly live-only under policy; selected replay verification detects hidden tools and missing records without assuming live calls can repeat. Exercise real selected reports and missing/wrong/stale model/prompt/tool/policy/review, hidden use or false replay claims. Applying changes, calling providers or checking compiler output remains held where restricted; source criteria and generated manifests perform no such action. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-specialist-services-ai-traces-and-applied-provenance:end -->
+
 <!-- tools-implementation-tasks:end -->
 
 ## Historical workflow migration record

@@ -441,6 +441,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Produce actual selected source-mapped JS/mobile/native artifacts and typed host boundaries. Library components do not imply a renderer for every target, provider support, app launch, signing or distribution. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual target-specific debug/source/ABI/runtime assumptions and supported device/counter features. Unsupported/optimized-away/unavailable facts remain explicit; no target or product adoption follows from a tooling view. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

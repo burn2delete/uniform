@@ -375,6 +375,275 @@ All task identities/statuses and historical receipts remain unchanged. Current c
 
 Preserve the human L12 declared/replayable compile-time input and scoped native local-model decisions, pure-constant distinctions, removed project accounting and all real policy/resource/provider constraints. Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no service execution or Main acceptance.
 
+## Complete specialist tool service criteria
+
+[T5](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md), [T6](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md), [T7](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md), [T8](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md), [T9](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md), [T10](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md), [T11](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md), [T12](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md), [T13](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md) define actual existing editor, debugger, docs, dev, registry, IR, profiler, safety and AI-development services. Each complete contract was read directly. Preserve their conditional target/fact availability, exact examples and wider source dependencies. Source hashes and navigation establish no semantic entailment or implementation. Earlier T1-T4 and frozen historical tooling views retain their scope.
+
+### Specialist tool existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| ai | [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| ai-tool | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| build-invalidation | [`build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| build-provenance | [`build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| cli | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| debug | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| dev | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| diagnostics | [`diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`](../../specs/diag-workflow/tasks.md#implementation-tasks) |
+| docs | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| format | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ir | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lsp | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| observability | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| passes | [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| pipeline | [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| profile | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| registry | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| registry-decisions | [`evolution/registry-yank`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| runtime | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| safety | [`tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| schema | [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| security-response | [`evolution/security-response`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| workflow | [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+
+The nine existing specialist tasks own actual service request/state/transformation/measurement/output behavior. Compiler/Build/Runtime/Diag/Auth/Domain producers retain authentic facts, effects and execution; Governance owns distinct audit/yank/security decisions and CLI real public routing. Views and reports cannot issue authority, approvals, proof or live observations. No second engine, renderer, task authority or roadmap is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| lsp-current-state-and-queries | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lsp-checked-edits | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lsp-protocol-and-traces | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| debug-subjects-and-breakpoints | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| debug-inspect-versus-mutate | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| debug-workflow-ai-and-reports | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| docs-real-inputs-and-api | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| docs-examples-and-freshness | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| docs-generated-and-protected-data | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| dev-session-and-incremental-services | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| dev-supervision-and-reload | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| dev-endpoint-replay-and-bug-bundles | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| registry-facts-and-update-diffs | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| registry-verification-private-and-latent | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| registry-search-and-automation | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ir-real-stage-views | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ir-diff-and-preservation | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ir-exports-and-reproduction | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| profiler-measurements-and-identity | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| profiler-comparisons-and-regressions | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| profiler-ai-replay-and-safety | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| safety-evidence-views | [`tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| safety-proof-and-missing-evidence | [`tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| safety-structured-audit-products | [`tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ai-development-modes-and-boundaries | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ai-patches-generated-checking-and-review | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| ai-traces-and-applied-provenance | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+
+### Specialist tool T5 Server State
+
+The server maintains:
+
+- open document text;
+- parsed syntax objects;
+- namespace graph;
+- macro expansion graph;
+- type and effect facts;
+- profile and target selection;
+- diagnostics;
+- package manifest facts;
+- artifact index;
+- cancellation and incremental compilation state.
+
+State updates are incremental but must converge to the same results as CLI
+`gravity check`.
+
+### Specialist tool T6 Debug Data
+
+Debug artifacts include:
+
+- source maps from target code to Gravity spans;
+- symbol tables;
+- type and layout maps;
+- MIR location maps;
+- effect and capability maps;
+- ownership and lifetime facts when available;
+- runtime stack records;
+- workflow event-log indexes;
+- AI model/tool ledger links.
+
+Each target declares which debug features it supports.
+
+### Specialist tool T7 Documentation Inputs
+
+Inputs include:
+
+- namespaces and public vars;
+- doc strings and metadata;
+- type signatures;
+- effect and capability summaries;
+- profile and target availability;
+- schemas and generated API docs;
+- examples and runnable snippets;
+- unsafe and FFI audit summaries;
+- package metadata and SBOM summaries;
+- diagnostics and rule explanations.
+
+### Specialist tool T8 Server Responsibilities
+
+The server handles:
+
+- file watching;
+- incremental check and build;
+- runtime process supervision;
+- hot reload and restart;
+- diagnostic streaming;
+- artifact event streaming;
+- REPL endpoint;
+- debugger endpoint;
+- workflow replay endpoint;
+- AI trace endpoint;
+- structured status API.
+
+Each endpoint declares authority and redaction policy.
+
+### Specialist tool T9 Registry Views
+
+Views include:
+
+- package overview;
+- version history;
+- dependency graph;
+- capability summary;
+- unsafe and audit summary;
+- target support matrix;
+- provenance and signing status;
+- SBOM view;
+- vulnerability/advisory view;
+- update diff;
+- policy compatibility report;
+- private and latent package state.
+
+### Specialist tool T10 Stages
+
+Inspectable stages include:
+
+- reader forms;
+- syntax objects;
+- macro expansion;
+- resolved names;
+- typed core;
+- effect-checked core;
+- ownership and region facts;
+- safety analysis facts;
+- MIR;
+- domain IR;
+- optimized MIR;
+- backend lowering;
+- artifact manifests.
+
+Each stage links back to source spans and upstream stage ids.
+
+### Specialist tool T11 Measured Data
+
+Reports may contain:
+
+- wall time and CPU time;
+- allocation counts and bytes;
+- cache and branch counters where available;
+- latency percentiles;
+- throughput;
+- energy or device counters where supported;
+- model/tool cost for AI workflows;
+- GC or runtime service costs;
+- check elision decisions;
+- specialization and layout choices.
+
+Targets declare which measurements are valid.
+
+### Specialist tool T12 Audit Views
+
+Views include:
+
+- unsafe island index;
+- safe wrapper boundary view;
+- ownership and lifetime facts;
+- region and arena escape analysis;
+- FFI boundary map;
+- capability graph;
+- taint flow graph;
+- AI tool and prompt safety view;
+- supply-chain and dependency safety view;
+- proof certificate view;
+- check elision view.
+
+Each view links to source spans and evidence artifacts.
+
+### Specialist tool T13 Tooling Modes
+
+Supported modes include:
+
+- diagnostic explanation;
+- code search and summarization;
+- patch proposal;
+- test generation;
+- documentation generation;
+- refactoring proposal;
+- package update review;
+- safety audit assistance;
+- performance investigation;
+- workflow replay analysis.
+
+Each mode declares its model, tools, memory, policy, output schema, and
+required checks.
+
+### Specialist tool producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual current versioned source/binding/expansion/type/effect/profile facts; incremental editor state converges to the same CLI subject. |
+| [`build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual affected dependency/current artifact and fact invalidation products; cancelled or stale edits cannot become current results. |
+| [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual T3 source-preserving formatter products and write/generated policy; no editor-only formatter/refactor engine. |
+| [`diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`](../../specs/diag-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Authentic exact codes/spans and source/generated context; service emits no conflicting editor-only meaning. |
+| [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual target-supported frames/stops/values and permitted replay; static artifact views do not manufacture live state. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Authentic separate inspection and mutation scopes, revocation and redaction decisions; debug convenience grants no program authority. |
+| [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual schema ids/formats and checked public API projection facts; generated prose cannot replace schemas or validators. |
+| [`build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Exact current source/compiler/package/artifact identities and audit/manifest facts used for freshness and source links. |
+| [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual permitted process supervision, cleanup/reload/restart, interactive endpoints and replay products with only session grants. |
+| [`build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual deterministic source-change/check/build/artifact node outputs; event labels alone are not a watcher or build. |
+| [`build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual package/profile/target/unsafe/compatibility/signature/SBOM/provenance/revocation facts under current access policy. |
+| [`evolution/registry-yank`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual accountable yank and preserved historical-resolution state; UX presents decisions without issuing them or leaking private existence. |
+| [`evolution/security-response`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual distinct security advisory/incident decisions and current package impact, not a synthesized badge or UX-created governance verdict. |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual selected current stage/input/output/source-generated facts and target assumptions, not a parallel display compiler. |
+| [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Genuine preservation/invalidation/proof/checker evidence for the exact transformation and check-elision subject. |
+| [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual selected source-linked measurements/provider/retry/replay/review events and target counter support; fixed samples prove no run. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Distinct real source/owner/island/wrapper/profile/target specialist verdicts and missing/revalidation conditions; explorer is a consumer. |
+| [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual typed model/prompt/tool/memory/policy/schema/generated-check/review products; native local-model exception does not widen scope. |
+| [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual recorded versus live-only replay and event/provenance semantics, no silent repetition of live side effects. |
+| [`tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | Generated source/patch subject and provenance sent through ordinary checking before use; checked results return from actual owners. |
+| [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual normalized public request/output boundary for selected services; CLI routing and each service keep separate authorities. |
+
+### Specialist tool accepted and refused products
+
+Exercise genuine protocol/editor revisions and checked edits; actual target-bound debugger stops/frames with separate inspection/mutation scope; source-backed docs and checked examples; deterministic dev updates and safe process restart; current registry facts/access/verification/filter results; actual stage/pass/target views; genuine measurements and threshold decisions; complete safety/missing-evidence reports; and typed AI proposal/check/review/provenance products. Instantiate documented CLI/service examples against authentic selected supported products; no example selects all targets, bypasses grants or permits a held action.
+
+Preserve each T5001-T5006, T6001-T6007, T7001-T7007, T8001-T8007, T9001-T9006, T10001-T10006, T11001-T11006, T12001-T12007 and T13001-T13008 meaning at its real boundary, with exact source/generated/revision/session/compiler/profile/target/artifact/provider/grant/policy/schema/checker/model/prompt/tool/review context as applicable, expected/observed facts and redaction. Independently exercise missing, stale, mismatched and unsupported products. Actual protocol transcripts, breakpoint stops, samples and checked/applied changes differ from fixture descriptors, supplied flags or display names.
+
+### Specialist tool authority and evidence limits
+
+Semantic services use authentic current owner facts and converge to matching compiler/CLI state. Earlier source-only services need no absent later facts. Read/inspection is distinct from mutation or effectful evaluation, and inspection of private compiler state grants no public import. Debugger/AI records cannot reveal redacted or no-store data. Actual target counter/debug support is reported partial or unavailable; optimized-away values are never fabricated live. Genuine side-channel/check-elision/audit evidence is consumed under exact scope. Missing known unsafe islands or proofs cannot be hidden to create a pass. Registry views preserve private non-disclosure and genuine latent state/review; package badges cannot replace current reports.
+
+Human L12 declared/replayable inputs and scoped native local-model APIs remain limited to their actual policy. Neither grants unrestricted tooling, secret capture, provider calls, writes or a Phase11 agent bypass. AI write review follows the actual governing policy; no new generic approval ceremony is created by this source plan. T11 actual external billing, target physical limits and performance thresholds retain meaning while removed project work quotas stay removed. Dev-only and simulator/historical products cannot satisfy real release or physical-target claims.
+
+### Specialist tool stage order and implementation disposition
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Current declared protocol, artifact/schema and producer fact interfaces permit bounded service construction. Source-only docs/inspection can use authentic available inputs without whole compiler/runtime completion; semantic views require actual applicable owner facts. Actual matching stage/grant/policy/debug/measurement/replay products precede their protected consumer claims. Checked edits/generated programs and required human review precede application. Real service protocols/clients, independent audit/suites and selected release composition need their own actual evidence. Wider specialist tools are not blanket prerequisites for the selected compiler distribution unless its actual recipe consumes them. Exact shared stage reconciliation and source binding remain separate; no shared route is edited here.
+
+All existing task identities/statuses and historical reviews remain unchanged. Current complete source-owner/interface entailment, independent review, binding and Main integration remain pending. The inherited seven-file bounded tooling inspection demonstrates fixed legacy records/static coverage, not whole service acceptance; this increment expands no implementation audit and executes no actual editor/debugger/docs-example/dev/registry/IR/profiler/audit/AI service, compiler, provider, proof engine, replay or mutation. Full-language/self-hosting/seed-retirement/Phase18 outcomes retain actual separate evidence. Reader contract-coverage reconciliation remains the first implementation increment and D1/C1/C5/C6 ordering stays separate.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no service execution or Main acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

@@ -371,6 +371,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual vectors, provider/policy/audit and component/snapshot/interaction plus old/new stability fixtures for exact subjects. Independent suites, full-language/bootstrap/seed retirement, signed distribution and release acceptance keep separate actual evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Consume actual scoped specialist service/protocol/measurement/report results where the selected recipe or claimed release requires them. Wider tool portfolio, independent acceptance and full-language/bootstrap/seed-retirement remain distinct outcomes. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

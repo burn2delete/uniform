@@ -314,6 +314,10 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual current versioned stage/fact/origin products for semantic lint/REPL queries and normal checked evaluation. Absent later facts are reported honestly; source-only services require only applicable inputs. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current versioned stage/fact/origin/input/output and verifier/preservation products. Source-only views require only applicable inputs, and tools cannot invent later facts or authorize compiler mutation. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration
