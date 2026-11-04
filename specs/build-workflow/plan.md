@@ -316,6 +316,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual module/export stability, opt-in/visibility, compatibility/lifecycle and exact source/build/provenance/signature/SBOM records. Reject internal or unauthorized experimental imports; package metadata alone grants no stability or release approval. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual selected project/lock/target/service and artifact verification products for CLI routing and session identity. Current source roots, output paths and manifest hashes remain bound to their real subjects. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

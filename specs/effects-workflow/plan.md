@@ -473,6 +473,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Check actual crypto and UI handler/command/navigation direct/latent effects, active profile and grants. Pure digests, policy, component/view data and generated code confer no live authority or bypass. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual direct/latent source effects and profile admission before REPL evaluation or protected command calls. Static inspection, formatting and policy reports grant no service execution. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

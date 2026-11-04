@@ -19,6 +19,17 @@ Evidence baseline: [Dispatcher](../../bootstrap/clojure/src/gravity/cli/dispatch
 
 Closing evidence: Command matrix that distinguishes implemented, rejected and unavailable operations
 
+
+<!-- tooling-source-services-command-family-inventory:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service command-family-inventory criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Implement the complete normative check/build/test/run/repl/fmt/lint/doc/package/registry/audit/verify/inspect-ir/profile/ai/explain command families with relevant explicit project/profile/target/package/output-format options, normalized arguments and actual service/output/artifact contracts. Distinguish implemented, refused and unavailable operations and unsupported options. Reject inferred profile/target where the project requires selection and unstable plugin output. A list of command names, static command-set artifact or selected compiler slice does not implement all families. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-command-family-inventory:end -->
+
+
 - [ ] `cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services` Connect check/run/compile/build/test/package/verify to real services
 
 Status: Open
@@ -34,6 +45,17 @@ Foundation requirement gravity/hosted-hello-execution: Compile the D2 hosted hel
 <!-- cli-foundation-hosted-hello:end -->
 
 
+
+<!-- tooling-source-services-compiler-service-routing:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service compiler-service-routing criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Connect the actual public check/build/test/run/package/verify boundary as applicable to real selected compiler, Runtime, Build/package, test and verification producers. Exercise genuine success/failure results, relevant capabilities, exact output/artifact manifests and known diagnostic origin. Preserve actual unavailable/unsupported services and owning failure classes; printing a static proof record or injecting a supplied successful result cannot stand in for the claimed service. The selected compiler recipe keeps its separately declared complete command/option closure and both source extensions. Audit remains in the existing specialist-routing task. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-compiler-service-routing:end -->
+
+
 - [ ] `cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services` Connect REPL/format/lint/doc/inspect/profile/audit/AI/registry/explain services
 
 Status: Open
@@ -41,6 +63,17 @@ Status: Open
 Evidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer-experience/README.md)
 
 Closing evidence: Each declared command has a genuine service result and negative fixture; no metadata-only success
+
+
+<!-- tooling-source-services-specialist-service-routing:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service specialist-service-routing criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md), [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md), [T3](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md), [T4](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md).
+
+Route actual repl/fmt/lint and remaining named specialist families to their existing sole service tasks, retaining normalized requests, current source/session/target/grants, real outputs and refusal diagnostics. CLI owns dispatch/presentation; Tools owns formatter/linter/REPL and other actual services, not parallel implementations. Exercise real selected dispatch/service composition and missing service, unsupported option/format, stale request or metadata-only response refusals. Other T5-T13 services remain wider separate source work. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-specialist-service-routing:end -->
+
 
 - [ ] `cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction` Normalize JSON, text, exit codes and redaction
 
@@ -50,6 +83,39 @@ Evidence baseline: [Diagnostic presentation](../../bootstrap/clojure/src/gravity
 
 Closing evidence: Golden success/error outputs including source, target, grants and redacted secrets
 
+
+<!-- tooling-source-services-structured-output-and-exit-classes:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service structured-output-and-exit-classes criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Implement human text plus structured automation for every human-output command, including JSON diagnostics/reports where applicable. Preserve stable shell exits 0 success,1 failed policy/check,2 usage,3 dependency/registry resolution,4 build-graph/artifact verification,5 runtime execution,6 missing required authority/human review; extra structured subcodes do not change these meanings. Exercise actual golden JSON success and failure for every family and text/JSON consistency, source span or manifest path/profile/target/remediation when known. Do not parse prose or accept a static exit-code table instead of actual public-boundary outcomes. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-structured-output-and-exit-classes:end -->
+
+
+
+<!-- tooling-source-services-visible-authority-and-secret-output:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service visible-authority-and-secret-output criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Expose actual requested/granted/denied authority and human-review conditions; unsafe/AI/network/shell/secret/publish actions cannot run silently. Redact secret values in text, JSON, diagnostic streams, traces and command execution records. Exercise genuine permitted/denied requests and hidden-network, redaction, missing authority and output-path escape refusals; output outside declared build/output roots requires actual grant. Human integration coordination and scoped native local-model APIs confer no shell, tool or publication grant. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-visible-authority-and-secret-output:end -->
+
+
+
+<!-- tooling-source-services-explanation-artifact-and-completion-output:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service explanation-artifact-and-completion-output criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Resolve gravity explain diagnostic codes and artifact ids to actual actionable source/policy context. Artifact-producing build/package commands print and emit genuine paths and manifest hashes; preserve diagnostic streams, execution records, requested traces, shell-completion metadata and golden schemas. Exercise known/unknown diagnostic/artifact resolution and missing/stale/wrong-subject manifest, verification and unsupported JSON/plugin output failures. Artifact labels or unrelated hashes are no verified product. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-explanation-artifact-and-completion-output:end -->
+
+
 - [ ] `cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints` Package and verify user entrypoints
 
 Status: Open
@@ -57,6 +123,17 @@ Status: Open
 Evidence baseline: [Release contract](../../docs/phase-18-binary-distribution-and-seedless-release/README.md)
 
 Closing evidence: Installed invocation, source-extension provenance and unsupported-option rejection
+
+
+<!-- tooling-source-services-installed-scope-and-wider-tools:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service installed-scope-and-wider-tools criterion (Open). Sources: [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Verify the actual installed entrypoint, project/option normalization and artifact locations for its claimed surface, preserving selected compiler versus wider command-family scope. Enumerate all commands/options used by the real selected build/release recipe, retain both .qst/.gravity path/extension provenance and actual produced-executable/public verification results when claimed. Refuse unsupported options and missing artifact/seed-retirement evidence rather than printing success. Existing Phase18/Release gates remain distinct; whole REPL/formatter/linter portfolio completion is no blanket prerequisite unless the actual recipe consumes it. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-installed-scope-and-wider-tools:end -->
+
 <!-- cli-implementation-tasks:end -->
 
 ## Selected compiler command scope

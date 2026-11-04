@@ -19,6 +19,39 @@ Remaining implementation tasks: Implement deterministic layout/comment/metadata 
 
 Closing evidence and governing contract: Reader output and semantic syntax identity preserved? Comments retained? Invalid input rejected? Generated-file policy respected? [Formatter](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md)
 
+
+<!-- tooling-source-services-format-source-preservation:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service format-source-preservation criterion (Open). Sources: [T3](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md).
+
+Implement deterministic whitespace/indentation/line-break/alignment layout over source text, reader grammar version, edition, configuration, comment/metadata positions, optional line width, ignore ranges and generated-source policy. Cover lists/bindings/maps/vectors/namespace/metadata, comment anchors, trailing whitespace/final newline and multiline strings without content mutation. Preserve macro-sensitive syntax identity, comments, metadata and profile semantics. Exercise genuine before/after outputs and malformed source, changed reader meaning, lost comments/metadata or semantic-refactor refusals. Formatting does not require macro expansion or later type/runtime completion. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-format-source-preservation:end -->
+
+
+
+<!-- tooling-source-services-format-cli-and-write-policy:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service format-cli-and-write-policy criterion (Open). Sources: [T3](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md), [T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md).
+
+Implement --check nonzero when changes are needed, explicit diff and policy-controlled --write with discoverable project or CLI configuration. Reject project-edition conflicts, invalid configuration and generated-file writes unless actual generated-source policy permits them; respect declared ignore ranges and authorized output paths. Exercise check-before/check-after, selected allowed writes and default generated-file denial with actual patch/file outputs and no unauthorized mutation. A policy flag or changed-file count is no observed write decision. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-format-cli-and-write-policy:end -->
+
+
+
+<!-- tooling-source-services-format-roundtrip-and-report:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service format-roundtrip-and-report criterion (Open). Sources: [T3](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md).
+
+Compare actual before/after syntax objects or normalized Reader forms and preserve meaningful identities while physical source origins accurately reflect layout. Exercise repeated formatting idempotence, round-trip positives and deliberate mismatch/comment/metadata/string cases. Emit actual formatted files/patches, JSON files/ranges/diagnostics/version, configuration hash, parse failures and round-trip report. Equal supplied hashes, reader-round-trip true or fixture status do not prove preservation; genuine Reader/Syntax products are consumed only for their selected scope. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-format-roundtrip-and-report:end -->
+
+
 - [ ] `tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer` Lint / analysis-tool maintainer
 
 Status: Open
@@ -38,6 +71,39 @@ Foundation requirement gravity/domain-concept-layer-map: Publish a domain-concep
 
 Foundation requirement gravity/qualify-ambiguous-normative-terms: For normative uses whose meaning affects implementation, require an explicit qualified D3 concept or owning contract reference; report the exact ambiguous span and the competing interpretations. Refusals: Reject unqualified uses such as runtime/profile/target or effect/capability where they change the required implementation meaning; ordinary nonnormative prose does not create a new terminology gate. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.
 <!-- tools-foundation-lint:end -->
+
+
+
+<!-- tooling-source-services-lint-rule-classes-and-facts:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service lint-rule-classes-and-facts criterion (Open). Sources: [T4](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md).
+
+Implement syntax/namespace/profile/effect/capability/unsafe/FFI/taint/package/artifact/AI/performance/documentation rules with stable id, severity, named inputs, fixability and profile/target applicability. Prefer authentic current compiler type/effect/profile/grant/artifact facts over text heuristics where available; inspect manifests as well as source and consume actual taint/prompt/tool/policy evidence for AI safety or performance evidence for hints. Exercise real selected facts/rules and unavailable/wrong-target/stale facts, ambient prompt authority and overbroad-tool refusals. A compiler-facts list is not analysis. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-lint-rule-classes-and-facts:end -->
+
+
+
+<!-- tooling-source-services-lint-config-baselines-and-blockers:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service lint-config-baselines-and-blockers criterion (Open). Sources: [T4](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md).
+
+Implement reproducible project-scoped configuration, actual baseline/fail-on-new comparison and policy mapping of severities to warnings or release blockers. Refuse unknown rules, invalid settings, stale changed-span baselines where forbidden and missing actual facts; apply profile/target applicability without inventing support. Exercise genuine unchanged/new/removed/changed-span diagnostics and release-blocker results. Baseline files cannot silently hide new findings, and retired project quotas do not replace real policy semantics. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-lint-config-baselines-and-blockers:end -->
+
+
+
+<!-- tooling-source-services-lint-fixes-explanations-and-exports:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service lint-fixes-explanations-and-exports criterion (Open). Sources: [T4](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md).
+
+Produce actual reader-preserving fixes or route semantic changes through genuine compiler-aware refactoring validation before application. Exercise safe patches and deliberately semantics-changing/unchecked fixes; refuse mutation without valid current source/edition/fact context. Emit source/manifest-path diagnostics with rule/severity/explanation, actual baseline/rule metadata/fix patches/coverage, JSON and SARIF-like exports and stable machine-readable --explain-rule docs. A validated flag, report filename or patch proposal is no applied/refactoring-checked change. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-lint-fixes-explanations-and-exports:end -->
 
 
 - [ ] `tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer` Language Server / editor maintainer
@@ -63,6 +129,50 @@ Status: Open
 Remaining implementation tasks: Implement explicit session state and contract commands; compile/check every evaluation; record redacted transcripts and replay policy for effects
 
 Closing evidence and governing contract: Same legality as compiled code? Grant denial before effect? Load/inspect/evaluate run in actual session? [REPL](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md)
+
+
+<!-- tooling-source-services-repl-session-and-command-state:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service repl-session-and-command-state criterion (Open). Sources: [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md).
+
+Implement actual ephemeral or recorded sessions with project/lockfile hashes, profile/target, namespace, loaded source/artifact roots, grants, evaluation history, artifacts, diagnostics, runtime ledger links and transcript. Expose every required :profile/:target/:ns/:load/:eval/:expand/:type/:effects/:capabilities/:inspect/:artifacts/:diagnostics/:replay/:transcript as tool-callable command forms. Exercise real selected session changes and missing/stale/wrong-session/project/profile/target state refusals; fixed session ids or history rows do not establish interaction. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-repl-session-and-command-state:end -->
+
+
+
+<!-- tooling-source-services-repl-checked-evaluation:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service repl-checked-evaluation criterion (Open). Sources: [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md).
+
+Run actual Reader/macro/type/effect/profile/safety checks before every evaluated source under the same normal compilation semantics. A pure Core expression needs no ambient host grant; effectful evaluation declares profile/target and visible current grants, unsafe forms actual policy/audit. Record participating Runtime ledgers. Exercise matching compiled/REPL results and missing grant/profile, invalid source/generated forms, unsafe policy and REPL-only semantic mismatch refusals with no unauthorized action. Inspection commands cannot bypass evaluation checks or grant execution. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-repl-checked-evaluation:end -->
+
+
+
+<!-- tooling-source-services-repl-inspection-and-transcripts:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service repl-inspection-and-transcripts criterion (Open). Sources: [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md).
+
+Expose actual selected syntax/expansion/type/effect/ownership/capability/profile/artifact/diagnostic facts and preserve syntax metadata/source spans in expansion inspection. Emit authentic evaluation results, views, generated manifests, ledger links and secret-redacted JSONL recorded transcripts; unavailable/stale facts are reported honestly. Exercise real queries, generated origins and transcript outputs plus secret exposure, fabricated facts or wrong source/session refusals. Inspecting macro output is not authorization to run macros or runtime effects. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-repl-inspection-and-transcripts:end -->
+
+
+
+<!-- tooling-source-services-repl-replay-and-hot-loading:start -->
+
+Apply the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Command/source service repl-replay-and-hot-loading criterion (Open). Sources: [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md).
+
+Declare AI/workflow/distributed replay behavior and replay recorded session effects only where the actual effect/provider contract permits it. Track current loaded type/effect/ownership/grant assumptions; reject hot replacement invalidating active checked assumptions or replay of live nondeterminism without matching recorded effects. Exercise genuine selected replay/hot-load results and stale/missing/wrong-subject trace, live replay and invalid replacement cases; a replay label or fixed supplied history proves neither deterministic execution nor valid replacement. Held replay/provider/compiler work stays unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- tooling-source-services-repl-replay-and-hot-loading:end -->
+
 
 - [ ] `tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer` IR Explorer / compiler-tool maintainer
 

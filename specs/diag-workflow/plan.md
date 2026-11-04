@@ -259,6 +259,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Preserve STD18001-STD18013, STD19001-STD19008, STD20001-STD20008 and owning domain/governance meanings with source/generated/call context, expected/observed facts and secret redaction; compare structured diagnostics against actual compatibility baselines. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual stable structured rule/command/session errors, source/manifest facts, explanations and redaction. CLI owns T1 exit presentation; tool-service diagnostics retain their own T2/T3/T4 meanings. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

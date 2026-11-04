@@ -310,6 +310,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Expose authentic versioned pipeline/pass/plugin contexts, output verifiers, preserved/invalidated/regenerated facts and real checker/proof products. Library wrappers create no second engine or hidden state authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual current versioned stage/fact/origin products for semantic lint/REPL queries and normal checked evaluation. Absent later facts are reported honestly; source-only services require only applicable inputs. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

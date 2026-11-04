@@ -451,6 +451,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Implement actual permitted typed crypto-provider/UI adapter boundaries, before-action enforcement, lifetime/cleanup, redaction and Gravity error/source mapping. Fakes and static acceptance are no live operation or mounted UI result. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual permitted interactive evaluation, ledger, replay, cleanup and hot-load decisions. Source/session metadata or injected complete rows are no execution; current authority precedes every protected action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

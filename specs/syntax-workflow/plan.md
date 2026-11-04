@@ -292,6 +292,10 @@ Current source/interface entailment and independent acceptance remain pending. P
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Supply actual immutable syntax values and source/span/hygiene/namespace/metadata/phase/origin transformations; generated diagnostic and fixture APIs preserve these facts. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual immutable source/generated context, meaningful syntax identity and valid facts for transformation/readback. Formatting updates physical layout origins accurately and cannot erase macro-sensitive metadata or hygiene. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

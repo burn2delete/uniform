@@ -185,6 +185,196 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume component/schema/route/style/accessibility, crypto policy/migration and lifecycle/provenance artifacts for diagnostics/docs/snapshots/migration. Artifact readers and report hooks are no provider execution, UI test or signed release. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Complete command and source service criteria
+
+[T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md), [T2](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md), [T3](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md), [T4](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md) govern actual command routing and REPL/formatter/linter service behavior. The complete selected contracts were read directly; T5-T13 specialist source reconciliation remains separate. Preserve current five CLI and twelve Tools task authorities, narrow selected compiler distribution scope and frozen historical views. Source hashes and links are navigation, not semantic or implementation acceptance.
+
+### Command/source existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| build | [`build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| commands | [`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| compiler-routing | [`cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| diagnostics | [`diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts`](../../specs/diag-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| entrypoints | [`cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| format | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lint | [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| pipeline | [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| presentation | [`cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| repl | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| runtime | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| syntax | [`syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations`](../../specs/syntax-workflow/tasks.md#implementation-tasks) |
+| tool-routing | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+
+CLI owns arguments/options, public routing, output/exit contracts and installed entrypoints. Tools owns actual formatter/linter/REPL services; the existing Reader/Syntax/compiler and Runtime producers retain actual parsing/checked facts and permitted execution, with Auth grants, Effects admission and Diag presentation. No duplicate dispatcher, compiler, interactive engine or task authority is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| command-family-inventory | [`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| compiler-service-routing | [`cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| specialist-service-routing | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| structured-output-and-exit-classes | [`cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| visible-authority-and-secret-output | [`cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| explanation-artifact-and-completion-output | [`cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| installed-scope-and-wider-tools | [`cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints`](../../specs/cli-workflow/tasks.md#implementation-tasks) |
+| repl-session-and-command-state | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| repl-checked-evaluation | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| repl-inspection-and-transcripts | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| repl-replay-and-hot-loading | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| format-source-preservation | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| format-cli-and-write-policy | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| format-roundtrip-and-report | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lint-rule-classes-and-facts | [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lint-config-baselines-and-blockers | [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| lint-fixes-explanations-and-exports | [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+
+### Command/source T1 Command Families
+
+The CLI includes:
+
+- `gravity check`;
+- `gravity build`;
+- `gravity test`;
+- `gravity run`;
+- `gravity repl`;
+- `gravity fmt`;
+- `gravity lint`;
+- `gravity doc`;
+- `gravity package`;
+- `gravity registry`;
+- `gravity audit`;
+- `gravity verify`;
+- `gravity inspect-ir`;
+- `gravity profile`;
+- `gravity ai`;
+- `gravity explain`.
+
+Command families may delegate to other tools, but the CLI owns argument
+normalization, output contracts, exit codes, diagnostic routing, and artifact
+locations.
+
+### Command/source T1 Exit Codes
+
+- `0` means success.
+- `1` means diagnostics failed policy or checks.
+- `2` means CLI usage error.
+- `3` means dependency or registry resolution failed.
+- `4` means build graph or artifact verification failed.
+- `5` means runtime execution failed.
+- `6` means required authority or human-review is missing.
+
+Commands may add subcodes in structured output, but shell exit codes remain
+stable.
+
+### Command/source T2 Commands
+
+Required commands include:
+
+- `:profile`;
+- `:target`;
+- `:ns`;
+- `:load`;
+- `:eval`;
+- `:expand`;
+- `:type`;
+- `:effects`;
+- `:capabilities`;
+- `:inspect`;
+- `:artifacts`;
+- `:diagnostics`;
+- `:replay`;
+- `:transcript`.
+
+### Command/source T3 Formatting Inputs
+
+The formatter reads:
+
+- source text;
+- reader grammar version;
+- edition;
+- formatter configuration;
+- comment and metadata positions;
+- optional maximum line width;
+- ignore ranges;
+- generated-source policy.
+
+It produces formatted text and a report describing changed files.
+
+### Command/source T3 Rules
+
+Default rules cover:
+
+- list indentation;
+- binding form indentation;
+- map and vector layout;
+- metadata placement;
+- namespace form layout;
+- multiline string handling without content mutation;
+- comment anchoring;
+- trailing whitespace removal;
+- final newline insertion.
+
+Profile-specific syntax may add rules, but cannot change the core round-trip
+guarantee.
+
+### Command/source T4 Rule Classes
+
+Rule classes include:
+
+- syntax style;
+- namespace hygiene;
+- profile portability;
+- effect visibility;
+- capability minimization;
+- unsafe audit completeness;
+- FFI boundary hygiene;
+- taint and input safety;
+- package and dependency policy;
+- artifact and provenance policy;
+- AI prompt/tool safety;
+- performance hints with evidence;
+- documentation completeness.
+
+Each rule has id, severity, inputs, fixability, and profile applicability.
+
+### Command/source producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual current checked compilation products and generated/source/semantic origins before selected evaluation; no REPL-only semantics or whole-pipeline completion prerequisite for source inspection. |
+| [`syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations`](../../specs/syntax-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual unexpanded before/after syntax and selected Reader round-trip identities, comments/metadata and accurate new physical origins; no macro execution premise. |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual applicable current compiler/manifest fact identities and versions; unknown/unavailable facts reported explicitly rather than fabricated. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Actual operation-specific current grants and policy/audit conditions; session or CLI convenience grants no authority. |
+| [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual direct/latent effect and profile legality before evaluation and replay; pure inspection versus actual call remains distinct. |
+| [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual permitted session evaluation, ledger, cleanup and replay/hot-load outcomes; source inspection never invents live results. |
+| [`diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts`](../../specs/diag-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Authentic structured diagnostic/source/policy/explanation and redaction facts; CLI preserves stable T1 output/exit classes. |
+| [`build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Actual project/lock/target/build/package/service artifacts and verified output paths/hashes; static artifact names prove no command result. |
+| [`tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Actual deterministic patch/check/write/round-trip and JSON/report results; public CLI invokes this existing service authority. |
+| [`tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Actual current rule/config/baseline/fix/refusal/export products; CLI dispatch does not implement or accept analysis. |
+| [`tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Actual session/command/evaluation/transcript products and refusals; static session records do not prove interaction. |
+| [`cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services`](../../specs/cli-workflow/tasks.md#implementation-tasks) | [`cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints`](../../specs/cli-workflow/tasks.md#implementation-tasks) | Real selected public command/service composition for the installed boundary; wider tools and compiler release scope remain distinct. |
+
+### Command/source accepted and refused products
+
+Exercise each actual command family with golden structured success/failure and its stable T1 exit class. Preserve the documented check/build/explain/audit invocation meanings without treating examples as a waiver of genuine grants or missing service artifacts. Real Core REPL expressions, granted hosted sessions and normal compiled semantics compare on identical selected forms; secret-redacted JSONL and matching permitted replay/hot-load outcomes remain genuine products. Real formatter output preserves reader/macro-sensitive identities/comments/metadata and new accurate physical origins without macro expansion; check/diff/write/config/generated-source policies are observed, not supplied flags. Lint consumes actual applicable compiler/manifest/taint/policy facts, checks baselines, validates fixes and emits usable rule explanations/JSON/SARIF-like artifacts.
+
+Preserve every T1001-T1008, T2001-T2007, T3001-T3006 and T4001-T4006 meaning with actual source or manifest/session/command/config/fact/profile/target/grant context, expected/observed outcomes and redaction. Reject missing/stale/wrong-subject products, unavailable facts, unvalidated fixes, invalid replay/hot replacement, hidden network, unauthorized writes and metadata-only success at their actual boundaries. Do not turn source inspection into effectful execution or a local protocol fixture into real service acceptance.
+
+### Bounded current implementation inspection
+
+Seven actual source files were read and their base/Main bytes compared exactly: gravity/tooling.clj, CLI dispatch plus compiler/platform command maps, and the three semantic_mid P13 artifact builders. The tooling facade explicitly declares static coverage/source evidence and no service admission; its unsupported list includes formatter/linter/REPL/LSP/debugger and other services. coverage-record reads caller-provided coverage/status/round-trip/compiler-fact/session fields. The P13 builders return fixed CLI command/exit, REPL history, formatter/linter and other records with supplied complete/true statuses; their merge does not execute those services. The bounded dispatcher routes real/injected selected compiler/build operations and legacy artifact operations. This proves source record construction and routing structure only, not whole CLI coverage or service behavior. It does not establish absence of every other implementation elsewhere, and no command/session/compiler/service test was executed here. Existing accepted narrower evidence remains unchanged; actual whole-service implementation and independent acceptance remain unassessed.
+
+### Command/source stage order and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Selected raw source/config/grammar and authentic unexpanded Reader/Syntax products permit formatter development without macro expansion or whole compiler completion. Actual current fact interfaces permit bounded lint and REPL inspection development; only available matching facts support their semantic claims. Real checked source and current authority/policy precede effectful evaluation, actual service results precede public command composition, and exact independent suite/release artifacts precede their acceptance. Keep existing selected compiler recipe scope and the sole shared dependency representation; no blanket full-tool portfolio prerequisite is added. Exact stage reconciliation/source binding remains separate; no shared route is edited here.
+
+All task identities/statuses and historical receipts remain unchanged. Current complete source-owner/interface entailment, independent review, binding and Main integration are pending; actual source inspection is not a completed implementation audit. Keep selected compiler CLI acceptance distinct from wider T1 and Tools services, and all full-language/self-hosting/seed-retirement/Phase18 obligations visible. Reader contract-coverage reconciliation remains the first actual implementation increment; D1/C1/C5/C6 ordering stays separate.
+
+Preserve the human L12 declared/replayable compile-time input and scoped native local-model decisions, pure-constant distinctions, removed project accounting and all real policy/resource/provider constraints. Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no service execution or Main acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration
