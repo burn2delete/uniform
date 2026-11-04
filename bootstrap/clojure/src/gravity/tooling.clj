@@ -5,6 +5,7 @@
 
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
+ :native-assembly-boundary :p13-native-artifact-construction,
  :public-api
  {native-task-statuses
   {:arglists ([operations]),
@@ -117,6 +118,25 @@
   {:arglists ([operations module formatter-fixture]),
    :admission :none,
    :native-compatibility-only? true},
+  native-experience-artifact
+  {:arglists ([operations source-path module source-overrides]),
+   :admission :none,
+   :native-compatibility-only? true,
+   :operation-suppliers
+   [:artifact-id
+    :accepted-fixtures
+    :rejected-fixtures
+    :task-statuses
+    :artifact-keys
+    :artifact-values
+    :conformance-evidence
+    :diagnostic-ids
+    :diagnostic-stream
+    :document-records
+    :documents
+    :governing-documents
+    :coverage-record
+    :validate-artifact]},
   native-validate-documentation!
   {:arglists ([operations module documentation-artifact]),
    :admission :none,
@@ -168,6 +188,18 @@
    :native-compatibility-only? true,
    :operation-suppliers
    [:task-id :diagnostic-document :diagnostic-ids :source-span]},
+  native-compiled-artifact
+  {:arglists
+   ([operations
+     source-path
+     source-text
+     module
+     compiled-plan
+     run-output]),
+   :admission :none,
+   :native-compatibility-only? true,
+   :operation-suppliers
+   [:present :sha256 :plan-report :compiled-rejected-fixtures]},
   native-metadata-suite-present?
   {:arglists ([module]),
    :admission :none,
@@ -268,7 +300,14 @@
    :original-predicates
    :refusal-order
    :diagnostic-precedence
-   :source-and-plan-identity]},
+   :source-and-plan-identity],
+  :native-artifact-construction
+  [:caller-preludes
+   :construction-and-validation-order
+   :late-function-and-catalog-reads
+   :ignored-callback-return-values
+   :exception-identity
+   :source-plan-report-and-artifact-identities]},
  :unsupported
  [:formatter
   :linter
@@ -300,14 +339,15 @@
   :late-native-operation-suppliers
   :trusted-native-catalog-suppliers
   :captured-native-record-factories
-  :native-plan-and-module],
+  :native-plan-and-module
+  :caller-produced-native-module-plan-and-output
+  :source-text-for-hashing
+  :late-native-construction-suppliers],
  :trusted-native-operation-suppliers? true,
  :namespace gravity.tooling,
  :diagnostic-ownership
- {:native-builder :none,
-  :source-rules :gravity.self-hosting.w5-tooling-conformance-verifier,
+ {:bootstrap-admission-and-publication :existing-owner,
   :compiler-and-runtime-failures :propagated-unchanged,
-  :bootstrap-admission-and-publication :existing-owner,
   :native-metadata-decides
   ["T1003"
    "T2002"
@@ -322,10 +362,14 @@
    "T11003"
    "T12001"
    "T13002"],
-  :native-metadata-transport :existing-p13-operation,
-  :native-records :existing-p13-rule-decisions-and-payload-assembly,
   :native-record-transport
-  :existing-failure-span-and-digest-operations},
+  :existing-failure-span-and-digest-operations,
+  :native-records :existing-p13-rule-decisions-and-payload-assembly,
+  :native-metadata-transport :existing-p13-operation,
+  :source-rules :gravity.self-hosting.w5-tooling-conformance-verifier,
+  :native-artifact-construction
+  :original-validation-and-callback-failures,
+  :native-builder :none},
  :artifact-outputs
  [:legacy-coverage-data
   :source-owned-static-evidence-result
@@ -337,7 +381,9 @@
   :native-p13-record-views
   :native-artifact-validation-outcome
   :unchanged-p13-diagnostic
-  :native-plan-report-and-digest],
+  :native-plan-report-and-digest
+  :native-experience-artifact
+  :native-compiled-tooling-artifact],
  :issues-certificates? false,
  :contract-boundary :native-coverage-data-and-static-source-evidence}
 )
@@ -1335,7 +1381,204 @@
     (assoc report-base
            :report-id (str "sha256:" (((:sha256 operations)) (pr-str report-base))))))
 
+(defn native-experience-artifact
+  [operations source-path module source-overrides]
+  (let [input-id (((:artifact-id operations)) {:source-path source-path
+                                  :module (:module module)
+                                  :task "P13-T01-T06"
+                                  :documents ((:documents operations))})
+        diagnostic-stream (((:diagnostic-stream operations)) source-path input-id)
+        tooling-artifacts (((:artifact-values operations)))
+        artifact-base
+        (merge
+         {:kind :gravity/stage0-tooling-experience-artifact
+          :phase "13"
+          :task "P13-T01-T06"
+          :document-set ((:documents operations))
+          :governing-documents ((:governing-documents operations))
+          :pass {:name :phase13-tooling-experience
+                 :input :ordinary-gravity-source
+                 :output :tooling-experience
+                 :requires ((:artifact-keys operations))
+                 :preserves [:compiler-truth :profile :target :effect
+                             :capability :runtime :safety :artifact-lineage
+                             :source-spans :redaction-policy
+                             :human-review-policy]
+                 :emits [:document-contracts :accepted-tooling-fixtures
+                         :rejected-tooling-fixtures
+                         :tooling-conformance-evidence
+                         :tooling-diagnostic-stream]
+                 :rejects ((:diagnostic-ids operations))}
+          :source-overrides source-overrides
+          :module (select-keys module [:module :source-path :profile :target
+                                       :effects :capabilities :safety
+                                       :metadata])
+          :document-contracts (((:document-records operations)))
+          :accepted-tooling-fixtures (((:accepted-fixtures operations)))
+          :rejected-tooling-fixtures (((:rejected-fixtures operations)))
+          :tooling-conformance-evidence (((:conformance-evidence operations)))
+          :tooling-diagnostic-stream diagnostic-stream
+          :tooling-experience-results
+          {:documents ((:documents operations))
+           :tasks (((:task-statuses operations)))
+           :document-contracts 13
+           :artifact-families (count ((:artifact-keys operations)))
+           :accepted-fixtures 13
+           :rejected-fixtures 13
+           :conformance-records 13
+           :diagnostic-count (count ((:diagnostic-ids operations)))
+           :status :complete}
+          :diagnostics []}
+         tooling-artifacts)
+        _ (((:validate-artifact operations)) source-path artifact-base)
+        capability-proof (((:coverage-record operations)) artifact-base)]
+    (assoc artifact-base
+           :capability-based-proof capability-proof
+           :artifact-id (((:artifact-id operations)) (assoc artifact-base
+                                               :capability-based-proof
+                                               capability-proof)))))
+
+(defn native-compiled-artifact
+  [operations source-path source-text module compiled-plan run-output]
+  (let [tooling-report (((:plan-report operations)) compiled-plan
+                                                            module)
+        manifest (:tooling-manifest tooling-report)
+        cli-command-set (:cli-command-set-record tooling-report)
+        repl-session (:repl-session-record tooling-report)
+        formatter (:formatter-record tooling-report)
+        linter (:linter-record tooling-report)
+        lsp (:lsp-record tooling-report)
+        debugger (:debugger-record tooling-report)
+        documentation (:documentation-record tooling-report)
+        dev-server (:dev-server-record tooling-report)
+        registry (:registry-ux-record tooling-report)
+        ir-inspector (:ir-inspector-record tooling-report)
+        profiler (:profiler-record tooling-report)
+        safety-audit (:safety-audit-record tooling-report)
+        ai-tooling (:ai-tooling-record tooling-report)
+        conformance (:tooling-conformance-results tooling-report)
+        proof {:compiled-tooling-gate-validated? true
+               :tooling-manifest-recorded?
+               (= :complete (:status manifest))
+               :cli-and-repl-recorded?
+               (boolean
+                (and (contains? (set (get-in cli-command-set
+                                              [:capability-prompts
+                                               :shown-denials]))
+                                 :shell/exec)
+                     (seq (:capability-grants repl-session))))
+               :formatter-linter-docs-recorded?
+               (boolean
+                (and (true? (:reader-round-trip formatter))
+                     (set/subset?
+                      #{:types :effects :capabilities :profile :artifacts}
+                      (set (:compiler-facts linter)))
+                     (true? (:structured-docs documentation))
+                     (zero? (get-in documentation
+                                    [:example-validation-report :failed]))))
+               :lsp-debugger-recorded?
+               (boolean
+                (and (true? (:diagnostics-match-cli lsp))
+                     (= :passed (get-in debugger
+                                        [:source-map-validation :status]))
+                     (not (some #(and (true? (:redacted %))
+                                      (true? (:accessed? %)))
+                                (:variable-reports debugger)))))
+               :dev-registry-inspector-recorded?
+               (boolean
+                (and (some #(= :restart (:decision %))
+                           (:hot-reload-decisions dev-server))
+                     (true? (get-in registry
+                                    [:update-diff
+                                     :capability-diff-visible]))
+                     (((:present operations)) (:source-span-maps ir-inspector))))
+               :profiler-safety-ai-recorded?
+               (boolean
+                (and (((:present operations)) (get-in profiler
+                                           [:check-elision-report
+                                            :evidence]))
+                     (((:present operations)) (:proof-index safety-audit))
+                     (true? (get-in ai-tooling
+                                    [:patch-artifact :validated]))
+                     (every? #(= :passed %)
+                             (vals (:validation-report ai-tooling)))))
+               :compiled-plan-executed? (= "core-app\ngravity:19:2\n(:ok 19)\n"
+                                          run-output)
+               :rejected-diagnostics-covered?
+               (= #{"T1003" "T2002" "T3002" "T4003" "T5001"
+                    "T6004" "T7001" "T8003" "T9001" "T10002"
+                    "T11003" "T12001" "T13002"}
+                  (set (:required-diagnostic-ids conformance)))
+               :limitations {:clojure-instruction-runner? true
+                             :production-cli? false
+                             :interactive-repl-server? false
+                             :lsp-server-transport? false
+                             :debugger-runtime-session? false
+                             :dev-server-process? false
+                             :registry-ui-service? false
+                             :profiler-runtime? false
+                             :ai-patch-application? false
+                             :self-hosted-tooling? false
+                             :next-required-capability
+                             :compile-and-run-real-tooling-slices}
+               :status :complete}
+        artifact-base
+        {:kind :gravity/stage0-hosted-core-compiled-tooling-proof
+         :phase "13"
+         :task "P13-S1"
+         :governing-documents ["D1" "T1-T13"]
+         :source {:path source-path
+                  :sha256 (str "sha256:" (((:sha256 operations)) source-text))}
+         :compiled-plan (select-keys compiled-plan
+                                     [:kind :plan-id :entrypoint
+                                      :instruction-summary :effect-summary])
+         :tooling-report
+         (select-keys tooling-report
+                      [:kind :report-id :document-set
+                       :compiled-plan-id
+                       :tooling-manifest
+                       :cli-command-set-record
+                       :repl-session-record
+                       :formatter-record
+                       :linter-record
+                       :lsp-record
+                       :debugger-record
+                       :documentation-record
+                       :dev-server-record
+                       :registry-ux-record
+                       :ir-inspector-record
+                       :profiler-record
+                       :safety-audit-record
+                       :ai-tooling-record
+                       :tooling-ui-data-model-record
+                       :tooling-conformance-results
+                       :diagnostics])
+         :accepted-run {:command (str "clojure -M:gravity run-compiled "
+                                      source-path)
+                        :stdout run-output}
+         :proof-command (str "clojure -M:gravity hosted-core-compiled-tooling "
+                             source-path)
+         :rejected-fixtures ((:compiled-rejected-fixtures operations))
+         :trusted-boundary {:compiler :clojure/jvm
+                            :runtime
+                            :gravity.runtime/stage0-clojure-jvm-instruction-runner
+                            :instruction-plan? true
+                            :clojure-instruction-runner? true
+                            :production-cli? false
+                            :interactive-repl-server? false
+                            :lsp-server-transport? false
+                            :debugger-runtime-session? false
+                            :dev-server-process? false
+                            :registry-ui-service? false
+                            :profiler-runtime? false
+                            :ai-patch-application? false
+                            :self-hosted-tooling? false}
+         :capability-based-proof proof}]
+    (assoc artifact-base
+           :artifact-id (str "sha256:" (((:sha256 operations)) (pr-str artifact-base))))))
+
 (doseq [operation [#'coverage-record #'check-evidence #'execute-evidence #'verify-evidence
                   #'native-metadata-suite #'native-metadata-suite-present? #'native-metadata-fail! #'native-validate-cli! #'native-validate-repl! #'native-validate-formatter! #'native-validate-linter! #'native-validate-lsp! #'native-validate-debugger! #'native-validate-documentation! #'native-validate-dev-server! #'native-validate-registry-ux! #'native-validate-ir-inspector! #'native-validate-profiler! #'native-validate-safety-audit! #'native-validate-ai-tooling! #'native-validate-tooling!
-                  #'native-document-number #'native-task-id #'native-source-overrides #'native-diagnostic-document #'native-fail! #'native-validate-source-overrides! #'native-document-record #'native-document-records #'native-accepted-fixtures #'native-rejected-fixtures #'native-conformance-evidence #'native-diagnostic-stream #'native-present? #'native-validate-artifact! #'native-task-statuses #'native-core-records #'native-extended-records #'native-artifact-values #'native-plan-report]]
+                  #'native-document-number #'native-task-id #'native-source-overrides #'native-diagnostic-document #'native-fail! #'native-validate-source-overrides! #'native-document-record #'native-document-records #'native-accepted-fixtures #'native-rejected-fixtures #'native-conformance-evidence #'native-diagnostic-stream #'native-present? #'native-validate-artifact! #'native-task-statuses #'native-core-records #'native-extended-records #'native-artifact-values #'native-plan-report
+                  #'native-experience-artifact #'native-compiled-artifact]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

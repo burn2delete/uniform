@@ -45,7 +45,7 @@
 (deftest native-metadata-contract-covers-all-public-operations
   (let [publics (ns-publics 'gravity.tooling)
         contract (:gravity/namespace-contract (meta #'tooling/native-validate-tooling!))]
-    (is (= 40 (count publics)))
+    (is (= 42 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= :stage0-tooling-compiled-gate (:native-metadata-boundary contract)))
     (doseq [[name operation] publics]
@@ -305,7 +305,7 @@
 (deftest native-record-contract-and-presence-keep-their-limited-boundary
   (let [contract (:gravity/namespace-contract (meta #'tooling/native-validate-artifact!))]
     (is (= :p13-native-records-and-validation (:native-record-boundary contract)))
-    (is (= 19 (count (filter #(contains? (val %) :operation-suppliers) (:public-api contract)))))
+    (is (= 21 (count (filter #(contains? (val %) :operation-suppliers) (:public-api contract)))))
     (is (= '[clojure.set clojure.string] (get-in contract [:dependency-direction :requires])))
     (is (false? (:authenticates-inputs? contract)))
     (is (false? (:performs-tool-services? contract))))
@@ -419,3 +419,121 @@
             wrapper (native-failure #(bootstrap/p13-tooling-validate! path value))]
         (is (= id (get-in direct [:data :id])))
         (is (= wrapper direct))))))
+
+(defn- native-assembly-operations []
+  (merge (native-record-operations)
+         {:artifact-id (fn [] bootstrap/c4-artifact-id)
+          :accepted-fixtures (fn [] bootstrap/p13-accepted-tooling-fixtures)
+          :rejected-fixtures (fn [] bootstrap/p13-rejected-tooling-fixtures)
+          :task-statuses (fn [] bootstrap/p13-task-statuses)
+          :diagnostic-stream (fn [] bootstrap/p13-tooling-diagnostic-stream)
+          :document-records (fn [] bootstrap/p13-tooling-document-records)
+          :conformance-evidence (fn [] bootstrap/p13-tooling-conformance-evidence)
+          :coverage-record (fn [] bootstrap/p13-tooling-proof)
+          :validate-artifact (fn [] bootstrap/p13-tooling-validate!)
+          :plan-report (fn [] bootstrap/stage0-compiled-plan-tooling-report)}))
+
+(defn- native-experience-request [extension]
+  (let [path (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/tooling/accepted/experience-records" extension)))
+        text (slurp path) forms (mapv :form (bootstrap/read-source-form-records path text))]
+    {:path path :text text :module (bootstrap/parse-module path forms)}))
+
+(defn- native-compiled-request [extension]
+  (let [path (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/tooling/accepted/metadata-checks" extension)))
+        text (slurp path) expanded (bootstrap/macro-source-artifact path text)
+        module (assoc (:module expanded) :forms (:expanded-forms expanded))
+        plan (bootstrap/stage0-compiled-core-plan path text module)]
+    {:path path :text text :module module :plan plan :output (bootstrap/execute-stage0-compiled-plan plan)}))
+
+(deftest native-construction-contract-keeps-admission-and-execution-outside
+  (let [contract (:gravity/namespace-contract (meta #'tooling/native-experience-artifact))]
+    (is (= :p13-native-artifact-construction (:native-assembly-boundary contract)))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:performs-tool-services? contract)))
+    (is (= :none (get-in contract [:public-api 'native-compiled-artifact :admission])))))
+
+(deftest native-construction-matches-real-paired-callers-and-recomputed-identities
+  (doseq [extension [".gravity" ".qst"]]
+    (let [{:keys [path text module]} (native-experience-request extension)
+          artifact (tooling/native-experience-artifact (native-assembly-operations) path module {})]
+      (is (= (bootstrap/tooling-experience-source-artifact path text) artifact))
+      (is (= (:artifact-id artifact) (bootstrap/c4-artifact-id (dissoc artifact :artifact-id)))))
+    (let [{:keys [path text module plan output]} (native-compiled-request extension)
+          artifact (tooling/native-compiled-artifact (native-assembly-operations) path text module plan output)]
+      (is (= "tooling-metadata\n" output))
+      (is (= (bootstrap/hosted-core-compiled-tooling-proof-source-artifact path text) artifact))
+      (is (= (:plan-id plan) (get-in artifact [:compiled-plan :plan-id])))
+      (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in artifact [:source :sha256])))
+      (is (= (:artifact-id artifact) (str "sha256:" (bootstrap/sha256-hex (pr-str (dissoc artifact :artifact-id))))))
+      ;; The legacy label remains data even when the stdout comparison is false.
+      (is (false? (get-in artifact [:capability-based-proof :compiled-plan-executed?]))))))
+
+(deftest experience-construction-reads-the-final-identity-root-after-earlier-callbacks
+  (let [{:keys [path module]} (native-experience-request ".gravity")
+        identity-var #'bootstrap/c4-artifact-id
+        stream bootstrap/p13-tooling-diagnostic-stream calls (atom [])
+        result (with-redefs-fn
+                 {identity-var (fn [_] (swap! calls conj :before) "before")
+                  #'bootstrap/p13-tooling-diagnostic-stream
+                  (fn [source input]
+                    (alter-var-root identity-var (constantly (fn [_] (swap! calls conj :after) "after")))
+                    (stream source input))}
+                 #(tooling/native-experience-artifact (native-assembly-operations) path module {}))]
+    (is (= [:before :after] @calls))
+    (is (= "before" (get-in result [:tooling-diagnostic-stream :input-artifact])))
+    (is (= "after" (:artifact-id result)))))
+
+(deftest experience-refusal-precedes-coverage-and-final-identity-and-keeps-exception-identity
+  (let [{:keys [path module]} (native-experience-request ".gravity")
+        error (ex-info "original artifact validation refusal" {:id "ORIGINAL"}) calls (atom [])
+        result (with-redefs [bootstrap/c4-artifact-id (fn [_] (swap! calls conj :input-id) "input")
+                             bootstrap/p13-tooling-validate! (fn [& _] (swap! calls conj :validation) (throw error))
+                             bootstrap/p13-tooling-proof (fn [_] (swap! calls conj :coverage))]
+                 (try (tooling/native-experience-artifact (native-assembly-operations) path module {})
+                      (catch Throwable observed observed)))]
+    (is (identical? error result))
+    (is (= [:input-id :validation] @calls)))
+  (let [{:keys [path module]} (native-experience-request ".gravity") calls (atom [])
+        result (with-redefs [bootstrap/p13-tooling-validate! (fn [& _] (swap! calls conj :validation) false)
+                             bootstrap/p13-tooling-proof (fn [_] (swap! calls conj :coverage) {:supplied :data})]
+                 (tooling/native-experience-artifact (native-assembly-operations) path module {}))]
+    (is (= [:validation :coverage] @calls))
+    (is (= {:supplied :data} (:capability-based-proof result)))))
+
+(deftest compiled-construction-keeps-report-failure-and-digest-before-serialization
+  (let [{:keys [path text module plan output]} (native-compiled-request ".gravity")
+        error (ex-info "original native report failure" {}) calls (atom [])
+        result (with-redefs [bootstrap/stage0-compiled-plan-tooling-report (fn [& _] (throw error))
+                             bootstrap/sha256-hex (fn [_] (swap! calls conj :digest))]
+                 (try (tooling/native-compiled-artifact (native-assembly-operations) path text module plan output)
+                      (catch Throwable observed observed)))]
+    (is (identical? error result))
+    (is (empty? @calls)))
+  (let [{:keys [path text module plan output]} (native-compiled-request ".gravity")
+        report (bootstrap/stage0-compiled-plan-tooling-report plan module)
+        digest #'bootstrap/sha256-hex calls (atom [])
+        result (with-redefs-fn
+                 {#'bootstrap/stage0-compiled-plan-tooling-report (fn [& _] report)
+                  digest (fn [value] (swap! calls conj [:before value]) "before")
+                  #'clojure.core/pr-str (fn [_]
+                                         (alter-var-root digest (constantly (fn [_] "after")))
+                                         (swap! calls conj :serialized) "serialized-native-artifact")}
+                 #(tooling/native-compiled-artifact (native-assembly-operations) path text module plan output))]
+    (is (= "sha256:before" (get-in result [:source :sha256])))
+    (is (= "sha256:before" (:artifact-id result)))
+    (is (= [[:before text] :serialized [:before "serialized-native-artifact"]] @calls))))
+
+(deftest real-source-refusals-precede-both-native-construction-handoffs
+  (doseq [document bootstrap/p13-tooling-documents]
+    (let [path (str "bootstrap/clojure/fixtures/rejected/" (bootstrap/p13-tooling-rejected-fixture-names document))
+          constructed (atom 0)
+          result (with-redefs [tooling/native-experience-artifact (fn [& _] (swap! constructed inc))]
+                   (native-failure #(bootstrap/tooling-experience-file-artifact path)))]
+      (is (= (bootstrap/p13-tooling-rejected-diagnostics document) (get-in result [:data :id])))
+      (is (zero? @constructed))))
+  (doseq [{:keys [fixture diagnostic]} bootstrap/stage0-compiled-tooling-rejected-fixtures]
+    (let [constructed (atom 0)
+          result (with-redefs [tooling/native-compiled-artifact (fn [& _] (swap! constructed inc))]
+                   (native-failure #(bootstrap/hosted-core-compiled-tooling-proof-source-artifact fixture (slurp fixture))))]
+      (is (= diagnostic (get-in result [:data :id])))
+      (is (zero? @constructed)))))

@@ -41,6 +41,24 @@ identity, physical positive/negative fixtures, language/ownership and lint
 checks, contract validators, independent adversarial review, own CI/artifact
 audit and exact clean current-main integration preflight.
 
+The working extraction passes 26 owning tests / 468 assertions. Both real
+source spellings match the existing callers and recomputed identities.
+Twenty-six physical refusal cases stop before the new construction handoffs.
+Adversarial cases preserve validation-before-coverage/final-identity order,
+late final identity lookup, ignored callback return behavior, report failure,
+digest-before-serialization lookup and original exception identity. Pinned
+stage/test lint reports zero errors or warnings. Exact source checks preserve
+both constructor tails, both caller preludes, forty prior stage bodies and
+every surrounding source byte. The extraction helper's initial unmatched
+parenthesis stopped before mutation; its source and nonpass log are retained.
+Clean committed capture, remaining integration checks, independent acceptance
+and own exact-current-main CI/preflight remain outstanding.
+
+The existing Bootstrap P13 controls also pass 3 / 156; language/ownership
+gates pass 48 / 1190 with zero skipped namespaces. Document, roadmap and
+workstream validators pass. These remain ordinary development observations
+and confer no admission or retirement authority.
+
 ## Unsupported boundaries
 
 The complete/proof/task labels and capability, review, redaction and validation
