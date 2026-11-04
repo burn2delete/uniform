@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: library foundations STD1/STD2/STD4/STD5/STD6.
-The [current checkpoint](#library-foundation-source-continuation)
+Latest source continuation: concurrency, filesystem and network libraries STD7-STD9.
+The [current checkpoint](#concurrency-and-io-library-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7652,3 +7652,119 @@ implementation increment remains Reader contract coverage. All actual holds and
 the stopped C7 handoff remain; no retry/transfer, other-chat message, reviewer or
 automation wake, aggregate publication or integration occurs. Reconciliation,
 implementation, independent acceptance and integration remain distinct.
+
+## Concurrency and IO library source continuation
+
+Source proposal: `76df109de84e9d1519bf74349786ef8025f10c56`.
+Predecessor checkpoint: `97191c4a6407b34219003eb02da93c8149929017`.
+The [complete concurrency and IO library criteria](../specs/stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria)
+refine the complete current STD7, STD8 and STD9 contracts as author proposals.
+All three canonical files match their preserved census bytes and hashes. Their
+27 sections, 217 original facet identities, 69 occurrence identities and eighteen
+original owner obligations remain visible. Counts and source spans establish
+custody, not complete predicate entailment or callable implementation.
+
+Thirty-one criteria comprise 23 new clauses in eight existing task bodies across
+four authorities and eight unchanged concurrency predicates retaining 6,673 exact
+bytes and original roles. Twelve plans and the existing Library spec expose
+producer/consumer boundaries. No new task, task authority, feature package or
+test is added. All original status, checkbox, ownership and narrow evidence
+qualifications remain; all eight amended bodies were already amended earlier in
+this branch, so original body comparisons stay 27 identical and 112 amended.
+
+The Library routes now require real task/future/channel/actor/lock/atomic/
+scheduler/replay helper APIs; typed streams, handles and paths; explicit roots,
+normalization, symlink/traversal/watch and encoding policies; actual atomic file
+replacement with declared durability; and typed URL/socket/HTTP/body/server/
+TLS/authentication/redaction behavior. The existing Runtime2/Runtime4/Runtime5
+tasks respectively execute deterministic cleanup, no-repeat recorded replay,
+and actual service enforcement plus redacted observation. The unchanged
+Runtime3 predicate retains real scheduler/atomic/message execution. Effects
+checks real direct/latent actions and forbidden blocking, Auth produces actual
+operation grants, and unchanged Legality predicates retain race/capture,
+profile, classification and preservation responsibilities.
+
+Six census owners have no original task reference. Their scoped routes preserve
+that nil history and the original obligation instead of treating an identifier
+match as whole-owner coverage. Existing concurrency allocation is retained.
+The existing Open future `services` outcome owns wider typed routes/handlers/
+jobs/CRUD integration; Library's callable HTTP consumer is distinct. Schema's
+validator producer and the existing future `schema/checked-consumer-projection`
+remain separate from Library's actual request/response/sink validation.
+Transport authentication does not establish schema or sink validation. The
+historical R8-only schema witness keeps its original review scope, with no new
+consumption or whole-owner reassignment. All eighteen whole attached-owner
+predicates remain unassessed pending independent current entailment review.
+
+All forty future predicate, role and complete source-container records remain
+exact; unlike the preceding foundation change, this change needs no container
+successor or future-selector alteration. No future producer predicate is edited
+or accepted. Prior STD1-STD6 and every other source/refinement/review record stay
+exact outside the six current pin/comparison fields, pending fingerprint and new
+service record. The projection tool adds only one source-view export key; test
+and dependency-tool code remain unchanged.
+
+Five STD7 source occurrences contain mixed budget wording. They retain exact
+source spans and explicit dispositions: project work/call/token/fuel/input/
+attempt quotas are superseded, while policy, authority, required human review,
+eval-event order and actual external billing conditions remain. Declared service
+timeout/retry/idempotency/body/stream/rate policy, physical executor/mailbox/
+storage limits, lifetimes and durability remain runtime semantics; they cannot
+restore arbitrary compiler/project admission quotas. All twenty-four STD7/8/9
+diagnostic identities remain required future behavior, not observed emissions.
+
+Read-only inspection of the existing p16 wrapper and phase roadmap again finds
+summary-derived counts and a complete result flag. That inspection establishes
+no new callable scheduler/filesystem/HTTP/TLS operation or whole-module support.
+No prior accepted receipt is discarded or promoted; other implementation is
+unassessed and actual service execution remains unrun.
+
+Validation of this source and metadata proposal:
+
+- Three focused crosswalk tests pass with 46,334 assertions, zero failures and
+  zero errors under a 768 MB host heap. They cover source-payload deduplication,
+  current global conservation and the preserved preceding B4-B14 source subject;
+  they do not prove current service-source or interface entailment.
+- The separate current audit verifies all 149 identities/statuses and 141 other
+  task bodies. Removing only 23 declared blocks recreates all 25 predecessor
+  authorities; modified historical suffixes are additionally literal-byte exact.
+  Removing only new sections recreates twelve plans and the Library spec. All
+  217 facet, 69 occurrence and 27 section spans, eighteen owner obligation/record
+  hashes, 31 current witnesses and eight reused predicates pass. All five mixed
+  accounting source cases retain their exact spans and explicit qualifications.
+- All forty complete future records and source/role bindings stay exact, along
+  with their complete authority files. The strict source-view guard rejects a
+  simulated undeclared future-body identity change. All prior root records and
+  test/dependency code stay exact. All 31 central table rows are valid.
+- Crosswalk projection generation/check and applying local Git source-pin
+  verification pass. The pending fingerprint is
+  `60bec8834f1737771ba95f5436953abe74d2509a7c02ea81d1e77c44b2d1f56b`.
+- Canonical docs validation passes for 240 documents and nineteen phase indexes;
+  the language-boundary gate passes six tests and eleven assertions.
+- All 23 dependency tests pass with 9,121 assertions, zero failures and zero
+  errors under a 512 MB host heap; the dependency check also exits zero. Forty
+  new local references, heading collision, ASCII and whitespace checks pass.
+  Full execution of the changed 90-test crosswalk suite remains unrun; the
+  earlier 90 / 177,322 result stays bound only to
+  `88d5f68432beb5c36cdb439fa7cf389118885334`.
+
+The sole dependency table remains byte-identical: 158 routes, 118 current parent
+consumers, forty future consumers, 3,650 input joins and the 139-task coarse
+feedback set. Concrete current service-interface/stage and global executable
+order entailment remain pending. Initial real signatures, provider/profile,
+schema, path/endpoint/policy and fixture interfaces support bounded development
+before final module/runtime/domain/backend acceptance; actual checked products
+and independent audit/checker results must precede claims consuming them.
+
+Remaining work includes STD10-STD20, wider AI/support/foundation/nonfunctional
+source conjunctions, exact requirement/owner/task and producer/consumer
+entailment, dependency order, concrete accounting cleanup, recorded Core/Resolve
+and hermetic wording conflicts, Platform decisions and required current
+independent review. The first implementation increment remains
+[Reader contract coverage](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+No actual compiler/Reader/Gravity/bootstrap/paired/provider/C12/native/callback/
+device/probe/replay/migration/private-store/signing/publication/product execution
+occurs; all actual holds and the stopped C7 handoff remain. No retry/transfer,
+other-chat message, reviewer/automation wake, aggregate publication or integration
+occurs. Reconciliation, implementation, independent acceptance and integration
+remain distinct.
