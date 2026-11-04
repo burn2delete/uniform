@@ -44,7 +44,18 @@ interposition, refusal order, field precedence and callback/exception identity.
 Run affected real compiler and native controls, language/ownership, committed
 lint and contract validators. Exact independent review, own CI/artifact audit
 and immediate clean current-main preflight remain integration requirements.
-This early draft records the boundary and original observations only.
+The focused stage regression passes 13 tests / 234 assertions, including
+both physical accepted programs and all thirteen real metadata refusals
+before execution. The existing Bootstrap tooling controls pass 2 / 45.
+The language and ownership gates pass 48 / 1190 with zero skipped namespaces.
+Pinned clj-kondo reports zero errors or warnings for the stage and its test.
+The 240-document, roadmap and workstream validators pass. The first focused
+attempt failed to compile a new test because its let closed early; that
+nonpass and its source are retained, and only the test parenthesis changed.
+Exact source conservation verifies all seventeen moved bodies and thin
+wrappers, all four original stage bodies and all surrounding fragment text.
+These are development observations; clean candidate equality, independent
+acceptance, own CI and integration evidence remain outstanding.
 
 ## Unsupported boundaries
 
