@@ -62,10 +62,11 @@ jobs:
     needs: select
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    # Macro runs three sequential fresh children with independent 900-second
-    # watchdogs. Leave room for all children, setup, cleanup and upload; the
-    # other matrix modes retain their existing 20-minute envelope.
-    timeout-minutes: ${{ matrix.mode == 'macro' && 50 || 20 }}
+    # Bootstrap can run its existing controls plus one 900-second current-
+    # source child; checked-core can run three 180-second controls plus one
+    # 900-second child. Leave room for setup, cleanup and upload while keeping
+    # every child watchdog unchanged.
+    timeout-minutes: ${{ matrix.mode == 'macro' && 50 || matrix.mode == 'bootstrap' && 50 || matrix.mode == 'checked-core-runtime' && 30 || 20 }}
     strategy:
       fail-fast: false
       max-parallel: 2

@@ -153,13 +153,13 @@
             "bootstrap" {:id "bootstrap-macro-plan"
                          :timeout 900
                          :heap "2g"
-                         :alias "-M:dev-test"
+                         :alias "-M:bootstrap-validation-test"
                          :runner-args ["--fail-fast" "--progress"]}
             "checked-core-runtime" {:id "checked-core-source-tests"
                                     :timeout 900
                                     :heap "2g"
-                                    :alias "-M:test"
-                                    :runner-args ["--fail-fast"]}
+                                    :alias "-M:compiler-composition-test"
+                                    :runner-args ["--fail-fast" "--progress"]}
             (throw (ex-info "Unsupported current-source test mode"
                             {:mode mode})))]
       [id timeout

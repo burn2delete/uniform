@@ -513,13 +513,24 @@
 (deftest macro-hosted-envelope-covers-all-child-watchdogs
   (let [workflow (slurp ".github/workflows/ci.yml")
         checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
-        [_ macro-minutes other-minutes]
-        (re-find #"timeout-minutes: \$\{\{ matrix.mode == 'macro' && (\d+) \|\| (\d+) \}\}" checks)
         watchdog-seconds (reduce + (map second (ci/commands-for-selection "macro" {:kind :full})))]
-    (is (some? macro-minutes))
-    (is (= "20" other-minutes))
-    (is (> (* 60 (Long/parseLong macro-minutes)) watchdog-seconds))
+    (is (str/includes? checks
+                       "timeout-minutes: ${{ matrix.mode == 'macro' && 50"))
+    (is (str/includes? checks "matrix.mode == 'bootstrap' && 50"))
+    (is (str/includes? checks "matrix.mode == 'checked-core-runtime' && 30"))
+    (is (> (* 60 50) watchdog-seconds))
     (is (str/includes? checks "mode: [static, contracts, bootstrap, macro, checked-core-runtime]"))))
+
+(deftest current-source-hosted-envelopes-cover-new-child-watchdogs
+  (let [workflow (slurp ".github/workflows/ci.yml")
+        checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
+        spec [{:namespace 'gravity.example-test}]]
+    (is (= 900 (second (ci/source-test-command "bootstrap" spec))))
+    (is (= 900 (second (ci/source-test-command "checked-core-runtime" spec))))
+    (is (> (* 60 50) (+ 120 120 600 600 900 90 120 90)))
+    (is (> (* 60 30) (+ 180 180 180 900)))
+    (is (str/includes? checks "matrix.mode == 'bootstrap' && 50"))
+    (is (str/includes? checks "matrix.mode == 'checked-core-runtime' && 30"))))
 
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
@@ -627,15 +638,17 @@
         (is (= ["gravity.bootstrap.rebuild.macro-plan-test"]
                (namespaces bootstrap-command)))
         (is (= 900 (second bootstrap-command)))
-        (is (= "-M:dev-test" (some #{"-M:dev-test"} (nth bootstrap-command 2))))
+        (is (= "-M:bootstrap-validation-test"
+               (some #{"-M:bootstrap-validation-test"} (nth bootstrap-command 2))))
         (is (= 1 (count (filter #{"--progress"} (nth bootstrap-command 2)))))
         (is (= ["gravity.self-hosting.c6-core-lowering-source-execution-test"
                 "gravity.self-hosting.c6-core-lowering-source-classifier-test"
                 "gravity.self-hosting.canonical-core-node-source-execution-test"]
                (namespaces checked-command)))
         (is (= 900 (second checked-command)))
-        (is (= "-M:test" (some #{"-M:test"} (nth checked-command 2))))
-        (is (not-any? #{"--progress"} (nth checked-command 2)))))))
+        (is (= "-M:compiler-composition-test"
+               (some #{"-M:compiler-composition-test"} (nth checked-command 2))))
+        (is (= 1 (count (filter #{"--progress"} (nth checked-command 2)))))))))
 
 (deftest current-source-test-planning-omits-absent-population-and-retains-controls
   (let [source-command-ids #{"bootstrap-macro-plan" "checked-core-source-tests"}
