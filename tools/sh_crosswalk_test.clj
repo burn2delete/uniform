@@ -57,6 +57,30 @@
       (with-redefs [sh-crosswalk/readiness-source-version forged]
         (is (thrown? Exception (sh-crosswalk/source-view)))))))
 
+(deftest current-source-transitions-bind-exact-files-and-spans
+  (let [view (sh-crosswalk/source-view)
+        transitions (get-in view [:implementation-readiness-source-version
+                                  :current-source-transitions])]
+    (is (= #{"specs/auth-workflow/tasks.md"
+             "specs/types-workflow/tasks.md"
+             "specs/compiler-api-workflow/plan.md"}
+           (set (map :path transitions))))
+    (is (= :pending-independent-source-version-review
+           (:review-state (first transitions))))
+    (is (every? #(= :current-source-interface-proposal (:role %)) transitions))
+    (is (every? #(= :current-source-interface-only (:authority %)) transitions))
+    (doseq [[label mutation]
+            [["wrong role" #(assoc-in % [0 :role] :migration-authority)]
+             ["foreign path" #(assoc-in % [1 :path] "specs/core-workflow/tasks.md")]
+             ["forged after digest" #(assoc-in % [2 :changed-spans 0 :after :sha256] "forged")]
+             ["missing transition" #(vec (butlast %))]]]
+      (with-redefs [sh-crosswalk/readiness-source-version
+                    (assoc sh-crosswalk/readiness-source-version
+                           :current-source-transitions
+                           (mutation transitions))]
+        (is (thrown? Exception
+                     (sh-crosswalk/source-view)) label)))))
+
 (deftest complete-pattern-source-interface-restores-owner-slices-and-rejects-retired-accounting
   (let [read (fn [path] (slurp path))
         core-plan (read "specs/core-workflow/plan.md")

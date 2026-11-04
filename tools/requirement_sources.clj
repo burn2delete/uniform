@@ -460,6 +460,191 @@
    :authority "PR564 Stdlib task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
    :qualification "Only the five named Stdlib task rows transfer from the frozen historical SH source view to the applying task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or library-release acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
 
+;; PR767's current-source proposal adds three source-only interface regions to
+;; files that were pinned to the b886 composition. Keep this separate from
+;; the historical Platform/Stdlib authority bridges above: it authenticates a
+;; current development view and does not rebind an applying migration pin.
+(def current-source-transition-kind
+  :authenticated-current-source-file-transition-v1)
+(def current-source-transition-contracts
+  [{:kind current-source-transition-kind
+    :role :current-source-interface-proposal
+    :document-id "auth-task-source-interface"
+    :path "specs/auth-workflow/tasks.md"
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
+    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
+    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
+    :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"
+    :applying-blob "d582303b169feaaa8c67586ac3114fab3379fb4c"
+    :baseline-sha256 "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"
+    :live-sha256 "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514"
+    :changed-spans
+    [{:id "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+      :kind :task-row
+      :before {:start-byte 6658 :end-byte 27922 :start-line 54 :end-line 122
+               :sha256 "a261f396233dd4898d6316aac44dde41a0ea86c9eae83159931563499a33478b"}
+      :after {:start-byte 6658 :end-byte 29186 :start-line 54 :end-line 130
+              :sha256 "22c8d497e3db8560c68013f51fe2c6bad7cfc9a677a80cf9d0b1f405283b39b4"}}]
+    :review-state :pending-independent-source-version-review
+    :authority :current-source-interface-only
+    :qualification "Only the named Auth task row is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}
+   {:kind current-source-transition-kind
+    :role :current-source-interface-proposal
+    :document-id "types-task-source-interface"
+    :path "specs/types-workflow/tasks.md"
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
+    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
+    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
+    :baseline-blob "816b12cfff602f21d22730ad0da486c12450a945"
+    :applying-blob "ba31872977698abe7e6ec91403f2a2092f2d7656"
+    :baseline-sha256 "95b9209126992f006296a090569d10b22b7dac68f6c6883c63ab7f3d78827022"
+    :live-sha256 "0ba3ef45bdaf8de19b9f1027463f7d8b1d98a08e059cee34f92fcdc27ff82acc"
+    :changed-spans
+    [{:id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+      :kind :task-row
+      :before {:start-byte 13711 :end-byte 28244 :start-line 74 :end-line 172
+               :sha256 "11c77b2a90631429e405ccc09658765828019ae5994d202ceb52988721797926"}
+      :after {:start-byte 13711 :end-byte 29516 :start-line 74 :end-line 180
+              :sha256 "3af6c2e15eb8f54081edd9090e6ae3c6e3efdd69d002e85f40316af8ee0f1c63"}}]
+    :review-state :pending-independent-source-version-review
+    :authority :current-source-interface-only
+    :qualification "Only the named Types task row is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}
+   {:kind current-source-transition-kind
+    :role :current-source-interface-proposal
+    :document-id "compiler-api-plan-source-interface"
+    :path "specs/compiler-api-workflow/plan.md"
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
+    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799"
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
+    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5"
+    :baseline-blob "ccc8158489430c9c52f7669e192c6a69e045fe73"
+    :applying-blob "c2b12582a7a0dda6b02d115acab71a3e0838ea2c"
+    :baseline-sha256 "0df35668340a97676b7356c365e38196fe969359991c8b25ada55e107ec00028"
+    :live-sha256 "c0f615433fe9b26b5a65e0cfe24896681cea097827930bf827f37f3c1235c06f"
+    :changed-spans
+    [{:id "compiler-api/complete-library-principles-source-interface"
+      :kind :plan-section
+      :before {:start-byte 31413 :end-byte 31413 :line 274
+               :sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+      :after {:start-byte 31413 :end-byte 32017 :start-line 274 :end-line 280
+              :sha256 "6a6f0cc3688165711102c3abe0525b43f1fe3f57d7d47f840f8e8b7d841a939b"}}]
+    :review-state :pending-independent-source-version-review
+    :authority :current-source-interface-only
+    :qualification "Only the named Compiler API plan section is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority."}])
+(def current-source-transition-paths
+  (set (map :path current-source-transition-contracts)))
+
+(declare validate-snapshots!)
+
+(defn- utf8-span-text [text start-byte end-byte require!]
+  (let [bytes (.getBytes ^String text "UTF-8")]
+    (require! (and (integer? start-byte) (integer? end-byte)
+                   (<= 0 start-byte end-byte (alength bytes)))
+              "Current source transition has an invalid UTF-8 byte span")
+    (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")))
+
+(defn- utf8-line-number [text offset]
+  (inc (count (filter #(= 10 (aget ^bytes (.getBytes ^String text "UTF-8") %))
+                     (range offset)))))
+
+(defn- replace-utf8-span [text span replacement require!]
+  (let [bytes (.getBytes ^String text "UTF-8")
+        start (:start-byte span)
+        end (:end-byte span)]
+    (require! (and (integer? start) (integer? end)
+                   (<= 0 start end (alength bytes)))
+              "Current source transition replacement span is invalid")
+    (str (String. (java.util.Arrays/copyOfRange bytes 0 start) "UTF-8")
+         replacement
+         (String. (java.util.Arrays/copyOfRange bytes end (alength bytes)) "UTF-8"))))
+
+(defn validate-current-source-transition!
+  "Authenticate one exact current-source file transition.
+
+  The expected contract is deliberately supplied by code, while the EDN
+  record supplies the review payload. Equality against that contract prevents
+  a caller from relabeling a foreign source, role, span or authority. The
+  whole-file identities and a byte-level replacement check then ensure the
+  named spans account for the complete before/after delta."
+  [transition expected read-ref read-text sha256 require!]
+  (require! (= transition expected)
+            (str "Current source transition identity or qualification changed: "
+                 (:path transition)))
+  (require! (= current-source-transition-kind (:kind transition))
+            "Current source transition kind changed")
+  (require! (= :current-source-interface-proposal (:role transition))
+            "Current source transition role is not a current-source proposal")
+  (require! (and (string? (:path transition))
+                 (not (.isAbsolute (io/file (:path transition))))
+                 (not (str/blank? (:document-id transition))))
+            "Current source transition path/document identity is invalid")
+  (validate-snapshots! transition read-ref sha256 require!)
+  (let [path (:path transition)
+        before-source (read-ref (:baseline-ref transition) path)
+        after-source (read-ref (:applying-ref transition) path)
+        current (read-text path)
+        spans (:changed-spans transition)]
+    (require! (= (:baseline-sha256 transition) (sha256 before-source))
+              "Current source transition baseline bytes changed")
+    (require! (= (:live-sha256 transition) (sha256 after-source))
+              "Current source transition applying bytes changed")
+    (require! (= after-source current)
+              "Current source transition is not bound to the checked-out current source")
+    (require! (and (vector? spans) (seq spans)
+                   (= (count spans) (count (set (map :id spans)))))
+              "Current source transition changed-span identities are incomplete")
+    (doseq [{:keys [id kind before after]} spans]
+      (require! (and (string? id) (keyword? kind) (map? before) (map? after))
+                "Current source transition changed span is malformed")
+      (let [before-text (utf8-span-text
+                         before-source
+                         (:start-byte before) (:end-byte before) require!)
+            after-text (utf8-span-text
+                        after-source
+                        (:start-byte after) (:end-byte after) require!)]
+        (require! (= (:sha256 before) (sha256 before-text))
+                  (str "Current source transition before-span digest changed: " id))
+        (require! (= (:sha256 after) (sha256 after-text))
+                  (str "Current source transition after-span digest changed: " id))
+        (doseq [[label expected-line source-text offset] [["before-start" (:start-line before) before-source (:start-byte before)]
+                                                          ["before-end" (:end-line before) before-source (dec (:end-byte before))]
+                                                          ["after-start" (:start-line after) after-source (:start-byte after)]
+                                                          ["after-end" (:end-line after) after-source (dec (:end-byte after))]]]
+          (when (and (some? expected-line) (pos? (count (utf8-span-text source-text
+                                                                        (if (= source-text before-source) (:start-byte before) (:start-byte after))
+                                                                        (if (= source-text before-source) (:end-byte before) (:end-byte after))
+                                                                        require!))))
+            (require! (= expected-line (utf8-line-number source-text offset))
+                      (str "Current source transition " label " line changed: " id))))
+        (when (= :task-row kind)
+          (require! (str/includes? before-text (str "`" id "`"))
+                    (str "Current source transition before row identity changed: " id))
+          (require! (str/includes? after-text (str "`" id "`"))
+                    (str "Current source transition after row identity changed: " id))
+          (require! (re-find #"(?m)^- \[[ xX]\] `[^`]+`" after-text)
+                    (str "Current source transition after row marker changed: " id)))
+        (when (= :plan-section kind)
+          (require! (str/starts-with? after-text "## Complete library-principles source interface")
+                    (str "Current source transition plan section changed: " id)))
+        (require! (= after-source
+                     (replace-utf8-span before-source before after-text require!))
+                  (str "Current source transition has unlisted file drift: " id))))
+    {:kind (:kind transition)
+     :role (:role transition)
+     :path path
+     :document-id (:document-id transition)
+     :baseline-ref (:baseline-ref transition)
+     :baseline-tree (:baseline-tree transition)
+     :applying-ref (:applying-ref transition)
+     :applying-tree (:applying-tree transition)
+     :changed-span-ids (mapv :id spans)
+     :snapshot-provenance :git-bytes-verified
+     :span-provenance :git-byte-and-line-spans-verified
+     :authority :current-source-interface-only
+     :implementation-acceptance :unassessed}))
+
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,
 ;; retained-semantic edit, or additional source mutation fail closed.

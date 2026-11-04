@@ -678,6 +678,36 @@
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
 
+(def current-source-transition-contracts
+  requirement-sources/current-source-transition-contracts)
+
+(defn current-source-transition-view
+  "Authenticate the bounded current-source proposal without changing any
+  historical/applying pin or granting implementation authority."
+  [transitions read-text]
+  (let [expected current-source-transition-contracts
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (require! (and (vector? transitions)
+                   (= (set (map :path transitions))
+                      (set (map :path expected)))
+                   (= (count transitions) (count expected)))
+              "Current source transition population changed")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (require! (= actual contract)
+                  (str "Current source transition contract changed: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (requirement-sources/git-source "." ref source-path require!))
+         read-text sha256 require!)))
+    {:kind requirement-sources/current-source-transition-kind
+     :paths (vec (sort (keys (by-path transitions))))
+     :review-state :pending-independent-source-version-review
+     :authority :current-source-interface-only
+     :implementation-acceptance :unassessed}))
+
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
   Task-ledger preambles are navigation layout, so their edits can shift a row;
@@ -1118,6 +1148,12 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        readiness-source-version (:implementation-readiness-source-version crosswalk)
+        current-source-transition
+        (when (contains? readiness-source-version :current-source-transitions)
+          (current-source-transition-view
+           (:current-source-transitions readiness-source-version)
+           read-text))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1262,6 +1298,7 @@
      :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :current-source-transitions current-source-transition
      :platform-task-source-transition platform-transition
      :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability

@@ -1,7 +1,8 @@
 (ns sh-crosswalk
   "Source-bound SH routing projection. Task status is read only from component ledgers."
   (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp]
-            [clojure.java.io :as io] [clojure.walk :as walk] [clojure.set :as set]))
+            [clojure.java.io :as io] [clojure.walk :as walk] [clojure.set :as set]
+            [requirement-sources :as requirement-sources]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
@@ -254,6 +255,12 @@
   ;; rows as ordinary current-source observations.
   #{(:path acceptance-dependencies/platform-task-source-transition)
     (:path acceptance-dependencies/stdlib-task-source-transition)})
+(def current-source-transition-contracts
+  (vec (:current-source-transitions readiness-source-version)))
+(def current-source-transition-paths
+  (set (map :path current-source-transition-contracts)))
+(defn- current-source-transition-for-path [path]
+  (first (filter #(= path (:path %)) current-source-transition-contracts)))
 (def preserved-scoped-evidence-source-pins
   ;; These are already accepted, narrowly scoped current records.  Preserve
   ;; their inspected source identities while the ordinary development frame
@@ -270,6 +277,31 @@
             (:source-input-commit readiness-source-version))
           baseline))))
 (declare git-source)
+
+(defn validate-current-source-transitions! [transitions]
+  (let [expected (vec requirement-sources/current-source-transition-contracts)
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (acceptance-dependencies/require!
+     (and (vector? transitions)
+          (= (set (map :path transitions))
+             (set requirement-sources/current-source-transition-paths))
+          (= (set (map :path transitions)) (set (map :path expected))))
+     "Current source transitions must cover exactly the authenticated paths")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (acceptance-dependencies/require!
+         (= actual contract)
+         (str "Current source transition metadata differs from its contract: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (git-source ref source-path))
+         slurp sh-inventory/sha256 acceptance-dependencies/require!)))
+    (mapv #(select-keys % [:document-id :path :baseline-ref :baseline-tree
+                           :applying-ref :applying-tree :changed-spans
+                           :review-state :authority])
+          (sort-by :path transitions))))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -506,6 +538,8 @@
                                 historical-row-source? baseline
                                 (contains? historical-task-transition-paths path)
                                 (:source-input-commit readiness-source-version)
+                                (contains? current-source-transition-paths path)
+                                (:applying-ref (current-source-transition-for-path path))
                                 :else (source-pin path))
                :file-sha256 (sh-inventory/sha256 source-text)
                :source (sh-inventory/source-span path source-text (:start row) (+ (:start row) (count raw)))
@@ -956,6 +990,7 @@
             (throw (ex-info "SH07 source changed; preserve lineage before amending sequence" {})))
         _ (when-not (= (:requirements inventory) (sh-inventory/inventory (slurp sh-inventory/plan-path)))
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
+        _ (validate-current-source-transitions! (:current-source-transitions readiness-source-version))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
         _ (validate-library-refinement! (:library-refinement readiness-source-version))
@@ -1067,6 +1102,7 @@
      :implementation-readiness-source-version
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
+                   :current-source-transitions
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
