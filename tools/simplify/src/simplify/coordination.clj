@@ -38,6 +38,19 @@
   ;; Check actual old controller locks, without probing recorded PIDs.
   (when-not (some-> (:coordinator-owner ctx) deref) (rt/assert-compatible-controllers! ctx))
   (rt/import-state-coordination! ctx)
+  ;; Retained in-flight work needs original-owner inspection before this
+  ;; controller performs even unrelated provider setup. Attention holds and
+  ;; other campaigns still reserve only their actual paths.
+  (when-let [retained (some (fn [[key task]]
+                             (when (#{:implementing :review} (:status task))
+                               {:finding key :status (:status task)}))
+                           (:tasks @(:state ctx)))]
+    (rt/fail! "Retained worker requires inspected handover before provider setup" retained))
+  (when-let [pending (transaction! ctx
+                                  (fn [state]
+                                    [state (first (filter #(= (rt/canonical (:state-dir ctx)) (:state-dir %))
+                                                          (vals (:main-effects state))))]))]
+    (rt/fail! "Unresolved main effect requires inspected handover before provider setup" {:effect (:id pending)}))
   (transaction! ctx
                 (fn [state]
                   [(assoc-in state [:controllers (owner ctx)]
