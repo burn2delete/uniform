@@ -27,6 +27,13 @@
 (def resolution-pipeline-cohort-regex
   "^(?!.*verifier-requires-fresh-replay-current-products-and-public-proof$).+")
 
+(def macro-receipt-test-vars
+  ["public-receipt-reuse-requires-current-stage-and-seed-operations"
+   "source-backed-operation-interpositions-stay-live"
+   "identical-value-thread-binding-disables-receipt-reuse"])
+(def macro-pipeline-cohort-regex
+  (str "^(?!.*(?:" (str/join "|" (map #(java.util.regex.Pattern/quote %) macro-receipt-test-vars)) ")$).+"))
+
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
 ;; retain the full matrix rather than being guessed into one stage.
@@ -374,6 +381,8 @@
    "tools/ci/run_test.clj"
    "bootstrap/clojure/src/gravity/bootstrap/rebuild/"
    "bootstrap/clojure/test/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/fixtures/accepted/hello.gravity"
+   "bootstrap/clojure/fixtures/jvm-toolchain/rejected.gravity"
    "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
    "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
    "bootstrap/clojure/src/gravity/digest.clj"
@@ -932,7 +941,8 @@
       (bootstrap-input-controls-required? selection)
       (conj ["bootstrap-input-controls" 600
              (command "2g" "-M:dev-test"
-                      "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
+                      "--namespace" "gravity.bootstrap.rebuild.inputs-test"
+                      "--namespace" "gravity.bootstrap.rebuild.component-test")])
       true
       (into [["language-boundary" 90
               (command "512m" "-M:test" "--namespace"
@@ -943,10 +953,19 @@
              ["ownership-inventory" 90
               (command "512m" "-M:test" "--namespace"
                        "gravity.self-hosting.sh01-ownership-test")]]))
-    "macro" [["macro-regression" 900
+    "macro" [["macro-pipeline-cohort" 900
               (command "2g" "-M:dev-test"
                        "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
+                       "--regex" macro-pipeline-cohort-regex)]
+             ["macro-receipt-controls" 900
+              (apply command "2g" "-M:dev-test"
+                     "--progress"
+                     "--namespace" "gravity.macro.pipeline-test"
+                     (mapcat #(vector "--exact" %) macro-receipt-test-vars))]
+             ["macro-bootstrap-compatibility" 900
+              (command "2g" "-M:dev-test"
+                       "--progress"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
     "resolution" [["resolution-regression" 900
                    (command "2g" "-M:dev-test"

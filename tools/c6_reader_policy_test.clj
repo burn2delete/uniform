@@ -182,7 +182,9 @@
   (with-envelope-oracle :passed
     (fn []
       (is (= 2 (get-in (receipt (products)) [:source-interface :version])))))
-  (doseq [version [1 3 nil (int 3) 3N]]
+  (is (= 3 (c6-interface/interface-version!
+            {:interface :gravity/c6-c10 :version 3})))
+  (doseq [version [1 nil (int 3) 3N]]
     (is (some? (try (c6-interface/interface-version!
                     {:interface :gravity/c6-c10 :version version})
                    nil

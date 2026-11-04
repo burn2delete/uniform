@@ -2,7 +2,12 @@
          p15-s23-c6c10-require-trusted-carrier!)
 
 (defn- p15-s23-c6c10-current-reader-envelope-state!
-  [source-path raw-front-end reader-path selected-binding]
+  ([source-path raw-front-end reader-path selected-binding]
+   (p15-s23-c6c10-current-reader-envelope-state! source-path raw-front-end reader-path selected-binding 2))
+  ([source-path raw-front-end reader-path selected-binding version]
+  (p15-s23-c6c10-source-program-contract version)
+  (when-not (contains? #{2 3} version)
+    (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :selected-current-reader-invocation-policy {}))
   ;; C3 deliberately projects its embedded C2 view without the raw Reader
   ;; boundary. Its authenticated provenance retains the actual C2 envelope and
   ;; descriptor. The selected binding comes from this fresh owner's plan call.
@@ -57,10 +62,11 @@
       (when-not (= :development-unadmitted state)
         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :actual-current-reader-envelope-admission-state {}))
       (let [receipt (merge (p15-s23-c6c10-project-reader-owner-metadata source-path witness)
-                     {:source-interface {:interface :gravity/c6-c10 :version 2}
+                     {:source-interface {:interface :gravity/c6-c10 :version version}
                       :admission-status state :verification-scope :selected-current-source-host-seed
                       :envelope-verification :passed :self-hosted? false})]
         ;; Only the fixed projection crosses into the unchanged strict Core
         ;; carrier. The full original envelope was verified above, unmodified.
         (p15-s23-c6c10-require-trusted-carrier! source-path :current-reader-policy-receipt receipt)
-        receipt)))))
+        (cond-> receipt
+          (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence))))))))

@@ -1,0 +1,250 @@
+{:kind :current-flat-bool-public-transaction
+ :schema-version 1
+ :authority :evidence-only
+ :source-freeze
+ {:commit "032baed5b0cf4a30447c8ee160ee8cf234eca4cd"
+  :tree "33e8439a556b1d9a85421b2900e7078b8ef51b61"
+  :parent "8692d94d983264533ee2cfc859407bc261dc945d"
+  :worktree-clean-before-run? true}
+ :composition
+ {:current-main "a5b6427cab15f40a8e1d61a6562a04b4a0f63efb"
+  :normal-composition-merge
+  "8692d94d983264533ee2cfc859407bc261dc945d"
+  :historical
+  {:source-input-transport-commit
+   "e61d452c3ab5ebc2d989588f58b0a1c2651818ef"
+   :normal-composition-merge
+   "e0cdfd55cfb1bb9ec4fb31dc78eebb74a6d043a3"
+   :composition-base "f5db48b06148077162c20fe47aca5b782c594eed"}
+  :transport-bound-before-proof? true}
+ :historical-proof
+ {:source-freeze
+  {:commit "4cd471becfe16eae5aab1557cecae18e79a46cfc"
+   :tree "1fbcb7c954bf3579525f3e253750965bbd1700fc"
+   :parent "aaed5c9899ed6c9a121eafe2eddc78249987845b"}
+  :process
+  {:pid 73742
+   :log "/tmp/uniform-flat-bool-public-transaction-4cd471bec.log"
+   :exit 0
+   :tests 3
+   :assertions 74
+   :failures 0
+   :errors 0}
+  :status :historical}
+ :command
+ "clojure -J-Xmx4g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/current_flat_bool_public_transaction_test.clj"
+ :process
+ {:pid 26465
+  :log "/tmp/uniform-flat-bool-public-transaction-032baed5b.log"
+  :exit 0
+  :tests 3
+  :assertions 74
+  :failures 0
+  :errors 0
+  :reporting-note
+  "The bounded reporter suppresses full artifact values; assertion count is the exact runtime count from the three test vars, including the looped rejection controls."}
+ :positive
+ {:v3
+  {:c6-interface {:interface :gravity/c6-c10 :version 3}
+   :c11-interface {:interface :gravity/c11-mir :version 3}
+   :source-mode :development-current
+   :semantic-family :closed-flat-bool-literal-sequence
+   :fresh-c6-report? true
+   :fresh-c11-report? true
+   :public-constructor? true
+   :source-input-transport :gravity-source-input-context}
+  :v2
+  {:c6-interface {:interface :gravity/c6-c10 :version 2}
+   :c11-interface {:interface :gravity/c11-mir :version 2}
+   :source-mode :development-current
+   :fresh-c6-report? true
+   :fresh-c11-report? true
+   :public-constructor? true}}
+ :current-source
+ {:c6
+  {:path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   :bytes 185620
+   :sha256 "sha256:c5433537cf9423b14a0456696d9f7c3eb5953f88a9535787ef9c53af883bc6b8"
+   :abi-version 3
+   :builder 'c6-c10-build-checked-core-template
+   :verifier 'c6-c10-verify-checked-core-template}
+  :c11
+  {:path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   :bytes 593009
+   :sha256 "sha256:8f5e1949f84e02604919d3fb6acad7721673c53ae9a3aa2d517fdeceac90e9db"
+   :abi-version 3
+   :builder 'sh12-build-flat-bool-sequence-mir
+   :verifier 'sh12-verify-flat-bool-sequence-mir}
+  :reader
+  {:path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+   :bytes 246369
+   :sha256 "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205"}
+  :expression-emitter
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity"
+   :bytes 1555571
+   :sha256 "sha256:5a28aebe715e65dbaad5a62e041cbf94757d919abd050f492ae0729a71e712c8"}}
+ :negative-controls
+ [:missing-core
+  :foreign-core
+  :native-core-class
+  :crossed-context
+  :forged-core-id
+  :tampered-source-rule
+  :tampered-builder-metadata
+  :type-fact
+  :origin-chain
+  :data-flow-edge]
+ :version-boundaries
+ {:v1-and-default :unchanged-and-fail-closed
+  :c6-data-version 2
+  :c11-data-version 2
+  :public-v3-not-a-historical-pin? true}
+ :nonclaims
+ [:native-c
+  :real-producer
+  :self-hosting
+  :migration
+  :release
+  :backend-completion
+  :full-sh12
+  :full-pr453]
+ :source-contract-note
+ "C6/C11 bytes and plans are authenticated from development-current source at invocation. The receipt records source provenance and ABI joins; it does not grant migration, release, or self-hosting authority."
+
+;; This successor frame is metadata only.  It does not replace the historical
+;; 032 proof above or convert the incomplete 530 transaction attempt into a
+;; pass.  The three original PR heads together authored 35 paths; prior
+;; independent review accepted their useful value through the current owners.
+ :current-main-successor
+ {:status :ready-for-independent-review
+  :original-prs [605 606 608]
+  :original-base
+  {:commit "f0be2a55cc348fd1c9ce8eca377b2427541643b7"
+   :tree "5f7ed31ee0c2a342b8ee053a3dcaa9f6ef0db2ce"}
+  :original-heads
+  [{:pr 605
+    :commit "b17e639db90a4c46af6e9d953ce53140833b3eb0"
+    :tree "7e9a5aab7f848736a4a8ad5cf791ad19b4f9bdee"}
+   {:pr 606
+    :commit "8c950c1f0f17e99aa88ac9f82aee2dda175c2e74"
+    :tree "0d0e91cb30459e4743dea1a9d5faa584bc405b8b"}
+   {:pr 608
+    :commit "8756ef475cd632f053eb6c85374e3e69270ca65f"
+    :tree "7d713156e70aabfecffb502cc4fd49e3aae72e7b"}]
+  :source-freeze
+  {:commit "530afd32e3f4dcc20208b5de39d9d4a267f2b868"
+   :tree "1a1916280fb62e09a8cbe92bc1a95fbb70d3c3f0"
+   :parent "258fc47b40a30b2ace32473d42729bff6b04687f"
+   :worktree-clean-before-metadata? true}
+  :current-main
+  {:commit "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"
+   :tree "50d2a92f9b54c85113b2c51bffa7c80d5e0e0bbd"
+   :title "Remove artifact cache cost accounting (#869)"}
+  :composition
+  {:commit "b9f2a5af8bf60bd084dae55a22f77024ed321699"
+   :tree "43bb78fb65da3a08b583c2b21abd345483b6eaeb"
+   :parents ["530afd32e3f4dcc20208b5de39d9d4a267f2b868"
+             "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"]
+   :composition-base "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"
+   :git-common-ancestor "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef"}
+  :owned-cohort
+  {:original-path-count 35
+   :accounted-current-equivalent-count 35
+   :dropped-paths []
+   :value-disposition :all-original-value-preserved-by-current-equivalents
+   :original-paths
+   ["bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00581-p15-s23-stage2-compiler-artifact-binding.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00582-p15-s23-stage2-construct-emitted-core-plan.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00702-p15-s23-c6c10-host-fail.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00716-p15-s23-c6c10-normalize-deferred-ratios-in-plan.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00719-p15-s23-c6c10-record-compiled-binding-metric.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00720-p15-s23-c6c10-compiled-binding-cache-key.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00723-p15-s23-c6c10-seal-digest-request-result.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00726-p15-s23-c6c10-gravity-candidate-verification.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00740-p15-s23-c11-mir-validate-effect-edge-placement.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-definitions.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-02-invoke-checked-core-verifier.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-03-authenticate-checked-core-ingress.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-04-invoke-pinned-c11-builder.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-05-construct-authenticated-c11-mir.clj"
+    "bootstrap/clojure/src/gravity/c6_c10/source_interface.clj"
+    "docs/artifacts/phase-15/reports/c6-reader-policy-projection.md"
+    "docs/artifacts/phase-15/reports/c6-versioned-source-binding.md"
+    "docs/artifacts/phase-15/reports/versioned-c11-core-authentication.md"
+    "docs/artifacts/phase-15/reports/versioned-expression-binding.md"
+    "docs/artifacts/phase-15/reports/versioned-fresh-core-construction.md"
+    "docs/artifacts/phase-15/reports/versioned-pinned-c11-construction.md"
+    "docs/artifacts/phase-15/reports/versioned-private-core-ingress.md"
+    "docs/artifacts/phase-15/reports/versioned-public-c11-interface.md"
+    "docs/artifacts/phase-15/reports/versioned-public-core-report.md"
+    "tools/c11_core_authentication_test.clj"
+    "tools/c11_pinned_construction_test.clj"
+    "tools/c11_public_interface_test.clj"
+    "tools/c6_fresh_construction_test.clj"
+    "tools/c6_private_ingress_test.clj"
+    "tools/c6_public_report_test.clj"
+    "tools/c6_reader_policy_test.clj"
+    "tools/c6_source_binding_test.clj"
+    "tools/expression_binding_test.clj"]
+   :v3-production-cohort
+   {:source-frame-diff :empty
+    :paths
+    ["bootstrap/clojure/src/gravity/c6_c10/source_contract.clj"
+     "bootstrap/clojure/src/gravity/c6_c10/source_interface.clj"
+     "bootstrap/clojure/src/gravity/c11_mir/source_contract.clj"
+     "bootstrap/clojure/src/gravity/c11_mir/source_interface.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00716-p15-s23-c6c10-normalize-deferred-ratios-in-plan.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00720-p15-s23-c6c10-compiled-binding-cache-key.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00720b-p15-s23-c6c10-current-reader-program.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00720c-p15-s23-c6c10-current-reader-envelope.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00720d-p15-s23-c6c10-reader-owner-projection.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724a-p15-s23-c6c10-fresh-construction.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00726-p15-s23-c6c10-gravity-candidate-verification.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00732-p15-s23-c11-mir-owned-upstream-diagnostic.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00740-p15-s23-c11-mir-validate-effect-edge-placement.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00743-p15-s23-c11-mir-validate-final-artifact.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-authority-holder.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-cleanup.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-definitions.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-01-classify-checked-core-ingress-pair.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-02-invoke-checked-core-verifier.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-03-authenticate-checked-core-ingress.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-04-invoke-pinned-c11-builder.clj"
+     "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00744-opaque-c11-construction-token-helper-05-construct-authenticated-c11-mir.clj"]}
+   :main-only-delta-preserved? true}
+  :focused-matrix
+  [{:name :c6-private-ingress :tests 6 :assertions 86}
+   {:name :c6-public-report :tests 7 :assertions 108}
+   {:name :c6-fresh-construction :tests 9 :assertions 76}
+   {:name :c11-source-api :tests 3 :assertions 49}
+   {:name :c11-source-binding :tests 7 :assertions 62}
+   {:name :c11-public-cleanup :tests 1 :assertions 12}
+   {:name :language-boundary :tests 6 :assertions 11}]
+  :historical-genuine-proof
+  {:source-freeze "032baed5b0cf4a30447c8ee160ee8cf234eca4cd"
+   :tree "33e8439a556b1d9a85421b2900e7078b8ef51b61"
+   :pid 26465
+   :log "/tmp/uniform-flat-bool-public-transaction-032baed5b.log"
+   :tests 3
+   :assertions 74
+   :status :historical}
+  :current-genuine-proof
+  {:source-freeze "530afd32e3f4dcc20208b5de39d9d4a267f2b868"
+   :pid 15225
+   :log nil
+   :exit 143
+   :status :incomplete
+   :reason :manually-stopped-after-over-60-minutes-without-summary
+   :retry? false}
+  :nonclaims
+  [:new-current-genuine-3-of-74-pass
+   :native-c
+   :general-v3
+   :migration
+   :release
+   :self-hosting
+   :backend-completion]}
+}

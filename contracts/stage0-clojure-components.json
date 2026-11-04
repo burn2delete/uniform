@@ -268,6 +268,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj", "namespace": "gravity.backend.query.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "mobile-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-mobile",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/mobile.clj", "namespace": "gravity.backend.mobile"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00262-b11-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-mobile"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/mobile/pipeline_test.clj", "namespace": "gravity.backend.mobile.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",

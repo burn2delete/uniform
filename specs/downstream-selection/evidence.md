@@ -10,11 +10,15 @@ Owner: ACC11. Contract basis: C11, C12, C13, C14, B1 and OWN-06 PR545
 
 The four-argument `p15-s23-stage2-c13-c14-b1-packet-from-c11!` forwards
 `[c11-artifact checked-core context interface-header]` to the existing current
-public C11 owner. The supported public header is exactly
-`{:interface :gravity/c11-mir :version 2}`. The owner performs fresh C11 v2
-construction and report production before downstream work. The downstream
-selector derives the version from that owner-produced report, checks exact
-header/report parity, and never selects from caller-supplied report labels.
+public C11 owner. The downstream packet selector supports the explicit
+`{:interface :gravity/c11-mir :version 2}` header and performs fresh C11 v2
+construction and report production before downstream work. Separately, the
+public C11 owner exposes an explicit v3 route for the closed flat-Bool
+literal-sequence family; that bounded owner transaction is recorded in
+`current-flat-bool-public-transaction-receipt.edn` and is not claimed here as
+a general C13/C14/B1 selector route. The downstream selector derives the
+version from its owner-produced report, checks exact header/report parity, and
+never selects from caller-supplied report labels.
 
 The selected v2 source contract and rule are compared against both the original
 C11 artifact and the fresh report. The checked-core ingress is compared across
@@ -33,14 +37,39 @@ through backend containment.
 
 ## Version boundaries and unaccepted work
 
-The current main source-interface API accepts public C11 version 2 only. The
-separate C11 source-contract DATA selector also contains a version-3
-flat-bool-literal-sequence record, but the current public C11 API does not
-admit version 3 and the corresponding Gravity producer functions are absent.
-This port therefore does not claim or invoke v3, copy a Native v3 producer, or
-invent a v3 fallback. C6/C11 source-contract DATA versions 1/2/3 are not the
-same thing as the public interface version; only the owner-supported v2 route
-is wired here.
+The statements in this section retain the historical PR552 checkpoint: on
+the original `5ecc0003e5595e73b3fb2d2e79a98233b9dd8950` composition, the public
+C11 source-interface admitted version 2 only and the version-3 DATA record had
+no corresponding public producer. That checkpoint remains historical evidence;
+it is not silently relabelled as the current implementation.
+
+The later current-source flat-Bool transaction adds an exact public C6 v3
+constructor, a public C11 v3 constructor, and a separate fresh C11 report path
+for the closed flat-Bool literal-sequence family. It derives current source
+bytes, plans, function shapes and builder/verifier identities at invocation;
+it does not refresh a historical v3 pin, copy a Native producer, or claim
+migration, release, self-hosting or backend completion. The exact bounded
+positive, v2 regression and fail-closed mutation matrix are recorded in
+`current-flat-bool-public-transaction-receipt.edn` after the source-freeze
+commit and independent review.
+
+That receipt binds the current public transaction to source-freeze commit
+`032baed5b0cf4a30447c8ee160ee8cf234eca4cd` (tree
+`33e8439a556b1d9a85421b2900e7078b8ef51b61`) and records the exact bounded
+`-J-Xmx4g` run from PID 26465 at
+`/tmp/uniform-flat-bool-public-transaction-032baed5b.log`: 3 test vars, 74
+assertions, zero failures and zero errors. The run includes one genuine v3
+C6-to-C11 transaction, one genuine current-v2 regression, and ten missing,
+foreign, crossed-context, native-class, source, metadata and coherent-IR
+mutation refusals. The earlier 4cd471becfe16eae5aab1557cecae18e79a46cfc
+source-freeze/run remains historical evidence in the receipt's history; it is
+not the current source authority. The log and source byte hashes are part of
+the receipt; the bounded run does not claim Native-C, full SH12 or PR453,
+migration, release or self-hosting.
+
+C6/C11 source-contract DATA versions 1/2/3 are not interchangeable with the
+public interface versions. Legacy default/v1 routing remains unchanged and
+explicit unsupported headers still fail closed.
 
 The original PR's four authored paths (the two packet components,
 `bootstrap/clojure/test/gravity/self_hosting/downstream_selection_test.clj`,

@@ -166,37 +166,16 @@
 
 (defn b10-document-fail!
   [id source-path subject extra]
-  (fail! id
-         "B10 workflow graph backend design document coverage validation failed"
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :b10-workflow-graph-backend-document
-                 :stage :b10-workflow-graph-backend-document-coverage
-                 :backend :gravity.backend/workflow-graph
-                 :profile :distributed
-                 :target :durable-workflow
-                 :workflow-id :gravity-stage0-workflow
-                 :step-id (or (:step-id subject)
-                              (b10-document-step-id id))
-                 :schema-id (or (:schema-id subject) :workflow-input-v1)
-                 :effect (or (:effect subject) :network/request)
-                 :capability (or (:capability subject)
-                                 :network/request)
-                 :provider (or (:provider subject)
-                               :stage0-model-provider)
-                 :replay-mode (or (:replay-mode subject)
-                                  :event-log)
-                 :missing-policy (b10-document-missing-policy id)
-                 :fallback-status :rejected
-                 :remediation "B10 requires workflow, step, message, and state schemas; replay-safe nondeterminism records; idempotency, retry, timeout, cancellation, and compensation records; explicit capabilities and human-review policy; taint validation; valid graph edges; audit provenance; and a complete workflow artifact manifest."}
-                extra)))
+  (gravity.backend.workflow/fail!
+   id source-path subject extra
+   {:fail! fail!
+    :source-span (fn [path index] (source-span path index))
+    :step-id (fn [id] (b10-document-step-id id))
+    :missing-policy (fn [id] (b10-document-missing-policy id))}))
 
 (defn b10-document-validate-source-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get b10-document-override-diagnostics fail-kind)]
-      (b10-document-fail!
-       id source-path
-       {:artifact-id (str "b10-document-" (name fail-kind))
-        :step-id (keyword (str "b10-document-" (name fail-kind)))}
-       {:missing-fields [fail-kind]}))))
+  (gravity.backend.workflow/validate-source-overrides!
+   source-path overrides
+   {:override-diagnostics (fn [] b10-document-override-diagnostics)
+    :failure-operation (fn [] b10-document-fail!)}))
