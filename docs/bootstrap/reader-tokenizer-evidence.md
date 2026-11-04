@@ -70,3 +70,38 @@ It does not replace the canonical SH03 reader, parse forms, resolve names,
 execute extensions, impose source/work quotas, or establish complete Reader,
 self-hosting, migration, release or seed retirement. Existing held operations
 and failed authentic-source controls remain untouched.
+
+## Implemented hosted tokenizer
+
+The sixteen original helper bodies now live privately in gravity.reader. Nine
+explicit late Var ports replace their previous Bootstrap root calls. Only the
+lexical context and comment-token signatures gain the operation map needed to
+thread those ports. Fifteen internal function values remain captured in a
+private operation map. The public API selects only its nine external keys;
+callers cannot replace internal dispatch functions through additional entries.
+It adds no callback class check, source read, authentication or new envelope.
+
+The compatibility facade retains both arities and the original three-argument
+default. The three moved resources are removed from both manifests; the facade
+resource retains its source metadata. The existing public API contract test is
+an affected owner and now names the eighth operation and expanded boundary.
+
+The clean original capture uses twelve retained real files across .gravity and
+.qst, both trivia settings, four successful streams and twenty lexical refusals.
+Full records include original paths/text/table/options, token products and
+diagnostics; SHA-256 is
+082cd1267f86bfec381050f1dcde7906c3fa387bf0bf783dd874d1ff04000ae1.
+These are hosted native products and refusals, not C2 source admission.
+
+Initial focused Reader/tokenizer checks pass 51 tests/2153 assertions. They
+cover paired source records/slices/identity, trivia, Unicode/CRLF coordinates,
+literal deferral, malformed strings/characters/numbers/dispatch, late roots,
+callback order, exception identity, no source discovery, internal operation
+isolation and facade arities/defaults. An unmatched parenthesis in the initial
+new test file was caught before execution and corrected; its source remains at
+/tmp/uniform-reader-tokenizer-test-initial-syntax-nonpass.clj. Production source
+was not changed for that correction.
+
+Candidate capture, exact body/manifest conservation, committed regressions,
+boundary gates, lint, validators, independent reviews, own CI and integration
+remain separate outstanding checks. Receipts use /tmp/uniform-reader-tokenizer-*.

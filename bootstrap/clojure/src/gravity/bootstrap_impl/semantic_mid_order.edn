@@ -2,9 +2,6 @@
  {:resource "gravity/bootstrap_impl/semantic_mid/001-p13-tooling-artifacts-core.clj", :reader-line 47178}
  {:resource "gravity/bootstrap_impl/semantic_mid/002-p13-tooling-artifacts-extended.clj", :reader-line 47178}
  {:resource "gravity/bootstrap_impl/semantic_mid/003-p13-tooling-artifact-values.clj", :reader-line 47178}
- {:resource "gravity/bootstrap_impl/semantic_mid/004-reader-token-lexical-context.clj", :reader-line 50099}
- {:resource "gravity/bootstrap_impl/semantic_mid/005-reader-token-realizers.clj", :reader-line 50099}
- {:resource "gravity/bootstrap_impl/semantic_mid/006-reader-token-dispatch.clj", :reader-line 50099}
  {:resource "gravity/bootstrap_impl/semantic_mid/007-stage1-reader-token-stream.clj", :reader-line 50099}
  {:resource "gravity/bootstrap_impl/semantic_mid/008-reader-products-context.clj", :reader-line 52273}
  {:resource "gravity/bootstrap_impl/semantic_mid/009-reader-products-values.clj", :reader-line 52273}

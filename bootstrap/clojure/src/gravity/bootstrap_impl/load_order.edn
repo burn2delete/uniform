@@ -558,9 +558,6 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00361-stage1-bootstrap-required-components.clj", :reader-line 49471, :owner :bootstrap-p15, :first-form "stage1-bootstrap-required-components"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00362-stage1-bootstrap-diagnostic-stream.clj", :reader-line 49701, :owner :bootstrap-p15, :first-form "stage1-bootstrap-diagnostic-stream"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00363-stage1-reader-table-form.clj", :reader-line 49927, :owner :bootstrap-p15, :first-form "stage1-reader-table-form"}
- {:resource "gravity/bootstrap_impl/semantic_mid/004-reader-token-lexical-context.clj", :reader-line 50099, :metadata-symbol stage1-reader-token-stream, :metadata-line 50099, :metadata-column 1}
- {:resource "gravity/bootstrap_impl/semantic_mid/005-reader-token-realizers.clj", :reader-line 50099, :metadata-symbol stage1-reader-token-stream, :metadata-line 50099, :metadata-column 1}
- {:resource "gravity/bootstrap_impl/semantic_mid/006-reader-token-dispatch.clj", :reader-line 50099, :metadata-symbol stage1-reader-token-stream, :metadata-line 50099, :metadata-column 1}
  {:resource "gravity/bootstrap_impl/semantic_mid/007-stage1-reader-token-stream.clj", :reader-line 50099, :metadata-symbol stage1-reader-token-stream, :metadata-line 50099, :metadata-column 1}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00365-stage1-reader-character-pipeline-fail.clj", :reader-line 50377, :owner :bootstrap-p15, :first-form "stage1-reader-character-pipeline-fail!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00366-stage1-reader-table-from-token-realizer.clj", :reader-line 50546, :owner :bootstrap-p15, :first-form "stage1-reader-table-from-token-realizer"}

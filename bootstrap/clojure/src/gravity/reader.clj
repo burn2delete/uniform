@@ -2,17 +2,26 @@
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
   This namespace owns native intake through an explicit byte owner, strict decoding, source-path
-  diagnostic data, existing artifact envelopes and a hosted compatibility oracle.
-  Admission, parsing, syntax, source identity and diagnostic publication remain
+  diagnostic data, existing artifact envelopes and hosted compatibility tokenization/products.
+  Admission, form parsing, syntax, source identity and diagnostic publication remain
   with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-reader-intake-products-report-validation-and-document-projection
+   :contract-boundary :native-reader-intake-tokenization-products-report-validation-and-document-projection
    :public-api
-   {'native-document-projection
+   {'tokenize-compatibility-source
+    {:arglists '([source-path source-text table reader-options operations])
+     :contract-boundary :hosted-compatibility-source-tokenization
+     :returns :gravity/stage1-reader-token-stream
+     :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:line-starts-var :digest-var :line-terminator-var :span-var
+                        :fail-var :decode-string-var :token-kind-var :decode-atom-var
+                        :decode-character-var]
+     :callback-type-checks? false :test-owner 'gravity.reader.tokenizer-test}
+    'native-document-projection
     {:arglists '([source-path source-text project-context reader-options views operations])
      :returns :gravity/native-c2-document-projection
      :admission :none :authenticates-inputs? false
@@ -60,11 +69,12 @@
                      :captured-native-document-views-and-late-owner-vars
                      :compatibility-oracle-late-owner-vars
                      :seed-reader-operations :standard-reader-options
+                     :historical-reader-table :tokenizer-late-owner-vars
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
-                      :gravity/native-c2-document-projection
+                      :gravity/native-c2-document-projection :gravity/stage1-reader-token-stream
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -90,7 +100,12 @@
                                  :delegates [:native-report-policy :identity-policy]
                                  :remapping-owner :guarded-source-facade
                                  :authenticates-inputs? false}
-    :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
+    :hosted-tokenizer {:owns [:lexical-branch-selection :token-realization :tokenizer-sequencing]
+                      :rule-ids ["STAGE1READER003" "STAGE1READER004"]
+                      :literal-policy-owner :supplied-literal-decoder-vars
+                      :span-owner :supplied-span-var :construction-owner :supplied-failure-var
+                      :authenticates-inputs? false}
+    :does-not-own [:form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
    {:requires ['clojure.core]
@@ -101,6 +116,7 @@
     :gravity-source-extension :gravity-source-kind :utf8-byte-count]
    :unsupported [:other-encodings :replacement-decoding :file-authority
                  :native-document-product-or-callback-authentication
+                 :tokenizer-text-table-options-callback-and-output-authentication
                  :native-document-canonical-admission-and-publication
                  :native-report-authentication
                  :compatibility-oracle-product-authentication
@@ -468,6 +484,370 @@
                         :profiles #{:meta} :output :syntax-seed}])
             artifact))]
     {:kind :gravity/native-c2-document-projection :admission :none :authenticates-inputs? false :artifact (assoc artifact :artifact-id ((deref artifact-id-var) artifact))}))
+
+(defn- compatibility-reader-token-context
+  [ops source-path ^String source-text table reader-options]
+  (let [line-starts ((:line-starts-var ops) source-text)
+        whitespace (set (:whitespace table))
+        delimiters (:delimiters table)
+        dispatch (:dispatch table)
+        comment-marker (:line-comment table)
+        string-delimiter (:string-delimiter table)
+        retain-trivia? (true? (:retain-comments reader-options))
+        source-length (count source-text)
+        table-id (str "sha256:" ((:digest-var ops) (pr-str table)))]
+    {:source-path source-path
+     :source-text source-text
+     :line-starts line-starts
+     :whitespace whitespace
+     :delimiters delimiters
+     :dispatch dispatch
+     :comment-marker comment-marker
+     :string-delimiter string-delimiter
+     :retain-trivia? retain-trivia?
+     :source-length source-length
+     :table-id table-id}))
+
+(defn- compatibility-reader-char-string
+  [{:keys [^String source-text]} idx]
+  (str (.charAt source-text idx)))
+
+(defn- compatibility-reader-ignored?
+  [ops {:keys [source-length whitespace] :as context} idx]
+  (and (< idx source-length)
+       (contains? whitespace
+                  ((:char-string ops) context idx))))
+
+(defn- compatibility-reader-comment?
+  [ops {:keys [source-length comment-marker] :as context} idx]
+  (and (< idx source-length)
+       (= comment-marker ((:char-string ops) context idx))))
+
+(defn- compatibility-reader-skip-ignored
+  [ops {:keys [source-length ^String source-text] :as context} idx]
+  (loop [idx idx]
+    (cond
+      (>= idx source-length) idx
+      ((:ignored? ops) ops context idx) (recur (inc idx))
+      ((:comment? ops) ops context idx)
+      (recur (loop [j idx]
+               (if (and (< j source-length)
+                        (not ((:line-terminator-var ops) (.charAt source-text j))))
+                 (recur (inc j))
+                 j)))
+      :else idx)))
+
+(defn- compatibility-reader-whitespace-token
+  [ops {:keys [source-path ^String source-text line-starts source-length]
+    :as context}
+   idx token-index]
+  (let [end (loop [end idx]
+              (if (and (< end source-length)
+                       ((:ignored? ops) ops context end))
+                (recur (inc end))
+                end))
+        raw (subs source-text idx end)]
+    [{:index token-index
+      :kind :whitespace
+      :lexeme raw
+      :raw raw
+      :decoded nil
+      :trivia? true
+      :span ((:span-var ops) source-path source-text
+                                line-starts idx end)}
+     end]))
+
+(defn- compatibility-reader-comment-token
+  [ops {:keys [source-path ^String source-text line-starts source-length]}
+   idx token-index]
+  (let [end (loop [end idx]
+              (if (and (< end source-length)
+                       (not ((:line-terminator-var ops)
+                             (.charAt source-text end))))
+                (recur (inc end))
+                end))
+        raw (subs source-text idx end)]
+    [{:index token-index
+      :kind :comment
+      :lexeme raw
+      :raw raw
+      :decoded nil
+      :trivia? true
+      :span ((:span-var ops) source-path source-text
+                                line-starts idx end)}
+     end]))
+
+(defn- compatibility-reader-atom-end
+  [ops {:keys [source-length string-delimiter delimiters dispatch] :as context}
+   idx]
+  (loop [idx idx]
+    (if (or (>= idx source-length)
+            ((:ignored? ops) ops context idx)
+            ((:comment? ops) ops context idx)
+            (= string-delimiter ((:char-string ops) context idx))
+            (contains? #{"'" "`" "~" "^" "@" "\\"}
+                       ((:char-string ops) context idx))
+            (contains? delimiters
+                       ((:char-string ops) context idx))
+            (contains? dispatch
+                       ((:char-string ops) context idx)))
+      idx
+      (recur (inc idx)))))
+
+(defn- compatibility-reader-string-token
+  [ops {:keys [source-path ^String source-text line-starts source-length
+           string-delimiter] :as context}
+   idx token-index]
+  (let [start idx]
+    (loop [idx (inc idx)]
+      (cond
+        (>= idx source-length)
+        ((:fail-var ops)
+         "STAGE1READER003" source-path nil
+         {:source-span ((:span-var ops) source-path source-text
+                                           line-starts start idx)
+          :token-id (keyword (str "tok-" token-index))
+          :raw (subs source-text start idx)})
+
+        (= string-delimiter ((:char-string ops) context idx))
+        (let [end (inc idx)
+              raw (subs source-text start end)
+              span ((:span-var ops) source-path source-text
+                                       line-starts start end)
+              decoded ((:decode-string-var ops)
+                       source-path raw span
+                       (keyword (str "tok-" token-index)))]
+          [{:index token-index
+            :kind :string
+            :lexeme decoded
+            :raw raw
+            :decoded decoded
+            :span span}
+           end])
+
+        (= \\ (.charAt source-text idx))
+        (if (< (inc idx) source-length)
+          (recur (+ idx 2))
+          ((:fail-var ops)
+           "STAGE1READER003" source-path nil
+           {:source-span ((:span-var ops) source-path source-text
+                                             line-starts start idx)
+            :token-id (keyword (str "tok-" token-index))
+            :raw (subs source-text start idx)}))
+        :else (recur (inc idx))))))
+
+(defn- compatibility-reader-atom-token
+  [ops {:keys [source-path ^String source-text line-starts] :as context}
+   idx token-index]
+  (let [start idx
+        end ((:atom-end ops) ops context idx)
+        token (subs source-text start end)
+        kind ((:token-kind-var ops) token)
+        token-id (keyword (str "tok-" token-index))
+        span ((:span-var ops) source-path source-text
+                                 line-starts start end)]
+    [{:index token-index
+      :kind kind
+      :lexeme token
+      :raw token
+      :decoded ((:decode-atom-var ops) source-path kind token
+                                          span token-id)
+      :span span}
+     end]))
+
+(defn- compatibility-reader-character-token
+  [ops {:keys [source-path ^String source-text line-starts source-length
+           delimiters] :as context}
+   idx token-index]
+  (let [word-start (inc idx)
+        end (cond
+              (>= word-start source-length) word-start
+              (or ((:ignored? ops) ops context word-start)
+                  ((:comment? ops) ops context word-start))
+              word-start
+              (contains? delimiters
+                         ((:char-string ops) context word-start))
+              (inc word-start)
+              :else ((:atom-end ops) ops context word-start))
+        raw (subs source-text idx end)
+        span ((:span-var ops) source-path source-text
+                                 line-starts idx end)
+        decoded ((:decode-character-var ops)
+                 source-path raw span
+                 (keyword (str "tok-" token-index)))]
+    [{:index token-index
+      :kind :character
+      :lexeme decoded
+      :raw raw
+      :decoded decoded
+      :span span}
+     end]))
+
+(defn- compatibility-reader-abbreviation-token
+  [ops {:keys [source-path ^String source-text line-starts source-length]
+    :as context}
+   idx token-index]
+  (let [splice? (and (= "~" ((:char-string ops) context idx))
+                     (< (inc idx) source-length)
+                     (= "@" ((:char-string ops) context (inc idx))))
+        end (+ idx (if splice? 2 1))
+        raw (subs source-text idx end)
+        abbrev (case raw
+                 "'" :quote
+                 "`" :syntax-quote
+                 "~" :unquote
+                 "~@" :splice-unquote
+                 "^" :metadata
+                 "@" :deref)]
+    [{:index token-index
+      :kind :abbreviation
+      :abbrev abbrev
+      :lexeme raw
+      :raw raw
+      :decoded abbrev
+      :span ((:span-var ops) source-path source-text
+                                line-starts idx end)}
+     end]))
+
+(defn- compatibility-reader-dispatch-token
+  [ops {:keys [source-path ^String source-text line-starts source-length dispatch]
+    :as context}
+   idx token-index]
+  (let [dispatch-token ((:char-string ops) context idx)
+        next-token (when (< (inc idx) source-length)
+                     ((:char-string ops) context (inc idx)))
+        dispatch-entry (get-in dispatch [dispatch-token next-token])]
+    (if (= :set-open (:kind dispatch-entry))
+      (let [end (+ idx 2)]
+        [{:index token-index
+          :kind (:kind dispatch-entry)
+          :lexeme (str dispatch-token next-token)
+          :raw (str dispatch-token next-token)
+          :decoded :set
+          :dispatch dispatch-token
+          :close-token (:closes dispatch-entry)
+          :span ((:span-var ops) source-path source-text
+                                    line-starts idx end)}
+         end])
+      (let [end ((:atom-end ops) ops context (inc idx))
+            raw (subs source-text idx end)
+            tag (subs raw 1)]
+        (if (contains? #{"inst" "uuid"} tag)
+          [{:index token-index
+            :kind :tag
+            :tag (symbol tag)
+            :lexeme raw
+            :raw raw
+            :decoded (symbol tag)
+            :span ((:span-var ops) source-path source-text
+                                      line-starts idx end)}
+           end]
+          ((:fail-var ops)
+           "STAGE1READER004" source-path dispatch-token
+           {:source-span
+            ((:span-var ops) source-path source-text line-starts idx
+                                (min source-length (max (inc idx) end)))
+            :token-id (keyword (str "tok-" token-index))
+            :raw raw
+            :extension-tag (when (seq tag) (symbol tag))}))))))
+
+(defn- compatibility-reader-delimiter-token
+  [ops {:keys [source-path source-text line-starts] :as context}
+   idx token-index delimiter]
+  (let [token ((:char-string ops) context idx)]
+    [{:index token-index
+      :kind (:kind delimiter)
+      :lexeme token
+      :raw token
+      :decoded token
+      :close-token (:closes delimiter)
+      :span ((:span-var ops) source-path source-text
+                                line-starts idx (inc idx))}
+     (inc idx)]))
+
+(defn- compatibility-reader-next-token
+  [ops {:keys [retain-trivia? string-delimiter delimiters dispatch] :as context}
+   idx token-index]
+  (let [token ((:char-string ops) context idx)
+        delimiter (get delimiters token)]
+    (cond
+      (and retain-trivia? ((:ignored? ops) ops context idx))
+      ((:whitespace-token ops) ops context idx token-index)
+
+      (and retain-trivia? ((:comment? ops) ops context idx))
+      ((:comment-token ops) ops context idx token-index)
+
+      (= string-delimiter token)
+      ((:string-token ops) ops context idx token-index)
+
+      (= "\\" token)
+      ((:character-token ops) ops context idx token-index)
+
+      (contains? #{"'" "`" "~" "^" "@"} token)
+      ((:abbreviation-token ops) ops context idx token-index)
+
+      (contains? dispatch token)
+      ((:dispatch-token ops) ops context idx token-index)
+
+      delimiter
+      ((:delimiter-token ops) ops context idx token-index delimiter)
+
+      :else
+      ((:atom-token ops) ops context idx token-index))))
+
+(defn- compatibility-reader-tokenize
+  [ops {:keys [retain-trivia? source-length source-path source-text table-id]
+    :as context}]
+  (loop [idx 0
+         token-index 0
+         tokens []]
+    (let [idx (if retain-trivia?
+                idx
+                ((:skip-ignored ops) ops context idx))]
+      (if (>= idx source-length)
+        {:kind :gravity/stage1-reader-token-stream
+         :source-path source-path
+         :source-id (str "sha256:" ((:digest-var ops) source-text))
+         :reader-table-id table-id
+         :token-count (count tokens)
+         :tokens tokens
+         :status :complete}
+        (let [[token-record next-idx]
+              ((:next-token ops) ops context idx token-index)]
+          (recur next-idx
+                 (inc token-index)
+                 (conj tokens token-record)))))))
+
+(def ^:private compatibility-reader-token-operations
+  {:char-string compatibility-reader-char-string
+   :ignored? compatibility-reader-ignored?
+   :comment? compatibility-reader-comment?
+   :skip-ignored compatibility-reader-skip-ignored
+   :whitespace-token compatibility-reader-whitespace-token
+   :comment-token compatibility-reader-comment-token
+   :atom-end compatibility-reader-atom-end
+   :string-token compatibility-reader-string-token
+   :atom-token compatibility-reader-atom-token
+   :character-token compatibility-reader-character-token
+   :abbreviation-token compatibility-reader-abbreviation-token
+   :dispatch-token compatibility-reader-dispatch-token
+   :delimiter-token compatibility-reader-delimiter-token
+   :next-token compatibility-reader-next-token
+   :tokenize compatibility-reader-tokenize})
+
+(defn tokenize-compatibility-source
+  "Tokenize already-decoded text through the hosted compatibility seed.
+
+  Explicit owner Vars retain their late lookup and original failure behavior.
+  Text, table, options, callbacks and output receive no authentication."
+  [source-path source-text table reader-options operations]
+  (let [ops (merge compatibility-reader-token-operations
+                   (select-keys operations
+                                [:line-starts-var :digest-var :line-terminator-var :span-var
+                                 :fail-var :decode-string-var :token-kind-var :decode-atom-var
+                                 :decode-character-var]))]
+    (compatibility-reader-tokenize
+     ops (compatibility-reader-token-context ops source-path source-text table reader-options))))
 
 (doseq
  [name (keys (:public-api namespace-contract))
