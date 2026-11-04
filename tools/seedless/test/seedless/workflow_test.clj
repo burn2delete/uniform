@@ -76,6 +76,7 @@
     (try
       (with-redefs
        [rt/event! (fn [& _])
+        transport/head-workflow-state (fn [& _] {:state :passed :runs [{:path ".github/workflows/ci.yml" :status "completed" :conclusion "success"}]})
         gh/status! (fn [_ _ status] (ownership! [:status status]) (swap! events conj [:status status]))
         gh/comment! (fn [& _])
         gh/open-review-threads? (fn [& _] false)
@@ -425,10 +426,46 @@
                                          :head (assoc info :headRefOid "foreign")
                                          info))))
                                gh/open-review-threads? (fn [& _] (and (= :threads drift) (> (swap! threads inc) 1)))]
-                   (is (thrown? Exception (w/integrate! ctx (w/task ctx "a")))))
+                   (if (= :ci drift)
+                     (w/integrate! ctx (w/task ctx "a"))
+                     (is (thrown? Exception (w/integrate! ctx (w/task ctx "a"))))))
                  (is (some #(= :preflight (first %)) @events))
                  (is (not-any? #(= :merge (first %)) @events))
                  (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx))))))))))
+
+(deftest queued-workflow-with-green-rollup-waits-at-each-merge-gate
+  (doseq [gate [1 2 3]]
+    (harness :normal
+             (fn [ctx events phases _]
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (let [calls (atom 0) authors @phases
+                     queued {:state :pending :runs [{:path ".github/workflows/ci.yml" :status "queued"}]}]
+                 (with-redefs [transport/head-workflow-state
+                               (fn [_ candidate]
+                                 (is (= (:candidate (w/task ctx "a")) candidate))
+                                 (if (>= (swap! calls inc) gate) queued {:state :passed :runs []}))]
+                   (w/integrate! ctx (w/task ctx "a")))
+                 (is (= gate @calls))
+                 (is (= (= gate 3) (boolean (some #(= :preflight (first %)) @events))))
+                 (is (not-any? #(= :merge (first %)) @events))
+                 (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx)))))
+                 (is (= :pending (get-in (w/task ctx "a") [:head-workflows :state])))
+                 (is (not= :attention (:status (w/task ctx "a"))))
+                 (w/integrate! ctx (w/task ctx "a"))
+                 (is (= :done (:status (w/task ctx "a"))))
+                 (is (= authors @phases)))))))
+
+(deftest failed-workflow-with-green-rollup-retains-evidence-for-repair
+  (harness :normal
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (let [failed {:state :failed :runs [{:id 19 :path ".github/workflows/ci.yml" :status "completed" :conclusion "failure"}]}]
+               (with-redefs [transport/head-workflow-state (fn [& _] failed)]
+                 (w/integrate! ctx (w/task ctx "a")))
+               (is (= :repair (:status (w/task ctx "a"))))
+               (is (= (assoc failed :candidate (:candidate (w/task ctx "a")))
+                      (get-in (w/task ctx "a") [:feedback :workflows])))
+               (is (not-any? #(#{:preflight :merge} (first %)) @events))))))
 
 (deftest command-success-with-unverified-merge-needs-original-journal-inspection
   (harness :normal

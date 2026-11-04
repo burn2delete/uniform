@@ -5,6 +5,7 @@
             [seedless.github :as gh]
             [seedless.schema :as schema]
             [simplify.codex :as codex]
+            [simplify.github :as transport]
             [simplify.runtime :as rt]
             [simplify.schema :as validation]
             [simplify.workflow :as shared])
@@ -568,19 +569,31 @@
                  (= :passed (get-in t [:checks :result])))
     (rt/fail! "Acceptance/check evidence does not bind this main candidate" {})))
 
+(defn- candidate-ci! [ctx t info]
+  (let [workflows (transport/head-workflow-state ctx (:candidate t))
+        states [(shared/check-state (:statusCheckRollup info)) (:state workflows)]]
+    (task! ctx (:key t) :head-workflows (assoc workflows :candidate (:candidate t)))
+    (cond
+      (some #{:failed} states) :failed
+      (every? #{:passed} states) :passed
+      :else :pending)))
+
 (defn assert-merge-provider! [ctx t]
-  (let [info (shared/pr-info ctx t)]
+  (let [info (shared/pr-info ctx t) ci (candidate-ci! ctx t info)]
     (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
     (when-not (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
                    (= (get-in ctx [:config :base-branch]) (:baseRefName info))
-                   (= :passed (shared/check-state (:statusCheckRollup info)))
                    (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
                    (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info))))
       (rt/fail! "Provider merge evidence changed after preflight" {:remote-pr-refusal true :pr info}))
     (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
       (rt/fail! "PR has unresolved review threads after preflight" {:remote-pr-refusal true}))
     (assert-clean! ctx (:worktree t))
-    (assert-identity! ctx t)))
+    (assert-identity! ctx t)
+    (if (= :passed ci)
+      true
+      (do (rt/event! ctx :waiting {:slice (:key t) :reason :ci-changed-after-preflight :ci ci})
+          false))))
 
 (defn merge-effect-id [t]
   (if (and (:candidate t)
@@ -601,11 +614,11 @@
   (rt/try-with-main-lock
    ctx
    (fn []
-     (let [base (fresh-main! ctx) info (shared/pr-info ctx t)]
+     (let [base (fresh-main! ctx) info (shared/pr-info ctx t) ci (candidate-ci! ctx t info)]
        (cond
          (not= base (:base t)) {:compose base}
          (not (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
-                   (= :passed (shared/check-state (:statusCheckRollup info)))
+                   (= :passed ci)
                    (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
                    (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info)))))
          (rt/event! ctx :waiting {:slice (:key t) :reason :pr-evidence-changed})
@@ -625,32 +638,32 @@
            (rt/run! ctx (:worktree t)
                     ["clojure" "-M" "tools/check_worktree_preflight.clj" "--mode" "integration" "--base-ref" base
                      "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
-           (assert-merge-provider! ctx t)
-           (let [observed (fresh-main! ctx)]
-             (if (not= base observed)
-               {:compose observed}
-               (let [intent {:id (merge-effect-id t) :base base :candidate (:candidate t)
-                             :tree (:tree t) :method :merge :pr-url (get-in t [:pr :html_url])}]
-                 (task! ctx (:key t) :merge-effect (:id intent))
-                 (try
-                   (rt/effect! ctx (:id intent)
-                               #(do (rt/begin-main-merge! ctx intent)
-                                    (rt/run! ctx (:worktree t)
-                                             ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
-                                              "--merge" "--match-head-commit" (:candidate t)])))
-                   (let [merged (shared/pr-info ctx t)]
-                     (when-not (= "MERGED" (:state merged)) (rt/fail! "Merge outcome needs inspection" {:effect (:id intent)}))
-                     (assert-merged-pr-identity! ctx t)
-                     (verify-merge! ctx t merged intent))
-                   (catch Exception e
-                     (throw (ex-info (.getMessage e)
-                                     (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e)))))))))))))
+           (when (assert-merge-provider! ctx t)
+             (let [observed (fresh-main! ctx)]
+               (if (not= base observed)
+                 {:compose observed}
+                 (let [intent {:id (merge-effect-id t) :base base :candidate (:candidate t)
+                               :tree (:tree t) :method :merge :pr-url (get-in t [:pr :html_url])}]
+                   (task! ctx (:key t) :merge-effect (:id intent))
+                   (try
+                     (rt/effect! ctx (:id intent)
+                                 #(do (rt/begin-main-merge! ctx intent)
+                                      (rt/run! ctx (:worktree t)
+                                               ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
+                                                "--merge" "--match-head-commit" (:candidate t)])))
+                     (let [merged (shared/pr-info ctx t)]
+                       (when-not (= "MERGED" (:state merged)) (rt/fail! "Merge outcome needs inspection" {:effect (:id intent)}))
+                       (assert-merged-pr-identity! ctx t)
+                       (verify-merge! ctx t merged intent))
+                     (catch Exception e
+                       (throw (ex-info (.getMessage e)
+                                       (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e))))))))))))))
 
 (defn integrate! [ctx t]
   (assert-no-pending-main! ctx t)
   (assert-identity! ctx t)
   (when (dependencies-merged? ctx t)
-    (let [info (shared/pr-info ctx t) ci (shared/check-state (:statusCheckRollup info))]
+    (let [info (shared/pr-info ctx t) ci (candidate-ci! ctx t info)]
       (cond
         (= "MERGED" (:state info))
         (do
@@ -663,6 +676,7 @@
         (not= "OPEN" (:state info)) (rt/fail! "PR closed without a verified merge" {:pr info})
         (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote head changed outside this controller" {:pr info})
         (= :failed ci) (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info)
+                                                          :workflows (:head-workflows (task ctx (:key t)))
                                                           :diagnostics (ci-evidence! ctx t (:statusCheckRollup info))
                                                           :instruction "Read the captured job evidence and repair the actual failure; retain timeouts/unavailable logs as such. Never weaken the test or retry unchanged code."})
                            (transition! ctx (:key t) :repair))

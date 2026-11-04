@@ -4,6 +4,7 @@
             [clojure.test :refer [deftest is]]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
+            [simplify.github :as transport]
             [simplify.runtime :as rt]
             [simplify.workflow :as shared])
   (:import [java.nio.file Files]))
@@ -128,6 +129,7 @@
         finished (atom false)]
     (rt/update! ctx assoc-in [:tasks "slice"] t)
     (with-redefs [shared/pr-info (fn [_ _] {:state "MERGED" :statusCheckRollup []})
+                  transport/head-workflow-state (fn [& _] {:state :passed :runs []})
                   workflow/assert-identity! (fn [& _])
                   workflow/finish-merge! (fn [& _] (reset! finished true))
                   gh/api (fn [_ _]
@@ -154,6 +156,7 @@
                    :conclusion "SUCCESS"}]]
       (rt/update! ctx assoc-in [:tasks "slice"] t)
       (with-redefs [shared/pr-info (fn [& _] {:state "MERGED" :statusCheckRollup checks})
+                    transport/head-workflow-state (fn [& _] {:state :passed :runs []})
                     workflow/assert-identity! (fn [& _])
                     gh/api (fn [& _] (full-pr t "closed" "candidate"))
                     rt/event! (fn [& _])
