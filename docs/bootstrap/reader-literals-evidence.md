@@ -172,3 +172,32 @@ Normal composition5876 preserves incoming mainf66233177d9fc3eaf29af30c7bfc3286bf
 and its two disjoint set/effects blobs. Current-base Reader88/4,247,
 set/effects3/127 and boundary48/1,198 pass, but they precede the owner-order
 repair. Its exact CI41907637750 remains historical, not repair acceptance.
+
+## Repair verification
+
+Repair source60087858765a1e9113416ba5b78423cb75aeb7bc, tree
+4d0eac5a5760da9739e17dc660905d81327dd4e1, is a clean five-path commit.
+The exact wired Reader CI command passes ninety-one tests and 4,252 assertions
+under its original one GiB heap and 120-second process watchdog. Language/source
+ownership gates pass forty-eight tests and 1,198 assertions with zero skipped
+namespaces. The thirty-nine-path contextual lint comparison against mainf662
+has 3,458 unchanged baseline warnings and zero blocking warnings/errors.
+Docs, roadmap and governance validators pass; cold Reader still exposes
+fourteen functions without Bootstrap.
+
+Fresh native captures preserve all original literal outcomes and four complete
+token streams at a65f15a6ac535fa0aaf0963480a4d189d9f555b3225e4dac8626e6d2727ba673.
+The form-builder capture preserves fifty-two metadata-aware records, four
+products, forty-eight syntax refusals and twenty native join refusals, byte
+identical to its prior final candidate at
+ad4c5c42a3b93f2eac63a9a81cc786237885974966822a3298325841b7a9ab14.
+The earlier four declared composite-set failure repairs remain exactly those
+recorded in the form-builder evidence; no additional baseline differences are
+accepted. These are native structural comparisons, not source authentication.
+
+Static conservation proves exactly sixty-three operator dereferences plus
+the explicit owner-call-resolution contract field, with all earlier seven
+Reader API bodies, Bootstrap facades, manifests and CI bytes unchanged.
+Independent repair acceptance, new source/base-bound CI and immediate clean
+integration preflight remain separate outstanding gates. The prior review
+withdrawal and failing regressions remain evidence, never erased by this pass.
