@@ -305,3 +305,145 @@ cannot supply it. The local bootstrap-format ambiguity and unresolved downstream
 selection, trust, grant, compatibility and execution obligations described above
 remain unchanged. The broad parent stays Open and unchecked. This repair grants
 no release, self-hosting or seed-retirement authority.
+
+## Environment key policy intersection increment
+
+Finding: `auth.environment-scope.eight-layer-intersection-v1`.
+Owning task:
+`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`.
+Observed locally on 2026-11-04 in the supplied current worktree
+`increment-1174`, using the speckit-implement workflow. Results describe only
+the uncommitted four owned-path changes. An immutable current candidate commit/
+tree was not supplied in this request and was not re-inspected. No commit,
+reference change, GitHub action, push, merge or independent acceptance occurred.
+
+### Implemented scope and actual fixtures
+
+The [local carrier](tasks.md#environment-key-policy-intersection-increment)
+implements pure `gravity.capabilities.environment-scope/assess-scope`. It
+requires the eight named SAFE10 layers, explicit allow/deny key sets, public
+policy-source/redaction references, and matching principal, capability,
+provider/version, phase, profile and target. The request retains its public
+source identity/location. The actual declaration producer is called afresh;
+unsupported capability/profile/target and mismatched declaration/context are
+refused. Existing provider declarations, provider-choice work, compatibility
+APIs, permission-row semantics and pinned source records are untouched.
+
+The actual operation retains exactly the common keys, minus all explicit
+denials, and emits sorted deterministic narrowing/denial provenance. Reordered
+request/policy/declaration maps give equal results. Broadening later layers
+cannot restore an upstream removed key. All redaction references survive in
+ordered obligations with `:redaction-enforced? false`. Scope assessments do not
+issue grants, select providers or construct handles.
+
+Executable fixtures cover `environment-key-intersection`,
+`reordered-maps-produce-equal-results`,
+`downstream-broadening-cannot-restore-key`, `missing-policy-layer`,
+`explicit-deny-at-each-layer`, `requested-key-outside-intersection`,
+`wrong-phase-and-mismatched-identities`,
+`mismatched-provider-and-unsupported-applicability`, `forged-scope-satisfied`
+and `malformed-inputs-and-secret-marker-controls`. Every layer's missing,
+malformed, denied, outside-scope and identity cases call the actual operation;
+precise diagnostic ID/path/reason/layer assertions accompany the status checks.
+A producer-call observation verifies the declaration/context actually supplied
+to the existing producer. A supplied producer record is rejected as a
+declaration substitute. Both matching build/runtime phases and empty sets have
+explicit fixtures. Key-name legality covers NUL, equals and invalid Unicode,
+while accepting a valid Unicode key without input quotas.
+
+Secret-marker fixtures inspect the entire public result, including diagnostics,
+for malformed fields and collections, unknown map keys, provider extensions,
+producer failures and nested span payloads. Malformed inputs produce no
+assessment. Public identities/key names/policy references remain trusted caller
+metadata; these controls do not establish general secret classification,
+redaction enforcement or public artifact export safety.
+
+### Checks and restrictions
+
+Checks run from repository root with exact argument vectors are recorded below.
+The first focused run exited 2 for an extra test reader delimiter at line 172;
+two excess closing delimiters were corrected. Subsequent focused runs passed
+10 tests / 811 assertions before adding missing-policy-field and malformed
+collection controls. Those earlier failures are not passing evidence.
+
+The following final commands exited 0:
+
+```clojure
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capabilities.environment-scope-test"]
+;; 10 tests, 1318 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M" "tools/acceptance_dependencies_test.clj"]
+;; 24 tests, 5489 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.providers.declarations-test"]
+;; 8 tests, 387 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capability-validation-test"]
+;; 6 tests, 56 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+;; 6 tests, 11 assertions, 0 failures, 0 errors; no skipped namespaces.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_gravity_docs.clj"]
+;; Passed: 240 docs, 19 phase indexes, ASCII, no placeholders.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_full_language_roadmap.clj"]
+;; Passed: structural claims only; dated snapshot is non-authoritative,
+;; completion admission remains disabled.
+```
+
+The focused namespace was expanded after the initial successful run to include
+every missing policy field, non-map inputs/layers and metadata-bearing public
+symbols. The final 1318 assertions include those controls; secret inspection
+enables metadata printing over the complete returned value.
+Acceptance dependency controls passed with the unchanged captured bodies and
+pinned plan, including existing task-body and source-drift rejection controls.
+All seven requested checks completed successfully; none was skipped or denied.
+
+Passive Clojure SHA256 reads identified final source and fixture bytes:
+
+- `bootstrap/clojure/src/gravity/capabilities/environment_scope.clj`:
+  `1ae1f9ca4abb08aa36d3c994da981d3203d2d5a4d6396f65a302fa4b86bd9e4f`.
+- `bootstrap/clojure/test/gravity/capabilities/environment_scope_test.clj`:
+  `e13b3f844d42d78cd9f80f1b96c178f06ed1c5e39779ff18aacedd5cc96fff5a`.
+
+An additional successful Clojure assertion compared passive pre-edit/current
+SHA256 snapshots of the pinned plan, complete marked task region and historical
+task suffix. They remain respectively
+`f1890883dcbdf6eddf407268502f905f1c0b2522b739dcf2c253cd9896f549be`,
+`1bc3e9cae5084d86ad81183860fc46e563d61774b95c92520f9b275fb526112c`, and
+`c2aa807bd087a8895fff1a424f2c0a53cda96c4edbaa1b4553d229ff0349321d`.
+The snapshot check did not inspect Git/cache state or perform the restricted
+whitespace action. `git status --short` showed only the two owned Markdown
+files and the two new owned namespace directories.
+
+The inherited907 Git whitespace action and select23 Git/cache-write inspection
+actions remain restricted and were not attempted, transferred or replaced by
+another executable. No actual check in this increment requested privileged
+execution. Network access remains disabled. No live environment read, callback
+execution, credential access, ambient authority or replacement accounting was
+introduced.
+
+### Missing authority and remaining semantics
+
+L15/SAFE10 do not define this decoded serialized carrier, authenticate its
+caller-supplied public policy sources, resolve provider scope/redaction
+references or define a redaction-policy merging algebra. The local choices
+above preserve all obligations without claiming their resolution or enforcement.
+Declaration validity/profile/target membership does not prove provider trust,
+conformance or canonical compiler profile legality. Real grants and their
+authentic policy sources, first-class values, attenuation/lifetime/revocation,
+secret/export enforcement and actual Runtime/Build action-boundary composition
+remain parent obligations. Source parsing, provider action/conformance suites,
+full compiler integration, release, self-hosting and seed retirement checks
+were not run or claimed. No provider-choice candidate acceptance is consumed.
+
+Independent acceptance of the exact resulting candidate is missing and cannot
+be supplied by these self-checks. Controller integration is unperformed. Parent
+task identity, captured criteria, checkbox and Open status remain unchanged;
+this finite computation is useful construction evidence, not parent completion
+or a release/self-hosting/seed-retirement authority claim.
