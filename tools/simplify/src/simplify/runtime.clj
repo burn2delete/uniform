@@ -377,12 +377,12 @@
                         ;; fence or its completed migration marker.
                         (when (and (str/starts-with? id "merge/")
                                    (#{:pending :uncertain :restricted :not-applied} (:status effect))
-                                   (or marker pending)
+                                   (or marker pending recorded)
                                    (not (main-effect-owner? ctx recorded-owner)))
                           (fail! "Main-effect migration belongs to another or unknown state owner" {:effect id}))
                         (if (or (not (str/starts-with? id "merge/"))
                                 (not (#{:pending :uncertain :restricted :not-applied} (:status effect)))
-                                marker pending) state
+                                marker pending recorded) state
                             (let [task (first (filter #(or (= id (str "merge/" (:candidate %)))
                                                           (= id (:merge-effect %))
                                                           (= id (get-in % [:merge-intent :id]))
