@@ -164,7 +164,8 @@ Build grants and runtime grants remain separate. Compile-time providers support
 replay or explicitly declare non-replayability. Release/conformance/safety-critical
 builds need the specified recorded exception before otherwise non-replayable use;
 that replay exception grants no effect authority and cannot waive the exact
-L6/L12 hermetic premises or their recorded environment-wording issue. Runtime
+L12 hermetic premises selected by [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs). Canonical L6 wording
+clarification remains separate source work. Runtime
 initialization checks actual required providers before user code unless its
 compatible fallback is declared. Emitted gate metadata cannot replace that check
 or actual no-action-after-denial behavior.

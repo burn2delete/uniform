@@ -255,6 +255,19 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Hermetic input policy
+
+Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) and the exact L12 declared-input,
+provider/replay, clock/random, target-manifest and generated-input premises.
+The existing typed-build-graph task owns actual allowed/refused execution;
+the reproducibility/target-matrix task owns real repeat-build typed-Core byte
+comparisons. An environment grant without its declared key/value policy, or a
+network/shell/model/tool grant without the required replayable provider or
+pinned result, is refused before action. Actual accepted and rejected input,
+provider, phase, redaction and replay records remain required. Canonical L6
+wording clarification and its source successor remain separate work; no held
+build or provider operation is enabled by this plan.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration
