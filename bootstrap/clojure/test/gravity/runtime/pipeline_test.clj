@@ -503,6 +503,29 @@
            (invoke [{:op :literal :value \a}
                     {:op :literal :value \b}])))))
 
+(deftest gravity-runtime-sequence-predicate-preserves-list-vector-distinction-and-arity-refusal
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [arguments]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-evaluate-closed-instruction
+                  [{:op :builtin-call :function 'seq? :args arguments} {} ""]))]
+    (doseq [value [(list) (list 1 2)]]
+      (is (= [true "" :normal]
+             (invoke [{:op :literal :value value}]))))
+    (doseq [value [[1 2] {:artifact :gravity/sequence
+                          :schema-version 1
+                          :items [1 2]}
+                   "12"]]
+      (is (= [false "" :normal]
+             (invoke [{:op :literal :value value}]))))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :invalid-local-runtime-instruction}
+            "" :rejected]
+           (invoke [{:op :literal :value (list 1)}
+                    {:op :literal :value (list 2)}])))))
+
 (defn- builtin-operations []
   (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
 
