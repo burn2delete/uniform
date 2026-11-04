@@ -2390,13 +2390,13 @@
 
 (defn-
  registered-literal-integrity-view
- [c2-artifact]
  "Restore host literal values before re-running C2 integrity.
 
   The C3 reader view intentionally projects registered Date/UUID values to
   serializable Gravity descriptors. C2 integrity is defined over the
   unprojected reader products, so validate that view without treating the
   projection itself as a new C2 product."
+ [c2-artifact]
  (let [bindings
        (get-in c2-artifact [:registered-literal-projection :bindings])
        replacements
