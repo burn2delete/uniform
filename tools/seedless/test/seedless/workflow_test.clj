@@ -602,6 +602,11 @@
     (try
       (is (= plan (validation/validate! schema/plan plan)))
       (is (= plan (w/validate-plan! plan {})))
+      (is (thrown-with-msg? Exception #"Stack parent must be a declared dependency"
+                            (w/validate-plan! (assoc plan :slices [(assoc p :key "standalone" :stack-on "")
+                                                                     (assoc (dissoc child :status) :stack-on "Main branch")]) {})))
+      (is (thrown-with-msg? Exception #"Unknown slice dependency"
+                            (w/validate-plan! (assoc plan :slices [(assoc p :dependencies ["missing"])]) {})))
       (is (thrown? Exception (w/validate-plan! (assoc plan :slices [(assoc p :dependencies ["child"]) child]) {})))
       (is (thrown? Exception (w/validate-plan! (assoc plan :slices [(assoc p :paths ["../outside"])]) {})))
       (is (thrown? Exception (w/validate-plan! (assoc plan :slices [p (assoc (dissoc child :status) :key "other")])
@@ -612,6 +617,37 @@
       (is (not (w/eligible? ctx child [(assoc p :status :implementing)])))
       (w/task! ctx "parent" :status :implementing)
       (is (not (w/eligible? ctx child [])))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest invalid-planning-is-recorded-without-admission-and-inspected-retry-gets-feedback
+  (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        p (slice "parent") child (assoc (slice "child") :dependencies ["parent"] :stack-on "Main branch")
+        invalid {:coverage ["bootstrap/"] :source-closure ["module.clj"] :target "declared target"
+                 :subset "required closure" :summary "Concrete work" :blockers []
+                 :slices [p child]}
+        valid (assoc invalid :slices [p (assoc child :stack-on "parent")])
+        prompts (atom []) admitted (atom 0) inspection (io/file (:root ctx) "planning-inspection.edn")]
+    (try
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/pages (fn [& _] [])
+                    gh/comment! (fn [& _])
+                    w/admit! (fn [& _] (swap! admitted inc))
+                    w/job! (fn [_ _ _ prompt _] (swap! prompts conj prompt) invalid)]
+        (is (thrown-with-msg? Exception #"Stack parent must be a declared dependency" (w/plan! ctx)))
+        (is (zero? @admitted))
+        (is (= :done (get-in @(:state ctx) [:effects "plan/1" :status])))
+        (is (= invalid (get-in @(:state ctx) [:effects "plan/1" :result])))
+        (is (= :planning-validation-error (get-in @(:state ctx) [:planning :validation-error :kind])))
+        (spit inspection (pr-str {:evidence "Original owner inspected the retained plan validation failure; no provider effect occurred."}))
+        (main/retry! ctx "audit" (str inspection))
+        (is (nil? (:planning @(:state ctx))))
+        (is (= invalid (get-in @(:state ctx) [:effects "plan/1" :result])))
+        (with-redefs [w/job! (fn [_ _ _ prompt _] (swap! prompts conj prompt) valid)]
+          (w/plan! ctx))
+        (is (= 2 (count @prompts)))
+        (is (str/includes? (second @prompts) "Original owner inspected the retained plan validation failure"))
+        (is (str/includes? (second @prompts) "Stack parent must be a declared dependency")))
       (finally (delete-tree! (:root ctx))))))
 
 (deftest completion-needs-checks-independent-review-and-unchanged-main
