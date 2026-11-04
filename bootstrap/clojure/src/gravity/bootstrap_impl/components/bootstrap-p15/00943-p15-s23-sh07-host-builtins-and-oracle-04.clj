@@ -50,8 +50,18 @@
                             {:reason :unsupported-decimal-readable-spelling})))
           key)))))
 
-(declare c2-reader-artifact-id
-         sh03-reader-final-decimal-occurrence-projection-valid?)
+(declare c2-reader-artifact-id)
+
+(defn- p15-s23-sh07-unsupported-decimal-occurrence-bridge!
+  []
+  (throw
+   (ex-info
+    "SH-07 decimal occurrence joins require the unintegrated SH-03/C2 V3 bridge"
+    {:reason :unsupported-decimal-readable-spelling
+     :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+     :required-adapter-contract :gravity/sh03-to-c2-reader-products-v3
+     :source-authority :current-c2-reader-products
+     :projection-authority :not-integrated})))
 
 (defn- p15-s23-sh07-p-decimal-occurrence
   [evidence]
@@ -61,21 +71,7 @@
                     (set (keys evidence))))
     (throw (ex-info "producer decimal projection evidence is malformed"
                     {:reason :unsupported-decimal-readable-spelling})))
-  (let [artifact (:c2-reader-artifact evidence)
-        form-id (:adapted-form-id evidence)
-        token-id (:adapted-token-id evidence)
-        projection (:sh07-decimal-occurrence-projection artifact)
-        selected
-        (filterv #(and (= form-id (:adapted-form-id %))
-                       (= token-id (:adapted-token-id %)))
-                 (:occurrences projection))]
-    (when-not
-     (and (= (:artifact-id artifact) (c2-reader-artifact-id artifact))
-          (sh03-reader-final-decimal-occurrence-projection-valid? artifact)
-          (= 1 (count selected)))
-      (throw (ex-info "producer decimal projection authentication failed"
-                      {:reason :unsupported-decimal-readable-spelling})))
-    (first selected)))
+  (p15-s23-sh07-unsupported-decimal-occurrence-bridge!))
 
 (defn- p15-s23-sh07-p-decimal-occurrence-raw
   [evidence occurrence]

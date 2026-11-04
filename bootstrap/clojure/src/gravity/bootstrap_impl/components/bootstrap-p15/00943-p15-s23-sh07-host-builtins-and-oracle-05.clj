@@ -127,32 +127,7 @@
                  (contains? evidence :adapted-token-id))
     (throw (ex-info "source oracle projection evidence is malformed"
                     {:reason :unsupported-decimal-readable-spelling})))
-  (let [artifact (get evidence :c2-reader-artifact)
-        wanted-form (get evidence :adapted-form-id)
-        wanted-token (get evidence :adapted-token-id)
-        candidates
-        (loop [remaining
-               (get-in artifact
-                       [:sh07-decimal-occurrence-projection :occurrences])
-               result []]
-          (if (empty? remaining)
-            result
-            (let [candidate (first remaining)]
-              (recur
-               (rest remaining)
-               (if (and (= wanted-form (get candidate :adapted-form-id))
-                        (= wanted-token (get candidate :adapted-token-id)))
-                 (conj result candidate)
-                 result)))))]
-    (when-not (and (= (get artifact :artifact-id)
-                      (c2-reader-artifact-id artifact))
-                   (true?
-                    (sh03-reader-final-decimal-occurrence-projection-valid?
-                     artifact))
-                   (= 1 (count candidates)))
-      (throw (ex-info "source oracle projection authentication failed"
-                      {:reason :unsupported-decimal-readable-spelling})))
-    (first candidates)))
+  (p15-s23-sh07-unsupported-decimal-occurrence-bridge!))
 
 (defn- p15-s23-sh07-o-decimal-occurrence-text
   [evidence occurrence]
