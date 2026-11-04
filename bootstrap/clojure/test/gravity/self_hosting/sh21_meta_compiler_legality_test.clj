@@ -95,6 +95,14 @@
   [program]
   (invoke-engine 'sh21-check-program [program]))
 
+(defn- rejects-with
+  [program rule reason]
+  (let [result (check program)]
+    (is (= :rejected (:status result)))
+    (is (= rule (get-in result [:diagnostics 0 :rule])))
+    (is (= reason (get-in result [:diagnostics 0 :reason])))
+    (is (nil? (:identity-input result)))))
+
 (def ^:private rejected-cases
   {'sh21-nonhermetic-program
    ["P3-HERMETIC" :hermetic-mode-required]
@@ -106,8 +114,8 @@
    ["P3-COMPILER-CAPABILITY" :effect-capability-set-mismatch]
    'sh21-extra-capability-program
    ["P3-COMPILER-CAPABILITY" :effect-capability-set-mismatch]
-   'sh21-oversized-effect-set-program
-   ["P3-BUILD-EFFECT" :effect-bound-exceeded]
+   'sh21-unknown-effect-program
+   ["P3-HERMETIC" :effect-not-allowed-in-hermetic-meta]
    'sh21-nonreplayable-input-program
    ["P3-HERMETIC" :invalid-or-nonreplayable-build-input]
    'sh21-missing-input-program
@@ -131,8 +139,6 @@
    'sh21-fact-overlap-program
    ["P3-FACT-INVALIDATION"
     :preserved-and-invalidated-fact-overlap]
-   'sh21-oversized-pass-facts-program
-   ["P3-FACT-INVALIDATION" :preserved-fact-bound-exceeded]
    'sh21-invalid-generated-profile-program
    ["P3-GENERATED-PROFILE" :target-profile-not-recognized]
    'sh21-unchecked-generated-code-program
@@ -148,9 +154,7 @@
    'sh21-missing-lineage-program
    ["P3-PASS-CONTRACT" :compiler-lineage-required]
    'sh21-cyclic-lineage-program
-   ["P3-PASS-CONTRACT" :compiler-lineage-cycle]
-   'sh21-oversized-program
-   ["P3-PASS-CONTRACT" :module-bound-exceeded]})
+   ["P3-PASS-CONTRACT" :compiler-lineage-cycle]})
 
 (deftest sh21-engine-and-co-canonical-fixtures-compile-as-gravity
   (doseq [plan [engine-plan accepted-gravity-plan accepted-qst-plan
@@ -167,19 +171,11 @@
            (slurp
             (path (fixture-relative-path family basename ".qst")))))))
 
-(deftest sh21-policy-is-bounded-hermetic-and-honest
+(deftest sh21-policy-is-hermetic-and-honest
   (let [policy (invoke-engine 'sh21-meta-policy [])]
     (is (= :gravity/sh21-meta-legality-policy (:artifact policy)))
     (is (= 1 (:version policy)))
     (is (= :meta (:profile policy)))
-    (is (= 64 (:maximum-modules policy)))
-    (is (= 256 (:maximum-dependencies policy)))
-    (is (= 16 (:maximum-effects-per-module policy)))
-    (is (= 16 (:maximum-capabilities-per-module policy)))
-    (is (= 64 (:maximum-pass-facts-per-set policy)))
-    (is (= 64 (:maximum-pass-artifacts policy)))
-    (is (= 32 (:maximum-compiler-lineage policy)))
-    (is (= 64 (:maximum-generated-records-per-module policy)))
     (is (contains? (:allowed-effects policy) :compiler/read-ir))
     (is (contains? (:allowed-effects policy) :build/read-file))
     (is (contains? (:forbidden-ambient-effects policy)
@@ -314,6 +310,152 @@
           (is (= "P3-SOURCE-MAP"
                  (get-in rejected [:diagnostics 0 :rule])))
           (is (= reason (get-in rejected [:diagnostics 0 :reason]))))))))
+
+(deftest sh21-traverses-large-module-and-dependency-graphs
+  (let [base (program accepted-gravity-plan 'sh21-meta-program)
+        template (second (:modules base))
+        ids (mapv #(str "module-" %) (range 258))
+        ;; The final module has 257 dependencies. One branch has 67 edges,
+        ;; so a valid graph also crosses the former cycle-search depth cap.
+        modules (mapv (fn [index]
+                        (assoc template
+                               :module-id (ids index)
+                               :dependencies
+                               (cond
+                                 (= index 257) (subvec ids 0 257)
+                                 (<= 1 index 66) [(ids (dec index))]
+                                 :else [])))
+                      (range 258))
+        program (assoc base :modules modules :module-order ids)
+        result (check program)]
+    (is (= :accepted (:status result)))
+    (is (= 258 (:module-count result)))
+    (is (= 323 (:dependency-count result)))
+    (is (= ids (:module-order result)
+           (get-in result [:dependency-graph :order])
+           (mapv :module-id (get-in result [:identity-input :modules]))))
+    (is (= (subvec ids 0 257)
+           (get-in result [:identity-input :modules 257 :dependencies])))
+    (is (= result (check program)))
+    (is (= :passed
+           (:status (invoke-engine 'sh21-verify-result [program result]))))
+    (doseq [[location value rule reason]
+            [[[:modules 257 :dependencies 256] :compiler/missing
+              "P3-PASS-CONTRACT" :missing-module-dependency]
+             [[:modules 257 :dependencies 256] (ids 0)
+              "P3-PASS-CONTRACT" :duplicate-module-dependency]
+             [[:modules 0 :dependencies] [(ids 66)]
+              "P3-PASS-CONTRACT" :compiler-module-dependency-cycle]
+             [[:modules 257 :dependencies] '(:compiler/reader)
+              "P3-PASS-CONTRACT" :dependency-vector-required]
+             [[:modules 257 :effects] #{:build/network}
+              "P3-HERMETIC" :effect-not-allowed-in-hermetic-meta]]]
+      (testing (str location " " reason)
+        (rejects-with (assoc-in program location value) rule reason)))))
+
+(deftest sh21-traverses-large-module-record-populations
+  (let [base (program accepted-gravity-plan 'sh21-meta-program)
+        input (first (get-in base [:modules 0 :build-inputs]))
+        generated (first (get-in base [:modules 1 :generated-code]))
+        inputs (mapv #(assoc input :input-token (str "input-" %)
+                             :content-id (str "sha256:input-" %))
+                     (range 65))
+        records (mapv #(assoc generated :generated-id (str "generated-" %))
+                      (range 65))
+        lineage (mapv #(str "sha256:compiler-" %) (range 65))
+        facts (fn [prefix] (set (map #(str prefix %) (range 65))))
+        contract (assoc (get-in base [:modules 1 :pass-contract])
+                        :requires (facts "required-")
+                        :preserves (facts "preserved-")
+                        :invalidates (facts "invalidated-")
+                        :regenerates (facts "regenerated-")
+                        :artifacts (mapv #(str "artifact-" %) (range 65)))
+        program (-> base
+                    (assoc-in [:modules 0 :build-inputs] inputs)
+                    (assoc-in [:modules 1 :generated-code] records)
+                    (assoc-in [:modules 1 :compiler-lineage] lineage)
+                    (assoc-in [:modules 1 :pass-contract] contract))
+        result (check program)]
+    (is (= :accepted (:status result)))
+    (is (= inputs (get-in result [:identity-input :modules 0 :build-inputs])))
+    (is (= records (get-in result [:identity-input :modules 1 :generated-code])))
+    (is (= lineage (get-in result [:identity-input :modules 1 :compiler-lineage])))
+    (is (= contract (get-in result [:identity-input :modules 1 :pass-contract])))
+    (is (= result (check program)))
+    (is (= :passed
+           (:status (invoke-engine 'sh21-verify-result [program result]))))
+    (doseq [[location value rule reason]
+            [[[:modules 0 :build-inputs 64 :replayable] false
+              "P3-HERMETIC" :invalid-or-nonreplayable-build-input]
+             [[:modules 0 :build-inputs 64 :capability] :build/read-env
+              "P3-HERMETIC" :invalid-or-nonreplayable-build-input]
+             [[:modules 1 :compiler-lineage 64] nil
+              "P3-PASS-CONTRACT" :compiler-lineage-identity-required]
+             [[:modules 1 :compiler-lineage 64] (first lineage)
+              "P3-PASS-CONTRACT" :compiler-lineage-cycle]
+             [[:modules 1 :pass-contract :profile] :hosted
+              "P3-PASS-CONTRACT" :pass-profile-must-be-meta]
+             [[:modules 1 :pass-contract :invalidates]
+              (conj (:invalidates contract) "preserved-64")
+              "P3-FACT-INVALIDATION" :preserved-and-invalidated-fact-overlap]
+             [[:modules 1 :pass-contract :regenerates]
+              (conj (:regenerates contract) "preserved-64")
+              "P3-FACT-INVALIDATION" :preserved-and-regenerated-fact-overlap]
+             [[:modules 1 :generated-code 64 :target-profile] :unknown
+              "P3-GENERATED-PROFILE" :target-profile-not-recognized]
+             [[:modules 1 :generated-code 64 :recheck-required] false
+              "P3-GENERATED-PROFILE" :generated-code-recheck-required]
+             [[:modules 1 :generated-code 64 :safety-provenance] nil
+              "P3-GENERATED-SAFETY" :generated-safety-provenance-required]
+             [[:modules 1 :generated-code 64 :origin-chain] []
+              "P3-SOURCE-MAP" :generated-origin-chain-required]]]
+      (testing (str location " " reason)
+        (rejects-with (assoc-in program location value) rule reason)))
+    ;; This is a coherent result from a different valid input, not just an
+    ;; inconsistent edit to the stored output.
+    (let [substitute (check (assoc-in program [:modules 0 :build-inputs 64
+                                             :content-id]
+                                     "sha256:substituted-input"))
+          verification (invoke-engine 'sh21-verify-result [program substitute])]
+      (is (= :accepted (:status substitute)))
+      (is (= :rejected (:status verification)))
+      (is (= "P3-PASS-CONTRACT" (get-in verification [:diagnostics 0 :rule])))
+      (is (= :meta-legality-result-substitution
+             (get-in verification [:diagnostics 0 :reason]))))))
+
+(deftest sh21-retains-the-exact-authority-policy-without-population-checks
+  (let [base (program accepted-gravity-plan 'sh21-meta-program)
+        policy (invoke-engine 'sh21-meta-policy [])
+        effects (:allowed-effects policy)
+        capabilities #{:compiler/ir-read :compiler/ir-transform :compiler/plugin
+                       :build/read-file :build/write-artifact :build/read-env
+                       :build/target-probe}
+        source-input (first (get-in base [:modules 0 :build-inputs]))
+        inputs [source-input
+                (assoc source-input :kind :environment :effect :build/env
+                       :capability :build/read-env :input-token :environment)
+                (assoc source-input :kind :target-manifest :effect :build/target-probe
+                       :capability :build/target-probe :input-token :target)]
+        program (-> base
+                    (assoc-in [:modules 0 :effects] effects)
+                    (assoc-in [:modules 0 :capabilities] capabilities)
+                    (assoc-in [:modules 0 :build-inputs] inputs))]
+    (is (= #{:memory/allocate :compiler/read-ir :compiler/write-ir :compiler/plugin
+             :build/read-file :build/write-artifact :build/env :build/target-probe}
+           effects))
+    (is (= :accepted (:status (check program))))
+    (rejects-with
+     (assoc-in program [:modules 0 :effects]
+               (into effects (map #(keyword "forbidden" (str %)) (range 17))))
+     "P3-HERMETIC" :effect-not-allowed-in-hermetic-meta)
+    (rejects-with
+     (assoc-in program [:modules 0 :capabilities]
+               (into capabilities (map #(keyword "ungranted" (str %)) (range 17))))
+     "P3-COMPILER-CAPABILITY" :effect-capability-set-mismatch)
+    (rejects-with
+     (assoc-in program [:modules 0 :runtime-assumptions]
+               (conj (:allowed-runtime-assumptions policy) :ambient-host-globals))
+     "P3-HERMETIC" :runtime-assumption-not-allowed)))
 
 (deftest sh21-keeps-physical-paths-outside-semantic-identity
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
