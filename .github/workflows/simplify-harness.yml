@@ -1,15 +1,17 @@
-name: Simplify harness
+name: Implementation and simplify harnesses
 
 on:
   pull_request:
     paths:
       - tools/simplify/**
+      - tools/advance/**
       - .github/workflows/simplify-harness.yml
       - .github/actions/clojure/**
   push:
     branches: [main]
     paths:
       - tools/simplify/**
+      - tools/advance/**
       - .github/workflows/simplify-harness.yml
       - .github/actions/clojure/**
   workflow_dispatch:
@@ -32,5 +34,5 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/clojure
       - name: Test protocol and workflow without inference or GitHub writes
-        working-directory: tools/simplify
+        working-directory: tools/advance
         run: clojure -Srepro -M:test
