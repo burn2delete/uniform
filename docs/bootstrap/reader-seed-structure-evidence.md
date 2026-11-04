@@ -107,8 +107,8 @@ ordinary semantic testing remains separate from renewing that evidence.
 ## Focused implementation evidence
 
 The two coordinate bodies move behind explicit per-call operator-dereferenced
-owner Vars. Original/candidate native outputs and complete downstream Reader
-artifacts remain to be compared at a clean candidate. Focused source-span and
+owner Vars. Clean-candidate native parity and complete downstream Reader
+artifact comparisons are recorded below. Focused source-span and
 Reader artifact tests pass fifty-two tests and 823 assertions. They cover
 indexed scalar-column/UTF-16/UTF-8 differences, clamping and invalid indices,
 unpaired-surrogate native strings, start/end/path reference identity, per-call
@@ -152,5 +152,5 @@ unchanged warning versus earlier slices is source-span's existing private
 contract warning, not a new error or a suppressed policy.
 
 Both independent reviewers accept the exact source with no actionable defect.
-Their scope remains code-only. Documentation-successor bookend review, own
-exact source/base CI and immediate integration preflight remain separate gates.
+Their scope remains code-only. Documentation-successor bookend review, full
+hosted exact source/base CI and immediate integration preflight remain separate gates.
