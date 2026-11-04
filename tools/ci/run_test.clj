@@ -301,7 +301,8 @@
     (is (thrown? RuntimeException (read-string "#=(+ 1 1)")))
     (is (thrown? IllegalArgumentException (read-string "^String \".\"")))
     (doseq [file (file-seq (io/file "tools/ci"))
-            :when (.endsWith (.getName file) ".clj")]
+            :when (and (.isFile file)
+                       (.endsWith (.getName file) ".clj"))]
       (with-open [reader (java.io.PushbackReader. (io/reader file))]
         (let [eof (Object.)]
           (is (pos? (loop [forms 0]
@@ -438,6 +439,88 @@
       (throw (ex-info "Expected command option is absent"
                       {:option option :argv argv})))
     (nth argv (inc index))))
+
+(defn- macro-selected-vars [argv source-vars]
+  (let [pairs (partition 2 1 argv)
+        exact (set (map second (filter #(= "--exact" (first %)) pairs)))
+        patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
+    (set (filter (fn [name]
+                   (let [qualified (str "gravity.macro.pipeline-test/" name)]
+                     (or (and (empty? exact) (empty? patterns))
+                         (contains? exact name) (contains? exact qualified)
+                         (some #(or (re-find % name) (re-find % qualified)) patterns))))
+                 source-vars))))
+
+(deftest macro-children-preserve-complete-disjoint-source-selection
+  (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"))
+        compatibility-vars (binding [*read-eval* false]
+                             (source-deftest-names "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"))
+        cohort-argv (nth cohort 2) receipt-argv (nth receipt 2) compatibility-argv (nth compatibility 2)
+        cohort-vars (macro-selected-vars cohort-argv source-vars)
+        receipt-vars (macro-selected-vars receipt-argv source-vars)
+        partition? (fn [left right]
+                     (and (seq left) (seq right) (empty? (set/intersection left right))
+                          (= source-vars (set/union left right))))]
+    (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
+           (mapv first commands)))
+    (is (= [900 900 900] (mapv second commands)))
+    (is (= ["gravity.macro.pipeline-test" "gravity.macro.pipeline-test"
+            "gravity.bootstrap-compatibility.c4-test"]
+           (mapv #(option-value (nth % 2) "--namespace") commands)))
+    (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))
+    (is (every? #(some #{"--progress"} (nth % 2)) commands))
+    (is (not-any? #(some #{"--fail-fast"} (nth % 2)) commands))
+    (is (= 3 (count (set ci/macro-receipt-test-vars))))
+    (is (every? source-vars ci/macro-receipt-test-vars))
+    (is (= (set ci/macro-receipt-test-vars) receipt-vars))
+    (is (partition? cohort-vars receipt-vars))
+    (is (seq compatibility-vars))
+    (is (not-any? #{"--regex" "--exact" "--prefix"} compatibility-argv))
+    ;; A lost selector, omitted control, or overlapping cohort is a real
+    ;; coverage defect even when every remaining child would pass.
+    (is (not (partition? #{} receipt-vars)))
+    (is (not (partition? source-vars receipt-vars)))
+    (is (not (partition? cohort-vars
+                         (macro-selected-vars (vec (drop-last 2 receipt-argv)) source-vars))))
+    (let [pattern (re-pattern (option-value cohort-argv "--regex"))]
+      (doseq [name ci/macro-receipt-test-vars]
+        (is (not (re-find pattern name)))
+        (is (not (re-find pattern (str "gravity.macro.pipeline-test/" name))))))))
+
+(deftest macro-child-failure-does-not-hide-later-evidence-or-become-success
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-macro-cohort-failure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        calls (atom [])]
+    (try
+      (with-redefs [ci/output (.getPath directory)
+                    ci/pull-request-selection (constantly {:kind :full})
+                    ci/execute!
+                    (fn [id timeout argv]
+                      (swap! calls conj [id timeout argv])
+                      {:id id :timeout-seconds timeout :argv argv
+                       :status (if (= id "macro-pipeline-cohort") :failed :passed)
+                       :exit-code (if (= id "macro-pipeline-cohort") 17 0)})]
+        (is (= 1 (ci/run-mode! "macro"))))
+      (let [rows (edn/read-string (slurp (io/file directory "macro-summary.edn")))]
+        (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
+               (mapv :id rows) (mapv first @calls)))
+        (is (= [:failed :passed :passed] (mapv :status rows)))
+        (is (= [17 0 0] (mapv :exit-code rows))))
+      (finally (delete-fixture-tree! directory)))))
+
+(deftest macro-hosted-envelope-covers-all-child-watchdogs
+  (let [workflow (slurp ".github/workflows/ci.yml")
+        checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
+        [_ macro-minutes other-minutes]
+        (re-find #"timeout-minutes: \$\{\{ matrix.mode == 'macro' && (\d+) \|\| (\d+) \}\}" checks)
+        watchdog-seconds (reduce + (map second (ci/commands-for-selection "macro" {:kind :full})))]
+    (is (some? macro-minutes))
+    (is (= "20" other-minutes))
+    (is (> (* 60 (Long/parseLong macro-minutes)) watchdog-seconds))
+    (is (str/includes? checks "mode: [static, contracts, bootstrap, macro, checked-core-runtime]"))))
 
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"

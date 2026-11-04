@@ -34,7 +34,7 @@
   operations)
 (defn engine-contract [public-api]
   {:contract-boundary :hosted-stage0-c14-target-lowering
-   :dependency-direction {:requires ['gravity.digest 'gravity.optimization-lowering]
+   :dependency-direction {:requires ['gravity.digest 'gravity.optimization-lowering 'gravity.lowering]
                           :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :owns [:hosted-stage0-c14-target-lowering-adapter :hosted-stage0-c14-evidence]
    :does-not-own [:canonical-c14-authority :source-authentication :profile-authority
