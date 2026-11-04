@@ -6,6 +6,7 @@
    one-way: a development caller supplies the current-source plan machinery,
    while the normal hosted Clojure operation remains the default route."
   (:require [clojure.java.io :as io]
+            [gravity.c6-core-lowering.context :as context]
             [gravity.digest :as digest]))
 
 (def source-relative-path
@@ -14,6 +15,8 @@
 (def source-function 'c6-form->core-form)
 
 (def evaluation-order-source-function 'c6-eval-order)
+
+(def canonical-core-node-source-function 'construct-canonical-core-node)
 
 (def ^:private source-engine
   :gravity-c6-core-lowering-source-classifier)
@@ -57,6 +60,18 @@
              "Current C6 source evaluation-order operation has an unexpected ABI"
              {:source-path source-path
               :function evaluation-order-source-function
+              :definition (select-keys definition
+                                       [:name :params :arity :definition-form])})))
+  (let [definition (get-in plan [:functions canonical-core-node-source-function])]
+    (when-not (and (map? definition)
+                   (= :def-fn (:definition-form definition))
+                   (= 6 (:arity definition))
+                   (= ['node-id 'form 'syntax 'module 'data 'effects]
+                      (:params definition)))
+      (fail! "C6-SOURCE-CLASSIFIER-CORE-NODE-ABI"
+             "Current C6 source canonical-node function has an unexpected ABI"
+             {:source-path source-path
+              :function canonical-core-node-source-function
               :definition (select-keys definition
                                        [:name :params :arity :definition-form])})))
   plan)
@@ -133,10 +148,42 @@
       :compiler-artifact-plan? true}
      plan evaluation-order-source-function [form child-count])))
 
+(defn c6-core-node-operation
+  "Build the hosted five-argument operation over the source six-argument ABI.
+
+  The effect fact is derived by the active C6 operation context, preserving
+  the hosted caller's existing surface while passing the upstream fact to the
+  Uniform-authored constructor explicitly."
+  [runtime-execute-function plan]
+  (when-not (fn? runtime-execute-function)
+    (fail! "C6-SOURCE-CLASSIFIER-RUNTIME-API"
+           "Current C6 source adapter requires the existing runtime function"
+           {:required :p15-s23-stage2-runtime-execute-function}))
+  (validate-source-plan! (get-in plan [:source :path]) plan)
+  (fn [node-id form syntax module data]
+    (let [effects (context/invoke-op :form-effect context/form-effect
+                                     (:form syntax))
+          result (runtime-execute-function
+                  {:engine :gravity-c6-core-lowering-source-canonical-node
+                   :compiler-artifact-plan? true}
+                  plan canonical-core-node-source-function
+                  [node-id form syntax module data effects])]
+      ;; The hosted constructor's source record is an ordered three-entry map.
+      ;; Preserve that existing representation after the Stage2 result is
+      ;; reified, so content-addressed C6 artifacts retain hosted identity.
+      (if (map? (:source result))
+        (assoc result :source
+               (array-map :syntax-id (get-in result [:source :syntax-id])
+                          :span (get-in result [:source :span])
+                          :origin-chain (get-in result [:source :origin-chain])))
+        result))))
+
 (defn source-operations
   "Return the explicit operation override for hosted C6 lowering."
   [runtime-execute-function plan]
-  {:c6-form->core-form
+  {:c6-core-node
+   (c6-core-node-operation runtime-execute-function plan)
+   :c6-form->core-form
    (c6-form->core-form-operation runtime-execute-function plan)
    :c6-eval-order
    (c6-eval-order-operation runtime-execute-function plan)})
