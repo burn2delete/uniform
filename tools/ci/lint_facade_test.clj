@@ -747,7 +747,8 @@
         caller #(str "(ns fixture.caller (:require [fixture.owner :as h]))\n"
                      "(def public h/public-value)\n(defn use-hidden [x] " % ")\n")]
     (try
-      (doseq [file (file-seq (io/file "tools/ci")) :when (.isFile file)]
+      (doseq [file (concat (filter #(.isFile %) (file-seq (io/file "tools/ci")))
+                           [(io/file "tools/gravity/project_tests/scope.clj")])]
         (let [target (io/file directory (.getPath file))]
           (io/make-parents target)
           (io/copy file target)))
