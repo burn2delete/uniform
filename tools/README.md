@@ -3,6 +3,12 @@
 Repository tooling is Clojure. Gravity/Uniform is the successor language for
 tooling admitted through the self-hosting contracts.
 
+The standalone [implementation harness](advance/README.md) selects current
+Spec Kit work and owns its draft-to-verified-merge loop. The
+[simplification harness](simplify/README.md) audits unnecessary complexity.
+Both share path ownership and merge coordination while keeping separate
+GitHub Projects and campaign state.
+
 Current commands:
 
 ```bash
