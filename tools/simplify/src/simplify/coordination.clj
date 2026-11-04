@@ -22,8 +22,7 @@
 (defn claims [ctx]
   (transaction! ctx
                 (fn [state]
-                  [state (mapv #(assoc % :identity [(str (io/file (:state-dir %) "state.edn")) (:key %)]
-                                       :state-file (str (io/file (:state-dir %) "state.edn")))
+                  [state (mapv #(assoc % :identity (or (get-in % [:legacy-claim :identity]) [(:state-file %) (:key %)]))
                                (vals (:writers state)))])))
 
 (defn claim! [ctx key paths]

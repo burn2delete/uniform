@@ -283,7 +283,8 @@
             result))))))
 
 (defn- owner [ctx]
-  {:state-dir (canonical (:state-dir ctx)) :campaign (get-in ctx [:config :campaign])})
+  {:state-dir (canonical (:state-dir ctx)) :state-file (canonical (:state-file ctx))
+   :campaign (get-in ctx [:config :campaign])})
 
 (defn- effect-key [ctx id] (pr-str [(:state-dir (owner ctx)) id]))
 
@@ -337,7 +338,7 @@
                    _ (when (get-in state [:writers id])
                        (fail! "Legacy writer conflicts with a registered writer; inspect before migration" {:claim claim}))
                    lease {:id id :token (str (UUID/randomUUID)) :key key :paths paths
-                          :state-dir state-dir :campaign (:campaign claim) :phase :implementing
+                          :state-dir state-dir :state-file (canonical state-file) :campaign (:campaign claim) :phase :implementing
                           :status :needs-inspection :legacy-claim claim :at (str (Instant/now))}]
                (-> state (assoc-in [:writers id] lease)
                    (assoc-in [:imports migration] {:lease (:token lease) :at (str (Instant/now))}))))))
@@ -422,7 +423,8 @@
 (defn- owned-lease! [ctx state lease]
   (let [current (get-in state [:writers (:id lease)])]
     (when-not (and (= (:token lease) (:token current))
-                   (= (:state-dir (owner ctx)) (:state-dir current)))
+                   (= (:state-dir (owner ctx)) (:state-dir current))
+                   (= (:state-file (owner ctx)) (:state-file current)))
       (fail! "Writer lease identity differs" {:finding (:key lease)}))
     current))
 

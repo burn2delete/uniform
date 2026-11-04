@@ -138,6 +138,23 @@
       (is (empty? (:writers (shared-state a))))
       (is (= denial (rt/shared-restriction b :checks "check-key"))))))
 
+(deftest manual-owners-in-one-directory-retain-distinct-inspected-release-authority
+  (let [[ctx _] (pair)
+        owner-a (assoc ctx :state-file (str (io/file (:state-dir ctx) "manual-first.edn")))
+        owner-b (assoc ctx :state-file (str (io/file (:state-dir ctx) "manual-second.edn")))
+        original {:identity [(:state-file owner-a) "legacy"] :state-file (:state-file owner-a) :key "legacy" :paths ["src/held.clj"]}
+        path (io/file (:coordination-dir ctx) "claims.edn")]
+    (.mkdirs (.getParentFile path))
+    (rt/write-edn! path {:claims {(:identity original) original}})
+    (rt/import-state-coordination! ctx)
+    (let [lease (first (vals (:writers (shared-state ctx))))]
+      (is (= (:identity original) (:identity (first (coordination/claims ctx)))))
+      (is (thrown-with-msg? Exception #"Writer lease identity differs"
+                           (rt/inspect-release-paths! owner-b lease "Different owner in the same directory")))
+      (is (= lease (get-in (shared-state ctx) [:writers (:id lease)])))
+      (rt/inspect-release-paths! owner-a lease "Original fixture owner inspected actual writer end")
+      (is (empty? (:writers (shared-state ctx)))))))
+
 (deftest legacy-main-not-applied-is-still-fenced-until-shared-inspection
   (let [[a b] (pair) calls (atom 0)
         receipt {:status :not-applied :evidence "Legacy local observation" :previous {:status :uncertain}}]
