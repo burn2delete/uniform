@@ -95,7 +95,7 @@
                    (with-open [reader (io/reader stream :encoding "UTF-8")]
                      (let [out (StringBuilder.) pending (StringBuilder.) buffer (char-array 4096)]
                        (loop []
-                           (let [n (.read reader buffer) start (.length pending)]
+                         (let [n (.read reader buffer) start (.length pending)]
                            (if (pos? n)
                              (do
                                (.append out buffer 0 n)
@@ -283,7 +283,8 @@
             result))))))
 
 (defn- owner [ctx]
-  {:state-dir (canonical (:state-dir ctx)) :campaign (get-in ctx [:config :campaign])})
+  {:state-dir (canonical (:state-dir ctx)) :state-file (canonical (:state-file ctx))
+   :campaign (get-in ctx [:config :campaign])})
 
 (defn- effect-key [ctx id] (pr-str [(:state-dir (owner ctx)) id]))
 
@@ -337,7 +338,7 @@
                    _ (when (get-in state [:writers id])
                        (fail! "Legacy writer conflicts with a registered writer; inspect before migration" {:claim claim}))
                    lease {:id id :token (str (UUID/randomUUID)) :key key :paths paths
-                          :state-dir state-dir :campaign (:campaign claim) :phase :implementing
+                          :state-dir state-dir :state-file (canonical state-file) :campaign (:campaign claim) :phase :implementing
                           :status :needs-inspection :legacy-claim claim :at (str (Instant/now))}]
                (-> state (assoc-in [:writers id] lease)
                    (assoc-in [:imports migration] {:lease (:token lease) :at (str (Instant/now))}))))))
@@ -407,6 +408,7 @@
                               (fn [state]
                                 (if-let [current (get-in state [:writers id])]
                                   [state (when (and (= :active (:status current)) (= paths (:paths current))
+                                                    (= (:state-file lease) (:state-file current))
                                                     (= (:token current) (get-in (some-> (:path-leases ctx) deref) [key :token])))
                                            current)]
                                   (if (some #(overlap? paths (:paths %)) (vals (:writers state)))
@@ -422,7 +424,8 @@
 (defn- owned-lease! [ctx state lease]
   (let [current (get-in state [:writers (:id lease)])]
     (when-not (and (= (:token lease) (:token current))
-                   (= (:state-dir (owner ctx)) (:state-dir current)))
+                   (= (:state-dir (owner ctx)) (:state-dir current))
+                   (= (:state-file (owner ctx)) (:state-file current)))
       (fail! "Writer lease identity differs" {:finding (:key lease)}))
     current))
 
@@ -521,6 +524,7 @@
   (validate-main-intent! intent)
   (let [parents (if (= :merge (:method intent)) [(:base intent) (:candidate intent)] [(:base intent)])]
     (when-not (and (string? (:commit actual)) (re-matches #"[0-9a-f]{40}" (:commit actual))
+                   (string? (:main actual)) (re-matches #"[0-9a-f]{40}" (:main actual))
                    (= (:tree intent) (:tree actual)) (= parents (:parents actual)))
       (fail! "Inspected main result differs from the exact intent" {:intent intent :actual actual}))))
 

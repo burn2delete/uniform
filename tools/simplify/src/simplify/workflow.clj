@@ -241,6 +241,20 @@
           (rt/update! ctx assoc-in [:tasks key :error :details :restricted] true))
         (rt/event! ctx :tracking-error {:message (.getMessage reporting)})))))
 
+(defn failure! [ctx key error]
+  (let [details (ex-data error)]
+    (if (and (= "Sandboxed check failed" (.getMessage error))
+             (true? (:writer-ended? details)) (not (:restricted details))
+             (not (#{:pending :uncertain :restricted} (:effect-status details))))
+      (let [failed (merge (select-keys (task ctx key) [:base :candidate :tree :status :implementation-job])
+                          {:message (.getMessage error) :details (rt/redact details)})]
+        (rt/update! ctx update-in [:tasks key :failed-checks] (fnil conj []) failed)
+        (task! ctx key :feedback {:local-check (:details failed)
+                                 :instruction "Repair the actual failure within owned paths. Preserve meaningful authenticity, provenance and semantic checks; never weaken or skip checks or route around a refusal."})
+        (try (transition! ctx key :repair)
+             (catch Exception reporting (attention! ctx key reporting))))
+      (attention! ctx key error))))
+
 (defn pr-info [ctx t]
   (json/read-str
    (rt/run! ctx (get-in ctx [:config :repo-dir])
@@ -349,22 +363,26 @@
               {:effect (:id pending) :effect-status (:status pending)}))
   (let [info (pr-info ctx t)]
     (assert-pr-identity! ctx t info)
-    (let [workflows (gh/head-workflow-state ctx (:candidate t))]
+    (let [workflows (gh/head-workflow-state ctx (:candidate t))
+          review-feedback (when (and (= "OPEN" (:state info)) (= "CHANGES_REQUESTED" (:reviewDecision info))
+                                     (get-in ctx [:config :repair-github-review]))
+                            (gh/requested-review-feedback ctx (:candidate t) (get-in t [:pr :number])))]
     (cond
       (= "MERGED" (:state info)) (finish-merge! ctx t info)
       (not= "OPEN" (:state info)) (rt/fail! "PR was closed without merge" {:pr info})
-      (= "CHANGES_REQUESTED" (:reviewDecision info))
-      (if (get-in ctx [:config :repair-github-review])
+      review-feedback
         (do (task! ctx (:key t) :feedback
-                   {:github-reviews (gh/pages ctx (gh/repo-path ctx (str "pulls/" (get-in t [:pr :number]) "/reviews")))
-                    :inline-comments (gh/pages ctx (gh/repo-path ctx (str "pulls/" (get-in t [:pr :number]) "/comments")))
-                    :instruction "Address actionable requested changes; preserve required human review and all restrictions."})
+                   (assoc review-feedback :ci (:statusCheckRollup info) :workflows workflows
+                          :instruction "Address current-head requested changes and any failing checks; preserve required human review and all restrictions."))
             (transition! ctx (:key t) :repair))
-        (rt/fail! "GitHub review requests changes" {:pr info}))
+      (and (= "CHANGES_REQUESTED" (:reviewDecision info)) (not (get-in ctx [:config :repair-github-review])))
+      (rt/fail! "GitHub review requests changes" {:pr info})
       (or (= :failed (check-state (:statusCheckRollup info))) (= :failed (:state workflows)))
       (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info) :workflows workflows
                                         :instruction "Repair the failing checks; do not weaken or skip them."})
           (transition! ctx (:key t) :repair))
+      (= "CHANGES_REQUESTED" (:reviewDecision info))
+      (rt/event! ctx :waiting {:finding (:key t) :reason :awaiting-current-head-reapproval})
       (not= :passed (:state workflows))
       (rt/event! ctx :waiting {:finding (:key t) :reason :current-head-workflows-incomplete :workflows workflows})
       (= :missing (check-state (:statusCheckRollup info)))
@@ -500,7 +518,7 @@
           (try (.get ^Future job)
                (catch Exception e
                  (let [cause (or (.getCause e) e)]
-                   (if (:ownership-wait (ex-data cause)) (transition! ctx key :repair) (attention! ctx key cause)))))
+                   (if (:ownership-wait (ex-data cause)) (transition! ctx key :repair) (failure! ctx key cause)))))
           (swap! running dissoc key))
         (if (paused? ctx)
           (if (empty? @running) (rt/update! ctx assoc :status :paused)
@@ -509,7 +527,7 @@
             (doseq [t (tasks ctx) :when (= :finalizing (:status t))]
               (try (finalize-merge! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (tasks ctx) :when (and (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
-              (try (integrate! ctx t) (catch Exception e (attention! ctx (:key t) e))))
+              (try (integrate! ctx t) (catch Exception e (failure! ctx (:key t) e))))
             (doseq [t (sort-by :key (tasks ctx))]
               (let [occupied (filter #(and (not= (:key t) (:key %)) (= :implementing (:status %))) (tasks ctx))]
                 (when (and (< (count @running) (get-in ctx [:config :parallelism]))
@@ -521,10 +539,15 @@
                              (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
                       (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
             (cond
-              (or (seq @running) (some #(#{:ci :merge :finalizing} (:status %)) (tasks ctx)))
+              (or (seq @running) (some #(#{:ready :repair :ci :merge :finalizing} (:status %)) (tasks ctx)))
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (some #(not (terminal (:status %))) (tasks ctx))
-              (do (rt/update! ctx assoc :status :attention) (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
+              (do
+                (when-not (= :attention (:status @(:state ctx)))
+                  (rt/update! ctx assoc :status :attention)
+                  (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
+                (Thread/sleep (get-in ctx [:config :poll-ms]))
+                (recur))
               :else
               (do
                 (doseq [[round info] (:rounds @(:state ctx)) :when (:milestone info)]

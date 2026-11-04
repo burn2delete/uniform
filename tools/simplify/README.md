@@ -98,7 +98,7 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    is configurable separately from semantic admission and accounting. Commit
    locally and obtain independent review of the exact base/commit/tree in a
    fresh thread. Requested changes return to implementation; no-change repairs
-   stop for attention. The reviewer returns the exact base/commit/tree, and
+   require attention. The reviewer returns the exact base/commit/tree, and
    worktree identity is checked across workers, checks, review and publication.
 5. Push without force; create/reuse the PR. Failed CI returns to repair. Skipped
    checks remain skipped, not executed-test evidence. Required GitHub human
@@ -115,8 +115,8 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    must use the same integration protocol; it cannot control uncooperative
    external applications. Existing GitHub branch protection and reviews still apply.
    The app does not change those settings. An external write during the final
-   request race is detected by actual merge-parent/tree verification and stops
-   the campaign for attention; the app does not undo an already applied merge.
+   request race is detected by actual merge-parent/tree verification and records
+   Attention while preserving the fence; the app does not undo an applied merge.
 8. Verify the actual squash commit's parent, tree and inclusion on main before
    marking Done and closing its issue. Close completed rounds. Finish only after
    a fresh empty audit on still-current main.
@@ -164,6 +164,14 @@ queues an inspected Attention item at its retained recovery phase: verified
 merges finish tracking, existing CI candidates return to CI, and unfinished
 implementation returns to repair. Restricted actions and unresolved current
 external effects cannot use this route. Attention is not completion.
+
+Known-ended, nonrestricted semantic check failures return to repair with the
+failed source tuple and check result retained. The repair must preserve meaningful
+checks, including authenticity and provenance. Restricted or uncertain effects
+and unknown writer termination remain Attention. The controller waits for an
+explicit pause while blocked; it does not silently exit or redispatch those
+tasks. Temporary writer contention and pending CI also wait. CI/review repair
+and waiting for missing CI evidence are enabled by default.
 
 Non-idempotent mutations have durable intents. A connection loss may leave an
 operation applied without its result saved. Such effects are uncertain and are

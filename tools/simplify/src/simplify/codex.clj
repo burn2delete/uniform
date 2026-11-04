@@ -4,7 +4,8 @@
             [clojure.java.io :as io]
             [simplify.runtime :as rt]
             [simplify.schema :as schema])
-  (:import [java.util.concurrent LinkedBlockingQueue]))
+  (:import [java.io ByteArrayOutputStream]
+           [java.util.concurrent LinkedBlockingQueue]))
 
 (defn send! [client message]
   (rt/event! (:ctx client) :rpc-send {:job (:job client) :message message})
@@ -28,9 +29,10 @@
     (:id message) (when-let [response (get @(:pending client) (:id message))] (deliver response message))
     (= "command/exec/outputDelta" (:method message))
     (let [params (:params message)
-          output (String. (.decode (java.util.Base64/getDecoder) ^String (:deltaBase64 params)) "UTF-8")]
+          bytes (.decode (java.util.Base64/getDecoder) ^String (:deltaBase64 params))
+          output (String. bytes "UTF-8")]
       (when-let [capture (:command-output client)]
-        (swap! capture conj {:stream (:stream params) :output output}))
+        (swap! capture conj {:stream (:stream params) :bytes bytes}))
       (when (and (:capReached params) (:capture-truncated client))
         (reset! (:capture-truncated client) true))
       (rt/event! (:ctx client) :sandbox-command-output {:job (:job client) :stream (:stream params) :output output :capture-truncated (:capReached params)}))
@@ -105,7 +107,11 @@
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
                               :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})
             chunks @(:command-output client)
-            stream (fn [name] (apply str (map :output (filter #(= name (:stream %)) chunks))))
+            stream (fn [name]
+                     (with-open [out (ByteArrayOutputStream.)]
+                       (doseq [chunk (filter #(= name (:stream %)) chunks)]
+                         (.write out ^bytes (:bytes chunk) 0 (alength ^bytes (:bytes chunk))))
+                       (.toString out "UTF-8")))
             result (assoc response
                           :stdout (if (seq (:stdout response)) (:stdout response) (stream "stdout"))
                           :stderr (if (seq (:stderr response)) (:stderr response) (stream "stderr"))
