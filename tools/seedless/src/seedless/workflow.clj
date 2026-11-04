@@ -691,20 +691,14 @@
   (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
   (when-not (= (pr-base ctx t) (:baseRefName info))
     (rt/fail! "Review does not target this PR base" {:remote-pr-refusal true :pr info}))
-  (let [number (get-in t [:pr :number])
-        reviews (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/reviews")))
-        latest (vals (reduce (fn [by-reviewer review]
-                               (assoc by-reviewer (or (get-in review [:user :id]) (:id review)) review))
-                             {} (sort-by (juxt #(or (:submitted_at %) "") #(or (:id %) 0))
-                                         (filter #(#{"APPROVED" "CHANGES_REQUESTED" "DISMISSED"} (:state %)) reviews))))
-        requests (filterv #(and (= "CHANGES_REQUESTED" (:state %)) (= (:candidate t) (:commit_id %))) latest)]
-    (if (or (seq requests) (= :failed ci))
-      (let [comments (when (seq requests) (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/comments"))))]
+  (let [review (transport/requested-review-feedback ctx (:candidate t) (get-in t [:pr :number]))]
+    (if (or review (= :failed ci))
+      (do
         (task! ctx (:key t) :feedback
                (merge (when (= :failed ci) (ci-feedback! ctx t info))
-                      (when (seq requests)
-                        {:candidate (select-keys t [:base :candidate :tree]) :github-reviews requests :comments comments
-                         :instruction "Address the current-head review findings and captured CI failures within this slice. Preserve scope, checks and required GitHub reapproval; never weaken tests or dismiss/resolve reviews dishonestly."})))
+                      (when review
+                        (assoc review :candidate (select-keys t [:base :candidate :tree])
+                               :instruction "Address the current-head review findings and captured CI failures within this slice. Preserve scope, checks and required GitHub reapproval; never weaken tests or dismiss/resolve reviews dishonestly."))))
         (transition! ctx (:key t) :repair))
       (rt/event! ctx :waiting {:slice (:key t) :reason :github-review-reapproval :candidate (:candidate t)}))))
 

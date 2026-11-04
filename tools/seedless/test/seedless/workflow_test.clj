@@ -447,15 +447,15 @@
                                                 (cond-> (assoc (original context task) :reviewDecision "CHANGES_REQUESTED")
                                                   (and ci-failed? (= (:candidate t) (:candidate task)))
                                                   (assoc :statusCheckRollup failed-checks)))
-                               gh/pages (fn [_ endpoint]
-                                          (cond
-                                            (str/ends-with? endpoint "/reviews") [request]
-                                            (str/ends-with? endpoint "/comments") comments
-                                            :else (throw (ex-info "Unexpected fixture page" {:endpoint endpoint}))))]
+                               transport/pages (fn [_ endpoint]
+                                                 (cond
+                                                   (str/ends-with? endpoint "/reviews") [request]
+                                                   (str/ends-with? endpoint "/comments") (conj comments {:pull_request_review_id 999 :body "Unrelated historical comment"})
+                                                   :else (throw (ex-info "Unexpected fixture page" {:endpoint endpoint}))))]
                    (w/integrate! ctx t)
                    (is (= :repair (:status (w/task ctx "a"))))
                    (is (= [request] (get-in (w/task ctx "a") [:feedback :github-reviews])))
-                   (is (= comments (get-in (w/task ctx "a") [:feedback :comments])))
+                   (is (= comments (get-in (w/task ctx "a") [:feedback :inline-comments])))
                    (is (= (select-keys t [:base :candidate :tree]) (get-in (w/task ctx "a") [:feedback :candidate])))
                    (when ci-failed?
                      (is (= failed-checks (get-in (w/task ctx "a") [:feedback :ci])))
@@ -481,16 +481,16 @@
                             {:id 12 :user {:id 3} :state "APPROVED" :commit_id (:candidate t) :submitted_at "2026-11-02T12:00:00Z"}
                             {:id 13 :user {:id 4} :state "CHANGES_REQUESTED" :commit_id "old-head" :submitted_at "2026-11-03T12:00:00Z"}]]
                (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED"))
-                             gh/pages (fn [_ endpoint]
-                                        (swap! pages inc)
-                                        (if (str/ends-with? endpoint "/reviews") reviews
-                                            (throw (ex-info "No current findings need comments" {}))))]
+                             transport/pages (fn [_ endpoint]
+                                               (swap! pages inc)
+                                               (if (str/ends-with? endpoint "/reviews") reviews
+                                                   (throw (ex-info "No current findings need comments" {}))))]
                  (w/integrate! ctx t)
                  (is (= :ci (:status (w/task ctx "a"))))
                  (is (= 1 @pages)))
                (reset! pages 0)
                (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED" :baseRefName "foreign"))
-                             gh/pages (fn [& _] (swap! pages inc))]
+                             transport/pages (fn [& _] (swap! pages inc))]
                  (is (thrown-with-msg? Exception #"Review does not target this PR base" (w/integrate! ctx t))))
                (is (zero? @pages))
                (is (= authors @phases))
