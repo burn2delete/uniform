@@ -48,7 +48,7 @@
         ctx {:config config :state-dir (str directory) :state-file path :control-file (str (io/file directory "control.edn"))
              :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{})
              :state (atom (read-state! config path))}]
-    (merge ctx (rt/coordination (workflow/common-directory ctx (:repo-dir config)) config))))
+    (merge ctx (rt/coordination (rt/common-git-directory (:repo-dir config)) config))))
 
 (defn with-current-state [ctx f]
   (rt/with-lock ctx

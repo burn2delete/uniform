@@ -28,6 +28,32 @@
 (def intent {:id (str "merge/" candidate) :base base :candidate candidate :tree tree :method :merge})
 (def actual {:commit merged :tree tree :parents [base candidate] :main merged})
 
+(deftest context-discovery-cannot-save-a-stale-owner-snapshot
+  (let [fixture (fixture/context)
+        {:keys [repo]} (git-fixture/repository! fixture)
+        config {:repo-dir repo :state-dir (:state-dir fixture) :repository "fixture/repo" :campaign "Simplify"}
+        initial {:schema 1 :repository "fixture/repo" :campaign "Simplify" :owner-marker :initial}
+        advanced (assoc initial :owner-marker :advanced)
+        original-read main/read-state!
+        calls (atom 0)]
+    (rt/write-edn! (:state-file fixture) initial)
+    (with-redefs [main/read-state! (fn [c path]
+                                    (let [stale (original-read c path)]
+                                      (rt/write-edn! path advanced)
+                                      stale))
+                  rt/command (fn [& _]
+                               (swap! calls inc)
+                               {:exit 1 :err "Operation not permitted" :out ""})]
+      (let [ctx (main/context! config)]
+        (is (= :initial (:owner-marker @(:state ctx))))
+        (is (= advanced (rt/read-edn (:state-file fixture))))
+        (is (zero? @calls) "No pre-lock external command can return a denial and save stale state")))
+    (let [base (rt/git fixture repo "rev-parse" "HEAD")
+          linked (str (io/file (:state-dir fixture) "linked"))]
+      (rt/git fixture repo "worktree" "add" "-b" "linked-fixture" linked base)
+      (is (= (rt/common-git-directory repo) (rt/common-git-directory linked)))
+      (is (= (rt/canonical (io/file repo ".git")) (rt/common-git-directory repo))))))
+
 (deftest ended-author-validation-does-not-reserve-an-idle-writer
   (let [[a b] (pair)
         {:keys [repo]} (git-fixture/repository! a)

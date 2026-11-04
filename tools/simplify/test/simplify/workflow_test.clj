@@ -161,11 +161,11 @@
   (let [ctx (fixture/context)
         {:keys [repo]} (repository! ctx)
         commit (rt/git ctx repo "rev-parse" "HEAD")
-        ctx (assoc ctx :config {:repo-dir repo})]
+        ctx (assoc ctx :config {:repo-dir repo :base-branch "main"})]
     (with-redefs [flow/fresh-main! (fn [_] commit)]
       ;; No parent on this initial commit also rejects an unverifiable merge.
-      (is (thrown? Exception (flow/finish-merge! ctx {:key "bad" :worktree repo :base "unexpected" :tree "unexpected"}
-                                               {:mergeCommit {:oid commit}}))))
+      (is (thrown? Exception (flow/finish-merge! ctx {:key "bad" :worktree repo :base "unexpected" :tree "unexpected" :candidate commit}
+                                               {:state "MERGED" :baseRefName "main" :headRefOid commit :mergeCommit {:oid commit}}))))
     (is (not= :done (get-in @(:state ctx) [:tasks "bad" :status])))))
 
 (deftest checks-and-reviews-reject-candidate-identity-drift
@@ -231,16 +231,36 @@
 (deftest merge-commit-cannot-count-as-reviewed-squash
   (let [ctx (fixture/context)
         {:keys [repo]} (repository! ctx)
-        ctx (assoc-in ctx [:config :repo-dir] repo)
+        ctx (update ctx :config assoc :repo-dir repo :base-branch "main")
         base (rt/git ctx repo "rev-parse" "HEAD")
         tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
         second-parent (rt/git ctx repo "commit-tree" tree "-p" base "-m" "Second parent")
         merged (rt/git ctx repo "commit-tree" tree "-p" base "-p" second-parent "-m" "Not a squash")]
     (with-redefs [flow/fresh-main! (fn [_] merged)]
       (is (thrown-with-msg? Exception #"differs from reviewed composition"
-                            (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree}
-                                                {:mergeCommit {:oid merged}}))))
+                            (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree :candidate second-parent}
+                                                {:state "MERGED" :baseRefName "main" :headRefOid second-parent :mergeCommit {:oid merged}}))))
     (is (not= :done (:status (flow/task ctx "bad"))))))
+
+(deftest changed-pr-base-or-head-cannot-enter-merge-verification
+  (let [ctx (assoc-in (fixture/context) [:config :base-branch] "main")
+        t {:key "finding" :base "base" :candidate "candidate"}
+        calls (atom [])
+        valid {:state "OPEN" :baseRefName "main" :headRefOid "candidate"
+               :statusCheckRollup [{:state "SUCCESS"}]}]
+    (doseq [info [(assoc valid :state "MERGED" :baseRefName "other")
+                  (assoc valid :state "MERGED" :headRefOid "other")]]
+      (with-redefs [flow/pr-info (fn [& _] info)
+                    flow/finish-merge! (fn [& _] (swap! calls conj :verification))]
+        (is (thrown? Exception (flow/integrate! ctx t)))))
+    (doseq [changed [(assoc valid :baseRefName "other") (assoc valid :headRefOid "other")]]
+      (let [reads (atom 0)]
+        (with-redefs [flow/pr-info (fn [& _] (if (= 1 (swap! reads inc)) valid changed))
+                      flow/fresh-main! (fn [_] "base")
+                      rt/run! (fn [& _] (swap! calls conj :mutation))]
+          (flow/integrate! ctx t)
+          (is (= 2 @reads)))))
+    (is (empty? @calls))))
 
 (deftest finding-issues-belong-to-their-campaign
   (let [first-ctx (assoc-in (fixture/context) [:config :campaign] "First campaign")

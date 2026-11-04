@@ -15,6 +15,23 @@
 
 (defn fail! [message data] (throw (ex-info message data)))
 (defn canonical [path] (.getCanonicalPath (io/file path)))
+
+(defn common-git-directory
+  "Read checkout metadata without commands or campaign state writes before lock acquisition."
+  [repo-dir]
+  (let [entry (io/file repo-dir ".git")
+        gitdir (if (.isDirectory entry) entry
+                   (let [path (when (.isFile entry) (second (re-matches #"gitdir: ([^\r\n]+)\r?\n?" (slurp entry))))]
+                     (when-not path (fail! "Configured checkout has no readable Git directory" {:repo-dir repo-dir}))
+                     (let [file (io/file path)] (if (.isAbsolute file) file (io/file repo-dir path)))))
+        common-file (io/file gitdir "commondir")
+        common (if (.isFile common-file)
+                 (let [file (io/file (str/trim (slurp common-file)))]
+                   (if (.isAbsolute file) file (io/file gitdir (str file))))
+                 gitdir)]
+    (when-not (.isDirectory common) (fail! "Git common directory is unavailable" {:repo-dir repo-dir}))
+    (canonical common)))
+
 (defn digest [value]
   (format "%064x" (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256")
                                         (.getBytes (str value) "UTF-8")))))

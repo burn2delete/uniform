@@ -260,7 +260,15 @@
         "changes_requested" (do (task! ctx (:key t) :feedback review) (transition! ctx (:key t) :repair))
         (rt/fail! "Composition review requires input" {:review review})))))
 
+(defn assert-pr-identity! [ctx t info]
+  (when-not (= (get-in ctx [:config :base-branch]) (:baseRefName info))
+    (rt/fail! "PR targets a different base branch" {:pr info}))
+  (when-not (= (:candidate t) (:headRefOid info))
+    (rt/fail! "Remote PR head differs from reviewed candidate" {:pr info})))
+
 (defn verify-merge! [ctx t merged & [intent]]
+  (assert-pr-identity! ctx t merged)
+  (when-not (= "MERGED" (:state merged)) (rt/fail! "Provider has not confirmed the merge" {:pr merged}))
   (let [cwd (:worktree t)
         commit (get-in merged [:mergeCommit :oid])
         _ (when-not commit (rt/fail! "Merged PR has no merge identity" {:pr merged}))
@@ -293,11 +301,10 @@
 
 (defn integrate! [ctx t]
   (let [info (pr-info ctx t)]
+    (assert-pr-identity! ctx t info)
     (cond
       (= "MERGED" (:state info)) (finish-merge! ctx t info)
       (not= "OPEN" (:state info)) (rt/fail! "PR was closed without merge" {:pr info})
-      (not= (get-in ctx [:config :base-branch]) (:baseRefName info)) (rt/fail! "PR targets a different base branch" {:pr info})
-      (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote PR head differs from reviewed candidate" {:pr info})
       (= "CHANGES_REQUESTED" (:reviewDecision info)) (rt/fail! "GitHub review requests changes" {:pr info})
       (= :failed (check-state (:statusCheckRollup info)))
       (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info) :instruction "Repair the failing checks; do not weaken or skip them."})
@@ -318,6 +325,7 @@
                      (cond
                        (not= base current-base) {:compose current-base}
                        (not (and (= "OPEN" (:state current-info)) (= (:candidate t) (:headRefOid current-info))
+                                 (= (get-in ctx [:config :base-branch]) (:baseRefName current-info))
                                  (= :passed (check-state (:statusCheckRollup current-info)))
                                  (not (:isDraft current-info))
                                  (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision current-info)))))
