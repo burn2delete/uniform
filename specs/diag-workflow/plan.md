@@ -258,6 +258,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 eleven-family/ten-context diagnostic schemas exist before checker/generator/Runtime fixtures; actual owning failures then supply authentic boundary/foreign/source/provider/type/ownership/effect/grant/remediation records. Future valid binding or full parity success is no first diagnostic interface. Diag transports real failures with proper redaction and cannot fabricate a requested outcome. Complete L19 origin mapping uses early real incumbent/header/schema/generator/host-frame and source-map interfaces, then authentic selected subject/error/wrapper/proof links back to source spans or manifest entries. Future actual runtime traces confirm host mapping, not its first schema. Generated code cannot become handwritten and stale/foreign mappings invalidate before use.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

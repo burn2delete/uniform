@@ -424,6 +424,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 binding resolution uses early actual foreign symbol/endpoint/schema/import and target-namespace declarations with authentic locks and supported profile facts. Actual generated names and consumers follow real generation; future complete generated Q cannot be the first schema/import identity. Resolving a name neither invokes a provider nor grants authority, and missing/ambiguous/stale/host-leaking imports reject.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

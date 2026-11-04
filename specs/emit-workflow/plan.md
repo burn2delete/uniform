@@ -62,6 +62,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 writes consume early real artifact/manifest/map/error schemas, then actual admitted selected output bytes and required metadata/provenance/readback. Later actual conformance packs apply before policy-required release-grade claims, not the first development writer. Source generation needs no universal native bytes/signature; explicit development-only evidence gaps remain non-release and cannot be laundered by manifests.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

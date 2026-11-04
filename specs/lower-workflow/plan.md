@@ -217,6 +217,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 layout uses early actual selected ABI/wire/calling-convention/representation/service rules plus independent preliminary types and ownership, then derives actual required concrete layouts and target assumptions. Future Runtime traces or final backend acceptance are not initial layout premises. Selected backend availability and ABI interfaces support construction; genuine current facts precede affected calls, with no universal native artifact for source-only schema work. Complete L19 lowering preserves actual wrapper/check/proof/source/foreign/error/ownership/thread/profile/grant/target obligations through exact-subject governing evidence. Early checker/layout interfaces precede transformation; actual changed-subject verification precedes use. Valid raw/unoptimized input remains possible, and an emitted host instruction cannot erase unsafe or missing translation facts.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

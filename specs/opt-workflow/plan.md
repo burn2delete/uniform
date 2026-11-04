@@ -191,6 +191,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 selected optimization keeps actual foreign effects/errors/alias/lifetime/allocator/thread and wrapper-check assumptions with governing proof and diagnostic preservation. Early property/checker contracts precede work; actual selected evidence precedes check erasure or other safety-sensitive reliance. Foreign/host success labels and equal normal values cannot replace the proof, while valid unoptimized source requires no universal optimizer. Complete L19 changed source/schema/ABI/CString-layout/runtime/provider inputs require actual affected type/ownership/error/wrapper/proof/origin/parity rechecking or invalidation and changed-subject verification. Available real owner analysis precedes change; future regenerated output cannot be its first service. Reuse never copies passed/audited flags as proof of current applicability.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

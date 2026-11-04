@@ -411,6 +411,156 @@ signing or product-publication action, reviewer wake, other-chat message,
 aggregate publication or merge is enabled. Reader contract coverage remains the
 first actual implementation increment.
 
+## Interoperability producer and consumer order
+
+Use the [complete L19 source criteria](#complete-interoperability-and-migration-source-criteria)
+and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Task bodies/statuses, all 31 source criteria, historical receipts and forty
+future declarations/source bindings remain unchanged. This is proposed selected
+interface staging, not an implementation receipt or second roadmap. Current
+whole-source/interface entailment, independent acceptance and integration remain
+pending; earlier population statements keep their original source checkpoints.
+
+Sixty-eight selected routes retain all 2,743 preceding input joins and all ninety
+unaffected route meanings. Fifty-seven rows already existed and eleven existing
+backend tasks gain their missing rows. Add 224 inputs for 2,967 joins over 158
+routes, 118 current parents and forty future records. Selected composition
+inputs increase from 1,611 to 1,835. All twenty-five direct L19 criterion owners
+already had rows. Every proposed input has an explicit selected stage; those
+roles do not relabel every legacy edge as newly reviewed.
+
+The coarse feedback set grows from 128 to 139 tasks. All 128 old members remain;
+backend-ai/c/emission/js/jvm/llvm/mlir/mobile/query/wasm/workflow enter, none leave.
+The fifteen existing backend-family task keys differ from the fourteen B1-B14
+canonical documents; selected L19 inputs accept neither population as complete.
+This is actual task feedback, not a whole-task executable ordering. Keep PKG2
+acyclicity and its explicitly governed bootstrap fixed point; these edges permit
+no unmarked namespace/build cycle.
+
+### Real declarations, generation and admission
+
+Early actual incumbent/header/schema/IDL/host-type/package/symbol/provider/ABI/
+protocol/version/support declarations and locks precede resolution and selected
+checking. Ten boundary families retain their truthful profiles and real provider
+contracts. A future complete wrapper, generated binding, native artifact or
+Runtime trace cannot supply its own first declaration, lock or policy interface.
+Pure schema data may lower to Core without a foreign runtime; resolving an import
+or loading a schema neither invokes a service nor issues a grant.
+
+Early real generator/type/codec/validator/namespace and oracle/case interfaces
+permit construction. Available actual checked P, declared build effects and
+separate authentic file/schema/tool/provider grants precede invocation; actual Q
+then receives ordinary checking with foreign/schema origins. Initial C wrapper
+declarations are not accepted safe APIs. Nine schema fields, seven shim examples,
+preserved/emulated/narrowed/rejected behavior, owner and temporary/stability state
+remain. Final parity, independently executed suites or stable-change decisions
+cannot be first source-generation interfaces.
+
+Actual structural/local source and preliminary type/representation premises
+precede performed/latent/transitive effect and resource inference. Actual effects,
+independent caller/profile/service/resource premises, genuine wrapper/check/proof
+facts and separate authentic grants precede admitted checked export and actions.
+Final admission does not supply its own first type graph. Auth retains admission
+without replacing Types inference, Legality profiles/wrappers or Runtime actions.
+A safe-wrapper, schema/read, selected-provider or shim label proves none of these.
+
+### Values, layouts, wrappers and actual execution
+
+Six directional mapping families retain explicit loss/failure and actual declared
+representations. Applicable round trips compare the specified behavior; they do
+not impose implicit bidirectionality on lossy mappings. Real Option absence stays
+legal, while errors and authority denials cannot become absence. Seven ownership
+modes and six pointer fact groups retain borrow/transfer/shared/allocator/release/
+alias/thread obligations. Unrepresentable facts remain unsafe, never invented
+ordinary references.
+
+Early actual ABI/calling-convention/wire/layout/host-root/thread/lifetime/error/
+release/representation/service rules and independent preliminary types precede
+needed concrete layouts. Actual invariant proof/checks, relevant target/ABI facts,
+policy and current owner verdicts precede safe reliance; copied review/audit names
+or one successful call are no proof of preconditions, no-retention or cleanup.
+Future Runtime traces are no first lifetime/layout rule. Actual admitted selected
+boundaries, required layouts, services and grants precede real conversion/call/
+borrow/transfer/rooting/release results and the six translated failure families.
+Host GC, a release function name and process exit cannot prove linear cleanup.
+
+Early typed process/network/service/tool/model/state/replay/audit schemas precede
+construction. Actual admitted artifacts, policy and grants precede actual selected
+execution. Replay may not issue uncontrolled repeated effects: any source-permitted
+reissue needs the actual explicit replay-safe/idempotent graph and event-log policy.
+Source generation authorizes no live subprocess/model/tool/store, foreign callback,
+device or migration. All current holds and external account/platform conditions
+remain; a source fixture is not native, host or replay execution evidence.
+
+### Backend interfaces, artifacts, tools and compatibility
+
+All fifteen existing backend task owners now have consuming rows. Early real
+selected-family ABI/feature/availability/helper/representation/schema/evidence
+interfaces support layout, service and emitter construction; actual verified raw
+MIR or selected anchored domain IR plus current required facts precede eligibility
+and claimed target output. Runtime availability or no-runtime evidence is actual,
+not whole Runtime completion before first backend declarations. Optional MLIR
+stays optional and valid unoptimized/Core-only paths remain; no invented domain
+IR or generic whole-registry gate is added.
+
+C keeps declared dialects including freestanding C11 and hosted C17 and no safe
+UB. LLVM keeps proof-backed attributes and the adopted selected native candidate.
+Wasm keeps actual core/component/world/canonical-ABI/resource contracts, with
+selected host and async/replay services; synchronous core is not async-component
+completion. JVM and JS retain distinct version/runtime/null/root/error/thread/
+numeric/global contracts and real selected results. MLIR retains actual verifier/
+legal-conversion/metadata and selected downstream interfaces/results. GPU/HDL
+retain actual address/transfer/sync or port/bus/width/clock/reset contracts;
+host semantics do not become hardware. Workflow/AI/Query/Mobile retain selected
+schema/provider/replay/permission/lifecycle/error and compatibility claims rather
+than universal live services. No new device, ISA, release target or store action
+is adopted. Broader B1-B14 source conjunctions and family acceptance remain open.
+
+Early common B13 artifact/hash/provenance/source-map/unsafe/evidence schemas
+precede writers. Actual selected admitted bytes/canonical representations and
+current required evidence precede manifests/readback. Real conformance packs are
+required before policy-governed release-grade claims, not the first development
+writer or fixture. Intentional unavailable development evidence remains explicitly
+non-release with affected downstream operations blocked. Final conformance cannot
+supply its own first artifact schema. Content identity precedes later governed
+signing/packaging; metadata cannot launder absent safety or conformance.
+
+Source/schema/provider/ABI/host/runtime/layout/compiler/generator/profile/target/
+lock/effect/grant changes invalidate affected bindings/codecs/wrappers/type-error-
+ownership/proof/origin/parity products before real regeneration/current-policy
+reuse. Early comparison/normalization/package schemas precede repeated builds;
+actual output/equality and permitted nondeterminism evidence precede reproducibility
+claims. Future complete packages are no first build identity. Tools consume actual
+current source/generated/foreign/host-frame artifacts and genuine eleven-family/
+ten-context diagnostics; a future valid artifact is no first error schema.
+
+Actual old/new compatibility/deprecation/owner/stability/policy interfaces precede
+required scoped promotion or stable-change decisions and checked migration or
+justified infeasibility. Final migrated output is no first review input. Ordinary
+compatible local work gains no per-run approval or fresh migration-proof gate.
+Temporary shims stay temporary unless promoted under their real governing policy.
+
+### Independent fixtures and remaining scope
+
+Early actual owner examples, source/incumbent oracles, wrapper/property/checker/
+ABI/schema/availability interfaces precede real independent language/compiler/
+profile/runtime/safety/library and backend results. Actual eight-family compatibility
+and at least one incumbent-language/schema parity report remain. Performance-sensitive
+replacement claims need actual selected envelope/measurement comparison; this is no
+universal benchmark or project work quota. Execution equality alone cannot replace
+source/proof/effect/grant/audit/diagnostic/manifest preservation. Unavailable target
+records remain truthful and required shared negative/metadata checks still run;
+held cases cannot pass by projected reports or skips.
+
+Current global source/owner/task/interface entailment, independent review and
+integration remain unproven. Reader contract coverage is still the first actual
+implementation increment. Preserve D1/C1/C5/C6 ordering and L6/L12 hermetic wording
+resolution paths, all actual restrictions and accounting removal. Foreign-language
+support grants no new bootstrap/tooling language. This proposal executes no held
+compiler/provider/plugin/C7/C12/native/callback/device/probe/replay/migration/private-
+store/signing/product-publication action, messages no other chat, wakes no reviewer,
+publishes no preserved aggregate and merges nothing.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

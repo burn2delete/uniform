@@ -969,6 +969,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 resource analysis uses independent local type/flow and early authentic borrow/transfer/shared/allocator/release/alias/thread/ABI contracts, then actual sufficient facts for admitted calls and cleanup. Seven ownership modes and six pointer facts remain; future runtime release or final layouts are no first lifetime rule. Unrepresentable foreign facts stay unsafe, and actual Runtime traces establish execution rather than an allocator label or host GC. Complete L19 wrapper safety starts from real invariant/precondition/ensures/no-retain/layout/target/audit/checker interfaces, then actual required proof/check and owner facts before a safe claim. Early ABI rules permit construction; required concrete layout and applicable evidence govern the specific wrapper. Future successful execution and copied review/audit names are not proof of invariants. Unsafe calls remain visible and unproved boundaries remain explicit unsafe/check/reject under governing policy. Complete L19 profile checking consumes truthful early support/representation/host/service/target and independent local resource/effect premises before actual combined verdicts. Later actual selected implementation and evidence confirm claimed support, not the first policy. Preserve eight profile meanings, Core schema-only portability and Workflow as a distributed facet; unsupported host/allocation/blocking/interrupt/MMIO behavior rejects before affected lowering, with no physical device or ISA adoption. Complete L19 checked handoff carries actual complete current foreign type/direction/ABI/provider/schema/ownership/error/thread/wrapper/unsafe/source facts and real admission into MIR/lowering/runtime. Early common schemas permit candidate construction, actual required owner verdicts precede admitted consumption. Runtime enforces static legality and cannot repair an illegal source boundary or fabricate an erased proof.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

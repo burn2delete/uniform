@@ -242,6 +242,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 resource APIs consume early actual safe-wrapper/type/directional mapping/lifetime/error/provider contracts, then real admitted selected Runtime services and grants before usable value/failure/release results. Compiler records, a release name and host GC implement none of the API. Actual required wrapper/audit evidence precedes safe use; unrelated source construction needs no complete library or native service. Complete L19 typed schema/query/workflow/AI/tool adapters use early real source/codec/validator/protocol contracts and later actual checked generated products and claimed permitted service behavior. Pure source generation needs no live database/model/tool/store, while actual calls need real effects/grants/error/ownership enforcement and replay/audit where required. Drift and unvalidated responses remain refused, not hidden behind host convenience.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

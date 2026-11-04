@@ -177,6 +177,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 docs consume early real foreign/schema/wrapper/migration/source artifact schemas and later actual current checked products before semantic claims. Preserve version/profile/provider/ownership/error and source-generated/manifest context through redaction; documentation cannot fabricate accepted wrappers, normalization or parity. Complete L19 LSP uses early real incremental foreign/schema/import/type/error/origin contracts, then actual current owner products for diagnostics/navigation/completion. Changed source/provider/schema/layout facts invalidate affected results before real regeneration. Future complete interop acceptance is no first tooling interface and cached labels cannot supply inference or hide a host leak. Complete L19 debugging uses early real source/generated/foreign/host-frame/suspension/ownership/error map contracts, then actual selected artifact/session/runtime products before claimed stepping or inspection. Future execution is not the first map schema, while real host traces remain required for execution claims. Debug access creates no authority and held runtime/provider actions remain held. Complete L19 inspection exposes authentic current boundary/provider/schema/type/direction/ownership/error/wrapper/unsafe/source/proof identities from actual artifacts. Early record interfaces precede tool construction; genuine current products precede semantic claims. Rendering a supplied passed/complete map proves no foreign call, wrapper or parity.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

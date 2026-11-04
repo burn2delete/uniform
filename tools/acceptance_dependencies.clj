@@ -175,7 +175,18 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"ui"
+  #{"backend-emission"
+    "backend-c"
+    "backend-llvm"
+    "backend-wasm"
+    "backend-jvm"
+    "backend-js"
+    "backend-mlir"
+    "backend-mobile"
+    "backend-query"
+    "backend-workflow"
+    "backend-ai"
+    "ui"
     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
     "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"

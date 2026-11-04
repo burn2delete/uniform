@@ -183,6 +183,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 Hardware exposes early actual register/MMIO/interrupt/DMA/address/width/order/ownership/layout/clock/bus/external-module interfaces before checking, then actual selected artifacts and claimed modeled behavior. Future physical-device/product acceptance is no first schema; host runtime semantics cannot stand in for modeled allocation/blocking/interrupt behavior. No ISA/device adoption or held execution follows.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

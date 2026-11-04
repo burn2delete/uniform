@@ -862,6 +862,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 generator actions use early real source/header/schema/IDL/host-type/package contracts, available checked P and actual declared build/read/tool/provider effects with authentic grants before invocation. Actual generated Q then receives ordinary checking. Future accepted Q or parity reports are no first generator interface; pure source preparation needs no unrelated live service, and held plugin/provider/probe actions remain held. Complete L19 schema/shim construction consumes early actual incumbent/header/schema/host-type/namespace/codec/validator and generator/checker/oracle interfaces, then real source generation, normal Q checking and actual claimed compatibility/parity products. Initial C wrappers are declarations, not accepted safe APIs; available checked P precedes invocation. Nine schema fields, seven shim examples and temporary/stability/owner/preserved-emulated-narrowed-rejected contracts remain. Actual execution/oracle/performance results where sensitive precede parity claims, not first source construction. Independent harness results and applicable stable-change decisions are later actual products; no universal native/live incumbent action or final whole suite gates portable schema generation.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

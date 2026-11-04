@@ -389,6 +389,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 selection consumes early authentic boundary/provider/version/language/ABI/protocol/schema/host/feature/support declarations and lock/policy inputs, not a future complete wrapper or runtime trace. Later applicable checked contracts and support establish admitted use; declaration/import/shim names grant no authority. Ten boundary families remain conditional on actual claimed support, while Core schema data needs no universal foreign provider. Complete L19 original Auth admission consumes actual complete typed declaration and independently established profile/resource/wrapper/error facts plus genuine action requirements before authentic scope/phase/lifetime/deployment grant checks. Early real policy/gate interfaces permit construction; actual required owner verdicts and grants precede affected actions. Future execution cannot authorize its own first call, and Auth does not replace Types, wrapper proof, profile legality or Runtime normalization.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

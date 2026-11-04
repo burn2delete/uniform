@@ -174,6 +174,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 MIR verification consumes real admitted common typed boundary/fact/check/proof/source records and preserves actual ordinary or selected domain semantics. Early schemas support construction; actual verification precedes downstream use. Raw/unoptimized valid MIR is permitted and Core-only schema data needs no invented domain IR or full foreign runtime.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

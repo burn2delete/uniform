@@ -606,6 +606,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 declaration checking consumes early actual foreign symbol/schema/provider/version and ABI/host/lifetime/error/thread contracts with independent source type premises. Preliminary declarations/types permit later layout and analysis; final runtime execution or complete schema generation cannot be the first declared contract. Preserve thirteen field groups, reject incomplete safe-namespace declarations and retain actual selected domain/schema facts without universal live services. Complete L19 directional mapping starts with real source/foreign representation/null/init/error/ownership contracts and preliminary types, then produces actual conversion/check/unsafe boundary records. Required concrete layouts and owning verdicts precede affected admitted use; future runtime conversion is not the first type-map schema. Six mapping families retain explicit loss/failure and legal Option absence, not implicit bidirectionality or host defaults. Complete L19 exports early actual source/provider/schema/ABI/host/version/dependency/fact schemas, then authentic current declarations/maps/wrappers/ownership/errors/generated origins and verification products. All ten artifact families retain real producers. Changed governing identities invalidate affected facts/checks/proofs/parity before actual owner regeneration; later complete parity cannot supply the first artifact schema. Complete L19 ordinary verification consumes real candidate declarations/generated bindings and independent structural/local premises before real effect/resource analysis, then actual combined admission before checked export. Final effects/profile/wrapper verdicts cannot supply their own first types. Genuine downstream verification rejects lost null/error/ownership/provenance; portable schema Core needs no universal native runtime, complete shim suite or foreign call.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

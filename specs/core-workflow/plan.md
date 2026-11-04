@@ -378,6 +378,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 ordinary structural candidate Core precedes combined owner checking, then actual admitted directional maps/wrappers/source/error/ownership and effect/grant/profile facts precede checked export. Foreign success flags, host exceptions/nulls and target assumptions do not define safe Core semantics. Portable schema data needs no foreign execution or whole backend family.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

@@ -466,6 +466,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 effect derivation consumes actual preliminary typed foreign/generator/caller structures and early service/protocol/check/error contracts, then derives performed/latent/transitive compile-time and runtime effects. Future execution or final typed admission is not its initial call graph. Translation, wrappers and caught failures erase no effects, allocation/blocking or authority requirements. Complete L19 effect admission consumes actual inferred requirements, independent allowance/profile/service premises and separately authentic grants before affected use. Early contracts precede candidate checking; later actual combined verdicts precede checked export. Declared safe wrappers, schema/read labels and shims create neither purity nor authority; actual schema-generation build effects stay distinct from emitted runtime effects.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

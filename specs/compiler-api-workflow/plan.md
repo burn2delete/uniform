@@ -325,6 +325,13 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Interoperability dependency interface
+
+Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 pipeline exposes actual declaration/generation/normal-check/ownership/ABI/admission products with retained diagnostics and invalidation across fused or interleaved passes. Preliminary independent premises precede inferred effects and final checked export; future conformance is not a first schema/interface. Preserve the unresolved D1/C1/C5/C6 order rather than invent one, and L6/L12 hermetic wording remains owned.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration
