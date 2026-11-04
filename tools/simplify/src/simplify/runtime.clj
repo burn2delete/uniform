@@ -8,10 +8,30 @@
   (:import [java.nio.channels FileChannel OverlappingFileLockException]
            [java.nio.file Files StandardCopyOption StandardOpenOption]
            [java.security MessageDigest]
-           [java.time Instant]))
+           [java.time Instant]
+           [java.util UUID]
+           [java.util.concurrent ConcurrentHashMap]
+           [java.util.function Function]))
 
 (defn fail! [message data] (throw (ex-info message data)))
 (defn canonical [path] (.getCanonicalPath (io/file path)))
+
+(defn common-git-directory
+  "Read checkout metadata without commands or campaign state writes before lock acquisition."
+  [repo-dir]
+  (let [entry (io/file repo-dir ".git")
+        gitdir (if (.isDirectory entry) entry
+                   (let [path (when (.isFile entry) (second (re-matches #"gitdir: ([^\r\n]+)\r?\n?" (slurp entry))))]
+                     (when-not path (fail! "Configured checkout has no readable Git directory" {:repo-dir repo-dir}))
+                     (let [file (io/file path)] (if (.isAbsolute file) file (io/file repo-dir path)))))
+        common-file (io/file gitdir "commondir")
+        common (if (.isFile common-file)
+                 (let [file (io/file (str/trim (slurp common-file)))]
+                   (if (.isAbsolute file) file (io/file gitdir (str file))))
+                 gitdir)]
+    (when-not (.isDirectory common) (fail! "Git common directory is unavailable" {:repo-dir repo-dir}))
+    (canonical common)))
+
 (defn digest [value]
   (format "%064x" (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256")
                                         (.getBytes (str value) "UTF-8")))))
@@ -105,34 +125,7 @@
 (boolean (re-find #"(?i)(HTTP (401|403|429)|requested URL returned error: (401|403|429)|permission denied|operation not permitted|read-only file system|sandbox[^\n]*(denied|deny|forbidden)|permission to .+ denied|write access .+ not granted|authentication failed|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit|not authorized)"
                     (or message ""))))
 
-(defn denials!
-  "Denied controller operations survive campaign changes and cannot transfer between harnesses."
-  [ctx f]
-  (if-let [directory (:coordination-dir ctx)]
-    (do (.mkdirs (io/file directory))
-        (loop []
-          (let [result (with-open [channel (FileChannel/open (.toPath (io/file directory "denials.lock"))
-                                                            (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
-                         (when-let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
-                           (try
-                             (let [file (io/file directory "denials.edn")
-                                   [updated result] (f (if (.exists file) (read-edn file) {}))]
-                               (write-edn! file updated) {:value result})
-                             (finally (.release lock)))))]
-            (if result (:value result) (do (Thread/sleep 25) (recur))))))
-    (second (f {}))))
-
-(defn assert-authorized! [ctx kind key]
-  (when (denials! ctx (fn [denials] [denials (get denials [kind key])]))
-    (fail! "Operation denied in a coordinated harness; cannot retry or transfer it" {:restricted true :kind kind :key key})))
-
-(defn record-denial! [ctx kind key details]
-  (denials! ctx (fn [denials] [(assoc denials [kind key] details) true])))
-
-(defn remember-denial! [ctx kind key details]
-  (record-denial! ctx kind key details)
-  (when (or (nil? (:coordinator-owner ctx)) @(:coordinator-owner ctx))
-    (update! ctx assoc-in [(case kind :command :restricted-commands :github :restricted-actions) key] details)))
+(declare shared-restriction shared-restrict!)
 
 (defn run! [ctx cwd argv]
   (let [action (cond
@@ -140,14 +133,16 @@
                  (= ["gh" "pr" "merge"] (vec (take 3 argv))) ["gh-pr-merge" (get-in ctx [:config :repository])]
                  :else argv)
         key (digest (pr-str action))
-        _ (assert-authorized! ctx :command key)
-        _ (when (get-in @(:state ctx) [:restricted-commands key])
+        _ (when (or (get-in @(:state ctx) [:restricted-commands key])
+                    (shared-restriction ctx :commands key))
             (fail! "Restricted controller command cannot be retried" {:argv argv :restricted true}))
         result (command ctx cwd argv)]
     (when-not (zero? (:exit result))
       (let [restricted (authorization-denied? (str (:err result) "\n" (:out result)))]
         (when restricted
-          (remember-denial! ctx :command key {:argv argv :error (:err result)}))
+          (let [refusal {:argv argv :error (:err result)}]
+            (update! ctx assoc-in [:restricted-commands key] refusal)
+            (shared-restrict! ctx :commands key refusal)))
         (fail! "Command failed" (assoc result :argv argv :restricted restricted))))
     (str/trim (:out result))))
 
@@ -159,9 +154,13 @@
   (let [prior (get-in @(:state ctx) [:effects id])]
     (case (:status prior)
       :done (:result prior)
-      :restricted (fail! "Restricted effect cannot be retried" {:effect id :restricted true})
-      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying" {:effect id :prior prior})
+      :restricted (fail! "Restricted effect cannot be retried" {:effect id :effect-status :restricted :restricted true})
+      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying"
+                                  {:effect id :effect-status (:status prior) :prior prior})
       (do
+        (when (and (= :not-applied (:status prior)) (str/starts-with? id "merge/"))
+          (fail! "Main not-applied effect requires shared inspection and an explicit successor intent"
+                 {:effect id :effect-status :not-applied}))
         (update! ctx assoc-in [:effects id]
                  (cond-> {:status :pending} (= :not-applied (:status prior)) (assoc :previous prior)))
         (try
@@ -171,7 +170,9 @@
           (catch Exception e
             (update! ctx update-in [:effects id] assoc :status (if (:restricted (ex-data e)) :restricted :uncertain)
                      :message (.getMessage e))
-            (throw e)))))))
+            (throw (ex-info (.getMessage e)
+                            (assoc (or (ex-data e) {}) :effect id
+                                   :effect-status (get-in @(:state ctx) [:effects id :status])) e))))))))
 
 (defn tracking-effect!
   "Status may legitimately cycle. An unresolved earlier write must be inspected first."
@@ -182,32 +183,415 @@
                (let [status (get-in @(:state ctx) [:effects prior :status])]
                  (when-not (#{:done :not-applied} status)
                    (fail! "Tracking effect needs reconciliation; not issuing another write"
-                          {:effect prior :restricted (= :restricted status)}))))
+                          {:effect prior :effect-status status :restricted (= :restricted status)}))))
              (let [n (inc (or (:tracking-sequence @(:state ctx)) 0))
                    id (str key "/" n)]
                (update! ctx #(-> % (assoc :tracking-sequence n) (assoc-in [:tracking-intents key] id)))
                id))]
     (effect! ctx id operation)))
 
+(defn assert-compatible-controllers! [ctx]
+  (doseq [path (:legacy-controller-locks ctx)
+          :let [file (io/file path)]
+          :when (and (.isFile file) (not= (canonical path) (canonical (:lock-file ctx))))]
+    (with-open [channel (FileChannel/open (.toPath file) (into-array StandardOpenOption [StandardOpenOption/WRITE]))]
+      (if-let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
+        (.release lock)
+        (fail! "Restart the legacy controller with shared coordination before starting this campaign"
+               {:lock path :legacy-controller-live true})))))
+
 (defn with-lock [ctx f]
   (with-open [channel (FileChannel/open (.toPath (io/file (:lock-file ctx)))
                                        (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
     (let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
-      (when-not lock (fail! "Another harness owns this repository" {}))
+      (when-not lock (fail! "Another controller owns this campaign state" {}))
       (try
-        ;; Contexts can be loaded while a coordinator is writing. Mutable
-        ;; commands use only the state observed after acquiring its lock.
-        (when (.exists (io/file (:state-file ctx)))
-          (let [state (read-edn (:state-file ctx)) config (:config ctx)]
-            (when-not (and (= 1 (:schema state))
-                           (= (:repository config) (:repository state)) (= (:campaign config) (:campaign state)))
-              (fail! "State belongs to another campaign or schema" {}))
+        ;; A differently named old lock must be rejected before any snapshot can be saved.
+        (assert-compatible-controllers! ctx)
+        (when (and (or (:read-state ctx) (:coordinator-owner ctx))
+                   (.exists (io/file (:state-file ctx))))
+          (let [state (if-let [read-state (:read-state ctx)] (read-state)
+                          (let [state (read-edn (:state-file ctx)) config (:config ctx)]
+                            (when-not (and (= 1 (:schema state))
+                                           (= (:repository config) (:repository state))
+                                           (= (:campaign config) (:campaign state)))
+                              (fail! "State belongs to another campaign or schema" {}))
+                            state))]
             (reset! (:state ctx) state)))
         (when-let [owner (:coordinator-owner ctx)] (reset! owner true))
         (try (f)
              (catch Exception e
-               (when (#{"run" "resume"} (:command ctx)) (update! ctx assoc :status :attention))
+               (when (and (#{"run" "resume"} (:command ctx)) (not= :attention (:status @(:state ctx))))
+                 (update! ctx assoc :status :attention))
                (throw e)))
         (finally
           (when-let [owner (:coordinator-owner ctx)] (reset! owner false))
           (.release lock))))))
+
+(defn coordination
+  "Separate state ownership from the repository's short integration transaction."
+  [common config]
+  (let [common (canonical common)
+        identity (digest (canonical (:state-dir config)))]
+    {:lock-file (str (io/file common (str "uniform-controller-" identity ".lock")))
+     :main-lock-file (str (io/file common "uniform-main.lock"))
+     :coordination-lock-file (str (io/file common "uniform-harnesses.lock"))
+     :coordination-file (str (io/file common "uniform-harnesses.edn"))
+     :coordination-dir (str (io/file common "uniform-harness"))
+     :legacy-controller-locks (mapv #(str (io/file common %)) ["simplify-harness.lock" "advance-harness.lock"])
+     :path-leases (atom {})
+     :snapshot-ref (str "refs/uniform/" identity "/main")
+     :snapshot-lock (Object.)
+     :main-lock-owner (atom nil)}))
+
+(defn fresh-main! [{:keys [snapshot-lock] :as ctx}]
+  (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
+    (locking snapshot-lock
+      ;; Neither FETCH_HEAD nor another campaign's tracking ref is our snapshot.
+      (git ctx repo-dir "fetch" "--no-write-fetch-head" "--refmap=" remote
+           (str "refs/heads/" base-branch ":" (:snapshot-ref ctx)))
+      (git ctx repo-dir "rev-parse" (:snapshot-ref ctx)))))
+
+(defn safe-path! [path]
+  (let [normal (str/replace path #"/+$" "")]
+    (when (or (str/blank? normal) (str/starts-with? normal "/") (str/includes? normal "\\")
+              (some #{".." ".git"} (str/split normal #"/")))
+      (fail! "Finding ownership must use safe relative paths" {:path path}))
+    normal))
+
+(defn covers? [owner path]
+  (or (= owner ".") (= owner path) (str/starts-with? path (str owner "/"))))
+
+(defn overlap? [a b]
+  (boolean (some (fn [x] (some #(or (covers? x %) (covers? % x)) b)) a)))
+
+(def ^:private local-coordination-locks (ConcurrentHashMap.))
+
+(defn coordinate! [ctx f]
+  (let [path (:coordination-lock-file ctx)
+        monitor (.computeIfAbsent local-coordination-locks (canonical path)
+                                  (reify Function (apply [_ _] (Object.))))]
+    (locking monitor
+      (with-open [channel (FileChannel/open (.toPath (io/file path))
+                                           (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))
+                  _lock (.lock channel)]
+        (let [file (io/file (:coordination-file ctx))
+              state (if (.exists file) (read-edn file) {:schema 1 :writers {} :main-effects {} :history []})]
+          (when-not (= 1 (:schema state)) (fail! "Unknown shared coordination schema" {}))
+          (let [[next-state result] (f state)]
+            (when-not (= state next-state) (write-edn! file next-state))
+            result))))))
+
+(defn- owner [ctx]
+  {:state-dir (canonical (:state-dir ctx)) :state-file (canonical (:state-file ctx))
+   :campaign (get-in ctx [:config :campaign])})
+
+(defn- effect-key [ctx id] (pr-str [(:state-dir (owner ctx)) id]))
+
+(defn main-effect-owner? [ctx intent]
+  (= (select-keys (owner ctx) [:state-dir :state-file])
+     (select-keys intent [:state-dir :state-file])))
+
+(defn shared-restriction [ctx kind key]
+  (when (:coordination-file ctx)
+    (coordinate! ctx (fn [state] [state (get-in state [:restrictions kind key])]))))
+
+(defn shared-restrict! [ctx kind key refusal]
+  (when (:coordination-file ctx)
+    (coordinate! ctx (fn [state]
+                       (if (get-in state [:restrictions kind key])
+                         [state nil]
+                         [(assoc-in state [:restrictions kind key]
+                                    (merge (owner ctx) refusal {:at (str (Instant/now))})) nil])))))
+
+(defn denial-kind [kind] (case kind :command :commands :github :api :check :checks))
+
+(defn assert-authorized! [ctx kind key]
+  (when (shared-restriction ctx (denial-kind kind) key)
+    (fail! "Operation denied in a coordinated harness; cannot retry or transfer it" {:restricted true :kind kind :key key})))
+
+(defn record-denial! [ctx kind key details]
+  (shared-restrict! ctx (denial-kind kind) key details))
+
+(defn remember-denial! [ctx kind key details]
+  (record-denial! ctx kind key details)
+  (when (or (nil? (:coordinator-owner ctx)) @(:coordinator-owner ctx))
+    (update! ctx assoc-in [(case kind :command :restricted-commands :github :restricted-actions :check :restricted-checks) key] details)))
+
+(defn- import-legacy-registry [ctx state]
+  (let [directory (:coordination-dir ctx)
+        claims-file (when directory (io/file directory "claims.edn"))
+        denials-file (when directory (io/file directory "denials.edn"))
+        registry (when (and claims-file (.isFile claims-file)) (read-edn claims-file))
+        denials (when (and denials-file (.isFile denials-file)) (read-edn denials-file))
+        state (reduce-kv (fn [state [kind key] details]
+                           (let [path [:restrictions (denial-kind kind) key]]
+                             (if (get-in state path) state (assoc-in state path details))))
+                         state (or denials {}))]
+    (reduce-kv
+     (fn [state identity claim]
+       (let [migration [:legacy-writer (canonical claims-file) identity]]
+         (if (get-in state [:imports migration]) state
+             (let [state-file (:state-file claim)
+                   _ (when-not (string? state-file) (fail! "Legacy writer has no recorded state owner" {:claim claim}))
+                   state-dir (canonical (.getParentFile (io/file state-file)))
+                   key (:key claim)
+                   id (pr-str [state-dir key])
+                   paths (mapv safe-path! (:paths claim))
+                   _ (when (empty? paths) (fail! "Legacy writer has no recorded owned paths" {:claim claim}))
+                   _ (when (get-in state [:writers id])
+                       (fail! "Legacy writer conflicts with a registered writer; inspect before migration" {:claim claim}))
+                   lease {:id id :token (str (UUID/randomUUID)) :key key :paths paths
+                          :state-dir state-dir :state-file (canonical state-file) :campaign (:campaign claim) :phase :implementing
+                          :status :needs-inspection :legacy-claim claim :at (str (Instant/now))}]
+               (-> state (assoc-in [:writers id] lease)
+                   (assoc-in [:imports migration] {:lease (:token lease) :at (str (Instant/now))}))))))
+     state (or (:claims registry) {}))))
+
+(defn import-state-coordination!
+  "Preserve legacy refusals and explicitly recorded unknown writers during handover."
+  [ctx]
+  (let [local @(:state ctx)]
+    (coordinate!
+     ctx
+     (fn [state]
+       (let [state (import-legacy-registry ctx state)
+             state (reduce (fn [state [kind entries]]
+                             (reduce-kv (fn [state key refusal]
+                                          (if (get-in state [:restrictions kind key]) state
+                                              (assoc-in state [:restrictions kind key] (merge (owner ctx) refusal))))
+                                        state (or entries {})))
+                           state [[:commands (:restricted-commands local)] [:api (:restricted-actions local)] [:checks (:restricted-checks local)]])
+             state (reduce
+                    (fn [state [id effect]]
+                      (let [migration [(:state-dir (owner ctx)) id :main-effect]
+                            marker (get-in state [:imports migration])
+                            pending (get-in state [:main-effects (effect-key ctx id)])
+                            recorded (or pending
+                                         (last (keep #(when (and (= id (get-in % [:intent :id]))
+                                                                 (= (:state-dir (owner ctx)) (get-in % [:intent :state-dir])))
+                                                        (:intent %)) (:history state))))
+                            recorded-owner (or recorded marker)]
+                        ;; Keep the original journal keys. A colliding local
+                        ;; effect cannot adopt or overwrite another state file's
+                        ;; fence or its completed migration marker.
+                        (when (and (str/starts-with? id "merge/")
+                                   (#{:pending :uncertain :restricted :not-applied} (:status effect))
+                                   (or marker pending recorded)
+                                   (not (main-effect-owner? ctx recorded-owner)))
+                          (fail! "Main-effect migration belongs to another or unknown state owner" {:effect id}))
+                        (if (or (not (str/starts-with? id "merge/"))
+                                (not (#{:pending :uncertain :restricted :not-applied} (:status effect)))
+                                marker pending recorded) state
+                            (let [task (first (filter #(or (= id (str "merge/" (:candidate %)))
+                                                          (= id (:merge-effect %))
+                                                          (= id (get-in % [:merge-intent :id]))
+                                                          (= id (get-in % [:merge-recovery :id])))
+                                                      (vals (:tasks local))))
+                                  saved-intent (when (= id (get-in task [:merge-intent :id])) (:merge-intent task))
+                                  intent (merge (owner ctx) (select-keys (or saved-intent task) [:base :candidate :tree])
+                                                {:id id :legacy true :status :uncertain
+                                                 :method (or (:method saved-intent) (if (= :seedless/v1 (:schema local)) :merge :squash))
+                                                 :original-effect effect})]
+                              (-> state (assoc-in [:main-effects (effect-key ctx id)] intent)
+                                  (assoc-in [:imports migration] (assoc (owner ctx) :at (str (Instant/now)))))))))
+                    state (:effects local))
+             state (reduce
+                    (fn [state [key task]]
+                      (let [boundary (:shared-dependency-validation task)
+                            migration [(:state-dir (owner ctx)) key (:candidate boundary) (:artifact-dir boundary)]
+                            id (pr-str [(:state-dir (owner ctx)) key])]
+                        (if (or (not= :unknown (:descendant-coverage boundary))
+                                (get-in state [:imports migration])) state
+                            (let [lease (or (get-in state [:writers id])
+                                            (merge (owner ctx)
+                                                   {:id id :token (str (UUID/randomUUID)) :key key
+                                                    :paths (mapv safe-path! (:paths task)) :phase :checking
+                                                    :status :needs-inspection :boundary boundary
+                                                    :at (str (Instant/now))}))]
+                              (when (empty? (:paths lease)) (fail! "Unknown legacy writer has no owned paths" {:finding key}))
+                              (-> state (assoc-in [:writers id] lease)
+                                  (assoc-in [:imports migration] {:lease (:token lease) :at (str (Instant/now))}))))))
+                    state (:tasks local))]
+         [state nil])))))
+
+(defn claim-paths!
+  "Claim only an actual implementing/checking phase. Busy is ordinary waiting."
+  [ctx key paths phase]
+  (let [paths (mapv safe-path! paths)
+        id (pr-str [(canonical (:state-dir ctx)) key])
+        lease (merge (owner ctx) {:id id :token (str (UUID/randomUUID)) :key key :paths paths
+                                 :phase phase :status :active :at (str (Instant/now))})]
+    (when (empty? paths) (fail! "Writer ownership needs paths" {:finding key}))
+    (let [claimed (coordinate! ctx
+                              (fn [state]
+                                (if-let [current (get-in state [:writers id])]
+                                  [state (when (and (= :active (:status current)) (= paths (:paths current))
+                                                    (= (:state-file lease) (:state-file current))
+                                                    (= (:token current) (get-in (some-> (:path-leases ctx) deref) [key :token])))
+                                           current)]
+                                  (if (some #(overlap? paths (:paths %)) (vals (:writers state)))
+                                    [state nil]
+                                    [(assoc-in state [:writers id] lease) lease]))))]
+      (when (and claimed (:path-leases ctx)) (swap! (:path-leases ctx) assoc key claimed))
+      claimed)))
+
+(defn- forget-local-lease! [ctx lease]
+  (when-let [leases (:path-leases ctx)]
+    (swap! leases #(if (= (:token lease) (get-in % [(:key lease) :token])) (dissoc % (:key lease)) %))))
+
+(defn- owned-lease! [ctx state lease]
+  (let [current (get-in state [:writers (:id lease)])]
+    (when-not (and (= (:token lease) (:token current))
+                   (= (:state-dir (owner ctx)) (:state-dir current))
+                   (= (:state-file (owner ctx)) (:state-file current)))
+      (fail! "Writer lease identity differs" {:finding (:key lease)}))
+    current))
+
+(defn lease-phase! [ctx lease phase]
+  (coordinate! ctx (fn [state]
+                     (owned-lease! ctx state lease)
+                     [(assoc-in state [:writers (:id lease) :phase] phase) nil])))
+
+(defn release-paths! [ctx lease]
+  (coordinate! ctx (fn [state]
+                     (let [current (owned-lease! ctx state lease)]
+                       (when (= :needs-inspection (:status current))
+                         (fail! "Interrupted writer needs inspected release" {:finding (:key lease)}))
+                       [(update state :writers dissoc (:id lease)) nil])))
+  (forget-local-lease! ctx lease))
+
+(defn inspect-release-paths! [ctx lease evidence]
+  (when (str/blank? evidence) (fail! "Inspected writer release needs evidence" {}))
+  (coordinate! ctx (fn [state]
+                     (let [current (owned-lease! ctx state lease)]
+                       [(-> state
+                            (update :writers dissoc (:id lease))
+                            (update :history conj {:kind :writer-inspected :lease current :evidence evidence
+                                                   :at (str (Instant/now))})) nil])))
+  (forget-local-lease! ctx lease))
+
+(defn with-claimed-paths [ctx lease f]
+  (try
+    (let [result (f)]
+      (release-paths! ctx lease)
+      result)
+    (catch Exception e
+      (let [data (ex-data e)]
+        (if (or (:writer-ended? data) (contains? data :exit))
+          (release-paths! ctx lease)
+          (coordinate! ctx (fn [state]
+                             (owned-lease! ctx state lease)
+                             [(update-in state [:writers (:id lease)] assoc :status :needs-inspection
+                                         :error (redact {:message (.getMessage e) :details data})) nil]))))
+      (throw e))))
+
+(defn- main-owned! [ctx]
+  (when-not (identical? (Thread/currentThread) @(:main-lock-owner ctx))
+    (fail! "Main mutation requires the integration lock" {})))
+
+(defn- with-main-lock [ctx inspect? f]
+  (with-open [channel (FileChannel/open (.toPath (io/file (:main-lock-file ctx)))
+                                       (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
+    (let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
+      (if-not lock
+        (do (event! ctx :integration-waiting {:reason :main-lock-busy}) :busy)
+        (try
+          (reset! (:main-lock-owner ctx) (Thread/currentThread))
+          (let [pending (coordinate! ctx (fn [state] [state (seq (vals (:main-effects state)))]))]
+            (if (and pending (not inspect?))
+              (do (event! ctx :integration-waiting {:reason :unresolved-main-effect :effect pending}) :fenced)
+              (try (f)
+                   (catch Exception e
+                     (coordinate! ctx
+                                  (fn [state]
+                                    [(update state :main-effects
+                                             (fn [effects]
+                                               (into {} (map (fn [[key effect]]
+                                                               [key (if (main-effect-owner? ctx effect)
+                                                                      (assoc effect :status :uncertain
+                                                                             :error {:message (.getMessage e)
+                                                                                     :details (redact (select-keys (ex-data e) [:restricted :effect :effect-status]))})
+                                                                      effect)]) effects)))) nil]))
+                     (throw e)))))
+          (finally (reset! (:main-lock-owner ctx) nil) (.release lock)))))))
+
+(defn try-with-main-lock [ctx f]
+  (with-main-lock ctx false f))
+
+(defn- validate-main-intent! [intent]
+  (when-not (and (string? (:id intent)) (#{:squash :merge} (:method intent))
+                 (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %))
+                         (map intent [:base :candidate :tree])))
+    (fail! "Incomplete shared main intent" {:intent intent})))
+
+(defn begin-main-merge! [ctx intent]
+  (main-owned! ctx)
+  (when (shared-restriction ctx :commands
+                           (digest (pr-str ["gh-pr-merge" (get-in ctx [:config :repository])])))
+    (fail! "Repository merge action remains restricted" {:restricted true}))
+  (validate-main-intent! intent)
+  (coordinate! ctx (fn [state]
+                     (when (seq (:main-effects state)) (fail! "Shared main effect requires reconciliation" {}))
+                     [(-> state
+                          (assoc-in [:main-effects (effect-key ctx (:id intent))]
+                                    (merge intent (owner ctx) {:status :pending :at (str (Instant/now))}))
+                          (assoc-in [:imports [(:state-dir (owner ctx)) (:id intent) :main-effect]]
+                                    (assoc (owner ctx) :kind :journaled :at (str (Instant/now))))) nil])))
+
+(defn- verify-main-result! [intent actual]
+  (validate-main-intent! intent)
+  (let [parents (if (= :merge (:method intent)) [(:base intent) (:candidate intent)] [(:base intent)])]
+    (when-not (and (string? (:commit actual)) (re-matches #"[0-9a-f]{40}" (:commit actual))
+                   (string? (:main actual)) (re-matches #"[0-9a-f]{40}" (:main actual))
+                   (= (:tree intent) (:tree actual)) (= parents (:parents actual)))
+      (fail! "Inspected main result differs from the exact intent" {:intent intent :actual actual}))))
+
+(defn complete-main-merge!
+  "Actual facts must come from the caller's Git/provider verification, never inference."
+  [ctx intent actual]
+  (main-owned! ctx)
+  (coordinate! ctx
+               (fn [state]
+                 (let [key (effect-key ctx (:id intent)) pending (get-in state [:main-effects key])]
+                   (when-not (and (= (:id intent) (:id pending))
+                                  (main-effect-owner? ctx pending)
+                                  (= (select-keys intent [:base :candidate :tree :method])
+                                     (select-keys pending [:base :candidate :tree :method])))
+                     (fail! "Shared main intent identity differs" {}))
+                   (verify-main-result! pending actual)
+                   [(-> state (update :main-effects dissoc key)
+                        (update :history conj {:kind :main-verified :intent pending :actual actual :at (str (Instant/now))})) actual]))))
+
+(defn main-merge-state
+  "Atomic original-owner view; :inspection is the retained accepted history record."
+  [ctx effect-id]
+  (coordinate! ctx
+               (fn [state]
+                 [state {:pending (let [pending (get-in state [:main-effects (effect-key ctx effect-id)])]
+                                    (when (main-effect-owner? ctx pending) pending))
+                         :inspection (last (filter #(and (= :main-inspected (:kind %))
+                                                         (= effect-id (get-in % [:intent :id]))
+                                                         (main-effect-owner? ctx (:intent %)))
+                                                   (:history state)))}])))
+
+(defn reconcile-main-merge!
+  "Original-owner inspection only. This never retries a mutation or clears its refusal."
+  [ctx effect-id inspection]
+  (when (str/blank? (:evidence inspection)) (fail! "Shared main reconciliation needs inspected evidence" {}))
+  (with-main-lock
+    ctx true
+    #(coordinate! ctx
+                  (fn [state]
+                    (let [key (effect-key ctx effect-id) pending (get-in state [:main-effects key])
+                          original (merge (:original-intent inspection) (into {} (remove (comp nil? val) pending)))]
+                      (when-not (and (= effect-id (:id pending))
+                                     (main-effect-owner? ctx pending))
+                        (fail! "Only the original main-effect owner can reconcile it" {}))
+                      (case (:outcome inspection)
+                        :not-applied nil
+                        :merged (verify-main-result! original (:actual inspection))
+                        (fail! "Shared main inspection needs merged or not-applied outcome" {}))
+                      [(-> state (update :main-effects dissoc key)
+                           (update :history conj {:kind :main-inspected :intent original
+                                                  :inspection inspection :at (str (Instant/now))})) nil])))))
