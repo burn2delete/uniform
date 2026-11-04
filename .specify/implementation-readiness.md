@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: B4-B14 selected-result dependency proposals.
-The [current checkpoint](#complete-b4-b14-selected-result-dependency-continuation)
+Latest source continuation: current STD3 collections and explicit source succession.
+The [current checkpoint](#current-collections-source-and-std3-succession-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7435,3 +7435,100 @@ independent current review remain. The first actual implementation increment is
 still Reader contract coverage. No compiler/backend/provider/device/replay/
 migration/signing/product execution, stopped C7 handoff retry/transfer, other-chat
 message, reviewer wake, automation, aggregate publication or integration occurs.
+
+## Current collections source and STD3 succession continuation
+
+Source proposal: `b3a728c789dc71c3cb9b1ab42c941d6d42e2e0e2`.
+Predecessor checkpoint: `9e60e1a77ede0085605bc97f570ed47289e34b2a`.
+The [current collections criteria](../specs/stdlib-workflow/plan.md#complete-current-collections-source-criteria)
+bind all 31 current STD3 sections to 25 criteria in four existing tasks across
+three authorities. Library retains module/callable APIs, Types the independent
+private Map-key-domain proof, and Core structured linear builder flow. Nine
+plans and the existing Library spec expose their actual producer/consumer roles;
+Legality, Runtime, optimization, Build, backend and independent library testing
+responsibilities remain distinct.
+
+The earlier census's STD3 hash
+`58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d`
+remains historical. Current hash
+`af847392b2ff50155d61a9a9c93bb6e2f1cc573220ceb11920de4dd483bd4160`
+removes List-to-Set and Map-keys element/pair/depth/work reservations while
+retaining complete physical traversal, termination, key/member/value type
+validation and allocation/ownership/lifetime semantics. All 166 original facet
+identities, 94 occurrence identities and 26 owner obligations survive. Eighty-
+eight occurrences retain exact bytes at current locations; six edited
+occurrences have five explicit successor groups. Current witnesses do not
+restamp the old predicate, renew its review or claim semantic equivalence.
+
+The criteria retain actual family classification without invented facts;
+Set conversion/count/membership/insertion/equality; Vector append/equality,
+independently bounded lookup/slicing, emptiness/nonempty first and persistent
+List rest; Map keys and complete private caller/use proof, eager-default and
+independently present lookup, removal; List queries/prepend/equality; comparator,
+builder/view, allocation/profile, artifact and diagnostic requirements. Ordinary
+evaluation, false/nil, effects/transfers, inert payloads, persistence and declared
+supported subsets remain explicit. STD3001-STD3008 are required future diagnostics,
+not claims of current emitted behavior. API manifests cannot replace calls.
+
+All 149 task identities/statuses, forty future declarations/bindings, earlier
+source/refinement/review records and dependency-table bytes remain unchanged.
+Original task-body comparisons remain 27 identical and 112 explicitly amended;
+four already-amended bodies receive declared additions. No new task or test is
+created. The new source-input commit is the source proposal above. Dependency
+navigation retains 158 routes, 118 current parents, forty future consumers,
+3,650 input joins and the 139-task coarse feedback set; complete current STD3
+interface entailment is pending.
+
+Read-only inspection of the existing p16 source-artifact/document-record helpers
+found summary-derived accepted/complete statuses. These records receive no new
+callable-export or whole-module acceptance. Other actual implementations remain
+unassessed, and historical receipts retain their exact narrow scopes. No compiler,
+Reader/Gravity/bootstrap, provider, target or library behavior was executed.
+
+Validation of this source and metadata proposal:
+
+- Three focused crosswalk tests pass with 46,334 assertions, zero failures and
+  zero errors under a 768 MB host heap. They check source-payload deduplication,
+  current global conservation and the preserved preceding B4-B14 source subject,
+  not current STD3 semantic acceptance. All 23 dependency tests pass with 9,121
+  assertions, zero failures
+  and zero errors under a 512 MB heap; projection and dependency checks pass.
+- Separate current collections auditing passes: all 149 task identities and
+  statuses, 145 other task bodies and forty future declarations/bindings remain
+  exact. Removing the 25 declared blocks recreates all 25 predecessor task
+  ledgers exactly; modified ledgers' historical suffixes are additionally literal
+  byte-identical. Removing the new plan sections recreates all nine preceding
+  plans. All original owner obligations, historical facet/occurrence hashes,
+  current exact/successor spans, 31 section conjunctions and 25 criterion
+  witnesses pass. These checks bind proposals; they do not establish entailment.
+- Test and dependency-tool code is unchanged. All applying local Git pins pass;
+  the pending fingerprint is
+  `3897a2b8cb8da092c8fa7393244a024bc718c9e93be210719e8e39c4b709dd90`.
+- Canonical documentation validation passes for 240 documents and nineteen
+  phase indexes. The language boundary passes six tests and eleven assertions.
+  New local navigation, ASCII and whitespace checks pass.
+- Full execution of the unchanged 90-test code against this new source is
+  unrun. The earlier 90-test / 177,322-assertion result remains bound only to
+  `88d5f68432beb5c36cdb439fa7cf389118885334`. No current compiler, library,
+  backend, runtime, conformance or self-hosting behavior is accepted by these
+  planning/traceability results. Local census availability proves no remote
+  aggregate availability or fresh-clone reproducibility.
+
+Historical proposal payloads in the new record are referenced by full-record
+digests; identities, dispositions, obligations and current witnesses remain.
+The preserved census is unchanged.
+
+The root changes six current pin/comparison fields, its pending fingerprint and
+the new collections record. All earlier refinement records remain exact; the
+projection tool adds one source-view key and test/dependency-tool code stays
+unchanged. Temporary parser and status-format guard corrections occurred before
+their mutators wrote repository files; both existing Open status formats and
+their partial-evidence wording remain literal. STD1/STD2/STD4/STD5/STD6 were
+directly read as context; their complete source/task conjunctions and wider
+STD7-STD20, AI/support/foundation/nonfunctional obligations, accounting cleanup,
+recorded source conflicts, product decisions and independent review remain.
+The exact first implementation increment stays Reader contract coverage.
+All actual restrictions and the stopped C7 handoff remain; no retry/transfer,
+other-chat message, reviewer/automation wake, aggregate publication or integration
+occurs. This is a source proposal, not reconciliation completion or implementation
+acceptance.
