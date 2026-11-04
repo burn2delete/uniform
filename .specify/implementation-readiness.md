@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: L19 interoperability and migration source and dependency
-proposals. The [current checkpoint](#complete-l19-selected-result-dependency-continuation)
+Latest source continuation: B1-B3 backend interface, C and LLVM source
+proposals. The [current checkpoint](#complete-b1-b3-backend-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6829,3 +6829,151 @@ Final conservation/navigation passes 91 changed files, 85 Markdown files,
 and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. Reconciliation, implementation, independent
 acceptance and integration remain separate and unfinished.
+
+## Complete B1-B3 backend source continuation
+
+Source proposal: `117c92dc37c653f47d82a52058276c4239c9c7a9`.
+Predecessor: `e49e9c4e3ca5ea35755d3278ccc40645ae160b5b`.
+The [complete B1-B3 criteria](../specs/backends-workflow/plan.md#complete-b1-b3-source-criteria)
+refine the common interface, C and LLVM behavior within the existing Backends
+spec, plan and task ledger. This is a current author proposal. Whole-project
+reconciliation, current source/interface entailment, independently accepted
+implementation and integration remain unproven.
+
+The direct source review covers the Phase 7 README and complete B1/B2/B3
+contracts. The 1,012 selected preserved facets contain 763 source-criterion
+fragments, 185 layout fragments and 64 structural fragments; they are not 1,012
+independent requirements. All 151 occurrence identities and byte hashes remain
+conserved. Current section mapping retains 902 facets in predicate conjunctions
+and 110 in hierarchy/dependency context, with 101 predicate occurrences,
+50 context occurrences, 38 complete section conjunction proposals and sixteen
+original owner obligations. Normative list preambles, examples and following
+conditions remain conjunctive. Matching identities, valid offsets and complete
+mapping populations do not prove semantic entailment. Whole attached-owner
+predicates and independent current review remain unassessed.
+
+Twenty criteria use four existing Open task keys in the sole Backends authority:
+`backend-interface`, `backend-c`, `backend-llvm` and `backend-emission`.
+Seven exact earlier predicates restore 9,878 bytes from the immutable local task
+source `45d0083d03c6e1fc91425097b4a8153892f2d689`: B1 eligibility, five C
+emission/ABI/memory/numeric/helper predicates and the C fixed-width refinement.
+Their whole-file and byte-span digests are verified. Remote availability of that
+local source object was not established in this tranche. Restoration neither
+renews nor consumes historical review. Thirteen new criteria make the remaining
+B1 and LLVM behavior and acceptance obligations explicit; no new task identity,
+status or accepted implementation claim is introduced.
+
+The substantive differences addressed are:
+
+- B1 needs a complete current verified-input/profile/target/ABI/layout/runtime
+  or no-runtime/provider/effect/capability/safety/proof/source/dependency packet,
+  eligibility before emission, matching Gravity evidence for every target
+  assumption, actual common artifacts and full diagnostic context. Declared
+  support or supplied completeness flags cannot establish those products.
+- B2 permits declared freestanding C11, hosted C17 or a named compiler-extension
+  profile. The two examples in an earlier recommendation are not an exhaustive
+  dialect restriction. Actual source/headers, fixed-width representations,
+  compiler/data-model/layout/FFI decisions, pointer/MMIO/atomic rules, numeric
+  modes/certificates, explicit helpers, recorded flags and compiled positive
+  and refused fixtures remain required.
+- B3 needs the complete pinned target/layout/CPU/feature/ABI/runtime/pass
+  configuration and actual operation, memory, resource, error, FFI, vector and
+  domain mappings. Its sixteen named attribute/metadata groups require matching
+  Gravity evidence; a wrapping label alone cannot justify overflow assertions.
+  Optional assumptions may be omitted conservatively, valid guards selected or
+  requests rejected. No safe undefined-behavior or poison shortcut is permitted.
+- LLVM pointer/lifetime metadata must preserve diagnostics, debugging, cleanup
+  and audits. Atomic mapping retains operation/address space/order/scope/
+  alignment/compare-exchange failure order/features and equivalent fallback.
+  Volatile/MMIO is not merged, duplicated or reordered across boundaries.
+  Math mode/certificate, explicit helper and capability obligations survive.
+- Run LLVM verification after emission and configured passes, and separately
+  validate Gravity metadata preservation or required repair. Equal execution
+  values and LLVM verifier acceptance do not establish source correctness.
+  Actual differential/MIR fixtures and exact B1/B2/B3 refusal identities/context
+  remain required. The adopted Linux candidate and separately declared family
+  extensions retain their original boundaries.
+
+B1 common emission remains under `backend-emission`, with Lower/Emit retaining
+their distinct selected-candidate responsibilities; selected B1 refinement does
+not accept complete B13. The fifteen backend task records remain distinct from
+the fourteen B1-B14 documents, and AI is no invented B15. All 149 current task
+keys, 25 authorities and forty future declarations remain. Of the original
+139 task bodies, 36 are identical and 103 now contain declared amendments.
+This is conservation accounting, not semantic coverage or implementation credit.
+
+The sole dependency table, all 158 routes, 118 current parent consumers,
+forty future declarations, 2,967 selected input joins and 139 coarse feedback
+members remain unchanged. Early real envelope/ABI/helper/oracle declarations
+permit independent family work; claimed emission still needs actual verified
+IR and current target/provider/proof/legality results. Valid raw/unoptimized
+MIR needs no universal Opt or MLIR pipeline, and Core-only input needs no
+invented domain IR. Whole C completion does not gate LLVM. Deeper complete
+B1-B3 selected-result staging remains pending; the existing L19 routes cannot
+establish it by implication.
+
+Validation of this exact source and metadata proposal:
+
+- Three focused crosswalk tests pass with 15,345 assertions, zero failures and
+  zero errors under a 512 MB host heap: current B1-B3 source joins, the entire
+  frozen prior L19 dependency subject and current global conservation. The full
+  current 88-test crosswalk suite is unrun. The previous complete 68-test /
+  44,978-assertion run remains bound only to
+  `25a96a0c03536270001449c00676e644ea353521`.
+- Twenty-three dependency tests pass with 7,735 assertions and zero failures or
+  errors. Both current generated projection checks and all applying local Git
+  source pins pass. The pending fingerprint is
+  `67bfc59b6ce867c7054e06396248e0c279c8dde2d5e8d6e563db01fe16faad9c`.
+- Canonical documentation validation passes for 240 documents and nineteen phase
+  indexes. Full-language roadmap structural validation passes; its dated counts
+  are not current implementation execution or acceptance evidence.
+- The final language-boundary gate passes six tests and eleven assertions.
+- Strict whole-file authority conservation, historical suffixes, local links
+  and anchors, ASCII and whitespace checks pass. The report continuation brings
+  navigation to 4,242 local references across 91 changed files and 85 Markdown
+  files; all 139 original routes, 48 historical spec/plan suffixes and 48 original
+  task/evidence contents remain conserved after declared additions are removed.
+- The first new focused run passed 15,337 assertions with eight failures and no
+  errors because its four normalized task-row checks expected a final newline
+  removed by the existing task parser. Correcting the new check to match newline
+  or row end and compare the parser's trimmed row changes no source criterion,
+  historical assertion or strict whole-file conservation rule. That failed run
+  receives no passing credit; the corrected three-test run is the result above.
+- These are planning/traceability checks. They establish no B1/B2/B3 behavior,
+  current source conjunction acceptance, compiler/target conformance, release or
+  self-hosting support. Preserved local census and restored-predicate Git objects
+  do not establish aggregate remote availability or fresh-clone reproducibility.
+
+The root source-version change is limited to six applying-pin/comparison fields,
+the pending fingerprint and the new `:backend-core-refinement` record. Every
+other prior record and historical subject remains exact. The prior dependency
+test is frozen to the whole e49 checkpoint, source readers and projection while
+its entire original assertion-body bytes remain exact; the current conservation
+test changes only three census constants to 36/103. A reverse byte audit accounts
+for those edits and the new test. All other prior test bytes remain unchanged.
+The projection tool adds one derived source-view key; no dependency or future
+binding selector is changed.
+
+Preparation history is retained without passing credit: the new temporary test
+text initially had an unmatched delimiter, caught before installation; a
+later temporary attempt to preserve old assertion bytes used a function with
+literal-string replacement, which failed before writing. Both preparations
+were corrected before the final source-scope audit and executed tests. A
+read-only navigation rerun printed its successful checks but then failed on a
+misplaced shell here-document terminator; that process receives no passing
+credit, and the same checker was rerun with correct redirection. No
+canonical semantics, existing predicate, historical assertion or implementation
+behavior was relaxed to address them.
+
+No new whole-backend implementation audit, compiler/backend/provider/native
+execution, migration, replay, device, signing or publication took place. Existing
+implementation citations and receipts retain their narrow original subjects.
+No new language/tooling runtime, project accounting/input/work/attempt quota,
+review renewal, other-chat message, reviewer wake, stopped C7 handoff retry,
+aggregate publication or integration is introduced. All actual restrictions
+remain. Full B4-B14 and AI source/task conjunctions, B1-B3 dependency refinement,
+wider library/support sources, global owner/interface entailment, accounting
+cleanup, recorded source conflicts, product decisions and independent review
+remain. The exact first implementation increment is still
+`reader/finite-remaining-work/contract-coverage-reconciliation` in its
+[selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
