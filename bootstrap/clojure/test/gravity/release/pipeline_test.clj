@@ -26,7 +26,7 @@
   (let [contract (:gravity/namespace-contract (meta #'release/jar-inventory-report))]
     (is (= :native-jar-inventory-reports (:contract-boundary contract)))
     (is (= [:observed-file-bytes-and-digests] (:additional-contract-boundaries contract)))
-    (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 file-sha256}
+    (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 uniform-bytes-sha256 file-sha256}
            (set (keys (:public-api contract)))))
     (is (false? (:authenticates-inputs? contract)))
     (is (true? (:performs-io? contract)))
@@ -194,17 +194,108 @@
 (deftest file-helper-wrapper-ports-and-byte-identity
   (doseq [[wrapped owner arguments port-count]
           [[#'bootstrap/p18-file-bytes #'release/file-bytes '[path] 0]
-           [#'bootstrap/p18-bytes-sha256 #'release/bytes-sha256 '[bytes] 0]
+           [#'bootstrap/p18-bytes-sha256 #'release/uniform-bytes-sha256 '[bytes] 1]
            [#'bootstrap/p18-file-sha256 #'release/file-sha256 '[path] 2]]]
     (let [value (Object.) token (Object.) calls (atom nil)]
       (is (= (list arguments) (:arglists (meta wrapped))))
       (with-redefs-fn {owner (fn [& args] (reset! calls args) token)}
         #(is (identical? token (wrapped value))))
       (is (identical? value (last @calls)))
-      (is (every? var? (take port-count @calls)))))
+      (if (= wrapped #'bootstrap/p18-bytes-sha256)
+        (is (identical? bootstrap/release-execute-uniform-sha256 (first @calls)))
+        (is (every? var? (take port-count @calls))))))
   (doseq [[name operation] (ns-publics 'gravity.release)]
     (let [contract (:gravity/namespace-contract (meta operation))]
       (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name))))
+
+(deftest uniform-digest-transport-preserves-octets-and-executor-failures
+  (let [expected (apply str (repeat 64 "a"))
+        calls (atom [])
+        execute (fn [arguments]
+                  (swap! calls conj arguments)
+                  {:status :accepted :value expected})
+        sentinel (ex-info "original source execution failure" {:test :identity})]
+    (with-redefs [release/bytes-sha256
+                  (fn [_] (throw (AssertionError. "legacy digest must not run")))]
+      (is (= expected (release/uniform-bytes-sha256
+                       execute (byte-array (map unchecked-byte [0 127 128 255])))))
+      (is (= expected (release/uniform-bytes-sha256 execute (byte-array 0))))
+      (is (= [[[0 127 128 255]] [[]]] @calls))
+      (is (identical? sentinel
+                      (rejection #(release/uniform-bytes-sha256
+                                   (fn [_] (throw sentinel)) (byte-array 0))))))))
+
+(deftest uniform-digest-transport-rejects-wrong-input-and-malformed-output
+  (let [calls (atom 0)
+        opaque (proxy [Object] []
+                 (toString [] (throw (AssertionError. "opaque input rendered"))))]
+    (with-redefs [bootstrap/release-execute-uniform-sha256 (fn [_] (swap! calls inc))]
+      (doseq [value [nil "abc" [0 1] '(0 1) (int-array [0 1]) opaque]
+              invoke [#(release/uniform-bytes-sha256
+                        (fn [_] (swap! calls inc)) value)
+                      #(bootstrap/p18-bytes-sha256 value)]]
+        (is (= {:rule "SH20SHA001" :reason :expected-byte-array}
+               (ex-data (rejection invoke))))))
+    (is (zero? @calls))
+    (doseq [result [nil opaque "stdout digest" {}
+                    {:status :rejected :diagnostics []}
+                    {:status :accepted :value nil}
+                    {:status :accepted :value (apply str (repeat 64 "A"))}
+                    {:status :accepted :value (apply str (repeat 63 "a"))}
+                    {:status :accepted :value (apply str (repeat 65 "a"))}
+                    {:status :accepted :value (apply str (repeat 64 "a")) :extra true}]]
+      (with-redefs [release/bytes-sha256
+                    (fn [_] (throw (AssertionError. "legacy digest must not run")))
+                    bootstrap/release-execute-uniform-sha256 (fn [_] result)]
+        (doseq [invoke [#(release/uniform-bytes-sha256 (fn [_] result) (byte-array 0))
+                        #(bootstrap/p18-bytes-sha256 (byte-array 0))]]
+          (is (= {:rule "SH20SHA001" :reason :invalid-kernel-output}
+                 (ex-data (rejection invoke)))))))))
+
+(deftest p18-file-digest-preserves-read-failures-and-missing-files
+  (let [file (java.io.File/createTempFile "gravity-release-read-" ".bin")
+        missing (str (.getPath file) ".missing")
+        sentinel (java.io.IOException. "original file read failure")]
+    (try
+      (with-redefs [bootstrap/p18-file-bytes (fn [_] (throw sentinel))
+                    bootstrap/p18-bytes-sha256
+                    (fn [_] (throw (AssertionError. "digest must not run")))]
+        (is (identical? sentinel
+                        (try (bootstrap/p18-file-sha256 (.getPath file))
+                             (catch Throwable error error))))
+        (is (= "sha256:missing" (bootstrap/p18-file-sha256 missing))))
+      (finally (.delete file)))))
+
+(deftest release-and-bootstrap-load-cold-without-a-cycle
+  (doseq [order [:release-first :bootstrap-first]]
+    (let [output (java.io.File/createTempFile "gravity-release-cold-" ".txt")
+          script
+          (pr-str
+           (list 'do
+                 (if (= :release-first order)
+                   '(do (require 'gravity.release)
+                        (assert (nil? (find-ns 'gravity.bootstrap)))
+                        (require 'gravity.bootstrap))
+                   '(do (require 'gravity.bootstrap) (require 'gravity.release)))
+                 '(assert (= "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                             ((resolve 'gravity.bootstrap/p18-bytes-sha256) (byte-array 0))))
+                 '(shutdown-agents)))
+          process (.start
+                   (doto (ProcessBuilder.
+                          ^java.util.List
+                          [(str (System/getProperty "java.home") "/bin/java")
+                           "-Xmx2g" "-cp" (System/getProperty "java.class.path")
+                           "clojure.main" "-e" script])
+                     (.redirectErrorStream true)
+                     (.redirectOutput output)))]
+      (try
+        (let [exited? (.waitFor process 120 java.util.concurrent.TimeUnit/SECONDS)]
+          (when-not exited? (.destroyForcibly process) (.waitFor process))
+          (is exited? (str order " cold-load process watchdog"))
+          (is (and exited? (zero? (.exitValue process))) (slurp output)))
+        (finally
+          (when (.isAlive process) (.destroyForcibly process) (.waitFor process))
+          (.delete output))))))
 
 (deftest file-digest-preserves-operation-root-lookup-and-failure
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory

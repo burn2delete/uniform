@@ -7,6 +7,7 @@
  :public-api
  {file-bytes {:arglists ([path]), :admission :none},
   bytes-sha256 {:arglists ([bytes]), :admission :none},
+  uniform-bytes-sha256 {:arglists ([execute-sha256 bytes]), :admission :none},
   file-sha256 {:arglists ([bytes-sha256-var file-bytes-var path]), :admission :none},
   jar-source-inventory-report
   {:arglists ([packaged-source-entries-supplier jar-entries]),
@@ -19,7 +20,8 @@
   :exact-membership
   :duplicate-refusal
   :missing-and-unexpected-entry-data
-  :observed-file-octets :observed-sha256 :legacy-missing-file-sentinel],
+  :observed-file-octets :observed-sha256 :legacy-missing-file-sentinel
+  :uniform-octet-transport-and-result-validation],
  :bootstrap-hosted? true,
  :dependency-direction
  {:requires [clojure.string],
@@ -53,8 +55,9 @@
  :diagnostic-ownership
  {:decides
   [:source-entry-membership-order-and-duplicates
-   :whole-file-membership-and-duplicates],
-  :publishes [],
+   :whole-file-membership-and-duplicates
+   :native-byte-array-and-kernel-result-shape],
+  :publishes ["SH20SHA001"],
   :host-file-errors :propagated-unchanged,
   :missing-file-digest :legacy-sentinel-only,
   :existing-caller ["P18T02006"]},
@@ -109,10 +112,28 @@
    (.toPath (java.io.File. path))))
 
 (defn bytes-sha256
+  "Retained host reference; the P18 digest caller uses uniform-bytes-sha256."
   [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         bytes)]
     (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+
+(defn uniform-bytes-sha256
+  "Transport exact native octets to a caller-owned Uniform kernel executor.
+  Source/ABI authentication belongs to the executor; this does not admit it."
+  [execute-sha256 bytes]
+  (when-not (= (class (byte-array 0)) (class bytes))
+    (throw (ex-info "release SHA-256 requires a native byte array"
+                    {:rule "SH20SHA001" :reason :expected-byte-array})))
+  (let [result (execute-sha256 [(mapv #(bit-and 255 %) bytes)])]
+    (when-not (and (map? result)
+                   (= #{:status :value} (set (keys result)))
+                   (= :accepted (:status result))
+                   (string? (:value result))
+                   (re-matches #"[0-9a-f]{64}" (:value result)))
+      (throw (ex-info "Uniform release SHA-256 returned an invalid result"
+                      {:rule "SH20SHA001" :reason :invalid-kernel-output})))
+    (:value result)))
 
 (defn file-sha256
   [bytes-sha256-var file-bytes-var path]
@@ -121,5 +142,5 @@
     "sha256:missing"))
 
 (doseq [operation [#'jar-source-inventory-report #'jar-inventory-report
-                   #'file-bytes #'bytes-sha256 #'file-sha256]]
+                   #'file-bytes #'bytes-sha256 #'uniform-bytes-sha256 #'file-sha256]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
