@@ -116,24 +116,54 @@
       (c15-construction-failure (get error :rule) (get error :field)
                                 (get error :reason)))))
 
+; First executable checkpoint: validate the declared stream envelope. A valid
+; envelope is incomplete verification until records, counts, order and external
+; identity joins are checked. Policy names never establish publication safety.
+(defn c15-stream-envelope-error [stream]
+  (if (c15-carrier-valid? stream)
+    (if (map? stream)
+      (let [missing
+            (loop [fields (get c15-diagnostic-stream-contract :stream-fields)]
+              (if (= 0 (count fields)) nil
+                (if (contains? stream (first fields)) (recur (rest fields))
+                  (first fields))))]
+        (if (= nil missing)
+          (c15-first-field-error
+           [[(keyword? (get stream :stage)) "C15-SCHEMA" :stage :invalid-stage]
+            [(if (= nil (get stream :input-artifact))
+               (c15-unavailable-stage? (get stream :stage))
+               (c15-identifier? (get stream :input-artifact)))
+             "C15-SCHEMA" :input-artifact :invalid-input-artifact]
+            [(if (= nil (get stream :output-artifact)) true
+               (c15-identifier? (get stream :output-artifact)))
+             "C15-SCHEMA" :output-artifact :invalid-output-artifact]
+            [(vector? (get stream :diagnostics)) "C15-SCHEMA" :diagnostics :invalid-diagnostics]
+            [(c15-keyword-map? (get stream :summary-counts))
+             "C15-SCHEMA" :summary-counts :invalid-summary-counts]
+            [(keyword? (get stream :deterministic-ordering-key))
+             "C15-SCHEMA" :deterministic-ordering-key :invalid-ordering-key]
+            [(c15-identifier? (get stream :redaction-policy))
+             "C15-SCHEMA" :redaction-policy :invalid-redaction-policy]
+            [(c15-identifier? (get stream :rendering-version))
+             "C15-SCHEMA" :rendering-version :invalid-rendering-version]])
+          {:rule "C15-SCHEMA" :field missing :reason :missing-stream-field}))
+      {:rule "C15-SCHEMA" :field :stream :reason :stream-map-required})
+    {:rule "C15-SCHEMA" :field :stream :reason :unsupported-canonical-carrier}))
+
 (defn verify-c15-diagnostic-stream [diagnostic-stream]
-  (quote {:status :stage1-source-owned
-          :diagnostic-stream diagnostic-stream
-          :checks [:schema-fields-present
-                   :stable-rule-ids
-                   :primary-source-span-present
-                   :generated-origin-chain-linked
-                   :fact-payload-structured
-                   :remediation-recorded
-                   :redaction-policy-applied
-                   :deterministic-ordering-key
-                   :golden-fixture-stable]
-          :diagnostics c15-diagnostic-catalog
-          :preserves [:source-spans :syntax-identity
-                      :diagnostic-codes :artifact-provenance
-                      :origin-chains :related-spans
-                      :diagnostic-facts :remediation-records
-                      :redaction-markers :golden-fixture-identity]}))
+  (let [error (c15-stream-envelope-error diagnostic-stream)
+        result (if (= nil error)
+                 {:status :incomplete :diagnostic-stream diagnostic-stream
+                  :verification-status :stream-envelope-only :diagnostics []}
+                 (c15-construction-failure (get error :rule) (get error :field)
+                                           (get error :reason)))]
+    (assoc result :artifact :gravity/c15-diagnostic-stream-verification
+           :schema-version 1
+           :nonclaims [:record-verification :summary-count-verification
+                       :deterministic-order-verification :identity-request-joins
+                       :digest-recomputation :upstream-source-authentication
+                       :public-safe-projection :golden-fixture-verification
+                       :self-hosting :release])))
 
 ; Canonical first-slice construction is private DATA until an external resolver
 ; binds the declared request. It is not a safe-publication or stream verifier.
