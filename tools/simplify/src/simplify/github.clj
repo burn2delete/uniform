@@ -255,13 +255,31 @@
           (recur next-cursor))
         :else nil))))
 
+(defn- duplicate-project-item-error? [error]
+  (let [{:keys [errors restricted]} (ex-data error)]
+    (and (false? restricted)
+         (= 1 (count errors))
+         (= {:type "UNPROCESSABLE"
+             :message "Content already exists in this project"}
+            (select-keys (first errors) [:type :message])))))
+
+(defn- add-item! [ctx project content]
+  (try
+    (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
+                     {:project project :content content})
+            [:addProjectV2ItemById :item :id])
+    (catch Exception error
+      (if (duplicate-project-item-error? error)
+        (or (existing-item ctx project content)
+            (rt/fail! "Duplicate Project membership has no verified readback"
+                      {:project project :content content :duplicate true}))
+        (throw error)))))
+
 (defn item! [ctx issue]
   ;; Sub-issue admission can add membership independently of this controller.
   (rt/effect! ctx (str "project-item/" (get-in @(:state ctx) [:project :id]) "/" (:node_id issue))
               #(or (existing-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
-                   (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
-                   {:project (get-in @(:state ctx) [:project :id]) :content (:node_id issue)})
-          [:addProjectV2ItemById :item :id]))))
+                   (add-item! ctx (get-in @(:state ctx) [:project :id]) (:node_id issue)))))
 
 (defn status! [ctx issue status]
   (let [project (:project @(:state ctx))
