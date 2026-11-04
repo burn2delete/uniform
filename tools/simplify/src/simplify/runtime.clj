@@ -408,6 +408,7 @@
                               (fn [state]
                                 (if-let [current (get-in state [:writers id])]
                                   [state (when (and (= :active (:status current)) (= paths (:paths current))
+                                                    (= (:state-file lease) (:state-file current))
                                                     (= (:token current) (get-in (some-> (:path-leases ctx) deref) [key :token])))
                                            current)]
                                   (if (some #(overlap? paths (:paths %)) (vals (:writers state)))

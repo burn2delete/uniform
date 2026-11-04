@@ -153,7 +153,12 @@
                            (rt/inspect-release-paths! owner-b lease "Different owner in the same directory")))
       (is (= lease (get-in (shared-state ctx) [:writers (:id lease)])))
       (rt/inspect-release-paths! owner-a lease "Original fixture owner inspected actual writer end")
-      (is (empty? (:writers (shared-state ctx)))))))
+      (is (empty? (:writers (shared-state ctx)))))
+    (let [active (rt/claim-paths! owner-a "native" ["src/held.clj"] :implementing)]
+      (is active)
+      (is (nil? (rt/claim-paths! owner-b "native" ["src/held.clj"] :implementing))
+          "Even a shared local cache cannot transfer a writer to a different state file")
+      (rt/release-paths! owner-a active))))
 
 (deftest legacy-main-not-applied-is-still-fenced-until-shared-inspection
   (let [[a b] (pair) calls (atom 0)
