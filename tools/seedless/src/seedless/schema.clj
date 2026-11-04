@@ -22,7 +22,7 @@
                 :target s/text :subset s/text :summary s/text
                 :blockers texts :slices (s/array-of slice)}))
 (def implementation
-  (s/object-of {:outcome {:type "string" :enum ["ready" "needs_input" "restricted"]}
+  (s/object-of {:outcome {:type "string" :enum ["checkpoint" "ready" "needs_input" "restricted"]}
                 :summary s/text :evidence s/text :residual-host-boundary s/text
                 :checks (s/array-of (assoc texts :minItems 1))}))
 (def review

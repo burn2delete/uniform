@@ -80,7 +80,8 @@
   [ctx job-id cwd argv]
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"}})
+      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
+                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
       (send! client {:method "initialized" :params {}})
       (let [result (request! client "command/exec"
                              {:command argv :cwd cwd :processId job-id :streamStdoutStderr true
@@ -112,7 +113,8 @@
 (defn job! [ctx job-id cwd mode instructions prompt output-schema]
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"}})
+      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
+                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
       (send! client {:method "initialized" :params {}})
       (let [model (get-in ctx [:config :model])
             started (request! client "thread/start"
