@@ -191,3 +191,22 @@ observer delimiter/forward-declaration preparation error is retained separately,
 without production-failure credit. Formatting and document validation pass.
 Independent composition/wiring acceptance, fresh fully wired exact-source/base
 hosted CI and immediate clean integration remain pending.
+
+## Namespace-index handoff
+
+The six-path composition/checking writer ended naturally and its own token was
+normally released, with actual row absence recorded at
+/tmp/uniform-macro-owner-calls-wired-source-frozen.edn. The former index holder
+also ended naturally. Fresh current-registry inspection found no conflicting
+writer, followed by an own two-path claim for the index and this evidence only.
+No prior token or unmerged PR918 source/index content was adopted.
+
+Only the Macro row now links the corrective evidence and test namespace and
+records diagnostic/runtime function selection before arguments, existing known
+diagnostic identity, interruption and broader Macro Throwable containment.
+All other namespace rows, APIs, dependency directions and authority remain
+unchanged. This closes the link update recorded as pending in earlier phase
+snapshots; it is documentation of the already tested four-operation boundary.
+CI wiring and its original source/code checks remain unchanged. Review of this
+documentation-only delta and fresh fully wired hosted CI/current-base clean
+integration remain pending.
