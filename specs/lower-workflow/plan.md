@@ -198,6 +198,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual selected layout/ABI/register facts and preserve volatile/order/proof/source constraints through lowering. Address/width metadata alone proves no alignment, target compatibility or safe register access. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

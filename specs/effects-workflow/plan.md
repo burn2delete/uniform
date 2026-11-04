@@ -465,6 +465,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Check actual test setup/body/teardown and meta direct/latent effects, active target profile and phase, declared replacements and authentic grants. Static summaries establish no execution or enforcement. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Check direct/latent platform and hardware effects, active profile and genuine grants, including handler callbacks, no-runtime and interrupt restrictions. Static admission establishes no live operation or physical safety. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

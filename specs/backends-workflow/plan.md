@@ -433,6 +433,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Emit real deployable workflow/AI graph/provider/schema/log artifacts from admitted semantics; generation does not establish recovery or provider results. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Emit actual selected target artifacts preserving volatile, order, source and target constraints or explicitly refuse unsupported lowering. Artifact labels or equal sampled results establish no hardware semantics. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

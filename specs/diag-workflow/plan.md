@@ -251,6 +251,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Retain each STD14001-STD14008/STD15001-STD15008 and owning TEST/C17/SAFE12 diagnostic meaning, structured expected/actual fields, source/generated context and secret redaction. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve individual STD16001-STD16008 and STD17001-STD17008 plus owning profile/Runtime/safety meanings, expected/actual facts, source origins and redaction. Missing working-directory/alignment example facts retain their errors. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

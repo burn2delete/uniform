@@ -142,6 +142,17 @@ L19 complete hosted bridge behavior criterion (Open): Execute selected declared 
 <!-- runtime-interop-source-hosts:end -->
 
 
+
+<!-- library-platform-hardware-source-native-services-and-cleanup:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library native-services-and-cleanup criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md).
+
+Supply actual selected native/minimal-runtime platform services and host-delegation boundaries for explicit environment/arguments, distinct clocks/random providers, complete process policies, signals and terminal operations. Normalize provider failures into Gravity errors and retain redaction/provider/version/provenance. Exercise real permitted success/failure/cancellation/partial-initialization cleanup without hidden hosted services in firmware/kernel/hardware. A callable wrapper or recorded fake is not the actual service result; held native/provider execution stays unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-native-services-and-cleanup:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -239,6 +250,17 @@ Apply the [complete interoperability and migration source criteria](plan.md#comp
 
 L19 actual foreign conversion, call and cleanup criterion (Open): At each selected permitted boundary, execute actual declared directional value conversion/call/ownership transfer/borrow/release under real provider/ABI/layout/grant/profile/thread/blocking contracts. Preserve six pointer facts, seven ownership modes and named release behavior across success and failure, with actual synchronized sharing where claimed. Translate foreign exceptions, panics, error codes/errno, rejected promises, signals and process exits into declared Gravity errors before safe entry; unexpected or undeclared null cannot enter non-null types, while declared Option absence remains legal. Reject incomplete maps, wrong allocator/thread/ownership, unmodeled foreign failure and unsafe casts disguised safe. Required evidence: real values/errors/resource and concurrency traces and refusal fixtures; current native/callback/provider/device execution restrictions remain, so manifests and status flags do not close this task.
 <!-- runtime-interop-source-execute:end -->
+
+
+
+<!-- library-platform-hardware-source-hardware-runtime-boundaries:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library hardware-runtime-boundaries criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+At actual permitted device/FFI boundaries enforce target/device ownership/lifetime/alignment/volatile/order, interrupt constraints and DMA transfer/cache/completion/cleanup using genuine adapter and grant facts. Preserve source/provenance and genuine capability-target tags where required. Exercise permitted selected simulator/device scopes and invalid ownership/cache/lifetime/alignment cases with distinct evidence; simulation or typed metadata cannot claim unavailable physical operations, device support or Product integration. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-hardware-runtime-boundaries:end -->
 
 
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
@@ -343,6 +365,17 @@ Execute actual selected scheduling/persistence/provider/model/tool/memory transi
 <!-- library-workflow-ai-source-durable-runtime:end -->
 
 
+
+<!-- library-platform-hardware-source-recorded-platform-boundary:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library recorded-platform-boundary criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Consume actual activity/replay records for clock/random and isolated process/environment calls with exact operation, request/result/error, provider/version, schema, policy, source/workflow/target identities and redaction. Exercise genuine permitted record/replay consumption and missing/stale/wrong-subject records; ambient time/random/process/environment access during replay rejects without the live action. A fixed supplied value or declaration of replayability does not prove deterministic workflow replay, and held provider/replay work remains unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-recorded-platform-boundary:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -432,6 +465,17 @@ Workflow/AI library protected-runtime criterion (Open). Sources: [STD12](../../d
 
 Enforce authentic current action-specific grants, effect/profile/provider, schema/taint/secret and payload-bound review before protected model/tool/service/memory or write operations. Deny missing/expired/revoked/wrong-subject/changed-payload authority before action and normalize actual permitted values, errors, cleanup and redaction. Exercise real allowed/denied boundaries and no-action-after-denial for exact source/agent/tool/provider subjects. Distributed/AI replay retains its separate owner and actual log/state obligations; Library/Auth metadata is no enforcement proof. All held effects stay unrun. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
 <!-- library-workflow-ai-source-protected-runtime:end -->
+
+
+
+<!-- library-platform-hardware-source-deny-before-platform-action:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library deny-before-platform-action criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Check the actual attempted operation against current authentic scope before environment disclosure, process spawn, signal/terminal mutation, random/provider call or hardware access. Emit redacted source-bound request/decision/no-action observations for revoked, mismatched and missing grants, preserving underlying provider failures and cleanup where permitted. A boolean allow flag or rejected static source is not actual before-action enforcement; compiler admission and Runtime/provider evidence remain distinct. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-deny-before-platform-action:end -->
 
 <!-- runtime-implementation-tasks:end -->
 

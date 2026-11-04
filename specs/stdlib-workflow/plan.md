@@ -729,6 +729,120 @@ All implementation tasks remain Open and historical receipts keep immutable scop
 
 Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation or main acceptance.
 
+## Complete platform and hardware library source criteria
+
+[STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md) define callable platform/hardware APIs and their selected profile, Runtime and safety interfaces. STD16/STD17 are this API refinement's scope; broader supporting contracts retain their existing owners. Preserve normative conditions, known/conditional facts, examples and their complete required context. A source hash or navigation link establishes no semantic entailment or implementation.
+
+### Platform/hardware existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| backend-emission | [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| devices | [`devices`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| firmware | [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| hardware | [`hardware`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| kernel | [`kernel`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| legality | [`legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`](../../specs/legality-workflow/tasks.md#implementation-tasks) |
+| library | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| library-suite | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| lower-layout | [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| lower-preservation | [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| resources | [`stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| runtime-boundary | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-enforcement | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-replay | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-services | [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+Stdlib owns the callable library behavior in the existing integrate-platform task, with export inventory and shared resource helpers retaining their existing tasks. Platform owns actual selected target/device schemas and conformance, Runtime owns services and before-action enforcement, Auth issues authentic scope, Effects checks source, Lower/Backends preserve actual layout/volatile/order, and Governance owns distinct audit verdicts. Platform's four target-conformance tasks and separate Product adoption and implementation tasks retain their scope; no target, ISA, device, OS, driver inventory or physical delivery is adopted by this library increment.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| target-and-host-facts | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| environment-and-arguments | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| clock-kinds | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| random-provider-kinds | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| process-policy-and-results | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| signal-terminal-cleanup | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| platform-profile-and-replay | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| registers-and-safe-mmio | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| interrupt-apis | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| dma-apis | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| clock-domain-and-timers | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| peripherals-and-hardware-artifacts | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| hardware-profile-and-capability-target | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| platform-hardware-effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| native-services-and-cleanup | [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| hardware-runtime-boundaries | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| deny-before-platform-action | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| recorded-platform-boundary | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| library-platform-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+### Platform/hardware STD16 callable surface
+
+- Target facts: `target`, `target-triple`, `arch`, `os`, `abi`, `features`, and `runtime-profile`.
+- Host facts: `host`, `host-os`, `host-arch`, `host-feature`, and `host-delegation`.
+- Environment: `env`, `get-env`, `with-env`, `argv`, `program-name`, and `redact-env`.
+- Time: `wall-clock`, `monotonic-clock`, `cpu-clock`, `sleep`, `deadline`, and `recorded-time`.
+- Randomness: `prng`, `seed`, `random-bytes`, `crypto-random`, and `deterministic-random`.
+- Process: `spawn`, `exec`, `wait`, `kill`, `exit-code`, `stdio-policy`, and `process-capability`.
+- Signals and terminal: `signal-handler`, `with-signal`, `terminal-size`, `tty?`, and `terminal-mode`.
+- Platform policy: `platform-capability`, `host-policy`, `target-manifest`, and `runtime-adapter`.
+
+### Platform/hardware STD17 callable surface
+
+- Registers: `register`, `read-reg`, `write-reg`, `modify-reg`, `field`, `bit`, `access-mode`, and `reset-value`.
+- MMIO: `mmio-region`, `mmio-capability`, `volatile-read`, `volatile-write`, and `memory-barrier`.
+- Interrupts: `interrupt`, `handler`, `enable-interrupt`, `disable-interrupt`, `critical-section`, and `interrupt-table`.
+- DMA: `dma-buffer`, `dma-map`, `dma-submit`, `dma-complete`, `dma-unmap`, and `cache-policy`.
+- Clocks and timers: `clock`, `timer`, `delay-cycles`, `deadline`, `clock-domain`, and `sync-domain`.
+- Firmware resources: `peripheral`, `pin`, `gpio`, `uart`, `spi`, `i2c`, and `device-tree`.
+- Artifacts: `memory-map`, `register-spec`, `firmware-manifest`, and `hardware-proof`.
+
+### Platform/hardware producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`hardware`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected target/device, clock/reset/port/protocol, memory-map and conditional capability-layout/tag/temporal-assumption facts; no Product/ISA adoption from library metadata. |
+| [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected no/minimal-runtime, interrupt/stack/latency/static-resource/peripheral constraints; real physical limits are not retired project work quotas. |
+| [`kernel`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual declared kernel ABI, interrupt/user/device boundary and unsafe-audit/service contracts; no hosted assumptions or entire OS prerequisite for a bounded library call. |
+| [`devices`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual register/map/provider/device/ownership/interrupt/transfer products, including actual alignment rather than address-width inference. |
+| [`stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual scoped resources, ownership/concurrency and IO cleanup behavior consumed by process/terminal/DMA wrappers; filesystem APIs create no shell grant. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Current operation-specific grants and provider/device scope; actual denied requests perform no protected action. |
+| [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual checked source direct/latent effect, profile and grant products; no proof of provider execution or physical safety by static admission alone. |
+| [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual permitted services, normalized errors, redaction, failure and cleanup observations; declared adapter names are not results. |
+| [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual permitted typed FFI/device ownership/cache/completion results; simulation/live scopes and unavailable cases remain explicit. |
+| [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual recorded activity/platform observations with authentic subject/provider/schema/policy identities; no ambient read during replay. |
+| [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual target ABI, register size/alignment and representation facts supporting wrappers, without invented example defaults. |
+| [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) | [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) | Actual volatile/order/source/target and proof-preservation obligations through emitted artifacts; metadata cannot replace verifier/results. |
+| [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected emitted artifact/source maps and volatile/order/target evidence; unsupported lowering rejects explicitly. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Distinct actual exact-island/source/owner/profile/target wrapper audit, including hardware-specific waiver conditions where applicable. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual callable module/profile/target fixtures and exact source/compiler/runtime/provider/device results; independent suite execution remains Release's task. |
+
+### Platform/hardware accepted and refused products
+
+Instantiate the documented run-tool and ready? examples only with genuine selected required process, target/device and register-map facts. The process illustration omits working-directory policy and the register illustration omits alignment; neither creates an implicit default or exempts its diagnostics. A real context may supply the required fact, otherwise the corresponding missing-policy/map case rejects. Preserve actual target versus build/runtime host distinctions, all clock/random kinds, redaction and complete process policies; register side effects, volatile/order, interrupts, DMA ownership/cache/completion and clock-domain synchronization are real checked behavior.
+
+Preserve every STD16001-STD16008 and STD17001-STD17008 refusal meaning and applicable P6/P7/P8/SAFE7/SAFE8/Runtime errors with expected/observed facts, source/call/generated origin and exact compiler/package/profile/target/device/provider/grant/adapter subjects. Independently exercise missing, stale, wrong-subject and unsupported cases; booleans, manifest fields or equal sampled values are no operational or safety proof. Unsafe islands require genuine exact audit records and checked safe-wrapper preconditions.
+
+### Platform/hardware profiles and evidence limits
+
+Keep static target values, hosted delegation or doubles, actual native capabilities, firmware/kernel no/minimal-runtime services, hardware descriptions, distributed activity/replay, AI typed tools/review, meta artifact inspection/generation and formal modeled assumptions distinct. A native local-model grant confers no process, tool or device authority. Preserve the actual human L12 declared/replayable input policy and separate pure-constant constraints. No live host/device access or dynamic runtime assumption follows from descriptions or compile-time API availability.
+
+On a genuine selected capability-hardware target preserve actual representation, bounds/provenance/permissions/tags across the relevant register/memory/DMA/FIFO/bus/port/debug paths and declared compartment entry/return/shared authority. Spatial safety is not temporal revocation; unmet stronger guarantees reject or require separate genuine proof. Source-supported hardware-specific audited waivers keep their exact scope; a generic unsafe flag, mutex, simulator or signature cannot replace them. No CHERI or target adoption is implied. Physical memory, clock/latency/power, stack and declared firmware bounds remain semantic constraints; removed compiler-work quotas and project allowances do not return.
+
+### Platform/hardware stage order and implementation disposition
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Define source/export/signature, complete process policy, target/device/map/clock/interrupt/DMA schemas and effect/grant interfaces first. Bounded implementations consume actually available matching selected producer artifacts and allowed fixtures; simulator development does not require physical device or full Product acceptance. Real permission, target facts, checks and required audit precede their protected consumer claims; actual live-target, suite, release and Product composition require their own evidence. Unselected targets and held actions remain explicit unresolved work, never silently inferred defaults. This source increment changes no shared route or source binding; exact stage reconciliation remains separate.
+
+All implementation tasks remain Open. Prior receipts retain their immutable narrow scope; this increment performs no complete implementation audit and executes no Gravity/compiler, platform API, simulator, process, signal, device, DMA, interrupt, proof engine, provider or replay. Actual current source-owner/interface entailment, independent source review, binding and Main integration remain pending. Reader contract-coverage reconciliation remains the first actual implementation increment. D1/C1/C5/C6 ordering stays separate.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human-authorized review/integration coordination grants no product execution or Main acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

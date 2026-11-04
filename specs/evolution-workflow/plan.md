@@ -222,3 +222,7 @@ Current source/interface entailment and independent acceptance remain pending. P
 ## Testing and meta library source interface
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Keep independent exact-island unsafe audit and affected compatibility/stabilization decisions separate from library APIs, declared pass contracts and ordinary implementation tests. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Retain distinct exact-island source/owner/profile/target unsafe audits, hardware-specific waiver conditions and actual admission/stability decisions. Library declarations and compatible metadata do not perform security review. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

@@ -980,6 +980,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Preserve actual profile, ownership/resource/taint/unsafe and generated-program rules. No mock, test runner or compiler plugin bypasses them; semantic constraints do not restore retired compiler quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve actual profile/no-runtime, ownership/resource/unsafe/taint and interrupt constraints. Reject hidden allocation, dynamic firmware assumptions and unchecked generated forms without restoring retired project quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

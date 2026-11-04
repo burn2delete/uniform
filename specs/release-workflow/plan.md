@@ -363,6 +363,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Consume actual library/subject fixtures and exact compiler/runtime/profile/target reports for independent library/compiler/property/formal/performance and stage comparisons. API availability does not execute or close those suites. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual callable platform/hardware fixtures, exact target/device/profile/provider subjects, genuine audits and independent results. Simulator agreement claims retain exact live-target artifact scope and unavailable physical operations; no API name accepts a target or Product. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

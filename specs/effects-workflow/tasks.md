@@ -228,6 +228,17 @@ Check actual test setup/body/teardown and meta direct/latent build/provider/comp
 <!-- library-testing-meta-source-test-meta-effects:end -->
 
 
+
+<!-- library-platform-hardware-source-platform-hardware-effects:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library platform-hardware-effects criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Check direct and latent platform/hardware effects and authentic grants for active profile/context, including handler callbacks, blocking/time/random/process, volatile operations, interrupt/DMA and generated forms. Static facts or device descriptions cannot hide live calls; unsafe declarations do not bypass profile/no-runtime or interrupt constraints. Exercise actual checked source positive/refusals for ambient access, forbidden profile/effects/handler behavior and missing scope with source diagnostics; static acceptance is no provider enforcement or physical run. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-platform-hardware-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

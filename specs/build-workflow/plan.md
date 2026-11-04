@@ -308,6 +308,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Track source/compiler/API/plugin/package/grants/profile/target/policy, fixture/golden/generator and actual artifact inputs for invalidation/reproduction. Changed subjects invalidate stale evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Track actual source/compiler/package/target/map/provider/grant/policy and input/output artifacts; separate target facts from build/runtime host probes. Invalidate stale contexts and provider/schema/target-dependent evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

@@ -131,6 +131,17 @@ Bind all named gravity.test and gravity.meta exports to actual callable implemen
 <!-- library-testing-meta-source-callable-exports:end -->
 
 
+
+<!-- library-platform-hardware-source-callable-exports:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library callable-exports criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Bind every named gravity.platform and gravity.hardware export to actual callable behavior or explicit remaining work, with namespace/version, input/output, profile/target/device/provider, effects/grants, errors, artifact and stability contract. Preserve full module surfaces, not only an inventory. Evidence: accepted/refused imports and real selected calls plus exact compiler/runtime/provider/target manifests; a static p16 summary, simulator name or API label is no implementation result. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-callable-exports:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -1429,6 +1440,160 @@ Testing/meta library library-example-conformance criterion (Open). Sources: [STD
 
 Compose actual callable test/meta exports and profile examples, structured assertion failures, property/fuzz reproduction, golden updates, diagnostic matching, mock/live denial, stable IR views, generated checking, pass invalidation, plugin compatibility/output and seed provenance results. Preserve individual STD14001-STD14008 and STD15001-STD15008 refusal meanings with source/compiler/package/profile/target/runtime/fixture/plugin/pass/grant context and actual expected/observed products. Compile assoc-then-get and when under their declared profiles and exercise forbidden-profile cases. Existing independent Release/testing/Governance authorities retain suite execution, audit and exact acceptance; no mock, scaffold or one receipt accepts complete library, compiler or self-hosting. Current implementation and independent source/interface acceptance remain unassessed.
 <!-- library-testing-meta-source-library-example-conformance:end -->
+
+
+
+<!-- library-platform-hardware-source-target-and-host-facts:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library target-and-host-facts criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement target/target-triple/arch/os/abi/features/runtime-profile from authentic compiler/package target artifacts, and separately host/host-os/host-arch/host-feature/host-delegation under actual effects/grants. Distinguish compilation target, build host, runtime host, container, workflow, browser, embedded board and kernel facts. Exercise cross-compilation with differing facts, explicit permitted runtime query and rejected implicit probing or wrong-subject substitution; retain source-bound target/host diagnostics and provider provenance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-target-and-host-facts:end -->
+
+
+
+<!-- library-platform-hardware-source-environment-and-arguments:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library environment-and-arguments criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement env/get-env/with-env/argv/program-name/redact-env using actual key allowlists, scoped authority and environment/argument redaction policy. No build-host environment is ambient target data. Exercise allowed keys and arguments, missing/revoked grant, forbidden key, absent redaction and restoration/cleanup after with-env failure. Emit redacted observations and authentic provider/version/error artifacts without leaking secret values. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-environment-and-arguments:end -->
+
+
+
+<!-- library-platform-hardware-source-clock-kinds:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library clock-kinds criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement wall-clock/monotonic-clock/cpu-clock/sleep/deadline/recorded-time with explicit wall, monotonic, CPU, compile-time and replay-recorded semantics and selected provider. Exercise actual allowed values/deadlines and wrong clock-kind or profile cases; do not substitute host wall time for monotonic, compilation or recorded facts. Preserve declared provider resolution and actual source/runtime/target identity; a supplied timestamp is no live or replay observation. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-clock-kinds:end -->
+
+
+
+<!-- library-platform-hardware-source-random-provider-kinds:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library random-provider-kinds criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement prng/seed/random-bytes/crypto-random/deterministic-random with explicit deterministic PRNG, cryptographic provider, test seed or host randomness identity and applicable grants. Exercise seeded reproducibility, explicit crypto-provider delegation and ambiguous/mismatched-kind refusals. Cryptographic random requirements remain STD18's real provider/safety contract, not a claim that any host bytes or deterministic test seed are cryptographically suitable. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-random-provider-kinds:end -->
+
+
+
+<!-- library-platform-hardware-source-process-policy-and-results:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library process-policy-and-results criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement spawn/exec/wait/kill/exit-code/stdio-policy/process-capability with explicit command, arguments, environment policy, IO policy, timeout, working-directory policy and actual authority. Reject missing policy independently, unchecked shell assembly and out-of-scope commands/args/cwd/output. Exercise real selected spawn/result/wait/kill/failure and redacted argument/environment observations through the owning permitted Runtime adapter. The run-tool illustration does not define a cwd default: an accepted instantiated fixture supplies genuine complete policy; its omitted policy is a refusal unless an authentic selected context supplies it. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-process-policy-and-results:end -->
+
+
+
+<!-- library-platform-hardware-source-signal-terminal-cleanup:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library signal-terminal-cleanup criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md).
+
+Implement signal-handler/with-signal/terminal-size/tty?/terminal-mode with declared support, resources, effects/grants and deterministic restoration/cleanup on success, failure, cancellation and partial initialization. Exercise actual selected signal/terminal adapter behavior and unsupported-target, missing-capability and leaked-resource refusals with normalized Gravity errors. Hosted delegation retains provider/version/error mapping and auditable privileged adapter records; no live signal/terminal action is authorized by this criterion. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-signal-terminal-cleanup:end -->
+
+
+
+<!-- library-platform-hardware-source-platform-profile-and-replay:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library platform-profile-and-replay criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement platform-capability/host-policy/target-manifest/runtime-adapter and preserve the full profile matrix: Core and hardware static target facts; target-specific capability-bearing firmware/kernel; capability-bearing native; recorded hosted delegation; distributed recorded time/random and activity-isolated process/environment; AI typed tools with human-review policy; meta target/build artifacts; formal modeled facts or explicit assumptions. Exercise allowed selected calls and forbidden profile/ambient replay reads with real source-bound results. Native local-model permission does not grant process or tool authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-platform-profile-and-replay:end -->
+
+
+
+<!-- library-platform-hardware-source-registers-and-safe-mmio:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library registers-and-safe-mmio criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md).
+
+Implement register/read-reg/write-reg/modify-reg/field/bit/access-mode/reset-value and mmio-region/mmio-capability/volatile-read/volatile-write/memory-barrier from actual target/device metadata. Require address, width, alignment, access mode, volatile policy, known reset value and side-effect semantics; safe wrappers prove/check size, alignment, access, ordering and authority, otherwise retain an explicit audited unsafe island. Exercise genuine selected reads/writes/side effects and absent width/alignment, unaligned, unsupported, nonvolatile, unauthorized or invalid-order refusals. The example's address/width does not prove alignment; accepted instantiation needs genuine target/map/layout facts, not invented defaults. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-registers-and-safe-mmio:end -->
+
+
+
+<!-- library-platform-hardware-source-interrupt-apis:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library interrupt-apis criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+Implement interrupt/handler/enable-interrupt/disable-interrupt/critical-section/interrupt-table using declared signature, priority, reentrancy, resource use, effects and selected stack/latency/scheduler constraints. Preserve shared-state and cleanup rules, including interrupt acknowledgement and partial failure. Exercise actual permitted handlers and forbidden effects, reentrancy/resource/race or missed-cleanup refusals; library definitions consume real profile/device evidence and do not substitute runtime locks for hardware protocol. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-interrupt-apis:end -->
+
+
+
+<!-- library-platform-hardware-source-dma-apis:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library dma-apis criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+Implement dma-buffer/dma-map/dma-submit/dma-complete/dma-unmap/cache-policy with actual buffer ownership transfer, lifetime, alignment, pinning where required, cache coherence, synchronization, completion and unmap/cleanup products. Exercise valid selected transfers and premature reuse/free/unmap, stale mapping, wrong-device authority, incoherent cache or absent completion refusals. Conditional capability-bearing paths preserve genuine target tags/provenance; a map descriptor or completed flag proves neither transfer nor lifetime safety. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-dma-apis:end -->
+
+
+
+<!-- library-platform-hardware-source-clock-domain-and-timers:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library clock-domain-and-timers criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Implement clock/timer/delay-cycles/deadline/clock-domain/sync-domain with actual clock source, bound and power policy. Require checked synchronizer/handshake/FIFO adapters or applicable synchronization proof for every crossing, retaining actual source/target clock evidence and any canonical hardware-specific audited waiver conditions. Exercise permitted timer/busy-wait behavior and missing bounds/clock/power or unsafe crossings. Runtime unsafe markers and generic locks do not constitute a hardware waiver or CDC proof; real physical timing/resource constraints survive removed project accounting. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-clock-domain-and-timers:end -->
+
+
+
+<!-- library-platform-hardware-source-peripherals-and-hardware-artifacts:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library peripherals-and-hardware-artifacts criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Implement peripheral/pin/gpio/uart/spi/i2c/device-tree plus memory-map/register-spec/firmware-manifest/hardware-proof from selected real target/device/schema/ABI products. Emit source-bound register and interrupt tables, layout/volatile/order and declared evidence interfaces; retain reset values when known. Exercise actual selected API-to-artifact composition and absent/mismatched target/device/maps/provider refusals. A manifest or hardware-proof filename is no protocol proof, physical run, selected ISA, driver product or fabrication claim. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-peripherals-and-hardware-artifacts:end -->
+
+
+
+<!-- library-platform-hardware-source-hardware-profile-and-capability-target:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library hardware-profile-and-capability-target criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Keep hardware register/state-machine/static-memory helpers, bounded firmware MMIO/interrupt/DMA/peripherals, kernel audited drivers, explicitly granted native simulator/device adapters, hosted doubles/readers, Core/distributed/AI data or genuinely mediated tools, meta descriptions and formal modeled verification distinct. Firmware rejects hidden heap/reflection/dynamic eval/unbounded recursion/ambient host assumptions. Where genuine selected capability hardware applies, preserve pointer bounds/provenance/permissions/tags across actual register/memory/DMA/FIFO/bus/port/debug paths, explicit compartments/call-gates/return/shared-memory authority, and separate temporal assumptions. No integer round-trip, spatial bound or simulator observation proves temporal revocation or live-device safety; reject stronger unmet guarantees or require genuine separate proof. No CHERI, ISA, board or Product is selected here. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-hardware-profile-and-capability-target:end -->
+
+
+
+<!-- library-platform-hardware-source-library-platform-conformance:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library library-platform-conformance criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Compose actual callable API/profile examples, complete process and target/host/clock/random cases, register maps/interrupt tables, MMIO volatile/order preservation, DMA ownership/coherence, CDC and genuine unsafe-audit products for exact source/compiler/runtime/provider/target/device subjects. Preserve each STD16001-STD16008 and STD17001-STD17008 meaning at its actual boundary with expected/observed source-bound positives and refusals. Compile run-tool/ready? under genuine selected complete policy/map/profile conditions and separately refuse missing example facts. Compare simulator with live-target artifact semantics where live hardware is unavailable, retaining explicit unavailable physical cases. Independent Release suites and Governance audits remain separate; no module inventory, simulator report or narrow receipt accepts whole Platform, hardware, library or Product. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-library-platform-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

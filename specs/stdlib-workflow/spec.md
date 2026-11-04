@@ -84,6 +84,8 @@ The [workflow and AI library source criteria](plan.md#complete-workflow-and-ai-l
 
 The [testing and meta library source criteria](plan.md#complete-testing-and-meta-library-source-criteria) refine callable STD14/STD15 behavior over existing compiler, test, Auth, Effects, Runtime and Governance producers. Actual structured failures, reproducible counterexamples, report/golden artifacts, stable IR views, scoped pass execution and seed/provenance evidence remain distinct from names or metadata. Task status, historical review and held actions persist.
 
+The [platform and hardware library source criteria](plan.md#complete-platform-and-hardware-library-source-criteria) refine callable STD16/STD17 behavior: explicit platform policies and target/host facts, actual MMIO/interrupt/DMA/clock safety, complete example context and profile-specific adapters. Existing Runtime, Platform, Auth, Effects, Lower/Backends, audit and independent suite owners keep their distinct products and evidence; no target or Product adoption follows. Tasks, historical evidence and held execution remain unchanged.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

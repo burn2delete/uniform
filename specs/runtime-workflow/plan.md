@@ -443,6 +443,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Provide actual permitted fixture/service resources, effects, cleanup and denied-before-action observations. Fake/recorded/live scopes stay explicit and unavailable services remain unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Provide actual permitted services and device/FFI boundaries, redacted provider/error and cleanup observations, authentic before-action denials and recorded activity products. Simulation/recorded/live scopes remain explicit and unavailable operations unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

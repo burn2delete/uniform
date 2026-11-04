@@ -177,6 +177,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Consume actual packageable structured reports, diagnostic goldens, counterexamples, stable IR views and provenance. A report hook or filename is no test run or proof. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual target/module/host-delegation/redaction/replay/maps/interrupt/DMA/clock/audit artifacts with exact source and provider identities. A report viewer or descriptor is no executed process, device operation or proof. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

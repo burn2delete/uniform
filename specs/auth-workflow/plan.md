@@ -395,6 +395,10 @@ Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#com
 
 Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Produce genuine operation-specific fixture/live-service and compiler artifact/namespace/phase grants, attenuation/revocation/lifetime and trust facts. Fakes and package identity grant no live authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Produce authentic operation-specific key/redaction, process command/args/cwd/output, clock/random, terminal/signal and device/register/range/interrupt grants with attenuation, revocation and lifetime. Actual Runtime/provider enforces before the action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority
