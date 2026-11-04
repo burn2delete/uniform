@@ -76,6 +76,13 @@ Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-p
 Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Expose actual kind/encoding/write/readback/map and common-manifest interfaces, then write real selected family artifacts and current required metadata. Full source-to-target graph, type/effect/grant/safety/proof/audit/source/helper/dependency/conformance/reproduction remain inspectable. Explicit development-only gaps stay non-release and cannot legalize invalid inputs; signing or future complete packs are not first writer inputs.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

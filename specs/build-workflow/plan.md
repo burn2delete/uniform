@@ -298,6 +298,13 @@ Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-p
 Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Resolve actual declared family/runtime/toolchain/dialect/ABI/schema/module/feature/pass/helper/resource/provider inputs before compilation and invalidate affected products on changes. Actual content bytes/canonical representation, common provenance graph, hashes, output-affecting environment and nondeterminism/timestamp policy precede claimed package/reproduction results. Final signing/release is not first artifact schema or authority.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

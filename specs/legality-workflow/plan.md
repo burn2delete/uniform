@@ -976,6 +976,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Profiles, resource/safety/ownership/taint and separate authority legality precede target use. Host null/errors/reflection, GPU host/device transfers, hardware fixed widths/CDC, replay side effects, SQL taint and mobile permission/lifecycle are real boundaries, not backend/runtime-only legalization. Preserve four safety outcomes, independent meaningful target/semantic bounds and accounting removal; no generic unsafe label waives hardware/review policy.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

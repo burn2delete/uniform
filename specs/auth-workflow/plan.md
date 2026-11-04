@@ -396,6 +396,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual selected host/global/import/device/database/model/tool/provider identity, source effects, grants, trust/taint and human-review policy distinct from backend availability or OS permission. Foreign schemas, package names and prompt/tool output issue no authority. Imported certificate compatibility/trust and actual operation gates remain required for affected claims; no held action becomes enabled.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

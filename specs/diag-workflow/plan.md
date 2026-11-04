@@ -272,6 +272,13 @@ Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-p
 Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
 
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Carry every B4-B14 diagnostic identity and its distinct owning source/generated/IR/domain/host/world/ABI/async/kernel/clock/workflow/query/platform/artifact/fixture context through success and rejected partial outputs. Common emission cannot suppress upstream failures; independent metadata faults must remain observable even when values agree. Redaction preserves refusal meaning.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

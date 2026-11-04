@@ -345,6 +345,198 @@ unchanged. No other chat is messaged and no reviewer or automation is woken.
 The first actual implementation increment stays Reader
 [contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
 
+## Complete B4-B14 source criteria
+
+This source proposal follows the complete Phase 7 README and B4-B14 contracts
+listed in [the existing spec](spec.md#purpose-and-canonical-contracts), with B1-B3
+retaining their [separate complete source criteria](#complete-b1-b3-source-criteria).
+Normative list preambles, examples, qualifiers and following conditions remain
+conjunctive. Source identities, section coverage and exact byte witnesses do not
+prove requirement entailment, implementation or independent acceptance.
+
+### One authority and conserved predicate roles
+
+Use [the existing sole Backends ledger](tasks.md#implementation-tasks) and all
+fifteen current task keys. B4-B14 source obligations route to twelve existing
+records; B10 model/provider binding remains under `backend-ai`, with Workflow,
+Schema, Auth and Runtime retaining their separate semantics. There is no B15.
+B1/B13 common interfaces do not duplicate Lower/Emit selected-candidate work;
+concrete backend behavior remains the family owner's responsibility.
+
+Thirteen predicates restore exactly 20,397 bytes from immutable local source
+`45d0083d03c6e1fc91425097b4a8153892f2d689`: four Wasm async-function/future/
+SIMD/atomic predicates, three B13 hash/common-validation/provenance predicates,
+and six TEST6 ABI/differential/manifest/report/source-map/unsupported predicates.
+Their original IDs, roles, qualifiers and historical review subjects remain.
+Remote availability of that source object is not established here; restoration
+renews or consumes no acceptance and retries no stopped publication handoff.
+Historical 175/77 membership counts in restored B13 text remain its original
+context, not a new source or implementation denominator.
+
+Four current predicates retain exact bytes: GPU synchronization, hardware
+concurrency, the narrower hardware-parallel/counter predicate and the selected
+B1 emission interface. They retain their original scopes, not whole B8/B9/B13
+acceptance. Sixty-seven new criteria supplement these exact predicates: 58
+existing source-owner obligations and nine full family target/artifact/
+conformance/diagnostic contracts. No criterion is a new implementation task.
+
+| Criterion | Existing task | Source role |
+| --- | --- | --- |
+| `owner-backend-artifact-reproducibility-record` | `backend-emission` | `backend/artifact-reproducibility-record` |
+| `owner-backend-conformance-execution-pack` | `backend-conformance` | `backend/conformance-execution-pack` |
+| `owner-backend-conformance-suite-composition` | `backend-conformance` | `backend/conformance-suite-composition` |
+| `owner-backend-conformance-target-availability` | `backend-conformance` | `backend/conformance-target-availability` |
+| `owner-backend-gpu-argument-memory-abi` | `backend-gpu` | `backend/gpu/argument-memory-abi` |
+| `owner-backend-gpu-kernel-emission` | `backend-gpu` | `backend/gpu/kernel-emission` |
+| `owner-backend-gpu-numeric-reduction-lowering` | `backend-gpu` | `backend/gpu/numeric-reduction-lowering` |
+| `owner-backend-gpu-transfer-launch-stubs` | `backend-gpu` | `backend/gpu/transfer-launch-stubs` |
+| `owner-backend-hdl-cdc-gate` | `backend-hdl` | `backend/hdl/cdc-gate` |
+| `owner-backend-hdl-clock-reset-timing` | `backend-hdl` | `backend/hdl/clock-reset-timing` |
+| `owner-backend-hdl-cycle-aware-emission` | `backend-hdl` | `backend/hdl/cycle-aware-emission` |
+| `owner-backend-hdl-interface-adapter` | `backend-hdl` | `backend/hdl/interface-adapter` |
+| `owner-backend-hdl-testbench-trace` | `backend-hdl` | `backend/hdl/testbench-trace` |
+| `owner-backend-hdl-width-arithmetic-lowering` | `backend-hdl` | `backend/hdl/width-arithmetic-lowering` |
+| `owner-backend-js-async-error-adapter` | `backend-js` | `backend/js/async-error-adapter` |
+| `owner-backend-js-dynamic-operation-gate` | `backend-js` | `backend/js/dynamic-operation-gate` |
+| `owner-backend-js-host-binding-gate` | `backend-js` | `backend/js/host-binding-gate` |
+| `owner-backend-js-module-api-emission` | `backend-js` | `backend/js/module-api-emission` |
+| `owner-backend-js-nullish-adapter` | `backend-js` | `backend/js/nullish-adapter` |
+| `owner-backend-js-numeric-lowering` | `backend-js` | `backend/js/numeric-lowering` |
+| `owner-backend-js-ui-artifacts` | `backend-js` | `backend/js/ui-artifacts` |
+| `owner-backend-jvm-class-jar-emission` | `backend-jvm` | `backend/jvm/class-jar-emission` |
+| `owner-backend-jvm-dynamic-authority` | `backend-jvm` | `backend/jvm/dynamic-authority` |
+| `owner-backend-jvm-exception-translation` | `backend-jvm` | `backend/jvm/exception-translation` |
+| `owner-backend-jvm-linear-cleanup` | `backend-jvm` | `backend/jvm/linear-cleanup` |
+| `owner-backend-jvm-native-image-config` | `backend-jvm` | `backend/jvm/native-image-config` |
+| `owner-backend-jvm-thread-runtime-binding` | `backend-jvm` | `backend/jvm/thread-runtime-binding` |
+| `owner-backend-jvm-value-interop` | `backend-jvm` | `backend/jvm/value-interop` |
+| `owner-backend-mlir-conversion-verification` | `backend-mlir` | `backend/mlir/conversion-verification` |
+| `owner-backend-mlir-dialect-registry` | `backend-mlir` | `backend/mlir/dialect-registry` |
+| `owner-backend-mlir-downstream-handoff` | `backend-mlir` | `backend/mlir/downstream-handoff` |
+| `owner-backend-mlir-module-emission` | `backend-mlir` | `backend/mlir/module-emission` |
+| `owner-backend-mobile-bundle-emission` | `backend-mobile` | `backend/mobile/bundle-emission` |
+| `owner-backend-mobile-lifecycle-thread-dispatch` | `backend-mobile` | `backend/mobile/lifecycle-thread-dispatch` |
+| `owner-backend-mobile-permission-policy` | `backend-mobile` | `backend/mobile/permission-policy` |
+| `owner-backend-mobile-platform-bindings` | `backend-mobile` | `backend/mobile/platform-bindings` |
+| `owner-backend-mobile-storage-sync` | `backend-mobile` | `backend/mobile/storage-sync` |
+| `owner-backend-query-dialect-semantics` | `backend-query` | `backend/query/dialect-semantics` |
+| `owner-backend-query-migration-artifacts` | `backend-query` | `backend/query/migration-artifacts` |
+| `owner-backend-query-predicate-movement` | `backend-query` | `backend/query/predicate-movement` |
+| `owner-backend-query-result-adapter` | `backend-query` | `backend/query/result-adapter` |
+| `owner-backend-query-sql-plan-emission` | `backend-query` | `backend/query/sql-plan-emission` |
+| `owner-backend-query-transaction-binding` | `backend-query` | `backend/query/transaction-binding` |
+| `owner-backend-wasm-async-stream` | `backend-wasm` | `backend/wasm/async-stream` |
+| `owner-backend-wasm-canonical-abi` | `backend-wasm` | `backend/wasm/canonical-abi` |
+| `owner-backend-wasm-component-composition` | `backend-wasm` | `backend/wasm/component-composition` |
+| `owner-backend-wasm-component-contracts` | `backend-wasm` | `backend/wasm/component-contracts` |
+| `owner-backend-wasm-core-emission` | `backend-wasm` | `backend/wasm/core-emission` |
+| `owner-backend-wasm-host-bindings` | `backend-wasm` | `backend/wasm/host-bindings` |
+| `owner-backend-wasm-linear-memory` | `backend-wasm` | `backend/wasm/linear-memory` |
+| `owner-backend-wasm-numeric-lowering` | `backend-wasm` | `backend/wasm/numeric-lowering` |
+| `owner-backend-wasm-replay-binding` | `backend-wasm` | `backend/wasm/replay-binding` |
+| `owner-backend-workflow-graph-emission` | `backend-workflow` | `backend/workflow/graph-emission` |
+| `owner-backend-workflow-model-provider-binding` | `backend-ai` | `backend/workflow/model-provider-binding` |
+| `owner-backend-workflow-replay-idempotency` | `backend-workflow` | `backend/workflow/replay-idempotency` |
+| `owner-backend-workflow-retry-compensation` | `backend-workflow` | `backend/workflow/retry-compensation` |
+| `owner-backend-workflow-review-policy` | `backend-workflow` | `backend/workflow/review-policy` |
+| `owner-backend-workflow-schema-state-artifacts` | `backend-workflow` | `backend/workflow/schema-state-artifacts` |
+| `b10-contract` | `backend-workflow` | B10 full target/artifact/conformance and diagnostics |
+| `b11-contract` | `backend-query` | B11 full target/artifact/conformance and diagnostics |
+| `b12-contract` | `backend-mobile` | B12 full target/artifact/conformance and diagnostics |
+| `b4-contract` | `backend-wasm` | B4 full target/artifact/conformance and diagnostics |
+| `b5-contract` | `backend-jvm` | B5 full target/artifact/conformance and diagnostics |
+| `b6-contract` | `backend-js` | B6 full target/artifact/conformance and diagnostics |
+| `b7-contract` | `backend-mlir` | B7 full target/artifact/conformance and diagnostics |
+| `b8-contract` | `backend-gpu` | B8 full target/artifact/conformance and diagnostics |
+| `b9-contract` | `backend-hdl` | B9 full target/artifact/conformance and diagnostics |
+| `wasm-async-function` | `backend-wasm` | Exact earlier predicate restored; original scope retained |
+| `wasm-atomic` | `backend-wasm` | Exact earlier predicate restored; original scope retained |
+| `wasm-future` | `backend-wasm` | Exact earlier predicate restored; original scope retained |
+| `wasm-simd` | `backend-wasm` | Exact earlier predicate restored; original scope retained |
+| `emission-hash` | `backend-emission` | Exact earlier predicate restored; original scope retained |
+| `emission-common` | `backend-emission` | Exact earlier predicate restored; original scope retained |
+| `emission-graph` | `backend-emission` | Exact earlier predicate restored; original scope retained |
+| `test-abi` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `test-differential` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `test-manifest` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `test-report` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `test-source-maps` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `test-unsupported` | `backend-conformance` | Exact earlier predicate restored; original scope retained |
+| `gpu-sync-existing` | `backend-gpu` | Exact current predicate retained under original scope |
+| `hdl-concurrency-existing` | `backend-hdl` | Exact current predicate retained under original scope |
+| `hdl-counter-existing` | `backend-hdl` | Exact current predicate retained under original scope |
+| `b1-emission-existing` | `backend-emission` | Exact current predicate retained under original scope |
+
+
+### Family behavior and independently meaningful evidence
+
+| Canonical family | Concrete accepted and refused outcomes |
+| --- | --- |
+| B4 Wasm | Real core/module/component artifacts and complete target/feature/memory/table/embedder contracts; typed WIT-like worlds/interfaces/resources, canonical lift/lower/ownership/drop/realloc, per-boundary grants/schema/taint/provider and explicit composition. WASI0.3-equivalent async funcs, single-completion futures and streams retain completion/cancel/backpressure/partial-consumption/outstanding effects and replay. Refuse ambient host authority, escaped offsets, unsupported feature/check elision, erased ownership/cancellation or unrecorded host/async events. Synchronous core is not async-component support. |
+| B5 JVM | Real classes/JAR/modules under versioned module/classloader/package rules, stable generated symbols and explicit representation/equality/hash/null/rooting/affinity/error boundaries. Reflection, dynamic loading/proxies/handles/invokedynamic/lifecycle/native use stays declared and granted. Optional native-image configuration matches accepted reflection/resources. GC does not replace deterministic linear release; host semantics cannot leak through lower-profile contracts. |
+| B6 JS/TS | Real selected-runtime modules, truthful TS API/dependency/source artifacts and complete module/bundler/side-effect/global/package contracts. Runtime validation handles untrusted host/package/DOM/network/storage/model/tool values; nullish/errors/promises/callbacks/cancellation remain typed and effectful. Preserve Number/BigInt/array/checked/serialized modes, numeric exceptional values and selected UI/hydration/state/assets. Refuse ambient globals, ordinary eval/prototype mutation, unsafe imports and lossy numeric boundaries. |
+| B7 MLIR | Real versioned dialect/operation/type registry and modules with source/ownership/effect/capability/safety/proof back edges. Passes/conversions have before/after verification, legality and accepted invalidation/repair. Real LLVM/GPU handoffs retain remaining-illegal operations, current evidence, ABI/runtime/features and valid fallback. Verifier success or standard dialect UB is no source proof; MLIR remains optional. |
+| B8 GPU | Real eligible kernels/device or intermediate artifacts, host stubs, explicit buffer argument/lifetime/transfer/launch/cleanup and synchronization graphs. Retain profile separation, address/layout/alias/ownership, queue/barrier/fence/atomic order/scope, geometry/occupancy/shared-memory and actual numeric certificates/reference comparisons. Refuse host effects, hidden or unsynchronized transfers, bad releases and uncertified relaxed reductions. No device/API is silently adopted. |
+| B9 HDL | Real verified hardware-anchored cycle-aware combinational/sequential/FSM/memory HDL, fixed width/sign/rounding/overflow/state, ports/protocols/backpressure and target-required clock/reset/timing. CDC needs actual synchronizer/FIFO/handshake/Gray proof or accepted hardware waiver; generic unsafe is insufficient. Real benches/traces connect cycles to source. Reject hidden runtime and unrepresentable control, without inventing compiler input/work quotas or a product ISA. |
+| B10 Workflow/AI adapter | Real durable graph/schema/state/event/policy artifacts and actual pause/resume/restart/replay/reference results. Record nondeterminism and source/model/tool/provider/evaluation identities; explicit idempotency/retry/timeout/cancel/failure/compensation and review/grant/taint rules survive substitution. Reissue effects only under explicit replay-safe/idempotent graph policy and event-log guards. Prompt/tool/model output issues no authority. |
+| B11 Query/relational | Real verified relational/schema SQL/prepared bindings and database/host/hybrid plans with dialect/null/three-valued/collation/timezone/numeric/JSON/array/enum maps. Validate parameters and rows, prove permitted predicate movement, preserve transaction/lock/retry/error/grants and workflow integration. Migration has old/new schemas, preservation or explicit loss approval, backfill/deployment/rollback-or-forward and validation SQL. Tainted strings and no-op records prove no support. |
+| B12 Mobile | Real declared platform bundles/resources/bindings/permissions/lifecycle/thread/UI/storage-sync and release/store metadata. Typed null/error/callback/intent/scene/activity/delegate boundaries retain affinity, cleanup and taint. Permission text, deployment grants, runtime request/denial and service effects remain separate. Required simulator/device startup/prompt/lifecycle/crash evidence is actual; metadata grants no signing, store access or physical adoption. |
+| B13 Shared emission | Actual common schema/kind/content/source/compiler/dependency/build identity and source-through-emission graph, preserving type/effect/capability, safety/proof/certificate/audit, target/ABI/runtime/provider, diagnostics, conformance and reproduction. Compute actual content identity before signing/packaging/deployment; tool queries resolve source and proof. Backend fields replace no common graph and remove common fields only through the explicit profile/tooling exemption. Missing/stale/contradictory evidence rejects; development-only gaps remain non-release with blocked consumers and cannot suppress source failures. |
+| B14 Shared conformance | Actual complete shared and per-family positive/negative/domain fixture matrix, exact diagnostic and missing-fact checks, differential/reference/semantic results, independently validated metadata/artifact maps and recorded nondeterminism. Validate success and rejected partial artifacts. Availability explains target skips while shared checks still run; stabilization needs actual shared/family results or accepted exclusions, not default-target samples. Real packs reach emission/release; equal values alone never suffice. |
+
+The restored TEST6 conditional differential criterion keeps its original SHOULD
+scope. It cannot weaken B14's required differential execution or semantic
+comparison, nor B14's required shape/verifier/map/diagnostic checks when local
+target execution is unavailable. Each actual claim retains complete compiler,
+pass, backend, profile, target, runtime/provider, input/output, fixture and checker
+identities, expected/actual diagnostics and missing facts. New family contracts
+retain every owning diagnostic ID and its distinct context fields.
+
+### Accounting, safety and actual restrictions
+
+B10's historical project budget/rate/cost/work/attempt wording is superseded by
+the current user accounting-removal decision. B10-POLICY still diagnoses actual
+policy/provider/authority/review failures and genuine external account/service
+limits. Requested program retry/timeout/cancel/replay semantics survive; they
+are not ordinary-development attempt quotas. Numeric error/roundoff bounds,
+Wasm memory/platform representability, GPU launch resources and hardware widths/
+finite structures retain their concrete semantic meaning. None creates an input
+form/depth/node/byte/token/work allowance for otherwise valid compiler input.
+
+Safe Gravity retains the four outcomes, real proof/check/audit and owner facts,
+separate effects and grants and no target UB. Optional optimization assumptions
+cannot be treated as source truth; check erasure and certificates need the
+surviving required evidence and imported trust policy. Host validation, taint,
+resource release, ABI and replay cannot be replaced by metadata completeness.
+Clojure stays the only temporary bootstrap/tooling language, with Gravity/Uniform
+the destination; naming foreign hosts never authorizes another seed language.
+
+Preserve actual C12, native/callback, provider/device, Reader/Gravity/bootstrap/
+paired/probe/replay/migration/private-store/signing/publication restrictions and
+the stopped C7 handoff. No action, reviewer wake, other-chat message, aggregate
+publication, API/device/ISA/product target choice or integration occurs here.
+D1/C1/C5/C6 source ordering and L6/L12 hermetic wording remain separately open.
+
+### Staging, existing implementation and completion
+
+Use the [sole dependency table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition), existing [B1-B3 stages](#b1-b3-producer-and-consumer-order) and retained L19 family routes. Genuine early source/domain/schema/ABI/helper/provider/oracle/availability declarations allow isolated construction. Actual verified selected subject and current required facts precede claimed family lowering; actual bytes/current metadata precede common validation; actual required conformance/reproduction precedes their corresponding stabilization/release claims. These source proposals do not establish complete B4-B14 selected-result staging; deeper family refinement remains visible work.
+
+Do not require universal MLIR, Opt, domain IR, math certificates, host services,
+live AI/database providers, native bytes or signed release before unrelated
+source/fixture work. Actual selected domain exits, certified math, foreign
+services, simulator/device or runtime claims still need their genuine evidence.
+Early interfaces cannot depend on their own future final artifacts. Coarse task
+feedback authorizes no namespace/build cycle or ungoverned bootstrap fixed point.
+
+Existing task citations retain their narrow inspection/receipt limits. This
+tranche audits no complete backend implementation and runs no compiler, backend,
+provider, proof engine, runtime, migration, device or replay behavior. Current
+source/interface and whole-owner entailment are author proposals with independent
+acceptance pending. All implementation tasks stay Open; source reconciliation
+is not compiler completion, acceptance, integration, release or self-hosting.
+The first actual implementation increment remains Reader
+[contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority
