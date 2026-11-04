@@ -105,3 +105,28 @@ was not changed for that correction.
 Candidate capture, exact body/manifest conservation, committed regressions,
 boundary gates, lint, validators, independent reviews, own CI and integration
 remain separate outstanding checks. Receipts use /tmp/uniform-reader-tokenizer-*.
+
+## Committed native comparison and regression evidence
+
+Implementation8506c8be9b0793133b413d59d6a803bb93f638fc, tree
+8eb111de56435da226f87663c16204ab1fa3ae06, matches all twenty-four original
+outcomes byte-for-byte and as parsed data, retaining the original capture hash.
+Committed Reader/tokenizer and C2 compatibility checks pass58 tests/2363
+assertions. Language/source ownership passes48/1198 with zero skipped
+namespaces. Cold Reader loads eight public APIs with Bootstrap absent.
+
+Conservation proves all sixteen moved helper bodies modulo the declared late
+ports and two operation-map signatures, all seven previous Reader public
+bodies as exact source text, facade arities/default/nine Var references, and
+exact removal of three resources from both manifests. An initial helper used
+separately read forms to compare existing anonymous functions; that observation
+failed and is retained. The corrected comparison uses exact original source
+segments for those existing APIs, without changing production code or weakening
+the sixteen moved-body comparisons.
+
+The semantic authoring phase ended cleanly at that immutable commit. A separate
+CI-wiring phase adds the new tokenizer test namespace to the existing Reader
+regression command in tools/ci/run.clj, so ordinary CI executes its owning tests.
+This is the only CI command change; watchdogs, selection policy and runtime
+coordination APIs remain unchanged. Lint, validators, independent exact source
+acceptance, own CI and current-main integration remain outstanding.
