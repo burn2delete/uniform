@@ -2,7 +2,7 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256])
-  (:effects #{})
+  (:effects #{:memory/allocate})
   (:capabilities #{})
   (:safety :safe))
 
@@ -18,7 +18,7 @@
    :visibility :internal
    :primitive-policy :restricted-to-unkeyed-content-identity
    :profiles #{:meta}
-   :effects #{}
+   :effects #{:memory/allocate}
    :capabilities #{}
    :allocation :proportional-to-input
    :input :vector-of-octets
