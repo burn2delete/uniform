@@ -50,7 +50,7 @@
       (.mkdirs (.getParentFile legacy))
       (rt/write-edn! legacy {:claims {identity original}})
       (rt/update! ctx assoc-in [:tasks key] {:key key :status status :paths (:paths original) :implementation-job "preserved-author"})
-      (let [before (slurp (:state-file ctx))]
+      (let [before @(:state ctx)]
         (with-redefs [project/setup! (fn [& _] (swap! writes conj :project))
                       workflow/ensure-campaign! (fn [& _] (swap! writes conj :campaign))
                       gh/setup! (fn [& _] (swap! writes conj :shared-project))
@@ -62,11 +62,36 @@
                                  :simplify-setup (simplify-main/dispatch! ctx "setup" [])
                                  :campaign (workflow/campaign! ctx)))))
         (is (empty? @writes))
-        (is (= before (slurp (:state-file ctx)))))
+        (is (= (dissoc before :tasks) (dissoc @(:state ctx) :tasks)))
+        (is (= :attention (get-in @(:state ctx) [:tasks key :status])))
+        (is (= status (get-in @(:state ctx) [:tasks key :resume-status])))
+        (is (= (select-keys (get-in before [:tasks key]) [:status :resume-status :error :implementation-job])
+               (last (get-in @(:state ctx) [:tasks key :handover-history])))))
       (let [shared (rt/read-edn (:coordination-file ctx)) lease (first (vals (:writers shared)))]
         (is (= :needs-inspection (:status lease)))
         (is (= original (:legacy-claim lease)))
         (is (empty? (:controllers shared)))))))
+
+(deftest retained-worker-recovers-through-inspected-release-and-existing-retry
+  (let [ctx (fixture/context) key "retained" original-error {:message "Original failure" :details {:fixture true}}
+        original {:key key :status :implementing :paths ["src/owned.clj"] :implementation-job "preserved-author" :error original-error}
+        lease (rt/claim-paths! ctx key (:paths original) :implementing)
+        lease-file (str (io/file (:state-dir ctx) "lease.edn"))
+        inspection-file (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:tasks key] original)
+    (is (thrown? Exception (rt/with-claimed-paths ctx lease #(throw (ex-info "Unknown writer termination" {})))))
+    (with-redefs [project/setup! (fn [& _] (throw (AssertionError. "No provider setup before inspected recovery")))
+                  gh/api (fn [& _] (throw (AssertionError. "No provider call during local recovery")))]
+      (is (thrown-with-msg? Exception #"Retained worker requires inspected handover" (main/dispatch! ctx "setup" [])))
+      (rt/write-edn! lease-file lease)
+      (rt/write-edn! inspection-file {:evidence "Fixture original owner inspected scoped writer as ended; no denied action retried"})
+      (simplify-main/dispatch! ctx "release-writer" [lease-file inspection-file])
+      (simplify-main/dispatch! ctx "retry" [key]))
+    (is (= :repair (get-in @(:state ctx) [:tasks key :status])))
+    (is (= "preserved-author" (get-in @(:state ctx) [:tasks key :implementation-job])))
+    (is (= original-error (get-in @(:state ctx) [:tasks key :error])))
+    (is (= :implementing (get-in @(:state ctx) [:tasks key :handover-history 0 :status])))
+    (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))
 
 (deftest own-unresolved-main-effect-stops-before-provider-setup
   (doseq [command [:setup :campaign :simplify-setup]]
