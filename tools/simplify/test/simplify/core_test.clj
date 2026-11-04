@@ -1,7 +1,7 @@
 (ns simplify.core-test
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is testing use-fixtures]]
             [simplify.codex :as codex]
             [simplify.github :as gh]
             [simplify.main :as main]
@@ -11,6 +11,17 @@
   (:import [java.nio.file Files]))
 
 (defn temp-dir [] (str (Files/createTempDirectory "uniform-simplify-test-" (make-array java.nio.file.attribute.FileAttribute 0))))
+(defn no-github-network [f]
+  (let [command rt/command]
+    (with-redefs [rt/command (fn
+                              ([ctx cwd argv]
+                               (when (= "gh" (first argv)) (throw (AssertionError. (str "Unmocked GitHub command: " argv))))
+                               (command ctx cwd argv))
+                              ([ctx cwd argv input]
+                               (when (= "gh" (first argv)) (throw (AssertionError. (str "Unmocked GitHub command: " argv))))
+                               (command ctx cwd argv input)))]
+      (f))))
+(use-fixtures :each no-github-network)
 (defn context []
   (let [dir (temp-dir)
         config {:repo-dir dir :state-dir dir}]
@@ -89,6 +100,48 @@
                                                                  {:nodes [] :pageInfo {:hasNextPage true :endCursor "same"}}}}})]
       (is (thrown-with-msg? Exception #"cursor did not advance" (gh/review-threads-clear? ctx 3))))))
 
+(deftest required-workflow-completion-is-not-inferred-from-a-partial-rollup
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")
+        run {:id 1 :workflow_id 10 :event "pull_request" :head_sha "candidate"
+             :path ".github/workflows/ci.yml" :status "completed" :conclusion "success"}
+        harness (assoc run :id 2 :workflow_id 11 :path ".github/workflows/simplify-harness.yml")]
+    (doseq [[runs expected] [[[harness] :pending]
+                            [[harness (assoc run :status "queued" :conclusion nil)] :pending]
+                            [[harness (assoc run :conclusion "failure")] :failed]
+                            [[harness (assoc run :conclusion "skipped")] :failed]
+                            [[harness (assoc run :head_sha "old")] :pending]
+                            [[harness (assoc run :conclusion "cancelled") (assoc run :id 3)] :passed]]]
+      (with-redefs [gh/api (fn [& _] {:total_count (count runs) :workflow_runs runs})]
+        (is (= expected (:state (gh/head-workflow-state ctx "candidate"))))))
+    (let [seen (atom [])]
+      (with-redefs [gh/api (fn [_ endpoint]
+                            (swap! seen conj endpoint)
+                            {:total_count 2 :workflow_runs [(if (str/ends-with? endpoint "page=1") harness run)]})]
+        (is (= :passed (:state (gh/head-workflow-state ctx "candidate"))))
+        (is (= 2 (count @seen)))))
+    (with-redefs [gh/api (fn [& _] {:total_count 2 :workflow_runs []})]
+      (is (thrown-with-msg? Exception #"pagination did not advance" (gh/head-workflow-state ctx "candidate"))))))
+
+(deftest existing-project-membership-is-read-before-add-without-replaying-uncertain-effects
+  (let [ctx (context) seen (atom [])]
+    (rt/update! ctx assoc :project {:id "project"})
+    (with-redefs [gh/graphql (fn [_ query variables]
+                              (is (str/starts-with? query "query"))
+                              (swap! seen conj (:after variables))
+                              {:node {:items {:nodes (if (:after variables) [{:id "existing-item" :content {:id "issue"}}] [])
+                                              :pageInfo {:hasNextPage (nil? (:after variables)) :endCursor "next"}}}})]
+      (is (= "existing-item" (gh/item! ctx {:node_id "issue"})))
+      (is (= [nil "next"] @seen))
+      (is (= "existing-item" (gh/item! ctx {:node_id "issue"})))
+      (is (= [nil "next"] @seen)))
+    (rt/update! ctx assoc-in [:effects "project-item/project/unknown"] {:status :uncertain :message "Retain original ambiguity"})
+    (with-redefs [gh/graphql (fn [& _] (throw (AssertionError. "Uncertain effect must stop before even the membership read")))]
+      (is (thrown-with-msg? Exception #"needs reconciliation" (gh/item! ctx {:node_id "unknown"}))))
+    (with-redefs [gh/graphql (fn [& _] {})]
+      (is (thrown-with-msg? Exception #"evidence is unavailable" (gh/existing-item ctx "project" "missing"))))
+    (with-redefs [gh/graphql (fn [& _] {:node {:items {:nodes [] :pageInfo {:hasNextPage true :endCursor "same"}}}})]
+      (is (thrown-with-msg? Exception #"cursor did not advance" (gh/existing-item ctx "project" "missing"))))))
+
 (deftest retained-uncertain-effects-do-not-trigger-attention-writes
   (let [ctx (context) calls (atom 0)]
     (doseq [status [:pending :uncertain :restricted]]
@@ -101,6 +154,47 @@
       (is (= :attention (:status (flow/task ctx "finding"))))
       (is (= :finalizing (:resume-status (flow/task ctx "finding")))))
     (is (zero? @calls))))
+
+(deftest legacy-applied-receipts-remain-valid
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:effects "issue"] {:status :uncertain :message "Original response lost"})
+    (rt/write-edn! receipt {:result {:id 7} :evidence "Inspected exact remote issue"})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= {:id 7} (rt/effect! ctx "issue" (fn [] (throw (ex-info "Must not replay" {}))))))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :status])))))
+
+(deftest confirmed-unapplied-mutations-can-be-repaired-with-original-history-retained
+  (let [ctx (context) calls (atom 0) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (is (thrown? Exception (rt/effect! ctx "issue" #(do (swap! calls inc) (throw (ex-info "HTTP 422: body rejected" {}))))))
+    (is (thrown? Exception (rt/effect! ctx "issue" #(swap! calls inc))))
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected HTTP 422 validation response and repository issue markers; no issue was created."})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :status])))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(do (swap! calls inc) {:id 7}))))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(swap! calls inc))))
+    (is (= 2 @calls))
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :previous :status])))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :previous :status])))))
+
+(deftest unapplied-reconciliation-cannot-reclassify-a-restriction-or-an-existing-result
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc :effects {"restricted" {:status :restricted} "unknown" {:status :uncertain}})
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected"})
+    (is (thrown? Exception (main/reconcile! ctx "restricted" receipt)))
+    (is (thrown? Exception (rt/effect! ctx "restricted" (fn [] :must-not-run))))
+    (rt/write-edn! receipt {:outcome :not-applied :result {:id 1} :evidence "An issue exists"})
+    (is (thrown? Exception (main/reconcile! ctx "unknown" receipt)))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "unknown" :status])))))
+
+(deftest confirmed-unapplied-tracking-write-does-not-block-a-new-observed-transition
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn")) calls (atom 0)]
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" (fn [] (throw (ex-info "Connection closed" {}))))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+    (let [id (get-in @(:state ctx) [:tracking-intents "status"])]
+      (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected remote field and operation response; transition did not apply."})
+      (main/reconcile! ctx id receipt)
+      (is (= 1 (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+      (is (= :not-applied (get-in @(:state ctx) [:effects id :status]))))))
 
 (deftest redacts-known-secrets
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}
@@ -250,8 +344,11 @@
     (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
     (with-redefs [gh/graphql (fn [_ query _]
                               (swap! calls conj query)
-                              (if (str/includes? query "addProjectV2ItemById")
+                              (cond
+                                (str/includes? query "items(first") {:node {:items {:nodes [] :pageInfo {:hasNextPage false}}}}
+                                (str/includes? query "addProjectV2ItemById")
                                 {:addProjectV2ItemById {:item {:id "item"}}}
+                                :else
                                 {:updateProjectV2ItemFieldValue {:projectV2Item {:id "item"}}}))]
       (gh/status! ctx issue "Ready")
       (gh/status! ctx issue "Ready"))
@@ -265,13 +362,16 @@
     (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
     (with-redefs [gh/graphql (fn [_ query _]
                               (swap! calls inc)
-                              (if (str/includes? query "addProjectV2ItemById")
+                              (cond
+                                (str/includes? query "items(first") {:node {:items {:nodes [] :pageInfo {:hasNextPage false}}}}
+                                (str/includes? query "addProjectV2ItemById")
                                 {:addProjectV2ItemById {:item {:id "item"}}}
+                                :else
                                 (throw (ex-info "Forbidden" {:restricted true}))))]
       (try (gh/status! ctx issue "Ready")
            (catch Exception e (flow/attention! ctx "blocked" e)))
       (is (thrown? Exception (gh/status! ctx issue "Ready")))
-      (is (= 2 @calls))
+      (is (= 3 @calls))
       (is (some #(= :restricted (:status %)) (vals (:effects @(:state ctx)))))
       (with-redefs [rt/with-lock (fn [_ f] (f))]
         (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"])))))))

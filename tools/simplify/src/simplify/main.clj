@@ -15,10 +15,12 @@
    :check-executables #{"clojure"}
    :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]})
 
-(defn config! [path]
+(defn config!
+  ([path] (config! path defaults))
+  ([path configuration-defaults]
   (let [file (io/file (rt/canonical path))
         parent (.getParentFile file)
-        raw (merge defaults (rt/read-edn file))
+        raw (merge configuration-defaults (rt/read-edn file))
         config (reduce (fn [m key]
                          (let [value (io/file (get m key))]
                            (assoc m key (rt/canonical (if (.isAbsolute value) value (io/file parent (str value)))))))
@@ -30,7 +32,7 @@
       (rt/fail! "Invalid harness configuration" {}))
     (when (workflow/covers? (:repo-dir config) (:worktree-root config))
       (rt/fail! "Worker worktrees must be outside the source checkout" {}))
-    config))
+    config)))
 
 (defn read-state! [config path]
   (let [state (if (.exists (io/file path)) (rt/read-edn path)
@@ -47,24 +49,25 @@
         path (str (io/file directory "state.edn"))
         ctx {:config config :state-dir (str directory) :state-file path :control-file (str (io/file directory "control.edn"))
              :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{})
+             :coordinator-owner (atom false) :read-state #(read-state! config path)
              :state (atom (read-state! config path))}]
     (merge ctx (rt/coordination (rt/common-git-directory (:repo-dir config)) config))))
 
 (defn with-current-state [ctx f]
   (rt/with-lock ctx
-                #(do (reset! (:state ctx) (read-state! (:config ctx) (:state-file ctx)))
+                #(do (when-not (:read-state ctx) (reset! (:state ctx) (read-state! (:config ctx) (:state-file ctx))))
                      (when (:coordination-file ctx) (rt/import-state-coordination! ctx))
                      (f))))
+
+(defn shutdown! [ctx]
+  ;; Compatibility entry point for Advance; never enumerate descendants or save a snapshot.
+  (doseq [process @(:processes ctx)] (.destroy ^Process process))
+  (rt/event! ctx :controller-shutdown {:descendant-coverage :unknown :inspection-required true}))
 
 (defn controller! [ctx f]
   (with-current-state
     ctx
-    #(let [hook (Thread. ^Runnable
-                         (fn []
-                           ;; Stop only known owned roots. Descendant coverage is not inferred.
-                           (doseq [process @(:processes ctx)] (.destroy ^Process process))
-                           (rt/event! ctx :controller-shutdown
-                                      {:descendant-coverage :unknown :inspection-required true})))]
+    #(let [hook (Thread. ^Runnable (fn [] (shutdown! ctx)))]
        (.addShutdownHook (Runtime/getRuntime) hook)
        (try (f)
             (catch Exception e
@@ -86,19 +89,26 @@
 (defn reconcile! [ctx effect-id result-file]
   (let [effect (get-in @(:state ctx) [:effects effect-id])
         result (rt/read-edn result-file)
-        inspection (when (str/starts-with? effect-id "merge/")
+        main? (str/starts-with? effect-id "merge/")
+        unapplied? (= :not-applied (:outcome result))
+        inspection (when main?
                      (:inspection (rt/main-merge-state ctx effect-id)))
         inspection-digest (when (= :not-applied (get-in inspection [:inspection :outcome]))
                             (rt/digest (pr-str inspection)))]
     (when-not (and (or (#{:pending :uncertain} (:status effect))
-                      (and (= :done (:status effect)) inspection-digest
+                      (and (#{:done :not-applied} (:status effect)) inspection-digest
                            (not= inspection-digest (:main-inspection-digest effect)))
                       (and (nil? effect) (some #{effect-id} (vals (:tracking-intents @(:state ctx))))))
                    (string? (:evidence result))
-                   (not (str/blank? (:evidence result))) (contains? result :result))
+                   (not (str/blank? (:evidence result))) (contains? result :result)
+                   (contains? #{nil :applied :not-applied} (:outcome result))
+                   (or (not= :not-applied (:outcome result)) (nil? (:result result))))
       (rt/fail! "Reconciliation needs an uncertain effect and inspected external result with evidence" {}))
+    (when (and main? unapplied? (nil? inspection-digest))
+      (rt/fail! "Main not-applied recovery requires the accepted shared inspection first" {:effect effect-id}))
     (rt/update! ctx assoc-in [:effects effect-id]
-                (cond-> {:status :done :result (:result result) :reconciliation (:evidence result) :prior effect}
+                (cond-> {:status (if (and unapplied? (not main?)) :not-applied :done)
+                         :result (:result result) :reconciliation (:evidence result) :prior effect :previous effect}
                   inspection-digest (assoc :main-inspection-digest inspection-digest)))
     (rt/event! ctx :effect-reconciled {:effect effect-id :evidence (:evidence result)})))
 
@@ -155,7 +165,7 @@
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Provide a command and a configuration path; see README.md" {}))
-    (let [ctx (context! (config! config-path))]
+    (let [ctx (assoc (context! (config! config-path)) :command command)]
       (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
       (try (dispatch! ctx command args)
            (catch Exception e

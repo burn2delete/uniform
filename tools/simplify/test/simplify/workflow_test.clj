@@ -3,7 +3,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
@@ -11,9 +11,15 @@
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]))
 
+(use-fixtures :each fixture/no-github-network)
+
 (def finding {:key "remove-duplicate" :title "Remove duplicate work" :evidence "The same constant is repeated"
               :proposal "Keep the required value once" :preserve "Value remains one"
               :paths ["work.edn"] :dependencies [] :kind "duplication"})
+
+(defn evidenced [t]
+  (assoc t :review (assoc (select-keys t [:base :candidate :tree]) :verdict "approved")
+           :checks {:candidate (:candidate t) :tree (:tree t) :result :passed}))
 
 (defn repository! [ctx]
   (let [root (:state-dir ctx) bare (str (io/file root "remote.git")) repo (str (io/file root "repo"))]
@@ -76,6 +82,7 @@
                     ([c cwd argv input] (original-command c cwd argv input)))
        gh/setup! (fn [_] nil)
        gh/review-threads-clear? (fn [& _] (not (and @preflight-done? (:unresolved-thread options))))
+       gh/head-workflow-state (fn [& _] {:state (if (and @preflight-done? (:queued-workflow options)) :pending :passed) :runs []})
        gh/status! (fn [_ _ status]
                     (when (= "Done" status)
                       (swap! tracking-locks conj (rt/try-with-main-lock other-controller (fn [] :available)))))
@@ -155,12 +162,13 @@
   (doseq [changes [{:headRefOid "other"} {:baseRefName "other"}
                    {:statusCheckRollup [{:state "FAILURE"}]} {:reviewDecision "CHANGES_REQUESTED"}
                    {:mergeable "CONFLICTING"} {:mergeStateStatus "BLOCKED"}
-                   :unresolved-thread]]
+                   :unresolved-thread :queued-workflow]]
     (let [{:keys [state merges merge-requests]}
           (run-fixture! {:verdict "approved" :summary "Exact fixture acceptance" :findings []}
                         {:pause-after-preflight true
                          :preflight-mutation (fn [pr] (when (map? changes) (swap! pr merge changes)))
-                         :unresolved-thread (= :unresolved-thread changes)})]
+                         :unresolved-thread (= :unresolved-thread changes)
+                         :queued-workflow (= :queued-workflow changes)})]
       (is (= :paused (:status state)))
       (is (zero? merges))
       (is (zero? merge-requests)))))
@@ -196,6 +204,7 @@
                                          :statusCheckRollup [{:state "SUCCESS"}]})
                   flow/fresh-main! (fn [_] "base")
                   gh/review-threads-clear? (fn [& _] true)
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs []})
                   gh/api (fn [& _] {:required_status_checks {:strict true}})]
       (is (thrown-with-msg? Exception #"does not match" (flow/integrate! ctx t))))))
 
@@ -231,10 +240,11 @@
         {:keys [repo]} (repository! ctx)
         commit (rt/git ctx repo "rev-parse" "HEAD")
         ctx (assoc ctx :config {:repo-dir repo :base-branch "main"})]
-    (with-redefs [flow/fresh-main! (fn [_] commit)]
+    (with-redefs [flow/fresh-main! (fn [_] commit)
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs []})]
       ;; No parent on this initial commit also rejects an unverifiable merge.
-      (is (thrown? Exception (flow/finish-merge! ctx {:key "bad" :worktree repo :base "unexpected" :tree "unexpected" :candidate commit}
-                                               {:state "MERGED" :baseRefName "main" :headRefOid commit :mergeCommit {:oid commit}}))))
+      (is (thrown? Exception (flow/finish-merge! ctx (evidenced {:key "bad" :worktree repo :base "unexpected" :tree "unexpected" :candidate commit})
+                                               {:state "MERGED" :baseRefName "main" :headRefOid commit :statusCheckRollup [{:state "SUCCESS"}] :mergeCommit {:oid commit}}))))
     (is (not= :done (get-in @(:state ctx) [:tasks "bad" :status])))))
 
 (deftest checks-and-reviews-reject-candidate-identity-drift
@@ -305,10 +315,11 @@
         tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
         second-parent (rt/git ctx repo "commit-tree" tree "-p" base "-m" "Second parent")
         merged (rt/git ctx repo "commit-tree" tree "-p" base "-p" second-parent "-m" "Not a squash")]
-    (with-redefs [flow/fresh-main! (fn [_] merged)]
+    (with-redefs [flow/fresh-main! (fn [_] merged)
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs []})]
       (is (thrown-with-msg? Exception #"differs from reviewed composition"
-                            (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree :candidate second-parent}
-                                                {:state "MERGED" :baseRefName "main" :headRefOid second-parent :mergeCommit {:oid merged}}))))
+                            (flow/finish-merge! ctx (evidenced {:key "bad" :worktree repo :base base :tree tree :candidate second-parent})
+                                                {:state "MERGED" :baseRefName "main" :headRefOid second-parent :statusCheckRollup [{:state "SUCCESS"}] :mergeCommit {:oid merged}}))))
     (is (not= :done (:status (flow/task ctx "bad"))))))
 
 (deftest changed-pr-base-or-head-cannot-enter-merge-verification
@@ -326,6 +337,7 @@
       (let [reads (atom 0)]
         (with-redefs [flow/pr-info (fn [& _] (if (= 1 (swap! reads inc)) valid changed))
                       flow/fresh-main! (fn [_] "base")
+                      gh/head-workflow-state (fn [& _] {:state :passed :runs []})
                       rt/run! (fn [& _] (swap! calls conj :mutation))]
           (flow/integrate! ctx t)
           (is (= 2 @reads)))))
