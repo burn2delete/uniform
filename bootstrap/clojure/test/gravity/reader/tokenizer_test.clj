@@ -16,6 +16,16 @@
 (defn- rejection [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo ex ex)))
 
+(deftest refusal-owner-is-captured-before-span-callback
+  (let [table (b/stage1-reader-table)]
+    (with-redefs [b/stage1-reader-fail! (fn [& _] (throw (ex-info "original owner" {:selected :original})))
+                  b/stage1-reader-span
+                  (fn [& _]
+                    (alter-var-root #'b/stage1-reader-fail!
+                                    (constantly (fn [& _] (throw (ex-info "later owner" {:selected :later})))))
+                    {:source "owner.qst"})]
+      (is (= :original (:selected (ex-data (rejection #(tokenize "owner.qst" "\"unterminated" table {})))))))))
+
 (deftest tokenizer-contract-is-explicit-and-unauthenticated
   (let [contract (:gravity/namespace-contract (meta #'reader/tokenize-compatibility-source))
         api (get-in contract [:public-api 'tokenize-compatibility-source])]

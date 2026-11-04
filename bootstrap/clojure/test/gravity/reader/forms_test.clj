@@ -20,6 +20,18 @@
 (defn- rejection [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo ex ex)))
 
+(deftest refusal-owner-is-captured-before-tagged-cause-message
+  (let [path "owner.qst" text "#uuid \"invalid\"" table (b/stage1-reader-table)
+        tokens (tokenize path text table false)
+        cause (proxy [Exception] []
+                (getMessage []
+                  (alter-var-root #'b/stage1-reader-fail!
+                                  (constantly (fn [& _] (throw (ex-info "later owner" {:selected :later})))))
+                  "tagged cause"))]
+    (with-redefs [edn/read-string (fn [& _] (throw cause))
+                  b/stage1-reader-fail! (fn [& _] (throw (ex-info "original owner" {:selected :original})))]
+      (is (= :original (:selected (ex-data (rejection #(parse path text table tokens)))))))))
+
 (deftest form-builder-contract-declares-ports-and-no-authentication
   (let [contract (:gravity/namespace-contract (meta #'reader/build-compatibility-forms))
         api (get-in contract [:public-api 'build-compatibility-forms])]
