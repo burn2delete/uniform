@@ -41,10 +41,7 @@
 ;; A literal-byte transport provider for the existing release file-hash caller.
 ;; Byte conversion stays outside the Uniform byte kernel; no text is decoded.
 (defn- uniform-bytes-sha256 [bytes]
-  (let [result (hash-octets [(mapv #(bit-and 255 %) bytes)])]
-    (if (= :accepted (:status result))
-      (:value result)
-      (throw (ex-info "Uniform SHA-256 rejected release bytes" result)))))
+  (release/uniform-bytes-sha256 hash-octets bytes))
 
 (defn- expected-padding [values]
   (let [size (count values)

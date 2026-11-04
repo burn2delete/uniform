@@ -26,7 +26,7 @@
   (let [contract (:gravity/namespace-contract (meta #'release/jar-inventory-report))]
     (is (= :native-jar-inventory-reports (:contract-boundary contract)))
     (is (= [:observed-file-bytes-and-digests] (:additional-contract-boundaries contract)))
-    (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 file-sha256}
+    (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 uniform-bytes-sha256 file-sha256}
            (set (keys (:public-api contract)))))
     (is (false? (:authenticates-inputs? contract)))
     (is (true? (:performs-io? contract)))
@@ -205,6 +205,45 @@
   (doseq [[name operation] (ns-publics 'gravity.release)]
     (let [contract (:gravity/namespace-contract (meta operation))]
       (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name))))
+
+(deftest uniform-digest-transport-preserves-octets-and-executor-failures
+  (let [expected (apply str (repeat 64 "a"))
+        calls (atom [])
+        execute (fn [arguments]
+                  (swap! calls conj arguments)
+                  {:status :accepted :value expected})
+        sentinel (ex-info "original source execution failure" {:test :identity})]
+    (with-redefs [release/bytes-sha256
+                  (fn [_] (throw (AssertionError. "legacy digest must not run")))]
+      (is (= expected (release/uniform-bytes-sha256
+                       execute (byte-array (map unchecked-byte [0 127 128 255])))))
+      (is (= expected (release/uniform-bytes-sha256 execute (byte-array 0))))
+      (is (= [[[0 127 128 255]] [[]]] @calls))
+      (is (identical? sentinel
+                      (rejection #(release/uniform-bytes-sha256
+                                   (fn [_] (throw sentinel)) (byte-array 0))))))))
+
+(deftest uniform-digest-transport-rejects-wrong-input-and-malformed-output
+  (let [calls (atom 0)
+        opaque (proxy [Object] []
+                 (toString [] (throw (AssertionError. "opaque input rendered"))))]
+    (doseq [value [nil "abc" [0 1] '(0 1) (int-array [0 1]) opaque]]
+      (is (= {:rule "SH20SHA001" :reason :expected-byte-array}
+             (ex-data (rejection #(release/uniform-bytes-sha256
+                                   (fn [_] (swap! calls inc)) value))))))
+    (is (zero? @calls))
+    (doseq [result [nil opaque "stdout digest" {}
+                    {:status :rejected :diagnostics []}
+                    {:status :accepted :value nil}
+                    {:status :accepted :value (apply str (repeat 64 "A"))}
+                    {:status :accepted :value (apply str (repeat 63 "a"))}
+                    {:status :accepted :value (apply str (repeat 65 "a"))}
+                    {:status :accepted :value (apply str (repeat 64 "a")) :extra true}]]
+      (with-redefs [release/bytes-sha256
+                    (fn [_] (throw (AssertionError. "legacy digest must not run")))]
+        (is (= {:rule "SH20SHA001" :reason :invalid-kernel-output}
+               (ex-data (rejection #(release/uniform-bytes-sha256
+                                     (fn [_] result) (byte-array 0))))))))))
 
 (deftest file-digest-preserves-operation-root-lookup-and-failure
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
