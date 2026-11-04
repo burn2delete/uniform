@@ -162,12 +162,21 @@
   (validate-source-plan! (get-in plan [:source :path]) plan)
   (fn [node-id form syntax module data]
     (let [effects (context/invoke-op :form-effect context/form-effect
-                                     (:form syntax))]
-      (runtime-execute-function
-       {:engine :gravity-c6-core-lowering-source-canonical-node
-        :compiler-artifact-plan? true}
-       plan canonical-core-node-source-function
-       [node-id form syntax module data effects]))))
+                                     (:form syntax))
+          result (runtime-execute-function
+                  {:engine :gravity-c6-core-lowering-source-canonical-node
+                   :compiler-artifact-plan? true}
+                  plan canonical-core-node-source-function
+                  [node-id form syntax module data effects])]
+      ;; The hosted constructor's source record is an ordered three-entry map.
+      ;; Preserve that existing representation after the Stage2 result is
+      ;; reified, so content-addressed C6 artifacts retain hosted identity.
+      (if (map? (:source result))
+        (assoc result :source
+               (array-map :syntax-id (get-in result [:source :syntax-id])
+                          :span (get-in result [:source :span])
+                          :origin-chain (get-in result [:source :origin-chain])))
+        result))))
 
 (defn source-operations
   "Return the explicit operation override for hosted C6 lowering."
