@@ -260,6 +260,15 @@
     (rt/import-state-coordination! a)
     (is (empty? (:main-effects (shared-state a))))
     (is (thrown? Exception (rt/import-state-coordination! b)))
+    ;; Retained history still authorizes the original owner when an old
+    ;; checkpoint has no import marker. It cannot authorize a different file
+    ;; or resurrect a transaction already disposed in the shared journal.
+    (rt/coordinate! a (fn [state] [(assoc state :imports {}) nil]))
+    (let [history-only (shared-state a)]
+      (is (thrown? Exception (rt/import-state-coordination! b)))
+      (is (= history-only (shared-state a)))
+      (rt/import-state-coordination! a)
+      (is (= history-only (shared-state a))))
     (rt/try-with-main-lock a #(do (rt/begin-main-merge! a intent) (rt/complete-main-merge! a intent actual)))
     (is (empty? (:main-effects (shared-state a))))))
 
