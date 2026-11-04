@@ -13294,6 +13294,13 @@
 
 
 (deftest complete-backend-core-source-preserves-historical-C-and-LLVM-proof-boundaries
+ (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:backend-core-dependency-refinement :predecessor-readiness-successor])
+       checkpoint-bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint))) sh-crosswalk/readiness-source-version)
+       checkpoint-view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint))) (sh-crosswalk/build))
+       read-text (if checkpoint (memoize (fn [p] (sh-crosswalk/git-source (:commit checkpoint) p))) slurp)
+       slurp read-text]
+  (with-redefs [sh-crosswalk/readiness-source-version checkpoint-bridge
+                sh-crosswalk/build (constantly checkpoint-view)]
  (let [bridge sh-crosswalk/readiness-source-version r (:backend-core-refinement bridge)
        previous (:predecessor-readiness-successor r) old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
        projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
@@ -13379,7 +13386,74 @@
   (is (= {:routes 158 :current-parent-consumers 118 :future-declarations 40 :selected-result-joins 2967 :task-feedback-members 139 :meaning :unchanged-existing-stages-no-new-complete-B1-B3-dependency-acceptance :further-refinement :pending} (:dependency-review r)))
   (is (= (slurp "docs/acceptance-dependencies.md") (sh-crosswalk/git-source (:commit previous) "docs/acceptance-dependencies.md")))
   (is (= (:backend-core-refinement (:implementation-readiness-source-version view)) r))
-  (is (= :pending (:independent-current-review r))) (is (= :unassessed (:global-source-conjunctions r) (:implementation-acceptance r)))))
+  (is (= :pending (:independent-current-review r))) (is (= :unassessed (:global-source-conjunctions r) (:implementation-acceptance r))))
+  )))
+
+
+(deftest backend-core-dependencies-preserve-selected-family-and-evidence-stages
+ (let [bridge sh-crosswalk/readiness-source-version r (:backend-core-dependency-refinement bridge)
+       previous (:predecessor-readiness-successor r) old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
+       projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
+       view (sh-crosswalk/build) rows (fn [v] (into {} (for [rs (vals (:task-authorities v)) row rs] [(:id row) row]))) tasks (rows view) before (rows prior)
+       task-text (fn [v row] (acceptance-dependencies/source-raw (:source row) (:source-snapshots v)))
+       ids (set (concat (keys tasks) (map :id (mapcat val (:future-task-authorities view))))) dep (:dependency-source r) text (slurp (:path dep))
+       result (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) slurp (:required-parent-consumers r)) review (:dependency-review result) routes (:routes review)
+       old-routes (acceptance-dependencies/future-dependency-routes (sh-crosswalk/git-source (:commit previous) (:path dep)) ids ids)
+       current-map (into {} (map (juxt :consumer identity) routes)) old-map (into {} (map (juxt :consumer identity) old-routes)) consumers (set (:consumer-task-ids r))
+       meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
+       joins (fn [rs] (set (for [row rs p (concat (:start-results row) (:composition-results row))] [(:consumer row) p]))) old-joins (joins old-routes) current-joins (joins routes)
+       stages (:staged-result-subjects r) stage-map (into {} (map (fn [s] [[(:consumer s) (:producer s)] s]) stages))
+       source (:backend-core-refinement bridge) source-binding (:backend-core-source-binding r)
+       allowed [:input-fingerprint :backend-core-dependency-refinement :source-files :applying-source-pins :inspection-locators :additional-pinned-evidence-hashes]
+       span-text (fn [body span] (String. (.getBytes body "UTF-8") (int (:start-byte span)) (int (- (:end-byte span) (:start-byte span))) "UTF-8"))]
+  (is (= (:sha256 previous) (sh-inventory/sha256 old-text))) (is (= (:projection-sha256 previous) (sh-inventory/sha256 projection-text)))
+  (is (= (:input-fingerprint previous) (:input-fingerprint old))) (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
+  (is (= (:task-comparisons old) (:task-comparisons bridge))) (is (= [36 103] [(get-in bridge [:task-comparisons :unchanged-body-count]) (count (get-in bridge [:task-comparisons :changed-bodies]))]))
+  (is (= (:source-input-commit old) (:source-input-commit bridge))) (is (= source (:backend-core-refinement old)))
+  (is (= (:record-sha256 source-binding) (sh-inventory/sha256 (pr-str source))))
+  (is (= [20 4 1 1012 151 38 16 13 7 9878 40] (mapv source-binding [:criteria :tasks :authorities :facets :occurrences :sections :original-owners :new-criteria :restored-local-criteria :restored-local-bytes :future-declarations])))
+  (is (= [149 25 40] [(count tasks) (count (:task-authorities view)) (reduce + (map count (vals (:future-task-authorities view))))]))
+  (is (= (set (keys tasks)) (set (keys before))))
+  (doseq [[id row] before] (is (= (select-keys row [:id :checked :status]) (select-keys (tasks id) [:id :checked :status])) id) (is (= (task-text prior row) (task-text view (tasks id))) id))
+  (is (= (:future-task-authorities prior) (:future-task-authorities view))) (is (= [] (:new-task-identities r) (:new-consumer-task-ids r)))
+  (is (= [26 22 4 669 846 177 2967 3144 158 118 40 132 4 295 9 26]
+   [(count consumers) (count (:selected-current-parent-consumers r)) (count (:selected-future-consumers r)) (:preserved-prior-input-joins r) (:selected-consumer-result-joins r) (:added-input-joins r) (:predecessor-all-selected-result-joins r) (:all-selected-result-joins r) (count routes) (count (:required-parent-consumers r)) (count (:declared-future-consumers r)) (:preserved-consumer-route-count r) (count (:source-criterion-consumers r)) (count stages) (count (:plan-sources r)) (count (:consumer-staging-criteria r))]))
+  (is (= (set (:required-parent-consumers r)) acceptance-dependencies/selected-parent-consumers))
+  (is (= (set (keys current-map)) (set (keys old-map))))
+  (is (= 2967 (count old-joins))) (is (= 3144 (count current-joins))) (is (= 177 (count (clojure.set/difference current-joins old-joins))))
+  (is (clojure.set/subset? old-joins current-joins))
+  (doseq [[id row] old-map :let [now (current-map id)]]
+   (is (= (:start-results row) (:start-results now))) (is (clojure.set/subset? (set (:composition-results row)) (set (:composition-results now))))
+   (is (str/starts-with? (:selected-output-contract now) (:selected-output-contract row)))
+   (when-not (consumers id) (is (= (meaning row) (meaning now))) (is (= (get-in row [:source :declaration]) (get-in now [:source :declaration])))))
+  (is (clojure.set/subset? (set (:source-criterion-consumers r)) consumers))
+  (is (= #{"backend-interface" "backend-c" "backend-llvm" "backend-emission"} (set (:source-criterion-consumers r))))
+  (is (= (set (:selected-current-parent-consumers r)) (clojure.set/intersection consumers acceptance-dependencies/selected-parent-consumers)))
+  (is (= (set (:selected-future-consumers r)) (clojure.set/intersection consumers (set (:declared-future-consumers r)))))
+  (doseq [{:keys [consumer producer result role route-scope]} stages]
+   (is (contains? ids consumer)) (is (contains? ids producer)) (is (keyword? role))
+   (is (= (str "result:" consumer ":" producer) result)) (is (= :selected-B1-B3-proposal-inputs-not-all-old-route-edges route-scope))
+   (is (some #{producer} (:composition-results (current-map consumer)))))
+  (is (= (count stages) (count stage-map)))
+  (doseq [{:keys [consumer producer-task-ids source-witness current-entailment]} (:consumer-staging-criteria r)
+          :let [w source-witness raw (span-text text (:source-span w))]]
+   (is (= (:sha256 w) (sh-inventory/sha256 text))) (is (= text (sh-crosswalk/git-source (:source-commit w) (:path w))))
+   (is (= (get-in w [:source-span :sha256]) (sh-inventory/sha256 raw))) (is (str/includes? (:selected-output-contract (current-map consumer)) raw))
+   (is (= :author-proposal-pending-independent-review current-entailment))
+   (doseq [p producer-task-ids] (is (contains? stage-map [consumer p]))))
+  (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)] (is (= sha256 (sh-inventory/sha256 (slurp path)))) (is (= (slurp path) (sh-crosswalk/git-source source-commit path))))
+  (is (= 11 (count (:canonical-sources r))))
+  (doseq [record (concat [dep] (:plan-sources r) [(:unchanged-backend-task-source r) (:unchanged-dependency-tool-source r) (:unchanged-dependency-test-source r)]) :let [p (:path record) a (:after record) b (:before record)]]
+   (is (= (:sha256 b) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit b) p)))) (is (= (:sha256 a) (sh-inventory/sha256 (slurp p)))))
+  (doseq [record [(:unchanged-backend-task-source r) (:unchanged-dependency-tool-source r) (:unchanged-dependency-test-source r)]] (is (= (get-in record [:before :sha256]) (get-in record [:after :sha256]))))
+  (let [removed (str/replace text #"(?m)^\| `backend-c` \|[^\n]*\n" "")
+        missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) #(if (= % (:path dep)) removed (slurp %)) (:required-parent-consumers r))]
+   (is (some #{"backend-c"} (get-in missing [:dependency-review :unresolved-consumers])))
+   (is (= :unassessed (get-in missing [:dependency-review :implementation-acceptance]))))
+  (is (= (:predecessor-coarse-cycles r) (:coarse-producer-cycles r) (:declared-output-cycles review)))
+  (is (= [139] (mapv count (:declared-output-cycles review)))) (is (= [] (:new-cyclic-task-ids r) (:removed-cyclic-task-ids r) (:unresolved-consumers r)))
+  (is (= {:valid-unoptimized-input :retained :Core-only-domain-IR :not-required :universal-Gravity-Opt :not-required :universal-MLIR :not-required :universal-math-certificate :not-required :universal-runtime-service :not-required :C-before-LLVM :not-required :new-target-device-ISA-adoption :none :held-actions :remain-held} (:optional-paths r)))
+  (is (= :pending (:independent-current-review r))) (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

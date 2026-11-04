@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: B1-B3 backend interface, C and LLVM source
-proposals. The [current checkpoint](#complete-b1-b3-backend-source-continuation)
+Latest source continuation: B1-B3 source and selected-result dependency
+proposals. The [current checkpoint](#complete-b1-b3-selected-result-dependency-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6975,5 +6975,149 @@ remain. Full B4-B14 and AI source/task conjunctions, B1-B3 dependency refinement
 wider library/support sources, global owner/interface entailment, accounting
 cleanup, recorded source conflicts, product decisions and independent review
 remain. The exact first implementation increment is still
+`reader/finite-remaining-work/contract-coverage-reconciliation` in its
+[selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
+## Complete B1-B3 selected-result dependency continuation
+
+Source proposal: `a0726018855be7e6021c651a287c2b4695e123ba`.
+Predecessor: `41c0c56f6f905b347e5dc45427898b417157eb66`.
+The [B1-B3 producer and consumer order](../specs/backends-workflow/plan.md#b1-b3-producer-and-consumer-order)
+refines actual inputs for the existing interface, C, LLVM and common-emission
+owners and their affected producers/consumers. Reconciliation remains in
+progress. Current source/interface entailment, independent acceptance,
+implementation and integration remain unproven.
+
+The sole dependency table preserves all 2,967 previous input joins and adds
+177, for 3,144 total. Twenty-six existing routes are selected: 22 current parent
+consumers and four already-declared future compiler/profile/safety/Runtime suite
+consumers. Their composition inputs increase from 669 to 846; every old start
+and composition input and contract prefix remains. The other 132 route meanings
+and declaration bytes stay exact. All 158 routes, 118 current parent consumers,
+forty future declarations and 139 coarse feedback members remain; no route or
+cycle member is added or removed. These are graph conservation counts, not
+requirement coverage, progress percentages or proof of an executable global order.
+
+Nine existing plans record 295 selected staged input subjects. These describe
+the producer interfaces proposed in this continuation, not every legacy edge of
+the selected routes. Each consumer's new declaration has an exact source witness;
+its stage retains the actual task identities and sole dependency representation.
+All twenty B1-B3 source criteria, their four task owners, 1,012 facets, 151
+occurrences, 38 section conjunction proposals, sixteen original owner obligations
+and seven restored local predicates (9,878 bytes) remain exact. All 149 current
+task keys, 25 authorities, statuses, checkboxes, historical reviews and receipts
+remain. Original task bodies stay 36 identical and 103 explicitly amended;
+forty future task bodies and source bindings are unchanged.
+
+The material staging changes are:
+
+- Actual family version/kind/feature/ABI/layout/helper/no-runtime/proof/map and
+  refusal contracts precede initial B1/Lower/Runtime interface work. Actual
+  complete current verified selected IR and required owner facts precede
+  eligibility, target assumptions and claimed emission. Future final family
+  outputs cannot provide their own first support declarations.
+- C uses actual declared dialect/compiler/data-model/flag/ABI/helper rules,
+  independent types/ownership and concrete selected layout before real source,
+  headers, build/maps and required compiled fixtures. Freestanding C11 and
+  hosted C17 remain examples alongside a named compiler-extension profile.
+- LLVM uses actual selected triple/layout/CPU/features/ABI/helper/pass/verifier
+  contracts, then actual current operation-specific proof/check/safety/resource/
+  numeric/order facts. Its own post-emission/configured-LLVM-pass verification
+  and Gravity metadata preservation/repair are distinct from optional prior
+  Gravity Opt. C is not LLVM's universal prerequisite; the selected recipe
+  chooses the family, with the adopted Linux candidate unchanged.
+- Required assumptions and check erasure consume authentic current checked
+  evidence for the exact subject and condition. Proof must dominate use and
+  survive transformations/backend lowering. Later invalidation requires
+  restored checks, actual rechecking/regeneration or rejection. Policy/effect/
+  grant/audit/replay/human-review checks need equivalent policy discharge;
+  speed alone cannot remove them. Target metadata proves no source fact.
+- Imported certificates need genuine package-digest/compiler/profile/target/
+  provider/schema/caller-policy/trust compatibility and non-invalidated
+  verification before reliance. Independent MATH5 checking remains separate
+  from synthesis and preserves EFIR/domain/branch/exception/error/roundoff/target
+  conditions. Certificates are conditional on affected claims; real numeric
+  error bounds are semantic requirements, not removed project accounting.
+- Early actual B13 manifest/hash/source/proof/dependency/diagnostic schemas
+  precede writers. Later actual selected family/Lower/Emit bytes, current
+  evidence, validation and source-to-proof queries precede claimed manifests.
+  Genuine reproduction/conformance governs the claimed grade; explicit
+  development-only gaps stay non-release and cannot legalize rejected input.
+  Final conformance packs and signed packages are not first writer schemas.
+- Real fixture/oracle/availability/expected-diagnostic/ABI/helper interfaces
+  precede cases. Actual selected lowering, C compilation, LLVM verification,
+  differential/MIR or semantic comparisons, independent metadata faults and
+  required independent suite results enter their corresponding packs later.
+  Actual availability records explain target skips while required shared
+  checks still run. Final Release/self-hosting is no first-fixture gate.
+
+Valid verified raw/unoptimized MIR, Core-only paths, optional MLIR/Gravity Opt
+and conditional math/runtime services remain. Selected domain IR still needs
+its actual verified anchor/schema/exit products and retains C12 restrictions.
+Actual requested family compilation/execution remains required where claimed;
+unavailability cannot become a pass. Coarse feedback authorizes no unmarked
+namespace/build cycle; PKG2 acyclicity and explicitly governed bootstrap fixed
+points remain separate. The existing D1/C1/C5/C6 ordering and L6/L12 hermetic
+wording issues retain their owners and unresolved status.
+
+Validation of the exact source and metadata proposal:
+
+- Three focused crosswalk tests pass with 13,305 assertions, zero failures and
+  zero errors under a 512 MB host heap: current B1-B3 selected dependencies,
+  the entire frozen preceding B1-B3 source subject and current global
+  conservation. The missing-C-route negative control remains explicitly
+  unresolved and implementation-unassessed. Full current 89-test crosswalk
+  execution is unrun; the earlier complete 68-test / 44,978-assertion run remains
+  bound only to `25a96a0c03536270001449c00676e644ea353521`.
+- Twenty-three dependency tests pass with 8,089 assertions, zero failures and
+  zero errors. Both current projection checks and all applying local Git source
+  pins pass. The pending fingerprint is
+  `50a5df15306f59c89488cef27f78a9a15151692b2626d40b957fc72865986390`.
+- Canonical document validation passes for 240 documents and nineteen phase
+  indexes. Full-language roadmap structural validation passes; dated counts are
+  not current implementation execution or acceptance evidence.
+- The final language-boundary gate passes six tests and eleven assertions.
+- Strict whole-file authority/receipt conservation, historical suffixes, local
+  links/anchors, ASCII and whitespace pass. The new report reaches 4,255 local
+  references across 91 changed files and 85 Markdown files, with all 139 original
+  task routes, 48 historical spec/plan suffixes and 48 original task/evidence
+  contents conserved after declared additions are removed.
+- The initial focused command failed before test assertions because the new
+  test used an undefined `set` namespace alias. Its six calls now use the
+  existing fully qualified `clojure.set` style; source declarations and historical
+  assertions are unchanged. That command receives no passing credit. The source
+  byte audit and focused run above followed the correction.
+- These are planning and traceability checks, establishing no backend, compiler,
+  proof, target, runtime, conformance, release or self-hosting implementation.
+  Preserved local census and restored-predicate source objects do not establish
+  aggregate remote availability or fresh-clone reproducibility.
+
+The source-version root changes only four applying-pin fields, its pending
+fingerprint and `:backend-core-dependency-refinement`. The primary B1-B3 source
+input commit, complete source record and task comparisons remain exact. The
+prior source test is frozen to the complete 41c checkpoint, projection and source
+readers; its whole original assertion-body bytes remain exact. Every other prior
+test byte, current census assertion, dependency tool and dependency test remains
+unchanged. The projection tool adds one derived source-view key. A reverse byte
+audit accounts for the complete test/tool delta.
+
+Preparation history is retained without passing credit: an initial temporary
+assertion treated four existing future suite consumers as current parents; it
+was corrected to check both existing declared populations. A missing Emit writer
+role was caught before plan preparation completed. Temporary apply/test delimiter
+errors were caught by parsing before repository writes. Corrections changed no
+canonical semantics, task identity/status, existing assertion or dependency-tool
+population. No failed preparation is counted as validation or acceptance.
+
+No backend/compiler/proof engine/provider/Runtime/native/device/replay/migration/
+signing/publication execution occurs in these checks. No historical review is
+renewed or consumed; no other chat is messaged, reviewer or automation woken,
+aggregate published, stopped C7 handoff retried/transferred, or integration
+performed. All actual restrictions, accounting removal and independently
+meaningful representation/type/Unicode/index/arity/authority/provenance/platform/
+external-account conditions remain. Source links and stage records establish no
+whole B4-B14/AI, supporting-source or global owner/interface entailment. Wider
+library/support sources, accounting cleanup, product decisions and required
+independent review remain open. The first actual implementation increment stays
 `reader/finite-remaining-work/contract-coverage-reconciliation` in its
 [selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
