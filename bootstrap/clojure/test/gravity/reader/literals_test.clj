@@ -148,3 +148,22 @@
   (is (= '([source-path kind raw span token-id]) (:arglists (meta #'b/stage1-reader-decode-atom))))
   (is (= '([source-path raw span token-id]) (:arglists (meta #'b/stage1-reader-decode-string))))
   (is (= '([source-path raw span token-id]) (:arglists (meta #'b/stage1-reader-decode-character)))))
+
+(deftest refusal-owner-is-captured-before-cause-message-evaluation
+  (doseq [decode [reader/decode-compatibility-string reader/decode-compatibility-character]]
+    (let [cause (proxy [Exception] []
+                  (getMessage []
+                    (alter-var-root #'b/stage1-reader-fail!
+                                    (constantly (fn [& _] (throw (ex-info "later owner" {:selected :later})))))
+                    "cause"))]
+      (with-redefs [clojure.core/read-string (fn [& _] (throw cause))
+                    b/stage1-reader-fail! (fn [& _] (throw (ex-info "original owner" {:selected :original})))]
+        (is (= :original (:selected (ex-data (rejection #(decode #'clojure.core/read-string #'b/stage1-reader-fail!
+                                                                  "owner.qst" "raw" {} :tok-0)))))))))
+  (let [cause (proxy [NumberFormatException] []
+                (getMessage []
+                  (alter-var-root #'b/stage1-reader-malformed-numeric! (constantly (fn [& _] :later)))
+                  "numeric cause"))]
+    (with-redefs [str/starts-with? (fn [& _] (throw cause))
+                  b/stage1-reader-malformed-numeric! (fn [& _] :original)]
+      (is (= :original (atom-value "owner.qst" :integer "42"))))))

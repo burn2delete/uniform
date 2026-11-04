@@ -132,3 +132,43 @@ weakened, no foreign output was removed, and no CI file was edited.
 Independent semantic review accepts the exact six-path source with gates:
 no material source defect, with independent adversarial review, full wired CI,
 fresh integration preflight and coordinator integration still outstanding.
+
+## Owner invocation timing correction
+
+The original global Clojure call captures its current function root before
+evaluating arguments. Invoking a supplied Var directly instead resolves the
+root after arguments have run. A span callback or an exception's getMessage
+can change the failure owner during argument evaluation. Earlier conservation
+modulo port substitution did not establish this ordering property; prior
+source acceptance does not waive the newly demonstrated failure.
+
+On composed source5876f03f930378c7e3741c69efc6f4351134cc42, three new
+regressions fail all five assertions: string/character/numeric cause-message
+evaluation, tokenizer failure-span construction, and tagged-form error-message
+construction select the later owner instead of the original captured owner.
+The failing receipt is retained. Correct all sixty-three affected owner call
+sites in hosted tokenization, form construction and literal decoding by
+dereferencing the supplied Var in operator position at each call. This is not
+an entry snapshot: later calls still see later owner roots. The previous seven
+Reader APIs already used that original operator ordering and remain unchanged.
+
+No callback restriction, type guard, default, source discovery, public API,
+identity preimage, grammar rule, diagnostic mapping, source pin or manifest
+change is introduced. This correction includes the affected predecessor
+tokenizer/form bodies because their preservation invariant must hold before
+integrating their shared ancestry. Full exact regression, native comparisons,
+independent review and new source/base-bound CI remain required; earlier
+passing tests/CI do not clear this finding.
+The same three new regressions now pass all five assertions after the
+operator-position correction; broader repair verification is still pending.
+
+The original PR915 CI owner has since normally released its seven-path claim.
+Its actual absence was observed before this workstream obtained a fresh own
+one-file claim. Commit8d28222de7027a4d94ceb83482167570024c2222 adds the
+literal namespace to the existing Reader CI command. That own one-file claim
+was normally released after authoring/checking ended; no foreign lease/token
+was adopted or released. The repair has a fresh five-path source lease.
+Normal composition5876 preserves incoming mainf66233177d9fc3eaf29af30c7bfc3286bf4f53bc
+and its two disjoint set/effects blobs. Current-base Reader88/4,247,
+set/effects3/127 and boundary48/1,198 pass, but they precede the owner-order
+repair. Its exact CI41907637750 remains historical, not repair acceptance.

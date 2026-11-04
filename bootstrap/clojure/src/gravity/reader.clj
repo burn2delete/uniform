@@ -11,6 +11,7 @@
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
    :contract-boundary :native-reader-intake-literals-tokenization-forms-products-report-validation-and-document-projection
+   :owner-call-resolution :per-call-var-root-before-arguments
    :public-api
    {'classify-compatibility-token
     {:arglists '([starts-with-var token]) :returns :native-literal-kind
@@ -543,7 +544,7 @@
 
 (defn- compatibility-reader-token-context
   [ops source-path ^String source-text table reader-options]
-  (let [line-starts ((:line-starts-var ops) source-text)
+  (let [line-starts ((deref (:line-starts-var ops)) source-text)
         whitespace (set (:whitespace table))
         delimiters (:delimiters table)
         dispatch (:dispatch table)
@@ -551,7 +552,7 @@
         string-delimiter (:string-delimiter table)
         retain-trivia? (true? (:retain-comments reader-options))
         source-length (count source-text)
-        table-id (str "sha256:" ((:digest-var ops) (pr-str table)))]
+        table-id (str "sha256:" ((deref (:digest-var ops)) (pr-str table)))]
     {:source-path source-path
      :source-text source-text
      :line-starts line-starts
@@ -588,7 +589,7 @@
       ((:comment? ops) ops context idx)
       (recur (loop [j idx]
                (if (and (< j source-length)
-                        (not ((:line-terminator-var ops) (.charAt source-text j))))
+                        (not ((deref (:line-terminator-var ops)) (.charAt source-text j))))
                  (recur (inc j))
                  j)))
       :else idx)))
@@ -609,7 +610,7 @@
       :raw raw
       :decoded nil
       :trivia? true
-      :span ((:span-var ops) source-path source-text
+      :span ((deref (:span-var ops)) source-path source-text
                                 line-starts idx end)}
      end]))
 
@@ -618,7 +619,7 @@
    idx token-index]
   (let [end (loop [end idx]
               (if (and (< end source-length)
-                       (not ((:line-terminator-var ops)
+                       (not ((deref (:line-terminator-var ops))
                              (.charAt source-text end))))
                 (recur (inc end))
                 end))
@@ -629,7 +630,7 @@
       :raw raw
       :decoded nil
       :trivia? true
-      :span ((:span-var ops) source-path source-text
+      :span ((deref (:span-var ops)) source-path source-text
                                 line-starts idx end)}
      end]))
 
@@ -658,9 +659,9 @@
     (loop [idx (inc idx)]
       (cond
         (>= idx source-length)
-        ((:fail-var ops)
+        ((deref (:fail-var ops))
          "STAGE1READER003" source-path nil
-         {:source-span ((:span-var ops) source-path source-text
+         {:source-span ((deref (:span-var ops)) source-path source-text
                                            line-starts start idx)
           :token-id (keyword (str "tok-" token-index))
           :raw (subs source-text start idx)})
@@ -668,9 +669,9 @@
         (= string-delimiter ((:char-string ops) context idx))
         (let [end (inc idx)
               raw (subs source-text start end)
-              span ((:span-var ops) source-path source-text
+              span ((deref (:span-var ops)) source-path source-text
                                        line-starts start end)
-              decoded ((:decode-string-var ops)
+              decoded ((deref (:decode-string-var ops))
                        source-path raw span
                        (keyword (str "tok-" token-index)))]
           [{:index token-index
@@ -684,9 +685,9 @@
         (= \\ (.charAt source-text idx))
         (if (< (inc idx) source-length)
           (recur (+ idx 2))
-          ((:fail-var ops)
+          ((deref (:fail-var ops))
            "STAGE1READER003" source-path nil
-           {:source-span ((:span-var ops) source-path source-text
+           {:source-span ((deref (:span-var ops)) source-path source-text
                                              line-starts start idx)
             :token-id (keyword (str "tok-" token-index))
             :raw (subs source-text start idx)}))
@@ -698,15 +699,15 @@
   (let [start idx
         end ((:atom-end ops) ops context idx)
         token (subs source-text start end)
-        kind ((:token-kind-var ops) token)
+        kind ((deref (:token-kind-var ops)) token)
         token-id (keyword (str "tok-" token-index))
-        span ((:span-var ops) source-path source-text
+        span ((deref (:span-var ops)) source-path source-text
                                  line-starts start end)]
     [{:index token-index
       :kind kind
       :lexeme token
       :raw token
-      :decoded ((:decode-atom-var ops) source-path kind token
+      :decoded ((deref (:decode-atom-var ops)) source-path kind token
                                           span token-id)
       :span span}
      end]))
@@ -726,9 +727,9 @@
               (inc word-start)
               :else ((:atom-end ops) ops context word-start))
         raw (subs source-text idx end)
-        span ((:span-var ops) source-path source-text
+        span ((deref (:span-var ops)) source-path source-text
                                  line-starts idx end)
-        decoded ((:decode-character-var ops)
+        decoded ((deref (:decode-character-var ops))
                  source-path raw span
                  (keyword (str "tok-" token-index)))]
     [{:index token-index
@@ -761,7 +762,7 @@
       :lexeme raw
       :raw raw
       :decoded abbrev
-      :span ((:span-var ops) source-path source-text
+      :span ((deref (:span-var ops)) source-path source-text
                                 line-starts idx end)}
      end]))
 
@@ -782,7 +783,7 @@
           :decoded :set
           :dispatch dispatch-token
           :close-token (:closes dispatch-entry)
-          :span ((:span-var ops) source-path source-text
+          :span ((deref (:span-var ops)) source-path source-text
                                     line-starts idx end)}
          end])
       (let [end ((:atom-end ops) ops context (inc idx))
@@ -795,13 +796,13 @@
             :lexeme raw
             :raw raw
             :decoded (symbol tag)
-            :span ((:span-var ops) source-path source-text
+            :span ((deref (:span-var ops)) source-path source-text
                                       line-starts idx end)}
            end]
-          ((:fail-var ops)
+          ((deref (:fail-var ops))
            "STAGE1READER004" source-path dispatch-token
            {:source-span
-            ((:span-var ops) source-path source-text line-starts idx
+            ((deref (:span-var ops)) source-path source-text line-starts idx
                                 (min source-length (max (inc idx) end)))
             :token-id (keyword (str "tok-" token-index))
             :raw raw
@@ -817,7 +818,7 @@
       :raw token
       :decoded token
       :close-token (:closes delimiter)
-      :span ((:span-var ops) source-path source-text
+      :span ((deref (:span-var ops)) source-path source-text
                                 line-starts idx (inc idx))}
      (inc idx)]))
 
@@ -863,7 +864,7 @@
       (if (>= idx source-length)
         {:kind :gravity/stage1-reader-token-stream
          :source-path source-path
-         :source-id (str "sha256:" ((:digest-var ops) source-text))
+         :source-id (str "sha256:" ((deref (:digest-var ops)) source-text))
          :reader-table-id table-id
          :token-count (count tokens)
          :tokens tokens
@@ -907,29 +908,29 @@
 
 (defn- compatibility-form-products-context
   [reader-operations source-path source-text table token-stream]
-  (let [expected-source-id (str "sha256:" ((:digest-var reader-operations) source-text))
-        expected-table-id (str "sha256:" ((:digest-var reader-operations) (pr-str table)))
+  (let [expected-source-id (str "sha256:" ((deref (:digest-var reader-operations)) source-text))
+        expected-table-id (str "sha256:" ((deref (:digest-var reader-operations)) (pr-str table)))
         tokens (:tokens token-stream)]
     (when-not (= :gravity/stage1-reader-token-stream (:kind token-stream))
-      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+      ((deref (:pipeline-fail-var reader-operations)) "STAGE1PIPE004" source-path token-stream
                                     {:missing-fields [:kind]}))
     (when-not (= source-path (:source-path token-stream))
-      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+      ((deref (:pipeline-fail-var reader-operations)) "STAGE1PIPE004" source-path token-stream
                                     {:missing-fields [:source-path]}))
     (when-not (= expected-source-id (:source-id token-stream))
-      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+      ((deref (:pipeline-fail-var reader-operations)) "STAGE1PIPE004" source-path token-stream
                                     {:missing-fields [:source-id]}))
     (when-not (= expected-table-id (:reader-table-id token-stream))
-      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+      ((deref (:pipeline-fail-var reader-operations)) "STAGE1PIPE004" source-path token-stream
                                     {:missing-fields [:reader-table-id]}))
     (when-not (and (vector? tokens)
                    (= (count tokens) (:token-count token-stream)))
-      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+      ((deref (:pipeline-fail-var reader-operations)) "STAGE1PIPE004" source-path token-stream
                                     {:missing-fields [:tokens
                                                       :token-count]}))
-    (let [line-starts ((:line-starts-var reader-operations) source-text)
+    (let [line-starts ((deref (:line-starts-var reader-operations)) source-text)
           token-count (count tokens)
-          token-index (delay ((:token-index-var reader-operations) tokens))
+          token-index (delay ((deref (:token-index-var reader-operations)) tokens))
           nodes (atom {})
           form-order (atom [])
           next-form-index (atom 0)
@@ -957,7 +958,7 @@
 
 (defn- compatibility-form-combined-span
   [{:keys [reader-operations source-path source-text line-starts]} start-token end-token]
-  ((:span-var reader-operations) source-path source-text line-starts
+  ((deref (:span-var reader-operations)) source-path source-text line-starts
                       (get-in start-token [:span :start :char])
                       (get-in end-token [:span :end :char])))
 
@@ -974,7 +975,7 @@
 (defn- compatibility-form-trivia-hash
   [{:keys [reader-operations token-index]} ids]
   (let [by-id @token-index]
-    ((:canonical-hash-var reader-operations)
+    ((deref (:canonical-hash-var reader-operations))
      (mapv (fn [id]
              (let [token (by-id id)]
                {:kind (:kind token)
@@ -986,7 +987,7 @@
   [{:keys [reader-operations source-path token-id]} token]
   (if (contains? token :decoded)
     (:decoded token)
-    ((:decode-atom-var reader-operations)
+    ((deref (:decode-atom-var reader-operations))
      source-path (:kind token) (:lexeme token) (:span token)
      (token-id token))))
 
@@ -1013,7 +1014,7 @@
                  (contains? seen value))
           (let [first-id (seen value)
                 first-node (@nodes first-id)]
-            ((:fail-var reader-operations)
+            ((deref (:fail-var reader-operations))
              "C2-SET" source-path value
              {:source-span (:span node)
               :token-id (:open-token node)
@@ -1038,7 +1039,7 @@
     (keyword? value) {value true}
     (or (symbol? value) (string? value)) {:tag value}
     :else
-    ((:fail-var reader-operations)
+    ((deref (:fail-var reader-operations))
      "C2-METADATA" source-path value
      {:source-span (:span node)
       :token-id (:open-token node)
@@ -1050,7 +1051,7 @@
   [{:keys [reader-operations source-path]} metadata target target-node]
   (if (instance? clojure.lang.IObj target)
     (with-meta target (merge (meta target) metadata))
-    ((:fail-var reader-operations)
+    ((deref (:fail-var reader-operations))
      "C2-METADATA" source-path target
      {:source-span (:span target-node)
       :token-id (:open-token target-node)
@@ -1070,10 +1071,10 @@
     (let [[idx between-trivia]
           (compatibility-form-skip-trivia context idx)]
       (if (>= idx token-count)
-        (let [eof-span ((:span-var reader-operations)
+        (let [eof-span ((deref (:span-var reader-operations))
                         source-path source-text line-starts
                         (count source-text) (count source-text))]
-          ((:fail-var reader-operations)
+          ((deref (:fail-var reader-operations))
            "STAGE1READER002" source-path nil
            {:source-span eof-span
             :token-id (token-id open-token)
@@ -1096,7 +1097,7 @@
                                 context child-ids values)
                           :map (do
                                  (when (odd? (count values))
-                                   ((:fail-var reader-operations)
+                                   ((deref (:fail-var reader-operations))
                                     "STAGE1READER005" source-path values
                                     {:source-span span
                                      :token-id
@@ -1133,7 +1134,7 @@
               [value (inc idx) span form-id])
 
             (= :close (:kind token))
-            ((:fail-var reader-operations)
+            ((deref (:fail-var reader-operations))
              "STAGE1READER001" source-path (:lexeme token)
              {:source-span (:span token)
               :token-id (token-id token)
@@ -1161,7 +1162,7 @@
           (let [[child-idx child-trivia]
                 (compatibility-form-skip-trivia context (inc idx))]
             (when (>= child-idx token-count)
-              ((:fail-var reader-operations)
+              ((deref (:fail-var reader-operations))
                "C2-METADATA" source-path abbrev
                {:source-span (:span token)
                 :token-id (token-id token)
@@ -1176,7 +1177,7 @@
         [child-idx child-trivia]
         (compatibility-form-skip-trivia context next-start)]
     (when (>= child-idx token-count)
-      ((:fail-var reader-operations)
+      ((deref (:fail-var reader-operations))
        (if (= :metadata abbrev) "C2-METADATA" "C2-ABBREV")
        source-path abbrev
        {:source-span (:span token)
@@ -1239,7 +1240,7 @@
   (let [[child-idx child-trivia]
         (compatibility-form-skip-trivia context (inc idx))]
     (when (>= child-idx token-count)
-      ((:fail-var reader-operations)
+      ((deref (:fail-var reader-operations))
        "STAGE1READER004" source-path (:raw token)
        {:source-span (:span token)
         :token-id (token-id token)
@@ -1251,9 +1252,9 @@
           child-node (@nodes child-id)
           raw (str (:raw token) " " (pr-str child-value))
           value (try
-                  ((:read-tagged-var reader-operations) raw)
+                  ((deref (:read-tagged-var reader-operations)) raw)
                   (catch Exception ex
-                    ((:fail-var reader-operations)
+                    ((deref (:fail-var reader-operations))
                      "STAGE1READER004" source-path raw
                      {:source-span (:span token)
                       :token-id (token-id token)
@@ -1307,14 +1308,14 @@
   [{:keys [reader-operations source-path tokens token-count token-id] :as context}
    idx leading-trivia]
   (when (>= idx token-count)
-    ((:fail-var reader-operations) "STAGE1READER002" source-path nil
+    ((deref (:fail-var reader-operations)) "STAGE1READER002" source-path nil
                          {:source-span {:source source-path}
                           :expected :form}))
   (let [token (tokens idx)
         form-id (compatibility-form-new-form-id context)]
     (case (:kind token)
       :close
-      ((:fail-var reader-operations)
+      ((deref (:fail-var reader-operations))
        "STAGE1READER001" source-path (:lexeme token)
        {:source-span (:span token)
         :token-id (token-id token)
@@ -1394,7 +1395,7 @@
                  (conj root-ids form-id)
                  (conj records
                        {:form form
-                        :kind ((:form-kind-var reader-operations) form)
+                        :kind ((deref (:form-kind-var reader-operations)) form)
                         :form-id form-id
                         :span (assoc span :form-index form-index)})))))))
 
@@ -1417,7 +1418,7 @@
     (= token "nil") :nil
     (= token "true") :boolean
     (= token "false") :boolean
-    (starts-with-var token ":") :keyword
+    ((deref starts-with-var) token ":") :keyword
     (re-matches #"[+-]?(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+)" token)
     :integer
     (re-matches #"[+-]?[0-9]+/[0-9]+" token) :ratio
@@ -1430,7 +1431,7 @@
 
 (defn reject-compatibility-numeric!
   [fail-var source-path raw span token-id cause]
-  (fail-var
+  ((deref fail-var)
    "STAGE1READER007" source-path raw
    {:source-span span
     :token-id token-id
@@ -1448,8 +1449,8 @@
       :boolean (= "true" raw)
       :keyword (keyword (subs raw 1))
       :integer
-      (let [negative? (starts-with-var raw "-")
-            positive? (starts-with-var raw "+")
+      (let [negative? ((deref starts-with-var) raw "-")
+            positive? ((deref starts-with-var) raw "+")
             unsigned (if (or negative? positive?) (subs raw 1) raw)
             [radix digits] (cond
                              (re-find #"^0[xX]" unsigned)
@@ -1460,7 +1461,7 @@
             value (bigint (java.math.BigInteger. digits radix))]
         (if negative? (- value) value))
       :ratio
-      (let [[numerator-spelling denominator-spelling] (split-var raw #"/" 2)
+      (let [[numerator-spelling denominator-spelling] ((deref split-var) raw #"/" 2)
             numerator (bigint numerator-spelling)
             denominator (bigint denominator-spelling)]
         (if (zero? denominator)
@@ -1476,16 +1477,16 @@
           (/ numerator denominator)))
       :decimal (Double/parseDouble raw)
       :malformed-number
-      (malformed-numeric-var
+      ((deref malformed-numeric-var)
        source-path raw span token-id
        "numeric lexeme does not match a declared Gravity numeric shape")
       :symbol (symbol raw)
       raw)
     (catch NumberFormatException ex
-      (malformed-numeric-var source-path raw span token-id
+      ((deref malformed-numeric-var) source-path raw span token-id
                                         (.getMessage ex)))
     (catch ArithmeticException ex
-      (malformed-numeric-var source-path raw span token-id
+      ((deref malformed-numeric-var) source-path raw span token-id
                                         (.getMessage ex)))))
 
 
@@ -1493,9 +1494,9 @@
   [read-string-var fail-var source-path raw span token-id]
   (try
     (binding [*read-eval* false]
-      (read-string-var raw))
+      ((deref read-string-var) raw))
     (catch Exception ex
-      (fail-var "STAGE1READER003" source-path raw
+      ((deref fail-var) "STAGE1READER003" source-path raw
                            {:source-span span
                             :token-id token-id
                             :raw raw
@@ -1506,13 +1507,13 @@
   [read-string-var fail-var source-path raw span token-id]
   (try
     (let [value (binding [*read-eval* false]
-                  (read-string-var raw))]
+                  ((deref read-string-var) raw))]
       (when-not (char? value)
         (throw (ex-info "reader character token did not decode to a character"
                         {:raw raw})))
       value)
     (catch Exception ex
-      (fail-var "STAGE1READER003" source-path raw
+      ((deref fail-var) "STAGE1READER003" source-path raw
                            {:source-span span
                             :token-id token-id
                             :raw raw
