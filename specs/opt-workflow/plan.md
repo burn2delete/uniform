@@ -257,310 +257,73 @@ Opt owns actual transformations, performance/variant decisions and invoked prese
 
 ### Performance PERF1 Evidence Classes
 
-Performance evidence includes:
-
-- Static cost model.
-- Benchmark measurement.
-- Target feature availability.
-- Layout proof.
-- Range proof.
-- Alias proof.
-- Memory locality proof.
-- Dispatch elimination proof.
-- Allocation elimination proof.
-- Math certificate.
-- Runtime trace or profile data.
-- Autotuning result.
-
-The required evidence depends on the claim. Benchmark evidence alone cannot
-justify removing safety checks.
+Use the canonical [Evidence Classes](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md#evidence-classes) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF1 Target Fingerprint
 
-Benchmark and optimization artifacts record:
-
-- CPU, GPU, accelerator, or runtime id.
-- Feature flags.
-- OS or execution environment.
-- Compiler version.
-- Backend version.
-- Runtime provider versions.
-- Memory provider.
-- Numeric provider.
-- Build flags.
-- Thermal or power mode when relevant.
-
-Without a fingerprint, benchmark results are advisory.
+Use the canonical [Target Fingerprint](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md#target-fingerprint) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF2 Abstraction Families
 
-The zero-cost model applies to:
-
-- Protocol dispatch.
-- Interface calls.
-- Generic functions.
-- Records and field access.
-- Newtype or wrapper values.
-- Iterator and sequence pipelines.
-- Collection views and slices.
-- Pattern matching.
-- Macros.
-- Facet-generated forms.
-- Higher-order functions.
-- Error/result wrappers.
-- Resource wrappers.
-- Numeric mode wrappers.
-- Standard-library convenience APIs.
-
-Each family declares what cost should erase and what residual work is acceptable.
+Use the canonical [Abstraction Families](../../docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md#abstraction-families) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF2 Residual Costs
 
-Residual costs include:
-
-- Allocation.
-- Boxing or unboxing.
-- Dynamic dispatch.
-- Reflection.
-- Synchronization.
-- Runtime bounds checks.
-- Runtime type checks.
-- Capability provider calls.
-- FFI boundary calls.
-- Host runtime calls.
-- Iterator state machines.
-- Closure allocation.
-- Virtual table lookup.
-- Branch guard.
-
-Residual work may be acceptable, but it is not zero-cost unless the equivalent
-handwritten form would contain the same work.
+Use the canonical [Residual Costs](../../docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md#residual-costs) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF3 Specialization Inputs
 
-Specialization may use:
-
-- Type arguments.
-- Const generics.
-- Literal values.
-- Collection shape.
-- Array length.
-- Schema shape.
-- Protocol implementation.
-- Numeric mode.
-- Profile.
-- Target features.
-- Memory layout.
-- Capability provider.
-- Effect set.
-- Proof facts.
-
-If a fact affects behavior but is missing from the key, specialization is invalid.
+Use the canonical [Specialization Inputs](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md#specialization-inputs) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF3 Invalidation
 
-Specialization is invalidated by changes to:
-
-- Source or macro expansion.
-- Type arguments.
-- Const values.
-- Profile or target.
-- Target features.
-- Memory layout.
-- Provider selection.
-- Numeric mode.
-- Build effects and replay records.
-- Proof facts.
-- Dependency versions.
-
-The cache key includes all invalidation inputs.
+Use the canonical [Invalidation](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md#invalidation) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF4 Transformation Families
 
-Layout transformations include:
-
-- Field reordering.
-- Field packing.
-- Padding insertion or removal.
-- Array-of-structs to struct-of-arrays.
-- Struct-of-arrays to array-of-structs.
-- Hot/cold field splitting.
-- Inline storage.
-- Unboxed representation.
-- Tagged union representation selection.
-- Cache-line alignment.
-- Device transfer packing.
-- Hardware register layout.
-
-Each family declares required proofs and forbidden boundaries.
+Use the canonical [Transformation Families](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md#transformation-families) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF4 ABI and Persistence Boundaries
 
-Layouts are fixed at:
-
-- C ABI boundaries.
-- Foreign struct boundaries.
-- Kernel and driver ABI boundaries.
-- Serialized formats.
-- Database or file persistence.
-- Network protocols.
-- Hardware ports and registers.
-- Public package ABI.
-
-The optimizer cannot reorder or repack across those boundaries unless the
-boundary declares a compatible representation or generated adapter.
+Use the canonical [ABI and Persistence Boundaries](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md#abi-and-persistence-boundaries) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF5 Benchmark Families
 
-Initial benchmark families include:
-
-- Core immutable data.
-- Numeric kernels.
-- Pattern matching and dispatch.
-- Memory layout and allocation.
-- FFI boundaries.
-- Concurrency and atomics.
-- Standard library IO and parsing.
-- GPU and accelerator kernels.
-- Workflow and AI trace overhead.
-- Compiler and macro expansion.
-- Package/build performance.
-
-Each family has positive performance fixtures and correctness/safety fixtures.
+Use the canonical [Benchmark Families](../../docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md#benchmark-families) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF5 Regression Policy
 
-A regression report classifies:
-
-- No regression.
-- Noise suspected.
-- Environment drift.
-- Compiler regression.
-- Backend regression.
-- Runtime/provider regression.
-- Dependency regression.
-- Semantic or safety change.
-- Baseline invalid.
-
-Regression gates fail when the measured regression exceeds threshold and cannot
-be attributed to accepted environment drift or intentional semantic change.
+Use the canonical [Regression Policy](../../docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md#regression-policy) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF6 Staleness Policy
 
-Staleness modes:
-
-- `:reject-if-source-differs`
-- `:reject-if-mir-hash-differs`
-- `:advisory-if-similar`
-- `:require-exact`
-- `:ignore`
-
-Release builds default to rejecting mismatched source or MIR hashes unless a
-policy explicitly accepts advisory data.
+Use the canonical [Staleness Policy](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md#staleness-policy) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF7 Variant Guards
 
-Variant guards may include:
-
-- Target feature.
-- CPU/GPU model.
-- Input length or shape.
-- Alignment.
-- Numeric domain.
-- Error-bound domain.
-- Memory layout.
-- Provider availability.
-- Profile.
-- Runtime PGO data.
-
-Guards must be complete and deterministic. If no guard matches, the dispatch
-falls back to a valid baseline.
+Use the canonical [Variant Guards](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md#variant-guards) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF8 Intrinsic Mapping
 
-Intrinsic maps record:
-
-- Source operation.
-- Target instruction or intrinsic.
-- Required feature.
-- Numeric mode.
-- Alignment requirement.
-- Memory order.
-- Fallback.
-- Proof or certificate.
-
-If fallback is unavailable, the variant guard must prevent execution on
-unsupported targets.
+Use the canonical [Intrinsic Mapping](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md#intrinsic-mapping) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF9 Bounded Work
 
-Bounded work evidence includes:
-
-- Static loop bounds.
-- Recursion depth.
-- Bounded data structure traversal.
-- Fixed-size allocation.
-- Fixed retry count.
-- Fixed timeout.
-- Bounded lock hold time.
-- Bounded queue operation.
-- Bounded interrupt latency.
-
-Unbounded data-dependent loops require a profile-specific proof, timeout, or
-rejection.
+Use the canonical [Bounded Work](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md#bounded-work) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF9 Evidence Modes
 
-Latency evidence may be:
-
-- Static worst-case path analysis.
-- Bounded model checking.
-- Hardware timing analysis.
-- Empirical bound under fixed target and workload fingerprint.
-- Hybrid static plus empirical report.
-
-Empirical evidence must identify target, clock, power mode, runtime provider,
-input shape, and measurement method.
+Use the canonical [Evidence Modes](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md#evidence-modes) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF10 Elision Rule Table
 
-| Check class | Elidable when | Required artifact | Policy checks |
-| --- | --- | --- | --- |
-| Bounds | Dominating range proof shows `0 <= index < count` at the use site | `:proof/range` plus residual-check report | no |
-| Integer overflow | Bit-width range proof covers the operator result, or source chose wrapping or saturating semantics | `:proof/int-range` or explicit operator record | no |
-| Division by zero | Divisor nonzero proof dominates division | `:proof/nonzero` | no |
-| Shift count | Shift count range proof covers target width | `:proof/shift-range` | no |
-| Null/option access | Type excludes null/none or pattern match proves the case | `:proof/non-null` or match coverage record | no |
-| Initialization | Definite-init analysis proves all bytes or fields read are initialized | `:proof/definite-init` | no |
-| Region lifetime | Escape analysis proves value cannot outlive region | `:proof/region-non-escape` | no |
-| Borrow/alias | Borrow graph proves legal alias state | `:proof/alias-exclusive` | no |
-| Linear resource | Flow graph proves exactly-once terminal state | `:proof/linear-flow` | no |
-| Data race | Ownership or synchronization proof proves no race | `:proof/race-free` | no |
-| Taint sink | Validator proof proves sink contract | `:proof/taint-cleared` | no |
-| Capability/effect | Compile-time validation proves exact grant and deployment policy | capability validation artifact | yes |
-| Unsafe audit | Review policy satisfied before build or deployment | unsafe audit artifact | yes |
-| Workflow replay | Step recorded, deterministic, or replay-safe | replay contract artifact | yes |
-| AI human-review | Policy proves no human-review gate applies at the site, the gate is already satisfied, or the gate is represented by workflow state | policy proof or workflow gate | yes |
-
-Policy checks marked yes are not removed for performance alone. They can be
-discharged only by equivalent policy artifacts.
+Use the canonical [Elision Rule Table](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#elision-rule-table) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Performance PERF10 Dominance and Invalidation
 
-The proof must dominate the operation in the relevant IR. Dominance can be:
+Use the canonical [Dominance and Invalidation](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#dominance-and-invalidation) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
-- Control-flow dominance.
-- Data-flow dominance.
-- Pattern-match dominance.
-- Type-refinement dominance.
-- Loop-invariant dominance.
-- Profile or target manifest dominance.
-
-Invalidation occurs after transformations that change control flow, data flow,
-layout, numeric mode, ownership, aliases, profile, target, provider, or backend
-assumptions.
-
-The complete PERF10 table above maps its actual operation/proof/policy cases to the existing Opt check-protection task, current proof regeneration to Opt verification and emitted assumption preservation to Lower. Retain each row's conditional alternative: source-selected wrap/saturate, actual matching pattern/validation facts and equivalent policy/workflow artifacts are not universal mathematical-proof requirements. Benchmarks cannot replace those required artifacts.
+The complete canonical PERF10 table linked above maps its actual operation/proof/policy cases to the existing Opt check-protection task, current proof regeneration to Opt verification and emitted assumption preservation to Lower. Retain each row's conditional alternative: source-selected wrap/saturate, actual matching pattern/validation facts and equivalent policy/workflow artifacts are not universal mathematical-proof requirements. Benchmarks cannot replace those required artifacts.
 
 ### Performance producer and consumer interfaces
 

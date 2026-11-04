@@ -233,112 +233,27 @@ CLI owns arguments/options, public routing, output/exit contracts and installed 
 
 ### Command/source T1 Command Families
 
-The CLI includes:
-
-- `gravity check`;
-- `gravity build`;
-- `gravity test`;
-- `gravity run`;
-- `gravity repl`;
-- `gravity fmt`;
-- `gravity lint`;
-- `gravity doc`;
-- `gravity package`;
-- `gravity registry`;
-- `gravity audit`;
-- `gravity verify`;
-- `gravity inspect-ir`;
-- `gravity profile`;
-- `gravity ai`;
-- `gravity explain`.
-
-Command families may delegate to other tools, but the CLI owns argument
-normalization, output contracts, exit codes, diagnostic routing, and artifact
-locations.
+Use the canonical [Command Families](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md#command-families) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source T1 Exit Codes
 
-- `0` means success.
-- `1` means diagnostics failed policy or checks.
-- `2` means CLI usage error.
-- `3` means dependency or registry resolution failed.
-- `4` means build graph or artifact verification failed.
-- `5` means runtime execution failed.
-- `6` means required authority or human-review is missing.
-
-Commands may add subcodes in structured output, but shell exit codes remain
-stable.
+Use the canonical [Exit Codes](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md#exit-codes) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source T2 Commands
 
-Required commands include:
-
-- `:profile`;
-- `:target`;
-- `:ns`;
-- `:load`;
-- `:eval`;
-- `:expand`;
-- `:type`;
-- `:effects`;
-- `:capabilities`;
-- `:inspect`;
-- `:artifacts`;
-- `:diagnostics`;
-- `:replay`;
-- `:transcript`.
+Use the canonical [Commands](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md#commands) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source T3 Formatting Inputs
 
-The formatter reads:
-
-- source text;
-- reader grammar version;
-- edition;
-- formatter configuration;
-- comment and metadata positions;
-- optional maximum line width;
-- ignore ranges;
-- generated-source policy.
-
-It produces formatted text and a report describing changed files.
+Use the canonical [Formatting Inputs](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md#formatting-inputs) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source T3 Rules
 
-Default rules cover:
-
-- list indentation;
-- binding form indentation;
-- map and vector layout;
-- metadata placement;
-- namespace form layout;
-- multiline string handling without content mutation;
-- comment anchoring;
-- trailing whitespace removal;
-- final newline insertion.
-
-Profile-specific syntax may add rules, but cannot change the core round-trip
-guarantee.
+Use the canonical [Rules](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md#rules) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source T4 Rule Classes
 
-Rule classes include:
-
-- syntax style;
-- namespace hygiene;
-- profile portability;
-- effect visibility;
-- capability minimization;
-- unsafe audit completeness;
-- FFI boundary hygiene;
-- taint and input safety;
-- package and dependency policy;
-- artifact and provenance policy;
-- AI prompt/tool safety;
-- performance hints with evidence;
-- documentation completeness.
-
-Each rule has id, severity, inputs, fixability, and profile applicability.
+Use the canonical [Rule Classes](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md#rule-classes) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Command/source producer and consumer interfaces
 
@@ -443,160 +358,39 @@ The nine existing specialist tasks own actual service request/state/transformati
 
 ### Specialist tool T5 Server State
 
-The server maintains:
-
-- open document text;
-- parsed syntax objects;
-- namespace graph;
-- macro expansion graph;
-- type and effect facts;
-- profile and target selection;
-- diagnostics;
-- package manifest facts;
-- artifact index;
-- cancellation and incremental compilation state.
-
-State updates are incremental but must converge to the same results as CLI
-`gravity check`.
+Use the canonical [Server State](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md#server-state) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T6 Debug Data
 
-Debug artifacts include:
-
-- source maps from target code to Gravity spans;
-- symbol tables;
-- type and layout maps;
-- MIR location maps;
-- effect and capability maps;
-- ownership and lifetime facts when available;
-- runtime stack records;
-- workflow event-log indexes;
-- AI model/tool ledger links.
-
-Each target declares which debug features it supports.
+Use the canonical [Debug Data](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md#debug-data) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T7 Documentation Inputs
 
-Inputs include:
-
-- namespaces and public vars;
-- doc strings and metadata;
-- type signatures;
-- effect and capability summaries;
-- profile and target availability;
-- schemas and generated API docs;
-- examples and runnable snippets;
-- unsafe and FFI audit summaries;
-- package metadata and SBOM summaries;
-- diagnostics and rule explanations.
+Use the canonical [Documentation Inputs](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md#documentation-inputs) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T8 Server Responsibilities
 
-The server handles:
-
-- file watching;
-- incremental check and build;
-- runtime process supervision;
-- hot reload and restart;
-- diagnostic streaming;
-- artifact event streaming;
-- REPL endpoint;
-- debugger endpoint;
-- workflow replay endpoint;
-- AI trace endpoint;
-- structured status API.
-
-Each endpoint declares authority and redaction policy.
+Use the canonical [Server Responsibilities](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md#server-responsibilities) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T9 Registry Views
 
-Views include:
-
-- package overview;
-- version history;
-- dependency graph;
-- capability summary;
-- unsafe and audit summary;
-- target support matrix;
-- provenance and signing status;
-- SBOM view;
-- vulnerability/advisory view;
-- update diff;
-- policy compatibility report;
-- private and latent package state.
+Use the canonical [Registry Views](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md#registry-views) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T10 Stages
 
-Inspectable stages include:
-
-- reader forms;
-- syntax objects;
-- macro expansion;
-- resolved names;
-- typed core;
-- effect-checked core;
-- ownership and region facts;
-- safety analysis facts;
-- MIR;
-- domain IR;
-- optimized MIR;
-- backend lowering;
-- artifact manifests.
-
-Each stage links back to source spans and upstream stage ids.
+Use the canonical [Stages](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md#stages) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T11 Measured Data
 
-Reports may contain:
-
-- wall time and CPU time;
-- allocation counts and bytes;
-- cache and branch counters where available;
-- latency percentiles;
-- throughput;
-- energy or device counters where supported;
-- model/tool cost for AI workflows;
-- GC or runtime service costs;
-- check elision decisions;
-- specialization and layout choices.
-
-Targets declare which measurements are valid.
+Use the canonical [Measured Data](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md#measured-data) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T12 Audit Views
 
-Views include:
-
-- unsafe island index;
-- safe wrapper boundary view;
-- ownership and lifetime facts;
-- region and arena escape analysis;
-- FFI boundary map;
-- capability graph;
-- taint flow graph;
-- AI tool and prompt safety view;
-- supply-chain and dependency safety view;
-- proof certificate view;
-- check elision view.
-
-Each view links to source spans and evidence artifacts.
+Use the canonical [Audit Views](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md#audit-views) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool T13 Tooling Modes
 
-Supported modes include:
-
-- diagnostic explanation;
-- code search and summarization;
-- patch proposal;
-- test generation;
-- documentation generation;
-- refactoring proposal;
-- package update review;
-- safety audit assistance;
-- performance investigation;
-- workflow replay analysis.
-
-Each mode declares its model, tools, memory, policy, output schema, and
-required checks.
+Use the canonical [Tooling Modes](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md#tooling-modes) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Specialist tool producer and consumer interfaces
 

@@ -472,22 +472,11 @@ Schema owns source definitions, validators and static projections; its existing 
 
 ### STD10 callable surface
 
-- Schema forms: `defschema`, `schema`, `field`, `optional`, `required`, `default`, `refine`, `enum`, `union`, and `record`.
-- Validation: `validate`, `explain`, `valid?`, `coerce`, `schema-path`, and `validation-error`.
-- Encoding and decoding: `encode`, `decode`, `json`, `edn`, `binary`, `canonical`, `stream-encode`, and `stream-decode`.
-- Derivation: `derive-schema`, `derive-validator`, `derive-codec`, and `derive-migration`.
-- Evolution: `schema-version`, `migration`, `compatible?`, `diff-schema`, `upgrade`, and `downgrade`.
-- Artifacts: `schema-artifact`, `codec-artifact`, `validator-artifact`, and `canonical-fixture`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### STD11 callable surface
 
-- Connections: `connect`, `with-connection`, `close`, `pool`, `provider`, and `connection-capability`.
-- Queries: `query`, `execute`, `prepare`, `param`, `query-dsl`, `select`, `insert`, `update`, `delete`, and `returning`.
-- Rows: `typed-row`, `row-schema`, `decode-row`, `row-path`, and `row-error`.
-- Transactions: `transaction`, `commit`, `rollback`, `savepoint`, `isolation`, and `retry-transaction`.
-- Migrations: `defmigration`, `apply-migration`, `rollback-migration`, `migration-plan`, and `migration-proof`.
-- Provider artifacts: `query-plan`, `explain`, `provider-feature`, and `dialect`.
-- Safety helpers: `tainted-param`, `trusted-query`, `allow-read`, `allow-write`, and `query-policy`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Producer and consumer interfaces
 
@@ -569,25 +558,12 @@ Library owns callable operations; Workflow owns durable source semantics, AI typ
 
 ### Workflow/AI STD12 callable surface
 
-- Definitions: `defworkflow`, `workflow`, `workflow-input`, `workflow-output`, and `workflow-version`.
-- Steps: `step`, `activity`, `recorded-step`, `side-effect`, `child-workflow`, and `workflow-state`.
-- Control: `sleep`, `timer`, `signal`, `await-signal`, `race`, `all`, `choice`, and `loop-step`.
-- Reliability: `retry`, `timeout`, `idempotency-key`, `compensate`, `saga`, and `checkpoint`.
-- Replay: `record-event`, `replay`, `event-log`, `deterministic?`, and `replay-fixture`.
-- Human-review: `human-review-step`, `human-review-policy`, and `human-review-event`.
-- Artifacts: `workflow-graph`, `event-schema`, `activity-manifest`, and `runtime-adapter`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 
 ### Workflow/AI STD13 callable surface
 
-- Providers: `defmodel-provider`, `model-provider`, `model`, `model-capability`, and `model-manifest`.
-- Prompts: `defprompt`, `prompt`, `system`, `developer`, `user`, `context`, `structured-output`, and `refusal`.
-- Tools: `deftool`, `tool`, `tool-schema`, `tool-capability`, `tool-call`, and `tool-result`.
-- Agents: `defagent`, `agent`, `run-agent`, `agent-state`, `agent-event`, and `agent-budget`.
-- Memory: `defmemory`, `retrieve`, `remember`, `embed`, `partition`, and `memory-policy`.
-- Policy: `defpolicy`, `policy-check`, `human-review-required?`, `redact`, and `taint-source`.
-- Evals: `defeval`, `run-eval`, `metric`, `threshold`, `probe`, and `eval-report`.
-- Workflow integration: `agent-workflow`, `human-review-step`, `record-model-call`, and `record-tool-call`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 
 ### Workflow/AI producer and consumer interfaces
@@ -674,24 +650,11 @@ Library owns actual test and meta APIs. Compiler-API/Pipeline/Syntax/Expand/Core
 
 ### Testing/meta STD14 callable surface
 
-- Test forms: `deftest`, `testing`, `is`, `are`, `throws?`, `diagnostic?`, and `test-var`.
-- Fixtures: `fixture`, `with-fixture`, `temp-resource`, `golden`, `golden-update`, and `artifact-fixture`.
-- Property testing: `defproperty`, `for-all`, `gen`, `shrink`, `seed`, and `counterexample`.
-- Fuzzing: `deffuzz`, `fuzz-input`, `corpus`, `minimize`, and `coverage-guided`.
-- Mocks: `fake-capability`, `mock-effect`, `record-calls`, and `expect-call`.
-- Conformance: `conformance-suite`, `profile-suite`, `backend-suite`, `stdlib-suite`, and `report`.
-- AI eval: `eval-case`, `eval-dataset`, `metric`, `threshold`, and `probe`.
-- Reporting: `test-report`, `junit`, `json-report`, `coverage-report`, and `evidence-pack`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Testing/meta STD15 callable surface
 
-- Syntax: `syntax`, `quote-syntax`, `syntax?`, `syntax-value`, `syntax-span`, `syntax-meta`, and `with-syntax-meta`.
-- Hygiene: `gensym`, `bind`, `resolve`, `namespace-context`, `hygiene-mark`, and `fresh-name`.
-- Macro helpers: `defmacro`, `macroexpand`, `syntax-case`, `syntax-match`, `emit`, and `diagnose`.
-- Compile-time values: `const`, `compile-time`, `eval-ct`, `ct-capability`, and `phase`.
-- IR APIs: `inspect-core`, `inspect-mir`, `mir-node`, `mir-effect`, `mir-type`, and `source-map`.
-- Pass APIs: `defpass`, `analysis`, `transform`, `preserves`, `invalidates`, and `pass-artifact`.
-- Plugin APIs: `defplugin`, `plugin-capability`, `compiler-hook`, and `plugin-manifest`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Testing/meta producer and consumer interfaces
 
@@ -784,24 +747,11 @@ Stdlib owns the callable library behavior in the existing integrate-platform tas
 
 ### Platform/hardware STD16 callable surface
 
-- Target facts: `target`, `target-triple`, `arch`, `os`, `abi`, `features`, and `runtime-profile`.
-- Host facts: `host`, `host-os`, `host-arch`, `host-feature`, and `host-delegation`.
-- Environment: `env`, `get-env`, `with-env`, `argv`, `program-name`, and `redact-env`.
-- Time: `wall-clock`, `monotonic-clock`, `cpu-clock`, `sleep`, `deadline`, and `recorded-time`.
-- Randomness: `prng`, `seed`, `random-bytes`, `crypto-random`, and `deterministic-random`.
-- Process: `spawn`, `exec`, `wait`, `kill`, `exit-code`, `stdio-policy`, and `process-capability`.
-- Signals and terminal: `signal-handler`, `with-signal`, `terminal-size`, `tty?`, and `terminal-mode`.
-- Platform policy: `platform-capability`, `host-policy`, `target-manifest`, and `runtime-adapter`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Platform/hardware STD17 callable surface
 
-- Registers: `register`, `read-reg`, `write-reg`, `modify-reg`, `field`, `bit`, `access-mode`, and `reset-value`.
-- MMIO: `mmio-region`, `mmio-capability`, `volatile-read`, `volatile-write`, and `memory-barrier`.
-- Interrupts: `interrupt`, `handler`, `enable-interrupt`, `disable-interrupt`, `critical-section`, and `interrupt-table`.
-- DMA: `dma-buffer`, `dma-map`, `dma-submit`, `dma-complete`, `dma-unmap`, and `cache-policy`.
-- Clocks and timers: `clock`, `timer`, `delay-cycles`, `deadline`, `clock-domain`, and `sync-domain`.
-- Firmware resources: `peripheral`, `pin`, `gpio`, `uart`, `spi`, `i2c`, and `device-tree`.
-- Artifacts: `memory-map`, `register-spec`, `firmware-manifest`, and `hardware-proof`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Platform/hardware producer and consumer interfaces
 
@@ -905,45 +855,19 @@ Stdlib implements callable APIs and assembles actual library evidence. Domain cr
 
 ### Crypto/UI/stability STD18 callable surface
 
-- Hashes and MACs: `hash`, `digest`, `hmac`, `mac`, `verify-mac`, and `hash-policy`.
-- Signatures: `keypair`, `public-key`, `sign`, `verify`, `signature`, `ml-dsa`, `slh-dsa`, `signature-policy`, and `signature-lifecycle`.
-- Encryption: `encrypt`, `decrypt`, `aead-encrypt`, `aead-decrypt`, `nonce`, `associated-data`, and `ciphertext`.
-- Key agreement and KDFs: `derive-key`, `key-exchange`, `ml-kem`, `hybrid-key-exchange`, `kdf`, `hkdf`, `password-hash`, and `salt`.
-- Randomness: `crypto-random`, `random-bytes`, `random-provider`, and `entropy-source`.
-- Secrets: `secret`, `with-secret`, `zeroize`, `key-handle`, `redact-secret`, and `secret-scope`.
-- Constant-time helpers: `constant-time=`, `ct-select`, `ct-copy`, and `constant-time-proof`.
-- Policy: `algorithm-policy`, `provider-policy`, `allowed-algorithm?`, `algorithm-lifecycle`, `migration-inventory`, and `crypto-artifact`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Crypto/UI/stability STD19 callable surface
 
-- Components: `defcomponent`, `component`, `props`, `state`, `view`, `slot`, and `fragment`.
-- Events and commands: `event`, `on`, `emit`, `command`, `dispatch`, `effect-handler`, and `event-contract`.
-- State: `state`, `signal`, `atom-state`, `derived`, `reducer`, `store`, and `state-schema`.
-- Routing: `route`, `router`, `navigate`, `link`, `route-param`, and `route-schema`.
-- Rendering: `render`, `hydrate`, `mount`, `unmount`, `portal`, `view-tree`, and `render-artifact`.
-- Styling: `style`, `class`, `theme-token`, `layout`, `media-query`, and `target-style`.
-- Accessibility: `label`, `role`, `focus`, `keyboard`, `announce`, and `accessibility-tree`.
-- Adapters: `web-adapter`, `desktop-adapter`, `mobile-adapter`, `terminal-adapter`, and `native-view`.
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Library stability levels
 
-- `:experimental`: available behind explicit opt-in; no compatibility guarantee; must not be used by stable modules without isolation.
-- `:draft`: intended API shape but may change before stabilization; changes require release notes and conformance fixture updates.
-- `:stable`: source, behavior, diagnostics, artifacts, and profile availability are compatibility-protected.
-- `:deprecated`: still supported for a governed window; emits diagnostics and replacement guidance.
-- `:removed`: unavailable except through compatibility packages, migration tools, or historical artifacts.
-- `:internal`: implementation detail; cannot be imported by user packages; may change without user-facing compatibility promises.
+Use the canonical [Stability Levels](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md#stability-levels) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Library compatibility dimensions
 
-- Source compatibility: namespaces, names, arity, macro shape, type signatures, and protocol contracts.
-- Behavioral compatibility: results, errors, ordering, equality, hashing, resource lifetime, replay, and side effects.
-- Effect compatibility: added, removed, renamed, or narrowed effects.
-- Capability compatibility: new requirements, changed authority shape, or removed capability paths.
-- Profile compatibility: added support, removed support, narrowed support, or changed delegation rules.
-- Diagnostic compatibility: diagnostic ids, primary span, structured fields, and remediation category.
-- Artifact compatibility: schema identity, content-addressing, provenance, signing, and generated metadata.
-- Conformance compatibility: fixtures, negative tests, benchmarks, and release gates.
+Use the canonical [Compatibility Dimensions](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md#compatibility-dimensions) with the existing implementation criteria and task mapping above. The governing source owns this definition.
 
 ### Crypto/UI/stability producer and consumer interfaces
 
