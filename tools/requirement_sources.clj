@@ -26,6 +26,8 @@
 ;; semantic qualification are part of the authenticated review record.
 (def exact-source-projection-kinds
   #{:l4-macro-expansion-semantic-projection
+    :l6-hermetic-input-policy-semantic-projection
+    :std13-native-model-policy-semantic-projection
     :c4-macro-expansion-semantic-projection
     :math4-eml-search-policy-semantic-projection
     :math9-rewrite-termination-semantic-projection
@@ -265,8 +267,205 @@
    {:hunk-id "STD3-359" :classification :accounting-removal-with-complete-physical-enumeration}
    {:hunk-id "STD3-497" :classification :accounting-removal-with-complete-census-validation}])
 
+(def canonical-policy-bridge-kinds
+  #{:std13-native-model-policy-semantic-projection :l6-hermetic-input-policy-semantic-projection})
+
 (def exact-source-bridge-contracts
-  {math9-rewrite-termination-kind
+  {:l6-hermetic-input-policy-semantic-projection
+   {:path
+ "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+ :source-review
+ {:path "/tmp/uniform-pr767-L6-d2a-independent-review.edn",
+  :sha256
+  "b1320a44bfcd0504ba3ff474f9bcbd6a70920ecc0f68d0248ee095cdefb1a7c0"},
+ :live-sha256
+ "529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72",
+ :applying-blob "b9ee86d36e07745e1c31c02848ec84ac2d9430db",
+ :review-state :proposed,
+ :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+ :human-decision :L12-declared-replayable-inputs,
+ :authority
+ "Matt's explicit L12-declared-replayable-inputs decision, authenticated by the preserved scoped canonical Source review.",
+ :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
+ :semantic-deltas
+ ["Declared environment key/value inputs require actual scoped build grants and all applicable phase/principal/provider/profile premises."
+  "Network/shell/model/tool inputs require configured replayable providers or pinned results as well as authority; no ambient input authority follows from a declaration."
+  "Clock/random, target manifests, compile-time input hashes and input/output/replay records remain explicit; pure constant evaluation still forbids external effects."],
+ :projection-hunks
+ [{:hunk-id "L6-policy-1",
+   :facet-ids
+   ["facet/language/7900fe5de772b242147a53fe"
+    "facet/language/c8208102085757edca466771"
+    "facet/language/d2f6f8aac945203a4b58ea25"],
+   :baseline-start-line 246,
+   :baseline-end-line 256,
+   :live-start-line 246,
+   :live-end-line 263,
+   :baseline-fragment-sha256
+   "9a1c085d0e85384ff12003e21462cb023a3bbe08e4bf0596e1b0c9bcb0ef6eb1",
+   :live-fragment-sha256
+   "0544b8f9123063dd16083974c8b47285ab274d4543499855d93db1eb8497c0ea"}
+  {:hunk-id "L6-policy-2",
+   :facet-ids ["facet/language/dfae37a673544578c9a71dcd"],
+   :baseline-start-line 342,
+   :baseline-end-line 342,
+   :live-start-line 349,
+   :live-end-line 353,
+   :baseline-fragment-sha256
+   "a87c9dd9bf9ffe08059c12f6a656109cd0dc6f15e3d6125c2894ab26fda1f38b",
+   :live-fragment-sha256
+   "af5c773959fba6b57a4fe35246c09ea81f04d274d8c4763be4635929a950fb7b"}],
+ :applying-tree "ff13ce6160d46b982125face622e5028b4e1cb38",
+ :kind :l6-hermetic-input-policy-semantic-projection,
+ :document-id "L6",
+ :applying-ref "d2a0378bdd530857d97d530aab15268fc333ce80",
+ :qualification
+ "Inverse source reconstruction authenticates historical identities only. The human-selected policy delta and its current required criteria remain explicit current semantics; baseline identity recovery cannot silently restore the superseded prohibition or confer current implementation/whole-scope acceptance.",
+ :baseline-sha256
+ "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5",
+ :current-criteria
+ [{:path "specs/build-workflow/tasks.md",
+   :span-sha256
+   "6a01f79fc41bf87fdcd93ff65c0f21e59460c74fe5b384899e2ca6e6934bd4ec",
+   :whole-file-sha256
+   "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+   :marker "compile-time-source-hermetic",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "395f8261e74db5dc9b1480f1a27991691e09ed5f",
+   :end-byte 46981,
+   :owning-task
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :start-byte 45246}],
+ :baseline-blob "b0f96111735331ff130fee06509d94ceea5ec0d0"}
+   :std13-native-model-policy-semantic-projection
+   {:path
+ "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+ :source-review
+ {:path
+  "/tmp/uniform-new240-std13-independent-source-review-authority-v2.edn",
+  :sha256
+  "a00c3c9054da5362ef7388cef60a6075fc4c2e6be4a3d9eee1059c3ca8786bdc"},
+ :live-sha256
+ "25dab04498281cc51537bb0aec2ba046670ccf3fd3dbc3cafc419d8ab79ee71c",
+ :applying-blob "a2e8355b6e3f2423e1d70bcd405717eaa7ca82a2",
+ :review-state :proposed,
+ :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+ :human-decision :allow-scoped-native-local-model-APIs,
+ :authority
+ "Matt's explicit allow-scoped-native-local-model-APIs decision, authenticated by the preserved scoped canonical Source review.",
+ :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
+ :semantic-deltas
+ ["Permit only explicitly declared native local-model providers and scoped actual call authority as the bounded profile exception."
+  "Retain applicable provider/model identity, input/output schemas, AI effects, policy, taint/secrets, failure, replay/audit and ordinary native safety/runtime obligations."
+  "Reject ambient access, missing grants, mismatched/nonlocal provider execution, unchecked outputs and unrestricted native agent/tool APIs; the actual human decision and Source review remain separately authenticated."],
+ :projection-hunks
+ [{:hunk-id "STD13-policy-1",
+   :facet-ids ["stdlib/facet/std13/1049-1178"],
+   :baseline-start-line 20,
+   :baseline-end-line 20,
+   :live-start-line 20,
+   :live-end-line 20,
+   :baseline-fragment-sha256
+   "0f5c69b125ee56d1490ce4d3724ca6c7c61d4dda718b7821b13bc52f40f93f2c",
+   :live-fragment-sha256
+   "a04b0654dc1b4b034dae3e76b0a4ed92cf48b5957443dacbd6d32ca0203262f2"}
+  {:hunk-id "STD13-policy-2",
+   :facet-ids ["stdlib/facet/std13/4423-4509"],
+   :baseline-start-line 76,
+   :baseline-end-line 76,
+   :live-start-line 76,
+   :live-end-line 81,
+   :baseline-fragment-sha256
+   "911d2ff421f524ceead14b06271e387de37cc3e33c3f167ee2bf3418c0408191",
+   :live-fragment-sha256
+   "d81424c71021198695a70bb95f18cebdfa72872873667a264a55c2f5cf650c5e"}
+  {:hunk-id "STD13-policy-3",
+   :facet-ids ["stdlib/facet/std13/6202-6265"],
+   :baseline-start-line 104,
+   :baseline-end-line 104,
+   :live-start-line 109,
+   :live-end-line 113,
+   :baseline-fragment-sha256
+   "f609af837290ec744eccea6155bf40b8c65880dbb08d90858b3c75711986303e",
+   :live-fragment-sha256
+   "2549c8272ca89efbdfd696d9cdf3b333a39090497880346522974bd83d7131c5"}],
+ :applying-tree "95ab69a2482a3fbcdc0400fe9c04c34950e95778",
+ :kind :std13-native-model-policy-semantic-projection,
+ :document-id "STD13",
+ :applying-ref "4c9539d5b9adf293d7203713e7c38b491e52fa9f",
+ :qualification
+ "Inverse source reconstruction authenticates historical identities only. The human-selected policy delta and its current required criteria remain explicit current semantics; baseline identity recovery cannot silently restore the superseded prohibition or confer current implementation/whole-scope acceptance.",
+ :baseline-sha256
+ "b578d3d39ed72930f3b6c838349fa3dbcdebe77698b98b88f3d93531f87a853f",
+ :current-criteria
+ [{:path "specs/legality-workflow/tasks.md",
+   :span-sha256
+   "2d5a2df55cac68df03d27b8da8c7420b812b8953bcb2c46a73de4f1d26f21666",
+   :whole-file-sha256
+   "f984efa03f925267bb2b683fe0613801b6322ffd76ecd462c1f89236e49474b2",
+   :marker "native-local-model-policy",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "b2e842eeb6731949fc2184470519021ee33db575",
+   :end-byte 21066,
+   :owning-task
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+   :start-byte 19724}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :span-sha256
+   "23f14792ece7005fffb2eb156af811a3528b8f40a63a913acdd2a06b361b591f",
+   :whole-file-sha256
+   "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+   :marker "library-workflow-ai-source-ai-provider",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "e44f6f266530fee734af97f94130a2c5f4e9f911",
+   :end-byte 155669,
+   :owning-task
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+   :start-byte 154226}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :span-sha256
+   "851f517113737b0cf7b4bf985c3c643eb9e817e707e913c435699b99cf9f02a2",
+   :whole-file-sha256
+   "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+   :marker "library-workflow-ai-source-ai-policy",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "e44f6f266530fee734af97f94130a2c5f4e9f911",
+   :end-byte 162618,
+   :owning-task
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+   :start-byte 161218}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :span-sha256
+   "dc4e5b451f38cc40d91feabb991382686481f16157862b814e65f4f3659fac74",
+   :whole-file-sha256
+   "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+   :marker "library-workflow-ai-source-ai-profile",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "e44f6f266530fee734af97f94130a2c5f4e9f911",
+   :end-byte 167063,
+   :owning-task
+   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+   :start-byte 165321}
+  {:path "specs/effects-workflow/tasks.md",
+   :span-sha256
+   "35733f38579bc077d2eb66f90bda9ab34739a4d09daecbabf2c4ff0eba8e4790",
+   :whole-file-sha256
+   "ffd8e09758643b5207053331929f08cbd2501405083055e0239be2e934451bc2",
+   :marker "library-workflow-ai-source-effect-admission",
+   :recorded-status :open,
+   :source-commit "67d05c761cad92d5e09f0f8cd2c6e692853887cb",
+   :blob "39bf0000f2fa10458efd16739602e1f01fbfdb29",
+   :end-byte 31625,
+   :owning-task
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+   :start-byte 30293}],
+ :baseline-blob "e1417db32e7ab319c595dee9fcb917b0950b44f7"}
+   math9-rewrite-termination-kind
    {:document-id "MATH9"
     :path math9-rewrite-termination-path
     :baseline-ref math9-rewrite-termination-baseline-ref
@@ -1752,8 +1951,11 @@
                           :baseline-sha256 :live-sha256 :baseline-blob :applying-blob
                           :review-state :authority :qualification :semantic-deltas
                           :projection-hunks]
-                   (#{math4-search-policy-kind math9-rewrite-termination-kind} (:kind bridge))
-                   (conj :baseline-tree :applying-tree :current-criteria)))
+                   (or (#{math4-search-policy-kind math9-rewrite-termination-kind} (:kind bridge))
+                       (canonical-policy-bridge-kinds (:kind bridge)))
+                   (conj :baseline-tree :applying-tree :current-criteria)
+                   (canonical-policy-bridge-kinds (:kind bridge))
+                   (conj :human-decision :source-review)))
          (or (not= platform-generated-view-kind (:kind bridge))
              (= (:generated-view (get exact-source-bridge-contracts (:kind bridge)))
                 (:generated-view bridge))))))
@@ -1880,6 +2082,30 @@
                 (str "Pinned Git source has no tree: " ref))
       (str/trim tree))))
 
+(defn- validate-policy-criteria! [bridge read-ref sha256 require!]
+  (when (canonical-policy-bridge-kinds (:kind bridge))
+    (require! (exact-source-bridge? bridge)
+              "Canonical policy source bridge identity or authority changed")
+    (doseq [{:keys [path marker source-commit blob whole-file-sha256 start-byte end-byte span-sha256 owning-task recorded-status]} (:current-criteria bridge)]
+      (require! (and (string? path) (not (.isAbsolute (io/file path)))
+                     (re-matches #"[0-9a-f]{40}" (or source-commit "")))
+                "Canonical policy criterion source identity is invalid")
+      (let [text (read-ref source-commit path) bytes (.getBytes ^String text "UTF-8")]
+        (require! (and (= whole-file-sha256 (sha256 text)) (= blob (git-blob-id text)))
+                  "Canonical policy criterion file bytes differ")
+        (require! (and (integer? start-byte) (integer? end-byte) (<= 0 start-byte) (< start-byte end-byte) (<= end-byte (alength bytes)))
+                  "Canonical policy criterion span is invalid")
+        (let [span (String. bytes (int start-byte) (int (- end-byte start-byte)) "UTF-8")
+              prefix (String. bytes 0 (int start-byte) "UTF-8")
+              task (last (re-seq #"(?m)^- \[([ xX])\] `([^`]+)`" prefix))]
+          (require! (and (= span-sha256 (sha256 span))
+                         (str/starts-with? span (str "<!-- " marker ":start -->"))
+                         (str/ends-with? span (str "<!-- " marker ":end -->"))
+                         (= owning-task (nth task 2 nil))
+                         (= recorded-status (when task (if (= " " (nth task 1)) :open :checked))))
+                    "Canonical policy criterion body, marker, task authority or status differs")))))
+  bridge)
+
 (defn validate-snapshots! [bridge read-ref sha256 require!]
   (require! (and (string? (:path bridge)) (not (.isAbsolute (io/file (:path bridge)))))
             "Source version bridge path must be relative")
@@ -1901,4 +2127,5 @@
                        (re-matches #"[0-9a-f]{40}" expected-blob)
                        (= expected-blob (git-blob-id text)))
                   "Bridge snapshot Git blob differs from declared source"))))
+  (validate-policy-criteria! bridge read-ref sha256 require!)
   (assoc bridge :snapshot-provenance :git-bytes-verified))

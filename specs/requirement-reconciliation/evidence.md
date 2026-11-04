@@ -651,3 +651,14 @@ tamper tests reject altered authority, rationale or fragment metadata even
 when a forged digest is recomputed. Structural docs, roadmap, language-
 boundary and governance checks pass. No compiler replay, implementation
 acceptance, integration eligibility or whole-project denominator is claimed.
+
+
+## Current L6 and STD13 human-policy source bridges
+
+The original canonical model lacked current-source bridges for the two explicit human policy decisions. The new proposed bridges authenticate L6 at `d2a0378bdd530857d97d530aab15268fc333ce80` and STD13 at `4c9539d5b9adf293d7203713e7c38b491e52fa9f`, preserving the complete original `a1b991be499d50579a8b4366976c519ae8949224` document pins and exact historical facet identities. Reversing only the two L6 and three STD13 declared spans reconstructs the entire original source bytes. All seven earlier bridge records and every other canonical model value remain unchanged.
+
+L6 follows the selected L12 declared/replayable-input policy with actual scoped grants, phase/principal/provider/profile premises, input and replay records, and the separate pure-constant prohibition. STD13 permits the selected scoped native local-model API exception while retaining provider/model, schema/effect/capability/policy, taint/secrets, failure/replay/audit and native safety requirements. The preserved scoped Source review receipts and the actual native-policy authority supplement are bound separately from canonical-model acceptance.
+
+The typed bridge checks bind six exact current criterion spans to their frozen `67d05c761cad92d5e09f0f8cd2c6e692853887cb` task files, sole task owners and recorded Open states. Baseline identity reconstruction does not reinstate superseded prohibitions or establish current implementation behavior. T002/T003/T005, complete current source/task/evidence composition, independent canonical-model review and Main integration remain open. Validation and final author identity are recorded in the separate immutable author receipt; this Source increment does not renew historical execution receipts.
+
+Author controls passed three policy-source tests with 101 assertions and the two existing layout/STD3 source-projection regression tests with 36 assertions, all with zero failures or errors. Pinned lint, canonical document validation, full-language roadmap structural validation, governance validation and the six-test/eleven-assertion language-boundary check passed. Complete current source/task binding and independent review remain separate work; these results provide no whole-project implementation or release acceptance.

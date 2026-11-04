@@ -678,4 +678,85 @@
     (is (str/includes? (:acceptance (requirement-evidence/task-record platform "platform-implementation-tasks" "hardware")) "state-machine lowering and simulation"))
     (is (thrown? Exception (requirement-evidence/task-record (str/replace domains "Outcome:" "Malformed outcome:") "domains-implementation-tasks" "math")))))
 
+(defn canonical-policy-fixture [document-id]
+  (let [manifest (edn/read-string (slurp rr/manifest-path))
+        document (first (filter #(= document-id (:id %)) (:original-documents manifest)))
+        bridge (first (filter #(= document-id (:document-id %)) (:source-version-bridges manifest)))
+        read-ref #(requirement-sources/git-source "." %1 %2 rr/require!)
+        baseline (read-ref (:baseline-ref bridge) (:path bridge))
+        live (slurp (:path bridge))
+        declared {:source-baseline (:source-baseline manifest)
+                  :original-documents [document]
+                  :source-facets (vec (filter #(= document-id (:document-id %)) (:source-facets manifest)))
+                  :source-version-bridges [bridge]}
+        options {:baseline-texts {document-id baseline} :verified-baselines? #{document-id}}]
+    {:bridge bridge :baseline baseline :live live :document document :read-ref read-ref :declared declared
+     :view (fn [b text]
+             (requirement-sources/view (assoc declared :source-version-bridges [b]) document text rr/sha256 rr/require! options))}))
+
+(deftest canonical-policy-current-sources-preserve-baseline-and-explicit-pending-scope
+  (doseq [id ["L6" "STD13"]]
+    (let [{:keys [bridge baseline live read-ref view]} (canonical-policy-fixture id)
+          authenticated (requirement-sources/validate-snapshots! bridge read-ref rr/sha256 rr/require!)
+          result (view bridge live)]
+      (is (= :git-bytes-verified (:snapshot-provenance authenticated)))
+      (is (= baseline (:text result)))
+      (is (= :proposed (get-in result [:bridge :review-state])))
+      (is (= (:human-decision bridge) (get-in result [:bridge :human-decision])))
+      (is (seq (:semantic-deltas bridge)))
+      (is (seq (:current-criteria bridge)))
+      (is (every? #(= :open (:recorded-status %)) (:current-criteria bridge)))
+      (is (every? #(and (:owning-task %) (:source-commit %) (:span-sha256 %)) (:current-criteria bridge))))))
+
+(deftest canonical-policy-source-authority-hunks-and-current-criteria-reject-forgeries
+  (doseq [id ["L6" "STD13"]]
+    (let [{:keys [bridge live read-ref view]} (canonical-policy-fixture id)]
+      (doseq [altered [(dissoc bridge :human-decision)
+                       (assoc bridge :human-decision :unrestricted-provider-access)
+                       (assoc bridge :review-state :reviewed)
+                       (assoc bridge :authority "")
+                       (assoc bridge :qualification "")
+                       (assoc bridge :semantic-deltas [])
+                       (assoc-in bridge [:source-review :sha256] (apply str (repeat 64 "0")))
+                       (assoc bridge :baseline-ref (:applying-ref bridge))
+                       (assoc bridge :baseline-tree (:applying-tree bridge))
+                       (assoc bridge :applying-blob (:baseline-blob bridge))
+                       (update bridge :projection-hunks pop)
+                       (assoc-in bridge [:projection-hunks 0 :facet-ids] ["absent/facet"])
+                       (update bridge :current-criteria pop)
+                       (assoc-in bridge [:current-criteria 0 :owning-task] "absent/task")
+                       (assoc-in bridge [:current-criteria 0 :recorded-status] :checked)
+                       (update-in bridge [:current-criteria 0 :start-byte] inc)
+                       (assoc-in bridge [:current-criteria 0 :whole-file-sha256] "forged")]]
+        (is (thrown? Exception (view altered live)))
+        (is (thrown? Exception (requirement-sources/validate-snapshots! altered read-ref rr/sha256 rr/require!))))
+      (let [drifted (str live "\nUnlisted additional policy.\n")]
+        (is (thrown? Exception (view bridge drifted)))
+        (is (thrown? Exception (view (assoc bridge :live-sha256 (rr/sha256 drifted)) drifted))))
+      (let [criterion (first (:current-criteria bridge))
+            forged-read (fn [ref path]
+                          (let [text (read-ref ref path)]
+                            (if (and (= ref (:source-commit criterion)) (= path (:path criterion)))
+                              (str text "\nChanged after the criterion source freeze.\n") text)))]
+        (is (thrown? Exception (requirement-sources/validate-snapshots! bridge forged-read rr/sha256 rr/require!)))))))
+
+(deftest canonical-policy-records-preserve-every-existing-model-value
+  (let [before (edn/read-string (requirement-sources/git-source "." "67d05c761cad92d5e09f0f8cd2c6e692853887cb" rr/manifest-path rr/require!))
+        current (edn/read-string (slurp rr/manifest-path))
+        prior (:source-version-bridges before)
+        all (:source-version-bridges current)
+        added (subvec all (count prior))]
+    (is (= (dissoc before :source-version-bridges) (dissoc current :source-version-bridges)))
+    (is (= prior (subvec all 0 (count prior))))
+    (is (= #{"L6" "STD13"} (set (map :document-id added))))
+    (is (= 2 (count added)))
+    (is (= :open (:scope-state current)))
+    (is (every? #(= :proposed (:review-state %)) added))
+    (is (= (:source-baseline before) (:source-baseline current)))
+    (is (= (:original-documents before) (:original-documents current)))
+    (is (= (:requirements before) (:requirements current)))
+    (is (= (:source-dispositions before) (:source-dispositions current)))
+    (is (= (:bounded-evidence-assessments before) (:bounded-evidence-assessments current)))))
+
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))
