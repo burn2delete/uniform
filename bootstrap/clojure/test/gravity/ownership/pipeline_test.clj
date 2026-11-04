@@ -5,6 +5,7 @@
             [gravity.c9-ownership-checker.graphs :as graphs]
             [gravity.c9-ownership-checker.lifecycles :as lifecycles]
             [gravity.c9-ownership-checker.resources :as resources]
+            [gravity.c9-ownership-checker.verification :as verification]
             [gravity.ownership :as ownership]
             [gravity.self-hosting.sh10-ownership-transition-fixture-support
              :as fixture-support]))
@@ -23,7 +24,9 @@
            'native-lifetime-interval-map 'native-escape-analysis-report
            'native-region-lifetime-graph 'native-arena-generation-graph
            'native-linear-resource-flow-graph 'native-transfer-records
-           'native-runtime-check-records 'native-unsafe-audit-references}
+           'native-runtime-check-records 'native-unsafe-audit-references
+           'native-ownership-diagnostics 'native-linear-paths-exact?
+           'native-verifier-report 'native-ownership-capability-proof 'native-validate!}
          (set (keys (ns-publics 'gravity.ownership)))))
   (doseq [[name operation] (ns-publics 'gravity.ownership)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -33,6 +36,150 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-c9-analysis} (:unsupported contract))))))
+
+(def ^:private validation-rules
+  [[:ownership-graph-complete? "C9-USE-AFTER-MOVE"]
+   [:borrow-rules-proven? "C9-MUT-ALIAS"]
+   [:lifetime-intervals-recorded? "C9-BORROW-ESCAPE"]
+   [:move-and-consume-recorded? "C9-USE-AFTER-CONSUME"]
+   [:region-and-arena-recorded? "C9-REGION-ESCAPE"]
+   [:linear-flow-complete? "C9-LINEAR-LEAK"]
+   [:transfer-boundaries-explicit? "C9-TRANSFER"]
+   [:runtime-checks-profile-gated? "C9-RUNTIME-CHECK"]
+   [:unsafe-audit-references-recorded? "C9-UNSAFE"]
+   [:diagnostics-covered? "C9-UNSAFE"]
+   [:verifier-passed? "C9-UNSAFE"]])
+
+(def ^:private native-report-inputs
+  ;; Explicit native data only; these labels are not authentic C8 evidence.
+  [{:capability-based-proof {:status :complete}}
+   {:owners {"value" {}} :status :complete}
+   {:edges [{:edge :immutable-borrow} {:edge :mutable-borrow}] :status :complete}
+   {:intervals {"interval" {}} :status :complete}
+   {:moves [:move] :consumes [:consume]}
+   {:status :complete}
+   {:regions {"region" {}} :status :complete}
+   {:arenas {"arena" {}} :status :complete}
+   {:resources {"resource" {:terminal-paths [{:terminal-count 1}]}} :status :complete}
+   {:records (mapv #(hash-map :boundary %) [:function :actor :task :ffi])}
+   {:records [{:profile-legal? true}]}
+   {:records [{:unsafe-island :provided-native-data :review :required}]}
+   {:diagnostics [{:diagnostic "native-a"} {:diagnostic "native-z"}]}])
+
+(def ^:private native-reporters
+  [ownership/native-verifier-report verification/verifier-report
+   (fn [predicate ids & inputs]
+     (c9/with-operations {:c9-linear-paths-exact? predicate :c9-ownership-diagnostic-ids ids}
+       #(apply c9/c9-ownership-verifier-report inputs)))])
+
+(deftest native-verifier-preserves-projection-flags-and-duplicate-callbacks
+  (doseq [report native-reporters]
+    (let [calls (atom []) linear (nth native-report-inputs 8)
+          predicate (fn [value] (swap! calls conj value) :truthy-native-label)
+          result (apply report predicate ["native-z" "native-a" "native-z"] native-report-inputs)]
+      (is (= :gravity/c9-ownership-verifier-report (:artifact result)))
+      (is (= :passed (:status result)))
+      (is (every? true? (vals (dissoc result :artifact :status))))
+      (is (= [linear linear] @calls))
+      (is (every? #(identical? linear %) @calls)))
+    ;; The original status decision checks supplied record contents separately
+    ;; from several completion flags. Keep that native compatibility behavior.
+    (let [inputs (reduce #(update %1 %2 dissoc :status) native-report-inputs [1 2 3 6 7 8])
+          result (apply report (constantly true) ["native-z" "native-a"] inputs)]
+      (is (= :passed (:status result)))
+      (is (false? (:ownership-graph-complete? result)))
+      (is (false? (:borrow-rules-proven? result)))
+      (is (false? (:lifetime-intervals-recorded? result)))
+      (is (false? (:region-and-arena-recorded? result)))
+      (is (false? (:linear-flow-complete? result))))
+    (let [calls (atom 0)
+          result (apply report (fn [_] (= 1 (swap! calls inc)))
+                        ["native-z" "native-a"] native-report-inputs)]
+      (is (true? (:linear-flow-complete? result)))
+      (is (= :failed (:status result)))
+      (is (= 2 @calls)))
+    (doseq [throw-at [1 2]]
+      (let [error (ex-info "original verifier callback" {:at throw-at}) calls (atom 0)
+            observed (try
+                       (apply report (fn [_] (when (= throw-at (swap! calls inc)) (throw error)) true)
+                              ["native-z" "native-a"] native-report-inputs)
+                       (catch Throwable value value))]
+        (is (identical? error observed))
+        (is (= throw-at @calls))))))
+
+(deftest native-diagnostic-registry-preserves-order-spans-and-failure-barriers
+  (doseq [construct [ownership/native-ownership-diagnostics verification/ownership-diagnostics
+                    (fn [span ids designs path owners]
+                      (c9/with-operations {:source-span span :c9-ownership-diagnostic-ids ids
+                                           :c9-ownership-rejected-designs designs}
+                        #(c9/c9-ownership-diagnostics path owners)))]]
+    (let [calls (atom []) ids ["z" "a"]
+          designs [{:diagnostic "z" :fixture :z} {:diagnostic "a" :fixture :a}
+                   {:diagnostic "z" :fixture :duplicate}]
+          span {:source :provided :origin :provided-native-data}
+          span-fn (fn [& args] (swap! calls conj (vec args)) span)
+          result (construct span-fn ids designs "native-source" {:owners (array-map "z" {} "a" {})})]
+      (is (identical? ids (:required-diagnostic-ids result)))
+      (is (= ["z" "a" "z"] (mapv :diagnostic (:diagnostics result))))
+      (is (= [:z :a :duplicate] (mapv :fixture (:diagnostics result))))
+      (is (= ["z" "z" "z"] (mapv :value-id (:diagnostics result))))
+      (is (every? #(identical? span (:source-span %)) (:diagnostics result)))
+      (is (= (repeat 3 ["native-source" 0]) @calls))
+      (is (= :fixture/value (get-in (construct span-fn ids (vec (take 1 designs)) "native-source" {})
+                                           [:diagnostics 0 :value-id])))
+      (let [error (ex-info "original diagnostic span callback" {}) count (atom 0)
+            observed (try (construct (fn [& _] (when (= 2 (swap! count inc)) (throw error)) span)
+                                     ids designs "native-source" {})
+                          (catch Throwable value value))]
+        (is (identical? error observed))
+        (is (= 2 @count))))))
+
+(deftest native-linear-and-proof-projections-preserve-empty-and-unadmitted-data
+  (doseq [predicate [ownership/native-linear-paths-exact? verification/linear-paths-exact?
+                    c9/c9-linear-paths-exact?]]
+    (doseq [linear [nil {} {:resources {}} {:resources {"r" {:terminal-paths []}}}]]
+      (is (true? (predicate linear))))
+    (doseq [count [0 2 nil false]]
+      (is (false? (predicate {:resources {"r" {:terminal-paths [{:terminal-count count}]}}}))))
+    (is (true? (predicate {:resources {"r" {:terminal-paths [{:terminal-count 1}]}}}))))
+  (doseq [project [ownership/native-ownership-capability-proof verification/ownership-capability-proof
+                  c9/c9-ownership-capability-proof]]
+    (let [result (project {:ownership-verifier-report {:status :passed :borrow-rules-proven? :supplied}})]
+      (is (= :complete (:status result)))
+      (is (= :supplied (:borrow-rules-proven? result)))
+      (is (nil? (:ownership-graph-complete? result)))
+      (is (true? (:verifier-passed? result))))
+    (is (= :complete (:status (project nil))))
+    (let [error (ex-info "original proof lookup" {})
+          artifact (reify clojure.lang.ILookup
+                     (valAt [_ _] (throw error)) (valAt [_ _ _] (throw error)))]
+      (is (identical? error (try (project artifact) (catch Throwable value value)))))))
+
+(deftest native-validation-preserves-all-rule-order-payloads-and-callback-identity
+  (doseq [validate [ownership/native-validate! verification/validate!
+                   (fn [proof fail path artifact]
+                     (c9/with-operations {:c9-ownership-capability-proof proof :c9-ownership-fail! fail}
+                       #(c9/c9-ownership-validate! path artifact)))]]
+    (doseq [missing (concat [[]] (mapv vector validation-rules) [validation-rules])]
+      (let [calls (atom []) proof-calls (atom []) artifact {:unadmitted true}
+            proof (apply dissoc (into {} (map (fn [[field _]] [field :truthy-native-label]) validation-rules))
+                         (map first missing))
+            result (validate (fn [value] (swap! proof-calls conj value) proof)
+                             (fn [& args] (swap! calls conj (vec args)) :ignored)
+                             "native-source" artifact)]
+        (is (= :complete result))
+        (is (= 1 (count @proof-calls)))
+        (is (identical? artifact (first @proof-calls)))
+        (is (= (mapv (fn [[field id]]
+                       [id "native-source" {:stage :ownership-lifetime-region-check}
+                        {:missing-fields [field]}]) missing) @calls))))
+    (let [error (ex-info "original validation refusal" {}) calls (atom [])
+          observed (try (validate (constantly {})
+                                  (fn [& args] (swap! calls conj (vec args)) (throw error))
+                                  "native-source" {})
+                        (catch Throwable value value))]
+      (is (identical? error observed))
+      (is (= ["C9-USE-AFTER-MOVE"] (mapv first @calls))))))
 
 (def ^:private record-builders
   [[ownership/native-lifetime-interval-map lifecycles/lifetime-interval-map c9/c9-lifetime-interval-map

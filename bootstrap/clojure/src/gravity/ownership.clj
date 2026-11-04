@@ -6,12 +6,24 @@
   '{:authenticates-inputs? false,
  :public-api
  {persistent-ownership {:arglists ([role extra]), :admission :none},
+  native-ownership-capability-proof
+  {:arglists ([artifact]),
+   :admission :none,
+   :native-compatibility-only? true},
   native-borrow-graph
   {:arglists ([node-ids node module effect-graph]),
    :admission :none,
    :native-compatibility-only? true},
   native-unsafe-audit-references
   {:arglists ([module]),
+   :admission :none,
+   :native-compatibility-only? true},
+  native-linear-paths-exact?
+  {:arglists ([linear]),
+   :admission :none,
+   :native-compatibility-only? true},
+  native-validate!
+  {:arglists ([capability-proof fail! source-path artifact]),
    :admission :none,
    :native-compatibility-only? true},
   persistent-ownership-schema-valid?
@@ -50,6 +62,25 @@
    :native-compatibility-only? true},
   shared-owner-domain-id
   {:arglists ([digest nodes]), :admission :none},
+  native-verifier-report
+  {:arglists
+   ([linear-paths-exact?
+     diagnostic-ids
+     c8-artifact
+     ownership
+     borrow
+     lifetimes
+     moves
+     escape
+     region
+     arena
+     linear
+     transfer
+     runtime
+     unsafe
+     diagnostics]),
+   :admission :none,
+   :native-compatibility-only? true},
   canonical-owner-id
   {:arglists ([shared-owner-domain-id product node]),
    :admission :none},
@@ -57,10 +88,20 @@
   {:arglists ([module]),
    :admission :none,
    :native-compatibility-only? true},
+  native-ownership-diagnostics
+  {:arglists
+   ([source-span
+     diagnostic-ids
+     rejected-designs
+     source-path
+     ownership]),
+   :admission :none,
+   :native-compatibility-only? true},
   native-region-lifetime-graph
   {:arglists ([module]),
    :admission :none,
    :native-compatibility-only? true}},
+ :native-proof-and-verifier-labels-are-data? true,
  :invalidated-verified-ir-facts [],
  :native-graph-boundary :c9-native-graph-projections,
  :native-graph-status-is-data? true,
@@ -70,7 +111,8 @@
   [gravity.bootstrap
    gravity.c9-ownership-checker.graphs
    gravity.c9-ownership-checker.lifecycles
-   gravity.c9-ownership-checker.resources],
+   gravity.c9-ownership-checker.resources
+   gravity.c9-ownership-checker.verification],
   :forbids
   [gravity.bootstrap
    gravity.c9-ownership-checker
@@ -87,6 +129,8 @@
   :host-exception-identity],
  :issues-verifier-certificates? false,
  :runtime-check-profile-flags-are-data? true,
+ :native-verification-boundary
+ :c9-native-diagnostic-and-verifier-projections,
  :native-record-boundary :c9-native-lifecycle-and-resource-records,
  :governing-contracts
  [D1
@@ -110,6 +154,12 @@
   BOOT8
   TEST2
   D6],
+ :preserves-native-verification
+ [:diagnostic-order-and-source-spans
+  :truthiness-and-vacuity
+  :callback-order-and-duplicate-invocations
+  :original-exception-identity
+  :supplied-proof-status-data],
  :unsupported
  [:public-input-admission
   :callback-authentication
@@ -133,7 +183,10 @@
   :common-key-schema
   :explicit-native-module-and-effect-node-view
   :source-span-and-node-callbacks
-  :explicit-native-module-and-profile-data],
+  :explicit-native-module-and-profile-data
+  :explicit-native-artifact-views
+  :diagnostic-id-and-design-data
+  :linear-predicate-proof-and-failure-callbacks],
  :preserves-native-graphs
  [:callback-lookup-and-invocation-order
   :exception-identity
@@ -149,7 +202,12 @@
   :existing-callers
   [C9-MUT-ALIAS C9-TRANSFER C6-VERIFY :diagnostic-construction],
   :native-graph-projections :original-callback-and-host-errors,
-  :native-records :original-host-lookup-failures},
+  :native-records :original-host-lookup-failures,
+  :native-verification
+  [:original-c9-validation-decisions
+   :original-rule-order-and-payloads
+   :callback-owner-retains-exception-construction
+   :original-host-failures]},
  :artifact-outputs
  [:persistent-ownership-records
   :forwarded-node-identities
@@ -166,7 +224,11 @@
   :native-linear-resource-flow-graph
   :native-transfer-records
   :native-runtime-check-records
-  :native-unsafe-audit-references],
+  :native-unsafe-audit-references
+  :native-ownership-diagnostic-registry
+  :native-verifier-report
+  :native-proof-label-data
+  :native-validation-result],
  :contract-boundary :native-seed-persistent-ownership-data}
 )
 
@@ -493,6 +555,102 @@
               :safe-api-boundary :stage0/linear-resource-wrapper
               :reason :manual-resource-flow :review :required :status :recorded}]
    :rejected-unsafe-families ["C9-UNSAFE"] :status :complete})
+
+(defn native-ownership-diagnostics [source-span diagnostic-ids rejected-designs source-path ownership]
+  {:artifact :gravity/c9-ownership-diagnostic-registry
+   :required-diagnostic-ids diagnostic-ids
+   :diagnostics
+   (mapv (fn [design]
+           {:diagnostic (:diagnostic design)
+            :fixture (:fixture design)
+            :value-id (or (some-> ownership :owners keys first) :fixture/value)
+            :owner-id :fixture/owner :borrow-id :fixture/borrow
+            :region-id :fixture/region :arena-generation :fixture/generation
+            :resource-id :fixture/resource :control-path :fixture/path
+            :source-span (source-span source-path 0)
+            :generated-origin-chain [] :profile :fixture/profile :target :fixture/target
+            :remediation "Keep ownership, lifetime, region, arena, and linear-resource facts explicit before safety analysis."})
+         rejected-designs)
+   :status :complete})
+
+(defn native-linear-paths-exact? [linear]
+  (every? (fn [[_ resource]]
+            (every? #(= 1 (:terminal-count %)) (:terminal-paths resource)))
+          (:resources linear)))
+
+(defn native-verifier-report [linear-paths-exact? diagnostic-ids c8-artifact ownership borrow
+                      lifetimes moves escape region arena linear transfer runtime unsafe diagnostics]
+  (let [diagnostics? (= (set diagnostic-ids)
+                        (set (map :diagnostic (:diagnostics diagnostics))))
+        borrow-kinds (set (map :edge (:edges borrow)))
+        transfer-boundaries (set (map :boundary (:records transfer)))
+        c8-complete? (= :complete (get-in c8-artifact [:capability-based-proof :status]))
+        graph-complete? (and (seq (:owners ownership)) (= :complete (:status ownership)))
+        borrow-proven? (and (contains? borrow-kinds :immutable-borrow)
+                            (contains? borrow-kinds :mutable-borrow)
+                            (= :complete (:status borrow)))
+        lifetimes-recorded? (and (seq (:intervals lifetimes)) (= :complete (:status lifetimes)))
+        moves-recorded? (boolean (and (seq (:moves moves)) (seq (:consumes moves))))
+        region-recorded? (and (seq (:regions region)) (seq (:arenas arena))
+                              (= :complete (:status region)) (= :complete (:status arena)))
+        linear-complete? (and (linear-paths-exact? linear) (= :complete (:status linear)))
+        transfers-explicit? (set/subset? #{:function :actor :task :ffi} transfer-boundaries)
+        runtime-gated? (every? :profile-legal? (:records runtime))]
+    {:artifact :gravity/c9-ownership-verifier-report
+     :c8-proof-complete? c8-complete?
+     :ownership-graph-complete? graph-complete?
+     :borrow-rules-proven? borrow-proven?
+     :lifetime-intervals-recorded? lifetimes-recorded?
+     :move-and-consume-recorded? moves-recorded?
+     :escape-analysis-recorded? (= :complete (:status escape))
+     :region-and-arena-recorded? region-recorded?
+     :linear-flow-complete? linear-complete?
+     :transfer-boundaries-explicit? transfers-explicit?
+     :runtime-checks-profile-gated? runtime-gated?
+     :unsafe-audit-references-recorded? (boolean (seq (:records unsafe)))
+     :diagnostics-covered? diagnostics?
+     :status (if (and c8-complete? (seq (:owners ownership))
+                      (contains? borrow-kinds :immutable-borrow)
+                      (contains? borrow-kinds :mutable-borrow)
+                      (seq (:intervals lifetimes)) (seq (:moves moves))
+                      (seq (:consumes moves)) (= :complete (:status escape))
+                      (seq (:regions region)) (seq (:arenas arena))
+                      (linear-paths-exact? linear) transfers-explicit? runtime-gated?
+                      (seq (:records unsafe)) diagnostics?)
+               :passed :failed)}))
+
+(defn native-ownership-capability-proof [artifact]
+  (let [verifier (:ownership-verifier-report artifact)]
+    {:ownership-graph-complete? (:ownership-graph-complete? verifier)
+     :borrow-rules-proven? (:borrow-rules-proven? verifier)
+     :lifetime-intervals-recorded? (:lifetime-intervals-recorded? verifier)
+     :move-and-consume-recorded? (:move-and-consume-recorded? verifier)
+     :region-and-arena-recorded? (:region-and-arena-recorded? verifier)
+     :linear-flow-complete? (:linear-flow-complete? verifier)
+     :transfer-boundaries-explicit? (:transfer-boundaries-explicit? verifier)
+     :runtime-checks-profile-gated? (:runtime-checks-profile-gated? verifier)
+     :unsafe-audit-references-recorded? (:unsafe-audit-references-recorded? verifier)
+     :diagnostics-covered? (:diagnostics-covered? verifier)
+     :verifier-passed? (= :passed (:status verifier))
+     :status :complete}))
+
+(defn native-validate! [capability-proof fail! source-path artifact]
+  (let [proof (capability-proof artifact)]
+    (doseq [[field id] [[:ownership-graph-complete? "C9-USE-AFTER-MOVE"]
+                        [:borrow-rules-proven? "C9-MUT-ALIAS"]
+                        [:lifetime-intervals-recorded? "C9-BORROW-ESCAPE"]
+                        [:move-and-consume-recorded? "C9-USE-AFTER-CONSUME"]
+                        [:region-and-arena-recorded? "C9-REGION-ESCAPE"]
+                        [:linear-flow-complete? "C9-LINEAR-LEAK"]
+                        [:transfer-boundaries-explicit? "C9-TRANSFER"]
+                        [:runtime-checks-profile-gated? "C9-RUNTIME-CHECK"]
+                        [:unsafe-audit-references-recorded? "C9-UNSAFE"]
+                        [:diagnostics-covered? "C9-UNSAFE"]
+                        [:verifier-passed? "C9-UNSAFE"]]]
+      (when-not (get proof field)
+        (fail! id source-path {:stage :ownership-lifetime-region-check}
+               {:missing-fields [field]}))))
+  :complete)
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

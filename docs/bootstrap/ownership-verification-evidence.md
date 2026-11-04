@@ -41,6 +41,40 @@ independent acceptance, own CI and artifact audit, and exact clean current-main
 integration preflight. This declaration precedes implementation and makes no
 acceptance or integration claim.
 
+The working extraction passes 15 owning tests / 719 assertions. Cases cover
+direct/helper/facade entrypoints, duplicate linear-predicate calls and failure
+identity, diagnostic ordering and original span identity, first-owner fallback,
+all eleven validation rules and their exact payload order, ignored failure
+callback returns, truthy native flags, empty-input vacuity and unadmitted proof
+labels. Several completion flags can be false while the original native report
+status is passed; this distinction is preserved and grants no authority.
+The separate cold C9 regression passes 4 / 94 with Bootstrap absent.
+Language-boundary tests pass 6 / 11; separate source ownership tests pass
+42 / 1187, both with zero skipped namespaces. Pinned source/helper/test lint reports
+zero errors or warnings. Document, roadmap and governance validators pass.
+Exact source checks conserve all five bodies, nineteen prior functions, helper
+arities and surrounding source.
+
+The clean original capture SHA-256 is
+99162dd9714dbb4de9e9f6d2bd96a6f242c536f5d5d0a682c1f92828ef186460.
+It retains thirteen validation-callback cases, two diagnostic-order/source-span
+cases, seven linear inputs and four proof-label views, as well as eleven native
+profile views (four accepted, seven profile refusals), six altered-record
+refusals and eight opaque-module failures. Separately the actual paired Gravity
+plans and current engine execute eight accepted and twenty-eight rejected
+normalized requests. Actual new-checkout source paths/bytes/hashes and plan
+identities are retained, not substituted from a predecessor checkout.
+
+Retained nonpasses: the extraction comparison stopped before mutation because
+separate Clojure reads generated different anonymous-function symbols. The
+comparison now normalizes only those generated parameter names, while exact
+source and all body structure remain checked. A test run before extraction
+reported the absent new API; a later test supplied a sequence where the
+existing facade requires a vector and was rejected. The test now supplies the
+declared vector; no facade check, source rule, pin or gate changed. Original
+helper source and raw failure logs remain retained. Committed capture/lint,
+independent acceptance, own CI and integration evidence remain outstanding.
+
 The prior source-to-C9 C2-HASH refusal remains untouched and uncredited. Do not
 call, retry, repin, transfer or route around that refused source operation.
 Native projection tests use the existing independent native-data boundary.
