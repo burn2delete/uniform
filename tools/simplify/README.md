@@ -141,6 +141,15 @@ The check watchdog does not impose a deadline on model turns or controller
 Git/GitHub calls. A stalled call requires host/operator interruption; pause
 takes effect at scheduler boundaries, after active operations finish.
 
+The implementation harness in `../advance` shares persistent path claims,
+denied-operation records and a main-write lock through the Git common directory.
+Disjoint authors can run concurrently; overlapping active writers wait. Claims
+release before independent review, so immutable candidates awaiting review or
+CI do not prevent isolated successors. Failed/interrupted writing claims persist.
+Restart older Simplify processes with this version before running both tools.
+These cooperative locks cover harnesses in the same Git repository; coordinate
+other main writers and separate clones explicitly.
+
 ```text
 clojure -M:run status config.edn
 clojure -M:run pause config.edn
@@ -170,10 +179,10 @@ retry an effect or override denial. Preserve uncertain effects and worktrees.
 
 ## Parallel campaigns and deployment
 
-Simplify and Seedless can plan, implement, check and review concurrently with
+Simplify, Seedless and Advance can plan, implement, check and review concurrently with
 separate Projects, campaign identities, state directories and worker worktrees.
 Do not reuse one campaign's state for a different objective. Deploy compatible
-versions of both tools; old versions use an incompatible lifetime repository
+versions of all consumers; old versions use an incompatible lifetime repository
 lock and must be stopped before this protocol is installed.
 
 The shared runtime's `coordination` function supplies the per-state controller
@@ -206,7 +215,7 @@ lock is released. Another campaign cannot merge until the original owner
 records the inspected outcome; it can continue independent source work.
 
 For the one-time transition, while old controllers are stopped, register every
-preserved campaign state before starting either compatible controller:
+preserved campaign and operator state before starting compatible controllers:
 
 ```text
 clojure -M:run coordinate config.edn
@@ -214,7 +223,12 @@ clojure -M:run coordinate config.edn
 
 This performs no model or GitHub calls. It preserves known refusal guards
 across campaigns and imports explicitly recorded legacy unknown-writer holds,
-including their exact owned paths. It is deployment recovery, not a prerequisite
+including their exact owned paths, and legacy claims/refusals from
+`uniform-harness/claims.edn` and `denials.edn`. Imported claims require inspected
+original-owner release; they are never assumed to have ended. A known local
+active lease can be reused by scheduler and worker, but a persisted or unknown
+lease cannot be reclaimed by starting another controller.
+This is deployment recovery, not a prerequisite
 for ordinary edits or focused tests. Inspection releases are not expiry timers.
 
 Original-owner recovery commands are explicit:
@@ -237,6 +251,19 @@ inspection. Only that exact source tuple can receive a new transaction ID;
 the old attempt stays recorded. A restricted action cannot take this path.
 An own unresolved main effect requires Attention before another provider read;
 another campaign's fence remains ordinary integration waiting.
+
+When the response and remote inspection establish that a request did not apply,
+use `{:outcome :not-applied :result nil :evidence "Exact inspected response and remote state"}`.
+For non-merge effects this records a failed, unapplied attempt and permits its corrected operation;
+the old attempt and receipt remain in history. It cannot reclassify a restricted
+operation, and unknown outcomes still cannot be automatically replayed.
+Main mutations instead require the shared inspection, local binding and explicit
+successor intent described above; a legacy `:not-applied` merge still fences main.
+
+CI readiness includes completed workflow runs for the exact candidate, with all
+pages observed and the normal CI workflow successful. A successful harness job
+does not establish readiness while the normal workflow is queued and absent
+from the check rollup. This evidence is checked again around integration preflight.
 
 ## Validation and references
 

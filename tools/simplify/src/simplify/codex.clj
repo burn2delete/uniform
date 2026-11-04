@@ -80,9 +80,21 @@
   @(:reader client)
   @(:stderr client))
 
+(defn check-key [ctx argv] (rt/digest (pr-str [(get-in ctx [:config :repository]) argv])))
+
+(defn validate-command-result! [ctx argv result]
+  (when-not (zero? (:exitCode result))
+    (let [output (str (:stderr result) "\n" (:stdout result))
+          restricted (or (rt/authorization-denied? output) (boolean (re-find #"(?i)sysctl failed" output)))
+          ended? (and (number? (:exitCode result)) (not (re-find #"(?i)owned process cleanup failed" output)))]
+      (when restricted (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :result result}))
+      (rt/fail! "Sandboxed check failed" {:command argv :result result :restricted restricted :writer-ended? ended?})))
+  result)
+
 (defn command!
   "Execute checks without inference. Model-selected argv stays inside the worker sandbox."
   [ctx job-id cwd argv]
+  (rt/assert-authorized! ctx :check (check-key ctx argv))
   (let [client (open! ctx job-id cwd)]
     (try
       (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
@@ -104,12 +116,11 @@
         (when @(:restricted client)
           (rt/fail! "Check encountered a restricted request; not retrying"
                     {:restricted true :writer-ended? ended? :result result}))
-        (when-not (zero? (:exitCode result))
-          (rt/fail! "Sandboxed check failed"
-                    {:command argv :result result :writer-ended? ended?
-                     :restricted (or (rt/authorization-denied? output)
-                                     (boolean (re-find #"(?i)operation not permitted|sysctl failed" output)))}))
-        result)
+        (validate-command-result! ctx argv result))
+      (catch Exception e
+        (when (:restricted (ex-data e))
+          (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :message (.getMessage e)}))
+        (throw e))
       (finally (close! client)))))
 
 (defn await-turn! [client turn-id]

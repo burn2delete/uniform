@@ -2,14 +2,17 @@
   "Concurrent controller/state fixtures and real disposable Git; no agents or GitHub."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
+            [simplify.coordination :as coordination]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as main]
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]
             [simplify.workflow-test :as git-fixture]))
+
+(use-fixtures :each fixture/no-github-network)
 
 (defn campaign [common name]
   (let [ctx (fixture/context)
@@ -27,6 +30,29 @@
 (def merged (apply str (repeat 40 "d")))
 (def intent {:id (str "merge/" candidate) :base base :candidate candidate :tree tree :method :merge})
 (def actual {:commit merged :tree tree :parents [base candidate] :main merged})
+
+(deftest nul-delimited-git-paths-remain-exact
+  (let [ctx (fixture/context) {:keys [repo]} (git-fixture/repository! ctx)
+        tracked "tracked space.edn" untracked "untracked\nname.edn"]
+    (spit (io/file repo tracked) "{:old true}\n")
+    (rt/git ctx repo "add" tracked)
+    (rt/git ctx repo "commit" "-m" "Tracked path fixture")
+    (spit (io/file repo tracked) "{:new true}\n")
+    (spit (io/file repo untracked) "{:new true}\n")
+    (is (= #{tracked untracked} (set (flow/changed-paths ctx repo))))))
+
+(deftest scheduler-preclaim-reuses-only-a-known-active-lease
+  (let [[ctx other] (pair)
+        lease (rt/claim-paths! ctx "task" ["src/a.clj"] :implementing)
+        restarted (assoc ctx :path-leases (atom {}))]
+    (is (= lease (rt/claim-paths! ctx "task" ["src/a.clj"] :checking)))
+    (is (nil? (rt/claim-paths! restarted "task" ["src/a.clj"] :implementing)))
+    (is (nil? (rt/claim-paths! ctx "task" ["src/b.clj"] :implementing)))
+    (is (nil? (rt/claim-paths! other "task" ["src/a.clj"] :implementing)))
+    (is (thrown? Exception (rt/with-claimed-paths ctx lease #(throw (ex-info "Unknown cleanup" {})))))
+    (is (nil? (rt/claim-paths! ctx "task" ["src/a.clj"] :implementing)))
+    (rt/inspect-release-paths! ctx lease "Fixture owner inspected the ended writer without any process probe")
+    (is (rt/claim-paths! restarted "task" ["src/a.clj"] :implementing))))
 
 (deftest context-discovery-cannot-save-a-stale-owner-snapshot
   (let [fixture (fixture/context)
@@ -88,6 +114,49 @@
                (is (= :working (rt/with-claimed-paths b lease (fn [] :working)))))))))
     (is (zero? @writes))
     (is (= 1 (rt/try-with-main-lock b #(swap! writes inc))))))
+
+(deftest legacy-lock-rejection-precedes-state-reload-or-write
+  (let [[ctx _] (pair) called (atom false)
+        ctx (assoc ctx :coordinator-owner (atom false) :command "resume"
+                       :read-state #(do (reset! called true) (throw (AssertionError. "Legacy writer is live"))))
+        legacy (first (:legacy-controller-locks ctx))]
+    (rt/write-edn! (:state-file ctx) {:schema 1 :preserve :live-legacy-writer})
+    (let [before (slurp (:state-file ctx))]
+      (coordination/with-file-lock legacy
+        #(is (thrown-with-msg? Exception #"legacy controller" (rt/with-lock ctx (fn [] (reset! called true))))))
+      (is (false? @called))
+      (is (false? @(:coordinator-owner ctx)))
+      (is (= before (slurp (:state-file ctx)))))))
+
+(deftest legacy-registry-import-preserves-scoped-writers-and-check-refusals
+  (let [[a b] (pair) legacy (:coordination-dir a)
+        identity [(:state-file a) "legacy-task"]
+        original {:identity identity :state-file (:state-file a) :key "legacy-task" :paths ["src/legacy.clj"]}
+        denial {:error "Retained fixture refusal" :argv ["clojure" "-M:fixture"]}]
+    (.mkdirs (io/file legacy))
+    (rt/write-edn! (str (io/file legacy "claims.edn")) {:claims {identity original}})
+    (rt/write-edn! (str (io/file legacy "denials.edn")) {[:check "check-key"] denial})
+    (rt/import-state-coordination! b)
+    (is (= denial (rt/shared-restriction a :checks "check-key")))
+    (let [lease (first (vals (:writers (shared-state a))))]
+      (is (= original (:legacy-claim lease)))
+      (is (= :needs-inspection (:status lease)))
+      (is (nil? (rt/claim-paths! a "legacy-task" ["src/legacy.clj"] :implementing)))
+      (is (thrown? Exception (rt/inspect-release-paths! b lease "Foreign owner cannot release")))
+      (rt/inspect-release-paths! a lease "Original fixture owner inspected the legacy writer as ended")
+      (rt/import-state-coordination! b)
+      (is (empty? (:writers (shared-state a))))
+      (is (= denial (rt/shared-restriction b :checks "check-key"))))))
+
+(deftest legacy-main-not-applied-is-still-fenced-until-shared-inspection
+  (let [[a b] (pair) calls (atom 0)
+        receipt {:status :not-applied :evidence "Legacy local observation" :previous {:status :uncertain}}]
+    (rt/update! a assoc :tasks {"task" (assoc intent :status :attention)} :effects {(:id intent) receipt})
+    (rt/import-state-coordination! a)
+    (is (= :fenced (rt/try-with-main-lock b #(swap! calls inc))))
+    (is (thrown-with-msg? Exception #"explicit successor" (rt/effect! a (:id intent) #(swap! calls inc))))
+    (is (= receipt (get-in @(:state a) [:effects (:id intent)])))
+    (is (zero? @calls))))
 
 (deftest active-writers-not-frozen-candidates-reserve-paths
   (let [[a b] (pair)
@@ -293,14 +362,18 @@
         config-file (str (io/file state-dir "config.edn"))
         _ (rt/write-edn! config-file config)
         ctx (main/context! config)]
-    (rt/update! ctx assoc :status :running :owner-marker :initial)
+    (rt/with-lock ctx #(rt/update! ctx assoc :status :running :owner-marker :initial))
     (let [stale (main/context! config)]
       (rt/with-lock ctx
         #(do
            (rt/update! ctx assoc :owner-marker :fresh)
            (doseq [[command exit] [["status" 0] ["pause" 0] ["doctor" 1] ["run" 1] ["resume" 1]]]
              (let [before (slurp (:state-file ctx))
-                   result (rt/command ctx repo (java-command "-m" "simplify.main" command config-file))]
+                   ;; Exercise the real entry point in another JVM while making
+                   ;; even a broken contender unable to contact GitHub.
+                   entry (str "(require '[simplify.core-test :as fixture] '[simplify.main :as main]) "
+                              "(fixture/no-github-network #(apply main/-main " (pr-str [command config-file]) "))")
+                   result (rt/command ctx repo (java-command "-e" entry))]
                (is (= exit (:exit result)))
                (is (= before (slurp (:state-file ctx))))))))
       (with-redefs [rt/command (fn [& _] {:exit 1 :err "HTTP 403: Permission denied" :out ""})]
