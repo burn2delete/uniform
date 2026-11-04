@@ -230,6 +230,39 @@
     (is (= :uncertain (get-in @(:state a) [:effects (:id intent) :status]))
         "Shared reconciliation never clears/replays the original native effect")))
 
+(deftest main-effects-authorize-the-full-state-file-without-changing-journal-keys
+  (let [[a _] (pair)
+        b (assoc a :state-file (str (io/file (:state-dir a) "other-owner.edn"))
+                 :state (atom {:effects {(:id intent) {:status :uncertain}}}))]
+    (rt/try-with-main-lock a #(rt/begin-main-merge! a intent))
+    (let [pending (shared-state a)
+          legacy-key (pr-str [(rt/canonical (:state-dir a)) (:id intent)])]
+      (is (= #{legacy-key} (set (keys (:main-effects pending)))))
+      (is (= {:pending nil :inspection nil} (rt/main-merge-state b (:id intent))))
+      (is (thrown? Exception (rt/reconcile-main-merge! b (:id intent) {:outcome :not-applied :evidence "Foreign file"})))
+      (is (= pending (shared-state a)) "Foreign reconciliation must not mark the real owner's effect uncertain")
+      ;; Complete requires the main lock; use an inspected lock boundary solely
+      ;; to exercise the authorization while the existing fence is retained.
+      (is (thrown? Exception
+                   (#'rt/with-main-lock b true #(rt/complete-main-merge! b intent actual))))
+      (is (= pending (shared-state a)))
+      (is (thrown? Exception (rt/import-state-coordination! b)))
+      (is (= pending (shared-state a)) "Import cannot replace a colliding foreign main effect"))
+    (rt/reconcile-main-merge! a (:id intent) {:outcome :not-applied :evidence "Original owner inspected fixture"})
+    (is (:inspection (rt/main-merge-state a (:id intent))))
+    (is (= {:pending nil :inspection nil} (rt/main-merge-state b (:id intent))))
+    (is (thrown? Exception (rt/import-state-coordination! b)) "A completed migration marker is still owner bound")
+    ;; Existing markers without the added identity remain usable through their
+    ;; retained exact owner intent, without rekeying history or clearing fences.
+    (rt/coordinate! a (fn [state] [(update state :imports
+                                         (fn [imports] (into {} (map (fn [[k v]] [k (dissoc v :state-dir :state-file :campaign)]) imports)))) nil]))
+    (rt/update! a assoc-in [:effects (:id intent)] {:status :uncertain})
+    (rt/import-state-coordination! a)
+    (is (empty? (:main-effects (shared-state a))))
+    (is (thrown? Exception (rt/import-state-coordination! b)))
+    (rt/try-with-main-lock a #(do (rt/begin-main-merge! a intent) (rt/complete-main-merge! a intent actual)))
+    (is (empty? (:main-effects (shared-state a))))))
+
 (deftest inspected-recovery-never-rearms-restricted-or-mismatched-evidence
   (doseq [restricted? [true false]]
     (let [[a b] (pair)
