@@ -19,6 +19,25 @@
 (def source-path "specs/demo/tasks.md")
 (def source-key (str source-path "#demo/value"))
 
+(deftest incompatible-startup-is-refused-before-github-or-state-writes
+  (let [ctx (fixture/context) before @(:state ctx) mutations (atom [])]
+    (with-redefs [coordination/register! (fn [_] (throw (ex-info "Incompatible live legacy controller" {})))
+                  project/setup! (fn [_] (swap! mutations conj :project))
+                  workflow/ensure-campaign! (fn [_] (swap! mutations conj :campaign))
+                  coordination/unregister! (fn [_] (swap! mutations conj :unregister))]
+      (is (thrown-with-msg? Exception #"Incompatible live legacy" (workflow/campaign! ctx)))
+      (is (empty? @mutations))
+      (is (= before @(:state ctx))))))
+
+(deftest setup-failure-releases-only-admitted-controller-registration
+  (let [ctx (fixture/context) sequence (atom [])]
+    (with-redefs [coordination/register! (fn [_] (swap! sequence conj :register))
+                  project/setup! (fn [_] (swap! sequence conj :setup) (throw (ex-info "Setup failure" {})))
+                  workflow/ensure-campaign! (fn [_] (swap! sequence conj :campaign))
+                  coordination/unregister! (fn [_] (swap! sequence conj :unregister))]
+      (is (thrown-with-msg? Exception #"Setup failure" (workflow/campaign! ctx)))
+      (is (= [:register :setup :unregister] @sequence)))))
+
 (deftest selection-sees-other-open-candidates-without-claiming-their-work
   (let [ctx (fixture/context)
         pull {:number 914 :title "Independent candidate" :head {:sha "other-head"}}

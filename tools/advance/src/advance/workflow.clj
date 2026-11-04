@@ -189,9 +189,10 @@
          (if (:ownership-wait (ex-data e)) (flow/transition! ctx key :repair) (failure! ctx key e)))))
 
 (defn campaign! [ctx]
+  (coordination/register! ctx)
+  (try
   (project/setup! ctx)
   (ensure-campaign! ctx)
-  (coordination/register! ctx)
   (doseq [t (flow/tasks ctx) :when (#{:implementing :review} (:status t))]
     (when (and (= :implementing (:status t)) (not (coordination/claim! ctx (:key t) (:paths t))))
       (rt/fail! "Retained increment conflicts with another writer" {:key (:key t)}))
@@ -240,5 +241,5 @@
                           (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
                         (Thread/sleep (get-in ctx [:config :poll-ms])) (recur fingerprint))))
                 (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur (or fingerprint selection-input))))))))
-      (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS)
-               (coordination/unregister! ctx)))))
+      (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS))))
+  (finally (coordination/unregister! ctx))))
