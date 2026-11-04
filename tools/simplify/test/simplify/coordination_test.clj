@@ -337,6 +337,18 @@
                         (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
          "clojure.main"] args))
 
+(deftest exact-command-capture-does-not-split-credential-redaction
+  (let [ctx (fixture/context)
+        log (str (io/file (:state-dir ctx) "capture.jsonl"))
+        secret (str "ghp_" (apply str (repeat 48 "A")))
+        output (str (apply str (repeat 4094 "x")) secret "\r\n" "nul\u0000tail")
+        argv (java-command "-e" (str "(print " (str/replace (pr-str output) "\u0000" "\\u0000") ") (flush)"))
+        result (rt/command (assoc ctx :log-file log) (:state-dir ctx) argv)]
+    (is (zero? (:exit result)))
+    (is (= output (:out result)))
+    (is (not (str/includes? (slurp log) secret)))
+    (is (str/includes? (slurp log) "[REDACTED]"))))
+
 (deftest streamed-check-failures-preserve-real-termination-and-host-capture-evidence
   (doseq [[mode ended? restricted?] [["stream-assertion" true false] ["stream-cleanup" false true]]]
     (let [ctx (assoc-in (fixture/context) [:config :codex-command]

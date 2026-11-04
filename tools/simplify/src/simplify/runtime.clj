@@ -93,13 +93,24 @@
          drain (fn [stream label]
                  (future
                    (with-open [reader (io/reader stream :encoding "UTF-8")]
-                     (let [out (StringBuilder.) buffer (char-array 4096)]
+                     (let [out (StringBuilder.) pending (StringBuilder.) buffer (char-array 4096)]
                        (loop []
-                         (let [n (.read reader buffer)]
-                           (when (pos? n)
-                             (.append out buffer 0 n)
-                             (event! ctx :command-output {:stream label :line (String. buffer 0 n)})
-                             (recur))))
+                           (let [n (.read reader buffer) start (.length pending)]
+                           (if (pos? n)
+                             (do
+                               (.append out buffer 0 n)
+                               (.append pending buffer 0 n)
+                               ;; Redact complete lines, never isolated chunks that
+                               ;; could divide a credential across event records.
+                               (loop [start start]
+                                 (let [end (.indexOf pending "\n" start)]
+                                   (when (not (neg? end))
+                                     (event! ctx :command-output {:stream label :line (.substring pending 0 end)})
+                                     (.delete pending 0 (inc end))
+                                     (recur 0))))
+                               (recur))
+                             (when (pos? (.length pending))
+                               (event! ctx :command-output {:stream label :line (str pending)})))))
                        (str out)))))
          stdout (drain (.getInputStream process) "stdout")
          stderr (drain (.getErrorStream process) "stderr")]
