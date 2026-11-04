@@ -1092,20 +1092,6 @@ maintainer; recommendation: shared fixture semantics plus target-specific runner
 with explicit availability records. Conformance interface work is parallel;
 family acceptance awaits its actual backend. No automatic release closure follows.
 
-<!-- backends-implementation-tasks:end -->
-
-## Historical migration record (frozen)
-
-# Tasks: Backends workflow migration
-
-Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
-Owner: backend workflow migration owner. Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
-
-## Declared increment
-
-These are migration-delivery tasks only. Implementation progress is exclusively
-in [Backends canonical remaining work](../../docs/component-roadmaps/backends.md#release-outcome); do not copy its checklist here.
-
 
 <!-- backends-family-source-owner-backend-conformance-execution-pack:start -->
 
@@ -1177,6 +1163,20 @@ Apply the [complete B4-B14 source criteria](plan.md#complete-b4-b14-source-crite
 
 Decision allocation interface/testing/test6/unsupported-rejection (Open). Role: backend conformance maintainer. Reject unsupported MIR behavior with stable diagnostics rather than silently mislowering it. Refusals and conditional cases: Feed unsupported MIR behavior and require stable unsupported-operation diagnostics before emission; reject silent lowering to wrong target behavior or metadata-only success without the expected refusal. Required outputs: Unsupported MIR negative fixture result, stable TEST6003 diagnostic and rejected-emission evidence. Consume actual dependency interface outputs: lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.
 <!-- backends-family-source-test-unsupported:end -->
+
+<!-- backends-implementation-tasks:end -->
+
+## Historical migration record (frozen)
+
+# Tasks: Backends workflow migration
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner: backend workflow migration owner. Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+
+## Declared increment
+
+These are migration-delivery tasks only. Implementation progress is exclusively
+in [Backends canonical remaining work](../../docs/component-roadmaps/backends.md#release-outcome); do not copy its checklist here.
 
 - [x] T001 [US1] Prepare the four owned package artifacts, preserving canonical
   contract, component and phase links. Evidence: the files in this directory.
