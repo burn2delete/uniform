@@ -16,6 +16,8 @@ map: :validate!, :capability-proof, :artifact-id, :governing-document and
 type check, re-acquisition, deep copy, source reading or admission is added.
 Opaque values and original host failures retain their identity and lookup
 behavior. The source-path argument is metadata only.
+This API authenticates neither callbacks nor input artifacts. Existing native
+callback behavior remains with its owner and supplies no source authority.
 
 The stage returns a :gravity/native-c9-artifact-projection envelope with
 :admission :none and :authenticates-inputs? false. The legacy raw map is its
@@ -50,6 +52,42 @@ Require focused/adversarial tests, cold C9 regression, language/source ownership
 gates, lint, contract validators, independent exact acceptance, own CI/artifact
 audit and clean current-main integration preflight. This declaration precedes
 implementation and confers no acceptance or integration status.
+
+The working projection passes 23 owning tests / 970 assertions. New cases
+verify the explicit non-authority envelope, original map/input identity and
+metadata retention, validation/internal-proof/projection-proof/identity order,
+duplicate proof calls, the exact proof-enriched hash input, all eleven native
+missing-field refusals before identity, missing/unknown assembly keys before
+input observation, original callback exceptions, captured functions versus
+late Var roots, and source/file sentinels. Opaque Associative failures precede
+callback-type errors as before; no new callback type check is introduced.
+The separate cold C9 regression passes 4 / 94 with Bootstrap absent. Exact
+source checks conserve all prior functions/data, the source/file prelude,
+wrapper arities and every legacy construction/validation/proof/identity form.
+
+The clean structural baseline capture SHA-256 is
+12df2362973bb5d9ccc58cd795026d2336e024f215cd3add7d6ff686d6e4cbc0.
+It records four native constructions, seven native profile refusals, eleven
+missing-field refusals, two original opaque failures and two unsupported-view
+host refusals. It provides structural comparison only, not source or C9
+acceptance. Separately the actual paired Gravity fixture plans and current
+engine execute eight accepted and twenty-eight rejected normalized requests,
+retaining actual checkout source paths/bytes/hashes and recomputed plan IDs.
+
+The first baseline capture used an ILookup-only fixture where select-keys
+requires an Associative view, so its expected custom-error assertion failed
+before any evidence record was written. The initial helper/log/report remain
+retained. The corrected fixture supplies that original interface; separate
+unsupported native objects retain real host refusals. No implementation rule,
+source pin, admission path or gate was weakened. Committed parity, remaining
+gates, independent implementation acceptance, own CI and integration remain
+outstanding.
+
+The language/source ownership gates pass 48 / 1198 with zero skipped
+namespaces; pinned stage/helper/contract/test lint has zero errors or warnings.
+Document, roadmap and workstream validators pass. Committed parity/lint,
+independent implementation acceptance, own CI and integration are still
+separate requirements.
 
 The prior source-to-C9 C2-HASH refusal remains untouched and uncredited. Do not
 invoke, retry, repin, transfer or route around it. The new native API accepts
