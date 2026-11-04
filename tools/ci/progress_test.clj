@@ -173,15 +173,18 @@
     (is (= 6 (count (:rows result))))))
 
 (deftest current-ci-commands-opt-in-all-resolution-children
-  (let [macro (first (ci/commands "macro"))
+  (let [macro (ci/commands "macro")
         aggregate (first (ci/commands "resolution"))
         children (mapv #(first (ci/commands %))
                        ["resolution-pipeline" "resolution-unmetered"
                         "resolution-invocation-selection"])]
-    (is (= ["macro-regression" 900] (subvec (vec macro) 0 2)))
+    (is (= [["macro-pipeline-cohort" 900]
+            ["macro-receipt-controls" 900]
+            ["macro-bootstrap-compatibility" 900]]
+           (mapv #(subvec (vec %) 0 2) macro)))
     (is (= ["resolution-regression" 900] (subvec (vec aggregate) 0 2)))
     (is (every? #(= 1 (count (filter #{"--progress"} (nth % 2))))
-                (cons macro (cons aggregate children))))
+                (concat macro (cons aggregate children))))
     (is (= ["resolution-pipeline" "resolution-unmetered"
             "resolution-invocation-selection"]
            (mapv first children)))
