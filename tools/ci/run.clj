@@ -381,6 +381,8 @@
    "tools/ci/run_test.clj"
    "bootstrap/clojure/src/gravity/bootstrap/rebuild/"
    "bootstrap/clojure/test/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/fixtures/accepted/hello.gravity"
+   "bootstrap/clojure/fixtures/jvm-toolchain/rejected.gravity"
    "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
    "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
    "bootstrap/clojure/src/gravity/digest.clj"
@@ -939,7 +941,8 @@
       (bootstrap-input-controls-required? selection)
       (conj ["bootstrap-input-controls" 600
              (command "2g" "-M:dev-test"
-                      "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
+                      "--namespace" "gravity.bootstrap.rebuild.inputs-test"
+                      "--namespace" "gravity.bootstrap.rebuild.component-test")])
       true
       (into [["language-boundary" 90
               (command "512m" "-M:test" "--namespace"

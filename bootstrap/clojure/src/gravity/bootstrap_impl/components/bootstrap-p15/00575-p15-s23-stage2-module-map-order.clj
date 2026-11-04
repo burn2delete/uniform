@@ -44,7 +44,16 @@
                                    (= (count keys) (count entries) (count (set keys)))
                                    (every? #(case (:kind %)
                                               :keyword (keyword? (:value %))
-                                              :string (string? (:value %)) false) (map first pairs))
+                                              :string (string? (:value %))
+                                              ;; Symbol keys are expressions whose
+                                              ;; values are resolved in the same
+                                              ;; local environment as the map
+                                              ;; value.  Preserve the exact
+                                              ;; native Symbol and source-key
+                                              ;; equality; do not coerce them to
+                                              ;; literal keys.
+                                              :symbol (symbol? (:value %))
+                                              false) (map first pairs))
                                    (every? some? order) (= (set order) (set (range (count entries)))))
                       (fail :map-source-distinct-literal-key-bijection record))
                     (swap! orders assoc [function path]
@@ -129,7 +138,8 @@
                             (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) position))))
                 (map? actual)
                 (let [entries (if (map? seed) (vec seed) []) host-keys (mapv first entries) slots (zipmap host-keys (range))]
-                  (when-not (and (map? seed) (= (count actual) (count seed)) (every? #(or (keyword? %) (string? %)) (keys actual))
+                  (when-not (and (map? seed) (= (count actual) (count seed))
+                                 (every? #(or (keyword? %) (string? %) (symbol? %)) (keys actual))
                                  (= (set (keys actual)) (set host-keys))) (fail :map-reference-key-bijection))
                   (when path (p15-s23-stage2-module-map-entries module seed path))
                   (doseq [[key value] actual]
