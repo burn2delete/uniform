@@ -2,6 +2,16 @@
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
 
+Local declaration increment `auth.provider-declaration.explicit-fields-v1`:
+implemented the pure bootstrap validator and record producer described in the
+[explicit declaration plan](#explicit-provider-declaration-increment).
+The actual producer is exercised by complete filesystem and missing/malformed
+declaration fixtures; exact checks and scoped results are in
+[Auth evidence](evidence.md#explicit-provider-declaration-increment).
+This records local implementation only. Deterministic compatible selection,
+resolved behavior/contracts, grants, execution and independent acceptance remain
+pending. Status stays Open and the parent checkbox stays unchecked.
+
 ## Implementation tasks
 
 This marked region is the sole editable implementation task ledger. All five
@@ -18,16 +28,6 @@ Status: Open
 Evidence baseline: [Hosted contract](../../bootstrap/clojure/src/gravity/capability_validation/contract.clj)
 
 Closing evidence: Typed provider fixtures with deterministic selection and incompatible-provider rejection
-
-Local declaration increment `auth.provider-declaration.explicit-fields-v1`:
-implemented the pure bootstrap validator and record producer described in the
-[explicit declaration plan](plan.md#explicit-provider-declaration-increment).
-The actual producer is exercised by complete filesystem and missing/malformed
-declaration fixtures; exact checks and scoped results are in
-[Auth evidence](evidence.md#explicit-provider-declaration-increment).
-This records local implementation only. Deterministic compatible selection,
-resolved behavior/contracts, grants, execution and independent acceptance remain
-pending. Status stays Open and the parent checkbox stays unchecked.
 
 <!-- auth-canonical-memory-model-provider-contract:start -->
 
@@ -176,6 +176,97 @@ Complete L15/SAFE10/R11 conformance criterion (Open): Join actual declared/selec
 
 
 <!-- auth-implementation-tasks:end -->
+
+## Explicit provider declaration increment
+
+Finding: `auth.provider-declaration.explicit-fields-v1`, within
+`auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`.
+Use the speckit-implement workflow for this semantic addition. Own only
+`bootstrap/clojure/src/gravity/providers/declarations.clj`, its matching test,
+and this Auth plan/tasks/evidence. The semantic namespace and public functions
+`validate-declaration` and `record-declaration` describe their actual behavior;
+there is no legacy rename or compatibility API change.
+
+Source basis: [L15 Provider Declaration, Requirements, Safety and Trust,
+Diagnostics](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md#provider-declaration)
+requires explicit identity/version, contracts and behavior. Its illustrative
+`defprovider` omits several fields required by the prose; it is not a complete
+accepted declaration fixture. [SAFE10 Secrets](../../docs/phase-02-safety/039-safe10-capability-security-model.md#secrets)
+requires diagnostics without secret values. D1/D3 preserve separate effects,
+capabilities, profiles, targets and provenance; D9 distinguishes a declaration
+from verified evidence. This is the early declaration product in the existing
+[producer/consumer table](plan.md#provider-and-capability-producer-and-consumer-order).
+
+### Bootstrap input shape
+
+Both pure functions take `[declaration context]`, decoded Clojure data supplied
+by a trusted bootstrap host caller. They neither parse source nor sandbox
+arbitrary host objects. L15 does not fix every data key, behavior encoding,
+version grammar or location schema. The following is a local bootstrap format,
+not a new normative Gravity syntax or canonical schema acceptance decision.
+
+| Declaration fields | Required shape and source meaning |
+| --- | --- |
+| `:provider-id`, `:version`, `:kind` | Qualified symbol, nonblank string, keyword; explicit identity/version and provider category. No synthesized fixture version or closed category registry. |
+| `:implements`, `:profiles`, `:targets` | Nonempty sets of keywords, kept distinct as capability implementations, supported profiles and supported targets. |
+| `:runtime-effects`, `:build-effects`, `:requires` | Explicit sets of keywords, possibly empty; separate runtime/build effects and required lower-level capabilities. No grant is inferred. |
+| `:contracts` | Nonempty vector of qualified interface symbols, following L15's interface example. |
+| `:failures` | Explicit set of qualified keyword/symbol failure-type references; an empty set is an explicit claim of no failures. |
+| `:scope-policy` | Qualified keyword/symbol reference to the provider's scope contract, as required by L15 Requirements. |
+| `:blocking`, `:concurrency`, `:resource-behavior`, `:memory-behavior`, `:determinism`, `:replay` | Explicit qualified keyword/symbol references to provider-specific behavior contracts. References are declarations, not resolved or verified implementations. Replay and non-replayability policies must each be named explicitly. |
+| `:artifact-schema`, `:conformance-suite` | Qualified keyword/symbol references; presence does not validate a schema or execute a suite. |
+| `:trust-level` | Explicit one of L15's `:trusted-core`, `:trusted-package`, `:local-dev`, `:sandboxed`, `:untrusted`; this is a claim, not an assigned trust decision. |
+| `:signature-policy` | Qualified keyword/symbol policy reference required when context says applicable; validated if supplied even when not required. |
+
+Context requires a nonblank public `:source-id`, Boolean
+`:signature-policy-required?`, and either `:source-span` with positive integer
+`:line`/`:column` or a nonempty `:manifest-entry` vector of public keyword,
+symbol, nonblank string or nonnegative integer path components. If both
+locations are supplied both must validate. Optional `:profile` and `:target`
+must be keywords. These coordinates and path indices are location legality,
+not input quotas. Signature applicability is an explicit caller policy input;
+the declaration cannot silently waive it. This function does not authenticate
+that policy input or decide a consumer's trust requirements.
+
+### Products, rejection and remaining consumers
+
+`validate-declaration` returns `{:status :valid|:invalid :diagnostics [...]}`.
+`record-declaration` always validates afresh, returning that result and adding
+`:record` only on success. The record has exactly `:schema`
+(`:gravity.provider/declaration-v1`, this bootstrap format), `:declaration`
+(the entire supplied map, including extensions/metadata), and `:provenance`
+(the valid public context fields above, with span restricted to line/column).
+No completeness, trust, grant, selection or conformance result is synthesized.
+Supplied status/complete/trusted claims remain inert nested input and cannot
+replace a required field. Records are internal data; public encoding/export
+still requires its own schema, provenance and secret policy checks.
+
+Failures emit `L15-CONTRACT` with a fixed message, `:path`, `:reason`,
+`:expected` shape and sanitized `:context`; no record or rejected payload is
+returned. Missing and malformed fields differ. Diagnostics use context order
+then the declaration field order in the table, with signature policy last.
+Source identity, manifest entry, active profile/target and span survive when
+valid; unknown context keys and nested span payloads are excluded. The caller
+must supply public identities/path components, not encode secrets in those
+identities. This boundary rejects and omits payload values; it is not a generic
+secret detector for caller-designated public metadata.
+
+Accepted and rejected filesystem data fixtures must call the actual record
+producer. Cover every missing required field, missing-version/contract/resource/
+replay, malformed runtime/build effect carriers, explicit empty sets, conditional
+signature policy, absent provenance/applicability, inert authority claims,
+deterministic diagnostics and secret payload omission. Run the focused namespace,
+hosted compatibility regression, language-boundary gate and document/roadmap
+validators; record actual results and argument vectors in Auth evidence.
+
+No selection, active-profile/target compatibility, behavior-reference resolution,
+contract-suite execution, authenticity/trust verification, grant enforcement,
+startup or provider execution is implemented by this increment. These remain
+composition/acceptance dependencies, not prerequisites for constructing the
+early declaration product. Preserve all current source refinements, including
+the distinct memory/concurrency/macro criteria associated with PR767/908,
+without adopting their acceptance. The parent stays Open pending all criteria
+and independent acceptance; no release, self-hosting or seed-retirement claim.
 
 ## Historical migration record (frozen)
 
