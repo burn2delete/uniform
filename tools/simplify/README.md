@@ -167,6 +167,12 @@ The supplied EDN is `{:evidence "What was inspected and where" :result ...}` wit
 the actual original operation's result. This records an observation; it does not
 retry an effect or override denial. Preserve uncertain effects and worktrees.
 
+When the response and remote inspection establish that a request did not apply,
+use `{:outcome :not-applied :result nil :evidence "Exact inspected response and remote state"}`.
+This records a failed, unapplied attempt and permits its corrected operation;
+the old attempt and receipt remain in history. It cannot reclassify a restricted
+operation, and unknown outcomes still cannot be automatically replayed.
+
 ## Validation and references
 
 Tests use a Clojure JSON-RPC fixture process with no inference, plus real

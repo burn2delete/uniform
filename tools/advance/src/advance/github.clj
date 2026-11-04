@@ -6,6 +6,16 @@
 (def controls {"Priority" ["Highest" "High" "Normal" "Low"]
                "Control" ["Active" "Paused" "Blocked"]})
 
+(defn open-prs [ctx]
+  (mapv #(select-keys % [:number :html_url :title :body :draft :head :base])
+        (gh/pages ctx (gh/repo-path ctx "pulls?state=open"))))
+
+(defn candidate-files [ctx pulls]
+  (mapv (fn [pull]
+          (assoc pull :files (mapv #(select-keys % [:filename :previous_filename :status])
+                                  (gh/pages ctx (gh/repo-path ctx (str "pulls/" (:number pull) "/files"))))))
+        pulls))
+
 (defn setup! [ctx]
   (gh/setup! ctx)
   (let [project (get-in @(:state ctx) [:project :id])
