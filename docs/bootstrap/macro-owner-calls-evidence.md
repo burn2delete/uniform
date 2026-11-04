@@ -172,6 +172,22 @@ state when those phases ended; it is not fresh integration authority.
 Current Main29711aa8532157a1d9c38c0b2df02d57957969ee separately integrates
 the controller-owned SH21 change. Only actual Main was fetched/read; that
 automated candidate, PR, leases, state and credit remain with its owner. This
-source branch has not composed those Main changes. Complete source-data parity,
-full contextual checks, independent composition/wiring acceptance, fresh fully
-wired exact-source/base hosted CI and immediate clean integration remain pending.
+source branch has not composed those Main changes. At clean wired source
+341d6f0e3ff400759dfc31d2c79f347476299a3d, tree
+2149ec7bd2414ca61122243813bb1ae04d4fc4a3, all 40 complete native records
+still match the original raw/parsed data and SHA2563583b32416da3feb5e0af7faf47d6ed08468bba5ca5639147f2c9b6793ffd259.
+The complete 54-path source context against captured Main297 passes with
+3459 unchanged baseline warnings and zero blockers, explicitly excluding the
+nine known Main-only paths that a provider would retain from Main. It is local
+source validation, not hosted provider or current-main integration credit.
+
+Conservation verifies the normal merge's exact ordered parents and four Native
+blob/mode additions, all other prior owner source blobs, all 16 operator fixes,
+the native-report pair and other Macro bodies, the early-load correction and
+ownership tests, and the single CI namespace insertion. The complete owner slice
+relative to Native f8 is five paths, with CI harness changes reviewed separately;
+the namespace index is byte-identical and remains pending. An initial local
+observer delimiter/forward-declaration preparation error is retained separately,
+without production-failure credit. Formatting and document validation pass.
+Independent composition/wiring acceptance, fresh fully wired exact-source/base
+hosted CI and immediate clean integration remain pending.
