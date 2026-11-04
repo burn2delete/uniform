@@ -148,6 +148,15 @@ Library service operation-grants criterion (Open): Produce authentic operation-s
 <!-- library-service-source-operation-grants:end -->
 
 
+
+<!-- auth-facet-source-grants:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet authority criterion (Open): Check authentic scoped capabilities and allowed build/compiler/runtime actions at their real facet invocation and artifact boundaries. Compiler inspection/transformation requires the declared read-ir/write-ir effect and C17 ir-transform capability with its actual read/write artifact/namespace/phase/package scope; read access grants no write. File generation declares build/write-artifact, while solver/synthesizer/model/package-tool calls declare matching effects and grants. A facet, package identity, prompt, signature, trust label or supplied manifest does not confer authority. Reject missing/wrong-phase/expired/revoked/out-of-scope authority without the external action and retain exact principal/action/source/provider/audit identity. Required evidence: real allowed/denied selected actions and L14-CAPABILITY/L14-BUILD-EFFECT products; held executions remain unrun.
+<!-- auth-facet-source-grants:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

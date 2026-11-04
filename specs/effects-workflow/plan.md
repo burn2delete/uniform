@@ -31,7 +31,7 @@ Task bodies/statuses and finite review subjects stay unchanged. Current source/i
 
 ## Complete compile-time evaluation interface
 
-Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The recorded L6/L12 environment premise remains unresolved; grants alone waive neither contract.
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); actual L12 premises remain conjunctive, and grants alone waive none of them. Canonical L6 wording clarification remains separate work.
 
 Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
 
@@ -132,7 +132,7 @@ are required; missing, mismatched, reordered and extra records are L6 errors.
 Retain the existing R6 qualification only outside stricter R7/R8 recorded-output
 segments. This source plan neither authorizes live calls nor reruns held replay.
 
-The [L12 hermetic refinement](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds) requires explicit declared-key/value policy, configured replayable providers or pinned results, recorded clock values/deterministic seeds, declared target manifests and hashed generated inputs where applicable. A grant alone cannot supply those premises. L6 lists environment reads as denied while L12 admits an explicitly declared key/value-policy case; retain this exact wording difference with the existing Build/Expand source-policy owners before accepting live hermetic environment reads. Local implementation under unchanged contracts can proceed. No broader allowance or new stable semantic decision is inferred here.
+The [L12 hermetic refinement](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds) requires explicit declared-key/value policy, configured replayable providers or pinned results, recorded clock values/deterministic seeds, declared target manifests and hashed generated inputs where applicable. A grant alone cannot supply those premises. The user selected [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) for this wording difference. Build/Expand require real declared-key/value-policy and other applicable premise evidence before live acceptance. The retained canonical L6 text requires a separate source clarification and authenticated successor; this policy selection renews no source review or implementation acceptance.
 
 Nine finite profile74 predicates retain the frozen review/applicability/receipt
 already recorded with the source-memory proposal. Restore seven missing exact
@@ -224,8 +224,9 @@ status, owner, evidence receipt or ordinary construction permission changes.
    traces. Q re-enters the ordinary compiler with generated origins afterward.
    Check both effectful-P/pure-Q and pure-P/effectful-Q cases. This staging does
    not let P obtain its own prior admission from Q or confer migration authority.
-   Exact L6/L12 hermetic premises and their recorded environment-wording issue
-   remain; a grant alone is not a hermetic exception.
+   Exact L12 hermetic premises under [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs)
+   remain; a grant alone is not a hermetic exception. Canonical L6 wording
+   clarification is separate required source work.
 7. Runtime2's early service/panic/failure/cleanup contract precedes Runtime3 use.
    Runtime3 produces actual selected continuation/resource/scheduler primitives;
    later Runtime2 resumable-error execution consumes those real primitives and
@@ -424,6 +425,19 @@ Current source/interface entailment and independent acceptance remain pending. T
 Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Check actual direct/latent concurrency, filesystem and network effects and forbidden blocking, including callbacks, server middleware/handlers and generated forms. Explicit grants, caller/callee contracts and active profiles precede admission; later runtime results are no first legality premise. STD8 filesystem effects do not introduce STD16 shell/process execution.
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve real callback/protocol latent effects/capabilities, phase and selected dispatch. Pure labels do not hide IO/allocation or host providers, and a helper cannot make an effectful callback legal in Core. Keep source legality distinct from runtime grants.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Derive real build/runtime/compiler and transitive composition requirements before allowance/profile/service admission. Separate Auth grants remain necessary; a facet id, caught result or generated wrapper cannot erase model/tool/query/decoder effects.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
 
 ## Historical task-authority-transfer plan
 

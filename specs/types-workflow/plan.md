@@ -147,7 +147,7 @@ All task IDs/statuses, earlier finite review hashes/scopes, source reservations,
 
 Use the [complete Types source criteria](#complete-types-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 46 existing routes. Preserve all 1,780 previous result joins and 91 unaffected route meanings; 113 added inputs yield 1,893 joins across the same 137 routes, 97 current parents and forty future records. All eleven direct L5/C7 criteria retain routes for six existing tasks, with inherited Legality/Expand roles preserved. Task bodies/statuses and source criteria remain unchanged. These counts establish conservation, not semantic coverage or execution.
 
-The coarse cycles retain 95 and 9 tasks. Concrete subjects below distinguish early interfaces, real selected products and later composition/acceptance. No coarse cycle is treated as a whole-component start gate or silently declared solved. The D1/C1/C5/C6 ordering and L6/L12 environment-wording issues remain explicit.
+The coarse cycles retain 95 and 9 tasks. Concrete subjects below distinguish early interfaces, real selected products and later composition/acceptance. No coarse cycle is treated as a whole-component start gate or silently declared solved. D1/C1/C5/C6 ordering remains explicit. Hermetic input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); canonical L6 wording clarification remains separate source work.
 
 | Boundary | Actual selected result and order |
 | --- | --- |
@@ -240,7 +240,7 @@ The finite profile74 stable-protocol-change review retains its exact 1,011-byte 
 
 Use the [complete protocol and dispatch source criteria](#complete-protocol-and-dispatch-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines seventy consumers, including two missing routes for the existing backend-interface and pass-evidence tasks. All 2,011 earlier joins and 71 unaffected route meanings remain; 117 new inputs yield 2,128 joins over 141 routes, 101 current parents and forty unchanged future declarations. Sixteen L8 criteria retain twelve existing task routes. Counts establish conservation, not semantic entailment or implementation acceptance.
 
-The actual staged subjects below expose remaining coarse feedback without pretending that whole tasks form one topological sequence. Initial construction consumes real declared interfaces; actual selected products precede later composition, independent acceptance and release. Retain unresolved D1/C1/C5/C6 ordering and L6/L12 environment-wording decisions.
+The actual staged subjects below expose remaining coarse feedback without pretending that whole tasks form one topological sequence. Initial construction consumes real declared interfaces; actual selected products precede later composition, independent acceptance and release. Retain unresolved D1/C1/C5/C6 ordering; apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) while retaining the separate canonical L6 wording follow-up.
 
 | Boundary | Actual product and order |
 | --- | --- |
@@ -276,6 +276,25 @@ Current source/interface entailment and independent acceptance remain pending. T
 Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Supply actual task/future/promise/channel/actor, path/handle/socket/URL/body and callback/handler signatures, payload/request/response/error/schema identity and owned/borrowed result contracts. Typed URLs and paths do not confer authority; schemas and type names do not prove actual IO/network values, cleanup or validation.
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Types retains independently established bounds, nonempty and Map-presence premises and the complete private whole-key-domain caller/use proof. Family labels and the result of keys cannot create their own input facts. Current STD3 has no removed pair/depth/work allowance; complete physical key and value validation, invalidation and each consumer's reconstruction remain.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual independent type/generic/totality/value-family and public signature facts. Predicate classification establishes no width/range/member/presence/flow or Unicode fact. Actual checked partiality and callback signatures precede calls; later results are no first type premise.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check actual facet-local and generated-source premises and consume real domain facts/proofs rather than inventing shape, replay, disclosure or EFIR evidence. The exact existing L5/C7 schema-abstraction criterion remains unchanged; Expand's inherited schema-generated owner is retained alongside Types and Schema's actual roles.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
 
 ## Historical task-authority-transfer plan
 

@@ -173,6 +173,25 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Runtime supplies actual chosen representation/provider storage, retention/borrow/copy/stream, allocation/failure, persistent shared-value lifetimes and explicit cleanup behavior. Vector-rest and Map-keys Lists own copied spines and borrow no input backing storage; List-to-Set temporary/output storage has the declared independent lifetimes. GC, native capacity or old work counters cannot replace these facts.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual selected allocator/provider/representation/link/cleanup and hosted Unicode/numeric/resource products for the claimed behavior. Explicit providers and real deterministic close/lifetimes replace neither source type/effect checking nor independent proofs; no whole runtime gates first portable declarations.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Retain actual selected service, provider, FFI ownership/error/ABI and execution boundaries for facets that require them. A portable Core-only facet needs no invented host runtime or native binary. Agent/model/tool/IO/FFI manifests do not execute services, grant authority or accept a live provider.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

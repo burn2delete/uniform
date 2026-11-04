@@ -115,6 +115,15 @@ Library service resource-cleanup criterion (Open): Execute deterministic cleanup
 <!-- library-service-source-resource-cleanup:end -->
 
 
+
+<!-- library-base-source-cleanup-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation cleanup-runtime criterion (Open): Release real linear resources deterministically under the declared lifecycle, including ordinary success, recoverable failure, transfer and panic/unwind paths where supported. Preserve exactly-once consumption, ordered cleanup, original error/diagnostic context and host/native ownership rules independently of process exit or GC. Refuse double close, post-transfer use, hidden leak/finalizer policy and unverified callback/resource lifetime. Evidence: actual permitted linked Runtime cleanup traces and negative outcomes with exact provider/compiler/profile identities; a plan or static record is no execution receipt.
+<!-- library-base-source-cleanup-runtime:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -195,6 +204,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 
 Source obligation `language/errors/normalize-foreign-failure`: Normalize a foreign/host call's error, exception, null and failure-resource behavior into an explicit typed Gravity boundary contract before entering safe/non-null source semantics. Accept: Before safe/non-null entry, convert nullable/undefined foreign values through the declared Option/Result, checked-wrapper or opaque-foreign-value contract; declared nullable Option absence may produce None without inventing an error. Separately translate foreign/host error returns, errno-like state, exceptions, panics, rejected promises, signals and exit statuses into declared typed Gravity error contracts. Do not convert a real error or capability denial into absence. Retain host/foreign type identity, ownership transfer on failure, cleanup, abort policy, runtime dependencies and exception/null contracts for hosted dispatch. Reject: Reject an unexpected or undeclared null, null crossing a non-null type, untranslated/untyped foreign failure and a missing mapping or failure-resource contract; report P4-EXCEPTION, L8-HOST-DISPATCH, L9-HOST-ERROR/L9-FFI-ERROR or L19-ERROR-MAP as applicable. Required outputs: Foreign/host dispatch and error-mapping artifacts, hosted conformance, failure-cleanup tests and diagnostics with host/runtime, source/generated origin, requested effect, grant, symbol and deployment policy when relevant. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts; they do not require blanket component completion. Implementation status remains Open.
 <!-- runtime-error-source-finite-foreign:end -->
+
+
+<!-- library-base-source-allocation-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation allocation-runtime criterion (Open): Execute the selected allocator/provider with actual family/version/profile/target, alignment/layout, initialization, ownership/lifetime, failure/blocking/sharing and deallocation contracts. Real current admitted requests and compatible provider bindings precede allocation, resize/reset and memory-view use. Reject hidden allocator substitution, invalid alignment/lifetime/region escape or unsupported runtime services. Evidence: actual provider allocation/value/failure and region/view cleanup products plus owning diagnostics; Library's typed allocation API and a provider descriptor do not establish Runtime execution.
+<!-- library-base-source-allocation-runtime:end -->
+
 
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 

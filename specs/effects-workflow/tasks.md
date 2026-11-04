@@ -83,6 +83,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 thrown-error propagation criterion (Open): Infer actual direct, latent and transitive error effects from typed throw/call/protected/handler edges, expose them in function contracts and preserve handler-raised and residual errors. Distinguish declared allowance, conservative source error potential, actual admitted handling and one selected runtime trace; declarations or a fixed String throws set are not body inference. Preserve required L6 conservative branch/handler behavior and original handled-label audit rather than erasing effects merely because C7 classifies a source catch. Required evidence: genuine function/call/handler derivations and accepted/refused hidden or undeclared throws and missing propagation fixtures with L9-THROW-EFFECT/UNHANDLED and owning C8 diagnostics.
 <!-- effects-error-source-effects:end -->
 
+
+<!-- library-base-source-callback-dispatch:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation callback-dispatch criterion (Open): Propagate explicitly accepted higher-order core callback and protocol implementation effects/capabilities through actual selected calls, retaining receiver/signature/capture/profile/target legality and declared dispatch. Pure recover examples stay pure; a file-reading callback cannot become legal Core by hiding behind a helper. Refuse missing/ambiguous instances, erased latent effects, undeclared reflective/open dispatch and host defaults. Evidence: actual typed function/protocol/callback admission and expected effect/profile refusals with ordinary values, effects and transfers preserved.
+<!-- library-base-source-callback-dispatch:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -159,6 +168,15 @@ Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan
 
 Library service service-effect-admission criterion (Open): Check direct and latent effects/capabilities of actual concurrency/IO/network calls and callbacks, including spawn/block/schedule/sleep/atomic/lock/message, stream/filesystem read/write/seek/metadata/watch/delete/execute-like operations and outbound/inbound/DNS/TLS/websocket/stream/listen. Admission preserves profile/context blocking restrictions, cancellation, callback/handler/schema/auth effect boundaries and generated source provenance. A capability value is data until use; a provider or callback type cannot erase the concrete action. Filesystem execute-like metadata grants no STD16 process/shell behavior. Reject undeclared effects, forbidden blocking and hidden ambient service use with source-bound owning errors. Evidence: actual checked accepted/rejected source and latent callback/handler cases, effect/grant/profile facts and STD7003/STD8001/STD9001 where applicable; runtime service enforcement remains a separate required consumer.
 <!-- library-service-source-service-effect-admission:end -->
+
+
+
+<!-- effects-facet-source-effects:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet effect-admission criterion (Open): Derive and preserve real runtime, build and compiler effects at each facet boundary, including generated wrappers, agent/tool/query composition, schema decoder allocation/decode and external solver/synthesizer/model/package-tool actions. Admit only when actual inferred requirements fit the caller allowance and applicable profile/service/safety rules, with Auth independently checking authentic grants. Compiler IR read/write and artifact generation remain explicit effects; declaring a facet or hiding an operation inside IR cannot widen authority or erase effects. Reject undeclared/hidden/transitive effects and incompatible caller context before affected action or backend lowering. Required evidence: actual accepted/refused summaries and source-bound L14/owning diagnostics, with pure source transport distinct from later effectful use.
+<!-- effects-facet-source-effects:end -->
 
 
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation

@@ -200,3 +200,15 @@ Current source/interface entailment and independent acceptance remain pending. T
 Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The existing distinct GOV9 audit and module-governance owners retain unsafe scheduler/lock/interrupt/atomic, filesystem adapter/listener/raw-socket/TLS review and revalidation. Library consumes actual current audit decisions at its safe wrapper; a generic security PASS does not establish unsafe audit, and ordinary declared-interface development gains no routine permission gate.
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Reuse the existing distinct GOV9 unsafe-audit decision and GOV3 module admission. Current source/wrapper/target/profile/compiler assumption changes require applicable revalidation before stabilization/release. A GOV4 security PASS is no GOV9 audit, and ordinary implementation is not gated by a new permission ceremony.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Preserve the single existing conditional change-review authority for semantic/compatibility changes and actual policy decisions. Expand owns stable-facet migration products and checked feasible rewrites; Build owns actual locks. An early schema or version comparison is not final approval, while compatible ordinary local development acquires no new per-run permission gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.

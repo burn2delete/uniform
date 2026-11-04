@@ -71,6 +71,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 actual throw/handler typing criterion (Open): Check real thrown payload types, typed catch bindings and protected/handler normal results against resolved source declarations, preserving nonreturning evaluation and original transfer identities. Actual function/call artifacts expose thrown-error type/effect requirements; distinguish conservative source-error potential from admitted or executed effects. Result/Option pattern coverage uses actual declared constructor domains and L7 evidence, never a canonical-if-only join extension or host truthiness. Reject untyped/unknown/mismatched thrown values, invalid handler bindings/results and missing required handling/propagation. Required evidence: independent payload/result/handler/call constraints, typed/never and accepted/refused source/generated cases with current provenance. Source coverage alone does not discharge profile, handler, effect or capability legality.
 <!-- types-error-source-typing:end -->
 
+
+<!-- collections-source-private-domain:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current private-domain criterion (Open): For the immutable bare-Map keys exception, reconstruct the complete closed private function/use/call census at each compiler consumer, with actual argument sources/types, bare-Map compatibility and complete normal-entry whole Keyword-key/value validation. Different entry shapes/value types and empty Map witnesses are allowed; the parameter remains bare Map and the result homogeneous Keyword List. At least one normal entry is required; any Never coordinate makes a call non-invoking. Refuse unknown/circular/unaccounted/all-non-invoking witnesses and omitted public entry/escape/mutation/re-entry. Retain function/parameter/use/caller dependencies and invalidations; selected-key presence is insufficient and no shape/presence/cardinality/flow fact is added. Evidence: actual positive and late-invalid caller/type products and exact refusals, with no removed 512-pair/depth/work allowances reintroduced.
+<!-- collections-source-private-domain:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -178,6 +187,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 
 L13 actual public library type-contract criterion (Open): Check actual public function/type/macro/protocol/constructor declarations and selected calls against independently derived argument/result/generic/schema facts and genuine resolved export identities. Preserve declared effect, capability, allocation, failure and profile contracts as inputs without treating them as completed effect/safety admission or callable implementation. Source schemas and intrinsic signatures are authentic; invalid/generated forms follow normal checks. Reject declaration/implementation/call mismatch, unsupported overloads, invented shape or host-default types, retaining actual source/export/version identity and typed accepted/refused cases. Library publishes contracts and implements APIs; Types supplies real type/compatibility facts, while other owners retain effects, grants, safety and target judgments.
 <!-- types-library-source-typed:end -->
+
+
+<!-- types-facet-source-typed:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet type-and-fact criterion (Open): Check real facet-local bindings, generated ordinary code and declared domain constraints using independent type/schema/shape premises and authentic owner verifier results. Facet rules may refine base typing but cannot replace its meaning without the existing alternative-system contract. Keep schema presence, signal width, workflow replay safety, query row shape, zk public-only disclosure, prompt-tool schema, UI handler effects and EFIR proof obligations as eight distinct source examples of facts requiring their actual producer evidence. Emit typed artifacts or proof records consumed by later passes, preserving checker/subject/profile/target identity and invalidation. Reject invented shape facts, manifest-only proof, incompatible generated types and an alternative checker that silently changes semantics. Required evidence: actual checked/refused generated/local cases and fact/proof consumption; Types does not implement a domain validator, grant authority or accept a proof label.
+<!-- types-facet-source-typed:end -->
+
 
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 

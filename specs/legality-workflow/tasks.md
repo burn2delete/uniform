@@ -100,6 +100,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 concrete profile-failure criterion (Open): Define and check the active profile's throw/try/panic disposition from actual error/type/effect/service facts: permitted host exceptions, explicit Result rewriting, panic, trap, workflow failure or rejection where governed. Preserve hosted exception/task-abort, native handler, kernel trap/platform panic, firmware reset/halt, hardware runtime-panic rejection or permitted synthesis-time unreachable/trap artifact, distributed durable failure state and AI policy/orchestration failure records. Reject unsupported/undeclared dispositions and panic used as ordinary stable-API control flow with L9-PANIC-PROFILE. Required evidence: actual source-bound profile/error/panic lowering matrix, lawful positive/refusal cases and selected service/layout/proof conditions; a profile label, host default or constrained target does not supply semantics or authority.
 <!-- legality-error-source-profiles:end -->
 
+
+<!-- legality-facet-source-profiles:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet profile-and-safety criterion (Open): Reject use outside declared supported profiles before backend lowering, retaining ordinary type/effect/capability/ownership/memory/safety checks. Core facets fully lower to portable typed Core; hosted reflection/loading requires declared authority; native ABI/layout/vector/FFI/linker artifacts retain actual target contracts. Kernel/firmware/hardware avoid managed-runtime assumptions unless modeled by that target; distributed preserves replay-safe effects/deterministic artifacts; ai preserves model/prompt/tool/memory/evaluation provenance; meta inspects only declared compiler APIs. Hardware counter addition is width-aware and overflow-defined; host allocation/GC/reflection/threads/IO cannot stand in for hardware constructs. Preserve D8's four outcomes and actual physical/type/index/target conditions while removed project work/input quotas stay removed. Required evidence: actual supported/refused tuple and unsafe-boundary cases with source diagnostics, never backend crashes or missing symbols as legality checks.
+<!-- legality-facet-source-profiles:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -341,6 +350,15 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 pattern ownership criterion (Open): Derive actual move/borrow/consumption facts for owned or linear pattern bindings from real resolved/narrowed types and branch/guard/control flow. A branch may move only when its consumption satisfies governing ownership and linear-resource rules; account for false guards, later clauses and non-returning paths. Emit L7-LINEAR-MOVE on violations and retain source-bound evidence. Resolution owns lexical names and Types owns narrowing; this task does not replace them. Required evidence: legal destructuring and rejected duplicate consumption, invalid moves/borrows/escapes and lost obligations across guard/failure paths.
 <!-- legality-pattern-source-resources:end -->
 
+
+<!-- library-base-source-borrow-analysis:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation borrow-analysis criterion (Open): Check real ownership moves, borrow access modes, initialization, region lifetimes and memory-view sharing facts at library calls and structured control joins. Reject stale owners, overlapping mutable aliases, dangling borrows and region escapes not transferred into valid longer-lived storage or explicit unsafe responsibility. Preserve facts and invalidations through MIR/optimization/backend consumers. Evidence: actual positive/negative lifetime/alias/escape graphs and diagnostic/checker products; expected API outcomes, scope descriptors and source parameter names are no proof.
+<!-- library-base-source-borrow-analysis:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -473,6 +491,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 
 L13 real safe-wrapper boundary criterion (Open): Verify each claimed safe library surface over separately isolated unsafe namespaces using the actual signature/invariant, preconditions, permitted profiles, ownership/cleanup and surviving proof/check/audit evidence. Require tests or proofs of the invariant, identify the wrapper when it cannot be established and retain release/safety-critical audit artifacts. Preserve D8's proved-safe/runtime-checked/rejected/explicit unsafe-island outcomes and no undefined behavior through optimization and target lowering. A manifest, generic unsafe flag or host implementation is no safety proof. Required evidence: actual valid/invalid wrapper cases and owning L13-UNSAFE-INVARIANT/L13-RESOURCE/L13-ALLOC or safety diagnostics, source-linked checks/proofs/audits and real library boundary behavior. Library owns callable wrappers, Legality analysis and verdicts; restricted unsafe/provider/device execution remains held.
 <!-- legality-library-source-wrappers:end -->
+
+
+<!-- library-base-source-safe-wrappers:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation safe-wrappers criterion (Open): Classify actual safe-wrapper boundaries over unsafe library/compiler-support internals using complete signatures/invariants that enforce every precondition, hide raw authority, define failure and preserve ownership/cleanup. Admit only governing static proof, runtime check, explicit unsafe responsibility or rejection; keep unsafe operations and current audit references visible in release artifacts. Reject safe UB, absent/stale evidence and lost memory/alias/concurrency/FFI/target assumptions after transforms. Evidence: actual invalid-precondition negatives, current checker/audit and preservation products; a generic unsafe flag or security verdict cannot discharge missing safety facts.
+<!-- library-base-source-safe-wrappers:end -->
+
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 

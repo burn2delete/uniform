@@ -278,6 +278,13 @@ Use the [complete library-principles source criteria](../stdlib-workflow/plan.md
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
 
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Keep actual versioned registration/callback policy and declared Core/domain outputs separate from each domain's real implementation. The existing domain task routes all ten L14 initial facets, preserves full versioned source/typed/effect/grant/privacy payloads and invokes actual owning verification before later consumers. C17/C12 reviews do not accept whole L14 and no held callback runs.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

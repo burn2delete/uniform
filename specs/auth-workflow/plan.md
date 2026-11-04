@@ -164,7 +164,8 @@ Build grants and runtime grants remain separate. Compile-time providers support
 replay or explicitly declare non-replayability. Release/conformance/safety-critical
 builds need the specified recorded exception before otherwise non-replayable use;
 that replay exception grants no effect authority and cannot waive the exact
-L6/L12 hermetic premises or their recorded environment-wording issue. Runtime
+L12 hermetic premises selected by [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs). Canonical L6 wording
+clarification remains separate source work. Runtime
 initialization checks actual required providers before user code unless its
 compatible fallback is declared. Emitted gate metadata cannot replace that check
 or actual no-action-after-denial behavior.
@@ -347,6 +348,19 @@ Current source/interface entailment and independent acceptance remain pending. T
 Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Supply authentic selected-provider and operation-specific grants for task/scheduler, filesystem roots/operations and network hosts/ports/protocols/listen under phase/lifetime/attenuation/revocation and deployment policy. STD8/STD9 grant no ambient path/stream/network authority. Preserve separate required review and actual restrictions; decisions precede real Runtime operation gates without a blanket whole-Auth completion prerequisite.
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply authentic declared provider and operation-specific grant/phase/lifetime decisions. API or prompt/data values do not confer authority. Actual permitted effects and host/provider/signing actions remain separate from schema/type development and actual restrictions persist.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check authentic action/phase/artifact/namespace/package scopes and actual provider authority separately from effects. C17 read-IR scope grants no write; facet/package/prompt/signature labels confer no privilege. Retain every held action.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
 
 ## Historical task-authority-transfer plan
 

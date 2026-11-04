@@ -143,7 +143,7 @@ Selected static inspection finds real hosted recursive form construction and som
 
 Use the [complete Core source criteria](#complete-core-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 59 consumers: thirteen missing Types/MIR/Opt/Lower routes and 46 existing routes. Preserve all 1,577 previous result joins, every previous input and 78 unaffected route meanings; 203 added inputs yield 1780 total joins across 137 routes, 97 current parents and forty unchanged future records. All fifteen Core criteria retain routes for nine existing tasks. Counts describe graph conservation, not semantic coverage or execution.
 
-The coarse cycles now contain 95 and 9 tasks. Earlier members remain; new producer routes expose existing feedback rather than proving an acyclic implementation. The source-stage, analysis, transformation and consumer subjects below resolve the declared order. Genuine D1/C1/C5/C6 representation ordering and L6/L12 environment wording remain explicit decisions.
+The coarse cycles now contain 95 and 9 tasks. Earlier members remain; new producer routes expose existing feedback rather than proving an acyclic implementation. The source-stage, analysis, transformation and consumer subjects below resolve the declared order. D1/C1/C5/C6 representation ordering remains an explicit decision. Hermetic input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); canonical L6 wording clarification remains separate source work.
 
 | Boundary | Real selected product and order |
 | --- | --- |
@@ -225,7 +225,7 @@ The finite profile74 pattern-change review retains its exact earlier predicate/d
 
 Use the [complete pattern-matching source criteria](#complete-pattern-matching-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 59 consumers: 57 existing routes and two missing existing-task routes, backend-conformance and query. Preserve all 1,893 prior joins and eighty unaffected route meanings; 118 new inputs yield 2,011 joins across 139 routes, 99 current parents and forty unchanged future records. The fourteen L7 criteria retain all twelve existing task routes. Counts establish conservation, not semantic acceptance or execution.
 
-The coarse cycles contain 97 and nine tasks: all earlier 95 main members plus backend-conformance/query, with the release/schema/governance set unchanged. The actual subjects below expose feedback rather than pretending the whole tasks can complete in one topological order. Initial construction uses real declared interfaces; actual selected products precede later composition, independent acceptance and release. Retain D1/C1/C5/C6 ordering and L6/L12 environment-wording decisions.
+The coarse cycles contain 97 and nine tasks: all earlier 95 main members plus backend-conformance/query, with the release/schema/governance set unchanged. The actual subjects below expose feedback rather than pretending the whole tasks can complete in one topological order. Initial construction uses real declared interfaces; actual selected products precede later composition, independent acceptance and release. Retain D1/C1/C5/C6 ordering; apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) while retaining the separate canonical L6 wording follow-up.
 
 | Boundary | Actual selected product and order |
 | --- | --- |
@@ -320,6 +320,18 @@ Preserve all eight L9 artifact families and seven diagnostic meanings with actua
 Scoped static inspection finds hosted C6 carrying try handlers and throw payloads with evaluation labels, and the selected hosted type-table builder emitting Dynamic returns/copied latent effects/fixed String throws. Selected Gravity C7 functions instead derive real source-bound direct typed throws, authenticate transfers and function ownership, seed exact atomic catch bindings, partition source errors through ordered handlers and build an acyclic local-call error graph with refusal paths. Their source-error coverage explicitly leaves effect/profile/handler/capability discharge pending. This is selected source inspection only, not fresh execution, a complete C7/Runtime review, general handler/profile/runtime support or proof that no other real implementation exists.
 
 Full current source/owner/interface entailment, independent review and implementation acceptance remain pending/unassessed. Earlier finite predicates/reviews and the policy facet's pending acceptance are preserved. Existing 2,128 result joins, 141 routes, 101 current parents, forty future declarations and 99-/nine-task coarse cycles retain their meanings; complete L9 selected-result staging remains to reconcile. Reader contract coverage remains the first actual implementation increment. Every writer reservation and actual C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Core retains ordinary left-to-right, eager, once-only evaluation, effects, transfers and explicit linear builder/scope/cleanup lowering. Inert stored payload laws do not erase explicitly requested traversal callbacks. Never prevents invocation/direct allocation while latent signature requirements and ordinary legality still apply.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual once-only eager evaluation, effects/transfers, structured resource/region/cleanup flow, metadata origins and library-versus-special-form ownership. Never prevents invocation while ordinary source and latent signature legality remains.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
 ## Historical task-authority-transfer plan
 

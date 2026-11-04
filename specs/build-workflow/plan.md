@@ -243,6 +243,38 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Build binds actual module exports, representation/provider/profile/target/effect/allocation metadata, compiler/toolchain/lock/source and examples to genuine artifact identities. Changed collection source, caller/use proofs or representation facts invalidate affected products; an old receipt or compatibility binding proves no current callable module. Signing/publication remains separate.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Bind genuine module exports/manifests/docs, supported profiles/providers, canonical payloads, locked recipe/environment inputs and actual repeat-build/signature/provenance/SBOM results to the exact claimed grade. Signing occurs only within actual custody/permission; signatures alone prove no provenance or authorization.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Hermetic input policy
+
+Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) and the exact L12 declared-input,
+provider/replay, clock/random, target-manifest and generated-input premises.
+The existing typed-build-graph task owns actual allowed/refused execution;
+the reproducibility/target-matrix task owns real repeat-build typed-Core byte
+comparisons. An environment grant without its declared key/value policy, or a
+network/shell/model/tool grant without the required replayable provider or
+pinned result, is refused before action. Actual accepted and rejected input,
+provider, phase, redaction and replay records remain required. Canonical L6
+wording clarification and its source successor remain separate work; no held
+build or provider operation is enabled by this plan.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Resolve authentic facet identity/version/range/source/schema locks before compilation, integrating selected-engine/shared semantic cache boundaries and actual current-policy reuse. Syntax/IR/lowering/profile/schema/privacy/grant changes invalidate affected products before owner regeneration; version metadata alone is not compatibility acceptance.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

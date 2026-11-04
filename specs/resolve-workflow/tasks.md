@@ -73,6 +73,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 real library import-boundary criterion (Open): Resolve actual versioned library namespace/export/layer/profile declarations with the ordinary module and public/private graph rules. Consume authentic early declarations before checking the caller, reject actual lower-to-higher portability edges and imports outside the active profile, and preserve source/binding/package/target identity for downstream checking. Later actual built availability confirms shipped claims; a future completed library/release is not the first declaration interface. Emit L13-PROFILE and owning graph diagnostics for real offending imports rather than fabricating unsupported namespaces or inheriting host availability. Required evidence: real allowed downward and refused upward/unknown/excluded/stale imports and exact source/graph/profile records; the library owns declarations and callable exports, Resolve the actual import decision.
 <!-- resolve-library-source-import:end -->
 
+
+<!-- resolve-facet-source-namespace:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet lexical-scope criterion (Open): Resolve explicit facet activations in namespace metadata against authentic selected versioned manifests before facet expansion. Imports do not transitively activate the importer's facets; a macro-generated nested activation needs explicit provenance and preserves the declared lexical boundary. Resolve aliases or explicit activation to disambiguate shared surfaces and reject remaining ambiguous or inactive use, unsupported profiles and wrong namespace/version ownership before backend lowering. Preserve normal name/public-private/package graph and source identities. Required evidence: real local/importer/nested/alias activation and ambiguous/inactive/wrong-scope refusals, linked to Expand manifest/dispatch products; a final whole facet or package release is not the first declaration.
+<!-- resolve-facet-source-namespace:end -->
+
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality
 
 Current evidence/status: Open; partial source evidence above is not closure

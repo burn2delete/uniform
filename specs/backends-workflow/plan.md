@@ -67,6 +67,25 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Actual selected backend/provider products preserve current collection semantics, including false/nil, inert payloads, ordinary transfers, representation-specific allocation and complete validation. Supported overload/member/operand subsets are declared separately from language laws. Target conformance uses actual outputs and current metadata, and optional/unavailable execution never becomes a pass or an initial whole-backend gate.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve real supported text/scalar/numeric/metadata/resource/effect and unsafe/proof contracts through selected artifacts. Host Unicode/float/object/GC defaults and target UB cannot substitute for Gravity; genuine required target comparisons and metadata checks follow actual products with honest availability.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Keep the exact existing 1,238-byte hardware-parallel-state/counter predicate and its original HDL owner. Actual circuit/state/timing/register/overflow/source-map products and forbidden host-service refusals remain required, with Platform and compiler owners supplying their distinct actual inputs. No product ISA/device is selected.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority
