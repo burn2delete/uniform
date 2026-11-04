@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: current STD3 collections and explicit source succession.
-The [current checkpoint](#current-collections-source-and-std3-succession-continuation)
+Latest source continuation: library foundations STD1/STD2/STD4/STD5/STD6.
+The [current checkpoint](#library-foundation-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7532,3 +7532,123 @@ All actual restrictions and the stopped C7 handoff remain; no retry/transfer,
 other-chat message, reviewer/automation wake, aggregate publication or integration
 occurs. This is a source proposal, not reconciliation completion or implementation
 acceptance.
+
+## Library foundation source continuation
+
+Source proposal: `ed16e62269486c85caab8f7abbef5d398c35687d`.
+Predecessor checkpoint: `24f4208d451b5c92071ca17efc22899aeb9d7034`.
+Plan formatting successor: `8682dba302e11edf666f3c673389c1deb40bbc0c`.
+Six multiline plan-table cells now use explicit line breaks, preserving all
+45 criterion rows and the exact original task-ledger predicates.
+The [library foundation criteria](../specs/stdlib-workflow/plan.md#complete-library-foundation-source-criteria)
+cover the complete current STD1, STD2, STD4, STD5 and STD6 source conjunctions
+as author proposals: 56 sections, 409 preserved facet identities, 143 occurrence
+identities and 34 original owner obligations. Every source file matches its
+preserved census bytes and hash; STD3's separate explicit succession remains
+unchanged. Counts and allocated source spans establish custody, not entailment.
+
+Forty-five criteria use existing task identities: 37 new criteria amend fourteen
+current bodies in eight authorities, and eight predicates retain 8,936 exact
+bytes in their original Math, Library-allocation and GOV9 roles. Thirteen plans
+and the existing Library spec expose the actual producer/consumer boundaries.
+No new task, test, authority or feature package is created. The actual independent
+checker remains the existing Open future
+`math/independent-proof-and-certificate-checking` outcome; the broad Math parent
+predicate does not establish independent checking or resolve its wider pending
+checker allocation.
+
+The current routes preserve complete module/export/profile contracts; actual
+core function/value/Option/Result/error/metadata/dispatch behavior; nil/Bool/
+Symbol/Keyword classification and binary inequality; immutable String/Character
+classification, exact concatenation and scalar-to-Vector conversion; Unicode,
+encoding, slicing, normalization, explicit locale and declared parser policy;
+numeric modes, EFIR/EML distinctions, elementary/interval/certificate use; actual
+allocator/borrow/region/linear/cleanup/view/unsafe wrapper behavior; and real
+module recipe, signature, provenance, compatibility and release evidence.
+The owning STD1/STD2/STD4/STD5/STD6 diagnostic families are required future
+behavior, not claims of current emitted diagnostics. Real numeric error bounds,
+physical memory/lifetimes and declared parser runtime policy remain distinct
+from removed compiler work/input/accounting quotas.
+
+Eleven original census owners had no task reference. Their current/future routes
+are now explicit author proposals, with original nil references and obligation
+identities retained. Library's allocation entry API remains separate from actual
+Runtime provider execution. Governance's existing task produces a distinct GOV9
+audit rather than a generic security PASS. Bootstrap/compiler maintainers retain
+unsafe source ownership; the existing Release self-hosting task consumes actual
+boundary, audit, trust and closure evidence. Neither those references nor matching
+source fragments establish whole attached-owner entailment or transfer reserved
+implementation/review responsibilities. Protocol dispatch retains the existing
+Types selection, Effects checking, Legality profile and Lower ABI composition;
+the census's Effects task reference is not exclusive dispatch implementation
+ownership or evidence of the complete attached predicate.
+
+The Release task-file edit changed the container identities of thirteen future
+Release records. All forty declaration bodies, roles, statuses and complete
+marked-region bytes remain exact; the other twenty-seven records retain their
+source identities. The new record provides an explicit before/after source
+successor, and the source-view selector checks it before the old fallback. The
+strict forty-record comparison remains; the old error-refinement binding is
+unchanged. The initial guard failure correctly stopped fingerprint/projection
+generation and receives no passing-validation credit.
+
+All 149 current task identities/statuses and earlier refinement/review subjects
+remain. Original body comparisons stay 27 identical and 112 explicitly amended;
+all fourteen changed bodies were already amended in this branch. Dependency
+table bytes remain exact: 158 routes, 118 current parents, forty future consumers,
+3,650 input joins and the 139-task coarse feedback set. Current foundation
+interface/global-order entailment remains pending.
+
+Validation of the final source and metadata proposal:
+
+- Three focused crosswalk tests pass with 46,334 assertions, zero failures and
+  zero errors under a 768 MB host heap. They check source-payload deduplication,
+  current global conservation and the preserved prior B4-B14 source subject;
+  they do not prove current foundation semantic entailment. All 23 dependency
+  tests pass with 9,121 assertions, zero failures and zero errors under a 512 MB
+  heap. Crosswalk projection, dependency and applying local Git pin checks pass.
+- Separate current foundation auditing passes: all 149 identities/statuses and
+  135 other task bodies stay exact. Removing 37 declared blocks recreates all
+  25 predecessor task ledgers, with modified historical suffixes additionally
+  literal-byte identical. Removing the new sections recreates thirteen plans
+  and the Library spec, including Governance's existing plan without a historical
+  transfer section. All original source/owner record hashes, 409 facet and 143
+  occurrence spans, 56 section conjunctions, 45 criterion witnesses and eight
+  reused predicates pass. Original owner obligations and earlier records remain.
+  The final plan-format successor also passes exact reversal of all six changed
+  cells and validation of all 45 criterion rows; task predicates stay exact.
+- All forty future predicate/role bindings and the independent checker record
+  remain exact. The thirteen Release container identities have an explicit
+  source successor, with the other twenty-seven records unchanged. The strict
+  source-view guard rejects a simulated undeclared future body-identity change.
+  The initial guard failure receives no validation credit.
+- Test and dependency-tool code is unchanged. The pending fingerprint is
+  `196036176d94d8fa1a08d1038d9ec7568ef200c49fd83c72ba284ea65657d131`.
+- Canonical docs validation passes for 240 documents and nineteen phase indexes;
+  the language boundary passes six tests and eleven assertions. New local
+  navigation, ASCII and whitespace checks pass.
+- Full execution of the 90-test crosswalk suite against this subject is unrun.
+  The earlier 90-test / 177,322-assertion result remains bound only to
+  `88d5f68432beb5c36cdb439fa7cf389118885334`. No compiler, library, runtime,
+  backend, proof, conformance, release or self-hosting behavior is accepted by
+  these planning/traceability results.
+
+The source-version root changes six current pin/comparison fields, its pending
+fingerprint and the new foundation record. The projection tool adds one source
+view key and selects the explicit future-source successor; test and dependency
+tool code remains unchanged. Preparation handled Governance's existing plan
+without fabricating a historical-transfer section. No whole-module implementation
+audit or compiler/library/provider/proof/runtime/Reader/Gravity/bootstrap/target/
+replay/signing/publication execution occurs; previous p16 summary-status findings
+and narrow accepted receipts retain their original scopes. Inherited historical
+proposal payloads remain digest-backed references to preserved sources, with no
+aggregate adoption, remote-availability or fresh-clone claim.
+
+Current STD1-STD6 author source proposals do not close the wider STD7-STD20,
+AI/support/foundation/nonfunctional obligations, global source/owner/interface
+conjunctions, concrete accounting cleanup, recorded source-order/hermetic
+conflicts, product decisions or required independent current review. The first
+implementation increment remains Reader contract coverage. All actual holds and
+the stopped C7 handoff remain; no retry/transfer, other-chat message, reviewer or
+automation wake, aggregate publication or integration occurs. Reconciliation,
+implementation, independent acceptance and integration remain distinct.
