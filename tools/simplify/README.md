@@ -133,6 +133,15 @@ The check watchdog does not impose a deadline on model turns or controller
 Git/GitHub calls. A stalled call requires host/operator interruption; pause
 takes effect at scheduler boundaries, after active operations finish.
 
+The implementation harness in `../advance` shares persistent path claims,
+denied-operation records and a main-write lock through the Git common directory.
+Disjoint authors can run concurrently; overlapping active writers wait. Claims
+release before independent review, so immutable candidates awaiting review or
+CI do not prevent isolated successors. Failed/interrupted writing claims persist.
+Restart older Simplify processes with this version before running both tools.
+These cooperative locks cover harnesses in the same Git repository; coordinate
+other main writers and separate clones explicitly.
+
 ```text
 clojure -M:run status config.edn
 clojure -M:run pause config.edn

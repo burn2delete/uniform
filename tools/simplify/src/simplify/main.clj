@@ -16,10 +16,12 @@
    :check-executables #{"clojure"}
    :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]})
 
-(defn config! [path]
+(defn config!
+  ([path] (config! path defaults))
+  ([path configuration-defaults]
   (let [file (io/file (rt/canonical path))
         parent (.getParentFile file)
-        raw (merge defaults (rt/read-edn file))
+        raw (merge configuration-defaults (rt/read-edn file))
         config (reduce (fn [m key]
                          (let [value (io/file (get m key))]
                            (assoc m key (rt/canonical (if (.isAbsolute value) value (io/file parent (str value)))))))
@@ -31,14 +33,14 @@
       (rt/fail! "Invalid harness configuration" {}))
     (when (workflow/covers? (:repo-dir config) (:worktree-root config))
       (rt/fail! "Worker worktrees must be outside the source checkout" {}))
-    config))
+    config)))
 
 (defn context! [config]
   (let [directory (io/file (:state-dir config))
         _ (.mkdirs directory)
         path (str (io/file directory "state.edn"))
         ctx {:config config :state-dir (str directory) :state-file path :control-file (str (io/file directory "control.edn"))
-             :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{})
+             :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{}) :coordinator-owner (atom false)
              :state (atom (if (.exists (io/file path)) (rt/read-edn path)
                               {:schema 1 :repository (:repository config) :campaign (:campaign config) :status :new :tasks {} :effects {} :jobs {} :rounds {}}))}
         _ (when-not (and (= 1 (:schema @(:state ctx))) (= (:repository config) (:repository @(:state ctx)))
@@ -46,8 +48,21 @@
             (rt/fail! "State belongs to another campaign or schema" {}))
         git-dir (rt/git ctx (:repo-dir config) "rev-parse" "--git-common-dir")
         lock-dir (io/file git-dir)
-        lock-dir (if (.isAbsolute lock-dir) lock-dir (io/file (:repo-dir config) git-dir))]
-    (assoc ctx :lock-file (str (io/file lock-dir "simplify-harness.lock")))))
+        lock-dir (if (.isAbsolute lock-dir) lock-dir (io/file (:repo-dir config) git-dir))
+        result (assoc ctx :lock-file (str (io/file lock-dir (get config :coordinator-lock "simplify-harness.lock")))
+                          :coordinator-owner (atom false)
+                          :coordination-dir (rt/canonical (io/file lock-dir "uniform-harness")))]
+    (doseq [[key details] (:restricted-commands @(:state ctx))] (rt/record-denial! result :command key details))
+    (doseq [[key details] (:restricted-actions @(:state ctx))] (rt/record-denial! result :github key details))
+    result))
+
+(defn shutdown! [ctx]
+  (doseq [process @(:processes ctx)]
+    (with-open [descendants (.descendants ^Process process)]
+      (doseq [handle (.toArray descendants)] (.destroy ^ProcessHandle handle)))
+    (.destroy ^Process process))
+  (when (and (some-> (:coordinator-owner ctx) deref) (#{:running :waiting} (:status @(:state ctx))))
+    (rt/update! ctx assoc :status :attention)))
 
 (defn doctor! [ctx]
   (doseq [argv [["git" "--version"] ["gh" "--version"] ["codex" "--version"] ["codex" "login" "status"]]]
@@ -90,20 +105,13 @@
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Provide a command and a configuration path; see README.md" {}))
-    (let [ctx (context! (config! config-path))]
+    (let [ctx (assoc (context! (config! config-path)) :command command)]
       (.addShutdownHook (Runtime/getRuntime)
                         (Thread. ^Runnable
-                                 (fn []
-                                   (doseq [process @(:processes ctx)]
-                                     (with-open [descendants (.descendants ^Process process)]
-                                       (doseq [handle (.toArray descendants)] (.destroy ^ProcessHandle handle)))
-                                     (.destroy ^Process process))
-                                   (when (= :running (:status @(:state ctx)))
-                                     (rt/update! ctx assoc :status :attention)))))
+                                 (fn [] (shutdown! ctx))))
       (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
       (try (dispatch! ctx command args)
            (catch Exception e
-             (when (#{"run" "resume"} command) (rt/update! ctx assoc :status :attention))
              (rt/event! ctx :fatal {:message (.getMessage e) :data (ex-data e)})
              (throw e))))
     (catch Exception e

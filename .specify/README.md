@@ -4,6 +4,12 @@ Status: initial adoption merged in [PR371](https://github.com/burn2delete/unifor
 Semantic naming is the successor draft [PR379](https://github.com/burn2delete/uniform/pull/379).
 Deus owns review routing and integration decisions.
 
+Matt's 2026-11-03 delegation authorizes the separate
+[implementation harness](../tools/advance/README.md) to select all current
+implementation tasks and own its full draft-to-verified-merge loop toward
+project completion, coordinating with Simplify. The constitution records this
+exception for that controller; existing restrictions remain effective.
+
 This is a work-artifact layer for implementation increments. The 240 contracts under
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
