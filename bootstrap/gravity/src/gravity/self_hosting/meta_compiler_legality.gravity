@@ -8,7 +8,7 @@
   (:capabilities #{})
   (:safety :safe))
 
-; SH-21 bounded compiler-module legality leaf. Applying this policy to every
+; SH-21 compiler-module legality leaf. Applying this policy to every
 ; authoritative compiler module and executing the resulting compiler remain
 ; coordinator-owned integration work.
 
@@ -16,15 +16,6 @@
   {:artifact :gravity/sh21-meta-legality-policy
    :version 1
    :profile :meta
-   :maximum-modules 64
-   :maximum-dependencies 256
-   :maximum-effects-per-module 16
-   :maximum-capabilities-per-module 16
-   :maximum-pass-facts-per-set 64
-   :maximum-pass-artifacts 64
-   :maximum-compiler-lineage 32
-   :maximum-generated-records-per-module 64
-   :maximum-build-inputs-per-module 64
    :allowed-effects
    #{:memory/allocate
      :compiler/read-ir
@@ -96,9 +87,7 @@
 
 (defn sh21-origin-chain-valid? [origin-chain]
   (if (vector? origin-chain)
-    (if (> (count origin-chain) 0)
-      (<= (count origin-chain) 32)
-      false)
+    (> (count origin-chain) 0)
     false))
 
 (defn sh21-set-subset? [values allowed]
@@ -183,23 +172,17 @@
         policy (sh21-meta-policy)]
     (if (set? effects)
       (if (set? capabilities)
-        (if (<= (count effects)
-                (get policy :maximum-effects-per-module))
-          (if (<= (count capabilities)
-                  (get policy :maximum-capabilities-per-module))
-            (if (sh21-set-subset? effects (get policy :allowed-effects))
-              (if (sh21-sets-disjoint?
-                   effects (get policy :forbidden-ambient-effects))
-                (let [required
-                      (sh21-required-capabilities effects #{})]
-                  (if (= required capabilities)
-                    nil
-                    ["P3-COMPILER-CAPABILITY"
-                     :effect-capability-set-mismatch]))
-                ["P3-HERMETIC" :forbidden-ambient-effect])
-              ["P3-HERMETIC" :effect-not-allowed-in-hermetic-meta])
-            ["P3-COMPILER-CAPABILITY" :capability-bound-exceeded])
-          ["P3-BUILD-EFFECT" :effect-bound-exceeded])
+        (if (sh21-set-subset? effects (get policy :allowed-effects))
+          (if (sh21-sets-disjoint?
+               effects (get policy :forbidden-ambient-effects))
+            (let [required
+                  (sh21-required-capabilities effects #{})]
+              (if (= required capabilities)
+                nil
+                ["P3-COMPILER-CAPABILITY"
+                 :effect-capability-set-mismatch]))
+            ["P3-HERMETIC" :forbidden-ambient-effect])
+          ["P3-HERMETIC" :effect-not-allowed-in-hermetic-meta])
         ["P3-COMPILER-CAPABILITY" :capability-set-required])
       ["P3-BUILD-EFFECT" :effect-set-required])))
 
@@ -267,19 +250,15 @@
 (defn sh21-module-input-error [module]
   (let [inputs (get module :build-inputs)]
     (if (vector? inputs)
-      (if (<= (count inputs)
-              (get (sh21-meta-policy)
-                   :maximum-build-inputs-per-module))
-        (if (sh21-build-inputs-valid? module inputs 0)
-          (let [required
-                (sh21-effects-requiring-inputs
-                 (get module :effects) #{})
-                supplied (sh21-input-effects inputs 0 #{})]
-            (if (= required supplied)
-              nil
-              ["P3-HERMETIC" :declared-build-input-set-mismatch]))
-          ["P3-HERMETIC" :invalid-or-nonreplayable-build-input])
-        ["P3-HERMETIC" :build-input-bound-exceeded])
+      (if (sh21-build-inputs-valid? module inputs 0)
+        (let [required
+              (sh21-effects-requiring-inputs
+               (get module :effects) #{})
+              supplied (sh21-input-effects inputs 0 #{})]
+          (if (= required supplied)
+            nil
+            ["P3-HERMETIC" :declared-build-input-set-mismatch]))
+        ["P3-HERMETIC" :invalid-or-nonreplayable-build-input])
       ["P3-HERMETIC" :build-input-vector-required])))
 
 (defn sh21-pass-contract-error [module]
@@ -294,38 +273,17 @@
                   (if (set? (get contract :invalidates))
                     (if (set? (get contract :regenerates))
                       (if (vector? (get contract :artifacts))
-                        (let [maximum
-                              (get (sh21-meta-policy)
-                                   :maximum-pass-facts-per-set)]
-                          (if (<= (count (get contract :requires)) maximum)
-                            (if (<= (count (get contract :preserves)) maximum)
-                              (if (<= (count (get contract :invalidates)) maximum)
-                                (if (<= (count (get contract :regenerates)) maximum)
-                                  (if (<=
-                                       (count (get contract :artifacts))
-                                       (get (sh21-meta-policy)
-                                            :maximum-pass-artifacts))
-                                    (if (sh21-sets-disjoint?
-                                         (get contract :preserves)
-                                         (get contract :invalidates))
-                                      (if (sh21-sets-disjoint?
-                                           (get contract :preserves)
-                                           (get contract :regenerates))
-                                        nil
-                                        ["P3-FACT-INVALIDATION"
-                                         :preserved-and-regenerated-fact-overlap])
-                                      ["P3-FACT-INVALIDATION"
-                                       :preserved-and-invalidated-fact-overlap])
-                                    ["P3-PASS-CONTRACT"
-                                     :pass-artifact-bound-exceeded])
-                                  ["P3-FACT-INVALIDATION"
-                                   :regenerated-fact-bound-exceeded])
-                                ["P3-FACT-INVALIDATION"
-                                 :invalidated-fact-bound-exceeded])
-                              ["P3-FACT-INVALIDATION"
-                               :preserved-fact-bound-exceeded])
-                            ["P3-PASS-CONTRACT"
-                             :required-fact-bound-exceeded]))
+                        (if (sh21-sets-disjoint?
+                             (get contract :preserves)
+                             (get contract :invalidates))
+                          (if (sh21-sets-disjoint?
+                               (get contract :preserves)
+                               (get contract :regenerates))
+                            nil
+                            ["P3-FACT-INVALIDATION"
+                             :preserved-and-regenerated-fact-overlap])
+                          ["P3-FACT-INVALIDATION"
+                           :preserved-and-invalidated-fact-overlap])
                         ["P3-PASS-CONTRACT" :artifact-vector-required])
                       ["P3-PASS-CONTRACT" :regenerates-set-required])
                     ["P3-PASS-CONTRACT" :invalidates-set-required])
@@ -385,11 +343,7 @@
 (defn sh21-module-generated-error [module]
   (let [records (get module :generated-code)]
     (if (vector? records)
-      (if (<= (count records)
-              (get (sh21-meta-policy)
-                   :maximum-generated-records-per-module))
-        (sh21-generated-records-error records 0)
-        ["P3-GENERATED-PROFILE" :generated-record-bound-exceeded])
+      (sh21-generated-records-error records 0)
       ["P3-GENERATED-PROFILE" :generated-record-vector-required])))
 
 (defn sh21-module-common-error [module]
@@ -401,63 +355,48 @@
             (if (string? (get module :compiler-artifact-id))
               (if (vector? (get module :compiler-lineage))
                 (if (> (count (get module :compiler-lineage)) 0)
-                  (if (<= (count (get module :compiler-lineage))
-                          (get (sh21-meta-policy)
-                               :maximum-compiler-lineage))
-                    (if (sh21-string-values?
-                         (get module :compiler-lineage) 0)
-                      (if (sh21-unique-values?
-                           (get module :compiler-lineage) 0 #{})
-                        (if (vector? (get module :dependencies))
-                          (if (sh21-unique-values?
-                               (get module :dependencies) 0 #{})
-                            (if (set? (get module :runtime-assumptions))
-                              (if (<=
-                                   (count
-                                    (get module :runtime-assumptions))
-                                   (count
-                                    (get (sh21-meta-policy)
-                                         :allowed-runtime-assumptions)))
-                                (if (sh21-set-subset?
-                                     (get module :runtime-assumptions)
-                                     (get (sh21-meta-policy)
-                                          :allowed-runtime-assumptions))
-                                  (if (vector?
-                                       (get module
-                                            :compile-time-captures))
-                                    (if (= 0
-                                           (count
-                                            (get module
-                                                 :compile-time-captures)))
-                                      (if (sh21-source-span-valid?
-                                           (get module :source-span))
-                                        (if (sh21-origin-chain-valid?
-                                             (get module :origin-chain))
-                                          nil
-                                          ["P3-SOURCE-MAP"
-                                           :module-origin-chain-required])
-                                        ["P3-SOURCE-MAP"
-                                         :module-source-span-required])
-                                      ["P3-PHASE"
-                                       :runtime-value-captured-at-compile-time])
-                                    ["P3-PHASE"
-                                     :compile-time-capture-vector-required])
-                                  ["P3-HERMETIC"
-                                   :runtime-assumption-not-allowed])
-                                ["P3-HERMETIC"
-                                 :runtime-assumption-bound-exceeded])
+                  (if (sh21-string-values?
+                       (get module :compiler-lineage) 0)
+                    (if (sh21-unique-values?
+                         (get module :compiler-lineage) 0 #{})
+                      (if (vector? (get module :dependencies))
+                        (if (sh21-unique-values?
+                             (get module :dependencies) 0 #{})
+                          (if (set? (get module :runtime-assumptions))
+                            (if (sh21-set-subset?
+                                 (get module :runtime-assumptions)
+                                 (get (sh21-meta-policy)
+                                      :allowed-runtime-assumptions))
+                              (if (vector?
+                                   (get module :compile-time-captures))
+                                (if (= 0
+                                       (count
+                                        (get module :compile-time-captures)))
+                                  (if (sh21-source-span-valid?
+                                       (get module :source-span))
+                                    (if (sh21-origin-chain-valid?
+                                         (get module :origin-chain))
+                                      nil
+                                      ["P3-SOURCE-MAP"
+                                       :module-origin-chain-required])
+                                    ["P3-SOURCE-MAP"
+                                     :module-source-span-required])
+                                  ["P3-PHASE"
+                                   :runtime-value-captured-at-compile-time])
+                                ["P3-PHASE"
+                                 :compile-time-capture-vector-required])
                               ["P3-HERMETIC"
-                               :runtime-assumption-set-required])
-                            ["P3-PASS-CONTRACT"
-                             :duplicate-module-dependency])
+                               :runtime-assumption-not-allowed])
+                            ["P3-HERMETIC"
+                             :runtime-assumption-set-required])
                           ["P3-PASS-CONTRACT"
-                           :dependency-vector-required])
+                           :duplicate-module-dependency])
                         ["P3-PASS-CONTRACT"
-                         :compiler-lineage-cycle])
+                         :dependency-vector-required])
                       ["P3-PASS-CONTRACT"
-                       :compiler-lineage-identity-required])
+                       :compiler-lineage-cycle])
                     ["P3-PASS-CONTRACT"
-                     :compiler-lineage-bound-exceeded])
+                     :compiler-lineage-identity-required])
                   ["P3-PASS-CONTRACT" :compiler-lineage-required])
                 ["P3-PASS-CONTRACT" :compiler-lineage-required])
               ["P3-PASS-CONTRACT" :compiler-artifact-identity-required])
@@ -505,40 +444,35 @@
     (let [module (get modules index)]
       (if (map? module)
         (if (vector? (get module :dependencies))
-          (if (<= (count (get module :dependencies))
-                  (get (sh21-meta-policy) :maximum-dependencies))
-            (sh21-module-container-error modules (+ index 1))
-            ["P3-PASS-CONTRACT" :dependency-bound-exceeded])
+          (sh21-module-container-error modules (+ index 1))
           ["P3-PASS-CONTRACT" :dependency-vector-required])
         ["P3-PASS-CONTRACT" :compiler-module-record-required]))))
 
 (defn sh21-cycle-from-dependencies?
-  [modules dependencies index path depth]
+  [modules dependencies index path]
   (if (= index (count dependencies))
     false
     (if (sh21-cycle-from?
-         modules (get dependencies index) path (+ depth 1))
+         modules (get dependencies index) path)
       true
       (sh21-cycle-from-dependencies?
-       modules dependencies (+ index 1) path depth))))
+       modules dependencies (+ index 1) path))))
 
-(defn sh21-cycle-from? [modules module-id path depth]
-  (if (> depth 64)
+(defn sh21-cycle-from? [modules module-id path]
+  (if (contains? path module-id)
     true
-    (if (contains? path module-id)
-      true
-      (let [module (sh21-find-module modules module-id 0)]
-        (if (= nil module)
-          false
-          (sh21-cycle-from-dependencies?
-           modules (get module :dependencies) 0
-           (conj path module-id) depth))))))
+    (let [module (sh21-find-module modules module-id 0)]
+      (if (= nil module)
+        false
+        (sh21-cycle-from-dependencies?
+         modules (get module :dependencies) 0
+         (conj path module-id))))))
 
 (defn sh21-any-cycle? [modules index]
   (if (= index (count modules))
     false
     (if (sh21-cycle-from?
-         modules (get (get modules index) :module-id) #{} 0)
+         modules (get (get modules index) :module-id) #{})
       true
       (sh21-any-cycle? modules (+ index 1)))))
 
@@ -578,37 +512,29 @@
           (if (vector? (get program :modules))
             (let [modules (get program :modules)]
               (if (> (count modules) 0)
-                (if (<= (count modules)
-                        (get (sh21-meta-policy) :maximum-modules))
-                  (if (sh21-unique-by-key?
-                       modules :module-id 0 #{})
-                    (if (= (get program :module-order)
-                           (sh21-module-ids modules 0 []))
-                      (let [container-error
-                            (sh21-module-container-error modules 0)]
-                        (if (= nil container-error)
-                          (if (<= (sh21-dependency-count modules 0 0)
-                                  (get (sh21-meta-policy)
-                                       :maximum-dependencies))
-                            (let [module-error
-                                  (sh21-modules-error modules 0)]
-                              (if (= nil module-error)
-                                (if (sh21-any-cycle? modules 0)
-                                  ["P3-PASS-CONTRACT"
-                                   :compiler-module-dependency-cycle]
-                                  (if (sh21-dependency-order-valid?
-                                       modules 0 #{})
-                                    nil
-                                    ["P3-PASS-CONTRACT"
-                                     :module-order-not-topological]))
-                                module-error))
-                            ["P3-PASS-CONTRACT"
-                             :dependency-bound-exceeded])
-                          container-error))
-                      ["P3-PASS-CONTRACT"
-                       :explicit-module-order-required])
-                    ["P3-PASS-CONTRACT" :duplicate-module-identity])
-                  ["P3-PASS-CONTRACT" :module-bound-exceeded])
+                (if (sh21-unique-by-key?
+                     modules :module-id 0 #{})
+                  (if (= (get program :module-order)
+                         (sh21-module-ids modules 0 []))
+                    (let [container-error
+                          (sh21-module-container-error modules 0)]
+                      (if (= nil container-error)
+                        (let [module-error
+                              (sh21-modules-error modules 0)]
+                          (if (= nil module-error)
+                            (if (sh21-any-cycle? modules 0)
+                              ["P3-PASS-CONTRACT"
+                               :compiler-module-dependency-cycle]
+                              (if (sh21-dependency-order-valid?
+                                   modules 0 #{})
+                                nil
+                                ["P3-PASS-CONTRACT"
+                                 :module-order-not-topological]))
+                            module-error))
+                        container-error))
+                    ["P3-PASS-CONTRACT"
+                     :explicit-module-order-required])
+                  ["P3-PASS-CONTRACT" :duplicate-module-identity])
                 ["P3-PASS-CONTRACT" :compiler-module-required]))
             ["P3-PASS-CONTRACT" :module-vector-required])
           ["P3-PASS-CONTRACT" :program-identity-required])
