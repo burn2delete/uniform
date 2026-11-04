@@ -679,6 +679,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Schema supplies actual validators; schema/checked-consumer-projection supplies the existing future API/source-generated consumer conjunction. Library applies those products to actual network bodies while preserving transport authentication, schema validation, taint and sink validation as separate facts. Existing future services owns wider typed routes/handlers/jobs/CRUD integration; Library's HTTP API is its consumer, not whole-service acceptance. Workflow/AI owners retain source graph, activity/replay, tool/model policy and required-review/eval-order production; project budget wording is explicitly superseded, actual external billing remains distinct.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

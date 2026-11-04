@@ -479,6 +479,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Check actual direct/latent concurrency, filesystem and network effects and forbidden blocking, including callbacks, server middleware/handlers and generated forms. Explicit grants, caller/callee contracts and active profiles precede admission; later runtime results are no first legality premise. STD8 filesystem effects do not introduce STD16 shell/process execution.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

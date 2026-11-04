@@ -87,6 +87,15 @@ Library foundation profile-matrix criterion (Open): Declare actual per-export av
 <!-- library-base-source-profile-matrix:end -->
 
 
+
+<!-- library-service-source-service-contracts:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-contracts criterion (Open): Bind every required gravity.concurrent, gravity.io, gravity.io.fs, gravity.net and gravity.net.http export to its actual callable implementation, type/schema, effect/capability, profile/target/provider, allocation/resource, blocking/scheduling, failure, cancellation, replay and stability contract. Include module/provider/delegation manifests, synchronization and memory-order support, filesystem path/encoding/durability policy, network endpoint/TLS/body/authentication policy, source-bound diagnostics and runnable examples. Reject missing/false callable exports, hidden host defaults, ambient file/stream/path/network authority and cross-profile availability claims. The compiler-support subset cannot discharge these wider modules. Evidence: exact source/export/contract/profile/provider joins and real accepted/refused import/call fixtures; generated inventory or assigned p16 completion is not callable support.
+<!-- library-service-source-service-contracts:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -648,6 +657,141 @@ Library foundation host-memory criterion (Open): Expose Gravity ownership/close/
 <!-- library-base-source-host-memory:end -->
 
 
+
+<!-- library-service-source-concurrency-api:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service concurrency-api criterion (Open): Implement the complete STD7 task, future, channel, actor, synchronization, atomic, scheduler and replay-helper surface: spawn/join/detach/cancel/task-scope/with-timeout/yield; future/promise/await/poll/complete/select; channel/send/recv/close/try-send/try-recv/buffer-policy; actor/send!/ask/stop/supervise/mailbox; mutex/rw-lock/condition/semaphore/barrier/once; atomic/load/store/compare-and-swap/fetch-add and memory orders; scheduler/run-loop/executor/recorded-scheduler/scheduler-policy; record-choice/replay-choice/deterministic-select. Preserve admitted effects/grants, actual selected schedulers and real values, completion/failure/cancellation and cleanup. Child tasks in the documented task-scope cannot outlive that scope. A detach export grants no permission to escape a structured scope: require the independently permitted execution model, lifecycle owner, capture/lifetime, cleanup and observability conditions from L11/SAFE8/R6. Reject orphan/leaked tasks, forbidden blocking, unsupported operations and host-thread fallback. Evidence: actual task/future/selection/synchronization/timeout/cancellation and refusal products, including the compiled fetch-both example and race-capture rejection.
+<!-- library-service-source-concurrency-api:end -->
+
+
+
+<!-- library-service-source-channels-and-actors:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service channels-and-actors criterion (Open): Execute real channel and actor APIs with declared element/message/request/response schemas, ownership move or permitted immutable copy, sender/receiver lifetime, buffering/mailbox capacity, backpressure, ordering/delivery, close, error, cancellation and supervision/failure policy. Preserve actor-owned state, typed/effectful messages, exactly-once linear close where required and cleanup of blocked/cancelled peers; durable boundaries additionally consume actual schema/replay products. Reject illegal aliases or transfer, closed-channel use, undeclared or unsupported blocking/order/provider behavior and actor-state access outside its owner. Evidence: genuine send/receive/ask/stop/supervision/close/backpressure/cancellation values and transfer/state/cleanup traces plus expected refusal diagnostics; a channel schema or mailbox policy alone is not message execution.
+<!-- library-service-source-channels-and-actors:end -->
+
+
+
+<!-- library-service-source-scheduler-and-atomic-apis:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service scheduler-and-atomic-apis criterion (Open): Expose the actual chosen scheduler/run-loop/executor and lock/atomic operations with declared spawn/block/sleep/yield/message/atomic effects, synchronization scope, alignment, memory order and target support. Preserve sequentially-consistent defaults unless the governing profile/library explicitly permits a supported weaker order; locks retain guard/lifetime/failure/cancellation contracts. Recorded scheduler and choice helpers preserve actual distributed nondeterminism and deterministic replay, rather than treating ordinary scheduling order as stable. AI concurrency preserves tool/model authorization, required human review, policy and eval-event ordering, with removed project accounting qualified separately from actual external billing. Reject unsupported orders/targets, missing delegation records, hidden host scheduling, invalid guards and unrecorded required choices. Evidence: actual operation/order/target/scheduler/delegation and replay-choice fixtures with STD7003/STD7004/STD7005/STD7006/STD7007 where applicable; claimed scheduler/channel/lock/atomic performance has per-profile benchmark artifacts.
+<!-- library-service-source-scheduler-and-atomic-apis:end -->
+
+
+
+<!-- library-service-source-stream-and-handle-apis:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service stream-and-handle-apis criterion (Open): Implement actual input/output streams, read/read-bytes/read-text/write/write-bytes/write-text/flush/close; open/open-read/open-write/with-open/seek/position/truncate/sync; exists?/metadata/copy/move/delete/create-dir/list and filesystem-capability/read-root/write-root/temporary-root/path-policy. Every stream, standard stream, handle and filesystem operation has declared effects and in-scope authority; file handles are linear or scoped with deterministic close and failure teardown. Preserve typed permission-denied/not-found/already-exists/interrupted/invalid-path/encoding/durability errors and host mappings. Shell execution and process spawning remain STD16 obligations, not incidental filesystem capabilities. Evidence: actual read/write/seek/metadata/directory/flush/close values, capability denials, success/failure cleanup and Gravity-normalized host errors; no descriptor or fake service proves live IO.
+<!-- library-service-source-stream-and-handle-apis:end -->
+
+
+
+<!-- library-service-source-typed-path-policy:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service typed-path-policy criterion (Open): Implement typed path/join/normalize/parent/filename/extension/relative?/absolute?/within-root? values under explicit platform and symlink policy. Every filesystem operation uses its supplied allowed-root/operation capability and preserves the declared resolution/normalization/symlink conditions at actual use, including relative and platform-specific paths. Reject unchecked string paths, root escape, unauthorized operation, missing policy and host-normalization gaps; string-prefix matching or a normalized=true flag is not proof of confinement. Evidence: actual legal in-root paths and cross-root/relative/symlink/platform refusal cases with path-policy/root/operation/provider identity and STD8001/STD8002/STD8005 as applicable.
+<!-- library-service-source-typed-path-policy:end -->
+
+
+
+<!-- library-service-source-text-io:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service text-io criterion (Open): Execute the documented load-config read through the supplied filesystem capability, its read-root and a declared in-root typed joined path, using explicit UTF-8 encoding and the STD4 decoding/error policy. Text streams and writes preserve the declared encoding and errors rather than host-default encoding, implicit replacement or hidden normalization. Reject omitted encoding/decode policy, invalid data under the selected policy, unauthorized/root-escaping reads and raw host exceptions substituted for Gravity errors. Evidence: real bytes/text/encoding and failure results for the declared example and supported text IO, source-bound STD8003/STD8001/STD8002 and STD4 failures, provider/path identity and resource-close traces.
+<!-- library-service-source-text-io:end -->
+
+
+
+<!-- library-service-source-directory-traversal:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service directory-traversal criterion (Open): Execute walk/watch/glob/with-symlink-policy under declared recursion, symlink, permission and cycle policy for the selected platform and capability roots. Preserve allowed traversal and watcher effects without broadening root/operation authority. Reject root escape, symlink loops, missing recursion/symlink policy, denied permissions and platform normalization gaps. Evidence: actual directory/traversal/watch results and policy-bound refusals including cyclic/symlink/permission/platform cases, source/path/root/provider records and STD8002/STD8005 or the owning typed IO error; naming a traversal policy alone is not execution.
+<!-- library-service-source-directory-traversal:end -->
+
+
+
+<!-- library-service-source-atomic-file-replacement:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service atomic-file-replacement criterion (Open): Execute each claimed atomic-write/file-replacement operation under its declared temporary path, rename, flush/sync and durability guarantees, allowed capability roots and resource lifecycle. State the selected platform/provider's actual atomicity, durability and failure modes without upgrading rename into an unsupported persistence guarantee. Reject missing required temp/rename/flush evidence, unsupported guarantees, root escape and failed/partial replacement presented as success. Evidence: actual replacement outputs and phase/failure/cleanup traces for the declared guarantee, required durability observations and STD8006 or owning failures; a supplied atomic/durable flag or expected operation list does not establish it.
+<!-- library-service-source-atomic-file-replacement:end -->
+
+
+
+<!-- library-service-source-network-surface:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service network-surface criterion (Open): Implement typed url/parse-url/origin/host/port/scheme/path/query/endpoint-policy; request/get/post/put/patch/delete/stream-request/with-client; serve/route/router/middleware/handler/response/status/headers; body-bytes/body-text/body-json/body-schema/stream-body/body-limit; socket/connect/listen/accept/send/recv/close; tls-config/client-cert/redact-header/auth-scheme/credential-source; timeout/retry/redirect/rate-limit policies and network-capability. Preserve endpoint, resource/stream, effect/grant, authentication, failure and cancellation semantics and explicit body/schema/encoding policy. No profile gains ambient outbound, inbound, DNS, TLS, websocket, stream or listen authority. Reject unchecked strings treated as trusted endpoints, unavailable target/profile services, hidden providers and false schema/TLS/redaction support. Evidence: actual API values and refusals tied to endpoint/provider/profile/target and source diagnostics; pure URL/data helper availability proves no live network support.
+<!-- library-service-source-network-surface:end -->
+
+
+
+<!-- library-service-source-http-client:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service http-client criterion (Open): Execute actual client requests using the supplied network capability and typed endpoint under declared timeout, retry tied to idempotency, redirect, body size/streaming and cancellation policy. Preserve body schema or explicit byte/text/encoding policy, actual authority for each operation and hop, failure mapping, resource cleanup and required workflow/AI records. The fetch-user example retains its 1000 ms timeout, maximum-two idempotent retry policy and :user/v1 response schema in the recorded/activity-isolated distributed boundary. Reject missing timeout/cancellation, unbounded or non-idempotent retry, unauthorized endpoint/operation, unsafe redirects, invalid bodies and unrecorded required effects. Evidence: actual response/stream/failure/cancel/retry/redirect and denial traces with STD9001/STD9002/STD9003/STD9005/STD9007/STD9008 as applicable. Declared service timeout/retry/body/rate policies are runtime semantics, not reinstated compiler/project work quotas.
+<!-- library-service-source-http-client:end -->
+
+
+
+<!-- library-service-source-http-server:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service http-server criterion (Open): Make actual serve/route/router/middleware/handler APIs enforce declared request schema, response schema, authentication policy and effect boundary, preserving typed errors and cancellation/resource behavior. Consume authentic schema validators/projections, selected runtime service hooks and Auth grants; reject schema-less/mismatched requests or responses, absent authentication/effect boundaries and unauthorized listen/handler effects. Library owns its callable HTTP API, existing future services owns the wider typed service/CRUD integration outcome, and Runtime owns real enforcement/observability; none is an alias for the complete other predicate. Evidence: actual accepted/refused request/handler/response/authentication results and source-bound service/schema/provider/grant/failure artifacts. No live listener, service or database is executed by this source proposal.
+<!-- library-service-source-http-server:end -->
+
+
+
+<!-- library-service-source-tls-policy:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service tls-policy criterion (Open): Validate actual TLS trust roots and certificate policy for the selected endpoint/provider, including valid, invalid, pinned and expired certificate fixtures. Insecure validation exceptions require an explicitly allowed unsafe or test context with audit/policy identity; ordinary safe use cannot silently disable checking. Preserve client-certificate and credential-source contracts without leaking secrets. Reject unknown/invalid roots, failed certificate or pin/expiry policy, provider substitution and disabled validation outside the governing exception. Evidence: actual handshake/admission/refusal results, trust/certificate/provider/endpoint policy records and STD9004 with privileged/raw-socket/unsafe-TLS audit evidence where claimed; a tls-enabled flag is not validation.
+<!-- library-service-source-tls-policy:end -->
+
+
+
+<!-- library-service-source-network-schema-boundary:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service network-schema-boundary criterion (Open): Validate actual request/response/body values against the intended declared schema and sink policy, or the explicitly selected byte/text/encoding policy where STD9 permits it. Preserve secret/taint/trust distinctions until the required validation succeeds; authenticated transport is not schema or sink validation. Consume actual Schema validators and the existing checked-consumer projection products without transferring their production to Library. Reject wrong/missing schema, invalid body/encoding, weakened generated consumer policy and unvalidated data treated as trusted. Evidence: actual valid/invalid body and source/generated consumer parity products, schema/version/sink/trust/provider identities and STD9005 plus applicable schema/taint diagnostics; schemas or codec manifests alone are not boundary execution.
+<!-- library-service-source-network-schema-boundary:end -->
+
+
+
+<!-- library-service-source-service-profile-matrix:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-profile-matrix criterion (Open): Enforce each module's actual profile matrix. Core gains no ambient concurrency/filesystem/network; core/hardware/formal network access is URL/data helpers only, and core/hardware/formal gain no ambient filesystem. Firmware concurrency uses supported atomics/interrupt-safe synchronization and physically bounded executors; kernel concurrency and IO/device/network adapters retain explicit capabilities, target metadata and required audits. Native supplies declared task/channel/lock/atomic/actor/scheduler and IO/network services; hosted delegation preserves provider/path/error contracts. Distributed uses replay-aware/workflow-safe services rather than arbitrary host threads; AI uses Phase 11 typed tools, policy and required human review with eval ordering. Formal concurrency has proof/model-check hooks. Meta filesystem access is compiler-capability source/artifact access and meta network access requires explicit compiler tooling grants. Other availability must come from its owning contract, never inferred from a host library. Evidence: actual supported-profile examples and rejected forbidden-profile imports/calls, exact module/profile/provider manifests and diagnostic/delegation/audit products.
+<!-- library-service-source-service-profile-matrix:end -->
+
+
+
+<!-- library-service-source-unsafe-service-wrappers:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service unsafe-service-wrappers criterion (Open): Hide unsafe scheduler/lock/interrupt/atomic, privileged filesystem adapter/listener/raw-socket and allowed unsafe TLS internals behind genuine safe APIs with explicit invariants, pre/postconditions, effects/grants, profile/target/provider and current audit identity. Consume real Legality proof/check/reject/unsafe decisions and the existing distinct GOV9 audit, not a generic security PASS or caller-supplied safe flag. Reject unaudited unsafe internals, an exception escaping its governing unsafe/test context and safe wrappers exposing invalid lifetime/race/authority states. Evidence: actual valid/invalid wrapper behavior and applicable audits/revalidation, STD7008 and owning IO/network failures; compiler/Bootstrap/Governance owners keep their implementation and review responsibilities and no C12 or held operation is executed.
+<!-- library-service-source-unsafe-service-wrappers:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` Complete schema/query/workflow/AI/meta/crypto/UI adapters
 
 Status: Open
@@ -712,6 +856,15 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation audit-consumption criterion (Open): Consume the existing evolution/security-review task's distinct GOV9 unsafe-audit verdict for each exact island/source/owner/profile/target/wrapper and applicable GOV4 security decision, keeping those decisions separate. Revalidate relevant changed assumptions and preserve invalid-precondition and specialist memory/concurrency/FFI/backend evidence in package/release provenance. Deny stabilization/release with stale/missing audit or unenforced wrapper conditions. Evidence: actual accepted/refused audit-consumer cases and GOV9001-GOV9008, without performing the independent review here or gating ordinary API implementation.
 <!-- library-base-source-audit-consumption:end -->
+
+
+
+<!-- library-service-source-library-service-conformance:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service library-service-conformance criterion (Open): Assemble actual callable module/export/profile/provider/delegation products with race/ownership analysis, synchronization/atomic order fixtures, task/resource/cancellation cleanup, path/symlink/encoding/atomic-write durability results, HTTP body/schema/authentication/TLS/redaction policy and genuine recorded replay evidence. Require all STD7001-STD7008, STD8001-STD8008 and STD9001-STD9008 diagnostic families at their owning failure boundaries, with expected/actual source-bound positive and negative results and host errors normalized. Compile the documented fetch-both/load-config/fetch-user examples under their declared profiles and reject forbidden-profile, missing-grant, race/capture/lifetime, path escape, omitted encoding, invalid TLS/schema/secret/replay cases. Include unsafe audits and per-profile scheduler/channel/lock/atomic benchmarks for claimed performance. Evidence: actual existing TEST7/Release producer suites, module/profile examples and independent checker/audit results for the exact source/compiler/runtime/provider/target subjects. Source custody, mocked provider tests, p16 summaries and benchmark names cannot establish whole service/library/release acceptance; held and unavailable required cases stay explicit Open work.
+<!-- library-service-source-library-service-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

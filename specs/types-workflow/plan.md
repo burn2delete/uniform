@@ -625,6 +625,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Supply actual task/future/promise/channel/actor, path/handle/socket/URL/body and callback/handler signatures, payload/request/response/error/schema identity and owned/borrowed result contracts. Typed URLs and paths do not confer authority; schemas and type names do not prove actual IO/network values, cleanup or validation.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

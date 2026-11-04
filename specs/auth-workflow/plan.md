@@ -415,6 +415,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Supply authentic selected-provider and operation-specific grants for task/scheduler, filesystem roots/operations and network hosts/ports/protocols/listen under phase/lifetime/attenuation/revocation and deployment policy. STD8/STD9 grant no ambient path/stream/network authority. Preserve separate required review and actual restrictions; decisions precede real Runtime operation gates without a blanket whole-Auth completion prerequisite.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

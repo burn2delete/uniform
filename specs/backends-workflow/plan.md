@@ -656,6 +656,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Preserve selected real atomic order/scope/alignment, synchronization, resource/failure/effect/grant and source-origin semantics through admitted target/provider artifacts. Unsupported orders/profile/targets reject or use only their explicitly permitted equivalent primitive. Hosted scheduler/path/permission/TLS/DNS/socket delegation needs actual provider/error evidence; pure helpers are no target-wide service support.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

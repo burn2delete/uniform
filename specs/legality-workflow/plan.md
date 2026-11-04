@@ -995,6 +995,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The unchanged current concurrency profile, race/capture, classification and preservation predicates remain authoritative for actual safety analysis. Consume real scoped lifetime, ownership/synchronization/atomic target facts; no unsafe host race, escaped task, stale proof or invalid handle becomes safe from a library label. Distinct current GOV9 audits and safe wrappers precede acceptance of unsafe service internals.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

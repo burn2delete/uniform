@@ -323,6 +323,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Bind actual module/export/profile/provider/delegation/path/TLS/schema/policy artifacts and compiled examples to exact source/compiler/target/locked recipe identities. Host defaults, ambient services and supplied complete flags cannot establish support. Consume actual applicable audit/conformance/performance artifacts for the claimed product; final signed/released acceptance remains downstream and held actions remain held.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

@@ -169,6 +169,15 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 L19 complete foreign-boundary admission criterion (Open): At the original Auth admission role, consume actual Types/Resolve/provider/profile/ownership/error/safety facts establishing the complete declared ABI/protocol boundary, then enforce authentic concrete effect grants, operation scope, phase/lifetime and package/deployment narrowing before actions. Preserve full type/memory/thread/version/safety/support contracts rather than infer authority from a foreign symbol, manifest, shim or wrapper. Auth does not replace inference, wrapper proof, Runtime normalization or profile legality. Reject incomplete/wrong-scope/ungranted/stale/unsupported boundaries and hidden host authority. Required evidence: actual allowed/denied declaration-to-policy-to-hook joins and no action after denial; held native/provider/callback/device/service operations remain held.
 <!-- auth-interop-source-admission:end -->
 
+
+<!-- library-service-source-operation-grants:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service operation-grants criterion (Open): Produce authentic operation-specific provider/selection/grant/phase/lifetime decisions for scheduler, filesystem roots/operations, network hosts/ports/protocols/listen and declared compiler-tooling services. STD8 and STD9 forbid ambient file/standard-stream/host-path or network authority; another module's expressly permitted convenience context cannot broaden those contracts. Preserve attenuation, revocation, scope and provider compatibility across handle transfer, redirects, tasks, tools and callbacks, with actual service gates consuming the decisions. Human-review capability or review-request records do not issue the required approval. Reject undeclared, widened, wrong-phase, expired/revoked and incompatible provider/grant use. Evidence: authentic admission/denial/selection artifacts and actual consuming-boundary denial fixtures with root/endpoint/source identities; grant metadata alone is no service execution or external permission.
+<!-- library-service-source-operation-grants:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open
