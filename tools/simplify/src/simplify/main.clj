@@ -96,7 +96,7 @@
 
 (defn dispatch! [ctx command args]
   (case command
-    "doctor" (doctor! ctx)
+    "doctor" (with-current-state ctx #(doctor! ctx))
     "status" (println (pr-str @(:state ctx)))
     "pause" (do (rt/write-edn! (:control-file ctx) {:paused true}) (println "Dispatch and merges will pause at the next scheduler boundary; active workers finish."))
     "setup" (with-current-state ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/ensure-campaign! ctx) "Proposed")))

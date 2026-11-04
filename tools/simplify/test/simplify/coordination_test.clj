@@ -243,11 +243,15 @@
       (rt/with-lock ctx
         #(do
            (rt/update! ctx assoc :owner-marker :fresh)
-           (doseq [[command exit] [["status" 0] ["pause" 0] ["run" 1] ["resume" 1]]]
-             (let [before (rt/read-edn (:state-file ctx))
+           (doseq [[command exit] [["status" 0] ["pause" 0] ["doctor" 1] ["run" 1] ["resume" 1]]]
+             (let [before (slurp (:state-file ctx))
                    result (rt/command ctx repo (java-command "-m" "simplify.main" command config-file))]
                (is (= exit (:exit result)))
-               (is (= before (rt/read-edn (:state-file ctx))))))))
+               (is (= before (slurp (:state-file ctx))))))))
+      (with-redefs [rt/command (fn [& _] {:exit 1 :err "HTTP 403: Permission denied" :out ""})]
+        (is (thrown? Exception (main/dispatch! stale "doctor" []))))
+      (is (= :fresh (:owner-marker (rt/read-edn (:state-file ctx)))))
+      (is (seq (:restricted-commands (rt/read-edn (:state-file ctx)))))
       (main/controller! stale #(is (= :fresh (:owner-marker @(:state stale)))))
       (is (thrown? Exception (main/controller! stale #(throw (ex-info "Owned failure" {})))))
       (is (= :attention (:status (rt/read-edn (:state-file ctx))))))))
