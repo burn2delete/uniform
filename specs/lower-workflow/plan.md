@@ -177,6 +177,13 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Derive actual concrete layout/ABI from authentic common typed-Core representation/ownership/resource facts and current target assumptions. An alternative checker cannot replace layout contracts without exported facts. Early type/ABI contracts, final layouts and actual runtime calls remain separate products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

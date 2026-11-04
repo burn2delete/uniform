@@ -109,6 +109,15 @@ L14 actual facet profile-and-safety criterion (Open): Reject use outside declare
 <!-- legality-facet-source-profiles:end -->
 
 
+
+<!-- legality-alternative-types-source-profile:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-checker profile-soundness criterion (Open): Validate the selected provider's supported profile/facet/feature boundary and its actual profile-specific soundness evidence before safe-profile claims or admitted use. Preserve ordinary source semantics, Effects/Auth/memory/unsafe rules and current provider identity; stronger facts cannot justify weaker safety under the same profile. Gradual checks require permitted metadata/allocation/dynamic representation, and missing required ownership/layout/domain premises receive the governing check/reject/explicit-unsafe disposition. Reject unsupported profiles, a soundness label without applicable evidence and host-only dynamic behavior smuggled into constrained profiles. Required evidence: actual accepted/refused provider/profile tuples with L17-SOUNDNESS/L17-GRADUAL-BOUNDARY and source-bound proof/test/audit references, preserving D8's four outcomes without a new generic approval gate.
+<!-- legality-alternative-types-source-profile:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -359,6 +368,15 @@ Library foundation borrow-analysis criterion (Open): Check real ownership moves,
 <!-- library-base-source-borrow-analysis:end -->
 
 
+
+<!-- legality-alternative-types-source-ownership:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative ownership-analysis boundary criterion (Open): When the selected checker owns borrowing, moves, region lifetimes, arena ownership, linear resources, uniqueness, initialization, pinning or foreign-handle lifetimes, consume its actual authentic exported facts for memory safety, release, concurrency transfer and backend layout decisions. Preserve all nine analysis families and their source/provider/schema premises; compatible delegated machinery need not duplicate the same analysis in a second engine. If a required property is unproved, retain a permitted real runtime check, reject, or require the explicit audited unsafe boundary; no unknown-safe outcome exists. Reject incomplete/stale facts, lost release/transfer or a profile forbidding the needed check. Required evidence: actual valid/invalid resource-flow and downstream fact-consumption products, including conditional unsupported families, with actual Runtime/Lower behavior remaining at its owner.
+<!-- legality-alternative-types-source-ownership:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -499,6 +517,15 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation safe-wrappers criterion (Open): Classify actual safe-wrapper boundaries over unsafe library/compiler-support internals using complete signatures/invariants that enforce every precondition, hide raw authority, define failure and preserve ownership/cleanup. Admit only governing static proof, runtime check, explicit unsafe responsibility or rejection; keep unsafe operations and current audit references visible in release artifacts. Reject safe UB, absent/stale evidence and lost memory/alias/concurrency/FFI/target assumptions after transforms. Evidence: actual invalid-precondition negatives, current checker/audit and preservation products; a generic unsafe flag or security verdict cannot discharge missing safety facts.
 <!-- library-base-source-safe-wrappers:end -->
+
+
+
+<!-- legality-alternative-types-source-unsafe:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-checker unsafe-boundary criterion (Open): Preserve explicit unsafe-island metadata, safe API invariants, retained checks/proofs and required audit when a selected checker cannot establish a safety property. Unchecked casts exist only in unsafe code and cannot become safe facts, refinement evidence or a reason to erase a check. Preserve no undefined behavior in safe Gravity and the proved-safe/runtime-checked/rejected/explicit-unsafe alternatives through generated and domain code. Reject a hidden nullable/foreign/resource boundary, cast relabeled proof or unverifiable provider fact accepted as safe. Required evidence: authentic provider/cast/source/profile/invariant/verdict and accepted/refused boundary products; an unsafe flag alone neither supplies an invariant nor authorizes held unsafe/provider execution.
+<!-- legality-alternative-types-source-unsafe:end -->
 
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution

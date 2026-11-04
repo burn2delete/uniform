@@ -192,6 +192,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Actually execute selected permitted inserted gradual/cast checks with expected type, declared failure, blame and source/provider identity. An unchecked cast stays unsafe; recorded runtime-checked does not execute a check. Source-only analysis needs no unrelated live runtime/provider or native artifact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

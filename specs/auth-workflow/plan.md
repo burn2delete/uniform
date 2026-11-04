@@ -362,6 +362,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Validate actual selected type-provider declarations/identity/feature/profile/schema/solver restrictions and preserve deterministic L15 choice. Actual checker/corpus/profile/proof owners supply soundness evidence; Auth admits and reports claims, with real scoped grants and exported linear/affine capability facts. The five L17 claim meanings remain exact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -47,6 +47,15 @@ L14 complete facet diagnostic-carrier criterion (Open): Preserve actual owning L
 <!-- diag-facet-source-diagnostics:end -->
 
 
+
+<!-- diag-alternative-types-source-diagnostics:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete alternative-type diagnostic-carrier criterion (Open): Preserve genuine owning L17-PROVIDER, L17-LOWERING, L17-SOUNDNESS, L17-EFFECT-ERASURE, L17-CAPABILITY-ERASURE, L17-OWNERSHIP-FACT, L17-GRADUAL-BOUNDARY, L17-UNSAFE-CAST, L17-DOMAIN-FACT and L17-DIAGNOSTIC-MAP failures. Each retains actual provider id/version, active profile, source span, generated-origin chain, type expression, effect set, capability set, relevant proof id and failed core rule. Owners derive failures; Diag transports stable structured/text records with proper privacy/redaction rather than fabricate a requested outcome. Required evidence: authentic ten-family carrier and field/origin round-trip/tamper/missing-provider/proof refusals from actual selected checker, profile, authority, optimization and consumer boundaries.
+<!-- diag-alternative-types-source-diagnostics:end -->
+
+
 - [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
 
 Status: Open
@@ -68,6 +77,15 @@ Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-m
 
 Complete macro diagnostic consumer criterion (Open): Preserve the 34 active L4/L16/C4/SAFE12 diagnostic meanings and deterministic ordering across reference/alternative engines, early typed diagnostics and normal generated-program failures. Carry provider id/version, macro symbol/version, definition/call/generated span/origin, phase/profile/target, hygiene context, requested/declared/granted effects/capabilities, equivalent L4 rule, missing safety fact and remediation where applicable. Redact secrets while retaining actionable context in actual text/JSON/debugger/LSP consumers. Preserve historical L4-EXPANSION-DEPTH, C4-DEPTH and C4-SIZE only as retired accounting source context; no renamed quota or substituted proof gate is introduced.
 <!-- macro-source-diagnostics:end -->
+
+
+
+<!-- diag-alternative-types-source-origins:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-type source diagnostic mapping criterion (Open): Map real checker/type/proof failures through base and alternative macro expansion, generated code and facet lowering to original source spans, provider/version/type-expression facts and definition/call/generated-origin chains. Preserve actual expected-type/runtime-check/failure/blame records where applicable and source identity across common typed-Core and downstream consumers. Reject a generated-only location hiding its source, a stale/foreign type-fact link or a preserved-map flag without the actual map. Required evidence: genuine accepted/rejected generated and handwritten cases, source/generated mapping artifacts and L17-DIAGNOSTIC-MAP/owning failures, preserving existing macro/hygiene and compiler diagnostic contracts.
+<!-- diag-alternative-types-source-origins:end -->
 
 
 - [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts

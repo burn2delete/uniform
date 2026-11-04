@@ -155,6 +155,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Supply actual declared hardware width/clock/bus/reset and layout/foreign-lifetime contracts to selected checker facts, with no product ISA/device adoption or host-default representation. Actual physical support and provider profile soundness remain separate evidence claims.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

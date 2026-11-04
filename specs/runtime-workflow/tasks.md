@@ -124,6 +124,15 @@ Library foundation cleanup-runtime criterion (Open): Release real linear resourc
 <!-- library-base-source-cleanup-runtime:end -->
 
 
+
+<!-- runtime-alternative-types-source-runtime:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual inserted-runtime-check execution criterion (Open): Execute each selected checker-inserted permitted gradual/cast/runtime check against its actual value/expected type and profile/representation/allocation contract, yielding the declared accepted value or typed failure with source span, failure type and blame. Preserve relevant ownership/release/panic behavior and authentic provider/check identity; unchecked casts remain explicit unsafe and never a successful safe check or optimization proof. Reject missing/forged check records, unsupported runtime metadata and mismatched source/failure/blame obligations. Required evidence: real selected accept-json-style success and DecodeError/failure cases plus forbidden-profile/unchecked-cast refusals and actual execution traces. Source-only typing needs no universal live runtime or provider; records saying runtime-checked do not execute the check.
+<!-- runtime-alternative-types-source-runtime:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open

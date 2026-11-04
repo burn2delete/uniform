@@ -59,6 +59,15 @@ L14 actual facet lock-and-version criterion (Open): Resolve and record each sele
 <!-- build-facet-source-lock:end -->
 
 
+
+<!-- build-alternative-types-source-locks:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider identity and lock criterion (Open): Record the actual deterministically selected custom type provider/version, fact/proof schema, restrictions and required solver/package/compiler inputs in typed-Core metadata, package locks and the artifact graph before dependent compilation/reuse. Preserve declared supported profiles/facets/features and authentic source identity; the example provider name/version/schema is not a default selection. Reject ambiguous/missing providers, incompatible lock/schema identities and coherently substituted providers that reuse another checker's facts or soundness evidence. Required evidence: real resolved-provider/typed-Core/lock joins and changed-provider/source/schema refusal fixtures; completed Build/release and an external solver are not universal prerequisites for local declaration construction.
+<!-- build-alternative-types-source-locks:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
 Status: Open
@@ -140,6 +149,15 @@ Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-f
 
 L14 actual facet invalidation criterion (Open): Include authentic selected facet identity/version/source/schema/surface/activation, required facets, profile/target, lowering/checker/provider and declared effect/grant/build-input identities in the applicable semantic cache dependency graph. Changed syntax, IR, lowering, profiles, schema, privacy policy or grants invalidates affected expansion, typed/domain verification, proof, artifacts and diagnostics before real owner regeneration and current-policy admission. Preserve the existing selected-engine/shared-Build cache boundary; source-only inspection can precede semantic products. Reject stale facet proof/validation reuse, hidden build inputs and silent stable compatibility drift. Required evidence: actual unchanged hit, changed-input miss/refusal and clean/rebuilt products; identical keys or assigned preserved flags alone do not establish current validity.
 <!-- build-facet-source-reuse:end -->
+
+
+
+<!-- build-alternative-types-source-cache:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider cache and invalidation criterion (Open): Include authentic selected provider/version/fact/proof/solver dependencies, source/compiler/profile/target/macro/facet/grant and permitted build-effect inputs in applicable semantic identities. Source/provider/profile/target/macro/facet/grant changes invalidate affected types, checks, ownership/domain facts, proofs, diagnostics and downstream artifacts before actual owner regeneration/current-policy reuse. Matching digests cannot grant authority or validate a stale proof; early real dependency/checker interfaces precede later actual products. Required evidence: genuine unchanged hit and changed-input miss/refusal with clean-versus-regenerated outputs, without project work/input/cost/attempt allowances or fresh migration proofs as ordinary editing prerequisites.
+<!-- build-alternative-types-source-cache:end -->
 
 
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records

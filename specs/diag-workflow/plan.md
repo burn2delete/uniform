@@ -218,6 +218,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Preserve all ten genuine L17 diagnostic meanings and provider/version/profile/span/generated/type/effect/grant/proof/rule context. Actual checker and consumer failures supply records; source/macro/facet maps and gradual blame/failure provenance survive transport and redaction.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

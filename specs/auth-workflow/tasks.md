@@ -61,6 +61,15 @@ Complete macro provider criterion (Open): Validate and deterministically select 
 <!-- macro-source-provider:end -->
 
 
+
+<!-- auth-alternative-types-source-provider:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete type-provider declaration and selection criterion (Open): Validate the actual selected versioned :type-system provider declaration with its supported profiles, language facets, type features, fact/proof schemas, solver dependencies, build effects, capabilities, conformance suites and known restrictions before dependent use. Preserve L15 deterministic source/package/workspace/profile/compiler-default selection and ambiguity refusal; bind the real selected provider/version/schema identity in typed Core metadata and package locks. The refinement-provider example is illustrative, not default profile support or an IR grant. Reject missing/incompatible declarations, unsupported namespace/profile/feature selections, inconsistent metadata/locks and authority inferred from a provider label. Required evidence: genuine declaration/selection and consuming-artifact joins with accepted and missing/ambiguous/incompatible-provider refusals; a flag or provider inventory does not execute a checker or establish soundness.
+<!-- auth-alternative-types-source-provider:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open
@@ -157,6 +166,15 @@ L14 actual facet authority criterion (Open): Check authentic scoped capabilities
 <!-- auth-facet-source-grants:end -->
 
 
+
+<!-- auth-alternative-types-source-grants:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual typed-capability and checker-authority criterion (Open): Preserve capability values as ordinary typed values with authentic authority metadata, exporting claimed linear/affine use facts for L15 checks. Check actual selected checker/solver/compiler build effects and real phase/artifact/namespace/package/lifetime scopes before actions; a read-IR scope under :compiler/ir-transform grants no write. A fact schema, proof provider, package or soundness label neither supplies grants nor erases runtime capability requirements. Reject missing/expired/revoked/wrong-scope authority and capability-erased function types before affected action. Required evidence: real typed authority/fact joins and allowed/denied L17-CAPABILITY-ERASURE or owning cases; pure checking requires no unrelated live service and every held solver/provider operation remains held.
+<!-- auth-alternative-types-source-grants:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open
@@ -208,6 +226,15 @@ Apply the [complete provider and capability source criteria](plan.md#complete-pr
 Complete L15/SAFE10/R11 conformance criterion (Open): Join actual declared/selected provider, grant/scope/value, gate, startup, primitive/service, redaction and consumer results. Exercise five-order selection and ambiguity, all source capability/scope families, separate build/runtime authority, declared versus forbidden ambient contexts, non-expanding attenuation, supported revocation/static-lifetime substitutes, secret/export failures, real provider isolation and deterministic denials under deterministic policy. Demonstrate actual safe replacement of one math provider and one memory or IO provider, consuming their owning implementations and required proof/check/conformance results rather than declared safe flags. Cover the seventeen R11 action families and all thirty-one diagnostic meanings: eleven L15, ten SAFE10 and ten R11. Retain requested effect/capability, selected/missing provider, grant/scope/phase/profile/target, denied policy layer, source/generated/manifest/principal/action/artifact identities, redaction/audit status, remediation and nearest valid provider/grant where applicable. Produce real accepted/refused matrices, suite outputs and named residual trust assumptions. Existing Release suites run their own exact subjects; records, mocks and historical finite receipts do not establish whole-source, live provider or implementation acceptance.
 <!-- authority-source-conformance:end -->
 
+
+
+
+<!-- auth-alternative-types-source-claims:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete selected-provider soundness-claim criterion (Open): Admit only the provider's actual declared and supported soundness meaning: :reference-equivalent accepts/rejects the same L5 programs up to diagnostic precision; :strict-extension accepts an L5 subset with stronger facts; :conservative-extension accepts all L5 plus additional annotated safe programs; :gradual inserts checked partial-type boundaries; :domain-specific stays within declared facet/namespace boundaries and lowers to ordinary typed Core. Do not substitute host terminology for these five meanings. Bind each claimed safe profile to its actual supporting theorem, proof, test-suite or audit artifact and real L5 accepted/rejected comparison products from their owners. Reject missing/wrong-subject/stale/unsupported evidence, weaker guarantees under the same profile and asserted safe/compatible statuses. Required evidence: exact provider/claim/profile/source/corpus/evidence/verdict records and counterexamples, with missing or held results Open. Auth owns admission/conformance reporting, while the checker, corpus harness and proof/safety owners supply actual results; no universal whole Formal or ordinary per-run approval gate is added.
+<!-- auth-alternative-types-source-claims:end -->
 
 <!-- auth-implementation-tasks:end -->
 

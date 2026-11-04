@@ -947,6 +947,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume authentic exported selected-provider ownership/borrow/region/linear/init/nullability/taint facts and applicable profile soundness evidence. Compatible delegated analysis need not duplicate machinery, but required properties retain actual checks/rejection/explicit unsafe boundaries. Gradual representation must be permitted and unchecked casts never prove safe optimization.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

@@ -722,6 +722,13 @@ shared bindings and main integration remain separate subjects. Historical
 source-census identities locate the original proposal; they are not a new
 requirement denominator, aggregate adoption or implementation evidence.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Generated programs retain actual definition/call/generated provenance and enter the selected compatible checker under ordinary source/profile/effect/grant rules. Alternative typing does not bypass Q revalidation or grant build/solver authority; P and Q checks remain distinct actual products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

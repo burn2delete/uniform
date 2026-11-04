@@ -330,6 +330,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume actual owner L5 accepted/rejected and provider/common-Core fixtures through existing independent language/compiler/profile/safety/formal harnesses as applicable. Compare the exact declared soundness population; one fixture, family counter or compatibility status cannot establish full provider or profile support.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

@@ -275,6 +275,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Bind actual custom type-provider/version/fact/proof/solver identity in locks and artifact metadata. Reuse depends on authentic source/compiler/profile/target/macro/facet/grants and current effects/policy; changed provider facts/proofs require real owner regeneration. No whole Build/release gates initial declarations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

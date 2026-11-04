@@ -285,6 +285,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Expose real versioned selected-checker/typed-Core/fact/proof/verifier interfaces through ordinary stage contracts and check actual outputs before consumption. C17 applies when the provider uses that plugin path; type providers acquire no mandatory plugin loading or hidden compiler privilege. Preserve unresolved source-stage ordering and every callback/C7/C12 hold.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

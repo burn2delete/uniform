@@ -179,6 +179,15 @@ L14 actual facet effect-admission criterion (Open): Derive and preserve real run
 <!-- effects-facet-source-effects:end -->
 
 
+
+<!-- effects-alternative-types-source-effects:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-type function-effect admission criterion (Open): Preserve and verify real inferred/refined or explicitly declared function effects and capability requirements together with panic/error/allocation/resource behavior at the ordinary effect boundary. A selected checker that cannot model effects is limited to profiles/namespaces with explicit effects verifiable by the reference effect checker; it cannot erase performed or latent requirements. Admit only under actual caller allowances/profile/service/safety premises and separate authentic grants. Reject effect erasure, hidden checked-cast allocation/panic, declaration-only purity and an alternative theory bypassing reference legality. Required evidence: actual selected-provider/reference-effect products, accepted/refused calls and L17-EFFECT-ERASURE/owning diagnostics; Types exports facts and Effects retains its real legality owner.
+<!-- effects-alternative-types-source-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
