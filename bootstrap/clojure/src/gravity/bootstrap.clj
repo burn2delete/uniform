@@ -25,6 +25,7 @@
             [gravity.backend.hdl]
             [gravity.backend.workflow]
             [gravity.backend.query]
+            [gravity.backend.mobile]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

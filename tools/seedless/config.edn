@@ -1,0 +1,25 @@
+{:repository "burn2delete/uniform"
+ :repo-dir "../.."
+ :remote "origin"
+ :base-branch "main"
+ :project-title "Uniform Seedless"
+ :campaign "Replace the Clojure seed with Uniform"
+ :state-dir "../../target/validation/seedless"
+ :worktree-root "../../../uniform-seedless-worktrees"
+ :objective "Retire Clojure from the complete required compiler, runtime, library and build closure for the existing staged Linux LLVM release candidate, following SH-00 through SH-29. Do not select a different release target."
+ :contracts ["AGENTS.md" "bootstrap/README.md"
+             "docs/development-verification.md"
+             "docs/self-hosting-milestone-completion-plan.md"
+             "docs/self-hosting-slice-backlog.md"
+             "docs/self-hosting-current-migration-cohort.md"
+             "docs/phase-15-bootstrap-and-self-hosting/README.md"
+             "docs/phase-18-binary-distribution-and-seedless-release/README.md"]
+ ;; Host process concurrency and watchdog; neither is compiler accounting.
+ :parallelism 3
+ :poll-ms 15000
+ :check-timeout-ms 1200000
+ :codex-command ["codex" "app-server" "--listen" "stdio://"]
+ :check-executables #{"clojure"}
+ :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]
+ ;; Ordinary development does not run this release gate. An empty work audit does.
+ :completion-checks [["clojure" "-M:gravity" "self-host" "verify"]]}

@@ -126,3 +126,182 @@ proof, canonical and release authority. No compiler semantic suite, conformance,
 release, self-hosting, seed retirement, dependency readiness or overall
 completion percentage is established. All five outcomes remain open. Effects,
 grants and signatures remain distinct; Build/Release retain signing and custody.
+
+## Explicit provider declaration increment
+
+Finding: `auth.provider-declaration.explicit-fields-v1`.
+Owning task:
+`auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`.
+Observed locally on 2026-11-03 using the speckit-implement workflow, from clean
+base commit `dd929d5584c3aacb1cf8d02039de8487ff6183be`, tree
+`4c6bcfd25d665af7f71893590bc40e0194d3935b`. Results describe the uncommitted
+owned-path changes, not that immutable base alone. No commit was made.
+
+Source identities (Git blob hashes, obtained with read-only `git hash-object`):
+
+- `bootstrap/clojure/src/gravity/providers/declarations.clj`:
+  `5694716165ef1d109d162340a134f3c964842e4f`.
+- `bootstrap/clojure/test/gravity/providers/declarations_test.clj`:
+  `fc4a5f41cfc9d3435857820028682d0aaa47826d`.
+
+### Observed products and rejection behavior
+
+The [planned local format](tasks.md#explicit-provider-declaration-increment)
+is implemented by pure `validate-declaration` and `record-declaration` in
+`gravity.providers.declarations`. The producer validates actual input afresh;
+it emits an internal declaration record only for explicit valid fields. The
+accepted filesystem data fixture preserves every supplied declaration field,
+including unsafe/runtime-check/human-review metadata and distinct runtime/build
+effect sets, capability implementations and lower-level requirements.
+
+Negative cases call the same producer: every missing required field, including
+version, interfaces, resource/memory and replay; malformed effect sets, empty
+capabilities/profiles/targets/contracts, invalid failure references and trust
+labels; applicable missing signature policy; absent or malformed source context
+and missing applicability. Each returns `:invalid` and diagnostics without a
+record. Supplied complete/trusted/granted/conformance claims neither supply
+missing fields nor become a producer decision. Explicit non-replayability and
+all five trust labels remain declarations without granting their use.
+
+Exact diagnostic assertions cover `L15-CONTRACT`, missing/invalid reason,
+field path, expected carrier and source/manifest/profile/target context. The
+multiple-error fixture observes deterministic order and excludes a secret
+marker supplied in a malformed effect set, declaration extensions/scope,
+unknown context keys and nested source-span payload. No rejected declaration
+payload is returned. Public identities/path components remain the caller's
+responsibility, as documented in the plan; this is not arbitrary secret
+classification or a public artifact-export implementation.
+
+### Exact checks
+
+Each following argument vector was executed from repository root and exited 0:
+
+```clojure
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.providers.declarations-test"]
+;; 8 tests, 387 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capability-validation-test"]
+;; 6 tests, 56 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+;; 6 tests, 11 assertions, 0 failures, 0 errors; no skipped namespaces.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_gravity_docs.clj"]
+;; Passed: 240 docs, 19 phase indexes, ASCII, no placeholders.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_full_language_roadmap.clj"]
+;; Passed: structural claims only; dated snapshot is non-authoritative and
+;; completion admission remains disabled.
+```
+
+`git diff --check` passed. Initial focused-test attempts exited 2 for a test
+reader delimiter error and then 1 for five assertions that incorrectly expected
+the result's `:status` key to be absent. Those test errors were corrected;
+the final focused run above includes additional exact-diagnostic assertions.
+These earlier failures are not passing evidence. The historical Auth projection
+script named above is absent in this checkout; it was not run or recreated.
+
+### Authority, ambiguity and remaining acceptance
+
+The hosted compatibility API, synthetic `record-provider-call!` records and
+historical evidence remain unchanged. Existing memory/concurrency/macro and
+whole-source refinements are retained as distinct pending criteria; no PR767/908
+acceptance is consumed. Their external current heads were not inspected
+(network is disabled).
+
+L15 specifies required meaning but not a complete serialized bootstrap shape,
+version syntax or behavior-reference resolution protocol. The plan names the
+local carrier choice explicitly. Behavior, schema, conformance and signature
+policy references are not resolved or verified by this producer. No current
+canonical format acceptance, provider trust decision, grant, selection,
+profile/target compatibility, provider service execution or secret export is
+conferred. No actual provider action, runtime/build gate, signing, release,
+self-hosting, seed retirement or broad integration suite was run or claimed.
+
+Independent acceptance is missing and cannot be supplied by this worker's
+self-checks. Integration is controller-owned and unperformed. The parent task
+remains Open with its original checkbox, identity and closing criteria, pending
+deterministic compatible selection and all other required implementation and
+independent acceptance evidence. This increment supplies only the early
+explicit declaration product; downstream obligations retain their own gates.
+
+## Contracts CI repair for explicit provider declarations
+
+Observed locally on 2026-11-04 using speckit-implement, starting from clean
+commit `f6a851e2f2d9897d2730c78d34b9f5cecf3865b0`, tree
+`32225012d6baa120d488a4d0816e9634833e35f5`. These results describe
+uncommitted changes to this evidence file, `tasks.md` and `plan.md` in the same
+increment. No commit or GitHub action was performed.
+
+The supplied local CI log for run `41839997709`, contracts job `126608972404`,
+reports dependency-controls failing with `ACCEPTANCE-DEPENDENCY` and
+`Changed or ambiguous current task body: specs/auth-workflow/tasks.md`.
+The actual dependency-control script reproduced that failure locally: 24 tests,
+5184 assertions, 0 failures, 5 errors, exit 1. Moving the scoped progress
+paragraph to the navigation preamble restored the captured task body.
+
+The next actual run exposed a second failure previously hidden by the first:
+`Stale SH input: specs/auth-workflow/plan.md` (24 tests, 5184 assertions,
+0 failures, 5 errors, exit 1). The plan's only difference from its crosswalk
+applying source, `05f11aba381d49124b8c9ddeb509f4d05791dff2`, was the local
+explicit-declaration increment section. Moved that section after the task
+region's end marker, retaining its input/output shape, required fixtures,
+source basis and nonclaims. Rebased its producer-table link and the existing
+local-format evidence link to their current locations. The plan now has no
+diff from that pinned source; source criteria and source-version records were
+not rewritten to accept drift.
+
+All original task criteria/body bytes, task identities and unchecked Open
+statuses remain. The historical migration suffix and all producer observations
+above retain their scope. Provider source and fixture blob identities still
+match `5694716165ef1d109d162340a134f3c964842e4f` and
+`fc4a5f41cfc9d3435857820028682d0aaa47826d`, respectively. No implementation,
+fixture, hosted compatibility API, synthetic provider record, canonical
+contract, crosswalk, source-version/evidence ledger, acceptance validator or
+test was changed. Existing positive and negative fixtures exercise the actual
+producer and dependency controls; this documentation repair needs no new
+provider behavior or fixture.
+
+### Repair checks
+
+Executed from repository root; all following vectors exited 0. The dependency
+run passed after both relocations, including its existing navigation-preservation
+and changed/ambiguous-body rejection controls. The earlier failed runs used the
+same dependency vector and are recorded above, not counted as passing evidence.
+
+```clojure
+["clojure" "-J-Xmx512m" "-M" "tools/acceptance_dependencies_test.clj"]
+;; 24 tests, 5489 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.providers.declarations-test"]
+;; 8 tests, 387 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capability-validation-test"]
+;; 6 tests, 56 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+;; 6 tests, 11 assertions, 0 failures, 0 errors; no skipped namespaces.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_gravity_docs.clj"]
+;; Passed: 240 docs, 19 phase indexes, ASCII, no placeholders.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_full_language_roadmap.clj"]
+;; Passed: structural claims only; completion admission remains disabled.
+```
+
+### Repair authority and remaining work
+
+The prior907 whitespace action remains restricted and was neither proposed nor
+run; no substitute executable was used. No denied operation was retried.
+Network access, hosted CI reruns, independent acceptance and integration were
+not performed. Independent acceptance remains missing; passing local controls
+cannot supply it. The local bootstrap-format ambiguity and unresolved downstream
+selection, trust, grant, compatibility and execution obligations described above
+remain unchanged. The broad parent stays Open and unchecked. This repair grants
+no release, self-hosting or seed-retirement authority.

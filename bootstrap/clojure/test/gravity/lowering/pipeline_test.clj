@@ -55,6 +55,10 @@
     (is (false? (:issues-certificates? contract)))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (= [] (get-in contract [:dependency-direction :requires])))
+    (is (= 14 (count (:public-api contract))))
+    (is (some #{'gravity.c14-lowering.artifact}
+              (get-in contract [:dependency-direction :consumed-by])))
+    (is (some #{:existing-native-c14-source-and-file-artifact-assembly} (:supported contract)))
     (is (some #{:canonical-c11-c13-admission} (:unsupported contract)))
     (doseq [[name operation] publics]
       (is (= contract (:gravity/namespace-contract (meta operation))))
