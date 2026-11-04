@@ -184,8 +184,9 @@
     "doctor" (with-current-lock ctx #(shared/doctor! ctx))
     "status" (println (pr-str @(:state ctx)))
     "pause" (rt/write-edn! (:control-file ctx) {:paused true})
-    "setup" (with-current-lock ctx #(do (doseq [t (workflow/tasks ctx)] (workflow/assert-no-pending-main! ctx t))
-                                        (gh/setup! ctx) (gh/status! ctx (workflow/campaign-issue! ctx) "Proposed")))
+    "setup" (with-current-lock ctx #(workflow/with-registration! ctx
+                                      (fn [] (gh/setup! ctx)
+                                        (gh/status! ctx (workflow/campaign-issue! ctx) "Proposed"))))
     "coordinate" (with-current-lock ctx #(println "Retained state registered; no workers or GitHub writes."))
     "run" (run-campaign! ctx false)
     "resume" (run-campaign! ctx true)

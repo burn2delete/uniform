@@ -5,6 +5,7 @@
             [seedless.github :as gh]
             [seedless.schema :as schema]
             [simplify.codex :as codex]
+            [simplify.coordination :as coordination]
             [simplify.github :as transport]
             [simplify.runtime :as rt]
             [simplify.schema :as validation]
@@ -610,6 +611,28 @@
               {:effect id :main-effect true :shared-main-fence true
                :restricted (= :restricted (get-in pending [:original-effect :status]))})))
 
+(declare attention!)
+
+(defn with-registration! [ctx operation]
+  (doseq [t (tasks ctx)] (assert-no-pending-main! ctx t))
+  (when (:interruption @(:state ctx))
+    (rt/fail! "Inspect retained controller interruption before provider writes" {}))
+  (let [retained (filter #(#{:implementing :checking :review :finalizing} (:status %)) (tasks ctx))]
+    (doseq [t retained]
+      (task! ctx (:key t) :history
+             (conj (vec (:history t))
+                   {:kind :startup-handover :status (:status t)
+                    :resume-status (:resume-status t) :error (:error t)}))
+      (attention! ctx (:key t)
+                  (ex-info "Interrupted work requires inspection before recovery"
+                           (cond-> {:local-only true :retained-handover true}
+                             (:finalization-effect t) (assoc :effect (:finalization-effect t))))))
+    (when (seq retained)
+      (rt/fail! "Inspect retained Seedless work before provider writes" {:retained-handover true})))
+  (coordination/register! ctx)
+  (try (operation)
+       (finally (coordination/unregister! ctx))))
+
 (defn merge-current! [ctx t]
   (rt/try-with-main-lock
    ctx
@@ -809,6 +832,7 @@
         effect-status (task-effect-status ctx error)
         details (ex-data error)
         local-only? (or (#{:pending :uncertain :restricted :unknown} effect-status)
+                        (:local-only details)
                         (:restricted details)
                         (:main-effect details)
                         (:remote-pr-refusal details))
@@ -839,12 +863,8 @@
 (defn paused? [ctx]
   (and (.exists (io/file (:control-file ctx))) (:paused (rt/read-edn (:control-file ctx)))))
 
-(defn campaign! [ctx]
+(defn- campaign-loop! [ctx]
   (gh/setup! ctx) (campaign-issue! ctx)
-  (doseq [t (tasks ctx) :when (#{:implementing :checking :review :finalizing} (:status t))]
-    (attention! ctx (:key t)
-                (ex-info "Interrupted work requires inspection before recovery"
-                         (cond-> {} (:finalization-effect t) (assoc :effect (:finalization-effect t))))))
   (gh/status! ctx (campaign-issue! ctx) "Implementing")
   (rt/update! ctx assoc :status :running)
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
@@ -895,3 +915,6 @@
                     ;; not an automatic repeated rebuild on unchanged inputs.
                     (when-not done? (recur)))))))))
       (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS)))))
+
+(defn campaign! [ctx]
+  (with-registration! ctx #(campaign-loop! ctx)))

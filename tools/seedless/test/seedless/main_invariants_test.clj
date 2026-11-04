@@ -1,6 +1,7 @@
 (ns seedless.main-invariants-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is use-fixtures]]
+            [seedless.github :as gh]
             [seedless.main :as main]
             [seedless.workflow :as workflow]
             [seedless.workflow-test :as fixture]
@@ -44,6 +45,67 @@
       (is (= [true] @calls))
       (is (= :attention (:status (rt/read-edn (:state-file ctx)))))
       (is (false? @(:owns-lock? ctx)))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest retained-native-work-blocks-provider-writes-but-keeps-inspected-recovery
+  (doseq [phase [:implementing :checking :review :finalizing]
+          command ["setup" "run" "resume"]]
+    (let [ctx (lock-context) calls (atom [])
+          effects {"retained-tracking" {:status :uncertain}}
+          t (cond-> {:key "slice" :status phase :paths ["module.clj"]
+                     :error {:message "Retained earlier source failure"} :resume-status :repair}
+              (= :finalizing phase) (assoc :merged "actual-merge" :finalization-effect "retained-tracking"))]
+      (try
+        (rt/update! ctx assoc :tasks {"slice" t} :effects effects)
+        (let [lease (rt/claim-paths! ctx "slice" (:paths t) :checking)]
+          (try (rt/with-claimed-paths ctx lease #(throw (ex-info "Retained unknown fixture writer" {})))
+               (catch Exception _))
+          (let [writers (:writers (rt/read-edn (:coordination-file ctx)))]
+            (with-redefs [gh/setup! (fn [& _] (swap! calls conj :setup))
+                          gh/status! (fn [& _] (swap! calls conj :status))
+                          gh/comment! (fn [& _] (swap! calls conj :comment))
+                          workflow/campaign-issue! (fn [& _] (swap! calls conj :campaign))
+                          workflow/job! (fn [& _] (swap! calls conj :author))]
+              (is (thrown-with-msg? Exception #"Inspect retained Seedless work" (main/dispatch! ctx command []))))
+            (is (empty? @calls))
+            (is (= :attention (:status (workflow/task ctx "slice"))))
+            (is (= phase (:resume-status (workflow/task ctx "slice"))))
+            (is (= (select-keys t [:status :error :resume-status])
+                   (dissoc (last (:history (workflow/task ctx "slice"))) :kind)))
+            (is (= effects (:effects @(:state ctx))))
+            (is (= writers (:writers (rt/read-edn (:coordination-file ctx)))))
+            (is (empty? (:controllers (rt/read-edn (:coordination-file ctx)))))
+            (when (and (= :implementing phase) (= "setup" command))
+              (let [file (io/file (:root ctx) "inspection.edn")]
+                (spit file (pr-str {:evidence "Fixture owner inspected the ended writer; original lease remains held until explicit inspected release"}))
+                (main/with-current-lock ctx #(main/retry! ctx "slice" (str file)))
+                (is (= :repair (:status (workflow/task ctx "slice"))))
+                (is (nil? (rt/claim-paths! ctx "slice" ["module.clj"] :implementing)))
+                (rt/inspect-release-paths! ctx lease "Fixture owner verified the original writer ended")
+                (is (some? (rt/claim-paths! ctx "slice" ["module.clj"] :implementing)))))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest interrupted-controller-setup-performs-no-provider-write
+  (let [ctx (lock-context) calls (atom 0)]
+    (try
+      (rt/update! ctx assoc :interruption {:descendant-coverage :unknown :inspection-required true})
+      (let [before @(:state ctx)]
+        (with-redefs [gh/setup! (fn [& _] (swap! calls inc))]
+          (is (thrown-with-msg? Exception #"Inspect retained controller interruption" (main/dispatch! ctx "setup" []))))
+        (is (zero? @calls))
+        (is (= before @(:state ctx))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest setup-registration-is-released-after-provider-failure
+  (let [ctx (lock-context) admitted (atom false)]
+    (try
+      (rt/save! ctx)
+      (with-redefs [gh/setup! (fn [& _]
+                                (reset! admitted (boolean (seq (:controllers (rt/read-edn (:coordination-file ctx))))))
+                                (throw (ex-info "Fixture setup failed" {})))]
+        (is (thrown-with-msg? Exception #"Fixture setup failed" (main/dispatch! ctx "setup" []))))
+      (is @admitted)
+      (is (empty? (:controllers (rt/read-edn (:coordination-file ctx)))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest successful-lock-acquisition-refreshes-the-state-snapshot
