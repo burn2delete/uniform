@@ -36,30 +36,11 @@
 
 (defn stage1-reader-location
   [source-text line-starts idx]
-  (let [idx (min idx (count source-text))
-        line-number (loop [line 0]
-                      (if (and (< (inc line) (count line-starts))
-                               (<= (line-starts (inc line)) idx))
-                        (recur (inc line))
-                        (inc line)))
-        line-start (line-starts (dec line-number))
-        line-prefix (subs source-text line-start idx)
-        column (inc (.codePointCount line-prefix 0 (.length line-prefix)))]
-    {:line line-number
-     :column column
-     :column-unit :unicode-scalar
-     :char idx
-     :byte (utf8-byte-count (subs source-text 0 idx))}))
+  (gravity.source-span/indexed-source-location #'utf8-byte-count source-text line-starts idx))
 
 (defn stage1-reader-span
   [source-path source-text line-starts start end]
-  (let [start-location (stage1-reader-location source-text line-starts start)
-        end-location (stage1-reader-location source-text line-starts end)]
-    {:source source-path
-     :start start-location
-     :end end-location
-     :byte-start (:byte start-location)
-     :byte-end (:byte end-location)}))
+  (gravity.source-span/indexed-source-span #'stage1-reader-location source-path source-text line-starts start end))
 
 (defn stage1-reader-table
   []

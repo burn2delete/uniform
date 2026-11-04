@@ -931,6 +931,7 @@
                        "--namespace" "gravity.reader.forms-test"
                        "--namespace" "gravity.reader.literals-test"
                        "--namespace" "gravity.reader.legacy-parser-test"
+                       "--namespace" "gravity.source-span-test"
                        "--namespace" "gravity.reader-primitives-test"
                        "--namespace" "gravity.c3-reader-expansions-test"
                        "--namespace" "gravity.cli.launcher-test"
