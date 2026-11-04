@@ -268,15 +268,28 @@
                             (map #(.getAbsolutePath (io/file %))
                                  (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
         command [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server"]]
-    (doseq [mode ["ok" "malformed" "failed" "interrupted" "approval"]]
+    (doseq [mode ["ok" "quoted-denial" "tool-output-data" "malformed" "failed" "interrupted" "approval"
+                 "tool-denied-zero" "tool-denied-nonzero"]]
       (let [ctx (assoc-in (context) [:config :codex-command] (conj command mode))]
         (testing mode
-          (if (= "ok" mode)
+          (if (#{"ok" "quoted-denial" "tool-output-data"} mode)
             (do
               (is (= "approved" (:verdict (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review))))
-              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status]))))
+              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status])))
+              (is (empty? (:restricted-commands @(:state ctx)))))
             (do
-              (is (thrown? Exception (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)))
+              (let [failure (try (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)
+                                 (catch Exception e e))]
+                (is (instance? Exception failure))
+                (when (#{"tool-denied-zero" "tool-denied-nonzero"} mode)
+                  (is (:restricted (ex-data failure)))
+                  (is (:writer-ended? (ex-data failure)))
+                  (is (= "fixture-read" (get-in (ex-data failure) [:refusal :item :command])))
+                  (is (= 1 (count (get-in @(:state ctx) [:jobs "fixture" :tool-refusals]))))
+                  (let [[key refusal] (first (:restricted-commands @(:state ctx)))]
+                    (is (= "fixture-read" (get-in refusal [:item :command])))
+                    (is (= refusal (select-keys (rt/shared-restriction ctx :commands key) (keys refusal))))
+                    (is (thrown? Exception (rt/assert-authorized! ctx :command key))))))
               (is (= :attention (get-in @(:state ctx) [:jobs "fixture" :status]))))))))))
 
 (deftest restricted-findings-cannot-be-retried
@@ -294,8 +307,16 @@
     (is (= "fixture command" (:stdout (codex/command! ctx "check-fixture" (:state-dir ctx) ["clojure" "-M:test"]))))
     (is (empty? (:jobs @(:state ctx))))
     (is (empty? @(:processes ctx)))
+    (let [data-result {:exitCode 0 :stdout "Fixture expected: Permission denied" :stderr ""}]
+      (is (= data-result (codex/validate-command-result! ctx ["fixture-output-data"] data-result))))
     (is (thrown? Exception (codex/command! (assoc-in ctx [:config :codex-command] (conj command "failed"))
-                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))))
+                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))
+    (let [denied-ctx (assoc-in ctx [:config :codex-command] (conj command "stream-denied-zero"))
+          argv ["fixture-zero-exit-check"]]
+      (is (thrown? Exception (codex/command! denied-ctx "check-zero-denial" (:state-dir ctx) argv)))
+      (is (= 0 (get-in (rt/shared-restriction ctx :checks (codex/check-key ctx argv)) [:result :exitCode])))
+      (with-redefs [codex/open! (fn [& _] (throw (AssertionError. "A retained refusal must block before starting another process")))]
+        (is (thrown? Exception (codex/command! denied-ctx "must-not-retry" (:state-dir ctx) argv)))))))
 
 (deftest denied-github-actions-are-persistent-and-not-retried
   (let [ctx (context) calls (atom 0)]
