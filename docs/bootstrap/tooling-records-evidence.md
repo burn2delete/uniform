@@ -52,7 +52,27 @@ field precedence and callback/exception identity.
 Focused positive/negative regressions, language/ownership gates, committed
 lint, contract validators, independent adversarial acceptance, own CI/artifact
 audit and exact clean current-main integration preflight remain required.
-This early draft records the boundary and original observations.
+The working extraction passes 20 owning tests / 378 assertions, including
+paired physical artifact/report fixtures and adversarial collection/root,
+failure/span and digest/serialization ordering. The existing Bootstrap P13
+controls pass 3 / 156. Language/ownership gates pass 48 / 1190 with zero
+skipped namespaces; pinned stage/test lint reports zero errors or warnings.
+The document, roadmap and workstream validators pass. Exact source checks
+preserve nineteen moved bodies, twenty-one prior stage bodies and every
+surrounding fragment, including the factory closure and private-helper unmap.
+
+The extraction helper first rejected an unmatched parenthesis, then rejected
+its own comparison of reader-generated argument names. Both stopped before
+repository mutation. Comparing those generated names by binding identity
+allows the otherwise exact form check; explicit lookalike names are refused
+by that helper. The first working source then exposed the extended factory's
+existing catalog reference: it needs a late document-catalog supplier. That
+actual source repair preserves the reference's original body position. The
+initial compile/lint nonpass remains recorded. A separate source-check helper
+also needed to read an existing split-line function header correctly. These
+helper/source failures are retained; no predicate, test, pin or authority gate
+was weakened. Clean candidate capture, committed lint, independent acceptance,
+own CI and exact current-main integration evidence remain outstanding.
 
 ## Unsupported boundaries
 

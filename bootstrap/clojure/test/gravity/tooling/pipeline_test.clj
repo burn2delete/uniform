@@ -45,7 +45,7 @@
 (deftest native-metadata-contract-covers-all-public-operations
   (let [publics (ns-publics 'gravity.tooling)
         contract (:gravity/namespace-contract (meta #'tooling/native-validate-tooling!))]
-    (is (= 21 (count publics)))
+    (is (= 40 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= :stage0-tooling-compiled-gate (:native-metadata-boundary contract)))
     (doseq [[name operation] publics]
@@ -167,8 +167,8 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-certificates? contract)))
       (is (false? (:performs-tool-services? contract)))
-      (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))))
-  (is (= #{'set} (set (keys (ns-aliases 'gravity.tooling)))))
+      (is (= '[clojure.set clojure.string] (get-in contract [:dependency-direction :requires])))))
+  (is (= #{'set 'str} (set (keys (ns-aliases 'gravity.tooling)))))
   (is (= '([artifact]) (:arglists (meta #'bootstrap/p13-tooling-proof))))
   (let [record (bootstrap/p13-tooling-proof {})]
     (is (= :complete (:status record)))
@@ -286,3 +286,136 @@
       (is (= (dissoc span :line) result))
       (is (contains? result :nil-value))
       (is (= :required (get-in result [:extra :ai/human-review]))))))
+
+(defn- native-record-operations []
+  (into {}
+        (for [[key name] '{:document-number p13-document-number :task-id p13-task-id
+                          :documents p13-tooling-documents :governing-documents p13-tooling-phase-governing-documents
+                          :diagnostics-by-document p13-tooling-diagnostics-by-document
+                          :fixture-names p13-tooling-rejected-fixture-names :rejected-diagnostics p13-tooling-rejected-diagnostics
+                          :diagnostic-ids p13-tooling-diagnostic-ids :override-diagnostics p13-tooling-override-diagnostics
+                          :artifact-keys p13-tooling-artifact-keys :summaries p13-tooling-document-summaries
+                          :diagnostic-document p13-tooling-diagnostic-document :fail p13-tooling-fail!
+                          :document-record p13-tooling-document-record :present p13-present?
+                          :artifact-values p13-tooling-artifact-values :compiled-rejected-fixtures stage0-compiled-tooling-rejected-fixtures
+                          :transport-fail fail! :source-span source-span :sha256 sha256-hex}
+              :let [operation (ns-resolve 'gravity.bootstrap name)]]
+          (do (assert operation name) [key (fn [] (var-get operation))]))))
+
+(deftest native-record-contract-and-presence-keep-their-limited-boundary
+  (let [contract (:gravity/namespace-contract (meta #'tooling/native-validate-artifact!))]
+    (is (= :p13-native-records-and-validation (:native-record-boundary contract)))
+    (is (= 19 (count (filter #(contains? (val %) :operation-suppliers) (:public-api contract)))))
+    (is (= '[clojure.set clojure.string] (get-in contract [:dependency-direction :requires])))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:performs-tool-services? contract))))
+  (doseq [value [nil false 0 "" [] [nil] {} {:a nil} #{} #{nil}]]
+    (is (= (bootstrap/p13-present? value) (tooling/native-present? value))))
+  (is (= {} (tooling/native-source-overrides nil))))
+
+(deftest native-factory-merge-retains-captured-functions-order-and-original-exceptions
+  (let [calls (atom []) value (Object.)
+        core (fn [] (swap! calls conj :core) {:left value :shared :core})
+        extended (fn [] (swap! calls conj :extended) {:right value :shared :extended})
+        result (tooling/native-artifact-values core extended)]
+    (is (= [:core :extended] @calls))
+    (is (= :extended (:shared result)))
+    (is (identical? value (:left result)))
+    (is (identical? value (:right result))))
+  (let [error (ex-info "original record factory failure" {}) calls (atom [])
+        result (try (tooling/native-artifact-values (fn [] (throw error)) (fn [] (swap! calls conj :extended)))
+                    (catch Throwable observed observed))]
+    (is (identical? error result))
+    (is (empty? @calls)))
+  (is (= (bootstrap/p13-tooling-artifact-values)
+         (tooling/native-artifact-values tooling/native-core-records
+                                       #(tooling/native-extended-records (native-record-operations))))))
+
+(deftest native-document-view-selects-the-collection-once-and-later-record-roots-at-each-call
+  (doseq [invoke [(fn [] (tooling/native-document-records (native-record-operations)))
+                 bootstrap/p13-tooling-document-records]]
+    (let [documents #'bootstrap/p13-tooling-documents record #'bootstrap/p13-tooling-document-record
+          calls (atom []) later (fn [document] (swap! calls conj [:later document]) :later)
+          result (with-redefs-fn {documents ["T1" "T2"]
+                                 record (fn [document]
+                                          (swap! calls conj [:first document])
+                                          (alter-var-root record (constantly later))
+                                          (alter-var-root documents (constantly ["T3"])) :first)} invoke)]
+      (is (= {"T1" :first "T2" :later} result))
+      (is (= [[:first "T1"] [:later "T2"]] @calls)))))
+
+(deftest native-p13-failure-selects-transport-before-payload-and-span-after-field-lookup
+  (doseq [invoke [(fn [subject] (tooling/native-fail! (native-record-operations) "T2002"
+                                                     "native-records.gravity" subject
+                                                     {:stage :caller-stage :source-span :caller-span :document-id :caller-document}))
+                 (fn [subject] (bootstrap/p13-tooling-fail! "T2002" "native-records.gravity" subject
+                                                           {:stage :caller-stage :source-span :caller-span :document-id :caller-document}))]]
+    (let [failure (ns-resolve 'gravity.bootstrap 'fail!) span (ns-resolve 'gravity.bootstrap 'source-span)
+          calls (atom [])
+          subject (reify clojure.lang.ILookup
+                    (valAt [_ key]
+                      (case key
+                        :document-id "T2"
+                        :source-span (do (alter-var-root failure (constantly (fn [& _] :after)))
+                                         (alter-var-root span (constantly (fn [path index]
+                                                                          (swap! calls conj [:span path index]) :after-span))) nil)
+                        nil))
+                    (valAt [this key fallback] (or (.valAt ^clojure.lang.ILookup this key) fallback)))
+          result (with-redefs-fn {failure (fn [id _ data]
+                                           (swap! calls conj [:before id (:stage data) (:source-span data) (:document-id data)]) :before)
+                                 span (fn [& _] (throw (ex-info "premature span root" {})))}
+                   #(invoke subject))]
+      (is (= :before result))
+      (is (= [[:span "native-records.gravity" 0] [:before "T2002" :caller-stage :caller-span :caller-document]] @calls)))))
+
+(deftest native-plan-digest-root-is-selected-before-report-serialization
+  (doseq [invoke [(fn [] (tooling/native-plan-report (native-record-operations) {:plan-id "native-plan"} {:profile :hosted :target :jvm}))
+                 (fn [] (bootstrap/stage0-compiled-plan-tooling-report {:plan-id "native-plan"} {:profile :hosted :target :jvm}))]]
+    (let [digest (ns-resolve 'gravity.bootstrap 'sha256-hex) calls (atom [])
+          result (with-redefs-fn {digest (fn [text] (swap! calls conj [:before text]) "before")
+                                 #'clojure.core/pr-str (fn [_]
+                                                        (alter-var-root digest (constantly (fn [_] "after")))
+                                                        (swap! calls conj :serialized) "serialized-native-report")}
+                   invoke)]
+      (is (= "sha256:before" (:report-id result)))
+      (is (= [:serialized [:before "serialized-native-report"]] @calls)))))
+
+(deftest complete-paired-native-record-programs-emit-stable-reports-and-real-source-refusals
+  (doseq [extension [".gravity" ".qst"]]
+    (let [experience-path (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/tooling/accepted/experience-records" extension)))
+          artifact (bootstrap/tooling-experience-file-artifact experience-path)
+          path (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/tooling/accepted/metadata-checks" extension)))
+          text (slurp path) expanded (bootstrap/macro-source-artifact path text)
+          module (assoc (:module expanded) :forms (:expanded-forms expanded))
+          plan (bootstrap/stage0-compiled-core-plan path text module)
+          report (tooling/native-plan-report (native-record-operations) plan module)]
+      (is (= :complete (tooling/native-validate-artifact! (native-record-operations) experience-path artifact)))
+      (is (= (:artifact-id artifact) (bootstrap/c4-artifact-id (dissoc artifact :artifact-id))))
+      (is (= "tooling-metadata\n" (bootstrap/execute-stage0-compiled-plan plan)))
+      (is (= (:plan-id plan) (:compiled-plan-id report)))
+      (is (= (:report-id report) (str "sha256:" (bootstrap/sha256-hex (pr-str (dissoc report :report-id))))))
+      (is (= (bootstrap/stage0-compiled-plan-tooling-report plan module) report))))
+  (doseq [document bootstrap/p13-tooling-documents]
+    (let [path (str "bootstrap/clojure/fixtures/rejected/" (bootstrap/p13-tooling-rejected-fixture-names document))
+          built (atom 0)
+          result (with-redefs [bootstrap/p13-tooling-artifact-values (fn [] (swap! built inc) {})]
+                   (native-failure #(bootstrap/tooling-experience-file-artifact path)))]
+      (is (= (bootstrap/p13-tooling-rejected-diagnostics document) (get-in result [:data :id])))
+      (is (zero? @built)))))
+
+(deftest native-artifact-validation-keeps-the-first-refusal-and-wrapper-payload
+  (let [path "bootstrap/clojure/fixtures/tooling/accepted/experience-records.gravity"
+        artifact (bootstrap/tooling-experience-file-artifact path)
+        altered [(-> artifact (dissoc :document-set) (dissoc :document-contracts))
+                 (assoc-in artifact [:formatter-fixture :status] :incomplete)
+                 (update-in artifact [:document-contracts "T1"] dissoc :governing-doc)
+                 (assoc artifact :accepted-tooling-fixtures [])
+                 (assoc artifact :rejected-tooling-fixtures [])
+                 (assoc artifact :tooling-conformance-evidence [])
+                 (assoc-in artifact [:cli-command-set :commands] [])]
+        expected ["P13-MANIFEST" "P13-MANIFEST" "P13-MANIFEST" "P13-ACCEPTED" "P13-REJECTED" "P13-CONFORMANCE" "T1006"]]
+    (doseq [[value id] (map vector altered expected)]
+      (let [direct (native-failure #(tooling/native-validate-artifact! (native-record-operations) path value))
+            wrapper (native-failure #(bootstrap/p13-tooling-validate! path value))]
+        (is (= id (get-in direct [:data :id])))
+        (is (= wrapper direct))))))

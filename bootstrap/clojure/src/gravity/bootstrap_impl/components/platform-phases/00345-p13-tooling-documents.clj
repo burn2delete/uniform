@@ -166,55 +166,24 @@
 
 (defn p13-document-number
   [document]
-  (Integer/parseInt (subs document 1)))
+  (gravity.tooling/native-document-number document))
 
 (defn p13-task-id
   [document]
-  (str "P13-D" (+ 176 (p13-document-number document))))
+  (gravity.tooling/native-task-id {:document-number (fn [] p13-document-number)} document))
 
 (defn p13-tooling-source-overrides
   [module]
-  (get-in module [:metadata :tooling :experience] {}))
+  (gravity.tooling/native-source-overrides module))
 
 (defn p13-tooling-diagnostic-document
   [diagnostic-id]
-  (some (fn [document]
-          (when (some #(= diagnostic-id %)
-                      (p13-tooling-diagnostics-by-document document))
-            document))
-        p13-tooling-documents))
+  (gravity.tooling/native-diagnostic-document {:diagnostics-by-document (fn [] p13-tooling-diagnostics-by-document) :documents (fn [] p13-tooling-documents)} diagnostic-id))
 
 (defn p13-tooling-fail!
   [id source-path subject extra]
-  (let [document (or (:document-id subject)
-                     (p13-tooling-diagnostic-document id))]
-    (fail! id
-           "P13 tooling and developer-experience validation failed"
-           (merge {:source-span (or (:source-span subject)
-                                    (source-span source-path 0))
-                   :diagnostic-family :phase13-tooling-experience
-                   :stage :tooling-experience
-                   :document-id document
-                   :task (when document (p13-task-id document))
-                   :tool-id (or (:tool-id subject) :gravity-tooling)
-                   :artifact-id (:artifact-id subject)
-                   :missing-fact (:missing-fact subject)
-                   :fallback-status :rejected
-                   :remediation "Phase 13 requires tooling to expose compiler, package, runtime, safety, performance, and AI truth through structured artifacts; accepted and rejected fixtures, stable diagnostics, redaction, authority checks, and capability-based proof must all be present."}
-                  extra))))
+  (gravity.tooling/native-fail! {:transport-fail (fn [] fail!) :task-id (fn [] p13-task-id) :diagnostic-document (fn [] p13-tooling-diagnostic-document) :source-span (fn [] source-span)} id source-path subject extra))
 
 (defn p13-tooling-validate-source-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (if-let [id (get p13-tooling-override-diagnostics fail-kind)]
-      (p13-tooling-fail!
-       id source-path
-       {:artifact-id (str "p13-tooling-" (name fail-kind))
-        :document-id (p13-tooling-diagnostic-document id)
-        :missing-fact fail-kind}
-       {:missing-fields [fail-kind]})
-      (p13-tooling-fail!
-       "P13-MANIFEST" source-path
-       {:artifact-id "p13-tooling-unknown-override"
-        :missing-fact fail-kind}
-       {:missing-fields [:known-override-diagnostic]}))))
+  (gravity.tooling/native-validate-source-overrides! {:diagnostic-document (fn [] p13-tooling-diagnostic-document) :fail (fn [] p13-tooling-fail!) :override-diagnostics (fn [] p13-tooling-override-diagnostics)} source-path overrides))
