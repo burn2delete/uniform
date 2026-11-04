@@ -3,7 +3,7 @@
 A standalone Clojure application for one loop: audit current main, identify
 evidenced unnecessary complexity, implement independent improvements in
 parallel, independently review exact candidates, open PRs, wait for CI, and
-merge through one coordinator. GitHub Projects is the visual tracker.
+serialize main integration. GitHub Projects is the visual tracker.
 
 This is temporary Clojure repository tooling, not a Gravity AI runtime or a
 claim of language, release, self-hosting, or seed-retirement conformance. It
@@ -85,7 +85,8 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
 2. Validate structured output; reject unknown/cyclic dependencies, unsafe paths
    and out-of-scope findings. Repeated dispositioned findings do not prove done.
 3. Allocate named branches/worktrees. Implement disjoint changes concurrently;
-   hold overlapping writers until the earlier item merges. Authors get
+   hold overlapping active writers until their writing/checking phase ends.
+   Read-only review and immutable CI candidates do not reserve paths. Authors get
    workspace-write with no network; auditors/reviewers get read-only access.
    Workers do not commit, push, merge or spawn more agents. The controller owns
    those actions. App-server sandboxes are filesystem policies, not full VMs.
@@ -107,8 +108,9 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    obtain fresh review and await the new head's CI. Run the repository's exact
    integration preflight immediately before merging.
 7. Recheck main after preflight and match the remote PR head when merging. The
-   coordinator must own the main-write window; its lock does not control other
-   applications. Existing GitHub branch protection and reviews still apply.
+   coordinator must own the shared main-integration lock. Other desktop writers
+   must use the same integration protocol; it cannot control uncooperative
+   external applications. Existing GitHub branch protection and reviews still apply.
    The app does not change those settings. An external write during the final
    request race is detected by actual merge-parent/tree verification and stops
    the campaign for attention; the app does not undo an already applied merge.
@@ -127,8 +129,11 @@ Verbose timestamped JSON lines go to stderr and `events.jsonl`: commands and
 output, elapsed time, app-server requests/events, transitions, GitHub results,
 waiting reasons and failures. Common credential fields and known token patterns
 are redacted; logs still contain repository content. Keep logs local.
-`state.edn` is replaced atomically. A repository-wide file lock prevents two
-harness coordinators from running.
+`state.edn` is replaced atomically. A controller lock derived from the canonical
+state directory prevents two owners of that state. State is reloaded and its
+campaign identity revalidated after successful lock acquisition. A failed
+contender, read-only status command or shutdown hook cannot save a stale
+snapshot over the owner.
 The check watchdog does not impose a deadline on model turns or controller
 Git/GitHub calls. A stalled call requires host/operator interruption; pause
 takes effect at scheduler boundaries, after active operations finish.
@@ -157,6 +162,68 @@ clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 The supplied EDN is `{:evidence "What was inspected and where" :result ...}` with
 the actual original operation's result. This records an observation; it does not
 retry an effect or override denial. Preserve uncertain effects and worktrees.
+
+## Parallel campaigns and deployment
+
+Simplify and Seedless can plan, implement, check and review concurrently with
+separate Projects, campaign identities, state directories and worker worktrees.
+Do not reuse one campaign's state for a different objective. Deploy compatible
+versions of both tools; old versions use an incompatible lifetime repository
+lock and must be stopped before this protocol is installed.
+
+The shared runtime's `coordination` function supplies the per-state controller
+lock, `uniform-main.lock`, `uniform-harnesses.edn` and its short metadata lock
+under the common Git directory. Each controller has its own snapshot ref and
+serializes its own fetches without writing shared `FETCH_HEAD` or tracking refs.
+
+Claim active paths before dispatch with `claim-paths!`, run the actual writing
+or checking phase with `with-claimed-paths`, then release before read-only
+review or CI. Busy paths are ordinary waiting. A known-ended failed or blocked
+turn releases its lease while its failure/refusal remains recorded. Unknown
+termination retains only the affected paths for original-owner inspection;
+there is no candidate, task or failed-attempt quota.
+
+Only the final integration transaction uses `try-with-main-lock`: refresh the
+immutable base and current evidence, run exact preflight, recheck main, merge
+with the matched head, and verify actual parents/tree/reachability. Busy or
+fenced main is ordinary waiting. If the base moved, release this lock before
+composition, checks and independent review. Lock order is controller, main,
+then snapshot/short coordination operations; metadata operations never call
+back into Git or acquire the main lock.
+
+Inside the native `effect!` callback, call `begin-main-merge!` before the provider
+mutation. After actual Git/provider verification, call `complete-main-merge!`
+with the observed commit/tree/parents/main, before post-merge bookkeeping. A
+crash or uncertain result leaves a durable shared fence even when the file
+lock is released. Another campaign cannot merge until the original owner
+records the inspected outcome; it can continue independent source work.
+
+For the one-time transition, while old controllers are stopped, register every
+preserved campaign state before starting either compatible controller:
+
+```text
+clojure -M:run coordinate config.edn
+```
+
+This performs no model or GitHub calls. It preserves known refusal guards
+across campaigns and imports explicitly recorded legacy unknown-writer holds,
+including their exact owned paths. It is deployment recovery, not a prerequisite
+for ordinary edits or focused tests. Inspection releases are not expiry timers.
+
+Original-owner recovery commands are explicit:
+
+```text
+clojure -M:run reconcile-main config.edn EFFECT-ID inspection.edn
+clojure -M:run release-writer config.edn lease.edn inspection.edn
+```
+
+A shared main inspection contains `:evidence` and either `:outcome :not-applied`
+or `:outcome :merged` with the actually observed `:actual` commit/tree/parents/main.
+A legacy incomplete tuple also needs its inspected `:original-intent`.
+Writer inspection contains `:evidence`; the lease file is the original shared
+lease, including its token. These commands do not rerun a denied operation,
+clear its native refusal/effect record or confer acceptance. Native effect
+reconciliation remains a separate observation when it is needed.
 
 ## Validation and references
 

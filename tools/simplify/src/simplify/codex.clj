@@ -29,6 +29,10 @@
     (= "command/exec/outputDelta" (:method message))
     (let [params (:params message)
           output (String. (.decode (java.util.Base64/getDecoder) ^String (:deltaBase64 params)) "UTF-8")]
+      (when-let [capture (:command-output client)]
+        (swap! capture conj {:stream (:stream params) :output output}))
+      (when (and (:capReached params) (:capture-truncated client))
+        (reset! (:capture-truncated client) true))
       (rt/event! (:ctx client) :sandbox-command-output {:job (:job client) :stream (:stream params) :output output :capture-truncated (:capReached params)}))
     :else (.put ^LinkedBlockingQueue (:events client) message)))
 
@@ -37,7 +41,8 @@
                          (.directory (io/file cwd))))
         _ (when-let [processes (:processes ctx)] (swap! processes conj process))
         client {:ctx ctx :job job :process process :writer (io/writer (.getOutputStream process) :encoding "UTF-8")
-                :pending (atom {}) :next-id (atom 0) :restricted (atom nil) :closed (atom false) :events (LinkedBlockingQueue.)}
+                :pending (atom {}) :next-id (atom 0) :restricted (atom nil) :closed (atom false)
+                :command-output (atom []) :capture-truncated (atom false) :events (LinkedBlockingQueue.)}
         reader (future
                  (try
                    (with-open [input (io/reader (.getInputStream process) :encoding "UTF-8")]
@@ -83,12 +88,27 @@
       (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
                                                    {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
       (send! client {:method "initialized" :params {}})
-      (let [result (request! client "command/exec"
+      (let [response (request! client "command/exec"
                              {:command argv :cwd cwd :processId job-id :streamStdoutStderr true
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
-                              :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})]
-        (when @(:restricted client) (rt/fail! "Check encountered a restricted request; not retrying" {:restricted true}))
-        (when-not (zero? (:exitCode result)) (rt/fail! "Sandboxed check failed" {:command argv :result result}))
+                              :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})
+            chunks @(:command-output client)
+            stream (fn [name] (apply str (map :output (filter #(= name (:stream %)) chunks))))
+            result (assoc response
+                          :stdout (if (seq (:stdout response)) (:stdout response) (stream "stdout"))
+                          :stderr (if (seq (:stderr response)) (:stderr response) (stream "stderr"))
+                          :capture-truncated @(:capture-truncated client))
+            output (str (:stdout result) "\n" (:stderr result))
+            cleanup-unknown? (boolean (re-find #"(?i)owned process cleanup failed" output))
+            ended? (and (number? (:exitCode result)) (not cleanup-unknown?))]
+        (when @(:restricted client)
+          (rt/fail! "Check encountered a restricted request; not retrying"
+                    {:restricted true :writer-ended? ended? :result result}))
+        (when-not (zero? (:exitCode result))
+          (rt/fail! "Sandboxed check failed"
+                    {:command argv :result result :writer-ended? ended?
+                     :restricted (or (rt/authorization-denied? output)
+                                     (boolean (re-find #"(?i)operation not permitted|sysctl failed" output)))}))
         result)
       (finally (close! client)))))
 
@@ -101,6 +121,7 @@
                            (recur (if (= "agentMessage" (:type item)) (conj messages item) messages)))
         "turn/completed" (if (= turn-id (get-in params [:turn :id]))
                            (do
+                             (rt/update! (:ctx client) assoc-in [:jobs (:job client) :turn-terminal?] true)
                              (when @(:restricted client) (rt/fail! "Agent encountered a restricted request; not retrying" {:restricted true}))
                              (when-not (= "completed" (get-in params [:turn :status]))
                                (rt/fail! "Agent turn did not complete" {:turn (:turn params)}))
@@ -137,5 +158,7 @@
         output)
       (catch Exception e
         (rt/update! ctx update-in [:jobs job-id] merge {:status :attention :message (.getMessage e) :restricted (boolean (:restricted (ex-data e)))})
-        (throw e))
+        (throw (ex-info (.getMessage e)
+                        (assoc (or (ex-data e) {}) :writer-ended?
+                               (true? (get-in @(:state ctx) [:jobs job-id :turn-terminal?]))) e)))
       (finally (close! client)))))

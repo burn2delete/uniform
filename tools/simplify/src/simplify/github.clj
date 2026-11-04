@@ -17,7 +17,8 @@
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
    (let [key (rt/digest (pr-str [method endpoint]))
-         _ (when (get-in @(:state ctx) [:restricted-actions key])
+         _ (when (or (get-in @(:state ctx) [:restricted-actions key])
+                     (rt/shared-restriction ctx :api key))
              (rt/fail! "Restricted GitHub action cannot be retried" {:endpoint endpoint :restricted true}))
          result (rt/command ctx (get-in ctx [:config :repo-dir])
                             (cond-> ["gh" "api" "--method" method endpoint]
@@ -25,7 +26,10 @@
                             (when body (json/write-str body)))]
      (when-not (zero? (:exit result))
        (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
-         (when restricted (rt/update! ctx assoc-in [:restricted-actions key] {:method method :endpoint endpoint :error (:err result)}))
+         (when restricted
+           (let [refusal {:method method :endpoint endpoint :error (:err result)}]
+             (rt/update! ctx assoc-in [:restricted-actions key] refusal)
+             (rt/shared-restrict! ctx :api key refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
@@ -37,8 +41,10 @@
                                            (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
                                                     (or (:message %) ""))) (:errors response)))]
         (when restricted
-          (rt/update! ctx assoc-in [:restricted-actions (rt/digest (pr-str ["POST" "graphql"]))]
-                      {:method "POST" :endpoint "graphql" :errors (:errors response)}))
+          (let [key (rt/digest (pr-str ["POST" "graphql"]))
+                refusal {:method "POST" :endpoint "graphql" :errors (:errors response)}]
+            (rt/update! ctx assoc-in [:restricted-actions key] refusal)
+            (rt/shared-restrict! ctx :api key refusal)))
         (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
     (:data response)))
 
