@@ -12,6 +12,7 @@
             [simplify.coordination :as coordination]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
+            [simplify.main :as simplify-main]
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]
             [simplify.workflow-test :as git-fixture]))
@@ -39,6 +40,93 @@
                   coordination/unregister! (fn [_] (swap! sequence conj :unregister))]
       (is (thrown-with-msg? Exception #"Setup failure" (workflow/campaign! ctx)))
       (is (= [:register :setup :unregister] @sequence)))))
+
+(deftest retained-inflight-claims-stop-before-all-provider-setup
+  (doseq [status [:implementing :review] command [:setup :campaign :simplify-setup]]
+    (let [ctx (fixture/context) writes (atom [])
+          key "retained" identity [(:state-file ctx) key]
+          legacy (io/file (:coordination-dir ctx) "claims.edn")
+          original {:identity identity :state-file (:state-file ctx) :key key :paths ["src/owned.clj"]}]
+      (.mkdirs (.getParentFile legacy))
+      (rt/write-edn! legacy {:claims {identity original}})
+      (rt/update! ctx assoc-in [:tasks key] {:key key :status status :paths (:paths original) :implementation-job "preserved-author"})
+      (let [before @(:state ctx)]
+        (with-redefs [project/setup! (fn [& _] (swap! writes conj :project))
+                      workflow/ensure-campaign! (fn [& _] (swap! writes conj :campaign))
+                      gh/setup! (fn [& _] (swap! writes conj :shared-project))
+                      gh/status! (fn [& _] (swap! writes conj :status))
+                      gh/api (fn [& _] (swap! writes conj :api))]
+          (is (thrown-with-msg? Exception #"Retained worker requires inspected handover"
+                               (case command
+                                 :setup (main/dispatch! ctx "setup" [])
+                                 :simplify-setup (simplify-main/dispatch! ctx "setup" [])
+                                 :campaign (workflow/campaign! ctx)))))
+        (is (empty? @writes))
+        (is (= (dissoc before :tasks) (dissoc @(:state ctx) :tasks)))
+        (is (= :attention (get-in @(:state ctx) [:tasks key :status])))
+        (is (= status (get-in @(:state ctx) [:tasks key :resume-status])))
+        (is (= (select-keys (get-in before [:tasks key]) [:status :resume-status :error :implementation-job])
+               (last (get-in @(:state ctx) [:tasks key :handover-history])))))
+      (let [shared (rt/read-edn (:coordination-file ctx)) lease (first (vals (:writers shared)))]
+        (is (= :needs-inspection (:status lease)))
+        (is (= original (:legacy-claim lease)))
+        (is (empty? (:controllers shared)))))))
+
+(deftest retained-worker-recovers-through-inspected-release-and-existing-retry
+  (let [ctx (fixture/context) key "retained" original-error {:message "Original failure" :details {:fixture true}}
+        original {:key key :status :implementing :paths ["src/owned.clj"] :implementation-job "preserved-author" :error original-error}
+        lease (rt/claim-paths! ctx key (:paths original) :implementing)
+        lease-file (str (io/file (:state-dir ctx) "lease.edn"))
+        inspection-file (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:tasks key] original)
+    (is (thrown? Exception (rt/with-claimed-paths ctx lease #(throw (ex-info "Unknown writer termination" {})))))
+    (with-redefs [project/setup! (fn [& _] (throw (AssertionError. "No provider setup before inspected recovery")))
+                  gh/api (fn [& _] (throw (AssertionError. "No provider call during local recovery")))]
+      (is (thrown-with-msg? Exception #"Retained worker requires inspected handover" (main/dispatch! ctx "setup" [])))
+      (rt/write-edn! lease-file lease)
+      (rt/write-edn! inspection-file {:evidence "Fixture original owner inspected scoped writer as ended; no denied action retried"})
+      (simplify-main/dispatch! ctx "release-writer" [lease-file inspection-file])
+      (simplify-main/dispatch! ctx "retry" [key]))
+    (is (= :repair (get-in @(:state ctx) [:tasks key :status])))
+    (is (= "preserved-author" (get-in @(:state ctx) [:tasks key :implementation-job])))
+    (is (= original-error (get-in @(:state ctx) [:tasks key :error])))
+    (is (= :implementing (get-in @(:state ctx) [:tasks key :handover-history 0 :status])))
+    (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))
+
+(deftest own-unresolved-main-effect-stops-before-provider-setup
+  (doseq [command [:setup :campaign :simplify-setup]]
+    (let [ctx (fixture/context) writes (atom 0)
+          original {:status :uncertain :message "Preserved lost provider response"}]
+      (rt/update! ctx assoc-in [:effects "merge/retained"] original)
+      (with-redefs [project/setup! (fn [& _] (swap! writes inc))
+                    gh/setup! (fn [& _] (swap! writes inc))
+                    workflow/ensure-campaign! (fn [& _] (swap! writes inc))]
+        (is (thrown-with-msg? Exception #"Unresolved main effect requires inspected handover"
+                             (case command
+                               :setup (main/dispatch! ctx "setup" [])
+                               :simplify-setup (simplify-main/dispatch! ctx "setup" [])
+                               :campaign (workflow/campaign! ctx)))))
+      (is (zero? @writes))
+      (is (= original (get-in @(:state ctx) [:effects "merge/retained"])))
+      (is (seq (:main-effects (rt/read-edn (:coordination-file ctx))))))))
+
+(deftest scoped-attention-and-foreign-holds-do-not-block-independent-setup
+  (let [ctx (fixture/context) other (fixture/context)
+        other (merge other (rt/coordination (.getParent (io/file (:coordination-file ctx))) (:config other)))
+        own (rt/claim-paths! ctx "held" ["src/held.clj"] :checking)
+        foreign (rt/claim-paths! other "foreign" ["src/foreign.clj"] :checking)
+        calls (atom [])]
+    (rt/update! ctx assoc-in [:tasks "held"] {:key "held" :status :attention :paths ["src/held.clj"]})
+    (doseq [[owner lease] [[ctx own] [other foreign]]]
+      (is (thrown? Exception (rt/with-claimed-paths owner lease #(throw (ex-info "Preserved unknown cleanup" {}))))))
+    (with-redefs [project/setup! (fn [& _] (swap! calls conj :project))
+                  workflow/ensure-campaign! (fn [& _] (swap! calls conj :campaign))]
+      (main/dispatch! ctx "setup" []))
+    (is (= [:project :campaign] @calls))
+    (let [shared (rt/read-edn (:coordination-file ctx))]
+      (is (= 2 (count (:writers shared))))
+      (is (every? #(= :needs-inspection (:status %)) (vals (:writers shared))))
+      (is (empty? (:controllers shared))))))
 
 (deftest selection-sees-other-open-candidates-without-claiming-their-work
   (let [ctx (fixture/context)

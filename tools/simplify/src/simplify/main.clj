@@ -1,6 +1,7 @@
 (ns simplify.main
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [simplify.coordination :as coordination]
             [simplify.github :as gh]
             [simplify.runtime :as rt]
             [simplify.workflow :as workflow])
@@ -150,7 +151,9 @@
     "doctor" (with-current-state ctx #(doctor! ctx))
     "status" (println (pr-str @(:state ctx)))
     "pause" (do (rt/write-edn! (:control-file ctx) {:paused true}) (println "Dispatch and merges will pause at the next scheduler boundary; active workers finish."))
-    "setup" (with-current-state ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/ensure-campaign! ctx) "Proposed")))
+    "setup" (with-current-state ctx #(do (coordination/register! ctx)
+                                        (try (gh/setup! ctx) (gh/status! ctx (workflow/ensure-campaign! ctx) "Proposed")
+                                             (finally (coordination/unregister! ctx)))))
     "coordinate" (with-current-state ctx #(println "Preserved state registered with shared coordination; no workers or GitHub writes."))
     "run" (controller! ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
     "resume" (controller! ctx #(when-not (= :complete (:status @(:state ctx)))

@@ -194,11 +194,6 @@
   (try
   (project/setup! ctx)
   (ensure-campaign! ctx)
-  (doseq [t (flow/tasks ctx) :when (#{:implementing :review} (:status t))]
-    (when (and (= :implementing (:status t)) (not (coordination/claim! ctx (:key t) (:paths t))))
-      (rt/fail! "Retained increment conflicts with another writer" {:key (:key t)}))
-    (when (#{:implementing :review} (:status t))
-      (flow/attention! ctx (:key t) (ex-info "Interrupted worker requires inspection; preserving files and thread IDs" {}))))
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
     (try
       (rt/update! ctx assoc :status :running)
