@@ -56,7 +56,16 @@
 
 (defn harness [scenario operation]
   (let [ctx (repository! (context)) original rt/command
-        events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)]
+        events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)
+        pr-data (fn [[key p]]
+                  (let [t (w/task ctx key)
+                        remote (rt/git ctx (get-in ctx [:config :repo-dir]) "ls-remote" "origin" (str "refs/heads/" (:branch t)))
+                        head (first (str/split remote #"\s+"))]
+                    (merge (:pr p)
+                           {:state (if (= "MERGED" (:state p)) "closed" "open")
+                            :merged (= "MERGED" (:state p)) :body (:body p)
+                            :head {:ref (:branch t) :sha head :repo {:full_name "fixture/repo"}}
+                            :base {:ref (:base p) :repo {:full_name "fixture/repo"}}})))]
     (try
       (with-redefs
        [rt/event! (fn [& _])
@@ -64,14 +73,22 @@
         gh/comment! (fn [& _])
         gh/open-review-threads? (fn [& _] false)
         gh/api (fn
-                 ([_ _] [])
+                 ([_ endpoint]
+                  (cond
+                    (re-find #"/pulls/[0-9]+$" endpoint)
+                    (some (fn [[_ p :as entry]]
+                            (when (str/ends-with? endpoint (str "/" (get-in p [:pr :number]))) (pr-data entry))) @prs)
+                    (str/includes? endpoint "pulls?state=all&head=")
+                    (mapv pr-data (filter (fn [[key _]] (str/ends-with? endpoint (str ":" (:branch (w/task ctx key))))) @prs))
+                    :else []))
                  ([_ method endpoint body]
                   (swap! events conj [:api method endpoint body])
                   (cond
                     (and (= "POST" method) (str/ends-with? endpoint "/pulls"))
                     (let [n (swap! next-pr inc) key (:key (some #(when (= (:branch %) (:head body)) %) (w/tasks ctx)))
                           pr {:number n :html_url (str "fixture-pr-" n) :node_id (str "pr" n)}]
-                      (swap! prs assoc key {:pr pr :draft true :base (:base body) :state "OPEN"}) pr)
+                      (swap! prs assoc key {:pr pr :draft true :base (:base body) :body (:body body) :state "OPEN"})
+                      (pr-data [key (get @prs key)]))
                     (and (= "PATCH" method) (str/includes? endpoint "/pulls/"))
                     (do (swap! prs (fn [m] (into {} (map (fn [[key p]] [key (if (str/ends-with? endpoint (str "/" (get-in p [:pr :number])))
                                                                               (assoc p :base (:base body)) p)]) m)))) {})
@@ -271,11 +288,12 @@
 
 (deftest completion-needs-checks-independent-review-and-unchanged-main
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
-        tree (rt/git ctx repo "rev-parse" "HEAD^{tree}") checks (atom [])]
+        tree (rt/git ctx repo "rev-parse" "HEAD^{tree}") checks (atom [])
+        completion (w/worktree! ctx "completion-fixture" base)]
     (try
       (rt/update! ctx assoc :last-plan {:base base :slices []} :campaign-issue {:number 1})
       (with-redefs [w/fresh-main! (constantly base)
-                    w/worktree! (fn [& _] {:worktree repo :branch "main"})
+                    w/worktree! (fn [& _] completion)
                     codex/command! (fn [_ _ _ argv] (swap! checks conj argv))
                     w/job! (fn [& _] {:base base :candidate base :tree tree :verdict "approved"
                                       :evidence-scope "completion" :summary "Verified fixture evidence" :findings []
@@ -330,10 +348,16 @@
         config (assoc (:config ctx) :state-dir (:state-dir ctx) :scope ["."])]
     (try
       (spit file (pr-str config))
-      (let [loaded (main/config! (str file)) saved (main/context! loaded)]
-        (is (str/ends-with? (:lock-file saved) "/simplify-harness.lock"))
-        (rt/save! saved)
-        (is (thrown? Exception (main/context! (assoc loaded :objective "Another objective")))))
+      (with-redefs [main/probe! (fn [context argv]
+                                  (cond
+                                    (= ["git" "check-ref-format" "--branch"] (vec (take 3 argv))) "main"
+                                    (= ["git" "rev-parse" "--show-toplevel"] argv) (get-in context [:config :repo-dir])
+                                    (= ["git" "rev-parse" "--git-common-dir"] argv) (str (io/file (get-in context [:config :repo-dir]) ".git"))
+                                    :else "git@github.com:fixture/repo.git"))]
+        (let [loaded (main/config! (str file)) saved (main/context! loaded)]
+          (is (str/ends-with? (:lock-file saved) "/simplify-harness.lock"))
+          (rt/save! saved)
+          (is (thrown? Exception (main/context! (assoc loaded :objective "Another objective"))))))
       (spit file (pr-str (assoc config :completion-checks [["clojure" "-e" "(println :passed)"]])))
       (is (thrown? Exception (main/config! (str file))))
       (spit file (pr-str (assoc config :checks [])))
@@ -358,7 +382,7 @@
 
 (deftest stale-independent-review-is-rejected
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
-        t {:base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}") :branch "main" :worktree repo}]
+        t (assoc (w/worktree! ctx "review-fixture" base) :base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}"))]
     (try
       (with-redefs [rt/event! (fn [& _]) w/job! (fn [& _] (assoc (select-keys t [:base :candidate :tree]) :candidate "wrong"
                                                                  :verdict "approved" :evidence-scope "adoption"))]
@@ -388,6 +412,7 @@
 
 (deftest project-setup-has-seedless-identity-views-and-labels
   (let [ctx (assoc (context) :config {:repository "fixture/repo" :project-title "Uniform Seedless" :objective "Retire declared seed"})
+        identity (atom {:id "project" :owner {:id "owner" :login "fixture"} :readme "" :repositories {:nodes []}})
         writes (atom []) fields [{:id "status" :name "Status" :options [{:id "todo" :name "Todo"} {:id "done" :name "Done"} {:id "progress" :name "In Progress"}]}]]
     (try
       (with-redefs [transport/owner-info (fn [& _] {:id "owner"}) transport/projects (fn [& _] []) transport/fields (fn [& _] fields)
@@ -397,6 +422,12 @@
                                  (swap! writes conj [:graphql query variables])
                                  (cond
                                    (str/includes? query "createProjectV2(") {:createProjectV2 {:projectV2 {:id "project" :title "Uniform Seedless"}}}
+                                   (str/includes? query "owner{") {:node @identity}
+                                   (str/includes? query "linkProjectV2ToRepository(")
+                                   (do (swap! identity assoc :repositories {:nodes [{:nameWithOwner "fixture/repo"}]})
+                                       {:linkProjectV2ToRepository {:repository {:id "repository"}}})
+                                   (str/includes? query "updateProjectV2(")
+                                   (do (swap! identity assoc :readme (:readme variables)) {:updateProjectV2 {:projectV2 @identity}})
                                    (str/includes? query "updateProjectV2Field(") {:updateProjectV2Field {:projectV2Field {:id "status" :options (mapv #(assoc % :id (or (:id %) (:name %))) (:options variables))}}}
                                    (str/includes? query "views(first:") {:node {:views {:nodes []}}}
                                    (str/includes? query "createProjectV2View(") {:createProjectV2View {:projectV2View {:id (:name variables)}}}

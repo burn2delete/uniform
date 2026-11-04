@@ -27,10 +27,50 @@
 (def task shared/task)
 (def tasks shared/tasks)
 (def task! shared/task!)
-(def assert-identity! shared/assert-identity!)
 (def assert-clean! shared/assert-clean!)
 (def next-job! shared/next-job!)
 (def terminal #{:done :not-planned})
+
+(defn- contained-path?
+  [root path]
+  (let [root (str/replace (str root) #"/+$" "")
+        path (str path)]
+    (or (= root path)
+        (str/starts-with? path (str root java.io.File/separator)))))
+
+(defn- overlapping-paths?
+  [left right]
+  (or (contained-path? left right) (contained-path? right left)))
+
+(defn- assert-seedless-worktree-root!
+  [ctx cwd]
+  (let [worktree-root (get-in ctx [:config :worktree-root])
+        source-root (get-in ctx [:config :repo-dir])]
+    (when-not (and (string? worktree-root) (string? source-root) (string? cwd))
+      (rt/fail! "Seedless worktree identity needs explicit roots"
+                {:worktree cwd :worktree-root worktree-root :source-root source-root
+                 :seedless-identity :missing-roots}))
+    (let [raw-root (.getAbsolutePath (io/file worktree-root))
+          raw-cwd (.getAbsolutePath (io/file cwd))
+          raw-source (.getAbsolutePath (io/file source-root))
+          canonical-root (rt/canonical worktree-root)
+          canonical-cwd (rt/canonical cwd)
+          canonical-source (rt/canonical source-root)]
+      (when-not (and (contained-path? raw-root raw-cwd)
+                     (contained-path? canonical-root canonical-cwd)
+                     (not= canonical-root canonical-cwd)
+                     (not (overlapping-paths? raw-source raw-cwd))
+                     (not (overlapping-paths? canonical-source canonical-cwd)))
+        (rt/fail! "Seedless candidate is outside its canonical worktree root"
+                  {:worktree cwd :worktree-root worktree-root :source-root source-root
+                   :canonical-worktree canonical-cwd :canonical-root canonical-root
+                   :canonical-source canonical-source :seedless-identity :root-containment})))))
+
+(defn assert-identity!
+  "Require a Seedless candidate to be an isolated worktree before Git checks."
+  [ctx t]
+  (assert-seedless-worktree-root! ctx (:worktree t))
+  (shared/assert-identity! ctx t))
 
 (defn job! [ctx role cwd prompt output-schema]
   (codex/job! (cond-> ctx (get-in ctx [:config :models role])
@@ -38,13 +78,17 @@
               (next-job! ctx role) cwd (if (= role :implement) :write :read)
               instructions prompt output-schema))
 
+(defn- project-status [status]
+  (case status :ready "Ready" :implementing "Implementing" :checking "Implementing"
+        :review "Review" :ci "CI" :merge "Merge queue" :finalizing "Merge queue" :done "Done"
+        :repair "Ready" :attention "Attention" :not-planned "Not planned"))
+
 (defn transition! [ctx key status]
+  ;; Complete the external tracking effect before recording the local status.
+  ;; In particular, a failed Done update must leave a merged task finalizing.
+  (gh/status! ctx (:issue (task ctx key)) (project-status status))
   (task! ctx key :status status)
-  (rt/event! ctx :transition {:slice key :status status})
-  (gh/status! ctx (:issue (task ctx key))
-              (case status :ready "Ready" :implementing "Implementing" :checking "Implementing"
-                    :review "Review" :ci "CI" :merge "Merge queue" :done "Done"
-                    :repair "Ready" :attention "Attention" :not-planned "Not planned")))
+  (rt/event! ctx :transition {:slice key :status status}))
 
 (defn fresh-main! [ctx]
   (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
@@ -128,23 +172,141 @@
   (let [parent (task ctx (:stack-on t))]
     (if (and parent (not= :done (:status parent))) (:branch parent) (get-in ctx [:config :base-branch]))))
 
+(defn- pr-repository [ctx]
+  (get-in ctx [:config :repository]))
+
+(defn- pr-head-ref [pr]
+  (or (get-in pr [:head :ref]) (:headRefName pr)))
+
+(defn- pr-head-sha [pr]
+  (or (get-in pr [:head :sha]) (:headRefOid pr)))
+
+(defn- pr-head-repository [pr]
+  (or (get-in pr [:head :repo :full_name]) (get-in pr [:head :repo :fullName])))
+
+(defn- pr-base-ref [pr]
+  (or (get-in pr [:base :ref]) (:baseRefName pr)))
+
+(defn- pr-base-repository [pr]
+  (or (get-in pr [:base :repo :full_name]) (get-in pr [:base :repo :fullName])))
+
+(defn- open-pr? [pr]
+  (= "OPEN" (some-> (:state pr) str str/upper-case)))
+
+(defn- pr-body-binds? [t pr]
+  (let [body (or (:body pr) "") issue (get-in t [:issue :number])]
+    (and (str/includes? body (gh/marker (:key t)))
+         (str/includes? body (str "Implements #" issue ".")))))
+
+(defn- pull-request-by-number! [ctx number]
+  (when number
+    (gh/api ctx (gh/repo-path ctx (str "pulls/" number)))))
+
+(defn- existing-pr! [ctx t]
+  (if-let [number (get-in t [:pr :number])]
+    (or (pull-request-by-number! ctx number)
+        (rt/fail! "Recorded Seedless PR is unavailable; refusing replacement"
+                  {:remote-pr-refusal true :reason :missing-recorded-pr :number number}))
+    (let [owner (first (str/split (pr-repository ctx) #"/"))
+          rows (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t))))
+          rows (cond
+                 (nil? rows) []
+                 (sequential? rows) (vec rows)
+                 :else (rt/fail! "GitHub returned an invalid PR listing" {:remote-pr-refusal true :result rows}))]
+      (when (> (count rows) 1)
+        (rt/fail! "Multiple PRs claim the Seedless candidate branch"
+                  {:remote-pr-refusal true :reason :ambiguous-branch-pr :branch (:branch t)
+                   :numbers (mapv :number rows)}))
+      (when-let [number (:number (first rows))]
+        (or (pull-request-by-number! ctx number)
+            (rt/fail! "Candidate PR disappeared during identity inspection"
+                      {:remote-pr-refusal true :reason :missing-listed-pr :number number}))))))
+
+(defn- assert-pr-identity!
+  ([ctx t pr] (assert-pr-identity! ctx t pr nil))
+  ([ctx t pr expected-head]
+   (assert-pr-identity! ctx t pr expected-head nil))
+  ([ctx t pr expected-head allowed-heads]
+   (let [expected-repo (pr-repository ctx)
+         expected-base (pr-base ctx t)
+         mismatches (cond-> {}
+                      (not (map? pr)) (assoc :pr {:expected :map :actual pr})
+                      (and (map? pr) (not (open-pr? pr))) (assoc :state {:expected "OPEN" :actual (:state pr)})
+                      (and (map? pr) (not= (:branch t) (pr-head-ref pr)))
+                      (assoc :head-ref {:expected (:branch t) :actual (pr-head-ref pr)})
+                      (and (map? pr) (not= expected-repo (pr-head-repository pr)))
+                      (assoc :head-repository {:expected expected-repo :actual (pr-head-repository pr)})
+                      (and (map? pr) (not= expected-base (pr-base-ref pr)))
+                      (assoc :base-ref {:expected expected-base :actual (pr-base-ref pr)})
+                      (and (map? pr) (not= expected-repo (pr-base-repository pr)))
+                      (assoc :base-repository {:expected expected-repo :actual (pr-base-repository pr)})
+                      (and (map? pr) (not (pr-body-binds? t pr)))
+                      (assoc :body {:expected [(gh/marker (:key t))
+                                               (str "Implements #" (get-in t [:issue :number]) ".")]
+                                    :actual (:body pr)})
+                      (and expected-head (map? pr) (not= expected-head (pr-head-sha pr)))
+                      (assoc :head-sha {:expected expected-head :actual (pr-head-sha pr)})
+                      (and (some? allowed-heads) (map? pr)
+                           (not (contains? allowed-heads (pr-head-sha pr))))
+                      (assoc :head-sha {:expected (vec (sort allowed-heads)) :actual (pr-head-sha pr)}))]
+     (when (seq mismatches)
+       (rt/fail! "Seedless PR identity is not owned by this candidate"
+                 {:remote-pr-refusal true :reason :pr-identity :mismatches mismatches
+                  :number (:number pr) :branch (:branch t)}))
+     pr)))
+
+(defn- published-heads [t]
+  (set (remove nil? (concat (:published-candidates t)
+                            [(:published-head t) (:published-candidate t) (:candidate t)]))))
+
+(defn- await-published-pr! [ctx t]
+  (let [key (:key t)
+        delay-ms (long (max 1 (or (get-in ctx [:config :poll-ms]) 1000)))]
+    (loop [pr (existing-pr! ctx (task ctx key))]
+      (let [current (task ctx key)
+            known (published-heads current)
+            head (pr-head-sha pr)]
+        (assert-pr-identity! ctx current pr nil known)
+        (cond
+          (= (:candidate current) head) pr
+          (not (contains? known head))
+          (rt/fail! "Remote PR head changed outside the known Seedless publish history"
+                    {:remote-pr-refusal true :reason :unexpected-remote-head
+                     :known-heads (vec (sort known)) :actual-head head})
+          :else
+          (do (Thread/sleep delay-ms) (recur (existing-pr! ctx current))))))))
+
+(defn- create-pr! [ctx t]
+  (let [pr-effect (str "pr/" (:key t))]
+    (task! ctx (:key t) :pr-effect pr-effect)
+    (let [created (rt/effect! ctx pr-effect
+                              #(gh/api ctx "POST" (gh/repo-path ctx "pulls")
+                                       {:title (:title t) :head (:branch t) :base (pr-base ctx t) :draft true
+                                        :body (str (:proposal t) "\n\nImplements #" (get-in t [:issue :number])
+                                                   ". Exact execution, review and remaining host boundaries are recorded there.\n\n"
+                                                   (gh/marker (:key t)))}))]
+      (when-not (map? created)
+        (rt/fail! "GitHub did not return the created Seedless PR"
+                  {:remote-pr-refusal true :result created}))
+      (task! ctx (:key t) :pr (select-keys created [:number :html_url :node_id]))
+      (await-published-pr! ctx (task ctx (:key t))))))
+
 (defn publish! [ctx t]
   (assert-clean! ctx (:worktree t)) (assert-identity! ctx t)
-  (rt/effect! ctx (str "push/" (:candidate t))
-              #(rt/git ctx (:worktree t) "push" (get-in ctx [:config :remote])
-                       (str (:candidate t) ":refs/heads/" (:branch t))))
-  (let [[owner] (str/split (get-in ctx [:config :repository]) #"/")
-        existing (or (:pr t)
-                     (some-> (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t)))) first
-                             (select-keys [:number :html_url :node_id])))
-        pr (or existing
-               (rt/effect! ctx (str "pr/" (:key t))
-                           #(gh/api ctx "POST" (gh/repo-path ctx "pulls")
-                                    {:title (:title t) :head (:branch t) :base (pr-base ctx t) :draft true
-                                     :body (str (:proposal t) "\n\nImplements #" (get-in t [:issue :number])
-                                                ". Exact execution, review and remaining host boundaries are recorded there.\n\n"
-                                                (gh/marker (:key t)))})))]
-    (task! ctx (:key t) :pr (select-keys pr [:number :html_url :node_id]))))
+  (let [push-effect (str "push/" (:candidate t))
+        existing (existing-pr! ctx t)
+        _ (when existing (assert-pr-identity! ctx t existing nil (published-heads t)))]
+    (task! ctx (:key t) :publish-effect push-effect)
+    (rt/effect! ctx push-effect
+                #(rt/git ctx (:worktree t) "push" (get-in ctx [:config :remote])
+                         (str (:candidate t) ":refs/heads/" (:branch t))))
+    (task! ctx (:key t) :published-head (:published-candidate t)
+           :published-candidate (:candidate t)
+           :published-candidates (vec (distinct (conj (or (:published-candidates t) [])
+                                                      (:candidate t))))
+           :remote-head-expected (:candidate t))
+    (let [pr (if existing (await-published-pr! ctx t) (create-pr! ctx t))]
+      (task! ctx (:key t) :pr (select-keys pr [:number :html_url :node_id])))))
 
 (defn merge-base! [ctx t base]
   (assert-clean! ctx (:worktree t)) (assert-identity! ctx t)
@@ -255,11 +417,16 @@
     (rt/git ctx cwd "merge-base" "--is-ancestor" commit main)
     (when-not (and (= [(:base t) (:candidate t)] (vec parents)) (= (:tree t) tree))
       (rt/fail! "Actual merge differs from the accepted base/head/tree" {:commit commit :parents parents :tree tree}))
-    (task! ctx (:key t) :merged commit)
-    (transition! ctx (:key t) :done)
-    (rt/effect! ctx (str "close/" (:key t))
-                #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number])))
-                         {:state "closed" :state_reason "completed"}))))
+    (let [key (:key t) close-effect (str "close/" key)]
+      ;; The merge is durable, but the task is not Done until its tracking
+      ;; record closes successfully. Keeping this finalization state makes an
+      ;; interrupted close resumable without redispatching the author.
+      (task! ctx key :merged commit :finalization-effect close-effect)
+      (transition! ctx key :finalizing)
+      (rt/effect! ctx close-effect
+                  #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number])))
+                           {:state "closed" :state_reason "completed"}))
+      (transition! ctx key :done))))
 
 (defn dependencies-merged? [ctx t]
   (every? #(and (= :done (:status (task ctx %))) (:merged (task ctx %))) (:dependencies t)))
@@ -293,11 +460,34 @@
                 (and (= "COMPLETED" (:status %))
                      (not (#{"SUCCESS" "SKIPPED" "NEUTRAL"} (:conclusion %))))) checks)))
 
+(defn- assert-merged-pr-identity! [ctx t]
+  (let [pr (pull-request-by-number! ctx (get-in t [:pr :number]))
+        expected-repo (pr-repository ctx)
+        expected-base (get-in ctx [:config :base-branch])
+        mismatches (cond-> {}
+                     (not (map? pr)) (assoc :pr {:expected :map :actual pr})
+                     (and (map? pr) (not= (:branch t) (pr-head-ref pr)))
+                     (assoc :head-ref {:expected (:branch t) :actual (pr-head-ref pr)})
+                     (and (map? pr) (not= (:candidate t) (pr-head-sha pr)))
+                     (assoc :head-sha {:expected (:candidate t) :actual (pr-head-sha pr)})
+                     (and (map? pr) (not= expected-repo (pr-head-repository pr)))
+                     (assoc :head-repository {:expected expected-repo :actual (pr-head-repository pr)})
+                     (and (map? pr) (not= expected-base (pr-base-ref pr)))
+                     (assoc :base-ref {:expected expected-base :actual (pr-base-ref pr)})
+                     (and (map? pr) (not= expected-repo (pr-base-repository pr)))
+                     (assoc :base-repository {:expected expected-repo :actual (pr-base-repository pr)}))]
+    (when (seq mismatches)
+      (rt/fail! "Merged PR identity does not target this Seedless candidate"
+                {:remote-pr-refusal true :reason :merged-pr-identity :mismatches mismatches
+                 :number (get-in t [:pr :number]) :branch (:branch t)}))
+    pr))
+
 (defn integrate! [ctx t]
   (when (dependencies-merged? ctx t)
     (let [info (shared/pr-info ctx t) ci (shared/check-state (:statusCheckRollup info))]
       (cond
-        (= "MERGED" (:state info)) (finish-merge! ctx t info)
+        (= "MERGED" (:state info)) (do (assert-merged-pr-identity! ctx t)
+                                       (finish-merge! ctx t info))
         (not= "OPEN" (:state info)) (rt/fail! "PR closed without a verified merge" {:pr info})
         (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote head changed outside this controller" {:pr info})
         (= :failed ci) (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info)
@@ -337,10 +527,12 @@
                        ["clojure" "-M" "tools/check_worktree_preflight.clj" "--mode" "integration" "--base-ref" base
                         "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
               (when (= base (fresh-main! ctx))
-                (rt/effect! ctx (str "merge/" (:candidate t))
-                            #(rt/run! ctx (:worktree t)
-                                      ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
-                                       "--merge" "--match-head-commit" (:candidate t)]))
+                (let [merge-effect (str "merge/" (:candidate t))]
+                  (task! ctx key :merge-effect merge-effect)
+                  (rt/effect! ctx merge-effect
+                              #(rt/run! ctx (:worktree t)
+                                        ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
+                                         "--merge" "--match-head-commit" (:candidate t)])))
                 (finish-merge! ctx t (shared/pr-info ctx t))))
             :else (rt/event! ctx :waiting {:slice (:key t) :ci ci :base (:baseRefName info)})))))))
 
@@ -430,21 +622,67 @@
                      (:dependencies t))))
        (not-any? #(shared/overlap? (:paths t) (:paths %)) occupied)))
 
+(defn- task-effect-ids [error]
+  ;; Only inspect effects named by the current failure.  Historical task
+  ;; effects are not evidence that an unrelated later failure is uncertain;
+  ;; treating them as such would suppress the ordinary reporting path.
+  (let [details (ex-data error)]
+    (vec (distinct (remove nil? [(:effect details) (:effect-id details)])))))
+
+(defn- task-effect-status [ctx error]
+  (let [effects (keep #(get-in @(:state ctx) [:effects %]) (task-effect-ids error))]
+    (or (some #(when (= :restricted (:status %)) :restricted) effects)
+        (some #(when (= :uncertain (:status %)) :uncertain) effects)
+        (some #(when (= :pending (:status %)) :pending) effects)
+        (some #(when (and (map? %)
+                          (not (#{:done :pending :uncertain :restricted} (:status %))))
+                 :unknown)
+              effects))))
+
+(defn- attention-error [error effect-status]
+  (cond-> {:message (.getMessage error) :details (ex-data error)}
+    effect-status (assoc-in [:details :effect-status] effect-status)))
+
 (defn attention! [ctx key error]
-  (task! ctx key :resume-status (:status (task ctx key)) :error {:message (.getMessage error) :details (ex-data error)})
-  (transition! ctx key :attention)
-  (gh/comment! ctx (:issue (task ctx key)) (str "attention/" (rt/digest (pr-str [(:candidate (task ctx key)) (.getMessage error)])))
-               (str "Needs attention: " (.getMessage error)
-                    "\n\nCandidate: `" (:candidate (task ctx key)) "`. Inspect the retained local trace at `" (:state-dir ctx)
-                    "`. Restricted and uncertain actions are not automatically replayed.")))
+  (let [t (task ctx key)
+        effect-status (task-effect-status ctx error)
+        details (ex-data error)
+        local-only? (or (#{:pending :uncertain :restricted :unknown} effect-status)
+                        (:restricted details)
+                        (:remote-pr-refusal details))
+        error-data (attention-error error effect-status)]
+    (if local-only?
+      (do
+        (task! ctx key :resume-status (:status t) :status :attention :error error-data)
+        (rt/event! ctx :attention {:slice key :local-only true :effect-status effect-status
+                                   :error error-data}))
+      (do
+        (task! ctx key :resume-status (:status t) :error error-data)
+        (try
+          (transition! ctx key :attention)
+          (gh/comment! ctx (:issue (task ctx key))
+                       (str "attention/" (rt/digest (pr-str [(:candidate (task ctx key)) (.getMessage error)])))
+                       (str "Needs attention: " (.getMessage error)
+                            "\n\nCandidate: `" (:candidate (task ctx key)) "`. Inspect the retained local trace at `" (:state-dir ctx)
+                            "`. Restricted and uncertain actions are not automatically replayed."))
+          (catch Exception reporting
+            ;; Preserve the original failure and record reporting failure
+            ;; without attempting another external write in this turn.
+            (task! ctx key :status :attention :reporting-error
+                   {:message (.getMessage reporting) :details (ex-data reporting)})
+            (rt/event! ctx :attention {:slice key :reporting-failed true
+                                       :error error-data
+                                       :reporting-error (ex-data reporting)})))))))
 
 (defn paused? [ctx]
   (and (.exists (io/file (:control-file ctx))) (:paused (rt/read-edn (:control-file ctx)))))
 
 (defn campaign! [ctx]
   (gh/setup! ctx) (campaign-issue! ctx)
-  (doseq [t (tasks ctx) :when (#{:implementing :checking :review} (:status t))]
-    (attention! ctx (:key t) (ex-info "Interrupted worker requires inspection before repair" {})))
+  (doseq [t (tasks ctx) :when (#{:implementing :checking :review :finalizing} (:status t))]
+    (attention! ctx (:key t)
+                (ex-info "Interrupted work requires inspection before recovery"
+                         (cond-> {} (:finalization-effect t) (assoc :effect (:finalization-effect t))))))
   (gh/status! ctx (campaign-issue! ctx) "Implementing")
   (rt/update! ctx assoc :status :running)
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]

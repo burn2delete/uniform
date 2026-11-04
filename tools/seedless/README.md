@@ -52,13 +52,30 @@ over. The planner receives this campaign's retained candidates and a read-only
 open-PR snapshot; it must not duplicate in-flight work or treat an unmerged
 dependency as current main.
 
-Seedless deliberately uses the existing repository-wide
-`simplify-harness.lock`. It cannot run alongside the Simplify controller or
-take over its lock. Other desktop applications do not acquire that lock:
-operator coordination remains necessary. Both tools must be paused and their
-controllers gone before an external writer uses main. Pause takes effect at
-scheduler boundaries, lets active operations finish, stops dispatch/merging,
-and releases the lock when `run` returns. Resume preserves candidates and PRs.
+Each campaign has its own controller/state lock. Seedless and Simplify can
+plan, implement disjoint paths, test and review concurrently. Their shared
+coordination records protect actual active writers; immutable candidates
+awaiting review or CI do not reserve paths. Git snapshots use separate refs
+without changing shared `FETCH_HEAD` or remote-tracking refs.
+
+A short main-integration lock covers the fresh base, exact acceptance/check
+validation and preflight, matched-head merge and actual parent/tree verification.
+Composition, model turns, checks and review run outside this lock. An uncertain
+main write leaves a durable shared fence requiring inspection and reconciliation;
+another campaign cannot treat lock release as proof that the mutation ended.
+These locks cover worktrees sharing one Git common directory, not other clones
+or desktop applications. Operator coordination is still required for external
+main writers. Pause takes effect at scheduler boundaries, lets active operations
+finish, stops dispatch/merging, and releases controller ownership when `run`
+returns. Resume preserves candidates and PRs.
+
+Commands that can change campaign state acquire its lock and reload/validate
+state after acquiring it. A lock-busy contender does not change the live state.
+`doctor` therefore also requires the campaign lock; `status` and atomic pause
+control do not mutate the execution state. Startup Git probes cannot persist a
+stale snapshot. State identity binds the checkout, Git common directory, remote,
+base branch, worktree root, Project policy, checks and campaign objective.
+Fetch and push URLs must match the configured GitHub repository.
 
 Workers have isolated worktrees. Authors get workspace-write with network
 disabled; planners/reviewers get read-only. These are app-server filesystem
@@ -110,10 +127,12 @@ equivalence/release scope. Issue bodies retain the source/consumer/evidence
 detail. Native sub-issues and dependency links connect deliverables. Group the
 SH milestones view by Milestone using GitHub's view menu.
 
-Same-title Projects are not adopted without the recorded Project identity or
-the Seedless repository marker plus repository link. Existing unrelated Status
-fields are not overwritten. No issues are created for individual agent turns
-or test commands. No sprint dates are invented.
+Projects require verified remote owner, Seedless marker and repository link,
+including recorded IDs. A durably recorded new creation may initialize only its
+identity marker/link before verification; unrelated remote drift is rejected.
+Issue/milestone identities also bind the campaign objective. Existing unrelated
+Status fields are not overwritten. No issues are created for individual agent
+turns or test commands. No sprint dates are invented.
 
 Done means a verified slice merge. The harness never automatically closes an
 SH milestone or rewrites its acceptance ledger. Existing roadmaps, BOOT1-8,
@@ -132,14 +151,20 @@ target/subset and evidence, not to issue counts or Clojure line counts.
 
 Atomic state and durable effect intents come from the existing Simplify runtime.
 An interrupted author/reviewer needs inspection. Resume does not silently rerun
-it. For a non-restricted Attention slice, record what was inspected in EDN:
+it. Interrupted controller cleanup signals only process objects owned by that
+invocation; it does not perform global or descendant process discovery. It
+records unknown descendant coverage and requires inspected recovery, without
+claiming that all children stopped. Restricted cleanup remains restricted.
+For a non-restricted Attention slice, record what was inspected in EDN:
 
 ```text
 {:evidence "Inspected the retained worktree and original job trace; ..."}
 clojure -M:run retry config.edn SLICE-KEY inspection.edn
 ```
 
-Use `audit` as the key for inspected non-restricted planning/completion failures.
+Use `audit` as the key for inspected non-restricted planning/completion or
+controller-interruption failures. The original unknown-coverage observation
+remains in inspection history.
 This preserves their history and queues new work; it does not turn the failure
 into success. Restricted actions cannot be retried or routed through this path.
 
@@ -150,6 +175,12 @@ external result, then record it using the inherited reconciliation format:
 {:evidence "Inspected GitHub/Git at ..." :result ORIGINAL-OPERATION-RESULT}
 clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 ```
+
+An already merged slice remains in finalization until its tracking writes are
+complete. Tracking failure never queues another author for the merged code.
+Pending/uncertain task effects must be reconciled before retry; restricted
+effects cannot be retried. Restricted/uncertain failures are recorded locally
+without additional GitHub reporting writes.
 
 Logs redact known credential fields/patterns but contain repository content.
 Keep them local. Traces are live-only; reading a trace does not replay models
