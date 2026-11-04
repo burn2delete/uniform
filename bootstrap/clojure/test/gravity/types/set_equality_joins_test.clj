@@ -83,6 +83,11 @@
 (defn- compile-node [context]
   (lower 'p15-s23-typed-compile-node context :call))
 
+(defn- effects-owner-evidence [context ledger facts]
+  (body 'body-bka-evidence (:core context) ledger facts
+        (:node context) (:call context) (:edge context) (:nodes context)
+        (:bindings context) (:types context)))
+
 (deftest actual-c7-effects-emitter-ordinary-rows-compose-with-dse
   (let [{:keys [context descriptor derived constrained ordinary-row ordinary-fact dse-row dse-fact]}
         (products)
@@ -115,6 +120,45 @@
           (is (= [dse-fact] (:items fact-result)))
           (is (= :complete (:status compiled)))
           (is (= expected (:value compiled))))))))
+
+(deftest effects-owner-requires-explicit-ledger-provenance
+  (let [{:keys [context ordinary-row ordinary-fact dse-row dse-fact]} (products)
+        ordinary-result (effects-owner-evidence context [ordinary-row dse-row]
+                                                [ordinary-fact dse-fact])
+        foreign-row {:constraint-id-request
+                     {:domain :gravity/sh08-bare-keyword-anchor-set-equality-constraint-v1}
+                     :producer-rule :sh08-bare-keyword-anchor-set-equality-v1}
+        foreign-fact {:fact-id-request
+                      {:domain :gravity/sh08-bare-keyword-anchor-set-equality-call-type-fact-v1}
+                      :call-core-node-id :foreign-call
+                      :dispatch :direct-bare-keyword-anchor-set-equality}
+        foreign-result (effects-owner-evidence context [foreign-row dse-row]
+                                                [foreign-fact dse-fact])
+        callbacks (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "opaque spelling"))))]
+    (is (= :accepted (:status ordinary-result)))
+    (is (= :accepted (:status foreign-result)))
+    (doseq [value [nil false 0 "ordinary" :forged]]
+      (is (= :rejected
+             (:status (effects-owner-evidence
+                       context [(assoc ordinary-row :producer-rule value) dse-row]
+                       [ordinary-fact dse-fact]))))
+      (is (= :rejected
+             (:status (effects-owner-evidence
+                       context [ordinary-row dse-row]
+                       [(assoc ordinary-fact :dispatch value) dse-fact])))))
+    (is (= :rejected
+           (:status (effects-owner-evidence
+                     context [(assoc ordinary-row :producer-rule opaque) dse-row]
+                     [ordinary-fact dse-fact]))))
+    (is (= :rejected
+           (:status (effects-owner-evidence
+                     context [ordinary-row dse-row]
+                     [(assoc ordinary-fact :dispatch opaque) dse-fact]))))
+    (is (zero? @callbacks))))
 
 (defn- descriptor-forgeries [descriptor]
   [(assoc descriptor :version :sh08-bare-keyword-anchor-set-equality-v1)
