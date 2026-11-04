@@ -759,4 +759,27 @@
     (is (= (:bounded-evidence-assessments before) (:bounded-evidence-assessments current)))))
 
 
+(deftest canonical-policy-cli-source-maps-load-declared-baselines
+  ;; The global task/evidence audit is a separate current-binding gate. Exercise
+  ;; the real CLI branch and actual document/Git inputs while isolating that gate.
+  (let [manifest (edn/read-string (slurp rr/manifest-path))
+        read-ref #(requirement-sources/git-source "." %1 %2 rr/require!)]
+    (doseq [id ["L6" "STD13" "STD3" "L4" "C4" "MATH4" "MATH9"]]
+      (let [source (first (filter #(= id (:id %)) (:original-documents manifest)))
+            bridge (first (filter #(= id (:document-id %)) (:source-version-bridges manifest)))
+            baseline (read-ref (:baseline-ref bridge) (:path source))
+            audit-roots (atom [])
+            output (with-out-str
+                     (with-redefs [rr/audit (fn [root] (swap! audit-roots conj root) {:scope :source-map-branch-fixture})]
+                       (rr/run ["--source-map" id])))
+            result (edn/read-string output)]
+        (is (= ["."] @audit-roots))
+        (is (= id (:document-id result)))
+        (is (= (:path source) (:path result)))
+        (is (= (:baseline-ref bridge) (:source-ref result)))
+        (is (= (rr/source-occurrences id baseline) (:source-occurrences result)))))
+    (with-redefs [rr/audit (fn [_] {:scope :source-map-branch-fixture})]
+      (is (thrown? Exception (rr/run ["--source-map" "missing-document"])))
+      (is (thrown? Exception (rr/run ["--source-map" "L6" "unexpected-argument"]))))))
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))
