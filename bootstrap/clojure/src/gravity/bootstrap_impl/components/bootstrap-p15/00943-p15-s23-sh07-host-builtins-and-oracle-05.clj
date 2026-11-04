@@ -127,7 +127,7 @@
                  (contains? evidence :adapted-token-id))
     (throw (ex-info "source oracle projection evidence is malformed"
                     {:reason :unsupported-decimal-readable-spelling})))
-  (p15-s23-sh07-unsupported-decimal-occurrence-bridge!))
+  (p15-s23-sh07-c2-decimal-occurrence evidence))
 
 (defn- p15-s23-sh07-o-decimal-occurrence-text
   [evidence occurrence]
@@ -170,19 +170,18 @@
           descriptor (get entry :descriptor)]
       (and (= text (p15-s23-sh07-o-decimal-occurrence-text
                     evidence occurrence))
-           (if (<= (count text) 256)
+           (if (= :accepted (:semantic-validation descriptor))
         (and (p15-s23-sh07-o-decimal-authentic-key?
               (get entry :semantic-key))
              (= key (get entry :semantic-key))
              (= key (get descriptor :semantic-key))
-             (= nil (get descriptor :normalization-reason)))
+             (= nil (get descriptor :normalization-reason))
+             (= nil (get descriptor :reason)))
         (and (= :deferred (get descriptor :semantic-validation))
-             (= :reader-semantic-work-boundary
-                (get descriptor :normalization-reason))
-             (= {:kind :decimal
-                 :normalization :reader-semantic-work-boundary
-                 :bounded-semantic-key (get descriptor :semantic-key)}
-                (get entry :semantic-key))))))
+             (= :host-independent-decimal-range
+                (get descriptor :reason))
+             (= key (get entry :semantic-key)
+                (get descriptor :semantic-key))))))
     (catch clojure.lang.ExceptionInfo _ false)
     (catch Throwable _ false)))
 
@@ -192,10 +191,12 @@
                    (p15-s23-sh07-o-decimal-c2-evidence? text key evidence))
       (throw (ex-info "source oracle decimal C2 evidence mismatch"
                       {:reason :unsupported-decimal-readable-spelling})))
-    (if (<= (count text) 256)
+    (if (= :accepted (get-in (p15-s23-sh07-o-decimal-occurrence evidence)
+                             [:semantic-value-entry :descriptor
+                              :semantic-validation]))
       {:status :exact-normalized :semantic-key key}
       {:status :normalization-deferred
-       :normalization-reason :reader-semantic-work-boundary
+       :normalization-reason :host-independent-decimal-range
        :semantic-key key})))
 
 (defn p15-s23-sh07-o-decimal-decoration [key evidence]

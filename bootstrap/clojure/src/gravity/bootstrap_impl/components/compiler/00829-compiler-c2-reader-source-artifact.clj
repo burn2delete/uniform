@@ -83,6 +83,18 @@
           top-level-form-ids (:root-form-ids products)
           _records (:parsed-records products)
           forms (:parsed-values products)
+          decimal-occurrence-projection
+          (sh03-reader-decimal-occurrence-projection-from-products!
+           source-path products)
+          _ (when-not (= decimal-occurrence-projection
+                         (:sh07-decimal-occurrence-projection products))
+              (c2-reader-fail!
+               "C2-HASH" source-path
+               {:stage :read-source
+                :source-span (source-span source-path 0)
+                :reader-options reader-options}
+               {:missing-fields
+                [:internal-sh03-c2-decimal-occurrence-projection]}))
           _ (validate-ns-syntax! source-path forms)
           module-context (reader-module-context forms)
           overrides (c2-reader-overrides-from-forms forms)
@@ -123,7 +135,8 @@
                               extension-invocations diagnostics)
           integrity-record (c2-reader-product-integrity-record
                             source-unit top-level-form-ids incremental-hashes
-                            literal-records deferred-literals)
+                            literal-records deferred-literals
+                            (:projection-id decimal-occurrence-projection))
           artifact-base
           {:kind :gravity/stage0-c2-reader-document-artifact
            :task "P06-D081"
@@ -139,7 +152,8 @@
                           :syntax-seed-stream :reader-source-map
                           :literal-decoding-records
                           :reader-extension-invocation-records
-                          :reader-diagnostics :incremental-reader-hash]
+                          :reader-diagnostics :incremental-reader-hash
+                          :sh07-decimal-occurrence-projection]
                   :rejects c2-reader-diagnostic-ids}
            :source-overrides overrides
            ;; Diagnostic observations only; never SH03 authentication authority.
@@ -160,6 +174,8 @@
                           :semantic-reader-template
                           :execution-boundary])
             :adapter-contract (:sh03-reader-adapter-contract products)
+            :decimal-occurrence-projection-id
+            (:projection-id decimal-occurrence-projection)
             :uncredited-source-models
             {:status :not-executed
              :entrypoints sh03-reader-uncredited-source-model-entrypoints
@@ -227,6 +243,7 @@
             :deferred? true
             :owner-phases [:namespace-analysis :type-check :profile-validate
                            :numeric-mode-validation]}
+           :sh07-decimal-occurrence-projection decimal-occurrence-projection
            :reader-diagnostics diagnostics
            :incremental-reader-hashes incremental-hashes
            :reader-product-integrity integrity-record

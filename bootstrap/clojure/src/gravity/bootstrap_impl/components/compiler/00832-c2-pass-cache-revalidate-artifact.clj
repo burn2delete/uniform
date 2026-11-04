@@ -14,6 +14,11 @@
         extension-invocations
         (:reader-extension-invocation-records artifact)
         diagnostics (:reader-diagnostics artifact)
+        decimal-projection
+        (:sh07-decimal-occurrence-projection artifact)
+        decimal-projection-id
+        (:decimal-occurrence-projection-id
+         (:gravity-reader-boundary artifact))
         incremental-hashes
         (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
                                extension-invocations diagnostics)
@@ -23,7 +28,8 @@
          (:literal-decoding-records artifact)
          (get-in artifact
                  [:semantic-error-deferment-record
-                  :deferred-literal-records]))
+                  :deferred-literal-records])
+         decimal-projection-id)
         artifact-id (c2-reader-artifact-id artifact)
         reconstructed-source
         (c2-reader-artifact-source-text source-path artifact)
@@ -52,11 +58,17 @@
           (= source-text reconstructed-source)
           (= (get-in key [:semantic-preimage :source-unit :source-id])
              (:source-id source-unit))
-          (= :gravity/sh03-to-c2-reader-products-v2
+          (= :gravity/sh03-to-c2-reader-products-v3
              (:adapter-contract accepted-reader-boundary))
+          (sh03-reader-decimal-occurrence-projection-shape-valid?
+           decimal-projection)
+          (= decimal-projection-id (:projection-id decimal-projection))
+          (= decimal-projection-id
+             (:decimal-occurrence-projection-id descriptor-summary))
           (= #{:slice :owner :plan-binding :resolved-reader-result
                :adapter-contract :uncredited-source-models
                :semantic-value-table-id
+               :decimal-occurrence-projection-id
                :authenticated-envelope-descriptor
                :authenticated-envelope :target-source-reread?
                :clojure-adapter-residual? :self-hosted?}

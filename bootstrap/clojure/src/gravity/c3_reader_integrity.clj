@@ -95,11 +95,90 @@
                             true)))
                    true)))
              form-tree)
+            decimal-projection
+            (:sh07-decimal-occurrence-projection c2-artifact)
+            decimal-projection-id
+            (get-in decimal-projection [:projection-id])
+            descriptor-summary
+            (:value
+             (some #(when (= :reader-product-identities (:name %)) %)
+                   (get-in c2-artifact
+                           [:gravity-reader-boundary
+                            :authenticated-envelope-descriptor
+                            :semantic-projections])))
+            v3-reader-boundary?
+            (= :gravity/sh03-to-c2-reader-products-v3
+               (get-in c2-artifact [:gravity-reader-boundary
+                                     :adapter-contract]))
+            decimal-projection-valid?
+            (if-not v3-reader-boundary?
+              true
+              (and (map? decimal-projection)
+                   (= #{:artifact :schema-version :projection-id
+                        :reader-result-id :semantic-value-table-id
+                        :adapted-source-unit-id :adapted-token-stream-id
+                        :adapted-form-tree-id :token-id-projection-id
+                        :form-id-projection-id :occurrence-count :occurrences}
+                      (set (keys decimal-projection)))
+                   (= :gravity/sh03-c2-decimal-occurrence-projection
+                      (:artifact decimal-projection))
+                   (= 1 (:schema-version decimal-projection))
+                   (re-matches #"sha256:[0-9a-f]{64}" decimal-projection-id)
+                   (every? #(re-matches #"sha256:[0-9a-f]{64}" %)
+                           (map decimal-projection
+                                [:reader-result-id
+                                 :semantic-value-table-id
+                                 :adapted-source-unit-id
+                                 :adapted-token-stream-id
+                                 :adapted-form-tree-id
+                                 :token-id-projection-id
+                                 :form-id-projection-id]))
+                   (integer? (:occurrence-count decimal-projection))
+                   (<= 0 (:occurrence-count decimal-projection))
+                   (vector? (:occurrences decimal-projection))
+                   (= (:occurrence-count decimal-projection)
+                      (count (:occurrences decimal-projection)))
+                   (= (vec (range (:occurrence-count decimal-projection)))
+                      (mapv :ordinal (:occurrences decimal-projection)))
+                   (every? #(= #{:ordinal :semantic-value-entry
+                                 :adapted-form-id :adapted-token-id}
+                                (set (keys %)))
+                           (:occurrences decimal-projection))
+                   (= decimal-projection-id
+                      (invoke :reader-canonical-hash
+                              {:domain
+                               :gravity/sh03-c2-decimal-occurrence-projection-v1
+                               :reader-result-id
+                               (:reader-result-id decimal-projection)
+                               :semantic-value-table-id
+                               (:semantic-value-table-id decimal-projection)
+                               :adapted-source-unit-id
+                               (:adapted-source-unit-id decimal-projection)
+                               :adapted-token-stream-id
+                               (:adapted-token-stream-id decimal-projection)
+                               :adapted-form-tree-id
+                               (:adapted-form-tree-id decimal-projection)
+                               :token-id-projection-id
+                               (:token-id-projection-id decimal-projection)
+                               :form-id-projection-id
+                               (:form-id-projection-id decimal-projection)
+                               :occurrence-count
+                               (:occurrence-count decimal-projection)
+                               :occurrences (:occurrences decimal-projection)}))
+                   (= decimal-projection-id
+                      (get-in c2-artifact [:gravity-reader-boundary
+                                            :decimal-occurrence-projection-id]))
+                   (= decimal-projection-id
+                      (:decimal-occurrence-projection-id descriptor-summary))))
             expected-integrity
             (when recomputed-hashes
-              (invoke :c2-reader-product-integrity-record
-                      source-unit top-level-form-ids recomputed-hashes
-                      literal-records deferred-records))
+              (if v3-reader-boundary?
+                (invoke :c2-reader-product-integrity-record
+                        source-unit top-level-form-ids recomputed-hashes
+                        literal-records deferred-records decimal-projection-id)
+                (invoke :c2-reader-product-integrity-record
+                        source-unit top-level-form-ids recomputed-hashes
+                        literal-records deferred-records)))
             source-id (:source-id source-unit)
             source-path (:path source-unit)
             expected-source-map
@@ -192,6 +271,7 @@
                                   [:semantic-error-deferment-record
                                    :semantic-analysis-in-reader?])))
              :deferred-descriptors-valid? deferred-descriptors-valid?
+             :decimal-occurrence-projection-valid? decimal-projection-valid?
              :integrity-record-valid?
              (= expected-integrity (:reader-product-integrity c2-artifact))}]
         (assoc checks

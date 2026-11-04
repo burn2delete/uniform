@@ -82,12 +82,12 @@
 
 (defn c2-reader-product-integrity-record
   [source-unit top-level-form-ids incremental-hashes literal-records
-   deferred-literal-records]
+   deferred-literal-records & [decimal-occurrence-projection-id]]
   (c2-artifact-identity-call
    :c2-reader-product-integrity-record
    c2-artifact-identity/c2-reader-product-integrity-record
    source-unit top-level-form-ids incremental-hashes literal-records
-   deferred-literal-records))
+   deferred-literal-records decimal-occurrence-projection-id))
 
 (defn c2-reader-artifact-id
   [artifact]

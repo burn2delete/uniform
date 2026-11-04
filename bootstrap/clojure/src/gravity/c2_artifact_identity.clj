@@ -36,7 +36,8 @@
                   extension-invocations diagnostics])}
     'c2-reader-product-integrity-record
     {:arglists '([source-unit top-level-form-ids incremental-hashes
-                  literal-records deferred-literal-records])}
+                  literal-records deferred-literal-records
+                  & [decimal-occurrence-projection-id]])}
     'c2-reader-artifact-id {:arglists '([artifact])}}
    :operation-interposition
    {:accepted-keys operation-keys
@@ -115,15 +116,22 @@
                     {:operation key}))))
 
 (defmacro ^:private definterposable [name key arguments & body]
-  `(defn ~name ~arguments
-     (if (contains? *bypass-next-operation-keys* ~key)
-       (binding [*bypass-next-operation-keys*
-                 (disj *bypass-next-operation-keys* ~key)]
-         (do ~@body))
-       (if-let [operation# (current-operation ~key)]
-         (binding [*active-operation-keys* (conj *active-operation-keys* ~key)]
-           (operation# ~@arguments))
-         (do ~@body)))))
+  (let [arguments (vec arguments)
+        amp-index (.indexOf arguments '&)
+        operation-args
+        (if (neg? amp-index)
+          `(list ~@arguments)
+          `(concat [~@(subvec arguments 0 amp-index)]
+                   ~(nth arguments (inc amp-index))))]
+    `(defn ~name ~arguments
+       (if (contains? *bypass-next-operation-keys* ~key)
+         (binding [*bypass-next-operation-keys*
+                   (disj *bypass-next-operation-keys* ~key)]
+           (do ~@body))
+         (if-let [operation# (current-operation ~key)]
+           (binding [*active-operation-keys* (conj *active-operation-keys* ~key)]
+             (apply operation# ~operation-args))
+           (do ~@body))))))
 
 (definterposable reader-canonical-value :reader-canonical-value [value]
   (canonical/reader-canonical-value reader-canonical-value value))
@@ -168,11 +176,13 @@
    source-unit token-stream form-tree syntax-seeds extension-invocations diagnostics))
 
 (definterposable c2-reader-product-integrity-record :c2-reader-product-integrity-record
-  [source-unit top-level-form-ids incremental-hashes literal-records deferred-literal-records]
+  [source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records & [decimal-occurrence-projection-id]]
   (artifacts/reader-product-integrity-record
    {:c2-path-neutral-span c2-path-neutral-span
     :reader-canonical-hash reader-canonical-hash}
-   source-unit top-level-form-ids incremental-hashes literal-records deferred-literal-records))
+   source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records decimal-occurrence-projection-id))
 
 (definterposable c2-reader-artifact-id :c2-reader-artifact-id [artifact]
   (artifacts/reader-artifact-id reader-canonical-hash artifact))

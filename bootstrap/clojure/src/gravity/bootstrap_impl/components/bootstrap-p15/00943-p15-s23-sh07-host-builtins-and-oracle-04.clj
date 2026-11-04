@@ -52,18 +52,38 @@
 
 (declare c2-reader-artifact-id)
 
-(defn- p15-s23-sh07-unsupported-decimal-occurrence-bridge!
-  []
-  (throw
-   (ex-info
-    "SH-07 decimal occurrence joins require the unintegrated SH-03/C2 V3 bridge"
-    {:reason :unsupported-decimal-readable-spelling
-     :adapter-contract :gravity/sh03-to-c2-reader-products-v2
-     :required-adapter-contract :gravity/sh03-to-c2-reader-products-v3
-     :source-authority :current-c2-reader-products
-     :projection-authority :not-integrated})))
+(declare sh03-reader-decimal-occurrence-projection-shape-valid?)
 
-(defn- p15-s23-sh07-p-decimal-occurrence
+(defn- p15-s23-sh07-c2-decimal-projection
+  [evidence]
+  (let [artifact (:c2-reader-artifact evidence)
+        projection (:sh07-decimal-occurrence-projection artifact)
+        boundary (:gravity-reader-boundary artifact)
+        descriptor
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (get-in boundary
+                       [:authenticated-envelope-descriptor
+                        :semantic-projections])))]
+    (when-not
+     (and (map? artifact)
+          (= :gravity/sh03-to-c2-reader-products-v3
+             (:adapter-contract boundary))
+          (sh03-reader-decimal-occurrence-projection-shape-valid?
+           projection)
+          (= (:projection-id projection)
+             (:decimal-occurrence-projection-id boundary)
+             (:decimal-occurrence-projection-id descriptor))
+          (= (:artifact-id artifact) (c2-reader-artifact-id artifact)))
+      (throw
+       (ex-info
+        "producer decimal occurrence projection is not authenticated"
+        {:reason :source-integrity-mismatch
+         :required-adapter-contract
+         :gravity/sh03-to-c2-reader-products-v3})))
+    projection))
+
+(defn- p15-s23-sh07-c2-decimal-occurrence
   [evidence]
   (when-not (and (map? evidence)
                  (= #{:c2-reader-artifact :adapted-form-id
@@ -71,7 +91,36 @@
                     (set (keys evidence))))
     (throw (ex-info "producer decimal projection evidence is malformed"
                     {:reason :unsupported-decimal-readable-spelling})))
-  (p15-s23-sh07-unsupported-decimal-occurrence-bridge!))
+  (let [projection (p15-s23-sh07-c2-decimal-projection evidence)
+        occurrences (:occurrences projection)
+        occurrence-pairs
+        (mapv (juxt :adapted-form-id :adapted-token-id) occurrences)
+        matching
+        (filterv #(and (= (:adapted-form-id evidence)
+                          (:adapted-form-id %))
+                       (= (:adapted-token-id evidence)
+                          (:adapted-token-id %)))
+                 occurrences)]
+    (when-not (= (count occurrence-pairs)
+                 (count (distinct occurrence-pairs)))
+      (throw (ex-info "producer decimal occurrence projection reuses an id pair"
+                      {:reason :source-integrity-mismatch})))
+    (when-not (= 1 (count matching))
+      (throw (ex-info "producer decimal occurrence is not uniquely projected"
+                      {:reason :source-integrity-mismatch})))
+    (let [occurrence (first matching)
+          entry (:semantic-value-entry occurrence)]
+      (when-not (and (= :decimal (:kind entry))
+                     (= :decimal (:kind (:descriptor entry)))
+                     (= (:semantic-key entry)
+                        (:semantic-key (:descriptor entry))))
+        (throw (ex-info "producer decimal occurrence lost semantic identity"
+                        {:reason :source-integrity-mismatch})))
+      occurrence)))
+
+(defn- p15-s23-sh07-p-decimal-occurrence
+  [evidence]
+  (p15-s23-sh07-c2-decimal-occurrence evidence))
 
 (defn- p15-s23-sh07-p-decimal-occurrence-raw
   [evidence occurrence]
@@ -105,17 +154,14 @@
           descriptor (:descriptor entry)]
       (and (= text (p15-s23-sh07-p-decimal-occurrence-raw
                     evidence occurrence))
-           (if (<= (count text) 256)
+           (if (= :accepted (:semantic-validation descriptor))
         (and (p15-s23-sh07-p-decimal-key? (:semantic-key entry))
              (= key (:semantic-key entry) (:semantic-key descriptor))
-             (nil? (:normalization-reason descriptor)))
+             (nil? (:normalization-reason descriptor))
+             (nil? (:reason descriptor)))
         (and (= :deferred (:semantic-validation descriptor))
-             (= :reader-semantic-work-boundary
-                (:normalization-reason descriptor))
-             (= {:kind :decimal
-                 :normalization :reader-semantic-work-boundary
-                 :bounded-semantic-key (:semantic-key descriptor)}
-                (:semantic-key entry))))))
+             (= :host-independent-decimal-range (:reason descriptor))
+             (= key (:semantic-key entry) (:semantic-key descriptor))))))
     (catch clojure.lang.ExceptionInfo _ false)
     (catch Throwable _ false)))
 
@@ -125,10 +171,12 @@
                    (p15-s23-sh07-p-decimal-c2-evidence? text key evidence))
       (throw (ex-info "producer decimal C2 evidence mismatch"
                       {:reason :unsupported-decimal-readable-spelling})))
-    (if (<= (count text) 256)
+    (if (= :accepted (get-in (p15-s23-sh07-p-decimal-occurrence evidence)
+                             [:semantic-value-entry :descriptor
+                              :semantic-validation]))
       {:status :exact-normalized :semantic-key key}
       {:status :normalization-deferred
-       :normalization-reason :reader-semantic-work-boundary
+       :normalization-reason :host-independent-decimal-range
        :semantic-key key})))
 
 (defn p15-s23-sh07-p-decimal-decoration [key evidence]
