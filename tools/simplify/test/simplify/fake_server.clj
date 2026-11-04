@@ -39,6 +39,12 @@
                        (when (= mode "approval")
                          (emit! {:id 100 :method "item/commandExecution/requestApproval" :params {}}))
                        (emit! {:id id :result {:turn {:id "fixture-turn"}}})
+                       (when (= mode "unfinished-action")
+                         (emit! {:method "item/started"
+                                 :params {:item {:type "commandExecution" :id "fixture-active" :status "inProgress"}}})
+                         (emit! {:method "item/completed"
+                                 :params {:item {:type "commandExecution" :id "fixture-active"
+                                                 :exitCode nil :status "completed"}}}))
                        (when (= mode "tool-output-data")
                          (emit! {:method "item/completed"
                                  :params {:item {:type "commandExecution" :id "fixture-source-read"
