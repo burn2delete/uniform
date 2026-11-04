@@ -254,6 +254,72 @@
              (w/integrate! ctx (w/task ctx "a"))
              (is (= :done (:status (w/task ctx "a")))))))
 
+(deftest ordinary-ended-check-failure-repairs-the-existing-draft
+  (harness :normal
+           (fn [ctx events phases prs]
+             (add-task! ctx (slice "a"))
+             (let [original codex/command! fail? (atom true)]
+               (with-redefs [codex/command!
+                             (fn [context job cwd argv]
+                               (if (compare-and-set! fail? true false)
+                                 (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1 :stderr "fixture assertion"}
+                                                                           :writer-ended? true :restricted false}))
+                                 (original context job cwd argv)))]
+                 (w/prepare! ctx "a")))
+             (let [t (w/task ctx "a") failure (first (:check-failures t))]
+               (is (= :ci (:status t)))
+               (is (= 3 (get @phases "a")))
+               (is (= 1 (count @prs)))
+               (is (= 1 (count (:check-failures t))))
+               (is (= (:base t) (:base failure)))
+               (is (string? (:tree failure)))
+               (is (not= (:candidate t) (:candidate failure)))
+               (is (= :passed (get-in t [:checks :result])))
+               (is (not-any? #(= [:status "Attention"] %) @events))
+               (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))))
+
+(deftest failed-composition-check-retains-the-new-base-for-source-repair
+  (harness :normal
+           (fn [ctx _ phases _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (let [repo (get-in ctx [:config :repo-dir]) old (:candidate (w/task ctx "a"))]
+               (spit (io/file repo "other.txt") "new main")
+               (rt/git ctx repo "add" "other.txt") (rt/git ctx repo "commit" "-m" "new composition base")
+               (rt/git ctx repo "push" "origin" "main")
+               (let [base (rt/git ctx repo "rev-parse" "HEAD")]
+                 (with-redefs [codex/command! (fn [_ _ _ argv]
+                                                (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1}
+                                                                                          :writer-ended? true :restricted false})))]
+                   (w/integrate! ctx (w/task ctx "a")))
+                 (let [t (w/task ctx "a")]
+                   (is (= :repair (:status t)))
+                   (is (= base (:base t)))
+                   (is (not= old (:candidate t)))
+                   (is (= (:candidate t) (:published-candidate t)))
+                   (is (= 1 (count (:check-failures t))))
+                   (is (= base (get-in t [:check-failures 0 :base])))
+                   (is (= 2 (get @phases "a")))
+                   (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))
+                   (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx)))))))))))
+
+(deftest denied-or-unended-checks-never-queue-another-author
+  (doseq [failure [{:restricted true :writer-ended? true}
+                   {:restricted false :writer-ended? false}]]
+    (harness :normal
+             (fn [ctx _ phases _]
+               (add-task! ctx (slice "a"))
+               (with-redefs [codex/command! (fn [_ _ _ argv]
+                                              (throw (ex-info "Sandboxed check failed"
+                                                              (merge {:command argv :result {:exitCode 1}} failure))))]
+                 (try (w/prepare! ctx "a") (catch Exception e (w/attention! ctx "a" e))))
+               (is (= :attention (:status (w/task ctx "a"))))
+               (is (= 2 (get @phases "a")))
+               (is (empty? (:check-failures (w/task ctx "a"))))
+               (let [claims (vals (:writers (rt/read-edn (:coordination-file ctx))))]
+                 (if (:writer-ended? failure)
+                   (is (empty? claims))
+                   (is (= [:needs-inspection] (mapv :status claims)))))))))
+
 (deftest actual-merge-race-does-not-close-the-issue
   (harness :race
            (fn [ctx events _ _]

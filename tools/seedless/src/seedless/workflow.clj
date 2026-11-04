@@ -375,8 +375,26 @@
   (assert-identity! ctx (task ctx key))
   (rt/lease-phase! ctx lease :checking)
   (transition! ctx key :checking)
-  (shared/checks! ctx (task ctx key) proposed)
+  (try (shared/checks! ctx (task ctx key) proposed)
+       (catch Exception e
+         (throw (ex-info (.getMessage e) (assoc (or (ex-data e) {}) :seedless-check true) e))))
   (assert-clean! ctx (:worktree (task ctx key))))
+
+(defn writer-result! [ctx key lease operation]
+  (try {:output (rt/with-claimed-paths ctx lease operation)}
+       (catch Exception e
+         (let [data (ex-data e)]
+           (if (and (:seedless-check data) (true? (:writer-ended? data))
+                    (number? (get-in data [:result :exitCode]))
+                    (not (zero? (get-in data [:result :exitCode])))
+                    (not (:restricted data)) (not (:effect data)) (not (:effect-id data)))
+             (let [failure (assoc (select-keys (task ctx key) [:base :candidate :tree]) :error (rt/redact data))]
+               (rt/update! ctx update-in [:tasks key :check-failures] (fnil conj []) failure)
+               (task! ctx key :feedback {:local-check failure
+                                         :instruction "Repair the captured failure with a real source change; retain the check and its watchdog. Never repeat unchanged code or route around a refusal."})
+               (transition! ctx key :repair)
+               {:repair true})
+             (throw e))))))
 
 (defn working-paths [ctx t]
   (if-not (:merge-in-progress t)
@@ -435,11 +453,12 @@
   ([ctx key initial-lease]
    (loop [lease initial-lease]
      (if-let [lease (or lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing))]
-       (let [output (rt/with-claimed-paths ctx lease #(prepare-candidate! ctx key lease))]
+       (let [{:keys [output repair]} (writer-result! ctx key lease #(prepare-candidate! ctx key lease))]
          ;; Immutable review/CI candidates do not retain active-writer claims.
-         (if (= "checkpoint" (:outcome output))
-           (do (transition! ctx key :repair) (recur nil))
-           (when-not (accept! ctx key (:checks output)) (recur nil))))
+         (cond
+           repair (recur nil)
+           (= "checkpoint" (:outcome output)) (do (transition! ctx key :repair) (recur nil))
+           :else (when-not (accept! ctx key (:checks output)) (recur nil))))
        (task! ctx key :status :repair)))))
 
 (defn verify-merge! [ctx t info & [intent]]
@@ -528,17 +547,18 @@
 
 (defn compose! [ctx t base]
   (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :checking)]
-    (let [checked? (rt/with-claimed-paths
-                     ctx lease
-                     #(if (merge-base! ctx t base)
-                        (do (prepare-base! ctx (task ctx (:key t)))
-                            (publish! ctx (task ctx (:key t)))
-                            (check-candidate! ctx (:key t) (get-in t [:checks :commands]) lease)
-                            true)
-                        false))]
-      (if checked?
-        (accept! ctx (:key t) (get-in t [:checks :commands]))
-        (transition! ctx (:key t) :repair)))))
+    (let [{:keys [output repair]} (writer-result!
+                                   ctx (:key t) lease
+                                   #(if (merge-base! ctx t base)
+                                      (do (prepare-base! ctx (task ctx (:key t)))
+                                          (publish! ctx (task ctx (:key t)))
+                                          (check-candidate! ctx (:key t) (get-in t [:checks :commands]) lease)
+                                          true)
+                                      false))]
+      (when-not repair
+        (if output
+          (accept! ctx (:key t) (get-in t [:checks :commands]))
+          (transition! ctx (:key t) :repair))))))
 
 (defn assert-merge-provider! [ctx t]
   (let [info (shared/pr-info ctx t)]
