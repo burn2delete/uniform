@@ -196,6 +196,17 @@ policy changes. Thirteen own generated harness output files were moved
 recoverably to /tmp/uniform-macro-native-ci-coverage-target-ci after its process
 ended, with full byte/hash preservation. No foreign checkout or source was cleaned.
 
-The corrected coverage/source join still requires final combined contextual
-lint, independent acceptance, fresh exact-head hosted CI and current-base clean
-integration. The failed a1/provider4e55 run remains NONPASS permanently.
+At corrected source fe6741d7fd5a913553cf41ec2e388a66f9e6ca43, tree
+5e628d1f583cd9c0cb78ae01ea892f826e1441e5, the complete 53-path combined
+source context against captured Main3c97 passes: 3459 unchanged baseline
+warnings, zero blockers. The four known Main-only project paths are excluded
+from the source-branch comparison because the provider retains them from Main.
+This is local reproduction, not a new hosted provider or integration grant.
+Conservation covers eleven total slice paths: the original two rule bodies
+remain exact modulo their ports, all old Macro bodies and surrounding source/
+authentication rules are unchanged, the late prefix deletion is exact, and
+the CI/ownership control changes receive separate review. One initial local
+conservation-observer delimiter error was corrected before it could run and
+is not production evidence. Independent acceptance of this corrected source,
+fresh exact-head hosted CI and current-base clean integration remain required.
+The failed a1/provider4e55 run remains NONPASS permanently.
