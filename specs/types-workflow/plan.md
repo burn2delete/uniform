@@ -277,6 +277,18 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Types retains independently established bounds, nonempty and Map-presence premises and the complete private whole-key-domain caller/use proof. Family labels and the result of keys cannot create their own input facts. Current STD3 has no removed pair/depth/work allowance; complete physical key and value validation, invalidation and each consumer's reconstruction remain.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual independent type/generic/totality/value-family and public signature facts. Predicate classification establishes no width/range/member/presence/flow or Unicode fact. Actual checked partiality and callback signatures precede calls; later results are no first type premise.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

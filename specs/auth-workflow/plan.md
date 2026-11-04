@@ -348,6 +348,12 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply authentic declared provider and operation-specific grant/phase/lifetime decisions. API or prompt/data values do not confer authority. Actual permitted effects and host/provider/signing actions remain separate from schema/type development and actual restrictions persist.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -131,6 +131,24 @@ Apply the [complete pattern-matching source criteria](plan.md#complete-pattern-m
 L7 decision-tree lowering criterion (Open): Produce a deterministic actual decision tree carrying tested fields/constructors, lexical bindings, move/borrow references, guard calls, branch effect summaries, coverage/unreachable facts and per-pattern/per-branch spans. Initial structural candidate lowering precedes semantic analyses; the checked decision product incorporates real current Types/Effects/ownership/profile/schema results afterward. Preserve source equality, order, false continuation and non-returning behavior through jump/if/table/vtable/hardware/workflow/query lowering or reject unsupported target behavior. Required evidence: actual mapped trees, handwritten/generated cases and representative target equivalence/refusals. A skeleton or assigned checked flag is not the later semantic product.
 <!-- core-pattern-source-tree:end -->
 
+
+<!-- collections-source-builder-flow:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current builder-flow criterion (Open): Preserve Core's structured linear resource/scoped-flow responsibility when lowering actual STD3 transient/builders and memory-backed views: retain checked ownership, scope/freeze/transfer and cleanup obligations into downstream products rather than converting them into ordinary reusable values. Library owns callable APIs; Legality owns actual lifetime/alias/linearity verdicts and Runtime owns required execution. Refuse missing/duplicated consumption, escaped scopes and hidden unsafe responsibility. Evidence: real checked Core-to-MIR builder/scope/transfer products and owning positive/negative fixtures; this source interface accepts no whole Core or collection implementation.
+<!-- collections-source-builder-flow:end -->
+
+
+
+<!-- library-base-source-resource-flow:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation resource-flow criterion (Open): Lower actual library resource/region/using/defer/transfer scopes into structured Core/MIR with single consumption and corresponding cleanup/effect/source/proof obligations. Preserve exactly-once flow, explicit source-permitted leak-declared handling and only the upstream explicitly privileged forget path; do not turn linear values into ordinarily reusable values. Library supplies callable contracts, independent Legality checks lifetimes/linearity and Runtime executes cleanup. Evidence: real admitted/rejected lowering and terminal-path products; reject lost/duplicated consumption, escaped regions and hidden unsafe responsibility without claiming whole component acceptance.
+<!-- library-base-source-resource-flow:end -->
+
+
 - [ ] `core/current-evidence-and-remaining-work/core4-verify-and-serialize` core/4: Verify and serialize
 
 Current evidence/status: Open; partial source evidence above is not closure

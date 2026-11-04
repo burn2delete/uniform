@@ -612,6 +612,12 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Math's existing EFIR/elementary/provider/floating/conversion predicates retain their roles. The five existing deeper Math future tasks remain unchanged; actual independent certificate acceptance belongs to math/independent-proof-and-certificate-checking, not synthesis or a broad parent success flag. EML is symbolic search/verification, not execution.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

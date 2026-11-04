@@ -71,6 +71,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 actual throw/handler typing criterion (Open): Check real thrown payload types, typed catch bindings and protected/handler normal results against resolved source declarations, preserving nonreturning evaluation and original transfer identities. Actual function/call artifacts expose thrown-error type/effect requirements; distinguish conservative source-error potential from admitted or executed effects. Result/Option pattern coverage uses actual declared constructor domains and L7 evidence, never a canonical-if-only join extension or host truthiness. Reject untyped/unknown/mismatched thrown values, invalid handler bindings/results and missing required handling/propagation. Required evidence: independent payload/result/handler/call constraints, typed/never and accepted/refused source/generated cases with current provenance. Source coverage alone does not discharge profile, handler, effect or capability legality.
 <!-- types-error-source-typing:end -->
 
+
+<!-- collections-source-private-domain:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current private-domain criterion (Open): For the immutable bare-Map keys exception, reconstruct the complete closed private function/use/call census at each compiler consumer, with actual argument sources/types, bare-Map compatibility and complete normal-entry whole Keyword-key/value validation. Different entry shapes/value types and empty Map witnesses are allowed; the parameter remains bare Map and the result homogeneous Keyword List. At least one normal entry is required; any Never coordinate makes a call non-invoking. Refuse unknown/circular/unaccounted/all-non-invoking witnesses and omitted public entry/escape/mutation/re-entry. Retain function/parameter/use/caller dependencies and invalidations; selected-key presence is insufficient and no shape/presence/cardinality/flow fact is added. Evidence: actual positive and late-invalid caller/type products and exact refusals, with no removed 512-pair/depth/work allowances reintroduced.
+<!-- collections-source-private-domain:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure

@@ -928,6 +928,18 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Legality supplies actual profile, ownership/lifetime, bounds/check/proof, builder linearity, invalidation and safe-wrapper/audit verdicts before admitted collection operations. A family, bare type, schema, digest or actual result is no replacement proof; constraints concern actual representation and semantics, not removed project admission quotas.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual independent bounds/ownership/lifetime/region/initialization/linearity and wrapper precondition verdicts, with exact source/proof/audit facts valid through transformations. Reject safe UB and stale assumptions rather than trusting API metadata.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

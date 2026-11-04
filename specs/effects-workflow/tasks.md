@@ -83,6 +83,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 thrown-error propagation criterion (Open): Infer actual direct, latent and transitive error effects from typed throw/call/protected/handler edges, expose them in function contracts and preserve handler-raised and residual errors. Distinguish declared allowance, conservative source error potential, actual admitted handling and one selected runtime trace; declarations or a fixed String throws set are not body inference. Preserve required L6 conservative branch/handler behavior and original handled-label audit rather than erasing effects merely because C7 classifies a source catch. Required evidence: genuine function/call/handler derivations and accepted/refused hidden or undeclared throws and missing propagation fixtures with L9-THROW-EFFECT/UNHANDLED and owning C8 diagnostics.
 <!-- effects-error-source-effects:end -->
 
+
+<!-- library-base-source-callback-dispatch:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation callback-dispatch criterion (Open): Propagate explicitly accepted higher-order core callback and protocol implementation effects/capabilities through actual selected calls, retaining receiver/signature/capture/profile/target legality and declared dispatch. Pure recover examples stay pure; a file-reading callback cannot become legal Core by hiding behind a helper. Refuse missing/ambiguous instances, erased latent effects, undeclared reflective/open dispatch and host defaults. Evidence: actual typed function/protocol/callback admission and expected effect/profile refusals with ordinary values, effects and transfers preserved.
+<!-- library-base-source-callback-dispatch:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
 Current evidence/status: Open; partial source evidence above is not closure

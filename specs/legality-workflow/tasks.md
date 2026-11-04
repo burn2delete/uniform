@@ -341,6 +341,15 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 pattern ownership criterion (Open): Derive actual move/borrow/consumption facts for owned or linear pattern bindings from real resolved/narrowed types and branch/guard/control flow. A branch may move only when its consumption satisfies governing ownership and linear-resource rules; account for false guards, later clauses and non-returning paths. Emit L7-LINEAR-MOVE on violations and retain source-bound evidence. Resolution owns lexical names and Types owns narrowing; this task does not replace them. Required evidence: legal destructuring and rejected duplicate consumption, invalid moves/borrows/escapes and lost obligations across guard/failure paths.
 <!-- legality-pattern-source-resources:end -->
 
+
+<!-- library-base-source-borrow-analysis:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation borrow-analysis criterion (Open): Check real ownership moves, borrow access modes, initialization, region lifetimes and memory-view sharing facts at library calls and structured control joins. Reject stale owners, overlapping mutable aliases, dangling borrows and region escapes not transferred into valid longer-lived storage or explicit unsafe responsibility. Preserve facts and invalidations through MIR/optimization/backend consumers. Evidence: actual positive/negative lifetime/alias/escape graphs and diagnostic/checker products; expected API outcomes, scope descriptors and source parameter names are no proof.
+<!-- library-base-source-borrow-analysis:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -473,6 +482,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 
 L13 real safe-wrapper boundary criterion (Open): Verify each claimed safe library surface over separately isolated unsafe namespaces using the actual signature/invariant, preconditions, permitted profiles, ownership/cleanup and surviving proof/check/audit evidence. Require tests or proofs of the invariant, identify the wrapper when it cannot be established and retain release/safety-critical audit artifacts. Preserve D8's proved-safe/runtime-checked/rejected/explicit unsafe-island outcomes and no undefined behavior through optimization and target lowering. A manifest, generic unsafe flag or host implementation is no safety proof. Required evidence: actual valid/invalid wrapper cases and owning L13-UNSAFE-INVARIANT/L13-RESOURCE/L13-ALLOC or safety diagnostics, source-linked checks/proofs/audits and real library boundary behavior. Library owns callable wrappers, Legality analysis and verdicts; restricted unsafe/provider/device execution remains held.
 <!-- legality-library-source-wrappers:end -->
+
+
+<!-- library-base-source-safe-wrappers:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation safe-wrappers criterion (Open): Classify actual safe-wrapper boundaries over unsafe library/compiler-support internals using complete signatures/invariants that enforce every precondition, hide raw authority, define failure and preserve ownership/cleanup. Admit only governing static proof, runtime check, explicit unsafe responsibility or rejection; keep unsafe operations and current audit references visible in release artifacts. Reject safe UB, absent/stale evidence and lost memory/alias/concurrency/FFI/target assumptions after transforms. Evidence: actual invalid-precondition negatives, current checker/audit and preservation products; a generic unsafe flag or security verdict cannot discharge missing safety facts.
+<!-- library-base-source-safe-wrappers:end -->
+
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 

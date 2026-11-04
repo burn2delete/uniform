@@ -157,6 +157,18 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Optimization preserves actual collection value/evaluation/effect/transfer, equality/hash/order, allocation/lifetime and source/proof facts. Exact dominating evidence valid through transformations is required before removing checks; invalidation requires genuine repair/rechecking, restoring checks or rejection. Classification creates no implicit cardinality, presence, bounds or flow refinements.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual value, metadata, numeric-mode/error-bound, lifetime/alias/cleanup and source/effect semantics. Exact current proof and backend preservation justify required check erasure; invalidation needs repair/recheck, restored checks or refusal. Optional optimizations are no universal API start gate.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

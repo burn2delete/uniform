@@ -68,6 +68,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 library numeric and safe-API preservation criterion (Open): Preserve actual declared public numeric width/overflow/floating/vector/rounding/NaN/infinity mode and library error/resource/wrapper/authority semantics through each selected optimization, specialization and inline/lowering path. Explicitly relaxed source modes permit only their declared variation; host defaults, normal-result equality, metadata retention or structural validity cannot justify lost failures, checks, cleanup, diagnostics or audit. Obtain the governing exact-subject proof/certificate/validation before dependent use, regenerate affected owner facts and verify the changed subject. Required evidence: actual before/after accepted/refused mode, check, resource and wrapper products plus preserved source/profile/target identity. Valid unoptimized programs remain usable; no universal optimizer or full future Formal prerequisite is introduced.
 <!-- opt-library-source-preservation:end -->
 
+
+<!-- library-base-source-mode-preservation:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation mode-preservation criterion (Open): Preserve declared width/signedness, overflow, floating/vector/rounding/exceptional-value/domain and error semantics through actual library specialization/inlining/optimization/lowering. A faster mode requires explicit source relaxation or governing current proof; checks cannot become unchecked target behavior by default. Exact dominating proof must remain valid after transformations, and invalidation needs repair/rechecking, check restoration or rejection. Evidence: real original/transformed comparisons, selected independent certificate/check results and negative mode/target/proof cases; no blanket fast-math, host default or source metadata proves execution.
+<!-- library-base-source-mode-preservation:end -->
+
+
 - [ ] `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` opt/4: Verify and regenerate
 
 Current evidence/status: Open; partial source evidence above is not closure

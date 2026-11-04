@@ -321,6 +321,18 @@ Scoped static inspection finds hosted C6 carrying try handlers and throw payload
 
 Full current source/owner/interface entailment, independent review and implementation acceptance remain pending/unassessed. Earlier finite predicates/reviews and the policy facet's pending acceptance are preserved. Existing 2,128 result joins, 141 routes, 101 current parents, forty future declarations and 99-/nine-task coarse cycles retain their meanings; complete L9 selected-result staging remains to reconcile. Reader contract coverage remains the first actual implementation increment. Every writer reservation and actual C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
 
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Core retains ordinary left-to-right, eager, once-only evaluation, effects, transfers and explicit linear builder/scope/cleanup lowering. Inert stored payload laws do not erase explicitly requested traversal callbacks. Never prevents invocation/direct allocation while latent signature requirements and ordinary legality still apply.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual once-only eager evaluation, effects/transfers, structured resource/region/cleanup flow, metadata origins and library-versus-special-form ownership. Never prevents invocation while ordinary source and latent signature legality remains.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority
