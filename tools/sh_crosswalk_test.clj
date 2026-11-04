@@ -6559,6 +6559,7 @@
     :current-source-checkpoint
     :current-source-paths
     :current-source-transitions
+    :current-source-transition-history
     :future-task-records
     :library-refinement
    :error-refinement

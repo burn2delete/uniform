@@ -288,6 +288,12 @@
 (defn validate-current-source-transitions! [transitions]
   (let [expected (vec requirement-sources/current-source-transition-contracts)
         by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (requirement-sources/validate-current-source-transition-history!
+     (:current-source-transition-history readiness-source-version)
+     (fn [ref source-path]
+       (git-source ref source-path))
+     sh-inventory/sha256
+     acceptance-dependencies/require!)
     (acceptance-dependencies/require!
      (and (vector? transitions)
           (= (count transitions) (count expected))
@@ -1151,7 +1157,7 @@
      :implementation-readiness-source-version
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
-                   :current-source-transitions
+                   :current-source-transitions :current-source-transition-history
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement

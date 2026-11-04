@@ -466,7 +466,7 @@
 ;; current development view and does not rebind an applying migration pin.
 (def current-source-transition-kind
   :authenticated-current-source-file-transition-v1)
-(def current-source-transition-contracts
+(def historical-current-source-transition-contracts
   [{:role :current-source-interface-proposal,
   :path "specs/auth-workflow/plan.md",
   :changed-spans
@@ -1273,8 +1273,146 @@
   :baseline-sha256
   "765e1ea7aaec6c263d6bec7e2bbfd0cf71f6238cca5e4b80f65bbc64c0379a94",
   :baseline-blob "9a31beeaff7e83413085f43826fd55e47e393d7f"}])
+
+;; The 792 Auth transition remains immutable history. The composed 908 frame
+;; contains that L13 source plus the Main #1160 Auth additions, so it needs a
+;; successor record rather than a duplicate path or a mutation of the old
+;; applying pin. Evidence is a distinct current-source input and is bound in
+;; its own complete-file transition.
+(def current-source-transition-successor-contracts
+  [{:role :current-source-interface-proposal,
+    :path "specs/auth-workflow/tasks.md",
+    :changed-spans
+    [{:id "908/specs/auth-workflow/tasks.md",
+      :kind :complete-file-transition,
+      :before {:start-byte 0,
+               :end-byte 37340,
+               :start-line 1,
+               :end-line 205,
+               :sha256 "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"},
+      :after {:start-byte 0,
+              :end-byte 46095,
+              :start-line 1,
+              :end-line 314,
+              :sha256 "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13"}}],
+    :live-sha256 "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
+    :applying-blob "dbb688ec44230c84fa95c35588330d89578cd3c3",
+    :review-state :pending-independent-source-version-review,
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+    :authority :current-source-interface-only,
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+    :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
+    :kind :authenticated-current-source-file-transition-v1,
+    :document-id "908-specs-auth-workflow-tasks-md-source-interface",
+    :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
+    :qualification "Only the complete authenticated composed Auth task file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. It conserves the prior L13 Auth transition and the Main #1160 L9/provider-source additions exactly once; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+    :baseline-sha256 "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2",
+    :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"}
+   {:role :current-source-interface-proposal,
+    :path "specs/auth-workflow/evidence.md",
+    :changed-spans
+    [{:id "908/specs/auth-workflow/evidence.md",
+      :kind :complete-file-transition,
+      :before {:start-byte 0,
+               :end-byte 8156,
+               :start-line 1,
+               :end-line 128,
+               :sha256 "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d"},
+      :after {:start-byte 0,
+              :end-byte 17643,
+              :start-line 1,
+              :end-line 307,
+              :sha256 "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e"}}],
+    :live-sha256 "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e",
+    :applying-blob "22618dc8d441c9ed5cfd33e32b2a48b6a9a7b434",
+    :review-state :pending-independent-source-version-review,
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+    :authority :current-source-interface-only,
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+    :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
+    :kind :authenticated-current-source-file-transition-v1,
+    :document-id "908-specs-auth-workflow-evidence-md-source-interface",
+    :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
+    :qualification "Only the complete authenticated composed Auth evidence file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. Evidence bytes remain source/interface provenance; implementation, provider execution and acceptance authority remain separate and unassessed.",
+    :baseline-sha256 "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
+    :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}])
+
+(def current-source-transition-history
+  historical-current-source-transition-contracts)
+
+(def current-source-transition-contracts
+  (let [successors (into {} (map (juxt :path identity)
+                                 current-source-transition-successor-contracts))
+        historical-paths (set (map :path historical-current-source-transition-contracts))
+        current (vec (concat
+                      (map #(get successors (:path %) %)
+                           historical-current-source-transition-contracts)
+                      (remove #(contains? historical-paths (:path %))
+                              current-source-transition-successor-contracts)))
+        paths (map :path current)]
+    (when-not (= (count paths) (count (set paths)))
+      (throw (ex-info "Duplicate current-source transition path" {:paths paths})))
+    current))
+
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
+
+(def current-source-transition-history-kind
+  :authenticated-current-source-transition-history-v1)
+(def current-source-transition-history-predecessor
+  {:commit "792a2b4e6397adecbba46f75d785a2c5482977d5"
+   :tree "4ba5e96aea175c9f734f28ffbd3c40aed7d3abef"
+   :path "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
+   :blob "55ebe27032dfdb76e7d0c118544af843ea3f72a2"
+   :sha256 "986cb8f8f69ba72b89e1850da1f833a8bef12a013b3929ae7938dbfdbf8760b7"})
+(def current-source-transition-history-predecessor-input-fingerprints
+  ["8edbe4bc736ea749ed688d532c9379a4e1afd878819bf642cb672466ae3a9993"
+   "a21dc2f6ae3a62746ca1687b7795b38758558e2c08c0c40298b7a9613690e5cc"])
+(def current-source-transition-history-predecessor-source-frame-fingerprint
+  "57d4e3415247ff5e27aae9d61b143518d6cca0f0dc3c5d73762048eeb592a3ad")
+
+(declare git-commit-tree git-blob-id)
+(defn validate-current-source-transition-history!
+  "Keep the predecessor transition frame authenticated when one path advances.
+  The current vector intentionally contains only one record per path; the
+  superseded record and its predecessor source identity remain explicit history."
+  [history read-ref sha256-fn require!]
+  (let [superseded-path "specs/auth-workflow/tasks.md"
+        expected (first (filter #(= superseded-path (:path %))
+                               historical-current-source-transition-contracts))]
+    (require! (map? history)
+              "Current source transition history is missing")
+    (require! (= current-source-transition-history-kind (:kind history))
+              "Current source transition history kind changed")
+    (require! (= 23 (:record-count history))
+              "Current source transition history record count changed")
+    (require! (= current-source-transition-history-predecessor
+                 (:predecessor history))
+              "Current source transition history predecessor changed")
+    (require! (= current-source-transition-history-predecessor-input-fingerprints
+                 (:predecessor-input-fingerprints history))
+              "Current source transition history input fingerprints changed")
+    (require! (= current-source-transition-history-predecessor-source-frame-fingerprint
+                 (:predecessor-source-frame-fingerprint history))
+              "Current source transition history source frame changed")
+    (require! (= [superseded-path] (:superseded-paths history))
+              "Current source transition history paths changed")
+    (require! (= [expected] (:superseded-transitions history))
+              "Superseded current source transition was not preserved exactly")
+    (require! (= :current-source-interface-only (:authority history))
+              "Current source transition history authority changed")
+    (require! (= :superseded-source-interface-history (:review-state history))
+              "Current source transition history review state changed")
+    (let [predecessor current-source-transition-history-predecessor
+          {:keys [commit tree path blob] expected-sha256 :sha256} predecessor
+          predecessor-source (read-ref commit path)]
+      (require! (= tree (git-commit-tree "." commit require!))
+                "Current source transition history predecessor tree changed")
+      (require! (= blob (git-blob-id predecessor-source))
+                "Current source transition history predecessor Git blob changed")
+      (require! (= expected-sha256 (sha256-fn predecessor-source))
+                "Current source transition history predecessor bytes changed"))
+    history))
 
 (declare validate-snapshots!)
 

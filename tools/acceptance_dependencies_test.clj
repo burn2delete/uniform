@@ -340,6 +340,29 @@
       (is (thrown? Exception
                    (dependencies/current-source-transition-view mutated slurp))))))
 
+(deftest current-source-transition-history-preserves-auth-predecessor
+  (let [history (:current-source-transition-history
+                 (edn/read-string
+                  (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn")))
+        read-ref (fn [ref path]
+                   (requirement-sources/git-source "." ref path dependencies/require!))
+        validate (fn [value]
+                   (requirement-sources/validate-current-source-transition-history!
+                    value read-ref dependencies/sha256 dependencies/require!))]
+    (is (= :authenticated-current-source-transition-history-v1
+           (:kind (validate history))))
+    (doseq [mutated [(assoc history :authority :migration-authority)
+                     (assoc history :record-count 22)
+                     (assoc-in history [:predecessor :tree]
+                               "0000000000000000000000000000000000000000")
+                     (assoc-in history [:predecessor :blob]
+                               "0000000000000000000000000000000000000000")
+                     (assoc-in history [:superseded-transitions 0 :path]
+                               "specs/core-workflow/tasks.md")
+                     (assoc-in history [:predecessor-input-fingerprints 0]
+                               "forged")]]
+      (is (thrown? Exception (validate mutated))))))
+
 (deftest stdlib-task-source-transition-authenticates-current-criteria
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         rows (vec (get-in source [:task-authorities "stdlib"]))

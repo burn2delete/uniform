@@ -16760,7 +16760,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "a21dc2f6ae3a62746ca1687b7795b38758558e2c08c0c40298b7a9613690e5cc"},
+  "6f062d1a19435638e157aa62b95bbfe950275b84f82d27079186ad12b24dbfce"},
  :implementation-readiness-source-version
  {:macro-dependency-refinement
   {:canonical-sources
@@ -102631,7 +102631,7 @@
    {:role :current-source-interface-proposal,
     :path "specs/auth-workflow/tasks.md",
     :changed-spans
-    [{:id "L13/specs/auth-workflow/tasks.md",
+    [{:id "908/specs/auth-workflow/tasks.md",
       :kind :complete-file-transition,
       :before
       {:start-byte 0,
@@ -102642,27 +102642,63 @@
        "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"},
       :after
       {:start-byte 0,
-       :end-byte 38604,
+       :end-byte 46095,
        :start-line 1,
-       :end-line 213,
+       :end-line 314,
        :sha256
-       "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514"}}],
+       "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13"}}],
     :live-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
-    :applying-blob "d582303b169feaaa8c67586ac3114fab3379fb4c",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
+    :applying-blob "dbb688ec44230c84fa95c35588330d89578cd3c3",
     :review-state :pending-independent-source-version-review,
     :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
     :authority :current-source-interface-only,
     :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-    :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+    :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
     :kind :authenticated-current-source-file-transition-v1,
-    :document-id "l13-specs-auth-workflow-tasks-md-source-interface",
-    :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :document-id "908-specs-auth-workflow-tasks-md-source-interface",
+    :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :qualification
-    "Only the complete authenticated L13 source file specs/auth-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+    "Only the complete authenticated composed Auth task file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. It conserves the prior L13 Auth transition and the Main #1160 L9/provider-source additions exactly once; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
     :baseline-sha256
     "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2",
     :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"}
+   {:role :current-source-interface-proposal,
+    :path "specs/auth-workflow/evidence.md",
+    :changed-spans
+    [{:id "908/specs/auth-workflow/evidence.md",
+      :kind :complete-file-transition,
+      :before
+      {:start-byte 0,
+       :end-byte 8156,
+       :start-line 1,
+       :end-line 128,
+       :sha256
+       "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d"},
+      :after
+      {:start-byte 0,
+       :end-byte 17643,
+       :start-line 1,
+       :end-line 307,
+       :sha256
+       "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e"}}],
+    :live-sha256
+    "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e",
+    :applying-blob "22618dc8d441c9ed5cfd33e32b2a48b6a9a7b434",
+    :review-state :pending-independent-source-version-review,
+    :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+    :authority :current-source-interface-only,
+    :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+    :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
+    :kind :authenticated-current-source-file-transition-v1,
+    :document-id
+    "908-specs-auth-workflow-evidence-md-source-interface",
+    :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
+    :qualification
+    "Only the complete authenticated composed Auth evidence file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. Evidence bytes remain source/interface provenance; implementation, provider execution and acceptance authority remain separate and unassessed.",
+    :baseline-sha256
+    "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
+    :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}
    {:role :current-source-interface-proposal,
     :path "specs/build-workflow/plan.md",
     :changed-spans
@@ -199502,6 +199538,63 @@
      ["distributed/durable-step-contract"
       "distributed/message-state-boundary"]}],
    :implementation-acceptance :unassessed},
+  :current-source-transition-history
+  {:record-count 23,
+   :review-state :superseded-source-interface-history,
+   :authority :current-source-interface-only,
+   :predecessor-source-frame-fingerprint
+   "57d4e3415247ff5e27aae9d61b143518d6cca0f0dc3c5d73762048eeb592a3ad",
+   :predecessor-input-fingerprints
+   ["8edbe4bc736ea749ed688d532c9379a4e1afd878819bf642cb672466ae3a9993"
+    "a21dc2f6ae3a62746ca1687b7795b38758558e2c08c0c40298b7a9613690e5cc"],
+   :superseded-paths ["specs/auth-workflow/tasks.md"],
+   :predecessor
+   {:commit "792a2b4e6397adecbba46f75d785a2c5482977d5",
+    :tree "4ba5e96aea175c9f734f28ffbd3c40aed7d3abef",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+    :blob "55ebe27032dfdb76e7d0c118544af843ea3f72a2",
+    :sha256
+    "986cb8f8f69ba72b89e1850da1f833a8bef12a013b3929ae7938dbfdbf8760b7"},
+   :kind :authenticated-current-source-transition-history-v1,
+   :superseded-transitions
+   [{:role :current-source-interface-proposal,
+     :path "specs/auth-workflow/tasks.md",
+     :changed-spans
+     [{:id "L13/specs/auth-workflow/tasks.md",
+       :kind :complete-file-transition,
+       :before
+       {:start-byte 0,
+        :end-byte 37340,
+        :start-line 1,
+        :end-line 205,
+        :sha256
+        "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"},
+       :after
+       {:start-byte 0,
+        :end-byte 38604,
+        :start-line 1,
+        :end-line 213,
+        :sha256
+        "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514"}}],
+     :live-sha256
+     "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+     :applying-blob "d582303b169feaaa8c67586ac3114fab3379fb4c",
+     :review-state :pending-independent-source-version-review,
+     :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+     :authority :current-source-interface-only,
+     :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+     :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+     :kind :authenticated-current-source-file-transition-v1,
+     :document-id "l13-specs-auth-workflow-tasks-md-source-interface",
+     :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+     :qualification
+     "Only the complete authenticated L13 source file specs/auth-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+     :baseline-sha256
+     "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2",
+     :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"}],
+   :qualification
+   "The predecessor 792 source frame authenticated 23 complete current-source transitions. Twenty-two remain current below; the old Auth task transition is retained here byte-for-byte while its successor authenticates the composed post-merge 908 frame. No historical pin, source authority or implementation acceptance is renewed."},
   :retained-historical-source-inputs
   {"docs/self-hosting-slice-ownership.edn"
    {:commit "c8fd8e437ef921041b181e2f09ee1a37d716d357",
@@ -244160,101 +244253,101 @@
  {"auth"
   [{:path "specs/auth-workflow/tasks.md",
     :file-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/auth-workflow/tasks.md",
-     :start-byte 492,
-     :end-byte 6655,
-     :start-line 14,
-     :end-line 51,
+     :start-byte 1152,
+     :end-byte 7315,
+     :start-line 24,
+     :end-line 61,
      :sha256
      "40a1e7c9b2441d25dc5072b84b4654d0a26ec846b57a7d8b331b91d641bf767a",
      :source-snapshot-ref
      "40a1e7c9b2441d25dc5072b84b4654d0a26ec846b57a7d8b331b91d641bf767a"},
     :owner-source "docs/component-roadmaps/auth.md",
     :component "auth",
-    :source-commit "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :source-commit "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :id
     "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection",
     :checked false}
    {:path "specs/auth-workflow/tasks.md",
     :file-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/auth-workflow/tasks.md",
-     :start-byte 6658,
-     :end-byte 29186,
-     :start-line 54,
-     :end-line 130,
+     :start-byte 7318,
+     :end-byte 29846,
+     :start-line 64,
+     :end-line 140,
      :sha256
      "22c8d497e3db8560c68013f51fe2c6bad7cfc9a677a80cf9d0b1f405283b39b4",
      :source-snapshot-ref
      "22c8d497e3db8560c68013f51fe2c6bad7cfc9a677a80cf9d0b1f405283b39b4"},
     :owner-source "docs/component-roadmaps/auth.md",
     :component "auth",
-    :source-commit "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :source-commit "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :id
     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
     :checked false}
    {:path "specs/auth-workflow/tasks.md",
     :file-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/auth-workflow/tasks.md",
-     :start-byte 29188,
-     :end-byte 33293,
-     :start-line 132,
-     :end-line 149,
+     :start-byte 29848,
+     :end-byte 33953,
+     :start-line 142,
+     :end-line 159,
      :sha256
      "5ba89eeb0e2b62ec028a5f2057090e4216835cdff92583955346c982a02483eb",
      :source-snapshot-ref
      "5ba89eeb0e2b62ec028a5f2057090e4216835cdff92583955346c982a02483eb"},
     :owner-source "docs/component-roadmaps/auth.md",
     :component "auth",
-    :source-commit "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :source-commit "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :id
     "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
     :checked false}
    {:path "specs/auth-workflow/tasks.md",
     :file-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/auth-workflow/tasks.md",
-     :start-byte 33296,
-     :end-byte 34944,
-     :start-line 152,
-     :end-line 165,
+     :start-byte 33956,
+     :end-byte 35604,
+     :start-line 162,
+     :end-line 175,
      :sha256
      "b15533cd6e1efb73e957f2e0975a5cd0f208b70fd77e0dde455d17aa52c8f6f9",
      :source-snapshot-ref
      "b15533cd6e1efb73e957f2e0975a5cd0f208b70fd77e0dde455d17aa52c8f6f9"},
     :owner-source "docs/component-roadmaps/auth.md",
     :component "auth",
-    :source-commit "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :source-commit "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :id
     "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity",
     :checked false}
    {:path "specs/auth-workflow/tasks.md",
     :file-sha256
-    "8862ea7945d528329882e84c693b522ae971dfeaf524706feb21fa4169639514",
+    "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/auth-workflow/tasks.md",
-     :start-byte 34947,
-     :end-byte 37038,
-     :start-line 168,
-     :end-line 181,
+     :start-byte 35607,
+     :end-byte 37698,
+     :start-line 178,
+     :end-line 191,
      :sha256
      "1dc2d3f58453856226204778fd40452ebc8b7cc883abee5c78d4214fe9cffdc6",
      :source-snapshot-ref
      "1dc2d3f58453856226204778fd40452ebc8b7cc883abee5c78d4214fe9cffdc6"},
     :owner-source "docs/component-roadmaps/auth.md",
     :component "auth",
-    :source-commit "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+    :source-commit "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :id
     "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions",
     :checked false}],
