@@ -161,31 +161,16 @@
 
 (defn b9-document-fail!
   [id source-path subject extra]
-  (fail! id
-         "B9 HDL backend design document coverage validation failed"
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :b9-hdl-backend-document
-                 :stage :b9-hdl-backend-document-coverage
-                 :backend :gravity.backend/hdl
-                 :profile :hardware
-                 :target :systemverilog
-                 :hardware-module :gravity_stage0_hdl
-                 :signal-or-state-id (b9-document-signal-id id)
-                 :clock-domain :clk
-                 :reset-domain :rst
-                 :missing-proof-or-constraint
-                 (b9-document-missing-fact id)
-                 :fallback-status :rejected
-                 :remediation "B9 requires verified hardware IR, fixed-width layout, explicit clock/reset and CDC records, finite-state control, hardware interface schemas, timing constraints, testbench/simulation trace evidence, source maps, and HDL artifact provenance."}
-                extra)))
+  (gravity.backend.hdl/fail!
+   id source-path subject extra
+   {:fail! fail!
+    :source-span (fn [path index] (source-span path index))
+    :signal-id (fn [id] (b9-document-signal-id id))
+    :missing-fact (fn [id] (b9-document-missing-fact id))}))
 
 (defn b9-document-validate-source-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get b9-document-override-diagnostics fail-kind)]
-      (b9-document-fail!
-       id source-path
-       {:artifact-id (str "b9-document-" (name fail-kind))
-        :signal-or-state-id (keyword (str "b9-document-" (name fail-kind)))}
-       {:missing-fields [fail-kind]}))))
+  (gravity.backend.hdl/validate-source-overrides!
+   source-path overrides
+   {:override-diagnostics (fn [] b9-document-override-diagnostics)
+    :failure-operation (fn [] b9-document-fail!)}))

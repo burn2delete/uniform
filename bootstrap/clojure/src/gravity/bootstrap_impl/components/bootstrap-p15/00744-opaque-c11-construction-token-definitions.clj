@@ -49,7 +49,7 @@
                     (p15-s23-c11-mir-validate-final-artifact! artifact checked-core context version)
                     (let [binding (p15-s23-c11-mir-source-binding!
                                          (:source-path context) (:requested-target context) version
-                                         (when (= 2 version) :development-current))
+                                         (when (contains? #{2 3} version) :development-current))
                           _ (p15-s23-c11-mir-require!
                              (and (= (p15-s23-c11-mir-source-rule-record binding) (:source-rule artifact))
                                   (= (:source-path binding) (get-in artifact [:provenance :actual-paths :c11-source])))

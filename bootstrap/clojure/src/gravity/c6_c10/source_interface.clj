@@ -10,7 +10,7 @@
    compiler, report or user callback is consulted by this operation."
   [header]
   (try
-    (shared/interface-version! header :gravity/c6-c10)
+    (shared/source-interface-version! header :gravity/c6-c10)
     (catch clojure.lang.ExceptionInfo error
       (let [data (ex-data error)]
         (if (and (= "C11-VERIFY" (:id data))

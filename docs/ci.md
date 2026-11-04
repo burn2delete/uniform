@@ -13,9 +13,9 @@ compiler migration or release acceptance.
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
-| macro | Always | Always | Fresh macro pipeline and Bootstrap compatibility regressions in an isolated child process. |
+| macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
 | checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
-| resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three fresh Resolution children serialized only within their own pool; one namespace per child, separate logs/receipts and a 600-second command watchdog per child. |
+| resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
 | darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
@@ -43,16 +43,22 @@ or malformed, the selector also falls back to the full matrix, while `static`
 records an explicit failed selection result so an untrusted diff cannot pass
 without changed-file lint.
 
-Each Resolution mode starts one fresh 600-second child, so the three
-serialized children have 1,800 seconds of command watchdogs in aggregate;
-each matrix job has its own 15-minute hosted-job ceiling. This is not
+The `resolution-pipeline` mode starts two fresh 600-second children
+sequentially: one cohort and one fresh current-product replay. The other two
+Resolution modes each start one fresh 600-second child. Each child records its
+own log and receipt, while the three matrix jobs are serialized only within
+their Resolution pool. Each matrix job has a 25-minute hosted-job ceiling so
+the two-child pipeline has room for its 1,200 seconds of command watchdogs
+plus checkout, toolchain setup, cleanup and artifact upload. The hosted
+ceiling is an orchestration envelope; it does not replace or extend either
+600-second child watchdog, and a child timeout remains a failed result with
+its receipt preserved. This is not
 equivalent to the former single combined 900-second command, and it is not a
 global parallelism limit or a cost-equivalence claim. The local combined
 `resolution` CLI mode remains available with its 900-second watchdog for
 compatibility. Only the Resolution pool is serialized; the other matrix pools
-retain their existing parallelism. Each child records its own logs and
-receipts, and publication depends on the Resolution pool while retaining the
-existing manual source-publish rule.
+retain their existing parallelism. Publication depends on the Resolution pool
+while retaining the existing manual source-publish rule.
 
 Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
@@ -77,6 +83,52 @@ selector output, or selector failure keeps the matrix runner, so positive
 Darwin publication and the unsupported-host refusal probe always run on their
 actual required macOS/JDK platform. Main, manual, and scheduled runs use the
 full catalog.
+
+### Macro execution cohorts
+
+The Macro mode retains all pipeline and Bootstrap compatibility test bodies and
+normal fixtures. It selects the three receipt/callback controls by exact name,
+the complement of those names in the same pipeline namespace by regex, and the
+whole compatibility namespace. Source-inventory controls prove exhaustive,
+disjoint selection; new ordinary pipeline tests join the complement rather than
+being omitted. The reviewed source contains twenty ordinary, three control and
+five compatibility tests. Each fresh child retains a 900-second watchdog.
+The three watchdogs allow up to 2,700 seconds in aggregate; they are different
+from the old single combined 900-second command.
+Only the Macro matrix job has a 50-minute hosted envelope, covering three
+sequential children and setup, cleanup and artifact upload. Other ordinary
+checks retain their 20-minute envelope; Resolution retains its separate
+25-minute envelope and 600-second children. Any child failure remains a failed
+Macro job, later children still produce their evidence, and receipts/cleanup
+remain owned by the unchanged runner.
+
+The prior combined run 41713342032 timed out in 900071ms after twenty-five
+test returns, during real-paired-macro-expansion-retains-identities-provenance-and-output.
+That nonpass remains bound to its old source/provider. This partition changes
+execution boundaries and does not claim a compiler or performance fix, waive
+tests, or reclassify historical failures. New source-specific command IDs and
+receipts identify the three children. Compiler, migration, release and
+self-hosting acceptance still require their separate evidence.
+
+TEST2, C18 and D1/D2/D3/D6/D8/D9 govern this orchestration boundary. Runner
+controls cover source-inventory completeness, disjoint selectors, missing or
+overlapping selection, retained negative fixtures, failure propagation and
+all-child receipt production. They pass 48 tests/509 assertions alongside
+pinned actionlint, clj-kondo and cljfmt checks and the language boundary.
+The first new control had a lexical-scope parenthesis error and failed before
+test execution; that log is retained, and the corrected controls pass without
+altering any compiler or Macro test body. Real execution of all three children,
+exact source review, candidate-owned CI/artifact audit and immediate current-main
+preflight remain separate requirements.
+
+Normal composition preserves main
+05df36d8535afef03d3f3ebea2b7c80eaab26a76, including its archived-owner
+context controls and their runner invocation. The earlier implementation
+source e3ab23ae69f3da89decbd9b7541ac4837526969b and 45/487 control result
+remain historical. The current four-path repair does not change Macro tests,
+their source fixtures, the development runner, or any compiler source. The
+frozen PR894 selector additions are outside this patch and must be preserved
+if they enter main before integration.
 
 ## Requirements and dependencies
 

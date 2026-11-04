@@ -198,15 +198,26 @@
       (is (= "C4-DEPTH" (:id data)))
       (is (= "java.lang.StackOverflowError" (get-in data [:facts :contained-host-error]))))))
 
-(defn- artifact-context [extension]
-  (let [{:keys [source c3 invocation] :as ctx} (context extension "defn-multiple")]
-    (assoc ctx :artifact
-           (macro/assemble source c3 false invocation (operations)
-                           :development-current))))
+(defn- artifact-context
+  ([extension] (artifact-context extension "defn-multiple"))
+  ([extension basename]
+   (let [{:keys [source c3 invocation] :as ctx} (context extension basename)]
+     (assoc ctx :artifact
+            (macro/assemble source c3 false invocation (operations)
+                            :development-current)))))
 (def ^:private multi-gravity (delay (artifact-context ".gravity")))
 (def ^:private multi-qst (delay (artifact-context ".qst")))
+(def ^:private basic-gravity (delay (artifact-context ".gravity" "defn-basic")))
 (defn- private-var [name] (or (ns-resolve 'gravity.bootstrap name)
                             (throw (ex-info "Required seed seam is absent" {:name name}))))
+(def ^:private basic-verifier-report
+  (delay
+    (let [{:keys [artifact invocation]} @basic-gravity]
+      ;; Capture one real report from the valid source-backed artifact. The
+      ;; cache-key harness below replaces only the private inner verifier with
+      ;; this captured value, never with a synthetic authority result.
+      (bootstrap/sh05-macro-artifact-verification
+       artifact invocation :development-current))))
 (defn- with-report-context [operation]
   (let [ctx (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
                    :phase :construction :epoch 0 :receipts [] :executions {}
@@ -469,55 +480,124 @@
     (is (= [:known-macro-source-mode]
            (:missing-fields (ex-data error))))))
 
-(defn- assert-interposition-misses [interpose]
-  (let [{:keys [artifact invocation]} @multi-gravity]
-    (with-report-context
-      (fn [ctx]
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= 1 (get-in @ctx [:executions :sh05])))
-        (is (= 1 (get-in @ctx [:reuses :sh05])))
-        (interpose #(dotimes [_ 2]
-                      (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                               artifact invocation :development-current))))))
-        (is (= 3 (get-in @ctx [:executions :sh05])))
-        (is (= 1 (get-in @ctx [:reuses :sh05])))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= 2 (get-in @ctx [:reuses :sh05])))))))
+(defn- with-basic-inner-verifier [operation]
+  (let [{:keys [artifact invocation]} @basic-gravity
+        report @basic-verifier-report
+        calls (atom [])]
+    (with-redefs-fn
+      {(private-var 'sh05-macro-artifact-verification*)
+       (fn [& args]
+         (swap! calls conj (vec args))
+         report)}
+      #(operation artifact invocation report calls))))
 
-(deftest receipt-reuse-requires-current-stage-and-seed-operations
-  (doseq [v [#'macro/verify #'macro/expanded-syntax-object
-             #'bootstrap/sh05-macro-gravity-verifier-report
-             #'macro-run-storage/exact?]]
-    (let [original @v calls (atom 0)]
-      (assert-interposition-misses
-       (fn [operation]
-         (with-redefs-fn {v (fn [& args] (swap! calls inc) (apply original args))} operation)))
-      (is (pos? @calls))))
-  (let [defaults (private-var 'macro-stage-defaults)
-        original @defaults
-        copied (reduce-kv assoc {} original)]
-    (is (= original copied))
-    (is (not (identical? original copied)))
-    (assert-interposition-misses
-     #(with-redefs-fn {defaults (assoc copied :verifier-root (fn [] :not-a-guard))} %)))
-  (let [cache (private-var 'sh05-macro-pinned-plan-identities)
-        replacement (atom @@cache)]
-    (assert-interposition-misses #(with-redefs-fn {cache replacement} %)))
-  (let [version (private-var 'sh05-macro-version)
-        replacement (String. ^String @version)]
-    (is (= @version replacement))
-    (is (not (identical? @version replacement)))
-    (assert-interposition-misses #(with-redefs-fn {version replacement} %))))
+(defn- assert-inner-verifier-calls [calls artifact invocation]
+  (is (= 3 (count @calls)))
+  (doseq [args @calls]
+    (is (= 4 (count args)))
+    (is (identical? artifact (nth args 0)))
+    (is (false? (nth args 1)))
+    (is (identical? invocation (nth args 2)))
+    (is (= :development-current (nth args 3)))))
+
+(defn- assert-public-receipt-interposition [interpose]
+  (with-basic-inner-verifier
+    (fn [artifact invocation report calls]
+      (is (= :passed (:status report)))
+      (with-report-context
+        (fn [ctx]
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
+          (is (= 1 (get-in @ctx [:executions :sh05])))
+          (is (= 1 (get-in @ctx [:reuses :sh05])))
+          (interpose
+           (fn []
+             (dotimes [_ 2]
+               (is (= report
+                      (bootstrap/sh05-macro-artifact-verification
+                       artifact invocation :development-current))))))
+          (is (= 3 (get-in @ctx [:executions :sh05])))
+          (is (= 1 (get-in @ctx [:reuses :sh05])))
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
+          (is (= 2 (get-in @ctx [:reuses :sh05])))
+          (assert-inner-verifier-calls calls artifact invocation))))))
+
+(defn- assert-real-operation-interpositions-together []
+  (let [{:keys [artifact invocation]} @basic-gravity
+        vars [#'macro/verify #'macro/expanded-syntax-object
+              #'bootstrap/sh05-macro-gravity-verifier-report
+              #'macro-run-storage/exact?]
+        originals (into {} (map (fn [v] [v @v]) vars))
+        calls (into {} (map (fn [v] [v (atom 0)]) vars))
+        replacements
+        (into {}
+              (map (fn [v]
+                     [v (fn [& args]
+                          (swap! (calls v) inc)
+                          (apply (originals v) args))])
+                   vars))
+        report
+        (with-redefs-fn
+          replacements
+          #(bootstrap/sh05-macro-artifact-verification
+            artifact invocation :development-current))]
+    ;; One genuine source-backed verification exercises all four callbacks;
+    ;; the public receipt test above still checks each root invalidation alone.
+    (is (= :passed (:status report)))
+    (doseq [v vars]
+      (is (pos? @(calls v))))))
+
+(deftest public-receipt-reuse-requires-current-stage-and-seed-operations
+  (let [_ @basic-gravity
+        _ @basic-verifier-report]
+    (doseq [v [#'macro/verify #'macro/expanded-syntax-object
+               #'bootstrap/sh05-macro-gravity-verifier-report
+               #'macro-run-storage/exact?]]
+      (let [replacement (fn [& _] :unit-interposition)]
+        (assert-public-receipt-interposition
+         (fn [operation]
+           (with-redefs-fn
+             {v replacement}
+             #(do
+                (is (identical? replacement @v))
+                (operation)))))))
+    (let [defaults (private-var 'macro-stage-defaults)
+          original @defaults
+          copied (reduce-kv assoc {} original)]
+      (is (= original copied))
+      (is (not (identical? original copied)))
+      (assert-public-receipt-interposition
+       #(with-redefs-fn
+          {defaults (assoc copied :verifier-root (fn [] :not-a-guard))}
+          %)))
+    (let [cache (private-var 'sh05-macro-pinned-plan-identities)
+          replacement (atom @@cache)]
+      (assert-public-receipt-interposition
+       #(with-redefs-fn {cache replacement} %)))
+    (let [version (private-var 'sh05-macro-version)
+          replacement (String. ^String @version)]
+      (is (= @version replacement))
+      (is (not (identical? @version replacement)))
+      (assert-public-receipt-interposition
+       #(with-redefs-fn {version replacement} %)))))
+
+(deftest source-backed-operation-interpositions-stay-live
+  (assert-real-operation-interpositions-together))
 
 (deftest identical-value-thread-binding-disables-receipt-reuse
-  (let [v #'macro/verify dynamic? (.isDynamic v) original @v]
+  (let [_ @basic-gravity
+        _ @basic-verifier-report
+        v #'macro/verify dynamic? (.isDynamic v) original @v]
     (try
       (.setDynamic v true)
-      (assert-interposition-misses #(with-bindings {v original} (%)))
+      (assert-public-receipt-interposition
+       #(with-bindings {v original} (%)))
       (finally (.setDynamic v dynamic?)))))
 
 (deftest invocation-rejection-precedes-the-stage-verifier

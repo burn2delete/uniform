@@ -25,6 +25,9 @@
              sh12-branch-join-mir-policy
              sh12-build-branch-join-mir
              sh12-verify-branch-join-mir
+             sh12-flat-bool-sequence-mir-policy
+             sh12-build-flat-bool-sequence-mir
+             sh12-verify-flat-bool-sequence-mir
              sh12-verify-literal-bool-branch-specialization
              sh12-authenticated-c10-mir-adapter-policy
              sh12-authenticated-c10-mir-carrier-preflight
@@ -1331,11 +1334,15 @@
             (= (get node :node-id) (get (get (get checked-core :core-nodes) index) :node-id)) false) false)) false) false))
 
 (defn c11-function-parameter-ids [checked-core]
+  (if (= [] (get (get (c11-find-node-by-id
+                        (get checked-core :core-nodes)
+                        (first (get checked-core :root-node-ids))) :type) :params))
+    []
   (loop [index 0 result []]
     (if (= index (sh12-c6p-parameter-count checked-core)) result
       (let [node (get (get checked-core :core-nodes) index)]
         (if (c11-c6-parameter-node? checked-core node)
-          (recur (+ index 1) (conj result (get node :node-id))) result)))))
+          (recur (+ index 1) (conj result (get node :node-id))) result))))))
 
 (defn c11-build-operations
   [checked-core nodes block-id result]
@@ -4929,6 +4936,369 @@
             (if (sh12-c10-mir-sha256-id? (get core (first fields)))
               (recur (rest fields)) false))) false) false)))
 
+; Successor structural evidence only. These helpers run AFTER native carrier
+; validation and do not select a version, authenticate Core, or return acceptance.
+; The old family preflight remains unchanged until the complete fact/graph proof
+; and explicit successor source contract are connected.
+(defn sh12-flat-bool-sequence-view [core]
+  (let [nodes (get core :core-nodes)]
+    (if (vector? nodes)
+      (if (>= (count nodes) 3)
+        (let [literal-count (- (count nodes) 2)]
+          (loop [index 0 ids [] origins []]
+            (if (= index (count nodes))
+              {:literal-count literal-count :ids ids :origins origins
+               :sequence-id (get ids literal-count)
+               :function-id (get ids (+ literal-count 1))}
+              (let [node (get nodes index) id (get node :node-id)
+                    origin (get (get node :source) :origin-id)
+                    operation (if (< index literal-count) :literal
+                                (if (= index literal-count) :do :function))]
+                (if (sh12-c6p-all?
+                      [(map? node) (map? (get node :attributes))
+                       (map? (get node :source))
+                       (sh12-c10-mir-sha256-id? id)
+                       (sh12-c10-mir-sha256-id? origin)
+                       (if (contains? (set ids) id) false true)
+                       (if (contains? (set origins) origin) false true)
+                       (= operation (get node :source-operation))])
+                  (recur (+ index 1) (conj ids id) (conj origins origin))
+                  nil))))) nil) nil)))
+
+(defn sh12-flat-bool-sequence-topology-valid? [core view]
+  (if (= view nil) false
+  (let [nodes (get core :core-nodes) n (get view :literal-count)
+        ids (get view :ids) sequence-id (get view :sequence-id)
+        function-id (get view :function-id)
+        function-type {:params [] :return :gravity/bool :latent-effects #{}
+                       :capabilities #{} :throws #{}
+                       :ownership-constraints #{:persistent-immutable-shareable}
+                       :profile-constraints #{:hosted}}
+        literal-ids (loop [index 0 out []]
+                      (if (= index n) out
+                        (recur (+ index 1) (conj out (get ids index)))))]
+    (if (sh12-c6p-all?
+          [(= (get core :root-node-ids) [function-id])
+           (= (get core :lexical-binding-records) [])
+           (if (contains? core :resolved-parameter) false true)])
+      (loop [index 0]
+        (if (= index (count nodes)) true
+          (let [node (get nodes index) attrs (get node :attributes)
+                literal? (< index n) sequence? (= index n)
+                path (if literal? [:functions 'main :body 0 :body index]
+                       (if sequence? [:functions 'main :body 0] [:functions 'main]))
+                base {:intrinsic-effects #{} :intrinsic-capabilities #{}
+                      :aggregate-effects #{} :aggregate-capabilities #{}}
+                expected-attrs
+                (if literal? (assoc base :value (get attrs :value))
+                  (if sequence? (assoc base :body-count n)
+                    (assoc (assoc (assoc (assoc (assoc (assoc base
+                      :name 'main) :params []) :arity 0) :body-count 1)
+                      :visibility :public) :entrypoint? true)))]
+            (if (sh12-c6p-all?
+                  [(sh12-c6p-keys? node
+                     #{:node-id :path :kind :source-operation :plan-node? :plan-depth
+                       :operands :attributes :type :effects :capabilities :ownership
+                       :safety :profile :source})
+                   (= (get node :path) path)
+                   (vector? (get node :path)) (vector? (get node :operands))
+                   (= (get node :kind) (if literal? :literal (if sequence? :sequence :function)))
+                   (= (get node :plan-node?) (if (= index (+ n 1)) false true))
+                   (= (get node :plan-depth) (if literal? 2 (if sequence? 1 0)))
+                   (= (get node :operands) (if literal? [] (if sequence? literal-ids [sequence-id])))
+                   (= attrs expected-attrs)
+                   (if literal? (boolean? (get attrs :value)) true)
+                   (= (get node :type) (if (= index (+ n 1)) function-type :gravity/bool))
+                   (= (get node :effects) #{}) (= (get node :capabilities) #{})
+                   (= (get node :profile) :hosted)])
+              (recur (+ index 1)) false)))) false))))
+
+(defn sh12-flat-bool-sequence-origin-valid? [core node literal?]
+  (let [source (get node :source) origin (get source :origin-id)
+        row (get (get core :source-origin-table) origin)
+        raw (get (get core :origin-closure) origin) span (get source :span)]
+    (if (sh12-c6p-keys? row
+          #{:domain :source-content-hash :plan-path :c2-form-id :c2-form-kind
+            :c2-span :c2-surface-span :c2-abbrev :c2-tag :c2-metadata
+            :c2-generated-origin :c3-syntax-id :generated-role :input-origin-id :origin-id})
+      (sh12-c6p-all?
+        [(sh12-c6p-span? span)
+         (= raw {:origin-id origin :c2-form-id (get row :c2-form-id)
+                 :c2-form-kind (get row :c2-form-kind) :c2-span (get row :c2-span)
+                 :c2-surface-span (get row :c2-surface-span) :c2-abbrev (get row :c2-abbrev)
+                 :c2-tag (get row :c2-tag) :c2-metadata (get row :c2-metadata)
+                 :c2-generated-origin (get row :c2-generated-origin)
+                 :c3-syntax-id (get row :c3-syntax-id) :generated-role nil :input-origin-id nil})
+         (= source {:origin-id origin :span span
+                    :enclosing-syntax-origin-id (get row :c3-syntax-id)
+                    :generated? false :generated-origin []})
+         (sh12-c10-mir-sha256-id? (get row :c3-syntax-id))
+         (= (get row :c3-syntax-id)
+            (get (get (first (get core :core-nodes)) :source) :enclosing-syntax-origin-id))
+         (= (get row :domain) :gravity/c6-c10-source-origin-v1)
+         (= (get row :source-content-hash) (get core :source-content-hash))
+         (= (get row :plan-path) (get node :path)) (= (get row :origin-id) origin)
+         (= (get row :c2-span) span) (keyword? (get row :c2-form-id))
+         (= (get row :c2-form-kind) (if literal? :boolean :list))
+         (= (get row :generated-role) nil) (= (get row :input-origin-id) nil)
+         (= (get row :c2-abbrev) nil) (= (get row :c2-tag) nil)
+         (= (get row :c2-metadata) {})
+         (if (= (get row :c2-generated-origin) nil) true
+           (= (get row :c2-generated-origin) []))]) false)))
+
+(defn sh12-flat-bool-sequence-node-facts-valid? [core node literal? function?]
+  (let [id (get node :node-id) type (get node :type) operands (get node :operands)
+        source (get node :source) origin (get source :origin-id)
+        operation (get node :source-operation)
+        tf (get (get core :type-facts) id) ef (get (get core :effect-facts) id)
+        of (get (get core :ownership-facts) id) cap (get (get core :capability-facts) id)
+        sf (get (get core :safety-facts) id) safety (get node :safety)
+        proof (get safety :proof) proof-id (get proof :proof-id)
+        owner (get (get (get core :ownership-facts) (first (get core :root-node-ids))) :owner-id)
+        role (if literal? :literal-value (if function? :function-result :sequence-result))
+        basis (if literal? :closed-scalar-literal
+                (if function? :authenticated-closed-function :ordered-sequence))
+        result-id (if literal? nil (c11-last-value operands))
+        own-base {:model :persistent-immutable-value :role role :shareability :shared
+                  :alias-policy :immutable-sharing :mutation :forbidden
+                  :managed-reachability :value-and-program-reachability
+                  :cleanup-policy :no-explicit-cleanup :provider-requirement :not-required
+                  :allocator-requirement :not-required :escape-policy :safe-persistent-value
+                  :derived? true}
+        own (if literal? (assoc own-base :storage :static-value)
+              (let [forwarded (assoc (assoc own-base :storage :forwarded-persistent-value)
+                                     :result-node-id result-id)]
+                (if function? (assoc forwarded :result-disposition :shared-persistent-value-return)
+                  forwarded)))
+        type-base {:core-node-id id :type-id (get tf :type-id) :type type
+                   :producer-rule (if literal? :literal-type
+                                    (if function? :closed-function-type :sequence-result-type))
+                   :dependencies operands :source-origin-id origin :profile :hosted
+                   :source-target :jvm :constraints [] :derived? true :fact-id (get tf :fact-id)}
+        type-expected (if function?
+                        (assoc (assoc (assoc (assoc (assoc (assoc (assoc type-base
+                          :params []) :return :gravity/bool) :latent-effects #{}) :capabilities #{})
+                          :throws #{}) :ownership-constraints #{:persistent-immutable-shareable})
+                          :profile-constraints #{:hosted}) type-base)
+        effect-base {:core-node-id id :type-fact-id (get tf :fact-id)
+                     :direct #{} :latent #{} :transitive #{} :residual #{} :ordering :none
+                     :source-origin-id origin :profile :hosted :source-target :jvm
+                     :derived? true :fact-id (get ef :fact-id)}
+        effect-expected (if function?
+                          (assoc effect-base :function-summary
+                                 {:declared #{} :inferred #{} :latent #{} :throws #{}})
+                          effect-base)
+        proof-expected {:domain :gravity/c10-pure-safety-proof-v1
+                        :artifact :gravity/c6-c10-pure-safety-proof
+                        :rule-version "c6-c10-pure-safety-v1"
+                        :source-content-hash (get core :source-content-hash)
+                        :plan-path (get node :path) :core-node-id id :source-operation operation
+                        :operand-node-ids operands :basis basis
+                        :source-origin {:origin-id origin :span (get source :span) :plan-path (get node :path)}
+                        :profile :hosted :source-target :jvm :type type :effects #{} :capabilities #{}
+                        :ownership-model :persistent-immutable-value
+                        :ownership-digest (get proof :ownership-digest)
+                        :specialized-safe-rule :persistent-immutable-pure-bounded-operation
+                        :effect-requirements #{} :capability-requirements #{}
+                        :invalidation-conditions [:source-origin-change :operand-change :source-operation-change
+                          :type-change :effect-change :capability-change :ownership-change :profile-change
+                          :source-target-change :rule-version-change]
+                        :status :proved-for-bounded-pure-slice :proof-id proof-id}]
+    (sh12-c6p-all?
+      [(= tf type-expected) (sh12-c10-mir-sha256-id? (get tf :fact-id))
+       (sh12-c10-mir-sha256-id? (get tf :type-id)) (vector? (get tf :dependencies))
+       (= ef effect-expected) (sh12-c10-mir-sha256-id? (get ef :fact-id))
+       (= (get node :ownership) own) (sh12-c10-mir-sha256-id? owner)
+       (sh12-c10-mir-sha256-id? (get of :fact-id))
+       (= of {:core-node-id id :value-id id :owner-id owner
+              :source-value-ids (if literal? [] [result-id])
+              :forwarding (if literal? :not-applicable
+                            (if function? :from-entrypoint-result :from-sequence-result))
+              :model :persistent-immutable-value :role role :storage (get own :storage)
+              :shareability :shared :alias-policy :immutable-sharing :mutation :forbidden
+              :managed-reachability :value-and-program-reachability :cleanup-policy :no-explicit-cleanup
+              :provider-requirement :not-required :allocator-requirement :not-required
+              :escape-policy :safe-persistent-value
+              :result-disposition (if function? :shared-persistent-value-return :not-applicable)
+              :source-origin-id origin :profile :hosted :source-target :jvm
+              :borrow :not-applicable :move :not-applicable :consume :not-applicable
+              :region :not-applicable :arena :not-applicable :linear-resource :not-applicable
+              :transfer :not-applicable :runtime-check :not-applicable :unsafe-audit :not-applicable
+              :derived? true :fact-id (get of :fact-id)})
+       (= cap {:core-node-id id :required #{} :granted #{} :provider-bindings {} :grant-ids []
+               :authority-id nil :authority-source :none-required
+               :capability-proof {:status :not-required :basis :empty-capability-requirements :proof-ids []}
+               :source-origin-id origin :profile :hosted :source-target :jvm :derived? true})
+       (= proof proof-expected) (sh12-c10-mir-sha256-id? proof-id)
+       (sh12-c10-mir-sha256-id? (get proof :ownership-digest))
+       (= safety {:outcome :proven-safe :basis basis :proof proof})
+       (= (get (get core :proof-records) id) proof)
+       (= sf {:artifact :gravity/safety-outcome :operation id :kind operation
+              :source {:core-node id :span (get source :span) :origin-chain [origin]}
+              :profile :hosted :target :jvm
+              :facts {:type (get tf :fact-id) :effects (get ef :fact-id) :ownership (get of :fact-id)}
+              :outcome :proven-safe :condition :always :proof proof-id
+              :runtime-check :not-applicable :unsafe-audit :not-applicable :failure-behavior :not-applicable})
+       (= (get (get core :profile-facts) id)
+          {:profile :hosted :operation operation :legal? true
+           :scope :gravity-owned-bounded-pure-hosted-jvm-slice})])))
+
+(defn sh12-flat-bool-sequence-original-facts-valid? [core]
+  ; No supplied view or role: all classifications come from these original rows.
+  ; Caller must have completed strict native carrier validation before this call.
+  (let [view (sh12-flat-bool-sequence-view core)]
+    (if (= view nil) false
+      (if (sh12-flat-bool-sequence-topology-valid? core view)
+        (let [nodes (get core :core-nodes) ids (get view :ids)
+              origins (get view :origins) n (get view :literal-count)]
+          (if (sh12-c6p-tables-valid? core nodes ids origins 0)
+            (loop [index 0]
+              (if (= index (count nodes))
+                (sh12-c6p-all?
+                  [(sh12-branch-join-fact-ids-unique? nodes (get core :type-facts) :fact-id [])
+                   (sh12-branch-join-fact-ids-unique? nodes (get core :effect-facts) :fact-id [])
+                   (sh12-branch-join-fact-ids-unique? nodes (get core :ownership-facts) :fact-id [])])
+                (let [node (get nodes index)]
+                  (if (sh12-flat-bool-sequence-origin-valid? core node (< index n))
+                    (if (sh12-flat-bool-sequence-node-facts-valid? core node (< index n) (= index (+ n 1)))
+                      (recur (+ index 1)) false) false)))) false)) false))))
+
+(defn sh12-flat-bool-sequence-original-graphs-valid? [core]
+  ; Original products only: never normalize nodes, synthesize identities, or
+  ; consume a caller-provided role/index projection.
+  (let [view (sh12-flat-bool-sequence-view core)]
+    (if (= view nil) false
+      (if (sh12-flat-bool-sequence-topology-valid? core view)
+        (let [nodes (get core :core-nodes) ids (get view :ids) n (get view :literal-count)
+              sequence-id (get view :sequence-id) root (get view :function-id)
+              module (get (get core :source-core-input) :module)
+              maps (loop [index 0 effects {} owners {} types {} source-map {} proofs []]
+                     (if (= index (count nodes))
+                       {:effects effects :owners owners :types types :source-map source-map :proofs proofs}
+                       (let [node (get nodes index) id (get node :node-id)
+                             origin (get (get node :source) :origin-id)]
+                         (recur (+ index 1)
+                           (assoc effects id {:direct #{} :latent #{} :transitive #{} :ordering :none
+                                              :source (get (get node :source) :span)})
+                           (assoc owners id (get (get (get core :ownership-facts) id) :owner-id))
+                           (assoc types id (get (get (get core :type-facts) id) :type-id))
+                           (assoc source-map id origin)
+                           (conj proofs (get (get (get node :safety) :proof) :proof-id))))))
+              edges (loop [index 0 out []]
+                      (if (= index n)
+                        (conj out {:dependency sequence-id :consumer root
+                                   :dependency-index n :consumer-index (+ n 1) :operand-index 0
+                                   :edge-kind :result :dependency-precedes-consumer? true})
+                        (recur (+ index 1)
+                          (conj out {:dependency (get ids index) :consumer sequence-id
+                                     :dependency-index index :consumer-index n :operand-index index
+                                     :edge-kind (if (= index (- n 1)) :result :sequence)
+                                     :dependency-precedes-consumer? true}))))
+              typed (get core :typed-core)]
+          (sh12-c6p-all?
+            [(= (count (set (get maps :proofs))) (count nodes))
+             (= (get core :instruction-origin-sidecar)
+                {:mapping-id (get core :mapping-id) :provenance-binding-id (get core :provenance-binding-id)
+                 :node-origin-map (get maps :source-map)})
+             (= (get core :dependency-order-graph)
+                {:artifact :gravity/c6-c10-dependency-order-graph :node-order ids :edges edges
+                 :all-dependencies-precede-consumers? true :all-lexical-bindings-resolve? true :status :passed})
+             (= (get core :effect-graph)
+                {:artifact :gravity/effect-graph :module module :nodes (get maps :effects)
+                 :functions {root {:declared #{} :inferred #{} :latent #{} :throws #{}}}
+                 :namespace {:declared #{} :inferred #{}}
+                 :build-effects [] :replay-required #{} :diagnostics []})
+             (= (get core :ownership-analysis)
+                {:artifact :gravity/ownership-analysis :module module :owners (get maps :owners)
+                 :moves [] :borrows [] :regions {} :arenas {} :linear {} :transfers [] :diagnostics []})
+             (= (get core :pure-capability-closure)
+                {:artifact :gravity/c6-c10-pure-capability-closure :module module
+                 :required #{} :granted #{} :provider-bindings {} :status :not-required})
+             (sh12-c10-mir-sha256-id? (get typed :core-input))
+             (= typed {:artifact :gravity/typed-core :module module :core-input (get typed :core-input)
+                       :types (get maps :types) :locals {}
+                       :functions {root {:params [] :return (get (get maps :types) sequence-id)
+                                         :latent-effects #{} :capabilities #{} :throws #{}}}
+                       :constraints [] :dynamic-boundaries [] :casts []
+                       :layout-facts :not-applicable :diagnostics []})])) false))))
+
+(defn sh12-flat-bool-sequence-original-lineage-valid? [core]
+  ; Coherence of original owner products, NOT authentication of their digests.
+  ; The public owner must freshly authenticate the selected source/Core first.
+  (let [source (get core :source-core-input) module (get source :module)
+        hash (get core :source-content-hash) authenticated (get core :authenticated-input)
+        semantic (get core :semantic-provenance) physical (get core :physical-provenance)
+        pins (get authenticated :binding-pins) request (get core :target-request-metadata)
+        paths (get physical :actual-paths)]
+    (if (sh12-c6p-all?
+          [(sh12-c6p-keys? core
+             #{:kind :schema-version :status :scope :source-content-hash :source-core-input
+               :entrypoint :profile :source-target :core-nodes :root-node-ids :mapping-id
+               :provenance-binding-id :instruction-origin-sidecar :dependency-order-graph
+               :lexical-binding-records :source-origin-table :origin-closure :type-facts
+               :effect-facts :capability-facts :ownership-facts :safety-facts :profile-facts
+               :proof-records :typed-core :typed-core-key :effect-graph :effect-graph-key
+               :capability-proof-records :pure-capability-closure :pure-capability-closure-key
+               :ownership-analysis :ownership-analysis-key :pass-history :authenticated-input
+               :input-carrier-validation :semantic-provenance :diagnostics :mir-derived? :whole-language?
+               :clojure-seed-boundary? :self-hosted? :artifact-id
+               :target-request-metadata :physical-provenance})
+           (= (get core :kind) :gravity/p15-s23-stage2-gravity-checked-core-artifact)
+           (= (get core :schema-version) 1)
+           (= (get core :status) :complete-for-bounded-pure-hosted-safe-jvm-slice)
+           (= (get core :profile) :hosted) (= (get core :source-target) :jvm)
+           (= (get core :entrypoint) 'main) (symbol? module)
+           (sh12-c10-mir-sha256-id? hash)
+           (= source {:module module :plan-id (get source :plan-id) :entrypoint 'main
+                      :operation-set #{:literal :do :function}
+                      :declared-effects #{} :declared-capabilities #{}})
+           (keyword? (get request :requested-target))
+           (= request {:requested-target (get request :requested-target) :source-target :jvm
+                       :identity-bearing? false :downstream-lowering-required? true})
+           (= authenticated {:kind :gravity/c6-c10-authenticated-input
+                             :source-content-hash hash :plan-id (get source :plan-id) :binding-pins pins})
+           (= semantic {:source-content-hash hash :binding-pins pins})
+           (= physical {:actual-paths paths :source-content-hash hash
+                        :c2-source-unit-id (get physical :c2-source-unit-id)
+                        :c3-artifact-id (get physical :c3-artifact-id) :binding-pins pins
+                        :digest-graph-proof-id (get physical :digest-graph-proof-id)
+                        :request-binding-id (get physical :request-binding-id)})
+           (sh12-c6p-keys? paths #{:source :gravity-c6-c10-source})
+           (sh12-branch-join-nonempty-string? (get paths :source))
+           (sh12-branch-join-nonempty-string? (get paths :gravity-c6-c10-source))
+           (sh12-c6p-keys? pins
+             #{:c2-semantic-hash :c3-semantic-hash :plan-semantic-hash :reader-integrity-hash
+               :builder-source-hash :builder-plan-hash :builder-function-hash})
+           (= (get core :scope)
+              {:artifact :gravity/c6-c10-checked-core-scope-contract :profiles [:hosted]
+               :safety-modes [:safe] :source-targets [:jvm]
+               :source-operations [:literal :quote :local :let :let-binding :parameter
+                                   :do :if :truthy :integer-eq :integer-lt :integer-lte
+                                   :integer-gt :integer-gte :implicit-nil :function]
+               :scalar-literals [:nil :string :boolean :integer :character :keyword :symbol]
+               :intrinsic-effects #{} :intrinsic-capabilities #{} :ownership :persistent-immutable
+               :safety :proven-safe :whole-language? false})
+           (= (get core :input-carrier-validation) {:status :passed})
+           (= (get core :capability-proof-records) []) (vector? (get core :pass-history))
+           (= (get core :clojure-seed-boundary?) true) (= (get core :self-hosted?) false)
+           (= (get core :whole-language?) false) (= (get core :mir-derived?) false)
+           (= (get core :diagnostics) [])])
+      (if (loop [fields (keys pins)]
+            (if (= (count fields) 0) true
+              (if (sh12-c10-mir-sha256-id? (get pins (first fields)))
+                (recur (rest fields)) false)))
+        (if (loop [fields [:artifact-id :mapping-id :provenance-binding-id :typed-core-key
+                          :effect-graph-key :pure-capability-closure-key :ownership-analysis-key]]
+              (if (= (count fields) 0) true
+                (if (sh12-c10-mir-sha256-id? (get core (first fields)))
+                  (recur (rest fields)) false)))
+          (sh12-c6p-all?
+            [(sh12-c10-mir-sha256-id? (get source :plan-id))
+             (sh12-c10-mir-sha256-id? (get physical :c2-source-unit-id))
+             (sh12-c10-mir-sha256-id? (get physical :c3-artifact-id))
+             (sh12-c10-mir-sha256-id? (get physical :digest-graph-proof-id))
+             (sh12-c10-mir-sha256-id? (get physical :request-binding-id))]) false) false) false)))
+
 (defn sh12-c6p-checked-core-preflight [core]
   (let [carrier (sh12-authenticated-c10-mir-carrier-preflight core)]
     (if (if (= (get carrier :status) :accepted)
@@ -6034,10 +6404,9 @@
    :nonclaims [:generic-c11-verifier :independent-acceptance
                :optimizer-credit :backend-credit :self-hosted?]})
 
-(defn sh12-verify-branch-join-mir [checked-core mir]
-  (let [preflight
-        (sh12-branch-join-checked-core-preflight checked-core)]
-    (if (= :accepted (get preflight :status))
+(defn sh12-verify-core-mir-preservation [checked-core mir]
+  ; Shared preservation, not source authentication or a report acceptor.
+  ; Each exported family entry first establishes its original-Core preflight.
       (if (map? mir)
         (if (= :gravity/mir-module (get mir :artifact))
           (let [expected (c11-build-target-independent-mir checked-core)]
@@ -6098,9 +6467,90 @@
           (sh12-branch-join-rejection
            :verification "C11-MODULE" :mir-module-artifact checked-core mir))
         (sh12-branch-join-rejection
-         :verification "C11-MODULE" :mir-module-carrier checked-core mir))
-      (sh12-branch-join-preflight-rejection
-       :verification preflight checked-core mir))))
+         :verification "C11-MODULE" :mir-module-carrier checked-core mir)))
+
+(defn sh12-verify-branch-join-mir [checked-core mir]
+  (let [preflight (sh12-branch-join-checked-core-preflight checked-core)]
+    (if (= :accepted (get preflight :status))
+      (sh12-verify-core-mir-preservation checked-core mir)
+      (sh12-branch-join-preflight-rejection :verification preflight checked-core mir))))
+
+(defn sh12-flat-bool-sequence-mir-policy []
+  {:artifact :gravity/sh12-flat-bool-sequence-mir-policy
+   :schema-version 1 :source-interface-version 3
+   :scope :closed-flat-bool-literal-sequence
+   :source-grammar :one-zero-parameter-main-with-one-explicit-nonempty-do
+   :source-operations #{:literal :do :function} :literal-types #{:gravity/bool}
+   :effects #{} :capabilities #{} :safety :proven-safe
+   :control-flow :single-reachable-entry-and-return
+   :occurrences :ordered-and-distinct-even-for-equal-literal-values
+   :empty-sequence :rejected :parameters :forbidden :locals :forbidden
+   :runtime-checks :forbidden :calls :forbidden :memory :forbidden
+   :target-independent? true
+   :source-authentication :fresh-selected-owner-required
+   :nonclaims [:generic-c11-verifier :source-authentication-from-report
+               :optimizer-credit :backend-credit :release-credit :self-hosted?]})
+
+(defn sh12-flat-bool-sequence-report [checked-core report]
+  ; Change only truthful family labels/diagnostic location. Never turn a
+  ; rejection into success or interpret a report as source authority.
+  (let [scoped (assoc report :scope :closed-flat-bool-literal-sequence)]
+    (if (= (get report :status) :passed)
+      (assoc scoped :checks
+        [:single-function-linear :blocks-terminators-and-cfg-edges
+         :same-block-definitions-uses-and-return-dominance
+         :type-fact-preservation :effect-order-preservation
+         :ownership-capability-and-profile-preservation
+         :safety-outcome-preservation :source-origin-preservation])
+      (assoc scoped :diagnostics
+        (loop [rows (get report :diagnostics) result []]
+          (if (= (count rows) 0) result
+            (let [row (first rows)]
+              (recur (rest rows)
+                (conj result
+                  (assoc row :block
+                    (if (= (get report :mir-module-id) nil) :not-applicable
+                      (if (= (get row :diagnostic-id) "C11-MODULE") :not-applicable
+                        (str (get checked-core :artifact-id) ":mir:entry")))))))))))))
+
+(defn sh12-flat-bool-sequence-core-preflight [core]
+  ; Host owner strict native/carrier validation precedes all guest use.
+  ; Product coherence and supplied hashes do not replace fresh authentication.
+  (let [carrier (sh12-authenticated-c10-mir-carrier-preflight core)]
+    (if (= (get carrier :status) :accepted)
+      (if (sh12-c6p-scalars-valid? core)
+        (if (sh12-flat-bool-sequence-original-lineage-valid? core)
+          (if (sh12-flat-bool-sequence-original-facts-valid? core)
+            (if (sh12-flat-bool-sequence-original-graphs-valid? core)
+              {:status :accepted}
+              {:status :rejected :diagnostic-id "C11-DOMINANCE"
+               :missing-fact :flat-bool-original-graphs})
+            {:status :rejected :diagnostic-id "C11-VERIFY"
+             :missing-fact :flat-bool-original-source-and-facts})
+          {:status :rejected :diagnostic-id "C11-VERIFY"
+           :missing-fact :flat-bool-original-lineage})
+        {:status :rejected :diagnostic-id "C11-MODULE"
+         :missing-fact :flat-bool-original-scalar-domain})
+      {:status :rejected :diagnostic-id "C11-MODULE"
+       :missing-fact :flat-bool-original-carrier})))
+
+(defn sh12-build-flat-bool-sequence-mir [checked-core]
+  (let [preflight (sh12-flat-bool-sequence-core-preflight checked-core)]
+    (if (= (get preflight :status) :accepted)
+      (let [mir (c11-build-target-independent-mir checked-core)]
+        (if (sh12-branch-join-mir-dominance-valid? mir) mir
+          (sh12-flat-bool-sequence-report checked-core
+            (sh12-branch-join-rejection :construction "C11-DOMINANCE"
+              :definitions-uses-or-edge-dominance checked-core mir))))
+      (sh12-flat-bool-sequence-report checked-core
+        (sh12-branch-join-preflight-rejection :construction preflight checked-core nil)))))
+
+(defn sh12-verify-flat-bool-sequence-mir [checked-core mir]
+  (let [preflight (sh12-flat-bool-sequence-core-preflight checked-core)]
+    (sh12-flat-bool-sequence-report checked-core
+      (if (= (get preflight :status) :accepted)
+        (sh12-verify-core-mir-preservation checked-core mir)
+        (sh12-branch-join-preflight-rejection :verification preflight checked-core mir)))))
 
 ; C11 owns this additive proof-reference adapter.  It is intentionally not an
 ; executable load and does not route through the legacy SH12 checked-core
