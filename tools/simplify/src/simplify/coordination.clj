@@ -56,7 +56,7 @@
       (rt/fail! "Retained worker requires inspected handover before provider setup" {:findings (vec (keys retained))})))
   (when-let [pending (transaction! ctx
                                   (fn [state]
-                                    [state (first (filter #(= (rt/canonical (:state-dir ctx)) (:state-dir %))
+                                    [state (first (filter #(rt/main-effect-owner? ctx %)
                                                           (vals (:main-effects state))))]))]
     (rt/fail! "Unresolved main effect requires inspected handover before provider setup" {:effect (:id pending)}))
   (transaction! ctx

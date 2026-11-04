@@ -288,6 +288,10 @@
 
 (defn- effect-key [ctx id] (pr-str [(:state-dir (owner ctx)) id]))
 
+(defn main-effect-owner? [ctx intent]
+  (= (select-keys (owner ctx) [:state-dir :state-file])
+     (select-keys intent [:state-dir :state-file])))
+
 (defn shared-restriction [ctx kind key]
   (when (:coordination-file ctx)
     (coordinate! ctx (fn [state] [state (get-in state [:restrictions kind key])]))))
@@ -360,10 +364,25 @@
                            state [[:commands (:restricted-commands local)] [:api (:restricted-actions local)] [:checks (:restricted-checks local)]])
              state (reduce
                     (fn [state [id effect]]
-                      (let [migration [(:state-dir (owner ctx)) id :main-effect]]
+                      (let [migration [(:state-dir (owner ctx)) id :main-effect]
+                            marker (get-in state [:imports migration])
+                            pending (get-in state [:main-effects (effect-key ctx id)])
+                            recorded (or pending
+                                         (last (keep #(when (and (= id (get-in % [:intent :id]))
+                                                                 (= (:state-dir (owner ctx)) (get-in % [:intent :state-dir])))
+                                                        (:intent %)) (:history state))))
+                            recorded-owner (or recorded marker)]
+                        ;; Keep the original journal keys. A colliding local
+                        ;; effect cannot adopt or overwrite another state file's
+                        ;; fence or its completed migration marker.
+                        (when (and (str/starts-with? id "merge/")
+                                   (#{:pending :uncertain :restricted :not-applied} (:status effect))
+                                   (or marker pending)
+                                   (not (main-effect-owner? ctx recorded-owner)))
+                          (fail! "Main-effect migration belongs to another or unknown state owner" {:effect id}))
                         (if (or (not (str/starts-with? id "merge/"))
                                 (not (#{:pending :uncertain :restricted :not-applied} (:status effect)))
-                                (get-in state [:imports migration])) state
+                                marker pending) state
                             (let [task (first (filter #(or (= id (str "merge/" (:candidate %)))
                                                           (= id (:merge-effect %))
                                                           (= id (get-in % [:merge-intent :id]))
@@ -375,7 +394,7 @@
                                                  :method (or (:method saved-intent) (if (= :seedless/v1 (:schema local)) :merge :squash))
                                                  :original-effect effect})]
                               (-> state (assoc-in [:main-effects (effect-key ctx id)] intent)
-                                  (assoc-in [:imports migration] {:at (str (Instant/now))}))))))
+                                  (assoc-in [:imports migration] (assoc (owner ctx) :at (str (Instant/now)))))))))
                     state (:effects local))
              state (reduce
                     (fn [state [key task]]
@@ -489,7 +508,7 @@
                                     [(update state :main-effects
                                              (fn [effects]
                                                (into {} (map (fn [[key effect]]
-                                                               [key (if (= (:state-dir (owner ctx)) (:state-dir effect))
+                                                               [key (if (main-effect-owner? ctx effect)
                                                                       (assoc effect :status :uncertain
                                                                              :error {:message (.getMessage e)
                                                                                      :details (redact (select-keys (ex-data e) [:restricted :effect :effect-status]))})
@@ -518,7 +537,7 @@
                           (assoc-in [:main-effects (effect-key ctx (:id intent))]
                                     (merge intent (owner ctx) {:status :pending :at (str (Instant/now))}))
                           (assoc-in [:imports [(:state-dir (owner ctx)) (:id intent) :main-effect]]
-                                    {:kind :journaled :at (str (Instant/now))})) nil])))
+                                    (assoc (owner ctx) :kind :journaled :at (str (Instant/now))))) nil])))
 
 (defn- verify-main-result! [intent actual]
   (validate-main-intent! intent)
@@ -536,7 +555,7 @@
                (fn [state]
                  (let [key (effect-key ctx (:id intent)) pending (get-in state [:main-effects key])]
                    (when-not (and (= (:id intent) (:id pending))
-                                  (= (:state-dir (owner ctx)) (:state-dir pending))
+                                  (main-effect-owner? ctx pending)
                                   (= (select-keys intent [:base :candidate :tree :method])
                                      (select-keys pending [:base :candidate :tree :method])))
                      (fail! "Shared main intent identity differs" {}))
@@ -549,10 +568,11 @@
   [ctx effect-id]
   (coordinate! ctx
                (fn [state]
-                 [state {:pending (get-in state [:main-effects (effect-key ctx effect-id)])
+                 [state {:pending (let [pending (get-in state [:main-effects (effect-key ctx effect-id)])]
+                                    (when (main-effect-owner? ctx pending) pending))
                          :inspection (last (filter #(and (= :main-inspected (:kind %))
                                                          (= effect-id (get-in % [:intent :id]))
-                                                         (= (:state-dir (owner ctx)) (get-in % [:intent :state-dir])))
+                                                         (main-effect-owner? ctx (:intent %)))
                                                    (:history state)))}])))
 
 (defn reconcile-main-merge!
@@ -566,7 +586,7 @@
                     (let [key (effect-key ctx effect-id) pending (get-in state [:main-effects key])
                           original (merge (:original-intent inspection) (into {} (remove (comp nil? val) pending)))]
                       (when-not (and (= effect-id (:id pending))
-                                     (= (:state-dir (owner ctx)) (:state-dir pending)))
+                                     (main-effect-owner? ctx pending))
                         (fail! "Only the original main-effect owner can reconcile it" {}))
                       (case (:outcome inspection)
                         :not-applied nil
