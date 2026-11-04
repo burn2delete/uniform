@@ -13,6 +13,14 @@
    ["simplify:duplication" "d4c5f9" "Consolidate equivalent implementation"]
    ["simplify:obsolete" "ededed" "Remove unused or superseded machinery"]])
 
+(defn- graphql-errors-from-output [endpoint output]
+  (when (= "graphql" endpoint)
+    (try
+      (let [payload (json/read-str output :key-fn keyword)]
+        (when (and (map? payload) (vector? (:errors payload)))
+          (:errors payload)))
+      (catch Exception _ nil))))
+
 (defn api
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
@@ -25,13 +33,15 @@
                               body (into ["--input" "-"]))
                             (when body (json/write-str body)))]
      (when-not (zero? (:exit result))
-       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
+       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))
+             errors (graphql-errors-from-output endpoint (:out result))]
          (when restricted
            (let [refusal {:method method :endpoint endpoint :error (:err result)}]
              (rt/update! ctx assoc-in [:restricted-actions key] refusal)
              (rt/shared-restrict! ctx :api key refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
-                   {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
+                   (cond-> {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted}
+                     (seq errors) (assoc :errors errors)))))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
 
 (defn graphql [ctx query variables]
@@ -255,13 +265,31 @@
           (recur next-cursor))
         :else nil))))
 
+(defn- duplicate-project-item-error? [error]
+  (let [{:keys [errors restricted]} (ex-data error)]
+    (and (false? restricted)
+         (= 1 (count errors))
+         (= {:type "UNPROCESSABLE"
+             :message "Content already exists in this project"}
+            (select-keys (first errors) [:type :message])))))
+
+(defn- add-item! [ctx project content]
+  (try
+    (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
+                     {:project project :content content})
+            [:addProjectV2ItemById :item :id])
+    (catch Exception error
+      (if (duplicate-project-item-error? error)
+        (or (existing-item ctx project content)
+            (rt/fail! "Duplicate Project membership has no verified readback"
+                      {:project project :content content :duplicate true}))
+        (throw error)))))
+
 (defn item! [ctx issue]
   ;; Sub-issue admission can add membership independently of this controller.
   (rt/effect! ctx (str "project-item/" (get-in @(:state ctx) [:project :id]) "/" (:node_id issue))
               #(or (existing-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
-                   (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
-                   {:project (get-in @(:state ctx) [:project :id]) :content (:node_id issue)})
-          [:addProjectV2ItemById :item :id]))))
+                   (add-item! ctx (get-in @(:state ctx) [:project :id]) (:node_id issue)))))
 
 (defn status! [ctx issue status]
   (let [project (:project @(:state ctx))
