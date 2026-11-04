@@ -85,14 +85,55 @@
 
 (defn reconcile! [ctx effect-id result-file]
   (let [effect (get-in @(:state ctx) [:effects effect-id])
-        result (rt/read-edn result-file)]
+        result (rt/read-edn result-file)
+        inspection (when (str/starts-with? effect-id "merge/")
+                     (:inspection (rt/main-merge-state ctx effect-id)))
+        inspection-digest (when (= :not-applied (get-in inspection [:inspection :outcome]))
+                            (rt/digest (pr-str inspection)))]
     (when-not (and (or (#{:pending :uncertain} (:status effect))
+                      (and (= :done (:status effect)) inspection-digest
+                           (not= inspection-digest (:main-inspection-digest effect)))
                       (and (nil? effect) (some #{effect-id} (vals (:tracking-intents @(:state ctx))))))
                    (string? (:evidence result))
                    (not (str/blank? (:evidence result))) (contains? result :result))
       (rt/fail! "Reconciliation needs an uncertain effect and inspected external result with evidence" {}))
-    (rt/update! ctx assoc-in [:effects effect-id] {:status :done :result (:result result) :reconciliation (:evidence result)})
+    (rt/update! ctx assoc-in [:effects effect-id]
+                (cond-> {:status :done :result (:result result) :reconciliation (:evidence result) :prior effect}
+                  inspection-digest (assoc :main-inspection-digest inspection-digest)))
     (rt/event! ctx :effect-reconciled {:effect effect-id :evidence (:evidence result)})))
+
+(defn retry! [ctx key]
+  (let [t (workflow/task ctx key)
+        intent (workflow/main-intent t)
+        effect (get-in @(:state ctx) [:effects (:id intent)])
+        {:keys [pending inspection]} (rt/main-merge-state ctx (:id intent))
+        not-applied? (= :not-applied (get-in inspection [:inspection :outcome]))
+        digest (when not-applied? (rt/digest (pr-str inspection)))]
+    (when-not (= :attention (:status t)) (rt/fail! "Only an inspected Attention finding can be retried" {:finding key}))
+    (when (or (true? (get-in t [:error :details :restricted])) (= :restricted (:status effect)))
+      (rt/fail! "Restricted actions are retained as denied history and cannot be retried" {:finding key}))
+    (when pending (rt/fail! "Own main mutation needs inspected reconciliation before retry" {:finding key :effect (:id intent)}))
+    (when (or (#{:pending :uncertain} (:status effect))
+              (#{:pending :uncertain :restricted}
+                (get-in @(:state ctx) [:effects (get-in t [:error :details :effect]) :status])))
+      (rt/fail! "Current external effect needs inspected reconciliation before retry" {:finding key}))
+    (when not-applied?
+      (let [key (rt/digest (pr-str ["gh-pr-merge" (get-in ctx [:config :repository])]))]
+        (when (or (get-in @(:state ctx) [:restricted-commands key]) (rt/shared-restriction ctx :commands key))
+          (rt/fail! "Repository merge action remains restricted; no successor intent is permitted" {:restricted true})))
+      (when-not (and (= :done (:status effect)) (= digest (:main-inspection-digest effect))
+                     (= (select-keys intent [:id :base :candidate :tree :method])
+                        (select-keys (:intent inspection) [:id :base :candidate :tree :method])))
+        (rt/fail! "Inspected not-applied merge needs matching local reconciliation before retry" {:finding key}))
+      (let [next-intent (assoc intent :id (str (:id intent) "/inspection/" digest))]
+        (when (get-in @(:state ctx) [:effects (:id next-intent)])
+          (rt/fail! "Inspected successor effect already exists; inspect its actual outcome" {:finding key}))
+        (workflow/task! ctx key :merge-intent next-intent)))
+    (workflow/task! ctx key :feedback (:error t)
+                    :status (cond (:merge-verification t) :finalizing
+                                  (or (:merged t) not-applied? (#{:ci :merge} (:resume-status t))) :ci
+                                  :else :repair))
+    (println "Finding queued at its inspected recovery phase. Use resume to continue.")))
 
 (defn dispatch! [ctx command args]
   (case command
@@ -104,20 +145,7 @@
     "run" (controller! ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
     "resume" (controller! ctx #(when-not (= :complete (:status @(:state ctx)))
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
-    "retry" (with-current-state ctx
-                         #(let [key (first args) t (workflow/task ctx key)]
-                            (when-not (= :attention (:status t)) (rt/fail! "Only an inspected Attention finding can be retried" {:finding key}))
-                            (when (true? (get-in t [:error :details :restricted]))
-                              (rt/fail! "Restricted actions are retained as denied history and cannot be retried" {:finding key}))
-                            (when (#{:pending :uncertain :restricted}
-                                    (get-in @(:state ctx) [:effects (get-in t [:error :details :effect]) :status]))
-                              (rt/fail! "Current external effect needs inspected reconciliation before retry" {:finding key}))
-                            (workflow/task! ctx key :feedback (:error t)
-                                            :status (cond (:merge-verification t) :finalizing
-                                                          (:merged t) :ci
-                                                          (#{:ci :merge} (:resume-status t)) :ci
-                                                          :else :repair))
-                            (println "Finding queued at its inspected recovery phase. Use resume to continue.")))
+    "retry" (with-current-state ctx #(retry! ctx (first args)))
     "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-state ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))

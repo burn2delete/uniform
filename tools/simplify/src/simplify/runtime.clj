@@ -264,10 +264,15 @@
                         (if (or (not (str/starts-with? id "merge/"))
                                 (not (#{:pending :uncertain :restricted} (:status effect)))
                                 (get-in state [:imports migration])) state
-                            (let [task (first (filter #(= id (str "merge/" (:candidate %))) (vals (:tasks local))))
-                                  intent (merge (owner ctx) (select-keys task [:base :candidate :tree])
+                            (let [task (first (filter #(or (= id (str "merge/" (:candidate %)))
+                                                          (= id (:merge-effect %))
+                                                          (= id (get-in % [:merge-intent :id]))
+                                                          (= id (get-in % [:merge-recovery :id])))
+                                                      (vals (:tasks local))))
+                                  saved-intent (when (= id (get-in task [:merge-intent :id])) (:merge-intent task))
+                                  intent (merge (owner ctx) (select-keys (or saved-intent task) [:base :candidate :tree])
                                                 {:id id :legacy true :status :uncertain
-                                                 :method (if (= :seedless/v1 (:schema local)) :merge :squash)
+                                                 :method (or (:method saved-intent) (if (= :seedless/v1 (:schema local)) :merge :squash))
                                                  :original-effect effect})]
                               (-> state (assoc-in [:main-effects (effect-key ctx id)] intent)
                                   (assoc-in [:imports migration] {:at (str (Instant/now))}))))))
@@ -425,6 +430,17 @@
                    [(-> state (update :main-effects dissoc key)
                         (update :history conj {:kind :main-verified :intent pending :actual actual :at (str (Instant/now))})) actual]))))
 
+(defn main-merge-state
+  "Atomic original-owner view; :inspection is the retained accepted history record."
+  [ctx effect-id]
+  (coordinate! ctx
+               (fn [state]
+                 [state {:pending (get-in state [:main-effects (effect-key ctx effect-id)])
+                         :inspection (last (filter #(and (= :main-inspected (:kind %))
+                                                         (= effect-id (get-in % [:intent :id]))
+                                                         (= (:state-dir (owner ctx)) (get-in % [:intent :state-dir])))
+                                                   (:history state)))}])))
+
 (defn reconcile-main-merge!
   "Original-owner inspection only. This never retries a mutation or clears its refusal."
   [ctx effect-id inspection]
@@ -443,5 +459,5 @@
                         :merged (verify-main-result! original (:actual inspection))
                         (fail! "Shared main inspection needs merged or not-applied outcome" {}))
                       [(-> state (update :main-effects dissoc key)
-                           (update :history conj {:kind :main-inspected :intent pending
+                           (update :history conj {:kind :main-inspected :intent original
                                                   :inspection inspection :at (str (Instant/now))})) nil])))))

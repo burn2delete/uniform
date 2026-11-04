@@ -7,6 +7,7 @@
             [simplify.codex :as codex]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
+            [simplify.main :as main]
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]))
 
@@ -28,7 +29,7 @@
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
 
-(defn run-fixture! [review-result]
+(defn run-fixture! [review-result & [options]]
   (let [ctx (fixture/context)
         {:keys [repo bare]} (repository! ctx)
         ctx (assoc ctx :config {:repo-dir repo :repository "fixture/repo" :remote "origin" :base-branch "main"
@@ -36,7 +37,10 @@
                                 :worktree-root (str (io/file (:state-dir ctx) "workers"))
                                 :checks [["clojure" "-M" "fixture-check.clj"]] :check-executables #{"clojure"}})
         _ (.mkdirs (io/file (get-in ctx [:config :worktree-root])))
+        _ (rt/update! ctx assoc :repository "fixture/repo" :campaign "fixture")
         calls (atom []) audits (atom 0) pr (atom nil) merge-count (atom 0)
+        merge-requests (atom 0)
+        preflight-done? (atom false)
         tracking-locks (atom [])
         other-controller (assoc ctx :main-lock-owner (atom nil))
         original-command rt/command
@@ -46,22 +50,32 @@
                     ([c cwd argv]
                      (swap! calls conj argv)
                      (cond
-                       (= "clojure" (first argv)) {:exit 0 :out "fixture check passed" :err ""}
+                       (= "clojure" (first argv))
+                       (do
+                         (when (some #{"--mode"} argv)
+                           (reset! preflight-done? true)
+                           (when-let [mutate (:preflight-mutation options)] (mutate pr))
+                           (when (:pause-after-preflight options) (rt/write-edn! (:control-file c) {:paused true})))
+                         {:exit 0 :out "fixture check passed" :err ""})
                        (= ["gh" "pr" "view"] (subvec (vec argv) 0 (min 3 (count argv))))
                        (response (merge {:state "OPEN" :baseRefName "main" :isDraft false :reviewDecision "APPROVED"
+                                         :mergeable "MERGEABLE" :mergeStateStatus "CLEAN"
                                          :statusCheckRollup [{:status "COMPLETED" :conclusion "SUCCESS"}]}
                                         @pr))
                        (= ["gh" "pr" "merge"] (subvec (vec argv) 0 (min 3 (count argv))))
-                       (let [t (first (flow/tasks c))
+                       (if (and (= 1 (swap! merge-requests inc)) (:first-merge-not-applied options))
+                         {:exit 0 :out "provider did not apply merge" :err ""}
+                         (let [t (first (flow/tasks c))
                              tree (rt/git c cwd "rev-parse" (str (:candidate t) "^{tree}"))
                              merged (rt/git c cwd "--git-dir" bare "commit-tree" tree "-p" (:base t) "-m" "Fixture squash")]
                          (rt/git c cwd "--git-dir" bare "update-ref" "refs/heads/main" merged (:base t))
                          (swap! merge-count inc)
                          (swap! pr assoc :state "MERGED" :mergeCommit {:oid merged})
-                         {:exit 0 :out "merged" :err ""})
+                         {:exit 0 :out "merged" :err ""}))
                        :else (original-command c cwd argv)))
                     ([c cwd argv input] (original-command c cwd argv input)))
        gh/setup! (fn [_] nil)
+       gh/review-threads-clear? (fn [& _] (not (and @preflight-done? (:unresolved-thread options))))
        gh/status! (fn [_ _ status]
                     (when (= "Done" status)
                       (swap! tracking-locks conj (rt/try-with-main-lock other-controller (fn [] :available)))))
@@ -94,9 +108,62 @@
                       (do (spit (io/file cwd "work.edn") "{:value 1}\n")
                           {:outcome "ready" :summary "Removed duplicate" :checks []})
                       :else (merge review-result (select-keys (first (flow/tasks ctx)) [:base :candidate :tree]))))]
-      (flow/campaign! ctx))
+      (flow/campaign! ctx)
+      (when-let [recover (:recover options)]
+        (recover ctx bare repo calls merge-requests)
+        (flow/campaign! ctx)))
     {:state @(:state ctx) :calls @calls :merges @merge-count :audits @audits :repo repo :ctx ctx
-     :tracking-locks @tracking-locks}))
+     :tracking-locks @tracking-locks :merge-requests @merge-requests}))
+
+(deftest unverified-command-success-needs-explicit-inspected-recovery
+  (let [{:keys [state merges merge-requests]}
+        (run-fixture!
+         {:verdict "approved" :summary "Exact fixture acceptance" :findings []}
+         {:first-merge-not-applied true
+          :recover
+          (fn [ctx bare repo calls requests]
+            (let [t (first (flow/tasks ctx))
+                  intent (flow/main-intent t)
+                  id (:id intent)
+                  before @calls
+                  result-file (str (io/file (:state-dir ctx) "inspected-not-applied.edn"))]
+              (is (= :attention (:status t)))
+              (is (= :done (get-in @(:state ctx) [:effects id :status])))
+              (is (:pending (rt/main-merge-state ctx id)))
+              (is (thrown-with-msg? Exception #"Own main mutation" (flow/integrate! ctx t)))
+              (is (= before @calls) "An own unresolved mutation is not polled or repeated")
+              (is (thrown-with-msg? Exception #"Own main mutation" (main/dispatch! ctx "retry" [(:key t)])))
+              (is (= (:base t) (rt/git ctx repo "--git-dir" bare "rev-parse" "refs/heads/main")))
+              (rt/reconcile-main-merge! ctx id {:outcome :not-applied :evidence "Inspected disposable remote main and OPEN fixture PR; no merge was applied"})
+              (is (thrown-with-msg? Exception #"matching local reconciliation" (main/dispatch! ctx "retry" [(:key t)])))
+              (rt/write-edn! result-file {:evidence "Inspected original command success against unchanged remote main and OPEN PR"
+                                         :result {:not-applied true :main (:base t)}})
+              (main/dispatch! ctx "reconcile" [id result-file])
+              (is (= :done (get-in @(:state ctx) [:effects id :prior :status])))
+              (main/dispatch! ctx "retry" [(:key t)])
+              (let [next-intent (flow/main-intent (flow/task ctx (:key t)))]
+                (is (not= id (:id next-intent)))
+                (is (= (dissoc intent :id) (dissoc next-intent :id)))
+                (is (nil? (get-in @(:state ctx) [:effects (:id next-intent)]))))
+              (is (= 1 @requests) "Only the explicit later campaign transaction may issue another mutation")))})]
+    (is (= :complete (:status state)))
+    (is (= 1 merges))
+    (is (= 2 merge-requests))
+    (is (= 2 (count (filter #(str/starts-with? % "merge/") (keys (:effects state))))))))
+
+(deftest evidence-changing-during-preflight-prevents-provider-mutation
+  (doseq [changes [{:headRefOid "other"} {:baseRefName "other"}
+                   {:statusCheckRollup [{:state "FAILURE"}]} {:reviewDecision "CHANGES_REQUESTED"}
+                   {:mergeable "CONFLICTING"} {:mergeStateStatus "BLOCKED"}
+                   :unresolved-thread]]
+    (let [{:keys [state merges merge-requests]}
+          (run-fixture! {:verdict "approved" :summary "Exact fixture acceptance" :findings []}
+                        {:pause-after-preflight true
+                         :preflight-mutation (fn [pr] (when (map? changes) (swap! pr merge changes)))
+                         :unresolved-thread (= :unresolved-thread changes)})]
+      (is (= :paused (:status state)))
+      (is (zero? merges))
+      (is (zero? merge-requests)))))
 
 (deftest complete-loop-verifies-real-git-result
   (let [{:keys [state merges audits calls tracking-locks]} (run-fixture! {:verdict "approved" :summary "Independent fixture approval" :findings []})
@@ -125,8 +192,10 @@
            :checks {:candidate "candidate"} :review {:verdict "approved" :base "old-base" :candidate "candidate" :tree "tree"}}
         ctx (assoc-in ctx [:config :base-branch] "main")]
     (with-redefs [flow/pr-info (fn [& _] {:state "OPEN" :headRefOid "candidate" :baseRefName "main"
+                                         :mergeable "MERGEABLE" :mergeStateStatus "CLEAN"
                                          :statusCheckRollup [{:state "SUCCESS"}]})
                   flow/fresh-main! (fn [_] "base")
+                  gh/review-threads-clear? (fn [& _] true)
                   gh/api (fn [& _] {:required_status_checks {:strict true}})]
       (is (thrown-with-msg? Exception #"does not match" (flow/integrate! ctx t))))))
 
