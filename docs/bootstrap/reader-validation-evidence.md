@@ -71,3 +71,29 @@ remain retained; the test expectation now follows that unchanged owner output.
 No production refusal, source pin or diagnostic construction was modified.
 Post-extraction equality, final regressions, independent review and integration
 checks remain outstanding at this source commit.
+
+## Verified comparison and regressions
+
+The full two-record after-capture matches original serialized bytes and parsed
+data with SHA-2566aae3d0590d1e2b6f2cffebc93e0f4196ae1026530f56475d703cfff4a9bb149.
+Both native products return complete and all ten altered native views retain
+their original C2 refusal data. Actual source bytes, source-unit identities,
+incremental hashes, token/form provenance and partial proof records survive.
+The exact native-view labels remain non-authoritative.
+
+Structural comparison proves that only the original function body's three
+owner calls became explicit late Var dereferences. All five preceding Reader
+function bodies and the component's proof/override/extension prefix and suffix
+remain exact. The patch tool initially added a final newline to component00827;
+the byte-conservation check caught it and the original EOF was restored. An
+initial temporary verification helper also had a delimiter error; its source
+and failure log remain retained, with no capture or production predicate change.
+
+Focused Reader33/449 and compatibility7/210 pass:40 tests/659 assertions.
+Language/source-ownership48/1198 passes with zero skipped namespaces. A separate
+cold process loads six public Reader operations without Bootstrap, checks two
+captured native reports and rejects a missing literal-facts field. Documentation,
+roadmap and governance validators pass. Independent implementation and adversarial
+reviews accept the original implementation source1a7472f0c4f33bf9777266059f4e7d7c1d8b3611;
+the final EOF/documentation delta, committed lint, own CI/artifacts and exact
+current-main preflight remain separate verification/integration gates.
