@@ -76,3 +76,30 @@ The API does not open source, replace canonical SH03, grant reader extension
 effects, decide namespace/type/effect/profile legality, impose input/work quotas,
 or establish complete Reader, self-hosting, migration, release or seed retirement.
 Existing source pins, denied operations and held routes remain unchanged.
+
+## Original parser failure and bounded correction
+
+The first native baseline at scopeb6cd5855d2366c21ab0369dd0b78502498276b48
+raised IllegalStateException on the duplicate composite set case. Its recursive
+literal-set predicate attempted to invoke an unbound Bootstrap helper. This is
+an observed native implementation failure, not an authentication or permission
+refusal. Source/log/report remain retained; no source pin or held route changed.
+
+A separate observer captures that exact known host failure instead of claiming
+it was a diagnostic. Across twenty-six retained real .gravity/.qst paths and
+both trivia modes, the original has four parsed products, forty-four syntax
+refusals and four unbound-helper failures; twenty native join refusals are
+recorded separately. Full metadata is serialized. The raw capture SHA-256 is
+aad631a7cf2bd3fbe64faa1c4cf231a3eb245292da0f393d5300f5828089583d.
+The observer's initial printed summary incorrectly counted all forty-eight
+negative outcomes as syntax refusals; the corrected read-only receipt derives
+forty-four refusals/four host failures from the unchanged capture, without
+repeating parser execution.
+
+The stage-owned predicate must remain bound for recursive composite keys and
+produce the C2-required C2-SET refusal with the duplicate and first-literal
+locations. This is the only declared behavior correction: four paired/trivia
+variants of the duplicate composite case. All other forty-eight records and all
+twenty native join refusals must retain exact output/metadata/diagnostic parity.
+The comparison cannot report complete old/new raw-byte equality across this
+explicit diagnostic repair.
