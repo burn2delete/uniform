@@ -380,6 +380,15 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 L19 complete foreign ownership and pointer-fact criterion (Open): Analyze actual Gravity-owned/foreign-borrowed, foreign-owned/Gravity-borrowed, transfers in either direction, shared immutable, synchronized/atomic shared mutable and named foreign-release handle modes. Preserve all seven ownership modes and pointer nullability, initialization, lifetime, allocator identity, aliasing and thread-affinity facts; foreign pointers are not ordinary safe references. Unrepresentable facts keep the boundary unsafe, with any safe wrapper retaining genuine invariants/checks. Reject missing/incompatible lifetime/allocator/release, use after transfer, double release, illegal shared mutation and thread-affinity/blocking violations. Required evidence: real typed flow/transfer/release and concurrency facts with actual Runtime results at their owner; no allocator manifest or host GC proves cleanup.
 <!-- legality-interop-source-ownership:end -->
 
+
+<!-- library-base-source-borrow-analysis:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation borrow-analysis criterion (Open): Check real ownership moves, borrow access modes, initialization, region lifetimes and memory-view sharing facts at library calls and structured control joins. Reject stale owners, overlapping mutable aliases, dangling borrows and region escapes not transferred into valid longer-lived storage or explicit unsafe responsibility. Preserve facts and invalidations through MIR/optimization/backend consumers. Evidence: actual positive/negative lifetime/alias/escape graphs and diagnostic/checker products; expected API outcomes, scope descriptors and source parameter names are no proof.
+<!-- library-base-source-borrow-analysis:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -528,6 +537,15 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 
 L19 complete safe foreign-wrapper criterion (Open): Retain the actual unsafe call and complete declared safe API requirements, ensures, no-retain/ownership/layout/profile invariants, source, reason, effects/grants, owner/audit/evidence and governing re-review trigger. Prove or actually check every requirement; a CString wrapper must establish its actual non-null/null-termination/within-buffer and no-retained-pointer obligations rather than copy the illustrative audit label. Record target-specific layout assumptions where used. Reject raw unsafe externs in safe code, unproved/unchecked invariants, hidden authority, stale ABI/CString/layout evidence and an assigned passed audit. Required evidence: actual wrapper/unsafe boundary/proof-or-check/profile artifact and positive/refused invariant/failure/cleanup cases; unsafe implementation does not become safe merely by naming a wrapper.
 <!-- legality-interop-source-wrappers:end -->
+
+
+<!-- library-base-source-safe-wrappers:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation safe-wrappers criterion (Open): Classify actual safe-wrapper boundaries over unsafe library/compiler-support internals using complete signatures/invariants that enforce every precondition, hide raw authority, define failure and preserve ownership/cleanup. Admit only governing static proof, runtime check, explicit unsafe responsibility or rejection; keep unsafe operations and current audit references visible in release artifacts. Reject safe UB, absent/stale evidence and lost memory/alias/concurrency/FFI/target assumptions after transforms. Evidence: actual invalid-precondition negatives, current checker/audit and preservation products; a generic unsafe flag or security verdict cannot discharge missing safety facts.
+<!-- library-base-source-safe-wrappers:end -->
+
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 

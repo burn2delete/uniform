@@ -650,6 +650,12 @@ Use the [complete current collections criteria](../stdlib-workflow/plan.md#compl
 
 Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve real supported text/scalar/numeric/metadata/resource/effect and unsafe/proof contracts through selected artifacts. Host Unicode/float/object/GC defaults and target UB cannot substitute for Gravity; genuine required target comparisons and metadata checks follow actual products with honest availability.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

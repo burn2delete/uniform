@@ -140,6 +140,15 @@ STD3 current builder-flow criterion (Open): Preserve Core's structured linear re
 <!-- collections-source-builder-flow:end -->
 
 
+
+<!-- library-base-source-resource-flow:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation resource-flow criterion (Open): Lower actual library resource/region/using/defer/transfer scopes into structured Core/MIR with single consumption and corresponding cleanup/effect/source/proof obligations. Preserve exactly-once flow, explicit source-permitted leak-declared handling and only the upstream explicitly privileged forget path; do not turn linear values into ordinarily reusable values. Library supplies callable contracts, independent Legality checks lifetimes/linearity and Runtime executes cleanup. Evidence: real admitted/rejected lowering and terminal-path products; reject lost/duplicated consumption, escaped regions and hidden unsafe responsibility without claiming whole component acceptance.
+<!-- library-base-source-resource-flow:end -->
+
+
 - [ ] `core/current-evidence-and-remaining-work/core4-verify-and-serialize` core/4: Verify and serialize
 
 Current evidence/status: Open; partial source evidence above is not closure

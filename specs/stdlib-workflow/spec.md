@@ -74,6 +74,8 @@ The [complete library-principles source criteria](plan.md#complete-library-princ
 
 The [complete current collections criteria](plan.md#complete-current-collections-source-criteria) bind current STD3 operation, profile/allocation, full physical validation and private caller-proof semantics to four existing task owners. The older source census remains explicit history; removed work/width/depth allowances are not current prerequisites, while full input/type/ownership validation remains. No finite prior receipt, compatibility spelling or summary status establishes complete module support. Independent current whole-source/interface acceptance remains pending.
 
+The [complete library foundation criteria](plan.md#complete-library-foundation-source-criteria) add current STD1/STD2/STD4/STD5/STD6 callable API, profile, text/Unicode, numeric/proof, memory/resource and release obligations under existing owners. Eight existing Math/allocation/unsafe-audit predicates keep exact bytes and roles, including the separate future independent checker. Compiler unsafe boundaries, real provider execution and governed release consumption remain distinct. STD3 keeps its separate succession; STD7-STD20 and current whole-source/interface acceptance remain open.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

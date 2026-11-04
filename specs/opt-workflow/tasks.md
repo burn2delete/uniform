@@ -76,6 +76,15 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual refinement-proof consumption criterion (Open): Use alternative type facts only when produced by the actual selected provider, valid for the active profile/target, serialized in common typed-Core proof/refinement facts or a proof artifact, stable under the selected transformation and rechecked or invalidated with changed source/provider/profile/target/macro/facet/grant inputs. When erasing a runtime check, retain the actual proof reference that justifies that exact removal and the governing checked preservation evidence under D9/SAFE15/PERF10/C18. Unchecked casts, assigned profile-safe flags, structural validity or a provider manifest are not safe proof. Reject stale/wrong-subject/unselected/incompatible facts and evidence-erasing transforms. Required evidence: actual selected before/after check/fact/proof/diagnostic products and erased-check/proof-link refusals; valid unoptimized programs need no universal optimizer or whole future Formal gate.
 <!-- opt-alternative-types-source-refinement:end -->
 
+
+<!-- library-base-source-mode-preservation:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation mode-preservation criterion (Open): Preserve declared width/signedness, overflow, floating/vector/rounding/exceptional-value/domain and error semantics through actual library specialization/inlining/optimization/lowering. A faster mode requires explicit source relaxation or governing current proof; checks cannot become unchecked target behavior by default. Exact dominating proof must remain valid after transformations, and invalidation needs repair/rechecking, check restoration or rejection. Evidence: real original/transformed comparisons, selected independent certificate/check results and negative mode/target/proof cases; no blanket fast-math, host default or source metadata proves execution.
+<!-- library-base-source-mode-preservation:end -->
+
+
 - [ ] `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` opt/4: Verify and regenerate
 
 Current evidence/status: Open; partial source evidence above is not closure

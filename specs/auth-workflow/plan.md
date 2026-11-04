@@ -409,6 +409,12 @@ Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14
 
 All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply authentic declared provider and operation-specific grant/phase/lifetime decisions. API or prompt/data values do not confer authority. Actual permitted effects and host/provider/signing actions remain separate from schema/type development and actual restrictions persist.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

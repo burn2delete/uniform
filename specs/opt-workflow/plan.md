@@ -224,6 +224,12 @@ Use the [complete current collections criteria](../stdlib-workflow/plan.md#compl
 
 Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual value, metadata, numeric-mode/error-bound, lifetime/alias/cleanup and source/effect semantics. Exact current proof and backend preservation justify required check erasure; invalidation needs repair/recheck, restored checks or refusal. Optional optimizations are no universal API start gate.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

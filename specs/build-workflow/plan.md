@@ -317,6 +317,12 @@ Use the [complete current collections criteria](../stdlib-workflow/plan.md#compl
 
 Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Bind genuine module exports/manifests/docs, supported profiles/providers, canonical payloads, locked recipe/environment inputs and actual repeat-build/signature/provenance/SBOM results to the exact claimed grade. Signing occurs only within actual custody/permission; signatures alone prove no provenance or authorization.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

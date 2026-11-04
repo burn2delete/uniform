@@ -69,6 +69,24 @@ STD3 current module criterion (Open): Bind the actual gravity.collections namesp
 <!-- collections-source-module:end -->
 
 
+
+<!-- library-base-source-module:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation module criterion (Open): Bind every required module and exported var/type/macro/protocol/constructor to actual callable Gravity source/compiled exports, canonical namespace/artifact identity, supported profiles and type/effect/capability/allocation/error/stability contracts. Preserve the complete STD1 namespace inventory, not a claim that all are implemented. Emit the compiled module manifest used by package legality, compiler checking, fixture discovery and docs. Refuse missing/stale/disagreeing export/package/docs metadata and host or declaration-only substitutes. Evidence: actual export-to-source/implementation/profile/API/diagnostic/artifact joins and positive/negative claimed-module examples; unsupported required surfaces remain Open.
+<!-- library-base-source-module:end -->
+
+
+
+<!-- library-base-source-profile-matrix:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation profile-matrix criterion (Open): Declare actual per-export availability across STD1's Core, hardware, firmware, kernel, native, hosted, distributed, AI, meta, GPU and formal profiles. Core has no hidden time/random/IO/process/database/AI/thread assumptions; hardware is static/allocation-free/runtime-free; systems allocation and authority, managed delegation, durable replay, AI policy, phase separation and formal partiality remain explicit. Preserve real provider/artifact identities and reject unsupported claims or lower-profile host leakage. Evidence: actual allowed/rejected profile fixtures, explicit allocator/provider/replay/policy facts and compatible module/package/support matrices; no whole runtime or unrelated target is the first declaration prerequisite.
+<!-- library-base-source-profile-matrix:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -365,6 +383,168 @@ STD3 current builders criterion (Open): Implement transient/builders as linear o
 <!-- collections-source-builders:end -->
 
 
+
+<!-- library-base-source-core-surface:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation core-surface criterion (Open): Implement the complete gravity.core function-helper, predicate, Bool, comparison/hash, Option, Result, error, metadata, permitted-var and reducer-dispatch surfaces. Preserve default availability in Core/meta/hosted/native/firmware/kernel/hardware/GPU/formal unless an export explicitly declares narrower profiles or the governing profile starts with a smaller kernel. Keep special forms and concrete numeric/collection/text/memory/platform/AI semantics with their owners. Exports are pure except explicitly accepted effectful function arguments; retain stable values and total/partial/checked behavior. Refuse ambient host state, eval/reflection/finalizers/managed-runtime assumptions and restricted-profile allocation/vars/dispatch. Evidence: actual callable type/arity/value/effect/profile cases, stable equality/hash/errors, checked alternatives and ordinary examples; a compatibility binding is no completed owned module.
+<!-- library-base-source-core-surface:end -->
+
+
+
+<!-- library-base-source-inequality:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation inequality criterion (Open): Implement binary not= as Bool complement of the applicable Gravity binary equality, with left-to-right once-only operands, preserved effects and transfer-aborted invocation. Do not add equality domains, coercions, object identity, variadic rules or stored-payload evaluation beyond equality's own contract. Refuse unselected equality/target/profile behavior. Evidence: actual equal/unequal and supported family cases, operand-order/effect/transfer fixtures and exact domain/arity/type refusals, with numeric/collection/safety ownership retained.
+<!-- library-base-source-inequality:end -->
+
+
+
+<!-- library-base-source-core-families:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation core-families criterion (Open): Implement nil?, boolean?, symbol? and keyword? as evaluated value-family predicates. Nil differs from false/empty/Option/Result; both Bool values classify true without truthiness. Symbols require normal resolution/evaluation first; quoted qualified Symbols remain inert DATA, not authority. Keyword-like spelling is not a Keyword and qualified Keywords grant no binding/capability. Preserve once-only evaluation/effects/transfers, inert payloads and original values without collection construction, syntax unwrapping or coercion. Refuse invented flow/representation/profile facts. Evidence: actual family/nonfamily, spelling, false/empty/wrapped values, quoted Symbol and effect/transfer/refusal cases.
+<!-- library-base-source-core-families:end -->
+
+
+
+<!-- library-base-source-core-metadata:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation core-metadata criterion (Open): Implement actual meta/with-meta/vary-meta/merge-meta and permitted syntax-facing helpers while retaining source spans, hygiene, namespace, metadata and phase facts. Library owns its callable metadata API and Syntax/Expand own authenticated syntax and ordinary revalidation. Preserve declared allocation/profile and callback effects; refuse dropped origins, syntax-as-ordinary-data coercion, hidden compiler mutation or phase bypass. Evidence: real source/syntax metadata transformations and consumer products, identity/phase/profile negatives and STD2005 diagnostics; a returned metadata map proves no authenticated compiler integration.
+<!-- library-base-source-core-metadata:end -->
+
+
+
+<!-- library-base-source-checked-partials:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation checked-partials criterion (Open): Expose total, partial or checked behavior for finite-value core helpers. Every partial operation has a checked Result alternative or an owning deterministic compile-time refusal when statically invalid; partial unwrap needs proof or checked handling. Option/Result/error/protocol behavior remains stable and profile-legal, with formal totality/partiality explicit. Refuse implicit host-null/exception/panic policy or dispatch assumptions and core APIs hiding allocation/effects. Evidence: actual Some/None/Ok/error/recover/unwrap and protocol cases, statically known and runtime-checked failures, restricted vars/errors and actual specialization-preservation products.
+<!-- library-base-source-checked-partials:end -->
+
+
+
+<!-- library-base-source-examples:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation examples criterion (Open): Compile and exercise each claimed module's ordinary declared-import examples under every profile it claims, preserving exact type/effect/capability/allocation/failure/provider semantics. Include the pure core recover callback, grapheme-prefix text check, formal certified-wave target/error policy and firmware region non-escape examples. Refuse missing imports, hidden state/authority, unsupported profiles, mismatched diagnostics or impossible math/lifetime policy. Evidence: actual example source/compiler/profile/provider identities, values/artifacts and expected negative diagnostics; summary counts, injected records and an example filename do not establish execution.
+<!-- library-base-source-examples:end -->
+
+
+
+<!-- library-base-source-text-surface:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation text-surface criterion (Open): Implement actual text/bytes/UTF8/scalar/grapheme/locale/encoding/error types and encoding, inspection, slicing, transformation, parsing/formatting, pattern and artifact APIs. Strings are immutable; bytes/text and byte/scalar/grapheme indexes remain distinct. Each API exposes validation/loss/allocation/borrow/slice/stream behavior and declared provider/table/version identity. Refuse silent lossy conversion, implicit locale, invalid Unicode/boundaries and hidden host-only behavior. Evidence: real per-export cases, UTF8 valid/invalid/incomplete/overlong/boundary fixtures, profile/taint/schema integrations, stable cross-target values and actual validation/normalization/slicing/formatting performance artifacts.
+<!-- library-base-source-text-surface:end -->
+
+
+
+<!-- library-base-source-string-family:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation string-family criterion (Open): Implement unary string? as actual String-family classification, including empty String; convertibility does not make Bytes, arbitrary Text/views or host carriers Strings. Preserve once-only L2 effects/transfers, inert payloads and originals without decoding, normalizing, indexing, coercing or constructing a collection. Establish no encoding/boundary/normalization or profile/host permission. Evidence: real String/nonfamily/view/carrier, empty and effect/transfer cases with owning refusals. gravity.text owns the law; a core compatibility spelling establishes no implemented gravity.text export.
+<!-- library-base-source-string-family:end -->
+
+
+
+<!-- library-base-source-character-family:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation character-family criterion (Open): Implement unary char? for actual Character values including BMP and supplementary scalars; empty or one-scalar Strings and ordinary carrier-shaped Maps are not Characters. Preserve once-only evaluation/effects/transfers, inert payloads and originals without conversion, mutation or collection construction. Infer no flow/encoding/Unicode validation/normalization/boundary fact. Evidence: actual BMP/supplementary/nonfamily/String/Map and transfer cases under declared representation legality; compatibility bindings create no text-module, target or provider support.
+<!-- library-base-source-character-family:end -->
+
+
+
+<!-- library-base-source-string-concat:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation string-concat criterion (Open): Implement the binary String str overload as the exact left scalar sequence followed by the right, without normalization, coercion or generic formatting. Preserve left-to-right once-only effects and transfer-aborted invocation. Normal invocation declares memory/allocate even for empty operands, with actual profile/allocation legality; operand effects remain when not invoked. Evidence: actual empty/nonempty/supplementary scalar results, evaluation/transfer and allocation-denial cases. This is no pure core export, other overload, representation choice or provider permission.
+<!-- library-base-source-string-concat:end -->
+
+
+
+<!-- library-base-source-string-vector:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation string-vector criterion (Open): Implement unary String vec as an ordered persistent Vector containing one Character per Unicode scalar, including empty and supplementary cases without UTF16 splitting, normalization or coercion. Preserve the old String and once-only operand effects/transfers. Declare possible allocation including empty conversion and storage/lifetime policy; reject unsupported or ill-formed inputs. Evidence: real scalar-sequence/persistence/allocation and late-invalid/transfer cases, with the implemented subset explicit. STD3 owns resulting Vector semantics; compatibility spelling grants no broader conversion/module/profile authority.
+<!-- library-base-source-string-vector:end -->
+
+
+
+<!-- library-base-source-unicode:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation unicode criterion (Open): Provide checked UTF8 and explicit encoding/error-policy conversion; keep byte offsets, scalar indexes and grapheme positions distinct. Byte slices require valid boundaries by proof or checked error; grapheme/scalar slices preserve their own meaning and statically invalid ranges reject. Declare allocation/borrow/stream/lifetime and lossy-result policy. Refuse bytes used as text, malformed/overlong/incomplete sequences, invalid scalar/boundaries, silent loss and host UTF16 substitutions. Evidence: actual encoder/decoder/transcode/slice results and STD4001/STD4002/STD4005 refusals, including grapheme example and taint-sensitive boundaries.
+<!-- library-base-source-unicode:end -->
+
+
+
+<!-- library-base-source-normalization:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation normalization criterion (Open): Normalize only under an explicit Unicode version/form and recorded table identity; case/locale behavior and equality/hash/order follow declared contracts with STD2. Host Unicode delegation records exact version and behavior. Refuse missing/stale version/form/table/provider facts and implicit cross-target normalization changes. Evidence: actual stable normalization, case and equality/hash/order results across supported targets, table/provider invalidation and exact STD4003/STD4007 refusals; classification and concatenation themselves supply no normalization fact.
+<!-- library-base-source-normalization:end -->
+
+
+
+<!-- library-base-source-locale:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation locale criterion (Open): Require explicit Locale for locale-sensitive parsing/formatting/transformation and preserve determinism under declared locale, numeric mode and time provider. No ambient process locale/timezone/clock or host formatter may silently choose semantics. Retain taint and canonical encoding/normalization where text crosses AI/schema/HTTP/database/UI boundaries. Evidence: actual explicit-locale and missing-locale/invalid-number/provider cases, deterministic results and structured diagnostics with current table/provider/profile identities.
+<!-- library-base-source-locale:end -->
+
+
+
+<!-- library-base-source-patterns:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation patterns criterion (Open): Implement pattern/parser compilation and execution under explicit effects, actual runtime resource policy and backtracking rules, with checked unsupported or policy-violating outcomes. Preserve real profile and provider constraints and taint validation. Declared program/parser runtime resources are distinct from removed compiler input/work quotas; add no arbitrary compiler admission allowance. Evidence: actual match/find/replacement/parser cases, compilation effects, real policy violation and STD4006/STD4008 refusals, with honest restricted-profile and unavailable-provider scope.
+<!-- library-base-source-patterns:end -->
+
+
+
+<!-- library-base-source-math-surface:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation math-surface criterion (Open): Implement public numeric types and integer/float/elementary/interval/EFIR/mode APIs with declared supported subsets: fixed/big integers, rational/decimal/float/interval/complex/symbolic forms and actual arithmetic/conversion/domain operations. Preserve checked/wrapping/saturating/trapping/proven modes, precision/rounding/special values and explicit target policy. Refuse invalid division/remainder/shift/cast, hidden fast math and unsupported allocation/precision/runtime/profile combinations. Evidence: actual callable extremes, special values, domains and owning diagnostics, ordinary formal example, scalar/SIMD/GPU/hosted/formal performance artifacts and real provider/target identities.
+<!-- library-base-source-math-surface:end -->
+
+
+
+<!-- library-base-source-integer-family:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation integer-family criterion (Open): Implement unary integer? as membership in an L5 Integer value family, not convertibility. Preserve once-only evaluation/effects/transfers and inert payloads without conversion, allocation or mutation. Infer no width/range/mode/overflow proof or new profile/target permission. Evidence: real integer/noninteger, conversion-shaped values and effect/transfer/refusal cases. gravity.math owns the law; a core compatibility name does not implement the owned module.
+<!-- library-base-source-integer-family:end -->
+
+
+
+<!-- library-base-source-certificate-use:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation certificate-use criterion (Open): Expose actual declared elementary domain/branch/approximation/certificate and interval/rewrite APIs. Analyzable math lowers through typed Core into EFIR; EML remains symbolic verification/search, not ordinary execution. Consume genuine independent future math/independent-proof-and-certificate-checking results before certificate-dependent reliance, including required safety-critical/formal/reproducible approximation policy. Reject missing/invalid certificates, unsatisfied error bounds, domain/branch/exception/target mismatch and invented checker success. Evidence: actual EFIR/approximation/interval/rewrite products and independently checked accepted/refused use; synthesis and the broad Math parent do not substitute for that checker.
+<!-- library-base-source-certificate-use:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` Complete resource/concurrency/IO/network APIs
 
 Status: Open
@@ -423,6 +603,51 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 L19 actual standard foreign resource and safe-wrapper API criterion (Open): Implement selected usable FFI/process/network/host/handle APIs over actual declared provider/runtime/type/error/ownership contracts, exposing safe checked wrappers with real invariants and explicit unsafe entry points. Preserve directional string/collection/Option/Result/handle conversions, authentic effects/grants, named release and success/failure/thread/blocking behavior; never hide host null/errors or borrowed pointer lifetimes behind ordinary safe values. Required evidence: real accepted/refused API value/error/cleanup and supported-profile results with wrapper audit and source provenance. Compiler metadata and a release function name do not execute the API; held provider/native/callback operations stay held.
 <!-- stdlib-interop-source-library:end -->
 
+
+<!-- library-base-source-memory-surface:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation memory-surface criterion (Open): Implement actual allocator/region/arena/borrow/ownership/linear-resource/view/unsafe gateway APIs with explicit type/effect/memory strategy, ownership/lifetime, failure and deallocation behavior. Core receives only pure nonallocating markers/helpers; hardware only static maps/layout; systems/hosted/formal/meta paths retain explicit allocation, cleanup, phase and proof requirements. Refuse hidden allocators, safe use-after-free/double-close/uninitialized/alias/race/escape behavior and unsupported profiles. Evidence: actual callable valid/invalid API products and STD6001-STD6008 diagnostics, region example, host delegation and allocator/region/layout/compiler-specific performance results.
+<!-- library-base-source-memory-surface:end -->
+
+
+
+<!-- library-base-source-borrow-api:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation borrow-api criterion (Open): Make borrow/borrow-mut/scoped/split/region/arena APIs consume real ownership, access-mode, initialization, alignment/bounds and lifetime facts, preserving region tokens and valid transfer. No safe mutable aliases, dangling references or escaped region values are admitted. Library owns callable APIs and consumes independent Legality verdicts; a type-shaped wrapper or scope record does not prove access. Evidence: actual shared/mutable/split/region reset and escape/alias/stale-owner refusal cases, with proof/check and current storage/provider identities.
+<!-- library-base-source-borrow-api:end -->
+
+
+
+<!-- library-base-source-linear-api:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation linear-api criterion (Open): Implement resource/close/transfer/defer/using/scoped/must-close APIs with exactly-once close, transfer or explicitly leak-declared handling and deterministic cleanup order where the profile supports it. Safe views expose actual retention/borrow/copy and access effects. Host management and process exit do not discharge Gravity ownership or leak diagnostics. Evidence: actual success/failure/transfer/cleanup-order/after-transfer/double-close/leak cases with real Runtime products, preserving the selected profile's supported scope.
+<!-- library-base-source-linear-api:end -->
+
+
+
+<!-- library-base-source-unsafe-api:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation unsafe-api criterion (Open): Keep raw pointer/manual free/allocator/optimized internals in explicit unsafe islands with stable owner/id/entrypoints/preconditions/invariants, proof/check obligations, tests/fuzz and safe wrapper list. Safe exports must prove/check preconditions, reject compilation or retain explicit unsafe responsibility; target UB never justifies safety. Consume exact GOV9 audit and security review only where applicable, without creating a routine development permission gate. Evidence: real wrapper signatures, invalid-precondition negatives, audit/provenance and actual memory/FFI/target-preservation products; an island label or generic security PASS is insufficient.
+<!-- library-base-source-unsafe-api:end -->
+
+
+
+<!-- library-base-source-host-memory:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation host-memory criterion (Open): Expose Gravity ownership/close/transfer/leak semantics for host-managed resources with explicit provider, null/error, lifetime and thread behavior. Preserve deterministic cleanup despite GC/finalizers, and actual persistent/borrowed view lifetimes under declared representation policy. Refuse hidden host allocation, unmanaged callbacks and host cleanup substituted for the public contract. Evidence: genuine supported hosted/native resource comparisons, close/leak/borrow/error and unsupported-profile/refusal cases, with live/provider execution kept within actual holds.
+<!-- library-base-source-host-memory:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` Complete schema/query/workflow/AI/meta/crypto/UI adapters
 
 Status: Open
@@ -469,6 +694,24 @@ Apply the [complete library-principles source criteria](plan.md#complete-library
 
 Decision criterion interface/language/library/record-compatibility-event: Classify API/profile changes under semantic compatibility rules; breaking changes carry explicit migration and feasible shim records with source/version identity. Reject: Reject silent breaking changes, stale compatibility evidence and unchecked/semantics-changing shims; preserve justified infeasibility when no safe rewrite exists. Required outputs: Compatibility event/version record, migration/shim or infeasibility artifact and preserved/broken-client fixtures.
 <!-- stdlib-library-source-finite-record-compatibility-event:end -->
+
+
+
+<!-- library-base-source-release-assembly:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation release-assembly criterion (Open): Assemble claimed library module/package/docs/export/profile/effect/safety/conformance artifacts from real implementations and independently applicable results. Every change has STD20 classification before release; actual GOV3/GOV8 admission/stabilization, GOV2 compatibility where breaking, provider records, reproducibility, signatures and SBOM accompany the claimed grade. Refuse false supported profiles, manifest disagreement, stale evidence, unsafe leaks and evidence-free stabilization. Evidence: actual per-module release dossiers, compatible/deprecated/experimental/breaking outcomes and blocked claims; signing/publication permissions and wider module completion stay separate.
+<!-- library-base-source-release-assembly:end -->
+
+
+
+<!-- library-base-source-audit-consumption:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation audit-consumption criterion (Open): Consume the existing evolution/security-review task's distinct GOV9 unsafe-audit verdict for each exact island/source/owner/profile/target/wrapper and applicable GOV4 security decision, keeping those decisions separate. Revalidate relevant changed assumptions and preserve invalid-precondition and specialist memory/concurrency/FFI/backend evidence in package/release provenance. Deny stabilization/release with stale/missing audit or unenforced wrapper conditions. Evidence: actual accepted/refused audit-consumer cases and GOV9001-GOV9008, without performing the independent review here or gating ordinary API implementation.
+<!-- library-base-source-audit-consumption:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

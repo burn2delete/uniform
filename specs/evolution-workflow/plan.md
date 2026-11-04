@@ -230,3 +230,9 @@ Current source/interface entailment and independent acceptance remain pending. P
 Use the [interoperability producer and consumer order](../runtime-workflow/plan.md#interoperability-producer-and-consumer-order) and sole selected-result table. Complete L19 conditional stability/promotion decisions consume early actual old/new ABI/schema/source/type/error/resource/profile/target/lock and oracle/policy interfaces, then real affected compatibility/parity and checked migration evidence or justified infeasibility before the scoped decision. Final migrated products are no first review input, and temporary shims remain temporary unless promoted. Compatible local implementation gains no per-run approval or fresh migration-proof gate.
 
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Reuse the existing distinct GOV9 unsafe-audit decision and GOV3 module admission. Current source/wrapper/target/profile/compiler assumption changes require applicable revalidation before stabilization/release. A GOV4 security PASS is no GOV9 audit, and ordinary implementation is not gated by a new permission ceremony.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.

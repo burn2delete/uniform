@@ -224,6 +224,15 @@ Complete L12 evaluation-record packaging criterion (Open): Consume the evaluator
 <!-- compile-time-source-artifact:end -->
 
 
+
+<!-- library-base-source-signing:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation signing criterion (Open): Consume actual content-addressed canonical library payload/content/manifest subjects before signing/packaging. Apply the declared key scope, validity and signing/verification policy; signature integrity alone establishes neither provenance nor authorization. Preserve compiler/source/dependency/build/test/unsafe/governance identity and required SBOM/compatibility records. Refuse stale/mismatched subjects, untrusted or wrong-scope keys, missing provenance and development-only release claims. Evidence: actual permitted canonical-signature/verification/consumer and negative products, with custody/signing/publication holds explicit and no new permission granted by this plan.
+<!-- library-base-source-signing:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix
 
 Status: Open
@@ -276,6 +285,15 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 
 L19 actual versioned binding and artifact reproducibility criterion (Open): Repeat selected real declared generation/builds from the same authentic incumbent/schema/provider/compiler/target/lock and permitted effect inputs, comparing actual binding/codecs/metadata/provenance artifacts under the governing reproducibility contract. Versioned labels and assigned reproducible flags do not establish equality, compatibility, privacy or incumbent parity. Preserve accurate source identity even where selected semantic outputs are stable; unavailable inputs cannot pass. Required evidence: genuine repeated locked-build/generation comparisons and changed-input/missing-source negatives, with final selfhost/release equivalence and authorized signing/publication remaining separate.
 <!-- build-interop-source-reproducibility:end -->
+
+
+
+<!-- library-base-source-recipe:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation recipe criterion (Open): Produce the actual standard-library release recipe and repeat-build comparison over controlled source/project/lock/compiler/toolchain/graph/profile/target/environment/locale/timezone/order/timestamp/seed/network/generated/blob/FFI inputs and output identities. Record permitted nondeterminism and policy exceptions and bind actual canonical content/manifests rather than filenames or supplied matching hashes. Refuse missing/changed/unrecorded inputs and false reproducibility. Evidence: real locked build recipes, actual repeated content/manifest comparisons, invalidation and exact package/STD1 refusals; future signed outputs are no first recipe inputs.
+<!-- library-base-source-recipe:end -->
 
 <!-- build-implementation-tasks:end -->
 

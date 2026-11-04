@@ -673,6 +673,12 @@ Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14
 
 All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
 
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Math's existing EFIR/elementary/provider/floating/conversion predicates retain their roles. The five existing deeper Math future tasks remain unchanged; actual independent certificate acceptance belongs to math/independent-proof-and-certificate-checking, not synthesis or a broad parent success flag. EML is symbolic search/verification, not execution.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

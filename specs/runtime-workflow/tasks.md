@@ -122,6 +122,15 @@ Apply the [complete interoperability and migration source criteria](plan.md#comp
 L19 complete hosted bridge behavior criterion (Open): Execute selected declared bridge runtime version/reflection-or-dynamic-dispatch/object-lifetime-rooting/threading/exception/performance-allocation/missing-feature contracts, preserving all seven host-declaration fields. Host runtime behavior remains behind an explicit boundary artifact measured and replaceable during migration, not part of portable Gravity. Actual null/error conversion and deterministic resource cleanup use their real owners; host GC alone cannot establish linear release. Reject unknown runtime versions, hidden reflection, unsafe roots/thread affinity, unmodeled failures and hosted behavior in unsupported profiles. Required evidence: actual selected host values/errors/roots/cleanup/source maps and non-hosted refusals; a fixed JVM/JS/Wasm adapter manifest does not execute a bridge or establish those results.
 <!-- runtime-interop-source-hosts:end -->
 
+
+<!-- library-base-source-cleanup-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation cleanup-runtime criterion (Open): Release real linear resources deterministically under the declared lifecycle, including ordinary success, recoverable failure, transfer and panic/unwind paths where supported. Preserve exactly-once consumption, ordered cleanup, original error/diagnostic context and host/native ownership rules independently of process exit or GC. Refuse double close, post-transfer use, hidden leak/finalizer policy and unverified callback/resource lifetime. Evidence: actual permitted linked Runtime cleanup traces and negative outcomes with exact provider/compiler/profile identities; a plan or static record is no execution receipt.
+<!-- library-base-source-cleanup-runtime:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -210,6 +219,15 @@ Apply the [complete interoperability and migration source criteria](plan.md#comp
 
 L19 actual foreign conversion, call and cleanup criterion (Open): At each selected permitted boundary, execute actual declared directional value conversion/call/ownership transfer/borrow/release under real provider/ABI/layout/grant/profile/thread/blocking contracts. Preserve six pointer facts, seven ownership modes and named release behavior across success and failure, with actual synchronized sharing where claimed. Translate foreign exceptions, panics, error codes/errno, rejected promises, signals and process exits into declared Gravity errors before safe entry; unexpected or undeclared null cannot enter non-null types, while declared Option absence remains legal. Reject incomplete maps, wrong allocator/thread/ownership, unmodeled foreign failure and unsafe casts disguised safe. Required evidence: real values/errors/resource and concurrency traces and refusal fixtures; current native/callback/provider/device execution restrictions remain, so manifests and status flags do not close this task.
 <!-- runtime-interop-source-execute:end -->
+
+
+<!-- library-base-source-allocation-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation allocation-runtime criterion (Open): Execute the selected allocator/provider with actual family/version/profile/target, alignment/layout, initialization, ownership/lifetime, failure/blocking/sharing and deallocation contracts. Real current admitted requests and compatible provider bindings precede allocation, resize/reset and memory-view use. Reject hidden allocator substitution, invalid alignment/lifetime/region escape or unsupported runtime services. Evidence: actual provider allocation/value/failure and region/view cleanup products plus owning diagnostics; Library's typed allocation API and a provider descriptor do not establish Runtime execution.
+<!-- library-base-source-allocation-runtime:end -->
+
 
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
