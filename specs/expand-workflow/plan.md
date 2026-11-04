@@ -83,7 +83,7 @@ active L12 diagnostics. Fuel-only refusal and mandatory replacement totality
 admission remain removed. Keep actual semantic/phase/cycle/target/Unicode and
 host/watchdog/external billing requirements. The existing D1/C1/C5/C6 ordering decision remains with its owner; stage
 labels do not resolve it. Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs)
-for hermetic inputs; canonical L6 wording clarification remains separate work. PKG2 rejects actual build cycles unless the governing
+for hermetic inputs; canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed. PKG2 rejects actual build cycles unless the governing
 marked compiler-bootstrap fixed point applies. Coarse feedback is no permission
 to introduce an unmarked graph cycle.
 
@@ -143,8 +143,7 @@ In required hermetic modes, apply declared file/environment value policy,
 configured replayable provider or pinned network/shell/model/tool result,
 recorded clock/random values or seeds, declared target manifests and generated
 input hashes. The hermetic input policy is selected by [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs).
-Build/Expand still require actual premise and live-behavior evidence; canonical
-L6 wording clarification and its source successor remain separate work. A grant or recorded non-replayability exception waives none of
+Build/Expand still require actual premise and live-behavior evidence; canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed. A grant or recorded non-replayability exception waives none of
 these premises. Identical declared semantic inputs require identical typed Core;
 native metadata exceptions cannot weaken that equality.
 
@@ -282,7 +281,7 @@ Real Reader/Syntax graphs, available macro definitions/bindings and checked comp
 
 Syntax owns the observable carrier and transformation interface; Expand owns execution and macro-specific facts, Auth actual selection/grants, Legality ordinary safety classification, Compiler API versioned service boundaries, and Build shared cache policy and real repeated-build comparison. Retain the [macro cache replacement boundary](#macro-engine-cache-replacement-boundary): selected engines may implement their own keys/storage/invalidation/scheduling under shared semantic-input, trace/replay and current-policy requirements. Structural reference/alternative equivalence permits declared representation differences and alpha-renaming; it does not relax L12 same-input hermetic typed-Core byte equality. Initial local interfaces/fixtures do not require whole-component completion, a final suite, fresh migration admission or publication. Actual composition needs real selected producer/consumer products.
 
-All thirteen build/compiler effects retain real declaration/grant/provider/phase/scope/input/output/replay/redaction contracts; runtime-only values, authority, handles and deployment secrets cannot be captured. Apply exact L12 hermetic premises conjunctively; [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) resolves the input policy while D1/C1/C5/C6 ordering remains with its owner. Canonical L6 wording clarification remains separate work. Grants alone are insufficient, and later trace/evidence cannot authorize its own first action. Full SAFE6 records and actual applicable review remain distinct from a policy/request token. Taint must survive through generated sinks with structured parameterization or actual validator/sink metadata.
+All thirteen build/compiler effects retain real declaration/grant/provider/phase/scope/input/output/replay/redaction contracts; runtime-only values, authority, handles and deployment secrets cannot be captured. Apply exact L12 hermetic premises conjunctively; [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) resolves the input policy while D1/C1/C5/C6 ordering remains with its owner. Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed. Grants alone are insufficient, and later trace/evidence cannot authorize its own first action. Full SAFE6 records and actual applicable review remain distinct from a policy/request token. Taint must survive through generated sinks with structured parameterization or actual validator/sink metadata.
 
 ### Positive, refusal and evidence population
 
