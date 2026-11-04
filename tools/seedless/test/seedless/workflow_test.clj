@@ -602,9 +602,9 @@
     (try
       (is (= plan (validation/validate! schema/plan plan)))
       (is (= plan (w/validate-plan! plan {})))
+      (is (= plan (w/validate-plan! (assoc plan :slices [(assoc p :key "standalone" :dependencies [] :stack-on "")]) {})))
       (is (thrown-with-msg? Exception #"Stack parent must be a declared dependency"
-                            (w/validate-plan! (assoc plan :slices [(assoc p :key "standalone" :stack-on "")
-                                                                     (assoc (dissoc child :status) :stack-on "Main branch")]) {})))
+                            (w/validate-plan! (assoc plan :slices [p (assoc (dissoc child :status) :stack-on "Main branch")]) {})))
       (is (thrown-with-msg? Exception #"Unknown slice dependency"
                             (w/validate-plan! (assoc plan :slices [(assoc p :dependencies ["missing"])]) {})))
       (is (thrown? Exception (w/validate-plan! (assoc plan :slices [(assoc p :dependencies ["child"]) child]) {})))
@@ -632,6 +632,7 @@
                     w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
                     gh/pages (fn [& _] [])
                     gh/comment! (fn [& _])
+                    w/campaign-issue! (fn [& _] {})
                     w/admit! (fn [& _] (swap! admitted inc))
                     w/job! (fn [_ _ _ prompt _] (swap! prompts conj prompt) invalid)]
         (is (thrown-with-msg? Exception #"Stack parent must be a declared dependency" (w/plan! ctx)))
