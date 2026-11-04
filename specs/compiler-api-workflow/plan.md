@@ -346,6 +346,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Pass evidence starts from real required-fact/checker/subject/invalidation and selected-family assumption schemas. Actual matching current source/profile/target/layout/provider/pass subjects and independent proof/checker results precede required target reliance or elision. Imported certificates need compatible digest/compiler/profile/target/provider/schema and caller-policy trust verification; future backend output or metadata cannot be its own proof premise. Complete B4-B14 selected interface: Domain boundaries start from independent actual source anchor/schema/type/effect/verifier/exit and selected lowering contracts, then produce real checked admitted domain subjects before selected backend use. Later actual family outputs and reference/conformance results check the exit. Ordinary Core-only requests need no domain IR; future backend success cannot create its first domain semantics, and C12 restrictions persist.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

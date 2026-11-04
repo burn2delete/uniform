@@ -197,6 +197,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Hardware-domain work starts from actual fixed-width cycle/state/clock/reset/CDC/protocol/timing semantics and selected backend interface facts. Actual checked circuit/state products precede HDL lowering, followed by real required benches/traces/reference or accepted synthesis results. Finite circuit legality is not compiler accounting; no generic unsafe waiver or selected product device is inferred.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

@@ -83,6 +83,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Emit writer work uses real selected kind/encoding/write/readback/source/proof/manifest interfaces first, then actual admitted family bytes or declared canonical representations and complete current records. Validate actual output and preserve owning diagnostics, including partial refused artifacts. Later conformance/release bundles do not supply the first writer schema, and no universal native target or signing gate is introduced.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

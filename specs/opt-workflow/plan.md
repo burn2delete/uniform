@@ -212,6 +212,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Optional Gravity optimization verification starts with real selected-family numeric/layout/assumption/helper/pass interfaces and later actual before/after products with affected invalidation and accepted regeneration. It does not make Opt or MLIR mandatory for raw MIR and does not replace verification required for actually configured MLIR/backend passes. Preserve source/safety/authority facts independently of equal results.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

@@ -403,6 +403,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Provider declarations and deterministic selection start from independent authentic provider/version/profile/target/ABI/schema/effect support, informed by actual selected family requests. Real compatible bindings precede helper/import/device/database/model/platform reliance; future family artifacts and final execution traces do not create initial provider authority or availability. Complete B4-B14 selected interface: Grant composition starts from real operation/resource/scope/phase/lifetime and selected boundary request interfaces. Authentic current intersection/attenuation/revocation and allow/deny decisions precede admitted import/export, reflection/global/tool/database/device/platform operations; future backend conformance never creates a grant or bypasses source/runtime policy. Complete B4-B14 selected interface: Artifact trust starts from actual common content/kind/schema/claim/caller-policy and selected family identity contracts. Real current content/provenance and required compiler/profile/target/provider/signature/certificate verification precede reliance under governing policy. Early declarations do not require future signed packages, and a package name or development-only record cannot establish release trust.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

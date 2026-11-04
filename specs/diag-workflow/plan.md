@@ -279,6 +279,12 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## B4-B14 dependency interface
+
+Use the [B4-B14 producer and consumer order](../backends-workflow/plan.md#b4-b14-producer-and-consumer-order) and sole selected-result table. Complete B4-B14 selected interface: Diagnostic carriers expose actual B4-B14 and C14 owning identities/context fields before failures, then retain genuine family refusals, expected/actual diagnostic identity, missing facts, profile/target/provider/artifact and remediation under the actual redaction policy. Producing bytes cannot suppress a source/lowering refusal, and equal results cannot excuse missing metadata. Complete B4-B14 selected interface: Origin composition exposes source/generated/IR/domain/lowering/target edge contracts first, then preserves genuine target-construct-to-source-and-proof maps across conversion/pass/adapter outputs and rejected partial artifacts. Actual repair and current generator/compiler/pass identity remain visible; a future successful artifact is no first source-map premise.
+
+All task bodies/statuses, 84 source criteria, historical receipt/review scopes and forty future declarations/bindings remain exact. Current source/interface entailment and independent acceptance remain pending. No implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority
