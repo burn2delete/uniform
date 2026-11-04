@@ -139,6 +139,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 actual library authority criterion (Open): Require authentic in-scope capability/provider authority at each real effectful library action under its declared phase, lifetime, attenuation/revocation and policy. An explicit capability value, a declared provider context or expressly permitted hosted convenience path still records the concrete effect; ambient globals and a library classification do not supply authority. Require the declared :compiler/read-ir effect and authentic C17 read scope under :compiler/ir-transform for IR inspection; a read-only scope cannot authorize rewriting without the real write scope/effect. Emit L13-CAPABILITY and required audit without externally visible action on denial. Required evidence: allowed/denied/expired/revoked/wrong-phase selected action cases and exact principal/action/export/provider/source records; all held execution stays unrun.
 <!-- auth-library-source-grants:end -->
 
+
+<!-- library-service-source-operation-grants:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service operation-grants criterion (Open): Produce authentic operation-specific provider/selection/grant/phase/lifetime decisions for scheduler, filesystem roots/operations, network hosts/ports/protocols/listen and declared compiler-tooling services. STD8 and STD9 forbid ambient file/standard-stream/host-path or network authority; another module's expressly permitted convenience context cannot broaden those contracts. Preserve attenuation, revocation, scope and provider compatibility across handle transfer, redirects, tasks, tools and callbacks, with actual service gates consuming the decisions. Human-review capability or review-request records do not issue the required approval. Reject undeclared, widened, wrong-phase, expired/revoked and incompatible provider/grant use. Evidence: authentic admission/denial/selection artifacts and actual consuming-boundary denial fixtures with root/endpoint/source identities; grant metadata alone is no service execution or external permission.
+<!-- library-service-source-operation-grants:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

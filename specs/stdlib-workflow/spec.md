@@ -72,6 +72,8 @@ and final seedless compiler release remain separate.
 
 The [complete library-principles source criteria](plan.md#complete-library-principles-source-criteria) bind full L13 public contracts, five layers, seven API classes, actual data/numeric/resource/compiler behavior, profile/type/effect/grant/safety checks, all artifacts/diagnostics and executable examples to existing owners. Ten earlier exact predicates are restored without review renewal; generated-source checking remains with Expand. Wider STD1-STD20 source/task entailment, implementation acceptance and current independent review remain pending.
 
+The [complete concurrency and IO library criteria](plan.md#complete-concurrency-and-io-library-source-criteria) refine complete current STD7/STD8/STD9 callable task/channel/actor/synchronization/scheduler, typed stream/path/filesystem and URL/HTTP/TLS/body APIs. Exact existing concurrency predicates retain their roles; actual cleanup, effects/grants, service enforcement/redaction and no-repeat replay stay with their existing owners. Distinct Schema/service producers, current unsafe audits, per-profile examples and real conformance remain required. Source budget passages are explicitly qualified by current accounting removal. Wider STD10-STD20 source reconciliation and current whole-source/interface acceptance remain pending.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

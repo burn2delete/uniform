@@ -61,6 +61,12 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Preserve selected real atomic order/scope/alignment, synchronization, resource/failure/effect/grant and source-origin semantics through admitted target/provider artifacts. Unsupported orders/profile/targets reject or use only their explicitly permitted equivalent primitive. Hosted scheduler/path/permission/TLS/DNS/socket delegation needs actual provider/error evidence; pure helpers are no target-wide service support.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

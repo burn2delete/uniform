@@ -194,3 +194,9 @@ Task identities/statuses, historical review scopes and actual restrictions remai
 Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Retain actual library admission, compatibility/deprecation/stabilization and unsafe/security policy ownership. Library assembles affected per-release records and profile-change events; a report or signature does not confer approval.
 
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The existing distinct GOV9 audit and module-governance owners retain unsafe scheduler/lock/interrupt/atomic, filesystem adapter/listener/raw-socket/TLS review and revalidation. Library consumes actual current audit decisions at its safe wrapper; a generic security PASS does not establish unsafe audit, and ordinary declared-interface development gains no routine permission gate.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.

@@ -167,6 +167,12 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The unchanged Runtime3 concurrency predicate owns actual scheduler/atomic/channel/actor execution; Runtime2 performs genuine deterministic close/cancel/failure cleanup, Runtime4 records choices and real IO/network results for no-repeat replay, and Runtime5 enforces actual service authority and redacts observations. Provider startup remains Runtime2. Library owns callable filesystem/network semantics over these genuine admitted services; a manifest, fake or supplied execution trace cannot prove the selected live service.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

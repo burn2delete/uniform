@@ -106,6 +106,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 Source obligation `language/errors/lower-panic`: Lower an unrecoverable panic according to the active profile, preserving source/artifact provenance when possible and rejecting panic as ordinary stable-API control flow. Accept: Emit the selected profile's panic lowering: hosted exception/task abort, native runtime handler, kernel trap/platform path, firmware reset/halt, hardware synthesis-time unreachable/trap artifact or runtime-panic rejection, distributed failure state and AI policy/orchestration record. Preserve source/artifact provenance when available and declare try/throw lowering or rejection. Reject: Reject panic as ordinary stable-API control flow, an unsupported lowering or an undeclared profile failure path; report L9-PANIC-PROFILE. Required outputs: Profile-specific panic/error lowering matrix, target failure artifacts, positive/negative fixtures and provenance-linked diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
 <!-- runtime-error-source-finite-panic:end -->
 
+
+<!-- library-service-source-resource-cleanup:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service resource-cleanup criterion (Open): Execute deterministic cleanup for task cancellation/timeout/failure, linear/scoped files, client/server/socket/body-stream resources and partially initialized provider operations under their declared ownership/lifecycle rules. with-open closes the actual handle exactly once; closed or transferred resources cannot be reused. Preserve ordered cleanup handlers, resource/failure and diagnostic context independently of process exit or managed finalization. Reject leaked, double-closed, post-close or unclosed failure paths and cancellation flags without real cleanup. Evidence: actual normal/failure/cancel/timeout/partial-init close/release traces, invalid lifetime refusals and STD7002/STD8004 or owning resource diagnostics, tied to provider/source/resource identities; Library's wrapper declaration does not execute Runtime cleanup.
+<!-- library-service-source-resource-cleanup:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -247,6 +256,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 Source obligation `language/errors/emit-durable-workflow-failure`: Emit and replay a durable workflow failure record with its step/input/error identity, retry/compensation policy and external-result/replay provenance. Accept: Persist and replay a workflow failure with step ID, input and output/error schemas, retry/compensation policy, time, external-call results and replay ID; retain source/generated origins and exercise failure plus compensation replay. Reject: Reject workflow failure without durable record, missing required schema/policy/result/replay identity or live re-execution during recorded replay; report L9-WORKFLOW-ERROR. Required outputs: Durable typed failure and compensation records, replay equality/refusal fixtures and source/generated-origin diagnostic artifacts. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
 <!-- runtime-error-source-finite-workflow:end -->
 
+
+<!-- library-service-source-recorded-service-replay:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service recorded-service-replay criterion (Open): Record actual replay-relevant scheduling choices and service inputs/outputs/errors with task/step/event/schema/provider/authority identity; replay consumes the recorded results and deterministic choices without repeating recorded external effects. Filesystem/network workflow operations must be recorded, idempotent under the governing contract or activity-isolated; an idempotent label cannot authorize a live call inside a stricter recorded-output segment. Preserve typed timeout/retry/backpressure, cancellation/cleanup and genuine failure/idempotency policy. AI execution preserves tool/model authorization, required review, policy and eval-event order, separately qualifying superseded project budget passages and actual external account restrictions. Reject unrecorded required scheduler/IO/network nondeterminism, changed records and hidden live service reacquisition during replay. Evidence: actual permitted record/replay values, ordering/equality/failure/denial and no-repeat traces with STD7005/STD8007/STD9007 and applicable AI diagnostics; held replay/external actions remain unrun.
+<!-- library-service-source-recorded-service-replay:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -298,6 +316,24 @@ Criterion `runtime/deployment-provider-authority/decision-interface` (Open): Inp
 Complete R11 action/handle enforcement criterion (Open): At the actual service sink, deny absent matching authority and check requested effects/capabilities, provider presence/scope/policy and source/package/deployment constraints before each authority-bearing action. Cover filesystem, network, database, environment, process, shell, secrets, FFI, raw memory, devices, models, tools, memory writes, human-review actions, deployment, package mutation and observability sinks. Bind action/principal/agent, namespace/module/package, deployment/artifact/source or generated origin, effect/capability/provider, policy inputs, grant/denial, handle, redaction and audit status. Issue and use typed scoped handles with real grantor/recipient/allowed-effect/lifetime/provider-policy records and supported revocation; reject wider delegation, expired/revoked use, unsupported assumptions and ambient globals. Apply caller/callee dual-contract and deployment narrowing checks, declared error/panic behavior, policy-required audit and actual redaction, including separately authorized observation sinks. Produce real allow/deny/delegate/revoke and no-action-after-denial results; supplied grant tables, empty leak lists, unrevoked flags or coverage counts do not execute enforcement. Required review tokens/events remain distinct from authority to request review.
 <!-- authority-source-runtime:end -->
 
+
+
+
+<!-- library-service-source-actual-service-enforcement:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service actual-service-enforcement criterion (Open): Enforce accepted profile/effect/capability/package/deployment rules at the actual scheduler, filesystem, network and host-adapter service boundary before the denied action can occur. Preserve operation-specific roots/hosts/ports/protocols/listen, principal/package/deployment/source/artifact/provider identity, phase/lifetime, attenuation/revocation and declared policy. Require the selected compatible provider/delegation product; API metadata and a checked compile-time grant alone do not execute enforcement or create authority. Reject ambient access, widened/expired/revoked authority, forbidden blocking/profile behavior and unsupported service substitution. Evidence: real allowed/refused service-hook observations with no action after denial, caller/callee/deployment facts, stable Gravity errors and STD7003/STD7007/STD8001/STD8002/STD9001 or applicable owning diagnostics; actual native/provider/listener execution remains subject to existing restrictions.
+<!-- library-service-source-actual-service-enforcement:end -->
+
+
+
+<!-- library-service-source-service-observation:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-observation criterion (Open): Emit actual stable source/schema/context-linked service logs, traces, metrics, diagnostics and audit events without changing required program ordering, replay or safety. Mark and redact secrets in HTTP headers, credentials, URLs and bodies, including denial/host-error/retry/cancellation paths, while preserving useful diagnostic codes and source/generated origins. Preserve synchronization/scheduler/provider/path/endpoint/TLS/schema/policy and required-review/eval event links without logging secret captures or raw memory. Reject unredacted secrets, raw host errors substituted for Gravity diagnostics, missing context and observability that silently changes scheduler/replay semantics. Evidence: actual redacted service/error/audit/event products and negative leak/order/schema tests, STD9006 and required host delegation/error mapping records; a declared redaction policy does not prove actual output was redacted.
+<!-- library-service-source-service-observation:end -->
 
 <!-- runtime-implementation-tasks:end -->
 

@@ -151,6 +151,12 @@ Use the [complete library-principles source criteria](../stdlib-workflow/plan.md
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
 
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Keep source atomic defaults and explicit supported weaker orders, synchronization, cleanup, cancellation, capability denials, redaction and replay/event order intact. A check may disappear only under current claim-specific proof and backend preservation; changing the provider/target/control/alias/lifetime/order facts invalidates affected proof. Optional passes do not gate initial module/signature/fixture development.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

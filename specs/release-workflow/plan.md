@@ -305,6 +305,12 @@ Use the [complete library-principles source criteria](../stdlib-workflow/plan.md
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
 
 
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Existing TEST7 and broader language/runtime/profile/AI-workflow suites produce real legal/illegal module, race/lifetime, path/encoding/durability, TLS/schema/redaction and replay results for exact claimed subjects. Library assembles those outputs; Release consumes them with current independent audits/review. Existing future suite predicates/roles remain exact; no test catalog, p16 status, seed package or narrow Linux LLVM receipt closes wider service support.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

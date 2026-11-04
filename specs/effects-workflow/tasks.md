@@ -152,6 +152,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 actual public library effect-admission criterion (Open): Admit each selected library call only after actual inferred body/latent/transitive requirements fit the caller's declared effect allowance and applicable profile/runtime/safety conditions, with Auth independently checking authentic capability grants. Preserve allocation, blocking, panic, nondeterminism, resource and provider requirements even behind pure-looking facade or target-specific implementation. Emit L13-EFFECT and owning legality diagnostics for real failures; a published class/signature, caught Result, permitted hosted convenience context or exported name cannot hide an effect or widen authority. Required evidence: actual accepted/refused call summaries, current context/profile/service premises and source-bound diagnostics, with the inherited Auth owner retained as grant context rather than inference/admission ownership.
 <!-- effects-library-source-effects:end -->
 
+
+<!-- library-service-source-service-effect-admission:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-effect-admission criterion (Open): Check direct and latent effects/capabilities of actual concurrency/IO/network calls and callbacks, including spawn/block/schedule/sleep/atomic/lock/message, stream/filesystem read/write/seek/metadata/watch/delete/execute-like operations and outbound/inbound/DNS/TLS/websocket/stream/listen. Admission preserves profile/context blocking restrictions, cancellation, callback/handler/schema/auth effect boundaries and generated source provenance. A capability value is data until use; a provider or callback type cannot erase the concrete action. Filesystem execute-like metadata grants no STD16 process/shell behavior. Reject undeclared effects, forbidden blocking and hidden ambient service use with source-bound owning errors. Evidence: actual checked accepted/rejected source and latent callback/handler cases, effect/grant/profile facts and STD7003/STD8001/STD9001 where applicable; runtime service enforcement remains a separate required consumer.
+<!-- library-service-source-service-effect-admission:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
