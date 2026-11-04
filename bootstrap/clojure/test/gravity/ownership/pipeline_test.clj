@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [gravity.bootstrap :as b]
             [gravity.c9-ownership-checker :as c9]
+            [gravity.c9-ownership-checker.artifact :as artifact]
             [gravity.c9-ownership-checker.catalog :as catalog]
             [gravity.c9-ownership-checker.graphs :as graphs]
             [gravity.c9-ownership-checker.lifecycles :as lifecycles]
@@ -30,7 +31,7 @@
            'native-ownership-diagnostics 'native-linear-paths-exact?
            'native-verifier-report 'native-ownership-capability-proof 'native-validate!
            'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
-           'native-override-diagnostics 'native-ownership-message}
+           'native-override-diagnostics 'native-ownership-message 'native-artifact-projection}
          (set (keys (ns-publics 'gravity.ownership)))))
   (doseq [[name operation] (ns-publics 'gravity.ownership)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -132,6 +133,148 @@
    {:records [{:profile-legal? true}]}
    {:records [{:unsafe-island :provided-native-data :review :required}]}
    {:diagnostics [{:diagnostic "native-a"} {:diagnostic "native-z"}]}])
+
+(defn- native-assembly-inputs []
+  (into ["native-metadata-only"
+         {:module 'native.assembly :profile :hosted :target :jvm
+          :metadata {:unsafe-island :provided :ai/human-review :required}} {}]
+        (conj native-report-inputs
+              (apply ownership/native-verifier-report ownership/native-linear-paths-exact?
+                     ["native-z" "native-a"] native-report-inputs))))
+
+(defn- assembly-operations [calls]
+  (let [proof (fn [value]
+                (swap! calls conj [:proof value])
+                (ownership/native-ownership-capability-proof value))]
+    {:validate! (fn [path value]
+                  (swap! calls conj [:validate path value])
+                  (ownership/native-validate!
+                   proof
+                   (fn [id source stage facts]
+                     (swap! calls conj [:refusal id source stage facts])
+                     (throw (ex-info "Native assembly validation refusal"
+                                     {:id id :source source :stage stage :facts facts})))
+                   path value))
+     :capability-proof proof
+     :artifact-id (fn [value] (swap! calls conj [:identity value]) (b/c4-artifact-id value))
+     :governing-document "provided-native-document" :diagnostic-ids ["native-z" "native-a"]}))
+
+(deftest native-assembly-keeps-original-map-order-identities-and-nonauthority-envelope
+  (let [calls (atom []) inputs (native-assembly-inputs)
+        result (apply ownership/native-artifact-projection (assembly-operations calls) inputs)
+        raw (:artifact result) events @calls
+        base (nth (first events) 2) enriched (second (last events))
+        contract (:gravity/namespace-contract (meta #'ownership/native-artifact-projection))]
+    (is (= #{:kind :admission :authenticates-inputs? :artifact} (set (keys result))))
+    (is (= :gravity/native-c9-artifact-projection (:kind result)))
+    (is (= :none (:admission result)))
+    (is (false? (:authenticates-inputs? result)))
+    (is (= :gravity/stage0-c9-ownership-checker-artifact (:kind raw)))
+    (is (= [:validate :proof :proof :identity] (mapv first events)))
+    (is (= "native-metadata-only" (second (first events))))
+    (is (identical? base (second (nth events 1))))
+    (is (identical? base (second (nth events 2))))
+    (is (= (dissoc raw :artifact-id) enriched))
+    (is (not (contains? enriched :admission)))
+    (is (not (contains? enriched :authenticates-inputs?)))
+    (is (= (b/c4-artifact-id enriched) (:artifact-id raw)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id raw)))
+    (is (identical? (get-in inputs [1 :metadata]) (get-in raw [:module :metadata])))
+    (is (identical? (nth inputs 4) (:ownership-graph raw)))
+    (is (identical? (nth inputs 14) (:unsafe-audit-references raw)))
+    (is (= #{:validate! :capability-proof :artifact-id :governing-document :diagnostic-ids}
+           (:native-assembly-operation-keys contract)))
+    (is (true? (:source-path-is-metadata-only? contract)))
+    (is (false? (:projection-envelope-enters-legacy-hash? contract)))
+    (is (= :unchanged (get-in (c9/c9-engine-contract) [:native-artifact-projection :source-and-file-entrypoints])))))
+
+(deftest native-assembly-refuses-missing-native-fields-before-proof-publication-or-identity
+  (doseq [[field id] validation-rules]
+    (let [calls (atom []) inputs (update (native-assembly-inputs) 16 assoc
+                                       (if (= field :verifier-passed?) :status field)
+                                       (if (= field :verifier-passed?) :failed false))
+          error (try (apply ownership/native-artifact-projection (assembly-operations calls) inputs)
+                     (catch clojure.lang.ExceptionInfo value value))]
+      (is (= id (:id (ex-data error))))
+      (is (= {:missing-fields [field]} (:facts (ex-data error))))
+      (is (= [:validate :proof :refusal] (mapv first @calls))))))
+
+(deftest native-assembly-closed-operation-map-precedes-all-input-and-callback-observation
+  (let [calls (atom []) operations (assembly-operations calls)
+        inputs (assoc (native-assembly-inputs) 1 (Object.))]
+    (doseq [bad (concat (map #(dissoc operations %) (keys operations))
+                       (map #(assoc operations % (fn [& _] (throw (ex-info "forbidden operation" {}))))
+                            [:read-source-form-records :compiler-c8-effect-source-artifact
+                             :c9-ownership-graph :artifact-operations :*operations*]))]
+      (let [error (try (apply ownership/native-artifact-projection bad inputs)
+                       (catch clojure.lang.ExceptionInfo value value))]
+        (is (= :native-c9-assembly-operations (:id (ex-data error))))
+        (is (= (set (keys operations)) (:expected-operation-keys (ex-data error))))
+        (is (= (set (keys bad)) (:actual-operation-keys (ex-data error))))
+        (is (empty? @calls))))))
+
+(deftest native-assembly-keeps-callback-failure-identity-and-duplicate-proof-barriers
+  (doseq [failure [:validate [:proof 1] [:proof 2] :identity]]
+    (let [calls (atom []) proof-count (atom 0)
+          error (ex-info "Original assembly callback failure" {:operation failure})
+          event! (fn [event] (swap! calls conj event) (when (= event failure) (throw error)))
+          proof (fn [value] (event! [:proof (swap! proof-count inc)])
+                  (ownership/native-ownership-capability-proof value))
+          operations {:validate! (fn [path value]
+                                   (event! :validate)
+                                   (ownership/native-validate! proof (fn [& _] (throw error)) path value))
+                      :capability-proof proof
+                      :artifact-id (fn [value] (event! :identity) (b/c4-artifact-id value))
+                      :governing-document "native" :diagnostic-ids ["native-z" "native-a"]}
+          observed (try (apply ownership/native-artifact-projection operations (native-assembly-inputs))
+                        (catch Throwable value value))]
+      (is (identical? error observed))
+      (is (= (case failure
+               :validate [:validate]
+               [:proof 1] [:validate [:proof 1]]
+               [:proof 2] [:validate [:proof 1] [:proof 2]]
+               :identity [:validate [:proof 1] [:proof 2] :identity]) @calls)))))
+
+(defn- native-assembly-id [value] (b/c4-artifact-id value))
+
+(deftest native-assembly-preserves-captured-functions-and-late-var-roots
+  (doseq [capture-var? [false true]]
+    (with-redefs [native-assembly-id (constantly "early-native-id")]
+      (let [captured (if capture-var? #'native-assembly-id native-assembly-id)
+            operations (assoc (assembly-operations (atom []))
+                              :artifact-id captured
+                              :validate! (fn [& _]
+                                           (alter-var-root #'native-assembly-id
+                                                           (constantly (constantly "late-native-id")))))
+            result (apply ownership/native-artifact-projection operations (native-assembly-inputs))]
+        (is (= (if capture-var? "late-native-id" "early-native-id")
+               (get-in result [:artifact :artifact-id])))))))
+
+(deftest native-assembly-never-enters-source-or-file-routes-and-preserves-host-failures
+  (let [forbidden (fn [& _] (throw (ex-info "Source/file route must remain unreachable" {})))]
+    (with-redefs [b/compiler-c9-ownership-source-artifact forbidden
+                  b/compiler-c9-ownership-file-artifact forbidden
+                  c9/compiler-c9-ownership-source-artifact forbidden
+                  c9/compiler-c9-ownership-file-artifact forbidden
+                  artifact/source-artifact forbidden artifact/file-artifact forbidden]
+      (is (= :none (:admission
+                    (apply ownership/native-artifact-projection
+                           (assembly-operations (atom [])) (native-assembly-inputs)))))))
+  (doseq [index [1 3]]
+    (let [error (ex-info "Original native view failure" {:index index})
+          opaque (reify clojure.lang.Associative
+                   (entryAt [_ _] (throw error)) (containsKey [_ _] (throw error))
+                   (assoc [_ _ _] (throw error))
+                   (valAt [_ _] (throw error)) (valAt [_ _ _] (throw error))
+                   (count [_] 0) (cons [_ _] (throw error)) (empty [_] {})
+                   (equiv [_ _] false) (seq [_] nil))
+          calls (atom []) operations (assoc (assembly-operations calls) :validate! nil)
+          observed (try (apply ownership/native-artifact-projection operations
+                               (assoc (native-assembly-inputs) index opaque))
+                        (catch Throwable value value))]
+      ;; A new callback-type check would replace the original map/view failure.
+      (is (identical? error observed))
+      (is (empty? @calls)))))
 
 (def ^:private native-reporters
   [ownership/native-verifier-report verification/verifier-report

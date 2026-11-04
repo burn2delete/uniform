@@ -4,6 +4,8 @@
 
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
+ :native-assembly-boundary
+ :c9-native-nonauthoritative-artifact-projection,
  :public-api
  {persistent-ownership {:arglists ([role extra]), :admission :none},
   native-ownership-capability-proof
@@ -62,6 +64,29 @@
   {:admission :none,
    :native-compatibility-only? true,
    :kind :native-catalog-data},
+  native-artifact-projection
+  {:arglists
+   ([operations
+     source-path
+     module
+     overrides
+     c8-artifact
+     ownership
+     borrow
+     lifetimes
+     moves
+     escape
+     region
+     arena
+     linear
+     transfer
+     runtime
+     unsafe
+     diagnostics
+     verifier]),
+   :admission :none,
+   :native-compatibility-only? true,
+   :output-envelope :gravity/native-c9-artifact-projection},
   native-arena-generation-graph
   {:arglists ([module]),
    :admission :none,
@@ -121,6 +146,7 @@
   {:arglists ([module]),
    :admission :none,
    :native-compatibility-only? true}},
+ :projection-envelope-enters-legacy-hash? false,
  :native-proof-and-verifier-labels-are-data? true,
  :invalidated-verified-ir-facts [],
  :native-graph-boundary :c9-native-graph-projections,
@@ -133,7 +159,8 @@
    gravity.c9-ownership-checker.lifecycles
    gravity.c9-ownership-checker.resources
    gravity.c9-ownership-checker.verification
-   gravity.c9-ownership-checker.catalog],
+   gravity.c9-ownership-checker.catalog
+   gravity.c9-ownership-checker.artifact],
   :forbids
   [gravity.bootstrap
    gravity.c9-ownership-checker
@@ -141,6 +168,15 @@
    gravity.release]},
  :performs-runtime-checks? false,
  :native-catalog-status-is-data? true,
+ :preserves-native-assembly
+ [:captured-reference-and-value-identity
+  :legacy-map-fields
+  :validation-proof-and-identity-order
+  :duplicate-proof-calls
+  :refusal-before-identity
+  :legacy-identity-input
+  :source-and-file-prelude
+  :existing-interposition],
  :preserves-native-records
  [:record-fields-and-collection-types
   :ordering
@@ -159,6 +195,13 @@
   :compatibility-alias-initialization-and-snapshots
   :fixture-paths
   :exact-message-and-default-behavior],
+ :source-path-is-metadata-only? true,
+ :native-assembly-operation-keys
+ #{:validate!
+   :artifact-id
+   :governing-document
+   :diagnostic-ids
+   :capability-proof},
  :native-record-boundary :c9-native-lifecycle-and-resource-records,
  :governing-contracts
  [D1
@@ -216,7 +259,9 @@
   :explicit-native-artifact-views
   :diagnostic-id-and-design-data
   :linear-predicate-proof-and-failure-callbacks
-  :explicit-native-diagnostic-id],
+  :explicit-native-diagnostic-id
+  :captured-native-c8-and-record-views
+  :captured-assembly-only-operations],
  :preserves-native-graphs
  [:callback-lookup-and-invocation-order
   :exception-identity
@@ -241,7 +286,11 @@
   :native-catalog
   [:original-stable-rule-ids
    :original-message-and-default-text
-   :caller-retains-validation-and-exception-construction]},
+   :caller-retains-validation-and-exception-construction],
+  :native-assembly
+  [:closed-assembly-operation-shape
+   :callback-owned-validation-and-failure-construction
+   :original-host-failures]},
  :artifact-outputs
  [:persistent-ownership-records
   :forwarded-node-identities
@@ -264,7 +313,8 @@
   :native-proof-label-data
   :native-validation-result
   :native-c9-catalog-values
-  :native-c9-message-string],
+  :native-c9-message-string
+  :native-c9-artifact-projection-envelope],
  :contract-boundary :native-seed-persistent-ownership-data}
 )
 
@@ -734,6 +784,157 @@
     "C9-RUNTIME-CHECK" "required dynamic ownership check is unavailable in the active profile"
     "C9-UNSAFE" "manual lifetime, alias, or resource behavior lacks unsafe audit evidence"
     "Ownership checking failed"))
+
+(defn
+ native-artifact-projection
+ [operations
+  source-path
+  module
+  overrides
+  c8-artifact
+  ownership
+  borrow
+  lifetimes
+  moves
+  escape
+  region
+  arena
+  linear
+  transfer
+  runtime
+  unsafe
+  diagnostics
+  verifier]
+ (let
+  [expected
+   #{:validate!
+     :artifact-id
+     :governing-document
+     :diagnostic-ids
+     :capability-proof}
+   actual
+   (set (keys operations))]
+  (when-not
+   (= expected actual)
+   (throw
+    (ex-info
+     "Native C9 projection requires assembly-only operation keys"
+     {:id :native-c9-assembly-operations,
+      :expected-operation-keys expected,
+      :actual-operation-keys actual}))))
+ (let
+  [{c9-ownership-validate! :validate!,
+    c9-ownership-capability-proof :capability-proof,
+    c4-artifact-id :artifact-id,
+    c9-ownership-governing-document :governing-document,
+    c9-ownership-diagnostic-ids :diagnostic-ids}
+   operations
+   artifact-base
+   {:ownership-graph ownership,
+    :linear-resource-flow-graph linear,
+    :diagnostics [],
+    :task "P06-D088",
+    :runtime-check-records runtime,
+    :borrow-graph borrow,
+    :document-set ["C9"],
+    :governing-document c9-ownership-governing-document,
+    :ownership-verifier-report verifier,
+    :unsafe-audit-references unsafe,
+    :arena-generation-graph arena,
+    :move-consume-records moves,
+    :module
+    (select-keys
+     module
+     [:module
+      :source-path
+      :profile
+      :target
+      :effects
+      :capabilities
+      :safety
+      :metadata]),
+    :transfer-records transfer,
+    :escape-analysis-report escape,
+    :ownership-diagnostics diagnostics,
+    :kind :gravity/stage0-c9-ownership-checker-artifact,
+    :c9-ownership-check-results
+    {:ownership-graph-status :complete,
+     :unsafe-audit-status :complete,
+     :transfer-status :complete,
+     :runtime-check-status :complete,
+     :task "P06-D088",
+     :arena-status :complete,
+     :linear-status :complete,
+     :diagnostic-status :complete,
+     :documents ["C9"],
+     :move-consume-status :complete,
+     :borrow-graph-status :complete,
+     :status :complete,
+     :region-status :complete,
+     :verifier-status (:status verifier),
+     :lifetime-status :complete,
+     :escape-status :complete,
+     :required-diagnostic-ids c9-ownership-diagnostic-ids},
+    :c8-effect-checker-artifact
+    (select-keys
+     c8-artifact
+     [:kind
+      :artifact-id
+      :effect-graph
+      :namespace-effect-summary
+      :capability-proof-records
+      :capability-based-proof]),
+    :pass
+    {:name :c9-ownership-lifetime-region-checker,
+     :input :effected-core,
+     :output :ownership-checked-core,
+     :requires
+     [:typed-core-module
+      :effect-graph
+      :capability-proof-records
+      :profile
+      :target],
+     :preserves
+     [:source-spans
+      :generated-origin
+      :types
+      :effects
+      :capabilities
+      :profile
+      :target
+      :unsafe-metadata],
+     :emits
+     [:ownership-graph
+      :borrow-graph
+      :lifetime-interval-map
+      :move-consume-records
+      :escape-analysis-report
+      :region-lifetime-graph
+      :arena-generation-graph
+      :linear-resource-flow-graph
+      :transfer-records
+      :runtime-check-records
+      :unsafe-audit-references
+      :ownership-diagnostics],
+     :rejects c9-ownership-diagnostic-ids},
+    :lifetime-interval-map lifetimes,
+    :region-lifetime-graph region,
+    :source-overrides overrides}
+   _
+   (c9-ownership-validate! source-path artifact-base)
+   capability-proof
+   (c9-ownership-capability-proof artifact-base)]
+  {:kind :gravity/native-c9-artifact-projection,
+   :admission :none,
+   :authenticates-inputs? false,
+   :artifact
+   (assoc
+    artifact-base
+    :capability-based-proof
+    capability-proof
+    :artifact-id
+    (c4-artifact-id
+     (assoc artifact-base :capability-based-proof capability-proof)))}))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

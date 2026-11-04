@@ -24,6 +24,13 @@ admission. The stage imports only clojure.set; the C9 graph helper consumes
 the stage, and the stage must not import the facade, Bootstrap, CLI or
 release. All nine earlier stage function bodies remain unchanged.
 
+These ownership assignments describe the graph extraction checkpoint. The
+later [native artifact projection](ownership-assembly-evidence.md) owns only
+compatibility assembly under an explicit non-authoritative envelope; existing
+source/file facade entrypoints retain their guarded intake, raw publication
+and admission. That later boundary changes no graph/source authentication
+claim or historical evidence recorded here.
+
 ## Original evidence and acceptance
 
 The clean original native-data capture has raw SHA-256
