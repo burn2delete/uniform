@@ -119,3 +119,38 @@ New source-span tests lint with zero warnings/errors. The source-span module
 retains its existing unused private namespace-contract warning; no new error
 or warning policy is suppressed. Table validation and its thirty-two original
 refusals are regression controls, not credit for a new Reader-owned validator.
+
+## Committed conservation and regression
+
+Source96919a41cba9a971a569c0a1efdcf813ccf2d281, tree
+004dc47eed72283f987a61a83711b56b48fdcd74, is a clean six-path commit.
+The exact wired Reader command passes 110 tests and 4,591 assertions at its
+original one GiB heap and 120-second process watchdog. Language/source
+ownership gates pass forty-eight tests and 1,198 assertions with zero skipped
+namespaces. Cold loading source-span and Reader exposes eight and fifteen
+public functions respectively without loading Bootstrap. Docs, roadmap,
+governance and CI formatting pass.
+
+All 118 candidate coordinate/table-control records are byte-identical and
+parsed-equal to the retained original baseline at ce3ddd4d03d2e6aee60e91ba88337f64ab665f176929a1afcedf1fdc6dbf1e7b.
+Complete downstream captures preserve literal outcomes and four token streams
+at a65f15a6ac535fa0aaf0963480a4d189d9f555b3225e4dac8626e6d2727ba673,
+52 metadata-aware form records and twenty join refusals at
+ad4c5c42a3b93f2eac63a9a81cc786237885974966822a3298325841b7a9ab14,
+and forty historical-parser records at
+05facbbf3623085382609ddc1f6ad3d44850027e7536d461e23bee34be35c7a4.
+Malformed-source refusals retain their exact diagnostic IDs, order and spans;
+the previously declared form-builder composite-set repairs remain unchanged.
+
+Static comparison proves both moved coordinate bodies modulo explicit owner
+ports, all prior source-span implementation code, all fifteen Reader API
+bodies, the full Reader/artifact-test bytes, exact Bootstrap table validation/
+loading/orchestration and facades, both manifests and the single CI insertion.
+Contextual lint covers forty-three present Clojure/EDN paths against mainf662:
+3,459 unchanged baseline warnings and zero blocking warnings/errors. The extra
+unchanged warning versus earlier slices is source-span's existing private
+contract warning, not a new error or a suppressed policy.
+
+Both independent reviewers accept the exact source with no actionable defect.
+Their scope remains code-only. Documentation-successor bookend review, own
+exact source/base CI and immediate integration preflight remain separate gates.
