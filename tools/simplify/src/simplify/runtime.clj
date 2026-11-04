@@ -148,14 +148,15 @@
       :restricted (fail! "Restricted effect cannot be retried" {:effect id :restricted true})
       (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying" {:effect id :prior prior})
       (do
-        (update! ctx assoc-in [:effects id] {:status :pending})
+        (update! ctx assoc-in [:effects id]
+                 (cond-> {:status :pending} (= :not-applied (:status prior)) (assoc :previous prior)))
         (try
           (let [result (operation)]
-            (update! ctx assoc-in [:effects id] {:status :done :result result})
+            (update! ctx update-in [:effects id] assoc :status :done :result result)
             result)
           (catch Exception e
-            (update! ctx assoc-in [:effects id] {:status (if (:restricted (ex-data e)) :restricted :uncertain)
-                                               :message (.getMessage e)})
+            (update! ctx update-in [:effects id] assoc :status (if (:restricted (ex-data e)) :restricted :uncertain)
+                     :message (.getMessage e))
             (throw e)))))))
 
 (defn tracking-effect!
@@ -165,7 +166,7 @@
         id (locking state
              (when-let [prior (get-in @(:state ctx) [:tracking-intents key])]
                (let [status (get-in @(:state ctx) [:effects prior :status])]
-                 (when-not (= :done status)
+                 (when-not (#{:done :not-applied} status)
                    (fail! "Tracking effect needs reconciliation; not issuing another write"
                           {:effect prior :restricted (= :restricted status)}))))
              (let [n (inc (or (:tracking-sequence @(:state ctx)) 0))

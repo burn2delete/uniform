@@ -68,7 +68,9 @@ priority, real prerequisites and work that unblocks completion.
 
 Each outcome has a Project issue; each independently reviewable increment has
 a child issue and PR. Source files remain authoritative for requirements and
-acceptance. A merged child closes only its own issue. Parent task status changes
+acceptance. Mirrors link to the complete task at its immutable source revision;
+large task bodies stay intact in the repository and local source catalog.
+One issue inventory is reused within each synchronization pass. A merged child closes only its own issue. Parent task status changes
 only when its source authority changes; partial implementation and independently
 accepted completion remain distinct. Removed source outcomes are retained for
 attention rather than treated as completed. Source authority changes on main
@@ -163,6 +165,11 @@ Restricted actions cannot be retried. An uncertain external effect is never
 automatically replayed. Reconciliation uses the original operation's observed
 result and inspection evidence; see `../simplify/README.md`. Retained path claims
 and historical restrictions must not be deleted to bypass unresolved ownership.
+If inspection proves a request did not apply, a reconciliation receipt may use
+`{:outcome :not-applied :result nil :evidence "Exact response and remote inspection"}`.
+That explicit observation permits a corrected operation while retaining the
+original attempt and receipt. Pending/uncertain requests still require
+inspection; restricted requests cannot use this recovery path.
 
 ## Validation and limits
 

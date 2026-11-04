@@ -52,6 +52,47 @@
     (is (= 1 @calls))
     (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects "ambiguous" :status])))))
 
+(deftest legacy-applied-receipts-remain-valid
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:effects "issue"] {:status :uncertain :message "Original response lost"})
+    (rt/write-edn! receipt {:result {:id 7} :evidence "Inspected exact remote issue"})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= {:id 7} (rt/effect! ctx "issue" (fn [] (throw (ex-info "Must not replay" {}))))))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :status])))))
+
+(deftest confirmed-unapplied-mutations-can-be-repaired-with-original-history-retained
+  (let [ctx (context) calls (atom 0) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (is (thrown? Exception (rt/effect! ctx "issue" #(do (swap! calls inc) (throw (ex-info "HTTP 422: body rejected" {}))))))
+    (is (thrown? Exception (rt/effect! ctx "issue" #(swap! calls inc))))
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected HTTP 422 validation response and repository issue markers; no issue was created."})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :status])))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(do (swap! calls inc) {:id 7}))))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(swap! calls inc))))
+    (is (= 2 @calls))
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :previous :status])))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :previous :status])))))
+
+(deftest unapplied-reconciliation-cannot-reclassify-a-restriction-or-an-existing-result
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc :effects {"restricted" {:status :restricted} "unknown" {:status :uncertain}})
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected"})
+    (is (thrown? Exception (main/reconcile! ctx "restricted" receipt)))
+    (is (thrown? Exception (rt/effect! ctx "restricted" (fn [] :must-not-run))))
+    (rt/write-edn! receipt {:outcome :not-applied :result {:id 1} :evidence "An issue exists"})
+    (is (thrown? Exception (main/reconcile! ctx "unknown" receipt)))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "unknown" :status])))))
+
+(deftest confirmed-unapplied-tracking-write-does-not-block-a-new-observed-transition
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn")) calls (atom 0)]
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" (fn [] (throw (ex-info "Connection closed" {}))))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+    (let [id (get-in @(:state ctx) [:tracking-intents "status"])]
+      (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected remote field and operation response; transition did not apply."})
+      (main/reconcile! ctx id receipt)
+      (is (= 1 (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+      (is (= :not-applied (get-in @(:state ctx) [:effects id :status]))))))
+
 (deftest redacts-known-secrets
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}
          (rt/redact {:apiKey "private" :message "Bearer abc.def.ghi" :value "ghp_somecredential"}))))
