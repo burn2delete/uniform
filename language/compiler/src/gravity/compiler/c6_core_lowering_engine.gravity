@@ -9,6 +9,7 @@
              c6-set-mutation-execution-contract
              c6-sh07-authenticated-exception-entrypoint
              c6-sh07-independent-exception-verifier
+             c6-form->core-form
              build-c6-core-node
              build-c6-desugaring-trace
              verify-c6-set-mutation-execution-request
@@ -144,6 +145,48 @@
                         :backend-only-legality
                         :runtime-only-profile-availability
                         :unrecorded-macro-output]})
+
+; The classifier is intentionally a small source-owned leaf.  It mirrors the
+; current hosted C6 operation boundary without taking over the surrounding
+; lowering pass: compound forms retain their configured core-form head,
+; declared primitive calls retain their safety marker, and all other calls
+; remain calls until a later lowering rule handles them.
+(defn c6-core-form-symbol? [value]
+  (if (= value (quote quote))
+    true
+    (if (= value (quote if))
+      true
+      (if (= value (quote do))
+        true
+        (if (= value (quote let))
+          true
+          (if (= value (quote fn))
+            true
+            (if (= value (quote loop))
+              true
+              (if (= value (quote recur))
+                true
+                (if (= value (quote def))
+                  true
+                  (if (= value (quote var))
+                    true
+                    (if (= value (quote set!))
+                      true
+                      (if (= value (quote try))
+                        true
+                        (if (= value (quote throw))
+                          true
+                          (= value (quote match)))))))))))))))
+
+(defn c6-form->core-form [form]
+  (if (seq? form)
+    (let [head (first form)]
+      (if (c6-core-form-symbol? head)
+        head
+        (if (= head (quote unsafe))
+          :declared-primitive
+          :call)))
+    (if (symbol? form) :symbol :literal)))
 
 (def c6-set-mutation-execution-contract
   {:artifact :gravity/c6-set-mutation-execution-contract
