@@ -54,6 +54,10 @@
           text (p15-s23-sh07-b51-strict-utf8 source path)
           emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! path :jvm))
           plan (p15-s23-stage2-compiler-artifact-plan emitter path text)
+          expected-module
+          '{:module gravity.stdlib.sha256 :profile :meta :target :jvm
+            :effects #{} :capabilities #{} :safety :safe
+            :exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256]}
           digest (fn [value]
                    (str "sha256:" (sha256-hex (pr-str (c-backend-canonical-value value)))))]
       (when-not (= (str "sha256:" (sha256-bytes-hex source))
@@ -61,9 +65,14 @@
         (reject! :kernel-source-plan-mismatch))
       (when-not (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
                      (true? (:compiler-artifact-plan? plan))
-                     (= '{:module gravity.stdlib.sha256 :profile :meta :target :jvm
-                          :effects #{} :capabilities #{} :safety :safe
-                          :exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256]}
+                     ;; The macro artifact omits exports from its module view.
+                     ;; Check the complete ABI against the retained source, then
+                     ;; check the exact projection the plan compiler emits.
+                     (= expected-module
+                        (select-keys
+                         (parse-module path (mapv :form (read-source-form-records path text)))
+                         (keys expected-module)))
+                     (= (dissoc expected-module :exports)
                         (:module plan))
                      (= '{:arity 1 :params [arguments]}
                         (select-keys (get-in plan [:functions 'sh22-sha256])

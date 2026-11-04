@@ -173,6 +173,32 @@
 (defn- rejection [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error error)))
 
+(deftest sh22-sha256-release-checks-exports-in-retained-source
+  ;; The macro artifact's module projection drops exports. An authentic plan
+  ;; hash therefore cannot substitute for checking the source export ABI.
+  (let [source (slurp (io/file @root "bootstrap/gravity/src/gravity/stdlib/sha256.gravity"))
+        exports "  (:exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256])\n"
+        resolver (ns-resolve 'gravity.bootstrap 'p15-s23-sh07-governed-source-file)
+        executions (atom 0)]
+    (is (not (contains? (:module @engine) :exports)))
+    (doseq [replacement ["" "  (:exports [sh22-sha256-policy sh22-sha256-pad])\n"
+                         "  (:exports [sh22-sha256])\n"]]
+      (let [file (java.io.File/createTempFile "uniform-sha256-exports-" ".gravity")
+            changed (.replace ^String source exports ^String replacement)]
+        (try
+          (is (not= source changed))
+          (spit file changed)
+          (with-redefs-fn
+            {resolver (constantly file)
+             #'release/bytes-sha256
+             (fn [_] (throw (AssertionError. "legacy digest must not run")))
+             #'bootstrap/p15-s23-stage2-runtime-execute-function
+             (fn [& _] (swap! executions inc))}
+            #(is (= {:rule "SH20SHA002" :reason :kernel-abi-mismatch}
+                    (ex-data (rejection (fn [] (bootstrap/p18-bytes-sha256 (byte-array 0))))))))
+          (finally (.delete file)))))
+    (is (zero? @executions))))
+
 (deftest sh22-sha256-release-rejects-missing-or-changed-bindings
   (let [plan @engine
         resolver (ns-resolve 'gravity.bootstrap 'p15-s23-sh07-governed-source-file)
