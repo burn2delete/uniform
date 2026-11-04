@@ -133,3 +133,32 @@ by the unchanged canonical-hash owner. Only the test syntax/expectation changed;
 production ordering was preserved. Candidate artifacts, conservation, committed
 regressions, boundary/lint/format/validator checks, independent review, own CI
 and integration remain outstanding.
+
+## Committed comparison and conservation
+
+Implementation9bf5818558dce2a1eb9c26e90afd0257e3b8e16f, tree
+f7966a04d63bf763e6f4a1c868c5080209c2dfa8, emits four parsed products and
+forty-eight proper syntax refusals with zero host failures. Its fifty-two-record
+capture has SHA-256
+ad4c5c42a3b93f2eac63a9a81cc786237885974966822a3298325841b7a9ab14.
+All forty-eight records outside the declared composite-set repair and all
+twenty native join refusals retain exact metadata-aware serialized parity.
+Complete before/after captures also round-trip byte-for-byte through EDN with
+metadata printing enabled. The four repaired cases now have C2-SET and a
+first-literal related location. No complete-capture hash equality is claimed.
+
+Committed Reader/tokenizer/forms and C2 compatibility pass70 tests/4087
+assertions. Language/source ownership passes48/1198 with zero skipped
+namespaces. Cold Reader exposes nine public APIs without Bootstrap; tools/ci
+formatting passes with cljfmt0.13.4. Static conservation proves sixteen helper
+bodies modulo the declared ports/context and unused private binding, all eight
+earlier public APIs as exact source text, facade arity/ten Vars, the exact single
+CI namespace insertion and both six-resource manifest removals.
+
+Both independent source/adversarial reviews accept that exact implementation
+with its declared recursive-helper correction and operational gates. The table
+now explicitly distinguishes ten form-builder and nine tokenizer owners. Lint,
+validators, current-main composition, final clean acceptance, own CI and exact
+integration preflight remain separate obligations. Receipts use
+/tmp/uniform-reader-forms-*; the initial conservation helper syntax failure was
+caught before execution and retained without changing production code.
