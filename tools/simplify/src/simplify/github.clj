@@ -17,6 +17,7 @@
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
    (let [key (rt/digest (pr-str [method endpoint]))
+         _ (rt/assert-authorized! ctx :github key)
          _ (when (get-in @(:state ctx) [:restricted-actions key])
              (rt/fail! "Restricted GitHub action cannot be retried" {:endpoint endpoint :restricted true}))
          result (rt/command ctx (get-in ctx [:config :repo-dir])
@@ -25,7 +26,8 @@
                             (when body (json/write-str body)))]
      (when-not (zero? (:exit result))
        (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
-         (when restricted (rt/update! ctx assoc-in [:restricted-actions key] {:method method :endpoint endpoint :error (:err result)}))
+         (when restricted
+           (rt/remember-denial! ctx :github key {:method method :endpoint endpoint :error (:err result)}))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
@@ -37,8 +39,8 @@
                                            (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
                                                     (or (:message %) ""))) (:errors response)))]
         (when restricted
-          (rt/update! ctx assoc-in [:restricted-actions (rt/digest (pr-str ["POST" "graphql"]))]
-                      {:method "POST" :endpoint "graphql" :errors (:errors response)}))
+          (rt/remember-denial! ctx :github (rt/digest (pr-str ["POST" "graphql"]))
+                              {:method "POST" :endpoint "graphql" :errors (:errors response)}))
         (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
     (:data response)))
 
@@ -69,10 +71,10 @@
   (let [existing (get-in (graphql ctx "query($id:ID!){node(id:$id){... on ProjectV2{views(first:100){nodes{id name number layout filter}}}}}"
                                   {:id (:id project)}) [:node :views :nodes])
         visible (mapv :id (filter #(contains? #{"Title" "Status" "Milestone" "Labels" "Parent issue" "Sub-issue progress" "Linked pull requests"} (:name %)) fs))]
-    (doseq [[name layout query-filter] [["All work" "TABLE_LAYOUT" "label:simplify"]
+    (doseq [[name layout query-filter] (get-in ctx [:config :project-views] [["All work" "TABLE_LAYOUT" "label:simplify"]
                                  ["Workflow" "BOARD_LAYOUT" "label:simplify"]
                                  ["Audit rounds" "TABLE_LAYOUT" "label:simplify"]
-                                 ["Attention" "TABLE_LAYOUT" "label:simplify status:Attention"]]]
+                                 ["Attention" "TABLE_LAYOUT" "label:simplify status:Attention"]])]
       (let [view (or (first (filter #(= name (:name %)) existing))
                      (when (= name "All work") (first (filter #(= "View 1" (:name %)) existing)))
                      (rt/effect! ctx (str "view/" name)
@@ -85,7 +87,7 @@
         (rt/update! ctx assoc-in [:project :views name] (assoc view :name name :layout layout :filter query-filter))))))
 
 (defn project-marker [ctx]
-  (str "<!-- uniform-simplify-project:" (get-in ctx [:config :repository]) " -->"))
+  (str "<!-- uniform-" (get-in ctx [:config :harness-id] "simplify") "-project:" (get-in ctx [:config :repository]) " -->"))
 
 (defn verify-project! [ctx project]
   (when-not (or (= (:id project) (get-in @(:state ctx) [:project :id]))
@@ -133,12 +135,14 @@
                 #(graphql ctx "mutation($project:ID!,$repo:ID!){linkProjectV2ToRepository(input:{projectId:$project,repositoryId:$repo}){repository{id}}}"
                           {:project (:id project) :repo (:node_id repository)}))
     (let [existing (set (map :name (pages ctx (repo-path ctx "labels"))))]
-      (doseq [[name color description] labels :when (not (contains? existing name))]
+      (doseq [[name color description] (get-in ctx [:config :labels] labels) :when (not (contains? existing name))]
         (rt/effect! ctx (str "label/" name) #(api ctx "POST" (repo-path ctx "labels") {:name name :color color :description description}))))
     (rt/effect! ctx "project-description"
-                #(graphql ctx "mutation($id:ID!,$readme:String!){updateProjectV2(input:{projectId:$id,shortDescription:\"Evidence-backed simplification: audit, implement, review, merge, repeat.\",readme:$readme}){projectV2{id}}}"
+                #(graphql ctx "mutation($id:ID!,$readme:String!,$description:String!){updateProjectV2(input:{projectId:$id,shortDescription:$description,readme:$readme}){projectV2{id}}}"
                           {:id (:id project)
-                           :readme (str "# Uniform Simplify\n\nOne milestone per audit round; one issue per independently mergeable improvement. Campaign issue is the parent. Checklists describe execution steps; sub-issues are independent deliverables. Labels classify work; Status records execution state.\n\nWorkflow is a board; Audit rounds is a table showing Milestone; Attention filters Status = Attention. Show Parent issue, Sub-issue progress, Linked pull requests, Labels, and Milestone. In the Audit rounds view, group by Milestone using the view menu; the current API does not expose grouping configuration.\n\nOnly the coordinator merges. Done means actual merge verified, not agent completion or green CI. A round closes when every finding has a disposition. Campaign completion requires a fresh audit of main with no new justified findings.\n\nNo language, release, self-hosting, or seed-retirement claims are conferred by this project.\n\n" (project-marker ctx))}))
+                           :description (get-in ctx [:config :project-description] "Evidence-backed simplification: audit, implement, review, merge, repeat.")
+                           :readme (str (get-in ctx [:config :project-readme]
+                                         "# Uniform Simplify\n\nOne milestone per audit round; one issue per independently mergeable improvement. Campaign issue is the parent. Checklists describe execution steps; sub-issues are independent deliverables. Labels classify work; Status records execution state.\n\nWorkflow is a board; Audit rounds is a table showing Milestone; Attention filters Status = Attention. Show Parent issue, Sub-issue progress, Linked pull requests, Labels, and Milestone. In the Audit rounds view, group by Milestone using the view menu; the current API does not expose grouping configuration.\n\nOnly the coordinator merges. Done means actual merge verified, not agent completion or green CI. A round closes when every finding has a disposition. Campaign completion requires a fresh audit of main with no new justified findings.\n\nNo language, release, self-hosting, or seed-retirement claims are conferred by this project.\n\n") (project-marker ctx))}))
     (rt/event! ctx :project-ready {:project project})
     project))
 
@@ -149,15 +153,22 @@
                     #(api ctx "POST" (repo-path ctx "milestones")
                           {:title title :description (str "Audit round " round ". Base commit and coverage are recorded on the campaign issue. Close after all findings have a disposition.")})))))
 
-(defn marker [key] (str "<!-- uniform-simplify:" key " -->"))
+(defn marker
+  ([key] (marker {} key))
+  ([ctx key] (str "<!-- uniform-" (get-in ctx [:config :harness-id] "simplify") ":" key " -->")))
 (defn ensure-issue! [ctx key title body milestone category]
-  (or (first (filter #(and (not (:pull_request %)) (str/includes? (or (:body %) "") (marker key)))
-                     (pages ctx (repo-path ctx "issues?state=all&labels=simplify"))))
-      (rt/effect! ctx (str "issue/" key)
+  (let [cache (:issue-cache ctx)
+        issues (or (when cache @cache)
+                   (let [items (pages ctx (repo-path ctx (str "issues?state=all&labels=" (get-in ctx [:config :work-label] "simplify"))))]
+                     (when cache (reset! cache items)) items))
+        existing (first (filter #(and (not (:pull_request %)) (str/includes? (or (:body %) "") (marker ctx key))) issues))
+        issue (or existing (rt/effect! ctx (str "issue/" key)
                   #(api ctx "POST" (repo-path ctx "issues")
-                        (cond-> {:title title :body (str body "\n\n" (marker key))
-                                 :labels ["simplify" category]}
-                          milestone (assoc :milestone milestone))))))
+                        (cond-> {:title title :body (str body "\n\n" (marker ctx key))
+                                 :labels [(get-in ctx [:config :work-label] "simplify") category]}
+                          milestone (assoc :milestone milestone)))))]
+    (when (and cache (not existing)) (swap! cache conj issue))
+    issue))
 
 (defn ensure-finding-issue! [ctx key title body milestone category]
   ;; Existing state keeps legacy issue identities on resume. New lookups never
@@ -189,6 +200,13 @@
 
 (defn comment! [ctx issue key body]
   (let [path (repo-path ctx (str "issues/" (:number issue) "/comments"))]
-    (when-not (some #(str/includes? (:body %) (marker key)) (pages ctx path))
+    (when-not (some #(str/includes? (:body %) (marker ctx key)) (pages ctx path))
       (rt/effect! ctx (str "comment/" (:number issue) "/" key)
-                  #(api ctx "POST" path {:body (str body "\n\n" (marker key))})))))
+                  #(api ctx "POST" path {:body (str body "\n\n" (marker ctx key))})))))
+
+(defn draft! [ctx pr draft? candidate]
+  (rt/effect! ctx (str (if draft? "draft/" "ready/") candidate)
+    #(graphql ctx (if draft?
+                    "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id}){pullRequest{id}}}"
+                    "mutation($id:ID!){markPullRequestReadyForReview(input:{pullRequestId:$id}){pullRequest{id}}}")
+              {:id (:node_id pr)})))

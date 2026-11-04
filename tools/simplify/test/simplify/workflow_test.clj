@@ -14,6 +14,10 @@
               :proposal "Keep the required value once" :preserve "Value remains one"
               :paths ["work.edn"] :dependencies [] :kind "duplication"})
 
+(defn evidenced [t]
+  (assoc t :review (assoc (select-keys t [:base :candidate :tree]) :verdict "approved")
+           :checks {:candidate (:candidate t) :tree (:tree t) :result :passed}))
+
 (defn repository! [ctx]
   (let [root (:state-dir ctx) bare (str (io/file root "remote.git")) repo (str (io/file root "repo"))]
     (rt/git ctx root "init" "--bare" "--initial-branch=main" bare)
@@ -27,6 +31,16 @@
     (rt/git ctx repo "commit" "-m" "Fixture")
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
+
+(deftest nul-delimited-git-paths-remain-exact
+  (let [ctx (fixture/context) {:keys [repo]} (repository! ctx)
+        tracked "tracked space.edn" untracked "untracked\nname.edn"]
+    (spit (io/file repo tracked) "{:old true}\n")
+    (rt/git ctx repo "add" tracked)
+    (rt/git ctx repo "commit" "-m" "Tracked path fixture")
+    (spit (io/file repo tracked) "{:new true}\n")
+    (spit (io/file repo untracked) "{:new true}\n")
+    (is (= #{tracked untracked} (set (flow/changed-paths ctx repo))))))
 
 (defn run-fixture! [review-result]
   (let [ctx (fixture/context)
@@ -155,8 +169,8 @@
         ctx (assoc ctx :config {:repo-dir repo})]
     (with-redefs [flow/fresh-main! (fn [_] commit)]
       ;; No parent on this initial commit also rejects an unverifiable merge.
-      (is (thrown? Exception (flow/finish-merge! ctx {:key "bad" :worktree repo :base "unexpected" :tree "unexpected"}
-                                               {:mergeCommit {:oid commit}}))))
+      (is (thrown? Exception (flow/finish-merge! ctx (evidenced {:key "bad" :worktree repo :base "unexpected" :candidate commit :tree "unexpected"})
+                                               {:mergeCommit {:oid commit} :headRefOid commit :statusCheckRollup [{:state "SUCCESS"}]}))))
     (is (not= :done (get-in @(:state ctx) [:tasks "bad" :status])))))
 
 (deftest checks-and-reviews-reject-candidate-identity-drift
@@ -229,8 +243,8 @@
         merged (rt/git ctx repo "commit-tree" tree "-p" base "-p" second-parent "-m" "Not a squash")]
     (with-redefs [flow/fresh-main! (fn [_] merged)]
       (is (thrown-with-msg? Exception #"differs from reviewed composition"
-                            (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree}
-                                                {:mergeCommit {:oid merged}}))))
+                            (flow/finish-merge! ctx (evidenced {:key "bad" :worktree repo :base base :candidate second-parent :tree tree})
+                                                {:mergeCommit {:oid merged} :headRefOid second-parent :statusCheckRollup [{:state "SUCCESS"}]}))))
     (is (not= :done (:status (flow/task ctx "bad"))))))
 
 (deftest finding-issues-belong-to-their-campaign

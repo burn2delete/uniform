@@ -27,6 +27,11 @@
    (sh07-core-current-source-key)
    captured
    @sh07-core-cached-binding
+   construction
+   ;; The private builder's effective execution binding is a construction
+   ;; fact, not a caller-controlled option. The outer facts remain unchanged
+   ;; for the post-build bookend check.
+   (assoc construction :execution-binding captured)
    _
    (when-not
     (= (second (:source input-key)) (:source-content-hash captured))

@@ -1,0 +1,14 @@
+{:repository "burn2delete/uniform"
+ :repo-dir "../.."
+ :project-title "Uniform Implementation"
+ :campaign "Uniform project completion"
+ :state-dir "../../target/validation/advance"
+ :worktree-root "../../../uniform-advance-worktrees"
+ ;; Concurrent host workers; no limit on tasks, attempts or useful work.
+ :parallelism 3
+ :poll-ms 15000
+ :check-timeout-ms 1200000
+ :priorities []
+ :codex-command ["codex" "app-server" "--listen" "stdio://"]
+ :check-executables #{"clojure"}
+ :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]}

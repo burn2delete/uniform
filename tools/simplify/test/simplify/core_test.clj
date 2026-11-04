@@ -1,5 +1,6 @@
 (ns simplify.core-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [simplify.codex :as codex]
@@ -16,6 +17,38 @@
     {:state-dir dir :state-file (str (io/file dir "state.edn")) :control-file (str (io/file dir "control.edn"))
      :log-lock (Object.) :state (atom {:schema 1 :tasks {} :jobs {} :effects {}})
      :config {:repo-dir dir}}))
+
+(deftest exact-command-capture-does-not-split-credential-redaction
+  (let [ctx (context)
+        log (str (io/file (:state-dir ctx) "capture.jsonl"))
+        secret (str "ghp_" (apply str (repeat 48 "A")))
+        output (str (apply str (repeat 4094 "x")) secret "\r\n" "nul\u0000tail")
+        error-output "stderr\rwith-cr\r\nnul\u0000tail"
+        classpath (str/join java.io.File/pathSeparator
+                            (map #(.getAbsolutePath (io/file %))
+                                 (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
+        java [(str (io/file (System/getProperty "java.home") "bin/java")) "-cp" classpath "clojure.main"]
+        baseline (rt/command ctx (:state-dir ctx) (into java ["-e" "nil"]))
+        expected-error (str (:err baseline) error-output)
+        argv (into java ["-e" (str/replace (str "(print " (pr-str output) ") (flush) "
+                                                  "(binding [*out* *err*] (print " (pr-str error-output) ") (flush))")
+                                               "\u0000" "\\u0000")])
+        result (rt/command (assoc ctx :log-file log) (:state-dir ctx) argv)
+        events (mapv #(json/read-str % :key-fn keyword) (str/split-lines (slurp log)))
+        streamed (fn [stream]
+                   (str/join "\n" (map :line (filter #(and (= "command-output" (:event %))
+                                                         (= stream (:stream %))) events))))]
+    (is (zero? (:exit result)))
+    (is (zero? (:exit baseline)))
+    (is (= "" (:out baseline)))
+    (is (= output (:out result)))
+    (is (= expected-error (:err result)))
+    ;; Inspect only output events: command-start already redacts the argv and
+    ;; must not make a leaking chunk logger look as though it redacted output.
+    (is (= (rt/redact output) (streamed "stdout")))
+    (is (= (rt/redact expected-error) (streamed "stderr")))
+    (is (not (str/includes? (slurp log) secret)))
+    (is (str/includes? (slurp log) "[REDACTED]"))))
 
 (deftest schema-rejects-unusable-results
   (is (= {:coverage ["tools"] :summary "No candidates" :findings []}
@@ -51,6 +84,47 @@
     (is (thrown? Exception (rt/effect! ctx "ambiguous" #(swap! calls inc))))
     (is (= 1 @calls))
     (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects "ambiguous" :status])))))
+
+(deftest legacy-applied-receipts-remain-valid
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:effects "issue"] {:status :uncertain :message "Original response lost"})
+    (rt/write-edn! receipt {:result {:id 7} :evidence "Inspected exact remote issue"})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= {:id 7} (rt/effect! ctx "issue" (fn [] (throw (ex-info "Must not replay" {}))))))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :status])))))
+
+(deftest confirmed-unapplied-mutations-can-be-repaired-with-original-history-retained
+  (let [ctx (context) calls (atom 0) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (is (thrown? Exception (rt/effect! ctx "issue" #(do (swap! calls inc) (throw (ex-info "HTTP 422: body rejected" {}))))))
+    (is (thrown? Exception (rt/effect! ctx "issue" #(swap! calls inc))))
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected HTTP 422 validation response and repository issue markers; no issue was created."})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :status])))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(do (swap! calls inc) {:id 7}))))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(swap! calls inc))))
+    (is (= 2 @calls))
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :previous :status])))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :previous :status])))))
+
+(deftest unapplied-reconciliation-cannot-reclassify-a-restriction-or-an-existing-result
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc :effects {"restricted" {:status :restricted} "unknown" {:status :uncertain}})
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected"})
+    (is (thrown? Exception (main/reconcile! ctx "restricted" receipt)))
+    (is (thrown? Exception (rt/effect! ctx "restricted" (fn [] :must-not-run))))
+    (rt/write-edn! receipt {:outcome :not-applied :result {:id 1} :evidence "An issue exists"})
+    (is (thrown? Exception (main/reconcile! ctx "unknown" receipt)))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "unknown" :status])))))
+
+(deftest confirmed-unapplied-tracking-write-does-not-block-a-new-observed-transition
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn")) calls (atom 0)]
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" (fn [] (throw (ex-info "Connection closed" {}))))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+    (let [id (get-in @(:state ctx) [:tracking-intents "status"])]
+      (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected remote field and operation response; transition did not apply."})
+      (main/reconcile! ctx id receipt)
+      (is (= 1 (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+      (is (= :not-applied (get-in @(:state ctx) [:effects id :status]))))))
 
 (deftest redacts-known-secrets
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}

@@ -133,6 +133,15 @@ The check watchdog does not impose a deadline on model turns or controller
 Git/GitHub calls. A stalled call requires host/operator interruption; pause
 takes effect at scheduler boundaries, after active operations finish.
 
+The implementation harness in `../advance` shares persistent path claims,
+denied-operation records and a main-write lock through the Git common directory.
+Disjoint authors can run concurrently; overlapping active writers wait. Claims
+release before independent review, so immutable candidates awaiting review or
+CI do not prevent isolated successors. Failed/interrupted writing claims persist.
+Restart older Simplify processes with this version before running both tools.
+These cooperative locks cover harnesses in the same Git repository; coordinate
+other main writers and separate clones explicitly.
+
 ```text
 clojure -M:run status config.edn
 clojure -M:run pause config.edn
@@ -157,6 +166,12 @@ clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 The supplied EDN is `{:evidence "What was inspected and where" :result ...}` with
 the actual original operation's result. This records an observation; it does not
 retry an effect or override denial. Preserve uncertain effects and worktrees.
+
+When the response and remote inspection establish that a request did not apply,
+use `{:outcome :not-applied :result nil :evidence "Exact inspected response and remote state"}`.
+This records a failed, unapplied attempt and permits its corrected operation;
+the old attempt and receipt remain in history. It cannot reclassify a restricted
+operation, and unknown outcomes still cannot be automatically replayed.
 
 ## Validation and references
 
