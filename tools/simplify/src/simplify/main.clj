@@ -4,7 +4,6 @@
             [simplify.github :as gh]
             [simplify.runtime :as rt]
             [simplify.workflow :as workflow])
-  (:import [java.lang ProcessHandle])
   (:gen-class))
 
 (def defaults
@@ -33,21 +32,48 @@
       (rt/fail! "Worker worktrees must be outside the source checkout" {}))
     config))
 
+(defn read-state! [config path]
+  (let [state (if (.exists (io/file path)) (rt/read-edn path)
+                  {:schema 1 :repository (:repository config) :campaign (:campaign config)
+                   :status :new :tasks {} :effects {} :jobs {} :rounds {}})]
+    (when-not (and (= 1 (:schema state)) (= (:repository config) (:repository state))
+                   (= (:campaign config) (:campaign state)))
+      (rt/fail! "State belongs to another campaign or schema" {}))
+    state))
+
 (defn context! [config]
   (let [directory (io/file (:state-dir config))
         _ (.mkdirs directory)
         path (str (io/file directory "state.edn"))
         ctx {:config config :state-dir (str directory) :state-file path :control-file (str (io/file directory "control.edn"))
              :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{})
-             :state (atom (if (.exists (io/file path)) (rt/read-edn path)
-                              {:schema 1 :repository (:repository config) :campaign (:campaign config) :status :new :tasks {} :effects {} :jobs {} :rounds {}}))}
-        _ (when-not (and (= 1 (:schema @(:state ctx))) (= (:repository config) (:repository @(:state ctx)))
-                         (= (:campaign config) (:campaign @(:state ctx))))
-            (rt/fail! "State belongs to another campaign or schema" {}))
-        git-dir (rt/git ctx (:repo-dir config) "rev-parse" "--git-common-dir")
-        lock-dir (io/file git-dir)
-        lock-dir (if (.isAbsolute lock-dir) lock-dir (io/file (:repo-dir config) git-dir))]
-    (assoc ctx :lock-file (str (io/file lock-dir "simplify-harness.lock")))))
+             :state (atom (read-state! config path))}]
+    (merge ctx (rt/coordination (workflow/common-directory ctx (:repo-dir config)) config))))
+
+(defn with-current-state [ctx f]
+  (rt/with-lock ctx
+                #(do (reset! (:state ctx) (read-state! (:config ctx) (:state-file ctx)))
+                     (when (:coordination-file ctx) (rt/import-state-coordination! ctx))
+                     (f))))
+
+(defn controller! [ctx f]
+  (with-current-state
+    ctx
+    #(let [hook (Thread. ^Runnable
+                         (fn []
+                           ;; Stop only known owned roots. Descendant coverage is not inferred.
+                           (doseq [process @(:processes ctx)] (.destroy ^Process process))
+                           (rt/event! ctx :controller-shutdown
+                                      {:descendant-coverage :unknown :inspection-required true})))]
+       (.addShutdownHook (Runtime/getRuntime) hook)
+       (try (f)
+            (catch Exception e
+              ;; This callback still owns the state lock; contenders cannot write here.
+              (rt/update! ctx assoc :status :attention)
+              (throw e))
+            (finally
+              (try (.removeShutdownHook (Runtime/getRuntime) hook)
+                   (catch IllegalStateException _ nil)))))))
 
 (defn doctor! [ctx]
   (doseq [argv [["git" "--version"] ["gh" "--version"] ["codex" "--version"] ["codex" "login" "status"]]]
@@ -73,37 +99,31 @@
     "doctor" (doctor! ctx)
     "status" (println (pr-str @(:state ctx)))
     "pause" (do (rt/write-edn! (:control-file ctx) {:paused true}) (println "Dispatch and merges will pause at the next scheduler boundary; active workers finish."))
-    "setup" (rt/with-lock ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/ensure-campaign! ctx) "Proposed")))
-    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
-    "resume" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx)))
+    "setup" (with-current-state ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/ensure-campaign! ctx) "Proposed")))
+    "coordinate" (with-current-state ctx #(println "Preserved state registered with shared coordination; no workers or GitHub writes."))
+    "run" (controller! ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
+    "resume" (controller! ctx #(when-not (= :complete (:status @(:state ctx)))
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
-    "retry" (rt/with-lock ctx
+    "retry" (with-current-state ctx
                          #(let [key (first args) t (workflow/task ctx key)]
                             (when-not (= :attention (:status t)) (rt/fail! "Only an inspected Attention finding can be retried" {:finding key}))
                             (when (true? (get-in t [:error :details :restricted]))
                               (rt/fail! "Restricted actions are retained as denied history and cannot be retried" {:finding key}))
                             (workflow/task! ctx key :feedback (:error t) :status :repair)
                             (println "Finding queued for repair. Use resume to continue.")))
-    "reconcile" (rt/with-lock ctx #(reconcile! ctx (first args) (second args)))
-    (rt/fail! "Usage: clojure -M:run doctor|setup|run|resume|pause|status|retry|reconcile CONFIG.edn [FINDING | EFFECT-ID RESULT.edn]" {})))
+    "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
+    "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
+    "release-writer" (with-current-state ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
+                                                                        (:evidence (rt/read-edn (second args)))))
+    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|resume|pause|status|retry|reconcile|reconcile-main|release-writer CONFIG.edn [KEY FILE]" {})))
 
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Provide a command and a configuration path; see README.md" {}))
     (let [ctx (context! (config! config-path))]
-      (.addShutdownHook (Runtime/getRuntime)
-                        (Thread. ^Runnable
-                                 (fn []
-                                   (doseq [process @(:processes ctx)]
-                                     (with-open [descendants (.descendants ^Process process)]
-                                       (doseq [handle (.toArray descendants)] (.destroy ^ProcessHandle handle)))
-                                     (.destroy ^Process process))
-                                   (when (= :running (:status @(:state ctx)))
-                                     (rt/update! ctx assoc :status :attention)))))
       (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
       (try (dispatch! ctx command args)
            (catch Exception e
-             (when (#{"run" "resume"} command) (rt/update! ctx assoc :status :attention))
              (rt/event! ctx :fatal {:message (.getMessage e) :data (ex-data e)})
              (throw e))))
     (catch Exception e

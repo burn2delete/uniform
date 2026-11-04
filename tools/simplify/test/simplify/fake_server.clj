@@ -10,7 +10,18 @@
         "initialize" (emit! {:id id :result {}})
         "initialized" nil
         "thread/start" (emit! {:id id :result {:thread {:id "fixture-thread"} :model "fixture-no-inference"}})
-        "command/exec" (emit! {:id id :result {:exitCode (if (= mode "failed") 1 0) :stdout "fixture command" :stderr ""}})
+        "command/exec"
+        (let [stream? (#{"stream-cleanup" "stream-assertion" "stream-capped"} mode)
+              output (case mode
+                       "stream-cleanup" "Owned process cleanup failed: Operation not permitted (sysctl failed)"
+                       "stream-assertion" "Fixture assertion failed"
+                       "fixture streamed output")]
+          (when stream?
+            (emit! {:method "command/exec/outputDelta"
+                    :params {:stream "stderr" :capReached (= mode "stream-capped")
+                             :deltaBase64 (.encodeToString (java.util.Base64/getEncoder) (.getBytes output "UTF-8"))}}))
+          (emit! {:id id :result {:exitCode (if (#{"failed" "stream-cleanup" "stream-assertion"} mode) 1 0)
+                                 :stdout (if stream? "" "fixture command") :stderr ""}}))
         "turn/start" (do
                        ;; Events may precede the request response.
                        (emit! {:method "item/completed" :params {:item {:type "agentMessage" :phase "commentary" :text "working"}}})

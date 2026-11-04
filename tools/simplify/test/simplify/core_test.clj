@@ -12,10 +12,12 @@
 
 (defn temp-dir [] (str (Files/createTempDirectory "uniform-simplify-test-" (make-array java.nio.file.attribute.FileAttribute 0))))
 (defn context []
-  (let [dir (temp-dir)]
-    {:state-dir dir :state-file (str (io/file dir "state.edn")) :control-file (str (io/file dir "control.edn"))
+  (let [dir (temp-dir)
+        config {:repo-dir dir :state-dir dir}]
+    (merge {:state-dir dir :state-file (str (io/file dir "state.edn")) :control-file (str (io/file dir "control.edn"))
      :log-lock (Object.) :state (atom {:schema 1 :tasks {} :jobs {} :effects {}})
-     :config {:repo-dir dir}}))
+     :config config}
+           (rt/coordination dir config))))
 
 (deftest schema-rejects-unusable-results
   (is (= {:coverage ["tools"] :summary "No candidates" :findings []}
