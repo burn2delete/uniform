@@ -440,16 +440,24 @@
                       {:option option :argv argv})))
     (nth argv (inc index))))
 
-(defn- macro-selected-vars [argv source-vars]
-  (let [pairs (partition 2 1 argv)
-        exact (set (map second (filter #(= "--exact" (first %)) pairs)))
-        patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
-    (set (filter (fn [name]
-                   (let [qualified (str "gravity.macro.pipeline-test/" name)]
-                     (or (and (empty? exact) (empty? patterns))
-                         (contains? exact name) (contains? exact qualified)
-                         (some #(or (re-find % name) (re-find % qualified)) patterns))))
-                 source-vars))))
+(defn- option-values [argv option]
+  (mapv second (filter #(= option (first %)) (partition 2 1 argv))))
+
+(defn- macro-selected-vars
+  ([argv source-vars]
+   (macro-selected-vars argv source-vars "gravity.macro.pipeline-test"))
+  ([argv source-vars namespace]
+   (let [pairs (partition 2 1 argv)
+         exact (set (map second (filter #(= "--exact" (first %)) pairs)))
+         patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
+     (if (some #{namespace} (option-values argv "--namespace"))
+       (set (filter (fn [name]
+                      (let [qualified (str namespace "/" name)]
+                        (or (and (empty? exact) (empty? patterns))
+                            (contains? exact name) (contains? exact qualified)
+                            (some #(or (re-find % name) (re-find % qualified)) patterns))))
+                    source-vars))
+       #{}))))
 
 (deftest macro-children-preserve-complete-disjoint-source-selection
   (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
@@ -457,6 +465,8 @@
                       (source-deftest-names "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"))
         compatibility-vars (binding [*read-eval* false]
                              (source-deftest-names "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"))
+        native-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/macro/native_reports_test.clj"))
         cohort-argv (nth cohort 2) receipt-argv (nth receipt 2) compatibility-argv (nth compatibility 2)
         cohort-vars (macro-selected-vars cohort-argv source-vars)
         receipt-vars (macro-selected-vars receipt-argv source-vars)
@@ -466,10 +476,15 @@
     (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
            (mapv first commands)))
     (is (= [900 900 900] (mapv second commands)))
-    (is (= ["gravity.macro.pipeline-test" "gravity.macro.pipeline-test"
-            "gravity.bootstrap-compatibility.c4-test"]
-           (mapv #(option-value (nth % 2) "--namespace") commands)))
-    (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))
+    (is (= [["gravity.macro.pipeline-test" "gravity.macro.native-reports-test"]
+            ["gravity.macro.pipeline-test"]
+            ["gravity.bootstrap-compatibility.c4-test"]]
+           (mapv #(option-values (nth % 2) "--namespace") commands)))
+    (is (seq native-vars))
+    (is (= native-vars (macro-selected-vars cohort-argv native-vars "gravity.macro.native-reports-test")))
+    (let [index (.indexOf ^java.util.List cohort-argv "gravity.macro.native-reports-test")
+          omitted (vec (concat (take (dec index) cohort-argv) (drop (inc index) cohort-argv)))]
+      (is (empty? (macro-selected-vars omitted native-vars "gravity.macro.native-reports-test"))))
     (is (every? #(some #{"--progress"} (nth % 2)) commands))
     (is (not-any? #(some #{"--fail-fast"} (nth % 2)) commands))
     (is (= 3 (count (set ci/macro-receipt-test-vars))))
