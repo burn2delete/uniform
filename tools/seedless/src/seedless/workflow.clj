@@ -90,10 +90,7 @@
   (task! ctx key :status status)
   (rt/event! ctx :transition {:slice key :status status}))
 
-(defn fresh-main! [ctx]
-  (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
-    (rt/git ctx repo-dir "fetch" remote (str "refs/heads/" base-branch ":refs/seedless/main"))
-    (rt/git ctx repo-dir "rev-parse" "refs/seedless/main")))
+(def fresh-main! rt/fresh-main!)
 
 (defn worktree! [ctx name base]
   (let [{:keys [repo-dir worktree-root]} (:config ctx)
@@ -344,9 +341,12 @@
 
 (defn accept! [ctx key proposed]
   (let [t (task ctx key)]
-    (transition! ctx key :checking)
-    (shared/checks! ctx t proposed)
-    (assert-clean! ctx (:worktree t))
+    (assert-identity! ctx t)
+    (when-not (and (= :passed (get-in t [:checks :result]))
+                   (= (:candidate t) (get-in t [:checks :candidate]))
+                   (= (:tree t) (get-in t [:checks :tree]))
+                   (every? (set (get-in t [:checks :commands])) proposed))
+      (rt/fail! "Acceptance needs the completed writer-phase checks" {:slice key}))
     (transition! ctx key :review)
     (let [review (review! ctx (task ctx key) (:kind t))]
       (task! ctx key :review review)
@@ -356,6 +356,9 @@
                      (gh/comment! ctx (:issue t) (str "accepted/" (:candidate (task ctx key)))
                                   (str "Exact candidate and checks: " (pr-str (select-keys (task ctx key) [:base :candidate :tree :checks :review]))))
                      (let [info (shared/pr-info ctx (task ctx key))]
+                       (assert-pr-identity! ctx (task ctx key)
+                                            (pull-request-by-number! ctx (get-in t [:pr :number]))
+                                            (:candidate (task ctx key)))
                        (when-not (and (= "OPEN" (:state info)) (= (:candidate (task ctx key)) (:headRefOid info)))
                          (rt/fail! "Published PR changed before acceptance" {:pr info}))
                        (when (:isDraft info)
@@ -364,6 +367,13 @@
                                                                   "--repo" (get-in ctx [:config :repository])]))))
                      (transition! ctx key :ci) true)
         (rt/fail! "Independent review needs input" {:review review})))))
+
+(defn check-candidate! [ctx key proposed lease]
+  (assert-identity! ctx (task ctx key))
+  (rt/lease-phase! ctx lease :checking)
+  (transition! ctx key :checking)
+  (shared/checks! ctx (task ctx key) proposed)
+  (assert-clean! ctx (:worktree (task ctx key))))
 
 (defn working-paths [ctx t]
   (if-not (:merge-in-progress t)
@@ -374,41 +384,62 @@
                            (str/split (str (rt/git ctx (:worktree t) "diff" "--name-only" "--no-renames" "-z")
                                            "\u0000" (rt/git ctx (:worktree t) "ls-files" "--others" "--exclude-standard" "-z")) #"\u0000"))))))
 
-(defn prepare! [ctx key]
-  (loop []
-    (prepare-base! ctx (task ctx key))
-    (let [t (task ctx key)
-          _ (transition! ctx key :implementing)
-          output (job! ctx :implement (:worktree t)
-                       (str "Implement the owned slice.\n" (pr-str (:description t))
-                            "\nExisting feedback: " (pr-str (:feedback t))
-                            "\nCurrent draft: " (pr-str (:pr t))
-                            "\nIf there is no draft yet, make the smallest coherent implementation checkpoint and return checkpoint promptly, before full implementation/validation. Never add filler just to open a PR. "
-                            "Return ready when the slice is implemented, or checkpoint to publish work in progress. Do not execute checks; propose meaningful Clojure argv for the controller. Preserve existing candidate edits during repair.")
-                       schema/implementation)]
-      (when (#{"needs_input" "restricted"} (:outcome output))
-        (rt/fail! "Implementation needs attention" {:output output :restricted (= "restricted" (:outcome output))}))
-      (assert-identity! ctx t)
-      (when (and (:merge-in-progress t) (not= (:base t) (rt/git ctx (:worktree t) "rev-parse" "MERGE_HEAD")))
-        (rt/fail! "Merge parent changed outside the controller" {}))
-      (let [paths (working-paths ctx t)]
-        (when (empty? paths) (rt/fail! "Implementation made no source change" {:slice key}))
-        (doseq [path paths]
-          (when-not (some #(shared/covers? % path) (:paths t))
-            (rt/fail! "Worker changed an unowned path" {:path path :slice key})))
-        (apply rt/git ctx (:worktree t) "add" "--" paths)
-        (doseq [path (remove str/blank? (str/split (rt/git ctx (:worktree t) "diff" "--cached" "--name-only" "--no-renames" (:base t)) #"\n"))]
-          (when-not (some #(shared/covers? % path) (:paths t))
-            (rt/fail! "Candidate index changes an unowned path relative to its base" {:path path})))
-        (rt/git ctx (:worktree t) "commit" "-m" (:title t)))
-      (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
-             :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false)
-      (publish! ctx (task ctx key))
-      (if (= "checkpoint" (:outcome output))
-        (recur)
-        (when-not (accept! ctx key (:checks output)) (recur))))))
+(defn prepare-candidate! [ctx key lease]
+  (let [writer-ended? (atom true)]
+    (try
+      (prepare-base! ctx (task ctx key))
+      (let [t (task ctx key)
+            _ (transition! ctx key :implementing)
+            _ (reset! writer-ended? false)
+            output (job! ctx :implement (:worktree t)
+                         (str "Implement the owned slice.\n" (pr-str (:description t))
+                              "\nExisting feedback: " (pr-str (:feedback t))
+                              "\nCurrent draft: " (pr-str (:pr t))
+                              "\nIf there is no draft yet, make the smallest coherent implementation checkpoint and return checkpoint promptly, before full implementation/validation. Never add filler just to open a PR. "
+                              "Return ready when the slice is implemented, or checkpoint to publish work in progress. Do not execute checks; propose meaningful Clojure argv for the controller. Preserve existing candidate edits during repair.")
+                         schema/implementation)]
+        (reset! writer-ended? true)
+        (when (#{"needs_input" "restricted"} (:outcome output))
+          (rt/fail! "Implementation needs attention" {:output output :restricted (= "restricted" (:outcome output))}))
+        (assert-identity! ctx t)
+        (when (and (:merge-in-progress t) (not= (:base t) (rt/git ctx (:worktree t) "rev-parse" "MERGE_HEAD")))
+          (rt/fail! "Merge parent changed outside the controller" {}))
+        (let [paths (working-paths ctx t)]
+          (when (empty? paths) (rt/fail! "Implementation made no source change" {:slice key}))
+          (doseq [path paths]
+            (when-not (some #(shared/covers? % path) (:paths t))
+              (rt/fail! "Worker changed an unowned path" {:path path :slice key})))
+          (apply rt/git ctx (:worktree t) "add" "--" paths)
+          (doseq [path (remove str/blank? (str/split (rt/git ctx (:worktree t) "diff" "--cached" "--name-only" "--no-renames" (:base t)) #"\n"))]
+            (when-not (some #(shared/covers? % path) (:paths t))
+              (rt/fail! "Candidate index changes an unowned path relative to its base" {:path path})))
+          (rt/git ctx (:worktree t) "commit" "-m" (:title t)))
+        (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
+               :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false)
+        (publish! ctx (task ctx key))
+        (when-not (= "checkpoint" (:outcome output))
+          (reset! writer-ended? false)
+          (check-candidate! ctx key (:checks output) lease)
+          (reset! writer-ended? true))
+        output)
+      (catch Exception e
+        (throw (ex-info (.getMessage e)
+                        (cond-> (or (ex-data e) {}) @writer-ended? (assoc :writer-ended? true)) e))))))
 
-(defn finish-merge! [ctx t info]
+(defn prepare!
+  ([ctx key] (prepare! ctx key nil))
+  ([ctx key initial-lease]
+   (loop [lease initial-lease]
+     (if-let [lease (or lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing))]
+       (let [output (rt/with-claimed-paths ctx lease #(prepare-candidate! ctx key lease))]
+         ;; Immutable review/CI candidates do not retain active-writer claims.
+         (if (= "checkpoint" (:outcome output))
+           (do (transition! ctx key :repair) (recur nil))
+           (when-not (accept! ctx key (:checks output)) (recur nil))))
+       (task! ctx key :status :repair)))))
+
+(defn verify-merge! [ctx t info & [intent]]
+  (assert-identity! ctx t)
   (let [commit (get-in info [:mergeCommit :oid]) cwd (:worktree t)
         _ (when-not commit (rt/fail! "Merged PR has no commit" {}))
         main (fresh-main! ctx)
@@ -417,16 +448,23 @@
     (rt/git ctx cwd "merge-base" "--is-ancestor" commit main)
     (when-not (and (= [(:base t) (:candidate t)] (vec parents)) (= (:tree t) tree))
       (rt/fail! "Actual merge differs from the accepted base/head/tree" {:commit commit :parents parents :tree tree}))
-    (let [key (:key t) close-effect (str "close/" key)]
+    (let [actual {:commit commit :tree tree :parents (vec parents) :main main}]
+      (when intent (rt/complete-main-merge! ctx intent actual))
+      actual)))
+
+(defn finish-merge!
+  ([ctx t info] (finish-merge! ctx t info (verify-merge! ctx t info)))
+  ([ctx t _ actual]
+   (let [key (:key t) close-effect (str "close/" key)]
       ;; The merge is durable, but the task is not Done until its tracking
       ;; record closes successfully. Keeping this finalization state makes an
       ;; interrupted close resumable without redispatching the author.
-      (task! ctx key :merged commit :finalization-effect close-effect)
-      (transition! ctx key :finalizing)
-      (rt/effect! ctx close-effect
-                  #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number])))
-                           {:state "closed" :state_reason "completed"}))
-      (transition! ctx key :done))))
+     (task! ctx key :merged (:commit actual) :status :finalizing :finalization-effect close-effect)
+     (transition! ctx key :finalizing)
+     (rt/effect! ctx close-effect
+                 #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number])))
+                          {:state "closed" :state_reason "completed"}))
+     (transition! ctx key :done))))
 
 (defn dependencies-merged? [ctx t]
   (every? #(and (= :done (:status (task ctx %))) (:merged (task ctx %))) (:dependencies t)))
@@ -475,19 +513,89 @@
                      (and (map? pr) (not= expected-base (pr-base-ref pr)))
                      (assoc :base-ref {:expected expected-base :actual (pr-base-ref pr)})
                      (and (map? pr) (not= expected-repo (pr-base-repository pr)))
-                     (assoc :base-repository {:expected expected-repo :actual (pr-base-repository pr)}))]
+                     (assoc :base-repository {:expected expected-repo :actual (pr-base-repository pr)})
+                     (and (map? pr) (not (pr-body-binds? t pr)))
+                     (assoc :body {:expected :slice-marker-and-issue :actual (:body pr)}))]
     (when (seq mismatches)
       (rt/fail! "Merged PR identity does not target this Seedless candidate"
                 {:remote-pr-refusal true :reason :merged-pr-identity :mismatches mismatches
                  :number (get-in t [:pr :number]) :branch (:branch t)}))
     pr))
 
+(defn compose! [ctx t base]
+  (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :checking)]
+    (let [checked? (rt/with-claimed-paths
+                     ctx lease
+                     #(if (merge-base! ctx t base)
+                        (do (prepare-base! ctx (task ctx (:key t)))
+                            (publish! ctx (task ctx (:key t)))
+                            (check-candidate! ctx (:key t) (get-in t [:checks :commands]) lease)
+                            true)
+                        false))]
+      (if checked?
+        (accept! ctx (:key t) (get-in t [:checks :commands]))
+        (transition! ctx (:key t) :repair)))))
+
+(defn merge-current! [ctx t]
+  (rt/try-with-main-lock
+   ctx
+   (fn []
+     (let [base (fresh-main! ctx) info (shared/pr-info ctx t)]
+       (cond
+         (not= base (:base t)) {:compose base}
+         (not (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
+                   (= :passed (shared/check-state (:statusCheckRollup info)))
+                   (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
+                   (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info)))))
+         (rt/event! ctx :waiting {:slice (:key t) :reason :pr-evidence-changed})
+         :else
+         (do
+           (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
+           (when-not (and (= (get-in ctx [:config :base-branch]) (:baseRefName info))
+                          (= "approved" (get-in t [:review :verdict]))
+                          (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
+                          (= (:candidate t) (get-in t [:checks :candidate]))
+                          (= (:tree t) (get-in t [:checks :tree])) (= :passed (get-in t [:checks :result])))
+             (rt/fail! "Acceptance/check evidence does not bind this main candidate" {}))
+           (doseq [dep (:dependencies t)]
+             (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:merged (task ctx dep)) base))
+           (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
+             (rt/fail! "PR has unresolved review threads" {}))
+           (assert-clean! ctx (:worktree t)) (assert-identity! ctx t)
+           (when (= (:tree t) (rt/git ctx (:worktree t) "rev-parse" (str base "^{tree}")))
+             (rt/fail! "Candidate is already tree-equivalent to main; inspect disposition" {:slice (:key t)}))
+           (rt/run! ctx (:worktree t)
+                    ["clojure" "-M" "tools/check_worktree_preflight.clj" "--mode" "integration" "--base-ref" base
+                     "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
+           (let [observed (fresh-main! ctx)]
+             (if (not= base observed)
+               {:compose observed}
+               (let [intent {:id (str "merge/" (:candidate t)) :base base :candidate (:candidate t)
+                             :tree (:tree t) :method :merge :pr-url (get-in t [:pr :html_url])}]
+                 (task! ctx (:key t) :merge-effect (:id intent))
+                 (try
+                   (rt/effect! ctx (:id intent)
+                               #(do (rt/begin-main-merge! ctx intent)
+                                    (rt/run! ctx (:worktree t)
+                                             ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
+                                              "--merge" "--match-head-commit" (:candidate t)])))
+                   (let [merged (shared/pr-info ctx t)]
+                     (when-not (= "MERGED" (:state merged)) (rt/fail! "Merge outcome needs inspection" {:effect (:id intent)}))
+                     (assert-merged-pr-identity! ctx t)
+                     (verify-merge! ctx t merged intent))
+                   (catch Exception e
+                     (throw (ex-info (.getMessage e)
+                                     (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e)))))))))))))
+
 (defn integrate! [ctx t]
+  (assert-identity! ctx t)
   (when (dependencies-merged? ctx t)
     (let [info (shared/pr-info ctx t) ci (shared/check-state (:statusCheckRollup info))]
       (cond
-        (= "MERGED" (:state info)) (do (assert-merged-pr-identity! ctx t)
-                                       (finish-merge! ctx t info))
+        (= "MERGED" (:state info))
+        (let [actual (rt/try-with-main-lock ctx #(do (assert-merged-pr-identity! ctx t)
+                                                     (verify-merge! ctx t info)))]
+          (when (:commit actual) (finish-merge! ctx t info actual)))
         (not= "OPEN" (:state info)) (rt/fail! "PR closed without a verified merge" {:pr info})
         (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote head changed outside this controller" {:pr info})
         (= :failed ci) (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info)
@@ -499,41 +607,16 @@
         (let [base (fresh-main! ctx)]
           (cond
             (and (not= base (:base t)) (or (= :passed ci) (= "CONFLICTING" (:mergeable info))))
-            (if (merge-base! ctx t base)
-              (do (prepare-base! ctx (task ctx (:key t)))
-                  (publish! ctx (task ctx (:key t)))
-                  (accept! ctx (:key t) (get-in t [:checks :commands])))
-              (transition! ctx (:key t) :repair))
+            (compose! ctx t base)
 
             (and (= base (:base t)) (= :passed ci) (= "MERGEABLE" (:mergeable info))
                  (not (:isDraft info)) (not= "REVIEW_REQUIRED" (:reviewDecision info)))
-            (let [key (:key t)]
-              (when-not (and (= (get-in ctx [:config :base-branch]) (:baseRefName info))
-                             (= "approved" (get-in t [:review :verdict]))
-                             (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
-                             (= (:candidate t) (get-in t [:checks :candidate]))
-                             (= (:tree t) (get-in t [:checks :tree])) (= :passed (get-in t [:checks :result])))
-                (rt/fail! "Acceptance/check evidence does not bind this main candidate" {}))
-              (doseq [dep (:dependencies t)]
-                (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:merged (task ctx dep)) base))
-              (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
-                (rt/fail! "PR has unresolved review threads" {}))
-              (assert-clean! ctx (:worktree t)) (assert-identity! ctx t)
-              ;; Identical/tree-equivalent candidates are retained without duplicate merge credit.
-              (when (= (:tree t) (rt/git ctx (:worktree t) "rev-parse" (str base "^{tree}")))
-                (rt/fail! "Candidate is already tree-equivalent to main; inspect disposition" {:slice key}))
-              (transition! ctx key :merge)
-              (rt/run! ctx (:worktree t)
-                       ["clojure" "-M" "tools/check_worktree_preflight.clj" "--mode" "integration" "--base-ref" base
-                        "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
-              (when (= base (fresh-main! ctx))
-                (let [merge-effect (str "merge/" (:candidate t))]
-                  (task! ctx key :merge-effect merge-effect)
-                  (rt/effect! ctx merge-effect
-                              #(rt/run! ctx (:worktree t)
-                                        ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" (get-in ctx [:config :repository])
-                                         "--merge" "--match-head-commit" (:candidate t)])))
-                (finish-merge! ctx t (shared/pr-info ctx t))))
+            (do
+              (transition! ctx (:key t) :merge)
+              (let [result (merge-current! ctx t)]
+                (cond
+                  (:compose result) (compose! ctx t (:compose result))
+                  (:commit result) (finish-merge! ctx t nil result))))
             :else (rt/event! ctx :waiting {:slice (:key t) :ci ci :base (:baseRefName info)})))))))
 
 (defn discovery-key [ctx base]
@@ -649,6 +732,7 @@
         details (ex-data error)
         local-only? (or (#{:pending :uncertain :restricted :unknown} effect-status)
                         (:restricted details)
+                        (:main-effect details)
                         (:remote-pr-refusal details))
         error-data (attention-error error effect-status)]
     (if local-only?
@@ -701,9 +785,12 @@
               (let [occupied (filter #(and (not= (:key t) (:key %)) (#{:implementing :checking} (:status %))) (tasks ctx))]
                 (when (and (< (count @running) (get-in ctx [:config :parallelism]))
                            (not (contains? @running (:key t))) (eligible? ctx t occupied))
-                  (transition! ctx (:key t) :implementing)
-                  (swap! running assoc (:key t)
-                         (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t)))))))))
+                  (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :implementing)]
+                    (try
+                      (transition! ctx (:key t) :implementing)
+                      (swap! running assoc (:key t)
+                             (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
+                      (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
             (if (seq @running)
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (let [base (fresh-main! ctx)

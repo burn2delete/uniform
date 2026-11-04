@@ -17,19 +17,20 @@
     (.mkdirs state-dir)
     (.mkdirs source-root)
     (.mkdirs worktree-root)
-    {:root root
-     :state-dir (str state-dir)
-     :state-file (str (io/file state-dir "state.edn"))
-     :control-file (str (io/file state-dir "control.edn"))
-     :log-lock (Object.)
-     :processes (atom #{})
-     :state (atom {:schema :seedless/v1 :tasks {} :jobs {} :effects {}
-                   :tracking-intents {}})
-     :config {:repo-dir (str source-root)
-              :worktree-root (str worktree-root)
-              :repository "fixture/repo"
-              :remote "origin"
-              :base-branch "main"}}))
+    (merge (rt/coordination root {:state-dir (str state-dir)})
+           {:root root
+            :state-dir (str state-dir)
+            :state-file (str (io/file state-dir "state.edn"))
+            :control-file (str (io/file state-dir "control.edn"))
+            :log-lock (Object.)
+            :processes (atom #{})
+            :state (atom {:schema :seedless/v1 :tasks {} :jobs {} :effects {}
+                          :tracking-intents {}})
+            :config {:repo-dir (str source-root)
+                     :worktree-root (str worktree-root)
+                     :repository "fixture/repo"
+                     :remote "origin"
+                     :base-branch "main"}})))
 
 (defn task [key]
   {:key key :title "Replace fixture slice" :branch "codex/seedless-slice"
@@ -127,6 +128,7 @@
         finished (atom false)]
     (rt/update! ctx assoc-in [:tasks "slice"] t)
     (with-redefs [shared/pr-info (fn [_ _] {:state "MERGED" :statusCheckRollup []})
+                  workflow/assert-identity! (fn [& _])
                   workflow/finish-merge! (fn [& _] (reset! finished true))
                   gh/api (fn [_ _]
                            {:number 9 :state "closed"
@@ -149,6 +151,7 @@
         transitions (atom [])]
     (rt/update! ctx assoc-in [:tasks "slice"] t)
     (with-redefs [workflow/fresh-main! (fn [_] "main")
+                  workflow/assert-identity! (fn [& _])
                   rt/git merge-command
                   rt/event! (fn [& _])
                   workflow/transition! (fn [c k status]
@@ -166,6 +169,7 @@
         transitions (atom [])]
     (rt/update! ctx assoc-in [:tasks "slice"] t)
     (with-redefs [workflow/fresh-main! (fn [_] "main")
+                  workflow/assert-identity! (fn [& _])
                   rt/git merge-command
                   rt/event! (fn [& _])
                   workflow/transition! (fn [c k status]
@@ -185,6 +189,7 @@
         statuses (atom [])]
     (rt/update! ctx assoc-in [:tasks "slice"] t)
     (with-redefs [workflow/fresh-main! (constantly "main")
+                  workflow/assert-identity! (fn [& _])
                   rt/git merge-command rt/event! (fn [& _])
                   gh/api (fn [& _] {:state "closed"})
                   gh/status! (fn [context _ status]
@@ -241,3 +246,29 @@
       (is (= 1 @comments))
       (is (= :attention (get-in @(:state ctx) [:tasks "slice" :status])))
       (is (nil? (get-in @(:state ctx) [:tasks "slice" :error :details :effect-status]))))))
+
+(deftest real-generic-effect-failure-does-not-trigger-reporting-writes
+  (let [ctx (context) t (task "slice") calls (atom [])]
+    (rt/update! ctx assoc-in [:tasks "slice"] t)
+    (with-redefs [rt/event! (fn [& _])
+                  gh/status! (fn [& _] (swap! calls conj :status))
+                  gh/comment! (fn [& _] (swap! calls conj :comment))]
+      (try
+        (rt/effect! ctx "original-write" #(throw (ex-info "Response lost" {})))
+        (catch Exception e (workflow/attention! ctx "slice" e)))
+      (is (empty? @calls))
+      (is (= :uncertain (get-in @(:state ctx) [:effects "original-write" :status])))
+      (is (= "original-write" (get-in (workflow/task ctx "slice") [:error :details :effect])))
+      (is (= :attention (:status (workflow/task ctx "slice")))))))
+
+(deftest outside-worktrees-are-refused-before-checks-or-provider-observation
+  (let [ctx (context) t (task "slice") calls (atom [])]
+    (rt/update! ctx assoc-in [:tasks "slice"] t)
+    (with-redefs [shared/checks! (fn [& _] (swap! calls conj :check))
+                  shared/pr-info (fn [& _] (swap! calls conj :provider))
+                  rt/git (fn [& _] (swap! calls conj :git))]
+      (doseq [operation [#(workflow/check-candidate! ctx "slice" [] nil)
+                         #(workflow/integrate! ctx t)
+                         #(workflow/verify-merge! ctx t {:mergeCommit {:oid "merge"}})]]
+        (is (= :root-containment (:seedless-identity (ex-data-of operation)))))
+      (is (empty? @calls)))))

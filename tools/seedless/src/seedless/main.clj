@@ -71,8 +71,7 @@
         ctx (assoc startup :identity identity :state (atom state) :owns-lock? (atom false)
                    :control-file (str (io/file directory "control.edn")))
         common (:git-common-dir identity)]
-    ;; Deliberately share Simplify's existing repository lock. Never take it over.
-    (assoc ctx :lock-file (str (io/file common "simplify-harness.lock")))))
+    (merge ctx (rt/coordination common config))))
 
 (defn owned-cleanup! [ctx reason]
   (when (and (:owns-lock? ctx) @(:owns-lock? ctx))
@@ -98,6 +97,7 @@
            (when-not (and (= :seedless/v1 (:schema state)) (= (:identity ctx) (:identity state)))
              (rt/fail! "State identity changed before lock ownership" {}))
            (reset! (:state ctx) state)))
+       (rt/import-state-coordination! ctx)
        (when (:owns-lock? ctx) (reset! (:owns-lock? ctx) true))
        (try (operation)
             (finally
@@ -162,11 +162,15 @@
     "status" (println (pr-str @(:state ctx)))
     "pause" (rt/write-edn! (:control-file ctx) {:paused true})
     "setup" (with-current-lock ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/campaign-issue! ctx) "Proposed")))
+    "coordinate" (with-current-lock ctx #(println "Retained state registered; no workers or GitHub writes."))
     "run" (run-campaign! ctx false)
     "resume" (run-campaign! ctx true)
     "retry" (with-current-lock ctx #(retry! ctx (first args) (second args)))
     "reconcile" (with-current-lock ctx #(shared/reconcile! ctx (first args) (second args)))
-    (rt/fail! "Usage: clojure -M:run doctor|setup|run|status|pause|resume|retry|reconcile CONFIG [KEY INSPECTION.edn | EFFECT RESULT.edn]" {})))
+    "reconcile-main" (with-current-lock ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
+    "release-writer" (with-current-lock ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
+                                                                        (:evidence (rt/read-edn (second args)))))
+    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|status|pause|resume|retry|reconcile|reconcile-main|release-writer CONFIG [KEY FILE]" {})))
 
 (defn -main [& [command path & args]]
   (try

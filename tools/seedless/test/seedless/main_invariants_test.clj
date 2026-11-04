@@ -26,7 +26,7 @@
         (rt/with-lock owner
           (fn []
             (with-redefs [workflow/campaign! (fn [& _] (throw (ex-info "must not dispatch" {})))]
-              (doseq [command ["run" "resume" "doctor" "setup" "retry" "reconcile"]]
+              (doseq [command ["run" "resume" "doctor" "setup" "coordinate" "retry" "reconcile" "reconcile-main" "release-writer"]]
                 (is (thrown? Exception (main/dispatch! contender command ["a" "unused.edn"])))
                 (is (= before (slurp (:state-file owner)))))))))
       (is (false? @(:owns-lock? contender)))

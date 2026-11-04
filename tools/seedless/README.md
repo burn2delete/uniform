@@ -69,6 +69,12 @@ main writers. Pause takes effect at scheduler boundaries, lets active operations
 finish, stops dispatch/merging, and releases controller ownership when `run`
 returns. Resume preserves candidates and PRs.
 
+Before either compatible controller starts, register each preserved stopped
+campaign with `coordinate CONFIG` in its own tool directory. This acquires its
+state lock, reloads identity, and imports original refusals, uncertain merges
+and explicitly recorded unknown writers without starting jobs or writing to
+GitHub. An unknown writer keeps only its actual owned paths held for inspection.
+
 Commands that can change campaign state acquire its lock and reload/validate
 state after acquiring it. A lock-busy contender does not change the live state.
 `doctor` therefore also requires the campaign lock; `status` and atomic pause
@@ -175,6 +181,15 @@ external result, then record it using the inherited reconciliation format:
 {:evidence "Inspected GitHub/Git at ..." :result ORIGINAL-OPERATION-RESULT}
 clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 ```
+
+If the shared main journal also retains that original merge, its owner must
+inspect and reconcile it separately using `reconcile-main CONFIG EFFECT FILE`.
+The EDN needs `:evidence`, `:outcome :merged` with verified `:actual` commit,
+tree and parents, or `:outcome :not-applied`. Reconciliation never retries the
+mutation or removes its denial. A retained unknown writer can be released only
+by its original state owner with `release-writer CONFIG LEASE.edn INSPECTION.edn`;
+the exact lease token and inspected evidence are required. Never clear either
+record merely because its process is absent.
 
 An already merged slice remains in finalization until its tracking writes are
 complete. Tracking failure never queues another author for the merged code.

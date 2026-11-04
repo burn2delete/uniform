@@ -18,9 +18,10 @@
 (defn context []
   (let [root (.toFile (Files/createTempDirectory "seedless-test-" (make-array java.nio.file.attribute.FileAttribute 0)))
         dir (io/file root "state") _ (.mkdirs dir)]
-    {:root root :state-dir (str dir) :state-file (str (io/file dir "state.edn"))
-     :control-file (str (io/file dir "control.edn")) :log-lock (Object.) :processes (atom #{})
-     :state (atom {:schema :seedless/v1 :tasks {} :jobs {} :effects {}})}))
+    (merge (rt/coordination root {:state-dir (str dir)})
+           {:root root :state-dir (str dir) :state-file (str (io/file dir "state.edn"))
+            :control-file (str (io/file dir "control.edn")) :log-lock (Object.) :processes (atom #{})
+            :state (atom {:schema :seedless/v1 :tasks {} :jobs {} :effects {}})})))
 
 (defn delete-tree! [root]
   (doseq [file (reverse (file-seq (io/file root)))] (Files/deleteIfExists (.toPath file))))
@@ -37,11 +38,12 @@
     (rt/git ctx repo "commit" "-m" "fixture base")
     (rt/git ctx repo "remote" "add" "origin" (str bare))
     (rt/git ctx repo "push" "-u" "origin" "main")
-    (assoc ctx :config {:repo-dir (str repo) :repository "fixture/repo" :remote "origin" :base-branch "main"
-                        :campaign "fixture" :project-title "Uniform Seedless" :objective "Fixture seed removal"
-                        :contracts ["module.clj"] :worktree-root (str (io/file root "worktrees"))
-                        :parallelism 2 :poll-ms 1 :checks [main/boundary-check]
-                        :completion-checks [main/completion-check] :check-executables #{"clojure"}})))
+    (merge ctx (rt/coordination (io/file repo ".git") {:state-dir (:state-dir ctx)})
+           {:config {:repo-dir (str repo) :repository "fixture/repo" :remote "origin" :base-branch "main"
+                     :campaign "fixture" :project-title "Uniform Seedless" :objective "Fixture seed removal"
+                     :contracts ["module.clj"] :worktree-root (str (io/file root "worktrees"))
+                     :parallelism 2 :poll-ms 1 :checks [main/boundary-check]
+                     :completion-checks [main/completion-check] :check-executables #{"clojure"}}})))
 
 (defn slice [key]
   {:key key :title (str "Replace " key) :stage "SH-07" :workstream "compiler" :kind "adoption"
@@ -57,6 +59,11 @@
 (defn harness [scenario operation]
   (let [ctx (repository! (context)) original rt/command
         events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)
+        ownership! (fn [phase]
+                     (let [file (io/file (:coordination-file ctx))
+                           state (when (.isFile file) (rt/read-edn file))]
+                       (swap! events conj [:ownership phase (count (:writers state))
+                                           (some? @(:main-lock-owner ctx))])))
         pr-data (fn [[key p]]
                   (let [t (w/task ctx key)
                         remote (rt/git ctx (get-in ctx [:config :repo-dir]) "ls-remote" "origin" (str "refs/heads/" (:branch t)))
@@ -69,7 +76,7 @@
     (try
       (with-redefs
        [rt/event! (fn [& _])
-        gh/status! (fn [_ _ status] (swap! events conj [:status status]))
+        gh/status! (fn [_ _ status] (ownership! [:status status]) (swap! events conj [:status status]))
         gh/comment! (fn [& _])
         gh/open-review-threads? (fn [& _] false)
         gh/api (fn
@@ -99,6 +106,7 @@
                             :mergeable "MERGEABLE" :reviewDecision nil :mergeCommit {:oid (:merged p)}
                             :statusCheckRollup [{:status "COMPLETED" :conclusion "SUCCESS"}]}))
         codex/command! (fn [_ _ _ argv]
+                         (ownership! :check)
                          (swap! events conj [:check argv])
                          (when (and (= scenario :release-gap) (= main/completion-check argv))
                            (throw (ex-info "P18T04007: fixture still requires seed" {})))
@@ -114,6 +122,7 @@
                          (= mode :write)
                          (let [phase (get (swap! phases update key (fnil inc 0)) key)
                                file (io/file cwd "module.clj") text (slurp file)]
+                           (ownership! :author)
                            (swap! events conj [:author key phase])
                            (spit file (str (if (str/includes? text "<<<<<<<")
                                              (str/join "\n" (remove #(or (str/starts-with? % "<<<<<<<") (= % "=======") (str/starts-with? % ">>>>>>>")) (str/split-lines text)))
@@ -126,19 +135,21 @@
                          (let [t (or t {:base (rt/git ctx cwd "rev-parse" "HEAD")
                                         :candidate (rt/git ctx cwd "rev-parse" "HEAD")
                                         :tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}") :kind "completion"})]
+                           (ownership! :review)
                            (swap! events conj [:review key (:base t)])
                            (merge (select-keys t [:base :candidate :tree])
                                   {:verdict "approved" :evidence-scope (:kind t) :summary "Independent fixture review"
                                    :findings [] :residual-host-boundary "Fixture host remains"})))))
         rt/command (fn [context cwd argv & input]
                      (cond
-                       (= "clojure" (first argv)) (do (swap! events conj [:preflight argv]) {:exit 0 :out "passed" :err ""})
+                       (= "clojure" (first argv)) (do (ownership! :preflight) (swap! events conj [:preflight argv]) {:exit 0 :out "passed" :err ""})
                        (= ["gh" "pr" "ready"] (vec (take 3 argv)))
                        (do (swap! prs (fn [m] (into {} (map (fn [[k p]] [k (if (= (get-in p [:pr :html_url]) (nth argv 3)) (assoc p :draft false) p)]) m))))
                            {:exit 0 :out "ready" :err ""})
                        (= ["gh" "pr" "merge"] (vec (take 3 argv)))
                        (let [t (some #(when (= (get-in % [:pr :html_url]) (nth argv 3)) %) (w/tasks ctx))
                              repo (get-in ctx [:config :repo-dir])]
+                         (ownership! :merge)
                          (swap! events conj [:merge argv])
                          (when (= scenario :race)
                            (spit (io/file repo "external.txt") "external writer")
@@ -249,7 +260,22 @@
              (add-task! ctx (slice "a")) (w/prepare! ctx "a")
              (is (thrown-with-msg? Exception #"Actual merge differs" (w/integrate! ctx (w/task ctx "a"))))
              (is (not= :done (:status (w/task ctx "a"))))
+             (is (seq (:main-effects (rt/read-edn (:coordination-file ctx))))
+                 "An unverified actual write keeps the shared durable fence")
+             (is (= :fenced (rt/try-with-main-lock ctx (constantly :must-not-merge))))
              (is (not-any? #(and (= :api (first %)) (= "completed" (get-in % [3 :state_reason]))) @events)))))
+
+(deftest an-unverified-main-write-keeps-attention-local
+  (harness :race
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (let [error (try (w/integrate! ctx (w/task ctx "a")) nil (catch Exception e e))
+                   before @events]
+               (is (:main-effect (ex-data error)))
+               (w/attention! ctx "a" error)
+               (is (= before @events))
+               (is (= :attention (:status (w/task ctx "a"))))
+               (is (seq (:main-effects (rt/read-edn (:coordination-file ctx)))))))))
 
 (deftest inspected-merge-observation-resumes-without-replaying-the-merge
   (harness :normal
@@ -266,6 +292,55 @@
              (is (= :done (:status (w/task ctx "a"))))
              (is (= 2 (get @phases "a")))
              (is (= 1 (count (filter #(= :merge (first %)) @events)))))))
+
+(deftest writer-check-review-and-merge-have-distinct-ownership-phases
+  (harness :normal
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (w/integrate! ctx (w/task ctx "a"))
+             (doseq [phase [:author :check]]
+               (let [entries (filter #(= [:ownership phase] (vec (take 2 %))) @events)]
+                 (is (seq entries))
+                 (is (every? #(= [1 false] (subvec % 2)) entries))))
+             (doseq [phase [:review [:status "Done"]]]
+               (let [entries (filter #(= [:ownership phase] (vec (take 2 %))) @events)]
+                 (is (seq entries))
+                 (is (every? #(= [0 false] (subvec % 2)) entries))))
+             (doseq [phase [:preflight :merge]]
+               (is (some #(= [:ownership phase 0 true] %) @events)))
+             (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx)))))
+             (is (= :main-verified (:kind (last (:history (rt/read-edn (:coordination-file ctx))))))))))
+
+(defn peer-context [ctx]
+  (let [directory (io/file (:root ctx) "peer-state") _ (.mkdirs directory)]
+    (merge ctx (rt/coordination (io/file (get-in ctx [:config :repo-dir]) ".git") {:state-dir (str directory)})
+           {:state-dir (str directory) :state-file (str (io/file directory "state.edn"))
+            :state (atom {:tasks {} :effects {}})
+            :config (assoc (:config ctx) :campaign "another-campaign" :state-dir (str directory))})))
+
+(deftest another-campaign-can-plan-but-cannot-write-an-active-owned-path
+  (harness :normal
+           (fn [ctx events _ _]
+             (let [peer (peer-context ctx)
+                   lease (rt/claim-paths! peer "other" ["module.clj"] :checking)]
+               (is (= :parallel (rt/with-lock ctx #(rt/with-lock peer (constantly :parallel)))))
+               (is (= (:main-lock-file ctx) (:main-lock-file peer)))
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (is (not-any? #(= :author (first %)) @events))
+               (rt/release-paths! peer lease)
+               (w/prepare! ctx "a")
+               (is (= :ci (:status (w/task ctx "a"))))
+               (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))))
+
+(deftest another-campaigns-main-lock-waits-without-replaying-a-merge
+  (harness :normal
+           (fn [ctx events _ _]
+             (let [peer (peer-context ctx)]
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (rt/try-with-main-lock peer #(w/integrate! ctx (w/task ctx "a")))
+               (is (not-any? #(= :merge (first %)) @events))
+               (w/integrate! ctx (w/task ctx "a"))
+               (is (= 1 (count (filter #(= :merge (first %)) @events))))))))
 
 (deftest planning-contracts-and-frozen-writer-ownership
   (let [ctx (context) p (slice "parent") child (assoc (slice "child") :status :ready :dependencies ["parent"] :stack-on "parent")
@@ -343,7 +418,7 @@
         (is (zero? @calls)))
       (finally (delete-tree! (:root ctx))))))
 
-(deftest configuration-keeps-the-canonical-gates-and-shared-lock
+(deftest configuration-keeps-canonical-gates-and-separate-controller-locks
   (let [ctx (repository! (context)) file (io/file (:root ctx) "config.edn")
         config (assoc (:config ctx) :state-dir (:state-dir ctx) :scope ["."])]
     (try
@@ -355,7 +430,8 @@
                                     (= ["git" "rev-parse" "--git-common-dir"] argv) (str (io/file (get-in context [:config :repo-dir]) ".git"))
                                     :else "git@github.com:fixture/repo.git"))]
         (let [loaded (main/config! (str file)) saved (main/context! loaded)]
-          (is (str/ends-with? (:lock-file saved) "/simplify-harness.lock"))
+          (is (str/includes? (:lock-file saved) "/uniform-controller-"))
+          (is (str/ends-with? (:main-lock-file saved) "/uniform-main.lock"))
           (rt/save! saved)
           (is (thrown? Exception (main/context! (assoc loaded :objective "Another objective"))))))
       (spit file (pr-str (assoc config :completion-checks [["clojure" "-e" "(println :passed)"]])))
