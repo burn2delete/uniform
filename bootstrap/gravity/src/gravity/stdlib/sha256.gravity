@@ -1,0 +1,110 @@
+(ns gravity.stdlib.sha256
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-sha256-policy sh22-sha256-pad])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; STD1/STD5/STD18: internal, experimental byte preparation for SHA-256.
+; This checkpoint computes padding only; it does not produce a digest.
+(defn sh22-sha256-policy []
+  {:artifact :gravity/sh22-sha256-policy
+   :algorithm :sha-256
+   :mode :unkeyed-content-hash
+   :provider :uniform-source
+   :stability :experimental
+   :visibility :internal
+   :profiles #{:meta}
+   :effects #{}
+   :capabilities #{}
+   :allocation :proportional-to-input
+   :input :vector-of-octets
+   :padding-output :vector-of-octets
+   :digest-output :lowercase-64-character-hex
+   :key-type :none
+   :nonce-policy :none
+   :randomness-provider :none
+   :numeric-mode :integer-exact
+   :text-decoding false
+   :canonicalization false
+   :audit-status :unreviewed
+   :constant-time-claim false
+   :secret-handling-claim false
+   :implemented #{:octet-validation :padding}
+   :pending [:compression :hex-rendering :caller-adoption :provider-audit]})
+
+(defn sha256-rejected [reason]
+  {:status :rejected
+   :diagnostics [{:rule "SH22SHA001" :reason reason}]})
+
+(defn sha256-octets? [values]
+  (loop [index 0]
+    (if (= index (count values))
+      true
+      (let [value (get values index)]
+        (if (integer? value)
+          (if (<= 0 value)
+            (if (<= value 255) (recur (+ index 1)) false)
+            false)
+          false)))))
+
+(defn sha256-times8 [value]
+  (let [twice (+ value value)
+        four (+ twice twice)]
+    (+ four four)))
+
+(defn sha256-times32 [value]
+  (let [eight (sha256-times8 value)
+        sixteen (+ eight eight)]
+    (+ sixteen sixteen)))
+
+(defn sha256-times64 [value]
+  (let [thirty-two (sha256-times32 value)]
+    (+ thirty-two thirty-two)))
+
+; Encode the bit length without constructing an overflowing signed word.
+; The low octet is 8*(byte-length mod 32); seven octets encode length/32.
+(defn sha256-length-trailer [size]
+  (let [upper (quot size 32)
+        low (sha256-times8 (- size (sha256-times32 upper)))
+        reversed
+        (loop [remaining upper index 0 result [low]]
+          (if (= index 7)
+            result
+            (let [next (quot remaining 256)
+                  high (sha256-times32 next)
+                  scaled (sha256-times8 high)]
+              (recur next (+ index 1) (conj result (- remaining scaled))))))]
+    (loop [index 7 result []]
+      (if (< index 0) result
+        (recur (- index 1) (conj result (get reversed index)))))))
+
+(defn sha256-pad-octets [values]
+  (let [size (count values)
+        tail (- size (sha256-times64 (quot size 64)))
+        zeros (if (< tail 56) (- 55 tail) (- 119 tail))
+        prefix (loop [index 0 result (conj values 128)]
+                 (if (= index zeros) result
+                   (recur (+ index 1) (conj result 0))))
+        trailer (sha256-length-trailer size)]
+    (loop [index 0 result prefix]
+      (if (= index 8) result
+        (recur (+ index 1) (conj result (get trailer index)))))))
+
+; The argument carrier is checked before inspecting any user value. Rejections
+; contain only fixed reasons, never a printed or retained opaque input.
+(defn sh22-sha256-pad [arguments]
+  (if (vector? arguments)
+    (if (= 1 (count arguments))
+      (let [values (get arguments 0)]
+        (if (vector? values)
+          (if (sha256-octets? values)
+            ; SHA-256's 64-bit bit-length field requires byte-length < 2^61.
+            (if (< (count values) 2305843009213693952)
+              {:status :accepted :value (sha256-pad-octets values)}
+              (sha256-rejected :length-not-representable))
+            (sha256-rejected :non-octet))
+          (sha256-rejected :expected-octet-vector)))
+      (sha256-rejected :invalid-arity))
+    (sha256-rejected :expected-argument-vector)))
