@@ -67,7 +67,7 @@ retains source path, complete source text, SHA256, native input and complete
 outcome. Metadata-aware EDN SHA256 is
 e2afc4c118836ff62791b9dbdb556471f57c1ac87c214f419722f4de996974ce.
 Only inert fixture headers were read; source compilation/authentication are
-explicitly false. Native before/after comparison is still required.
+explicitly false. Candidate parity is recorded below.
 
 Focused native-report and owner-call regressions pass 24 tests / 273 assertions.
 The API inventory check passes 1 / 65. Boundary/ownership passes 48 / 1202,
@@ -86,8 +86,29 @@ count; only the Macro row changes in the namespace map. Constructors,
 authentication, source pins, manifests, other stage rules and CI files remain
 unchanged. The still-live saved legacy constructor is preserved.
 
-Source-expansion composition, full native parity, contextual lint, independent
-semantic/adversarial review, exact hosted CI and current-base integration remain
-separate outstanding checks at this implementation checkpoint. Both existing
-native-report and owner-call namespaces remain wired into the Macro CI cohort;
-no new CI namespace or command selection is required.
+Clean implementation 498795ff0bf6ae907127c13266f81439a2e87540, tree
+253e4aa25417939420781271181c504eb1c46efb, reproduces all 42 native
+records byte for byte and as parsed data with the same SHA256 above. The
+before/after capture remains native diagnostic/metadata evidence, not source
+compilation evidence.
+
+Separate existing development composition passes two tests / 43 assertions:
+actual paired defn expansion emits C4 artifacts with source/generated origins,
+retained C3/plan lineage and deterministic identity preimages; illegal macro
+return and missing build authority are rejected. These tests use the explicit
+current Reader/Syntax/Macro development route. They do not admit source,
+renew migration pins or prove the legacy user-macro constructor authoritative.
+
+The complete 54-path source context against captured Main
+594f7ca139bbf6c158b7ad9f6d6bb452975273d7 passes with 3459 unchanged
+baseline warnings and zero blockers. Eleven known Main-only paths are excluded
+from this source-branch comparison: four project-membership, five SH21 and two
+SH23 paths. This branch has not imported them; provider composition and exact
+CI must retain their real Main blobs/modes. Cold load exposes 60 public entries
+without loading Bootstrap. All checking processes ended normally; source
+worktree is clean at the implementation commit.
+
+Independent semantic/adversarial review, exact hosted CI and current-base
+integration remain separate outstanding checks at this local-evidence
+checkpoint. Both existing native-report and owner-call namespaces remain wired
+into the Macro CI cohort; no new CI namespace or command selection is required.
