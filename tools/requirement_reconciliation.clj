@@ -230,7 +230,7 @@
 
 (defn current-task-reference-readers [root]
   {:read-ref #(requirement-sources/git-source root %1 %2 require!)
-   :read-tree #(git-tree root % require!)
+   :read-commit-tree #(requirement-sources/git-commit-tree root % require!)
    :read-current #(read-source (checked-path root %))
    :task-record requirement-evidence/task-record :sha256 sha256 :require! require!})
 

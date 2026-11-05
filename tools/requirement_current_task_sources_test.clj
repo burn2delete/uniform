@@ -28,7 +28,7 @@
                 :observed-status (:status record) :observed-checked? (:checked? record)
                 :criterion-source criterion :detailed-acceptance :unassessed
                 :qualification "Pinned source fixture only; no implementation or current evidence acceptance."})
-(def readers {:read-ref read-ref :read-tree #(rr/git-tree "." % rr/require!)
+(def readers {:read-ref read-ref :read-commit-tree #(sources/git-commit-tree "." % rr/require!)
               :read-current #(if (= path %) snapshot (throw (ex-info "Unexpected fixture path" {})))
               :task-record evidence/task-record :sha256 rr/sha256 :require! rr/require!})
 (def bridge {:path path :marker marker :current-ref checkpoint :current-tree tree
@@ -73,6 +73,19 @@
                          (assoc bridge :marker "other-authority")]]
     (is (thrown? Exception (current/validate! reference forged-bridge readers))))
   (is (thrown? Exception (current/validate! reference bridge (assoc readers :read-current (constantly (str snapshot "\nChanged.")))))))
+
+(deftest actual-tree-object-cannot-stand-in-for-the-source-commit
+  ;; A tree resolves through ^{tree} and serves the identical file, so checking
+  ;; those values alone cannot authenticate the claimed commit identity.
+  (is (= tree (rr/git-tree "." tree rr/require!)))
+  (is (= snapshot (read-ref tree path)))
+  (let [production-readers (rr/current-task-reference-readers ".")
+        forged (assoc reference :source-commit tree)]
+    (is (= tree ((:read-commit-tree production-readers) checkpoint)))
+    (is (thrown? Exception ((:read-commit-tree production-readers) tree)))
+    (is (thrown? Exception (current/validate! forged nil production-readers)))
+    (is (thrown? Exception (current/validate! forged nil readers)))
+    (is (thrown? Exception (current/validate! reference nil (dissoc readers :read-commit-tree))))))
 
 (deftest legacy-historical-identity-is-not-relabeled
   (with-redefs [rr/current-task-reference-readers (constantly readers)

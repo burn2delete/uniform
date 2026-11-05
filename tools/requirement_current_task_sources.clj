@@ -46,8 +46,9 @@
 (defn validate!
   "Check current Git/file/record/criterion identity only. The caller supplies
   authenticated source readers and its existing strict task-record parser.
+  read-commit-tree must reject Git objects whose actual type is not commit.
   Historical references must continue through their separate legacy checks."
-  [reference bridge {:keys [read-ref read-tree read-current task-record sha256 require!]}]
+  [reference bridge {:keys [read-ref read-commit-tree read-current task-record sha256 require!]}]
   (let [{:keys [path marker id source-commit source-tree observed-status observed-checked?
                 source-record-sha256 criterion-source detailed-acceptance qualification]
          file-sha256 :sha256} reference]
@@ -68,7 +69,8 @@
       (require! (= [path marker source-commit source-tree file-sha256]
                    ((juxt :path :marker :current-ref :current-tree :current-sha256) bridge))
                 "Current task reference differs from its qualified current bridge"))
-    (require! (= source-tree (read-tree source-commit)) "Current task reference tree drift")
+    (require! (ifn? read-commit-tree) "Current task reference lacks a commit-object reader")
+    (require! (= source-tree (read-commit-tree source-commit)) "Current task reference tree drift")
     (let [snapshot (read-ref source-commit path)
           current (read-current path)
           record (task-record snapshot marker id)
