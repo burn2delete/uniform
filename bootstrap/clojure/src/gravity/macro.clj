@@ -16,6 +16,21 @@
     :other-callable-ports :unchanged :input-port-changed? false
     :operation-parameter-call-changed? false :admission-check-added? false
     :test-owner gravity.macro.owner-calls-test}
+   :native-diagnostic-policy-contract
+   {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 SAFE12 C1 C4 C15 TEST2]
+    :boundary :native-c4-diagnostic-policy-and-context
+    :inputs [:native-module-metadata :rule :source-path :subject :extra-facts
+             :message-var :span-var :document-var :failure-var :override-diagnostics-var]
+    :outputs [:native-source-overrides :diagnostic-message :owner-published-c4-diagnostic]
+    :diagnostics [C4-NOT-MACRO C4-RETURN C4-DEPTH C4-SIZE C4-BUILD-EFFECT C4-HYGIENE
+                  C4-CAPTURE C4-GENERATED-UNSAFE C4-PROFILE C4-TRACE]
+    :preserves [:catalog-order :source-provenance :span-precedence :extra-fact-precedence
+                :callee-before-arguments :field-position-config-reads :exception-identity]
+    :depends-on [] :consumed-by [gravity.bootstrap]
+    :publication-owner gravity.bootstrap :test-owner gravity.macro.native-reports-test
+    :source-execution? false :source-authentication? false
+    :unsupported [:canonical-c15 :redaction :diagnostic-streams :canonical-c4
+                  :migration :self-hosting :release]}
    :native-report-contract
    {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 C1 C4 C15 TEST2]
     :boundary :native-c4-proof-predicates-and-ordered-refusals
@@ -28,7 +43,18 @@
     :authenticates? false :certifies? false
     :unsupported [:source-execution :canonical-c4 :grant-validation :replay-validation :migration :self-hosting :release]}
    :public-api
-   {native-capability-proof
+   {c4-macro-diagnostic-ids {:arglists nil :operation-inputs []},
+    c4-macro-governing-document {:arglists nil :operation-inputs []},
+    c4-macro-rejected-designs {:arglists nil :operation-inputs []},
+    c4-macro-override-diagnostics {:arglists nil :operation-inputs []},
+    source-overrides {:arglists ([module]) :operation-inputs []},
+    diagnostic-message {:arglists ([id]) :operation-inputs []},
+    emit-native-diagnostic!
+    {:arglists ([id source-path subject extra message-var span-var document-var failure-var])
+     :operation-inputs []},
+    validate-native-overrides!
+    {:arglists ([source-path overrides diagnostics-var span-var failure-var]) :operation-inputs []},
+    native-capability-proof
     {:arglists ([artifact diagnostic-ids-var]), :operation-inputs []},
     validate-native!
     {:arglists ([source-path artifact proof-var failure-var]), :operation-inputs []},
@@ -452,6 +478,123 @@
   "Capture a supplied Var before call arguments; retain other callable values."
   [operation]
   (if (var? operation) (deref operation) operation))
+
+(def c4-macro-diagnostic-ids
+  ["C4-NOT-MACRO"
+   "C4-RETURN"
+   "C4-DEPTH"
+   "C4-SIZE"
+   "C4-BUILD-EFFECT"
+   "C4-HYGIENE"
+   "C4-CAPTURE"
+   "C4-GENERATED-UNSAFE"
+   "C4-PROFILE"
+   "C4-TRACE"])
+
+(def c4-macro-governing-document
+  "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md")
+
+(def c4-macro-rejected-designs
+  [{:diagnostic "C4-NOT-MACRO"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-not-macro.gravity"
+    :rejected-design :invalid-macro-invocation}
+   {:diagnostic "C4-RETURN"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-return.gravity"
+    :rejected-design :macro-output-not-syntax}
+   {:diagnostic "C4-DEPTH"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-depth.gravity"
+    :rejected-design :unbounded-expansion}
+   {:diagnostic "C4-SIZE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-size.gravity"
+    :rejected-design :unbounded-expansion-size}
+   {:diagnostic "C4-BUILD-EFFECT"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-build-effect.gravity"
+    :rejected-design :ambient-host-authority}
+   {:diagnostic "C4-HYGIENE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-hygiene.gravity"
+    :rejected-design :hygiene-violation}
+   {:diagnostic "C4-CAPTURE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-capture.gravity"
+    :rejected-design :illegal-authority-capture}
+   {:diagnostic "C4-GENERATED-UNSAFE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-generated-unsafe.gravity"
+    :rejected-design :generated-unsafe-without-safe6}
+   {:diagnostic "C4-PROFILE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-profile.gravity"
+    :rejected-design :generated-profile-bypass}
+   {:diagnostic "C4-TRACE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c4-trace.gravity"
+    :rejected-design :unreplayable-expansion-trace}])
+
+(def c4-macro-override-diagnostics
+  {:not-macro "C4-NOT-MACRO"
+   :return "C4-RETURN"
+   :depth "C4-DEPTH"
+   :size "C4-SIZE"
+   :build-effect "C4-BUILD-EFFECT"
+   :hygiene "C4-HYGIENE"
+   :capture "C4-CAPTURE"
+   :generated-unsafe "C4-GENERATED-UNSAFE"
+   :profile "C4-PROFILE"
+   :trace "C4-TRACE"})
+
+(defn source-overrides
+  [module]
+  (get-in module [:metadata :compiler :c4-macro] {}))
+
+(defn diagnostic-message
+  [id]
+  (case id
+    "C4-NOT-MACRO" "macro invocation is invalid or unavailable"
+    "C4-RETURN" "macro output is not valid syntax"
+    "C4-DEPTH" "macro expansion was recursive or exceeded a host containment boundary"
+    "C4-SIZE" "historical macro expansion-size compatibility diagnostic"
+    "C4-BUILD-EFFECT" "macro used undeclared or ungranted build effects"
+    "C4-HYGIENE" "macro expansion violates hygiene"
+    "C4-CAPTURE" "macro expansion captures a binding illegally"
+    "C4-GENERATED-UNSAFE" "macro generated unsafe code without required metadata"
+    "C4-PROFILE" "macro generated code illegal for the caller profile"
+    "C4-TRACE" "macro expansion trace is not replayable"
+    "macro expansion engine failed"))
+
+(defn emit-native-diagnostic!
+  [id source-path subject extra message-var span-var document-var failure-var]
+  ((owner-function failure-var) id
+         ((owner-function message-var) id)
+         (merge {:source-span (or (:source-span subject)
+                                  (:call-span subject)
+                                  ((owner-function span-var) source-path 0))
+                 :diagnostic-family :c4-macro-expansion
+                 :stage :macro-expansion
+                 :document-id "C4"
+                 :expected-document @document-var
+                 :macro (:macro subject)
+                 :macro-version (:macro-version subject)
+                 :definition-span (:definition-span subject)
+                 :call-site-span (:call-span subject)
+                 :generated-span (:generated-span subject)
+                 :active-profile (:profile subject)
+                 :target (:target subject)
+                 :build-effects (:build-effects subject)
+                 :capabilities (:capabilities subject)
+                 :hygiene-context (:hygiene subject)
+                 :remediation "Rebuild macro expansion with syntax-object inputs and outputs, authorized build effects, visible hygiene, generated-origin links, replayable traces, and downstream safety checks."}
+                extra)))
+
+(defn validate-native-overrides!
+  [source-path overrides diagnostics-var span-var failure-var]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get @diagnostics-var fail-kind)]
+      ((owner-function failure-var) id source-path
+                      {:source-span ((owner-function span-var) source-path 0)
+                       :macro (symbol (str "fixture/" (name fail-kind)))
+                       :macro-version "fixture"
+                       :profile :hosted
+                       :target :jvm
+                       :build-effects #{}
+                       :capabilities #{}
+                       :hygiene {:marks []}}
+                      {:missing-fields [fail-kind]}))))
 
 (defn native-capability-proof
   [artifact diagnostic-ids-var]

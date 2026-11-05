@@ -45,3 +45,49 @@ C15 identity, streams, redaction or rendering; authenticate or execute source;
 complete C4 semantic expansion; renew migration evidence; or establish
 self-hosting, release or seed retirement. Source IO/admission and generic
 diagnostic publication remain residual Bootstrap boundaries.
+
+## Implementation and local evidence
+
+Macro now owns four C4 catalog data Vars and four operations:
+source-overrides, diagnostic-message, emit-native-diagnostic! and
+validate-native-overrides!. Its public inventory grows from 52 to 60 entries;
+the shared stage operation map and all prior APIs retain their shape. The
+diagnostic operation receives explicit message/span/document/publication ports;
+the override operation receives explicit mapping/span/C4-failure ports.
+Callable owners are resolved per use before their arguments. Document and
+mapping dereferences stay at their original field/lookup positions. Bootstrap
+facades retain all old arities and interposition. Its single Macro require
+moves earlier within 00028; no duplicate import or manifest change is added.
+
+Before implementation, clean scope commit
+bb6baebb8dfb46548e9c120e45b9af09208769fb retains 42 full native records
+on 22 actual paired fixture paths: two accepted metadata returns, twenty
+fixture-metadata refusals and twenty emitted native diagnostics. Every record
+retains source path, complete source text, SHA256, native input and complete
+outcome. Metadata-aware EDN SHA256 is
+e2afc4c118836ff62791b9dbdb556471f57c1ac87c214f419722f4de996974ce.
+Only inert fixture headers were read; source compilation/authentication are
+explicitly false. Native before/after comparison is still required.
+
+Focused native-report and owner-call regressions pass 24 tests / 273 assertions.
+The API inventory check passes 1 / 65. Boundary/ownership passes 48 / 1202,
+with no skipped namespaces. Direct changed-file lint is zero warnings/errors;
+document, roadmap and governance validators pass. Initial added-test assertions
+incorrectly indexed variadic argument lists as vectors and omitted Bootstrap's
+existing stage marker; their four failures are retained in the initial log.
+Correcting those test observations required no production repair.
+
+Static conservation recovers the complete prior Macro file byte for byte after
+reversing only the new policy block, contract and API inventory. Reversing the
+eight facades and require position recovers all of 00028. Catalog/message
+bodies and the two parameterized context/refusal bodies recover the exact old
+policy. All prior native tests remain; the pipeline test changes only its API
+count; only the Macro row changes in the namespace map. Constructors,
+authentication, source pins, manifests, other stage rules and CI files remain
+unchanged. The still-live saved legacy constructor is preserved.
+
+Source-expansion composition, full native parity, contextual lint, independent
+semantic/adversarial review, exact hosted CI and current-base integration remain
+separate outstanding checks at this implementation checkpoint. Both existing
+native-report and owner-call namespaces remain wired into the Macro CI cohort;
+no new CI namespace or command selection is required.
