@@ -337,22 +337,63 @@
                                 :checks [["clojure" "-M:test"]] :check-executables #{"clojure"}})
         wt (flow/worktree! ctx "identity" base)
         t (merge finding wt {:base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")})
+        review-t (assoc t :checks {:candidate base :tree (:tree t) :result :passed :commands [["clojure" "-M:test"]]})
         tuple (select-keys t [:base :candidate :tree])]
     (rt/update! ctx assoc-in [:tasks (:key t)] t)
     (is (nil? (flow/assert-identity! ctx t)))
     (is (thrown? Exception (flow/assert-identity! ctx (assoc t :branch "other"))))
     (is (thrown? Exception (flow/assert-identity! ctx (assoc t :tree "other"))))
     (with-redefs [codex/job! (fn [& _] (merge tuple {:candidate "stale" :verdict "approved"}))]
-      (is (thrown-with-msg? Exception #"different candidate tuple" (flow/review! ctx t))))
+      (is (thrown-with-msg? Exception #"different candidate tuple" (flow/review! ctx review-t))))
     (is (nil? (:review (flow/task ctx (:key t)))))
     (with-redefs [codex/job! (fn [& _] (merge tuple {:verdict "changes_requested" :summary "No details" :findings []}))]
-      (is (thrown-with-msg? Exception #"actionable findings" (flow/review! ctx t))))
+      (is (thrown-with-msg? Exception #"actionable findings" (flow/review! ctx review-t))))
     (with-redefs [codex/job! (fn [& _] (merge tuple {:verdict "approved" :summary "Exact fixture" :findings []}))]
-      (is (= "approved" (:verdict (flow/review! ctx t)))))
+      (is (= "approved" (:verdict (flow/review! ctx review-t)))))
     (with-redefs [codex/command! (fn [& _] (rt/git ctx (:worktree t) "commit" "--allow-empty" "-m" "Unexpected check commit"))]
       (is (thrown-with-msg? Exception #"identity differs" (flow/checks! ctx t []))))
     (is (nil? (:checks (flow/task ctx (:key t)))))
     (is (thrown? Exception (flow/worktree! ctx "identity" base)))))
+
+(deftest passive-review-receives-the-complete-frozen-patch-and-native-checks
+  (let [ctx (fixture/context)
+        {:keys [repo]} (repository! ctx)
+        ctx (assoc-in ctx [:config :repo-dir] repo)
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        _ (spit (io/file repo "work.edn") "{:value 1}\n")
+        _ (rt/git ctx repo "commit" "-am" "Remove actual duplicate")
+        candidate (rt/git ctx repo "rev-parse" "HEAD")
+        tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+        checks {:candidate candidate :tree tree :result :passed :commands [["clojure" "-M" "fixture-check.clj"]]}
+        t (merge finding {:worktree repo :branch "main" :base base :candidate candidate :tree tree :checks checks})
+        captured (atom nil)]
+    (rt/update! ctx assoc-in [:tasks (:key t)] t)
+    (with-redefs [codex/job! (fn [_ _ _ mode instructions prompt _]
+                             (reset! captured {:mode mode :instructions instructions :prompt prompt})
+                             (merge (select-keys t [:base :candidate :tree])
+                                    {:verdict "approved" :summary "Reviewed supplied evidence" :findings []}))]
+      (is (= "approved" (:verdict (flow/review! ctx t)))))
+    (is (= :read (:mode @captured)))
+    (is (str/includes? (:instructions @captured) "do not run Git, Clojure, tests"))
+    (let [patch (:out (rt/command ctx repo ["git" "diff" "--no-ext-diff" "--no-textconv" "--no-renames" "--binary" base candidate "--"]))]
+      (is (str/includes? (:prompt @captured) (pr-str patch)))
+      (is (str/includes? patch "-{:value 1 :duplicate 1}"))
+      (is (str/includes? patch "+{:value 1}"))
+      (is (str/includes? (:prompt @captured) (rt/digest patch))))
+    (is (str/includes? (:prompt @captured) (pr-str checks)))
+    (with-redefs [codex/job! (fn [& _] (throw (AssertionError. "Stale native evidence must not dispatch a reviewer")))]
+      (is (thrown-with-msg? Exception #"exact native check evidence"
+                            (flow/review! ctx (assoc-in t [:checks :candidate] "previous")))))
+    (let [command rt/command]
+      (with-redefs [rt/command (fn [c cwd argv & input]
+                                (if (= ["git" "diff"] (vec (take 2 argv)))
+                                  {:exit 0 :out "partial patch" :err "Fixture cache: Operation not permitted"}
+                                  (apply command c cwd argv input)))
+                    codex/job! (fn [& _] (throw (AssertionError. "A refused partial patch cannot reach a reviewer")))]
+        (is (thrown-with-msg? Exception #"snapshot encountered a refusal" (flow/review! ctx t)))))
+    (rt/update! ctx assoc-in [:tasks (:key t) :error] {:details {:restricted true}})
+    (with-redefs [rt/command (fn [& _] (throw (AssertionError. "A refused finding cannot obtain a replacement snapshot")))]
+      (is (thrown-with-msg? Exception #"cannot obtain a new review snapshot" (flow/review! ctx t))))))
 
 (deftest dependent-authoring-base-includes-verified-prerequisite
   (let [ctx (fixture/context)
