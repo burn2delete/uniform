@@ -120,6 +120,14 @@
         job-id (:original-job receipt)
         job (get-in @(:state ctx) [:jobs job-id])
         output (:output job)
+        classification (:operator-classification receipt)
+        _ (require! (and (= :controller-owned-verification-unrun (:kind classification))
+                         (= :controller-operator (:inspector classification))
+                         (= (rt/digest (pr-str output)) (:original-output-sha256 classification))
+                         (true? (:no-unresolved-authority classification))
+                         (true? (:no-unresolved-semantics classification))
+                         (string? (:basis classification)) (not (str/blank? (:basis classification))))
+                    "An exact-output operator classification of solely unrun controller checks is required")
         prompt-file (io/file (:state-dir ctx) (str job-id ".prompt.edn"))
         _ (require! (.isFile prompt-file) "Original author prompt is missing")
         prompt (rt/read-edn prompt-file)
@@ -179,6 +187,7 @@
     {:kind :inspected-reported-implementation :stage :queued :job job-id
      :thread (:thread job) :turn (:turn job) :original-error-sha256 (error-digest task)
      :output-sha256 (rt/digest (pr-str output)) :file-sha256 files :commands commands
+     :operator-classification classification
      :evidence-file (str file) :evidence-sha256 (file-digest file)
      :native-evidence (native-evidence! ctx task job-id)}))
 

@@ -55,6 +55,10 @@
     (let [t (flow/task ctx "authored")
           bytes (java.nio.file.Files/readAllBytes (.toPath (io/file repo "work.edn")))
           receipt {:kind :authored-implementation-evidence :task-key "authored"
+                   :operator-classification {:kind :controller-owned-verification-unrun :inspector :controller-operator
+                                             :original-output-sha256 (rt/digest (pr-str output))
+                                             :no-unresolved-authority true :no-unresolved-semantics true
+                                             :basis "Fixture operator inspected the original report: only controller-owned verification is unrun."}
                    :base (:base t) :candidate (:candidate t) :tree (:tree t)
                    :original-job "implement-1" :original-job-state (get-in @(:state ctx) [:jobs "implement-1"])
                    :original-task-error (:error t) :observed-changed-paths ["work.edn"]
@@ -132,3 +136,18 @@
       (with-redefs [codex/job! (fn [& _] (swap! authors inc)) gh/status! (fn [& _] nil)]
         (is (thrown? Exception (flow/prepare! ctx "authored"))))
       (is (zero? @authors)))))
+
+(deftest a-model-report-alone-does-not-authorize-reinterpretation
+  (doseq [mutation [:missing :different-output :unresolved-authority :unresolved-semantics :no-basis]]
+    (let [{:keys [ctx evidence task]} (held-fixture!)
+          receipt (rt/read-edn evidence)
+          altered (case mutation
+                    :missing (dissoc receipt :operator-classification)
+                    :different-output (assoc-in receipt [:operator-classification :original-output-sha256] "different")
+                    :unresolved-authority (assoc-in receipt [:operator-classification :no-unresolved-authority] false)
+                    :unresolved-semantics (assoc-in receipt [:operator-classification :no-unresolved-semantics] false)
+                    :no-basis (assoc-in receipt [:operator-classification :basis] ""))]
+      (rt/write-edn! evidence altered)
+      (is (thrown? Exception (flow/recover-authored! ctx "authored" evidence)) (name mutation))
+      (is (= :attention (:status (flow/task ctx "authored"))))
+      (is (= (:error task) (:error (flow/task ctx "authored")))))))
