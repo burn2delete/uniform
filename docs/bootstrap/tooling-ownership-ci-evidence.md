@@ -66,6 +66,20 @@ harness controls pass 51 tests / 545 assertions; format and direct CI lint
 pass. The language-boundary test passes 6 tests / 11 assertions. The 13 local
 harness output files are retained separately from the source checkout.
 
-The real changed contracts group, exact-source contextual lint, independent
-review and hosted CI/artifact acceptance remain pending. This candidate does
-not retry PR1206's failed dependency request or transfer its other job results.
+On clean source b984b7e867957be3b78702128ab49e0e45bb50bd, tree
+804af702e4bd221f8fb9bea9a157403339261f66, the real changed contracts group
+passes all six commands. Tooling passes 28 tests / 525 assertions; Ownership
+passes 23 / 970. Local receipts have no hosted commit/run identity and confer
+no hosted CI credit. They are retained with the invocation's clean source
+identity in the local development evidence, not relabeled as GitHub records.
+
+Complete source-context lint against captured Main
+9c34e295881ca1bf3ecbb9e4a8f12e0e8c1c7315 checks 57 present Clojure/EDN
+paths, excluding 18 known Main-only paths: 3459 unchanged baseline warnings
+and zero blockers. No Main source is imported. Conservation recovers every
+prior command byte and harness test; compiler/pipeline/fixture/version/pin and
+workflow source are unchanged. Only the Tooling/Ownership index rows change.
+Independent semantic review finds no source/contract defect. Independent
+adversarial review, hosted CI/artifact acceptance and exact current-Main
+integration remain pending. PR1206's failed dependency request and its other
+job results are not retried or transferred by this source increment.
