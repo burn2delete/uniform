@@ -268,15 +268,32 @@
                             (map #(.getAbsolutePath (io/file %))
                                  (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
         command [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server"]]
-    (doseq [mode ["ok" "malformed" "failed" "interrupted" "approval"]]
+    (doseq [mode ["ok" "quoted-denial" "tool-output-data" "malformed" "failed" "interrupted" "unfinished-action" "approval"
+                 "tool-denied-zero" "tool-denied-nonzero"]]
       (let [ctx (assoc-in (context) [:config :codex-command] (conj command mode))]
         (testing mode
-          (if (= "ok" mode)
+          (if (#{"ok" "quoted-denial" "tool-output-data"} mode)
             (do
               (is (= "approved" (:verdict (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review))))
-              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status]))))
+              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status])))
+              (is (empty? (:restricted-commands @(:state ctx)))))
             (do
-              (is (thrown? Exception (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)))
+              (let [failure (try (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)
+                                 (catch Exception e e))]
+                (is (instance? Exception failure))
+                (when (= "unfinished-action" mode)
+                  (is (false? (:writer-ended? (ex-data failure))))
+                  (is (= {"fixture-active" "commandExecution"}
+                         (get-in @(:state ctx) [:jobs "fixture" :active-items]))))
+                (when (#{"tool-denied-zero" "tool-denied-nonzero"} mode)
+                  (is (:restricted (ex-data failure)))
+                  (is (:writer-ended? (ex-data failure)))
+                  (is (= "fixture-read" (get-in (ex-data failure) [:refusal :item :command])))
+                  (is (= 1 (count (get-in @(:state ctx) [:jobs "fixture" :tool-refusals]))))
+                  (let [[key refusal] (first (:restricted-commands @(:state ctx)))]
+                    (is (= "fixture-read" (get-in refusal [:item :command])))
+                    (is (= refusal (select-keys (rt/shared-restriction ctx :commands key) (keys refusal))))
+                    (is (thrown? Exception (rt/assert-authorized! ctx :command key))))))
               (is (= :attention (get-in @(:state ctx) [:jobs "fixture" :status]))))))))))
 
 (deftest restricted-findings-cannot-be-retried
@@ -284,6 +301,83 @@
     (rt/update! ctx assoc-in [:tasks "blocked"] {:status :attention :error {:details {:restricted true}}})
     (with-redefs [rt/with-lock (fn [_ f] (f))]
       (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))
+
+(def ^:private git-cache-refusal-lines
+  ["git: error: couldn't create cache file '/tmp/xcrun_db-fixture-a' (errno=Operation not permitted)"
+   "git: error: couldn't create cache file '/tmp/xcrun_db-fixture-b' (errno=Operation not permitted)"])
+
+(deftest zero-exit-git-cache-diagnostics-are-refusals
+  (let [classify (ns-resolve 'simplify.codex 'model-command-denial-lines)
+        item {:id "git-cache-fixture" :type "commandExecution" :status "completed" :exitCode 0
+              :command "fixture-data-not-executed" :aggregatedOutput (str/join "\n" git-cache-refusal-lines)}]
+    (is (= git-cache-refusal-lines (vec (classify item))))
+    ;; Quoted source and ordinary errors stay data; missing exits stay unknown.
+    (doseq [other [(assoc item :aggregatedOutput (pr-str (:aggregatedOutput item)))
+                   (assoc item :aggregatedOutput "git: error: fixture malformed input")
+                   (assoc item :aggregatedOutput "git: error: Permission denied")
+                   (assoc item :aggregatedOutput "git: error: Operation not permitted")
+                   (assoc item :aggregatedOutput "git: error: couldn't create cache file '/tmp/xcrun_db-fixture' (note: Operation not permitted)")
+                   (assoc item :exitCode nil)
+                   (assoc item :type "agentMessage")]]
+      (is (empty? (classify other))))))
+
+(deftest zero-exit-git-refusals-persist-without-command-replay
+  (let [ctx (context) queue (java.util.concurrent.LinkedBlockingQueue.)
+        job "git-cache-fixture" output (str/join "\n" git-cache-refusal-lines)
+        client {:ctx ctx :job job :events queue :restricted (atom nil)
+                :interrupt-requested (atom false) :active-items (atom {})}
+        interrupts (atom [])]
+    (rt/update! ctx assoc-in [:jobs job] {:thread "fixture-thread" :status :running})
+    (doseq [event [{:method "item/started" :params {:item {:id "git-item" :type "commandExecution"}}}
+                   {:method "item/completed"
+                    :params {:item {:id "git-item" :type "commandExecution" :status "completed" :exitCode 0
+                                    :command "fixture-data-not-executed" :aggregatedOutput output}}}
+                   {:method "turn/completed" :params {:turn {:id "fixture-turn" :status "interrupted"}}}]]
+      (.put queue event))
+    (let [failure (with-redefs [codex/request! (fn [_ method params] (swap! interrupts conj [method params]) {})]
+                    (try (codex/await-turn! client "fixture-turn") (catch Exception e e)))
+          refusals (get-in @(:state ctx) [:jobs job :tool-refusals])]
+      (is (:restricted (ex-data failure)))
+      (is (= 1 (count refusals)))
+      (is (= git-cache-refusal-lines (:denial-lines (first refusals))))
+      (is (= (rt/digest output) (:output-sha256 (first refusals))))
+      (is (= [["turn/interrupt" {:threadId "fixture-thread" :turnId "fixture-turn"}]] @interrupts))
+      (is (true? (get-in @(:state ctx) [:jobs job :turn-terminal?])))
+      (is (empty? @(:active-items client)))
+      (is (= 1 (count (:restricted-commands @(:state ctx)))))
+      (when-let [[key refusal] (first (:restricted-commands @(:state ctx)))]
+        (is (= 0 (get-in refusal [:item :exitCode])))
+        (is (= "fixture-data-not-executed" (get-in refusal [:item :command])))
+        (is (= refusal (select-keys (rt/shared-restriction ctx :commands key) (keys refusal))))
+        (is (thrown? Exception (rt/assert-authorized! ctx :command key)))))))
+
+(deftest a-refusal-does-not-interrupt-another-active-action
+  (doseq [active-type ["commandExecution" "fileChange"]]
+    (let [ctx (context)
+          queue (java.util.concurrent.LinkedBlockingQueue.)
+          client {:ctx ctx :job "parallel-fixture" :events queue
+                  :restricted (atom nil) :interrupt-requested (atom false) :active-items (atom {})}
+          interruptions (atom [])]
+      (rt/update! ctx assoc-in [:jobs "parallel-fixture"] {:thread "fixture-thread" :status :running})
+      (doseq [event [{:method "item/started" :params {:item {:id "remaining-action" :type active-type}}}
+                     {:method "item/completed"
+                      :params {:item {:id "denied-action" :type "commandExecution" :command "fixture-read"
+                                      :exitCode 0 :status "completed"
+                                      :aggregatedOutput "xcrun: error: fixture cache: Operation not permitted"}}}
+                     {:method "item/completed" :params {:item {:id "remaining-action" :type active-type :exitCode 0}}}
+                     {:method "turn/completed" :params {:turn {:id "fixture-turn" :status "interrupted"}}}]]
+        (.put queue event))
+      (with-redefs [codex/request! (fn [_ method params]
+                                    (swap! interruptions conj
+                                           {:method method :params params
+                                            :pending-action-completion
+                                            (boolean (some #(= "remaining-action" (get-in % [:params :item :id]))
+                                                           (.toArray queue)))})
+                                    {})]
+        (is (thrown? Exception (codex/await-turn! client "fixture-turn"))))
+      (is (= [{:method "turn/interrupt" :params {:threadId "fixture-thread" :turnId "fixture-turn"}
+               :pending-action-completion false}] @interruptions))
+      (is (true? (get-in @(:state ctx) [:jobs "parallel-fixture" :turn-terminal?]))))))
 
 (deftest checks-use-agentless-sandbox-protocol
   (let [classpath (str/join java.io.File/pathSeparator
@@ -294,8 +388,16 @@
     (is (= "fixture command" (:stdout (codex/command! ctx "check-fixture" (:state-dir ctx) ["clojure" "-M:test"]))))
     (is (empty? (:jobs @(:state ctx))))
     (is (empty? @(:processes ctx)))
+    (let [data-result {:exitCode 0 :stdout "Fixture expected: Permission denied" :stderr ""}]
+      (is (= data-result (codex/validate-command-result! ctx ["fixture-output-data"] data-result))))
     (is (thrown? Exception (codex/command! (assoc-in ctx [:config :codex-command] (conj command "failed"))
-                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))))
+                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))
+    (let [denied-ctx (assoc-in ctx [:config :codex-command] (conj command "stream-denied-zero"))
+          argv ["fixture-zero-exit-check"]]
+      (is (thrown? Exception (codex/command! denied-ctx "check-zero-denial" (:state-dir ctx) argv)))
+      (is (= 0 (get-in (rt/shared-restriction ctx :checks (codex/check-key ctx argv)) [:result :exitCode])))
+      (with-redefs [codex/open! (fn [& _] (throw (AssertionError. "A retained refusal must block before starting another process")))]
+        (is (thrown? Exception (codex/command! denied-ctx "must-not-retry" (:state-dir ctx) argv)))))))
 
 (deftest denied-github-actions-are-persistent-and-not-retried
   (let [ctx (context) calls (atom 0)]
