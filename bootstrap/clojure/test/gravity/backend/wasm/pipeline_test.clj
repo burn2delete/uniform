@@ -96,6 +96,63 @@
   (bootstrap/p15-s23-stage2-runtime-execute-function
    {:engine :gravity-wasm-codec-development :compiler-artifact-plan? true} @gravity-plan name arguments))
 
+(defn- gravity-module [mir]
+  (let [{:keys [function block-order operations operation-index] :as input} (emission-input mir)
+        instructions (gravity-call 'b4-function-instructions [function block-order operations operation-index])
+        body (vec (concat [1] (gravity-call 'b4-u32-leb [(count operations)])
+                          [0x7f] instructions [0x0b]))
+        code (vec (concat [1] (gravity-call 'b4-u32-leb [(count body)]) body))
+        bytes (vec (concat [0 97 115 109 1 0 0 0]
+                           (gravity-call 'b4-section [1 [1 0x60 0 1 0x7f]])
+                           (gravity-call 'b4-section [3 [1 0]])
+                           (gravity-call 'b4-section [7 [1 4 0x6d 0x61 0x69 0x6e 0 0]])
+                           (gravity-call 'b4-section [10 code])))
+        expected (native "reconstruct" input)]
+    (is (= bytes (:wasm-bytes expected)))
+    {:input input :bytes bytes :expected expected}))
+
+(defn- large-module []
+  (let [ops (mapv #(operation (str "large-" %) "entry" :constant []
+                              :gravity/integer Integer/MAX_VALUE) (range 7500))
+        mir {:functions {'main {:entry "entry" :blocks
+                               {"entry" {:instructions ops :terminator {:operands ["large-7499"]}}}}}}
+        expected (native "reconstruct" (emission-input mir))]
+    {:bytes (:wasm-bytes expected) :expected expected}))
+
+(deftest real-gravity-byte-modules-pass-relative-native-structural-verification
+  ;; Gravity helpers emit the bytes; the expected packet is native fixture
+  ;; data, with no B1 admission, source authentication or Node execution.
+  (doseq [[label mir] (fixtures)
+          :let [{:keys [input bytes expected]} (gravity-module mir)
+                before (pr-str [input bytes expected])
+                report (native "parse-module!" bytes expected)]]
+    (is (= :passed (:status report)) label)
+    (is (= [1 3 7 10] (:section-ids report)))
+    (is (= (:expected-result expected) (:decoded-result report)))
+    (is (= (count (:operations input)) (:operation-count report) (count (:operation-byte-map report))))
+    (is (= (mapv :op-id (:operations input)) (mapv :operation-id (:operation-byte-map report))))
+    (is (= :code-section-payload (:operation-byte-map-coordinate report)))
+    (is (= before (pr-str [input bytes expected])))
+    (doseq [[changed id] [[(assoc bytes 1 0) "B4-MANIFEST"]
+                          [(assoc bytes 4 2) "B4-TARGET"]
+                          [(assoc bytes 8 2) "B4-IMPORT"]
+                          [(assoc bytes 8 5) "B4-MEMORY"]
+                          [(assoc bytes (dec (count bytes)) 0xff) "B4-MANIFEST"]]]
+      (is (= id (:id (refusal #(native "parse-module!" changed expected))))))
+    (is (= "B4-MANIFEST"
+           (:id (refusal #(native "parse-module!" bytes (assoc expected :expected-result -999))))))))
+
+(deftest valid-emitted-module-is-not-refused-by-the-retired-byte-quota
+  (let [{:keys [bytes expected]} (large-module)
+        report (native "parse-module!" bytes expected)]
+    (is (> (count bytes) 65536))
+    (is (= :passed (:status report)))
+    (is (= 7500 (:operation-count report) (count (:operation-byte-map report))
+           (count (:definitely-initialized-locals report))))
+    (is (= Integer/MAX_VALUE (:decoded-result report)))
+    (is (= :code-section-payload (:operation-byte-map-coordinate report)))
+    (is (nil? (ns-resolve 'gravity.bootstrap 'p15-s23-b4-wasm-max-module-bytes)))))
+
 (deftest emits-real-core-modules-and-refuses-invalid-operations-and-encodings
   (doseq [[label mir] (fixtures)
           :let [{:keys [input module opcode-refusal format-refusals join-refusal u32 s32]} (capture-native mir)]]

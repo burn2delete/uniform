@@ -12,8 +12,9 @@ cd77c47a63ec4a6135c67565df61eb2a50c2e2b0, produced local composition
 7b193f5a9eebaa04c7f8d57a0d28979cca596e3d, tree
 f263de6f68753e4315b875af570a6222faba0cb5. Its ordered parents are
 [83e824559, 9c34e295]. Exactly 18 incoming paths equal Main's modes/blobs;
-every other source path survives. No runtime/controller or authority is
-adopted. The original 12-path source lease remains active; incoming immutable
+every other source path survives. No runtime/controller state, execution or
+authority follows from this composition. The original 12-path source lease
+remains active; incoming immutable
 Main files did not require separate writer reservations.
 
 ## Stage ownership and artifacts
@@ -76,3 +77,19 @@ WIT/WASI/components, target execution, verified B1 ingress, proof/source
 authentication, release, migration, self-hosting or seed retirement. Private B4
 and Node routes are not executed. The scope record itself earns no completion
 or integration credit.
+
+## Quota correction and original capture
+
+The original scope source 77a1f353433e694d536e33a50b116b7aee409d1d emits
+two small modules through the compiled Gravity B4 helpers and a 67417-byte
+native module containing 7500 real constant/local operations. Its 27 complete
+records contain two reports and 25 refusals, including the artificial refusal
+of the large valid module. Capture SHA256:
+fc5d583a0d1020ee1b79273fcd77b2c44ec687c7f6067098935bc977aab50c4d.
+
+The constant and exactly three size predicates are now removed. Minimum
+header/octet checks remain; the integrity function hashes every valid byte
+vector, including oversized vectors. No other source binding, authentication,+hash or envelope rule changes. Before extraction, the whole Wasm namespace
+passes 8 tests / 185 assertions, including genuine Gravity-emitted small
+modules, malformed-module refusals and the 67417-byte module's complete
+relative report and operation map. No private B4 or Node route is exercised.

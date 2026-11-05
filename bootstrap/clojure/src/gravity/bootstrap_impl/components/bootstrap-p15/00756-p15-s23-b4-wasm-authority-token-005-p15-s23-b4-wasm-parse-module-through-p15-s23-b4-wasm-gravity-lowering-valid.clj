@@ -2,7 +2,7 @@
       p15-s23-b4-wasm-node-state (nth __gravity_bootstrap_lexical_values_136338 1)]
 (defn p15-s23-b4-wasm-parse-module! [bytes expected]
   (when-not (and (vector? bytes)
-                 (<= 8 (count bytes) p15-s23-b4-wasm-max-module-bytes)
+                 (<= 8 (count bytes))
                  (every? #(and (integer? %) (<= 0 % 255)) bytes))
     (p15-s23-b4-wasm-fail!
      "B4-MANIFEST" "<b4-wasm>" {}
