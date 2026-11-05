@@ -16378,6 +16378,12 @@
    "Normal Reader fixture ownership and current Build task source pins composed; both predecessor source/review histories retained. Changed exact composition awaits independent review; no implementation acceptance or mapping promotion.",
    :input-fingerprint
    "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"},
+  :original-dependency-source-successor
+  {:commit "9ef3622060652f339fa75b73fefa4963db272a10",
+   :tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
+   :prior-review-commit "f989a01024d4ef0f595b7bf685e0fbf17648469b",
+   :prior-review-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :scope :original-fourteen-selected-result-routes},
   :pkg5-source-review
   {:reviewed-commit "023a28488f8f161c68cbe57aa29fa48247197d62",
    :reviewed-tree "e8b660791bdaf3e865528f943725b5d1dd307b41",
@@ -17698,7 +17704,7 @@
    :prior-current-main-qualification
    "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
   :qualification
-  "Exact task-source and Governance routing successor, including the reviewed foundation/policy/L6 records and pending facet, alternative-type, interop and backend source inputs. The composed source successor binds 28 current transition paths and a 47-file reviewed-source census to the authenticated bc7 current checkpoint while retaining the old 4202/ff783 frame, all historical pins/digests and task statuses. Current source/routing, implementation, migration, release and whole-SH acceptance remain pending.",
+  "The fourteen original selected-result dependency rows are normally composed with the reviewed f989 binder. Their separate whole-document transition preserves the complete previous transition and the unchanged earlier source census, pins, snapshots, task statuses and narrow evidence. Current source/routing review remains pending; typed execution acyclicity, implementation, migration, release and full-240 verification remain separate obligations.",
   :resolution-main-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -17706,7 +17712,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"},
   :predecessor-input-fingerprint
-  "6f062d1a19435638e157aa62b95bbfe950275b84f82d27079186ad12b24dbfce",
+  "a47f70ddbc5de1677d7b8b698248e925506a1f11395a77b944f64dd1a9bda6f3",
   :resolution-runtime-current-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -17728,7 +17734,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "a47f70ddbc5de1677d7b8b698248e925506a1f11395a77b944f64dd1a9bda6f3"},
+  "dc7a6d91cd3b75e368170cbd039308983f57e65781986402a991ece56b891f49"},
  :implementation-readiness-source-version
  {:macro-dependency-refinement
   {:canonical-sources
@@ -106277,14 +106283,50 @@
    {:role :current-source-interface-proposal,
     :path "docs/acceptance-dependencies.md",
     :successor-of
-    {:kind :authenticated-current-source-transition-frame-v1,
-     :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
-     :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
-     :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+    {:role :current-source-interface-proposal,
+     :path "docs/acceptance-dependencies.md",
+     :successor-of
+     {:kind :authenticated-current-source-transition-frame-v1,
+      :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+      :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+      :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+      :live-sha256
+      "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+     :changed-spans
+     [{:id "SOURCE-SUCCESSOR/docs/acceptance-dependencies.md",
+       :kind :complete-file-transition,
+       :before
+       {:start-byte 0,
+        :end-byte 539166,
+        :start-line 1,
+        :end-line 706,
+        :sha256
+        "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+       :after
+       {:start-byte 0,
+        :end-byte 539166,
+        :start-line 1,
+        :end-line 706,
+        :sha256
+        "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
      :live-sha256
-     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+     :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+     :review-state :pending-independent-source-version-review,
+     :baseline-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+     :authority :current-source-interface-only,
+     :baseline-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+     :applying-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+     :kind :authenticated-current-source-file-transition-v1,
+     :document-id "source-successor-docs-acceptance-dependencies-md",
+     :applying-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+     :qualification
+     "Only the complete authenticated current-source file docs/acceptance-dependencies.md advances from its prior current-source bytes to the composed cc8a79074fc8eeeb65d72333e5d64542b201f0d4 checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+     :baseline-sha256
+     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+     :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"},
     :changed-spans
-    [{:id "SOURCE-SUCCESSOR/docs/acceptance-dependencies.md",
+    [{:id "ORIGINAL-14-DEPENDENCY-ROWS",
       :kind :complete-file-transition,
       :before
       {:start-byte 0,
@@ -106295,24 +106337,24 @@
        "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
       :after
       {:start-byte 0,
-       :end-byte 539166,
+       :end-byte 583986,
        :start-line 1,
-       :end-line 706,
+       :end-line 720,
        :sha256
-       "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
+       "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"}}],
     :live-sha256
-    "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
-    :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+    "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
+    :applying-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804",
     :review-state :pending-independent-source-version-review,
-    :baseline-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+    :baseline-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
     :authority :current-source-interface-only,
-    :baseline-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
-    :applying-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+    :baseline-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+    :applying-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
     :kind :authenticated-current-source-file-transition-v1,
-    :document-id "source-successor-docs-acceptance-dependencies-md",
-    :applying-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+    :document-id "original-14-dependency-row-successor",
+    :applying-ref "9ef3622060652f339fa75b73fefa4963db272a10",
     :qualification
-    "Only the complete authenticated current-source file docs/acceptance-dependencies.md advances from its prior current-source bytes to the composed cc8a79074fc8eeeb65d72333e5d64542b201f0d4 checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+    "This source/interface successor adds only the fourteen independently reviewed original 0f4 dependency rows to the f989 composition. Its complete prior cc8 transition, historical census, source pins, task owners, statuses and implementation/evidence dispositions remain unchanged. All fourteen start-result lists remain empty. Coarse selected-result feedback grants no executable cycle, provider execution, implementation, release or full-240 acceptance.",
     :baseline-sha256
     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
     :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"}

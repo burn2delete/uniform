@@ -787,6 +787,7 @@
         resolution (edn/read-string (sh-crosswalk/git-source (get-in bridge [:resolution-source-ownership :commit]) path))
         view (sh-crosswalk/build)
         ignored [:input-fingerprint :source-version-bridge :qualification
+                 :original-dependency-source-successor
                  :predecessor-input-fingerprint
                  :resolution-main-predecessor-review :resolution-runtime-current-review
                  :resolution-runtime-predecessor-review
@@ -930,7 +931,11 @@
       (is (= "specs/sh-family-crosswalk/implementation-readiness-source-version.edn"
              (:historical-source-version predecessor-review))))
     (is (= (:input-fingerprint bridge)
+           (:predecessor-input-fingerprint sh-crosswalk/original-dependency-predecessor-mapping-review)))
+    (is (= (:input-fingerprint sh-crosswalk/original-dependency-predecessor-mapping-review)
            (get-in view [:mapping-review :predecessor-input-fingerprint])))
+    (is (= (get-in view [:mapping-review :original-dependency-source-successor :prior-review-commit])
+           "f989a01024d4ef0f595b7bf685e0fbf17648469b"))
     (is (= (get-in view [:mapping-review :input-fingerprint])
            (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
     (is (= 180 (count (:requirements view))))
@@ -6740,7 +6745,7 @@
   (is (= [] (:changed-task-ids r) (:new-task-identities r)))
   (is
    (=
-    [46 0 46 819 932 113 1780 1893 144 104 40 91]
+    [46 0 46 819 932 113 1780 1893 158 118 40 91]
     [(count consumers)
      (count new-consumers)
      (count (:predecessor-selected-routes r))
@@ -6768,7 +6773,7 @@
    (= 113 (reduce + (map count (vals (:added-composition-inputs r))))))
   (is
    (=
-    2156
+    2517
     (count
      (filter
       (fn*
@@ -6907,7 +6912,7 @@
    (=
     [95 9]
     (mapv count (:coarse-producer-cycles r))))
-  (is (= [99 11] (mapv count (:declared-output-cycles review))))
+  (is (= [138] (mapv count (:declared-output-cycles review))))
   (is (= (:predecessor-coarse-cycles r) (:coarse-producer-cycles r)))
   (is
    (=

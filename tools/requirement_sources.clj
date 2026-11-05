@@ -1540,8 +1540,93 @@
                 " checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority."))))
 (def current-source-transition-successor-contracts
   (mapv current-source-successor-contract current-source-transition-contracts-v1))
+;; Preserve the complete reviewed predecessor inside this bounded later
+;; document transition. The earlier source census remains a historical
+;; checkpoint; the current transition is the authority for these fourteen rows.
+(def original-dependency-row-successor
+  {:role :current-source-interface-proposal,
+ :path "docs/acceptance-dependencies.md",
+ :successor-of
+ {:role :current-source-interface-proposal,
+  :path "docs/acceptance-dependencies.md",
+  :successor-of
+  {:kind :authenticated-current-source-transition-frame-v1,
+   :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+   :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+   :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+   :live-sha256
+   "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+  :changed-spans
+  [{:id "SOURCE-SUCCESSOR/docs/acceptance-dependencies.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 539166,
+     :start-line 1,
+     :end-line 706,
+     :sha256
+     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+    :after
+    {:start-byte 0,
+     :end-byte 539166,
+     :start-line 1,
+     :end-line 706,
+     :sha256
+     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
+  :live-sha256
+  "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+  :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+  :authority :current-source-interface-only,
+  :baseline-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+  :applying-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "source-successor-docs-acceptance-dependencies-md",
+  :applying-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+  :qualification
+  "Only the complete authenticated current-source file docs/acceptance-dependencies.md advances from its prior current-source bytes to the composed cc8a79074fc8eeeb65d72333e5d64542b201f0d4 checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+  :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"},
+ :changed-spans
+ [{:id "ORIGINAL-14-DEPENDENCY-ROWS",
+   :kind :complete-file-transition,
+   :before
+   {:start-byte 0,
+    :end-byte 539166,
+    :start-line 1,
+    :end-line 706,
+    :sha256
+    "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+   :after
+   {:start-byte 0,
+    :end-byte 583986,
+    :start-line 1,
+    :end-line 720,
+    :sha256
+    "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"}}],
+ :live-sha256
+ "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
+ :applying-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804",
+ :review-state :pending-independent-source-version-review,
+ :baseline-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+ :authority :current-source-interface-only,
+ :baseline-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+ :applying-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
+ :kind :authenticated-current-source-file-transition-v1,
+ :document-id "original-14-dependency-row-successor",
+ :applying-ref "9ef3622060652f339fa75b73fefa4963db272a10",
+ :qualification
+ "This source/interface successor adds only the fourteen independently reviewed original 0f4 dependency rows to the f989 composition. Its complete prior cc8 transition, historical census, source pins, task owners, statuses and implementation/evidence dispositions remain unchanged. All fourteen start-result lists remain empty. Coarse selected-result feedback grants no executable cycle, provider execution, implementation, release or full-240 acceptance.",
+ :baseline-sha256
+ "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+ :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"}
+)
 (def current-source-transition-contracts
-  current-source-transition-successor-contracts)
+  (mapv #(if (= "docs/acceptance-dependencies.md" (:path %))
+           original-dependency-row-successor %)
+        current-source-transition-successor-contracts))
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
 
