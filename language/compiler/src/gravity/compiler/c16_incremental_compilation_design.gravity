@@ -430,7 +430,7 @@
 
 (defn build-c16-cache-key
   [stage source reader syntax macro-expansion namespace profile target compiler pass-contract dependencies build-effects capabilities language-facets]
-  (quote {:artifact :gravity/cache-key
+  {:artifact :gravity/cache-key
           :stage stage
           :source source
           :reader reader
@@ -445,11 +445,11 @@
           :build-effects build-effects
           :capabilities capabilities
           :language-facets language-facets
-          :contract c16-cache-key-contract}))
+          :contract c16-cache-key-contract})
 
 (defn build-c16-cache-entry
   [cache-key artifact-id producer inputs preserved-facts invalidated-by diagnostics trust revalidation provenance]
-  (quote {:artifact :gravity/cache-entry
+  {:artifact :gravity/cache-entry
           :cache-key cache-key
           :artifact-id artifact-id
           :producer producer
@@ -460,11 +460,11 @@
           :trust trust
           :revalidation revalidation
           :provenance provenance
-          :contract c16-cache-entry-contract}))
+          :contract c16-cache-entry-contract})
 
 (defn build-c16-invalidation-trace
   [trace-id cause invalidating-input affected-nodes downstream-stages proofs-invalidated diagnostics-invalidated profile target remediation]
-  (quote {:artifact :gravity/invalidation-trace
+  {:artifact :gravity/invalidation-trace
           :trace-id trace-id
           :cause cause
           :invalidating-input invalidating-input
@@ -475,11 +475,11 @@
           :profile profile
           :target target
           :remediation remediation
-          :contract c16-invalidation-trace-contract}))
+          :contract c16-invalidation-trace-contract})
 
 (defn build-c16-revalidation-report
   [artifact-id cache-key stage checks-run checks-missing outcome speculation diagnostics profile target]
-  (quote {:artifact :gravity/revalidation-report
+  {:artifact :gravity/revalidation-report
           :artifact-id artifact-id
           :cache-key cache-key
           :stage stage
@@ -490,11 +490,11 @@
           :blocking-diagnostics diagnostics
           :profile profile
           :target target
-          :contract c16-revalidation-contract}))
+          :contract c16-revalidation-contract})
 
 (defn build-c16-artifact-reuse-report
   [artifact-id cache-entry reuse-status revalidation-report invalidation-trace diagnostics publishable]
-  (quote {:artifact :gravity/artifact-reuse-report
+  {:artifact :gravity/artifact-reuse-report
           :artifact-id artifact-id
           :cache-entry cache-entry
           :reuse-status reuse-status
@@ -502,7 +502,7 @@
           :invalidation-trace invalidation-trace
           :diagnostics diagnostics
           :publishable publishable
-          :contract c16-incremental-compilation-contract}))
+          :contract c16-incremental-compilation-contract})
 
 (defn verify-c16-incremental-compilation [incremental-artifact]
   (quote {:status :stage1-source-owned
