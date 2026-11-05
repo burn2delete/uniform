@@ -60,3 +60,30 @@ migration, self-hosting, release or seed retirement. Private C6/C11 policy,
 default/frozen Reader, broker/factory, staging, package and release routes are
 not exercised. Native validity labels remain data under the existing narrow
 single-entry and single-conditional contracts.
+
+## Genuine baseline defect and fixture correction
+
+The parent 43-test suite passed, but the complete native verifier rejected both
+original paired fixtures with C11-SAFETY,
+:pure-operation-runtime-check-not-applicable. Their safety facts omitted the
+explicit :runtime-check and :failure-behavior :not-applicable fields required
+by the existing pure-operation rule. C10's Outcome Record owns these fields;
+the current C6-C10 producer also emits them for pure operations.
+
+The first fact-table-only correction failed: the Gravity C11 builder requires
+each safety fact to equal its node safety record. Preserve this NONPASS and
+the original whole-validator NONPASS. The corrected change adds only those two
+fields to the shared fixture safety constructor in both source spellings;
+copied facts remain equal. No native rule or Gravity builder is weakened.
+
+Before extraction, the corrected genuine capture emits two MIR modules and
+passes two complete native reports, with 16 real tamper refusals across
+C11-MODULE/TYPE/EFFECT/SAFETY/TARGET-LEAK/ORIGIN/BLOCK/DOMINANCE. Its 18 complete
+records have SHA256
+382bf420e0a5b9b2dae0556bc26303b8ea49c65ea96bf0f90bb1d04c8f2b73c9.
+This exploratory capture records a dirty fixture candidate and is not frozen
+commit evidence. The new regression removes each marker from both node and
+fact, rebuilds MIR through the actual Gravity builder, and requires the old
+C11-SAFETY refusal. The complete MIR namespace now passes 44 tests / 1176
+assertions; the language boundary passes 6 tests / 11 assertions. None of the
+fixture's embedded proof/status labels authenticates checked Core.

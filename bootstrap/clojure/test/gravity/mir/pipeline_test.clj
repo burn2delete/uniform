@@ -33,6 +33,28 @@
 (defn- failure [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
 
+(deftest whole-native-validation-requires-explicit-pure-safety-facts
+  ;; These are normalized fixture data, not authenticated C10 products.
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [report (b/p15-s23-c11-mir-validate-constructed! source checked emitted)]
+      (is (= {:status :passed :block-count 4 :operation-count 5 :conditional-count 1}
+             (select-keys report [:status :block-count :operation-count :conditional-count])))
+      (is (= {:runtime-check-count 0 :runtime-check-ids []} (:runtime-checks report)))
+      (is (= {:edge-count 4 :terminator-use-count 4 :definition-count 5 :value-count 5}
+             (:data-flow report))))
+    (doseq [field [:runtime-check :failure-behavior]]
+      (let [changed (-> checked
+                        (update :core-nodes
+                                (fn [nodes] (mapv #(update % :safety dissoc field) nodes)))
+                        (update :safety-facts
+                                (fn [facts]
+                                  (into {} (map (fn [[id fact]] [id (dissoc fact field)])) facts))))
+            rebuilt ((fixture-helper 'build-mir) changed)
+            record (failure #(b/p15-s23-c11-mir-validate-constructed! source changed rebuilt))]
+        (is (= :gravity/mir-module (:artifact rebuilt)))
+        (is (= "C11-SAFETY" (:id record)))
+        (is (= :pure-operation-runtime-check-not-applicable (:missing-fact record)))))))
+
 (deftest contract-identifies-the-native-rule-boundary
   (is (empty? (ns-aliases 'gravity.mir)))
   (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
