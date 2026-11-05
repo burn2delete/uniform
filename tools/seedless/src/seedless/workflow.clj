@@ -775,14 +775,13 @@
                       (let [path [location :repo] repository (get-in pr path)]
                         (if-not (map? repository)
                           pr
-                          (let [digest (rt/digest (pr-str repository))
-                                selector (or (get @seen digest)
+                          (let [selector (or (get @seen repository)
                                              [:open-prs index location :repo])]
-                            (if (contains? @seen digest)
+                            (if (contains? @seen repository)
                               (assoc-in pr path {:kind :repository-reference
                                                  :identity (repository-identity repository)
                                                  :raw-reference (raw-reference file selector repository)})
-                              (do (swap! seen assoc digest selector) pr))))))
+                              (do (swap! seen assoc repository selector) pr))))))
                     pr [:head :base]))
           (map-indexed vector open-prs))))
 
@@ -857,7 +856,8 @@
     (admit! ctx base (:slices output))
     (gh/comment! ctx (campaign-issue! ctx) (str "plan/" n)
                  (str "Audit base `" base "`.\n\n" (pr-str output)))
-    (rt/update! ctx assoc :round n :planning nil :last-discovery-key discovery :last-plan (assoc output :base base))
+    (rt/update! ctx assoc :round n :planning nil :last-discovery-key discovery
+                :last-plan (assoc output :base base :raw-input-reference raw-reference))
     output))
 
 (defn complete! [ctx]

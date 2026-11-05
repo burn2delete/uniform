@@ -744,6 +744,8 @@
         (is (.isFile artifact))
         (is (= (:sha256 raw-reference-prompt)
                (rt/digest (slurp artifact))))
+        (is (= (:sha256 raw-reference-prompt)
+               (get-in @(:state ctx) [:last-plan :raw-input-reference :sha256])))
         (is (nil? (:planning @(:state ctx)))))
       (finally (delete-tree! (:root ctx))))))
 
