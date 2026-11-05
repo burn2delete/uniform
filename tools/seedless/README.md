@@ -186,25 +186,28 @@ task identity, changed working files, dirty-diff digest and per-file digests:
   :original-paths ["owned/file.clj"]
   :base "..." :candidate "..." :tree "..."
   :worktree "/absolute/retained/worktree"
+  :branch "codex/seedless-slice"
   :original-error {:message "Worker changed an unowned path" ...}
   :paths ["inventory/unowned.edn"]
   :dirty-diff-sha256 "..."
-  :file-sha256 {"inventory/unowned.edn" "..."}
-  :authorization {:owner :master-coordinator
-                  :paths ["inventory/unowned.edn"]
-                  :substantive? true
-                  :evidence "Exact inventory/census inspection ..."}}}
+  :file-sha256 {"inventory/unowned.edn" "..."}}}
 ```
 
 The controller accepts only existing safe files that are still the complete
 observed unowned diff, with the original Attention identity and known-ended,
-unrestricted error unchanged. It checks that native and shared-main effects are
-settled, acquires and releases a fresh checking lease for the full amended path
-set, preserves the prior error/scope/check/review/CI evidence in native history,
-updates both task and description paths, invalidates old verification credit and
-queues ordinary repair. It does not edit, stage, commit, publish, replay or
-normalize the retained bytes. Directories, removals, stale snapshots, busy paths,
-restricted effects and bookkeeping-only authorization fail closed.
+unrestricted error unchanged. The scope extension is authorized only by the
+original owner's trusted `retry` CLI invocation while it holds the controller
+lock and verifies the native state identity and the actual worktree root,
+common Git directory, branch, HEAD and tree. Inspection EDN is evidence, not an
+authority channel; self-attested coordinator authorization fields are rejected.
+It checks that native and shared-main effects are settled, acquires and releases
+a fresh checking lease for the full amended path set, preserves the complete
+prior task identity and evidence (excluding only recursive history journals) in
+native history, updates both task and description paths, invalidates old
+verification credit and queues ordinary repair. It does not edit, stage, commit,
+publish, replay or normalize the retained bytes. Directories, removals, stale
+snapshots, busy paths, restricted effects and untrusted authorization data fail
+closed.
 
 An uncertain GitHub effect is not automatically replayed. Inspect the actual
 external result, then record it using the inherited reconciliation format:

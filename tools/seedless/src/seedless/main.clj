@@ -6,18 +6,28 @@
             [seedless.workflow :as workflow]
             [simplify.main :as shared]
             [simplify.workflow :as shared-workflow]
-            [simplify.runtime :as rt]))
+            [simplify.runtime :as rt])
+  (:import [java.math BigInteger]
+           [java.security MessageDigest]))
 
 (def completion-check ["clojure" "-M:gravity" "self-host" "verify"])
 (def boundary-check ["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"])
 
 (def ^:private unsettled-effect-statuses #{:pending :uncertain :restricted})
 
-(defn- nonblank-string? [value]
-  (and (string? value) (not (str/blank? value))))
-
 (defn- scope-extension-error! [message data]
   (rt/fail! message (assoc data :scope-extension true)))
+
+(defn- raw-file-sha256 [file]
+  (let [digest (MessageDigest/getInstance "SHA-256")
+        buffer (byte-array 8192)]
+    (with-open [in (io/input-stream file)]
+      (loop []
+        (let [read (.read in buffer)]
+          (when (pos? read)
+            (.update digest buffer 0 read)
+            (recur)))))
+    (format "%064x" (BigInteger. 1 (.digest digest)))))
 
 (defn- current-dirty-snapshot [ctx task]
   (let [worktree (:worktree task)
@@ -29,7 +39,7 @@
         content (str diff "\u0000" untracked)
         file-sha256 (into (sorted-map)
                           (map (fn [path]
-                                 [path (rt/digest (slurp (io/file worktree path)))])
+                                 [path (raw-file-sha256 (io/file worktree path))])
                                changed))]
     {:candidate candidate
      :tree tree
@@ -37,16 +47,35 @@
      :dirty-diff-sha256 (rt/digest content)
      :file-sha256 file-sha256}))
 
-(defn- scope-authorization! [extension paths]
-  (let [authorization (:authorization extension)]
-    (when-not (and (map? authorization)
-                   (= :master-coordinator (:owner authorization))
-                   (= paths (vec (:paths authorization)))
-                   (true? (:substantive? authorization))
-                   (nonblank-string? (:evidence authorization)))
-      (scope-extension-error!
-       "Scope amendment needs substantive coordinator authorization"
-       {:authorization authorization :paths paths}))))
+(def ^:private recursive-task-keys
+  #{:history :scope-inspection-history})
+
+(defn- original-task-snapshot [task]
+  ;; Preserve the complete prior identity/evidence envelope without recursively
+  ;; copying the task's existing history journals.
+  (apply dissoc task recursive-task-keys))
+
+(defn- assert-scope-extension-authority! [ctx key task extension paths]
+  (when (contains? extension :authorization)
+    (scope-extension-error!
+     "Scope amendment cannot carry self-attested coordinator authorization"
+     {:key key :paths paths}))
+  (when-not (= "retry" (:command ctx))
+    (scope-extension-error!
+     "Scope amendment needs the trusted original-owner retry CLI context"
+     {:key key :command (:command ctx)}))
+  (when-not (and (:owns-lock? ctx) @(:owns-lock? ctx))
+    (scope-extension-error!
+     "Scope amendment needs the original owner's held controller lock"
+     {:key key}))
+  (when-not (= (:identity ctx) (:identity @(:state ctx)))
+    (scope-extension-error!
+     "Scope amendment needs the verified native state identity"
+     {:key key}))
+  ;; The trusted CLI context, not inspection EDN, authorizes the exact current
+  ;; checkout and its observed coordinator-owned paths.
+  (workflow/assert-identity! ctx task)
+  true)
 
 (defn- assert-no-unsettled-scope-effects! [ctx]
   (let [effects (into {}
@@ -72,17 +101,18 @@
 
 (defn- validate-scope-extension! [ctx key task inspection]
   (when-let [extension (:scope-extension inspection)]
+    (when-not (map? extension)
+      (scope-extension-error! "Scope amendment must be a map" {:value extension}))
     (let [original-paths (vec (:paths task))
           paths (vec (:paths extension))
           original-error (:error task)
           details (:details original-error)
           task-message (or (:message original-error) "")
+          _ (assert-scope-extension-authority! ctx key task extension paths)
           current (current-dirty-snapshot ctx task)
           changed (set (:paths current))
           expected-unowned (set/difference changed (set original-paths))
           extension-files (set paths)]
-      (when-not (map? extension)
-        (scope-extension-error! "Scope amendment must be a map" {:value extension}))
       (when-not (= key (:task extension))
         (scope-extension-error! "Scope amendment is bound to a different task"
                                 {:expected key :actual (:task extension)}))
@@ -91,10 +121,11 @@
                      (= (:candidate task) (:candidate extension))
                      (= (:tree task) (:tree extension))
                      (= (:worktree task) (:worktree extension))
+                     (= (:branch task) (:branch extension))
                      (= original-error (:original-error extension)))
         (scope-extension-error! "Scope amendment does not bind the retained task"
-                                {:task (select-keys task [:paths :base :candidate :tree :worktree :error])
-                                 :extension (select-keys extension [:original-paths :base :candidate :tree :worktree :original-error])}))
+                                {:task (select-keys task [:paths :base :candidate :tree :worktree :branch :error])
+                                 :extension (select-keys extension [:original-paths :base :candidate :tree :worktree :branch :original-error])}))
       (when-not (and (= (:candidate task) (:candidate current))
                      (= (:tree task) (:tree current)))
         (scope-extension-error! "Scope amendment candidate changed after the retained failure"
@@ -133,7 +164,6 @@
       (when-not (= (:file-sha256 current) (:file-sha256 extension))
         (scope-extension-error! "Scope amendment file bytes changed after inspection"
                                 {:expected (:file-sha256 extension) :actual (:file-sha256 current)}))
-      (scope-authorization! extension paths)
       (assert-no-unsettled-scope-effects! ctx)
       {:paths (vec (concat original-paths paths))
        :extension extension
@@ -146,8 +176,7 @@
                    {:key key :paths (:paths scope)}))]
     (try
       (let [history {:kind :inspected-scope-extension
-                     :original (select-keys task [:paths :description :base :candidate :tree :worktree
-                                                  :error :checks :review :head-workflows])
+                     :original (original-task-snapshot task)
                      :inspection inspection
                      :observed (:snapshot scope)
                      :amended-paths (get-in scope [:extension :paths])}]
@@ -360,7 +389,7 @@
 (defn -main [& [command path & args]]
   (try
     (when-not path (rt/fail! "Provide a command and configuration file" {}))
-    (let [ctx (context! (config! path))]
+    (let [ctx (assoc (context! (config! path)) :command command)]
       (.addShutdownHook (Runtime/getRuntime)
                         (Thread. ^Runnable
                          (fn [] (owned-cleanup! ctx :jvm-shutdown))))
