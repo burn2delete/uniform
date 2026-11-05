@@ -262,3 +262,136 @@
   (let [marker (ex-info "native publication failure" {:native true})]
     (with-redefs [b/fail! (fn [& _] (throw marker))]
       (is (identical? marker (caught #(b/c4-macro-fail! "C4-RETURN" "identity.qst" {} {})))))))
+
+(def ^:private native-projection-names
+  '[c4-expansion-input c4-macro-environment c4-expanded-syntax-stream c4-trace-records
+    c4-macro-safety-declarations c4-expansion-cache-key c4-hygiene-capture-records
+    c4-build-effect-log c4-generated-origin-source-map c4-trace-replay-report c4-macro-safety-report])
+
+(defn- native-projections []
+  (into {} (map (fn [name] [(keyword (str name)) (ns-resolve 'gravity.bootstrap name)]) native-projection-names)))
+
+(defn- native-construction-input []
+  ;; Native unit inputs only; genuine source composition is checked separately.
+  {:source-path "native-construction.gravity"
+   :module {:module 'native.construction :profile :hosted :target :jvm :metadata {:build-grants #{:source-read}}}
+   :overrides {:native-unit true}
+   :c3 {:kind :gravity/stage0-c3-syntax-object-artifact :artifact-id "sha256:native-c3"
+        :syntax-object-stream [{:syntax/id "sha256:native-root"}]
+        :syntax-verification-report {:status :complete} :unselected-parent-field :retained-only-in-input}
+   :macro {:macro-namespace-entries
+           [{:identity 'native/unsafe-macro :version "sha256:native-version" :macro-namespace 'native
+             :params ['value] :source-span {:source "native-construction.gravity" :form-index 1}
+             :build-effects #{:source-read} :required-build-capabilities #{:fs/read}}]
+           :expanded-syntax-object-stream
+           [{:syntax-id "sha256:native-expanded" :form '(def native 1) :phase :macro-expanded
+             :span {:source "native-construction.gravity" :form-index 2}
+             :generated-origin [{:source "native-construction.gravity" :form-index 1}]}]
+           :macro-expansion-trace
+           [{:macro 'native/unsafe-macro :macro-version "sha256:native-version"
+             :call-span {:source "native-construction.gravity" :form-index 2}
+             :input-syntax-id "sha256:native-input" :output-hash "sha256:native-output"
+             :hygiene-policy :explicit-capture :build-effects #{:source-read}
+             :generated-origin [{:source "native-construction.gravity" :form-index 1}]
+             :generated-spans ["generated:native:1"]}]}})
+
+(defn- assemble-native
+  ([input] (assemble-native input (native-projections)))
+  ([{:keys [source-path module overrides c3 macro]} projections]
+   (macro/assemble-native-artifact
+    source-path module overrides c3 macro projections
+    #'b/c4-macro-governing-document #'b/c4-macro-diagnostic-ids #'b/c4-macro-rejected-designs
+    #'b/c4-macro-validate! #'b/c4-macro-capability-proof #'b/c4-artifact-id)))
+
+(deftest native-construction-retains-complete-input-projection-and-identity-preimages
+  (let [input (native-construction-input) identity b/c4-artifact-id preimages (atom [])
+        artifact (with-redefs [b/c4-artifact-id (fn [value] (swap! preimages conj value) (identity value))]
+                   (assemble-native input))]
+    (is (= :gravity/stage0-c4-macro-expansion-artifact (:kind artifact)))
+    (is (= 3 (count @preimages)))
+    (is (= (get-in input [:macro :macro-namespace-entries]) (first @preimages)))
+    (is (= (:macro-expansion-trace artifact) (second @preimages)))
+    (is (= (dissoc artifact :artifact-id) (nth @preimages 2)))
+    (is (= (identity (nth @preimages 2)) (:artifact-id artifact)))
+    (is (= (identity (second @preimages)) (get-in artifact [:self-hosting-comparison-inputs :seed-trace-hash])))
+    (is (= (select-keys (:c3 input) [:kind :artifact-id :syntax-object-stream :syntax-verification-report])
+           (:c3-syntax-object-artifact artifact)))
+    (is (identical? (:overrides input) (:source-overrides artifact)))
+    (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (= b/c4-macro-diagnostic-ids (get-in artifact [:c4-macro-results :required-diagnostic-ids])))
+    (is (= artifact (assemble-native input (into {} (map (fn [[key value]] [key @value]) (native-projections))))))
+    (is (= (set (keys (native-projections)))
+           (set (get-in (:gravity/namespace-contract (meta #'macro/assemble-native-artifact))
+                        [:native-construction-contract :projection-ports]))))))
+
+(deftest native-construction-rejects-malformed-upstream-products-with-existing-diagnostics
+  (doseq [[id input] [["C4-RETURN" (assoc-in (native-construction-input) [:c3 :syntax-object-stream] [])]
+                      ["C4-RETURN" (assoc-in (native-construction-input) [:macro :expanded-syntax-object-stream] [])]
+                      ["C4-TRACE" (assoc-in (native-construction-input) [:macro :macro-expansion-trace 0 :macro-version] nil)]
+                      ["C4-HYGIENE" (assoc-in (native-construction-input) [:macro :macro-expansion-trace 0 :hygiene-policy] :hygienic)]
+                      ["C4-TRACE" (assoc-in (native-construction-input) [:macro :macro-expansion-trace 0 :generated-origin] [])]]]
+    (let [data (ex-data (caught #(assemble-native input)))]
+      (is (= id (:id data)))
+      (is (= (:source-path input) (get-in data [:source-span :source])))))
+  (with-redefs [b/c4-build-effect-log (fn [& _] {:records [{:authorization :denied}]})]
+    (is (= "C4-BUILD-EFFECT" (:id (ex-data (caught #(assemble-native (native-construction-input)))))))))
+
+(deftest native-projection-callables-are-resolved-per-use-and-configuration-at-original-fields
+  (let [calls (atom []) cache b/c4-expansion-cache-key identity b/c4-artifact-id]
+    (with-redefs [b/c4-macro-governing-document "before-cache"
+                  b/c4-macro-diagnostic-ids ["C4-BEFORE"] b/c4-macro-rejected-designs []
+                  b/c4-expansion-cache-key (fn [& arguments]
+                                            (alter-var-root #'b/c4-macro-governing-document (constantly "after-cache"))
+                                            (alter-var-root #'b/c4-macro-diagnostic-ids (constantly ["C4-PASS"]))
+                                            (apply cache arguments))
+                  b/c4-artifact-id (fn [value]
+                                    (when (vector? value)
+                                      (alter-var-root #'b/c4-macro-rejected-designs
+                                                      (constantly [{:diagnostic "C4-PASS"}])))
+                                    (identity value))
+                  b/c4-macro-validate! (fn [_ artifact]
+                                         (swap! calls conj [:validate artifact])
+                                         (alter-var-root #'b/c4-macro-diagnostic-ids (constantly ["C4-CONFORMANCE"]))
+                                         :returned-refusal)
+                  b/c4-macro-capability-proof (fn [artifact] (swap! calls conj [:proof artifact]) :native-proof)]
+      (let [artifact (assemble-native (native-construction-input))]
+        (is (= [:validate :proof] (mapv first @calls)))
+        (is (= "after-cache" (:governing-document artifact)))
+        (is (= ["C4-PASS"] (get-in artifact [:pass :rejects])))
+        (is (= [{:diagnostic "C4-PASS"}] (:rejected-design-coverage artifact)))
+        (is (= ["C4-CONFORMANCE"] (get-in artifact [:c4-macro-results :required-diagnostic-ids])))
+        (is (= :native-proof (:capability-based-proof artifact))))))
+  (let [trace b/c4-trace-records seen (atom []) environment b/c4-macro-environment]
+    (with-redefs [b/c4-macro-environment (fn [artifact]
+                                        (alter-var-root #'b/c4-trace-records
+                                                        (constantly (fn [actual]
+                                                                      (swap! seen conj actual) (trace actual))))
+                                        (environment artifact))]
+      (is (:artifact-id (assemble-native (native-construction-input))))
+      (is (= 1 (count @seen))))))
+
+(deftest native-construction-stops-on-validation-exception-before-attaching-proof-or-final-id
+  (let [marker (ex-info "native validation" {:native true}) events (atom [])]
+    (with-redefs [b/c4-artifact-id (fn [value]
+                                  (swap! events conj (if (some :identity value) :environment-hash :seed-hash))
+                                  "sha256:seed")
+                  b/c4-macro-validate! (fn [& _] (swap! events conj :validate) (throw marker))
+                  b/c4-macro-capability-proof (fn [& _] (throw (AssertionError. "Proof must not follow rejection")))]
+      (is (identical? marker (caught #(assemble-native (native-construction-input)))))
+      (is (= [:environment-hash :seed-hash :validate] @events)))))
+
+(deftest native-id-facade-and-hash-owner-retain-call-before-printing-order
+  (let [value (Object.)]
+    (with-redefs [macro/native-artifact-id vector]
+      (let [[actual digest] (b/c4-artifact-id value)]
+        (is (identical? value actual))
+        (is (identical? #'b/sha256-hex digest)))))
+  (let [calls (atom []) late (fn [text] (swap! calls conj [:late text]) "late")
+        value (proxy [Object] []
+                (toString [] (alter-var-root #'b/sha256-hex (constantly late)) "native-print"))]
+    (with-redefs [b/sha256-hex (fn [text] (swap! calls conj [:first text]) "first")]
+      (is (= "sha256:first" (b/c4-artifact-id value)))
+      (is (= "sha256:late" (b/c4-artifact-id value)))
+      (is (= [:first :late] (mapv first @calls)))
+      (is (every? #(str/includes? (second %) "native-print") @calls))))
+  (is (= "sha256:function-value" (macro/native-artifact-id {:native true} (constantly "function-value")))))

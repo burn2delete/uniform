@@ -39,7 +39,9 @@ Capture complete before/after native artifacts and refusals on actual paired
 fixture paths, including full source text/hash and all input/output data. The
 baseline executes only the exact old native construction suffix in an isolated
 unit function. It does not invoke the legacy source constructor, replace an
-admission guard, authenticate source or replay a held route. Positive cases
+admission guard or replay a held route. Genuine upstream products use the
+explicit current-development Reader/Syntax and public hosted macro producer;
+their development provenance does not renew migration authority. Positive cases
 must emit real native artifact identities; negative native inputs must publish
 real C4 refusals. Keep separate explicit current-development compilation and
 semantic rejection checks, plus provenance/preimage, callback ordering and
@@ -56,3 +58,64 @@ cache-hit admission, canonical C4/C15 conformance, migration, self-hosting,
 release or seed retirement. Preserve historical C4-SIZE data without a project
 quota. The legacy source prefix, publication, projection helpers and generic
 digest execution remain residual host boundaries.
+
+## Implementation checkpoint and genuine baseline
+
+The stage adds native-artifact-id and assemble-native-artifact, taking explicit
+projection Vars plus document/catalog/coverage, validation/proof/identity and
+digest ports. Its public inventory grows from 60 to 62; the shared SH-05 stage
+operation map is unchanged. Bootstrap retains its first eight constructor
+bindings, old names/arities, saved alias and final dispatch. Eleven native
+projection calls retain their ordering and per-use callable roots. Document,
+diagnostic catalog (twice) and coverage dereferences stay at original positions.
+Native validation precedes explicit proof attachment and final identity; the
+validator's own proof call remains separate. Returning refusals still do not
+create a new gate. Ready/complete metadata remains unauthenticated native data.
+
+There are two direct constructor identity sites, for the trace and completed
+artifact, and a third nested environment identity inside c4-expansion-input.
+All three preimages and the final native artifact shape must be preserved.
+The legacy adapter remains distinct from SH-05 compatibility identity.
+
+Clean source 5e85510e2a9892af9c599fe68768b6598f726e57 produces genuine
+C3 and hosted macro artifacts from both actual compiler-c4-macro-engine source
+extensions, using explicit current-development Reader/Syntax and the ordinary
+hosted macro producer. Each macro product has three actual expansion steps.
+The exact old native tail consumes these products, retaining full source text,
+hashes, C3/macro inputs, native artifact preimages/identities and diagnostics.
+The 22 complete records contain eight emitted artifacts and fourteen C4
+refusals: RETURN four, TRACE six, HYGIENE two and GENERATED-UNSAFE two.
+Metadata-aware EDN SHA256 is
+7e32d3c68f5b680b08922068a9fd7bd4ae9d64519393c61ae6b9a3e02dc4477d.
+No legacy source constructor, guard substitution or migration admission is
+used. Initial synthetic inputs remain unit controls and establish no C4
+authority; the genuine baseline is the acceptance comparison input.
+
+An initial extraction lint found one multiline projection call not yet routed
+through its explicit port; it was corrected before candidate execution. The
+initial added test had an unmatched delimiter. Subsequent six test-observation
+failures assumed only two total identity calls, omitting the existing nested
+environment identity; correcting those expectations changed no production
+semantics. These nonpasses remain separate logs, without acceptance credit.
+
+Native-report/owner-call regressions pass 29 tests / 314 assertions. The new
+genuine paired producer/assembler/tamper test and API inventory pass 2 / 95:
+actual C3 and macro products emit full native C4 artifacts, with independent
+SHA256 preimage checks, and actual product substitutions are rejected.
+Boundary/ownership passes 48 / 1202, with no skipped namespaces. Direct lint
+is zero warnings/errors; document, roadmap and governance validators pass.
+
+Conservation reverses the native body/ports, contract and API additions to
+recover the complete prior Macro file byte for byte. All eight source-prefix
+bindings and all other 00029 content are byte-preserved; 00028 changes only
+the identity facade. Every prior native test remains byte-preserved, the
+pipeline adds only its genuine test/import and API count, and only the Macro
+row changes in the namespace index. All other source/authentication, pins,
+manifests, CI, legacy alias and dispatch bytes remain unchanged. An editor-added
+EOF newline in surrounding 00029 content was detected by conservation and
+restored before this check passed; the initial nonpass remains recorded.
+
+Genuine before/after parity, contextual lint, independent reviews, exact own
+hosted CI and current-base integration remain outstanding at this source
+implementation checkpoint. New tests stay in the existing native-report and
+pipeline namespaces already selected by Macro CI.

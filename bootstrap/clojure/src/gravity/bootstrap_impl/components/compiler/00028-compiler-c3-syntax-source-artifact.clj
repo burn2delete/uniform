@@ -37,7 +37,7 @@
 
 (defn c4-artifact-id
   [value]
-  (str "sha256:" (sha256-hex (pr-str value))))
+  (gravity.macro/native-artifact-id value #'sha256-hex))
 
 (defn c4-macro-environment
   [macro-artifact]

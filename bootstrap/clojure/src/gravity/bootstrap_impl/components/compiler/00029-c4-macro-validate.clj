@@ -14,74 +14,22 @@
         overrides (c4-macro-source-overrides module)
         _ (c4-macro-validate-overrides! source-path overrides)
         c3-artifact (compiler-c3-syntax-source-artifact source-path source-text)
-        macro-artifact (macro-source-artifact source-path source-text)
-        expansion-input (c4-expansion-input module c3-artifact macro-artifact)
-        macro-environment (c4-macro-environment macro-artifact)
-        expanded-stream (c4-expanded-syntax-stream macro-artifact)
-        trace-records (c4-trace-records macro-artifact)
-        safety-declarations (c4-macro-safety-declarations macro-environment)
-        cache-key (c4-expansion-cache-key expansion-input trace-records)
-        artifact-base
-        {:kind :gravity/stage0-c4-macro-expansion-artifact
-         :task "P06-D083"
-         :document-set ["C4"]
-         :governing-document c4-macro-governing-document
-         :pass {:name :c4-macro-expansion-engine
-                :input :c3-syntax-object-artifact
-                :output :expanded-syntax-with-macro-proof
-                :requires [:syntax-object-graph :macro-environment
-                           :build-grants :target-manifest]
-                :preserves [:source-spans :generated-origin :hygiene
-                            :metadata :profile :safety-metadata]
-                :emits [:expanded-syntax-stream :macro-expansion-trace
-                        :hygiene-capture-records :build-effect-log
-                        :macro-safety-declarations
-                        :generated-origin-source-map
-                        :expansion-cache-key :expansion-diagnostics]
-                :rejects c4-macro-diagnostic-ids}
-         :source-overrides overrides
-         :c3-syntax-object-artifact
-         (select-keys c3-artifact [:kind :artifact-id :syntax-object-stream
-                                   :syntax-verification-report])
-         :macro-expansion-input expansion-input
-         :macro-environment macro-environment
-         :expanded-syntax-stream expanded-stream
-         :macro-expansion-trace trace-records
-         :hygiene-capture-records (c4-hygiene-capture-records trace-records)
-         :build-effect-log (c4-build-effect-log module trace-records)
-         :macro-safety-declarations safety-declarations
-         :generated-origin-source-map (c4-generated-origin-source-map
-                                       trace-records expanded-stream)
-         :expansion-cache-key cache-key
-         :trace-replay-report (c4-trace-replay-report trace-records cache-key)
-         :macro-safety-report (c4-macro-safety-report trace-records
-                                                      safety-declarations)
-         :self-hosting-comparison-inputs
-         {:artifact :gravity/macro-self-hosting-comparison-inputs
-          :seed-trace-hash (c4-artifact-id trace-records)
-          :gravity-trace-slot :pending-self-host
-          :status :ready}
-         :rejected-design-coverage c4-macro-rejected-designs
-         :diagnostics []}
-        _ (c4-macro-validate! source-path artifact-base)
-        capability-proof (c4-macro-capability-proof artifact-base)
-        conformance {:documents ["C4"]
-                     :task "P06-D083"
-                     :required-diagnostic-ids c4-macro-diagnostic-ids
-                     :input-output-status :complete
-                     :trace-status :complete
-                     :hygiene-status :complete
-                     :build-effect-status :complete
-                     :generated-origin-status :complete
-                     :generated-unsafe-status :complete
-                     :cache-replay-status :complete
-                     :self-hosting-comparison-status :ready
-                     :diagnostic-status :complete
-                     :status :complete}
-        artifact (assoc artifact-base
-                        :capability-based-proof capability-proof
-                        :c4-macro-results conformance)]
-    (assoc artifact :artifact-id (c4-artifact-id artifact))))
+        macro-artifact (macro-source-artifact source-path source-text)]
+    (gravity.macro/assemble-native-artifact
+     source-path module overrides c3-artifact macro-artifact
+     {:c4-expansion-input #'c4-expansion-input
+      :c4-macro-environment #'c4-macro-environment
+      :c4-expanded-syntax-stream #'c4-expanded-syntax-stream
+      :c4-trace-records #'c4-trace-records
+      :c4-macro-safety-declarations #'c4-macro-safety-declarations
+      :c4-expansion-cache-key #'c4-expansion-cache-key
+      :c4-hygiene-capture-records #'c4-hygiene-capture-records
+      :c4-build-effect-log #'c4-build-effect-log
+      :c4-generated-origin-source-map #'c4-generated-origin-source-map
+      :c4-trace-replay-report #'c4-trace-replay-report
+      :c4-macro-safety-report #'c4-macro-safety-report}
+     #'c4-macro-governing-document #'c4-macro-diagnostic-ids #'c4-macro-rejected-designs
+     #'c4-macro-validate! #'c4-macro-capability-proof #'c4-artifact-id)))
 
 (defn compiler-c4-macro-file-artifact
   [path]

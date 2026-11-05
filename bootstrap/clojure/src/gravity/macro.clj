@@ -16,6 +16,21 @@
     :other-callable-ports :unchanged :input-port-changed? false
     :operation-parameter-call-changed? false :admission-check-added? false
     :test-owner gravity.macro.owner-calls-test}
+   :native-construction-contract
+   {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 SAFE12 C1 C3 C4 C15 TEST2]
+    :boundary :native-c4-artifact-construction-and-identity
+    :inputs [:source-path :native-module :overrides :native-c3-artifact :hosted-macro-artifact
+             :projection-var-map :document-var :diagnostic-catalog-var :coverage-var
+             :validation-var :proof-var :identity-var :digest-var]
+    :outputs [:native-c4-artifact :native-trace-hash :native-artifact-id :owner-refusal]
+    :projection-ports [:c4-expansion-input :c4-macro-environment :c4-expanded-syntax-stream :c4-trace-records :c4-macro-safety-declarations :c4-expansion-cache-key :c4-hygiene-capture-records :c4-build-effect-log :c4-generated-origin-source-map :c4-trace-replay-report :c4-macro-safety-report]
+    :preserves [:projection-order :field-position-config-reads :callee-before-arguments
+                :validation-before-proof :validation-before-final-identity :source-provenance
+                :identity-preimages :returning-refusals :exception-identity]
+    :depends-on [] :consumed-by [gravity.bootstrap]
+    :test-owner gravity.macro.native-reports-test :source-prefix-owner gravity.bootstrap
+    :unsupported [:source-admission :source-authentication :canonical-c4 :canonical-c15
+                  :build-grant-authority :replay-authority :migration :self-hosting :release]}
    :native-diagnostic-policy-contract
    {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 SAFE12 C1 C4 C15 TEST2]
     :boundary :native-c4-diagnostic-policy-and-context
@@ -43,7 +58,12 @@
     :authenticates? false :certifies? false
     :unsupported [:source-execution :canonical-c4 :grant-validation :replay-validation :migration :self-hosting :release]}
    :public-api
-   {c4-macro-diagnostic-ids {:arglists nil :operation-inputs []},
+   {native-artifact-id {:arglists ([value digest-var]) :operation-inputs []},
+    assemble-native-artifact
+    {:arglists ([source-path module overrides c3-artifact macro-artifact projections
+                 document-var diagnostic-ids-var rejected-designs-var validate-var proof-var identity-var])
+     :operation-inputs []},
+    c4-macro-diagnostic-ids {:arglists nil :operation-inputs []},
     c4-macro-governing-document {:arglists nil :operation-inputs []},
     c4-macro-rejected-designs {:arglists nil :operation-inputs []},
     c4-macro-override-diagnostics {:arglists nil :operation-inputs []},
@@ -595,6 +615,81 @@
                        :capabilities #{}
                        :hygiene {:marks []}}
                       {:missing-fields [fail-kind]}))))
+
+(defn native-artifact-id
+  [value digest-var]
+  (str "sha256:" ((owner-function digest-var) (pr-str value))))
+
+(defn assemble-native-artifact
+  [source-path module overrides c3-artifact macro-artifact projections
+   document-var diagnostic-ids-var rejected-designs-var validate-var proof-var identity-var]
+  (let [expansion-input ((owner-function (:c4-expansion-input projections)) module c3-artifact macro-artifact)
+        macro-environment ((owner-function (:c4-macro-environment projections)) macro-artifact)
+        expanded-stream ((owner-function (:c4-expanded-syntax-stream projections)) macro-artifact)
+        trace-records ((owner-function (:c4-trace-records projections)) macro-artifact)
+        safety-declarations ((owner-function (:c4-macro-safety-declarations projections)) macro-environment)
+        cache-key ((owner-function (:c4-expansion-cache-key projections)) expansion-input trace-records)
+        artifact-base
+        {:kind :gravity/stage0-c4-macro-expansion-artifact
+         :task "P06-D083"
+         :document-set ["C4"]
+         :governing-document @document-var
+         :pass {:name :c4-macro-expansion-engine
+                :input :c3-syntax-object-artifact
+                :output :expanded-syntax-with-macro-proof
+                :requires [:syntax-object-graph :macro-environment
+                           :build-grants :target-manifest]
+                :preserves [:source-spans :generated-origin :hygiene
+                            :metadata :profile :safety-metadata]
+                :emits [:expanded-syntax-stream :macro-expansion-trace
+                        :hygiene-capture-records :build-effect-log
+                        :macro-safety-declarations
+                        :generated-origin-source-map
+                        :expansion-cache-key :expansion-diagnostics]
+                :rejects @diagnostic-ids-var}
+         :source-overrides overrides
+         :c3-syntax-object-artifact
+         (select-keys c3-artifact [:kind :artifact-id :syntax-object-stream
+                                   :syntax-verification-report])
+         :macro-expansion-input expansion-input
+         :macro-environment macro-environment
+         :expanded-syntax-stream expanded-stream
+         :macro-expansion-trace trace-records
+         :hygiene-capture-records ((owner-function (:c4-hygiene-capture-records projections)) trace-records)
+         :build-effect-log ((owner-function (:c4-build-effect-log projections)) module trace-records)
+         :macro-safety-declarations safety-declarations
+         :generated-origin-source-map ((owner-function (:c4-generated-origin-source-map projections))
+                                       trace-records expanded-stream)
+         :expansion-cache-key cache-key
+         :trace-replay-report ((owner-function (:c4-trace-replay-report projections)) trace-records cache-key)
+         :macro-safety-report ((owner-function (:c4-macro-safety-report projections)) trace-records
+                                                      safety-declarations)
+         :self-hosting-comparison-inputs
+         {:artifact :gravity/macro-self-hosting-comparison-inputs
+          :seed-trace-hash ((owner-function identity-var) trace-records)
+          :gravity-trace-slot :pending-self-host
+          :status :ready}
+         :rejected-design-coverage @rejected-designs-var
+         :diagnostics []}
+        _ ((owner-function validate-var) source-path artifact-base)
+        capability-proof ((owner-function proof-var) artifact-base)
+        conformance {:documents ["C4"]
+                     :task "P06-D083"
+                     :required-diagnostic-ids @diagnostic-ids-var
+                     :input-output-status :complete
+                     :trace-status :complete
+                     :hygiene-status :complete
+                     :build-effect-status :complete
+                     :generated-origin-status :complete
+                     :generated-unsafe-status :complete
+                     :cache-replay-status :complete
+                     :self-hosting-comparison-status :ready
+                     :diagnostic-status :complete
+                     :status :complete}
+        artifact (assoc artifact-base
+                        :capability-based-proof capability-proof
+                        :c4-macro-results conformance)]
+    (assoc artifact :artifact-id ((owner-function identity-var) artifact))))
 
 (defn native-capability-proof
   [artifact diagnostic-ids-var]
