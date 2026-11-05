@@ -1012,7 +1012,10 @@
                                       "--namespace" "gravity.self-hosting.sh07-mutation-test"
                                       "--exact" "sh07-character-source-occurrence-development-kernel"
                                       "--exact" "sh07-map-source-order-development-kernel"
-                                      "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]]
+                                      "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]
+                            ["mir-native-validation" 180
+                             (command "2g" "-M:dev-test"
+                                      "--progress" "--namespace" "gravity.mir.pipeline-test")]]
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable" selection)]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]

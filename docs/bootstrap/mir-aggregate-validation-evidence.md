@@ -87,3 +87,45 @@ fact, rebuilds MIR through the actual Gravity builder, and requires the old
 C11-SAFETY refusal. The complete MIR namespace now passes 44 tests / 1176
 assertions; the language boundary passes 6 tests / 11 assertions. None of the
 fixture's embedded proof/status labels authenticates checked Core.
+
+The corrected clean baseline is source
+e3dcc722607781953266671ea54c63417d368c43, tree
+dc9a0391a3a83f7f317c826c884f9b23884536ae. Its repeated 18-record capture has
+the same SHA256 as the exploratory capture above. Independent read-only
+review accepts the narrow pure fixture correction; it does not establish
+aggregate coverage of runtime-checked fixtures, which remain unsupported here.
+
+## Implemented native boundary and local checks
+
+gravity.mir/validate-constructed! now owns the unchanged eight-phase native
+sequence and report. Its Bootstrap adapter passes eight live Vars; the outer
+diagnostic context and containment wrapper and every other byte of component
+00740 remain unchanged. The stage has no namespace imports. Runtime-check
+legality remains the supplied existing operation, not a new stage claim.
+
+The full native namespace passes 47 tests / 1246 assertions, including genuine
+whole validation, all phase argument identities and order, every first-refusal
+position, ignored false returns, borrowed report values, live callback
+replacement and diagnostic context. The boundary/ownership pair passes
+48 tests / 1202 assertions. Both document validators and direct stage/test/CI
+lint pass. CI harness controls pass 50 tests / 530 assertions, and CI format
+checks pass. The initial new CI assertion omitted the existing fixed seed
+arguments; its NONPASS is retained, and the assertion now compares the real
+existing command constructor without changing command behavior.
+
+One mir-native-validation command is appended to checked-core-runtime with
+2g/180 seconds and the complete gravity.mir.pipeline-test namespace. The
+controls check exact prior command labels, the added command and all current
+deftests, and detect omitted or substituted namespace selection. Workflow,
+matrix modes and affected-path classification are unchanged.
+
+The immutable old algorithm from e3dcc722 and the extracted algorithm consume
+the same live genuine Core/MIR objects in the parity control. All 18 complete
+raw and parsed outcomes match: two reports and 16 refusals; inputs remain
+unchanged. The complete paired records have SHA256
+3e357fa7790caebf449f85bbe305194b119f93c0c9d6f8cb8523098ca7879b87.
+Byte conservation recovers the old native algorithm and full prior stage,
+preserves all other component 00740 bytes, all prior MIR and CI tests, and all
+prior CI command bytes. Only the MIR index row changes. Cold loading exposes
+50 public APIs, no aliases and no loaded gravity.bootstrap. Independent source
+acceptance, exact hosted CI and Main integration remain pending.

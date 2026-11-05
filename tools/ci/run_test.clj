@@ -459,6 +459,24 @@
                     source-vars))
        #{}))))
 
+(deftest checked-core-cohort-includes-the-complete-native-mir-namespace
+  (let [commands (ci/commands-for-selection "checked-core-runtime" {:kind :full})
+        [label timeout argv] (last commands)
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"))
+        namespace "gravity.mir.pipeline-test"]
+    (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
+            "checked-core-projection-kernel-regression" "mir-native-validation"]
+           (mapv first commands)))
+    (is (= "mir-native-validation" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.checked-core.pipeline-test") source-vars namespace)))))
+
 (deftest macro-children-preserve-complete-disjoint-source-selection
   (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
         source-vars (binding [*read-eval* false]
