@@ -174,6 +174,38 @@ remains in inspection history.
 This preserves their history and queues new work; it does not turn the failure
 into success. Restricted actions cannot be retried or routed through this path.
 
+An ended Attention caused by the exact `Worker changed an unowned path` finding
+has one narrower recovery form. The original owner may include a
+`:scope-extension` in the inspection only after recording the exact retained
+task identity, changed working files, dirty-diff digest and per-file digests:
+
+```text
+{:evidence "Substantive original-owner inspection ..."
+ :scope-extension
+ {:task "slice-key"
+  :original-paths ["owned/file.clj"]
+  :base "..." :candidate "..." :tree "..."
+  :worktree "/absolute/retained/worktree"
+  :original-error {:message "Worker changed an unowned path" ...}
+  :paths ["inventory/unowned.edn"]
+  :dirty-diff-sha256 "..."
+  :file-sha256 {"inventory/unowned.edn" "..."}
+  :authorization {:owner :master-coordinator
+                  :paths ["inventory/unowned.edn"]
+                  :substantive? true
+                  :evidence "Exact inventory/census inspection ..."}}}
+```
+
+The controller accepts only existing safe files that are still the complete
+observed unowned diff, with the original Attention identity and known-ended,
+unrestricted error unchanged. It checks that native and shared-main effects are
+settled, acquires and releases a fresh checking lease for the full amended path
+set, preserves the prior error/scope/check/review/CI evidence in native history,
+updates both task and description paths, invalidates old verification credit and
+queues ordinary repair. It does not edit, stage, commit, publish, replay or
+normalize the retained bytes. Directories, removals, stale snapshots, busy paths,
+restricted effects and bookkeeping-only authorization fail closed.
+
 An uncertain GitHub effect is not automatically replayed. Inspect the actual
 external result, then record it using the inherited reconciliation format:
 

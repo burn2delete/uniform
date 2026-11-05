@@ -1,5 +1,6 @@
 (ns seedless.main
   (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
@@ -9,6 +10,152 @@
 
 (def completion-check ["clojure" "-M:gravity" "self-host" "verify"])
 (def boundary-check ["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"])
+
+(def ^:private unsettled-effect-statuses #{:pending :uncertain :restricted})
+
+(defn- nonblank-string? [value]
+  (and (string? value) (not (str/blank? value))))
+
+(defn- scope-extension-error! [message data]
+  (rt/fail! message (assoc data :scope-extension true)))
+
+(defn- current-dirty-snapshot [ctx task]
+  (let [worktree (:worktree task)
+        changed (shared-workflow/changed-paths ctx worktree)
+        diff (rt/git ctx worktree "diff" "--binary" "--no-ext-diff" "--no-renames" "HEAD")
+        untracked (rt/git ctx worktree "ls-files" "--others" "--exclude-standard" "-z")
+        content (str diff "\u0000" untracked)
+        file-sha256 (into (sorted-map)
+                          (map (fn [path]
+                                 [path (rt/digest (slurp (io/file worktree path)))])
+                               changed))]
+    {:paths (vec changed)
+     :dirty-diff-sha256 (rt/digest content)
+     :file-sha256 file-sha256}))
+
+(defn- scope-authorization! [extension paths]
+  (let [authorization (:authorization extension)]
+    (when-not (and (map? authorization)
+                   (= :master-coordinator (:owner authorization))
+                   (= paths (vec (:paths authorization)))
+                   (true? (:substantive? authorization))
+                   (nonblank-string? (:evidence authorization)))
+      (scope-extension-error!
+       "Scope amendment needs substantive coordinator authorization"
+       {:authorization authorization :paths paths}))))
+
+(defn- assert-no-unsettled-scope-effects! [ctx]
+  (let [effects (into {}
+                      (filter (fn [[_ effect]]
+                                (contains? unsettled-effect-statuses (:status effect)))
+                              (:effects @(:state ctx))))
+        own-main-effects
+        (rt/coordinate! ctx
+                        (fn [state]
+                          [state (into {}
+                                       (filter (fn [[_ intent]]
+                                                 (or (= (:state-file intent) (:state-file ctx))
+                                                     (= (:state-dir intent) (:state-dir ctx))))
+                                               (:main-effects state)))]))]
+    (when (seq effects)
+      (scope-extension-error!
+       "Scope amendment needs all native effects settled"
+       {:effects (select-keys effects (keys effects))}))
+    (when (seq own-main-effects)
+      (scope-extension-error!
+       "Scope amendment needs its shared main effects settled"
+       {:main-effects (select-keys own-main-effects (keys own-main-effects))}))))
+
+(defn- validate-scope-extension! [ctx key task inspection]
+  (when-let [extension (:scope-extension inspection)]
+    (let [original-paths (vec (:paths task))
+          paths (vec (:paths extension))
+          original-error (:error task)
+          details (:details original-error)
+          task-message (or (:message original-error) "")
+          current (current-dirty-snapshot ctx task)
+          changed (set (:paths current))
+          expected-unowned (set/difference changed (set original-paths))
+          extension-files (set paths)]
+      (when-not (map? extension)
+        (scope-extension-error! "Scope amendment must be a map" {:value extension}))
+      (when-not (= key (:task extension))
+        (scope-extension-error! "Scope amendment is bound to a different task"
+                                {:expected key :actual (:task extension)}))
+      (when-not (and (= original-paths (vec (:original-paths extension)))
+                     (= (:base task) (:base extension))
+                     (= (:candidate task) (:candidate extension))
+                     (= (:tree task) (:tree extension))
+                     (= (:worktree task) (:worktree extension))
+                     (= original-error (:original-error extension)))
+        (scope-extension-error! "Scope amendment does not bind the retained task"
+                                {:task (select-keys task [:paths :base :candidate :tree :worktree :error])
+                                 :extension (select-keys extension [:original-paths :base :candidate :tree :worktree :original-error])}))
+      (when-not (and (= :attention (:status task))
+                     (= "Worker changed an unowned path" task-message)
+                     (true? (or (:writer-ended? original-error) (:writer-ended? details)))
+                     (not (true? (:restricted original-error)))
+                     (not (true? (:restricted details))))
+        (scope-extension-error! "Scope amendment requires a known-ended unrestricted unowned-path Attention"
+                                {:status (:status task) :error original-error}))
+      (when (or (empty? paths) (not= (count paths) (count (set paths))))
+        (scope-extension-error! "Scope amendment paths must be a nonempty unique file list"
+                                {:paths paths}))
+      (doseq [path paths]
+        (try (rt/safe-path! path)
+             (catch Exception e (scope-extension-error! "Scope amendment path is unsafe"
+                                                        {:path path :cause (.getMessage e)})))
+        (when (some #(or (= path %) (str/starts-with? path (str % "/"))) original-paths)
+          (scope-extension-error! "Scope amendment may not reclassify an already-owned path"
+                                  {:path path :original-paths original-paths}))
+        (when-not (contains? expected-unowned path)
+          (scope-extension-error! "Scope amendment must name only observed unowned files"
+                                  {:path path :observed (vec (:paths current)) :original-paths original-paths}))
+        (when-not (.isFile (io/file (:worktree task) path))
+          (scope-extension-error! "Scope amendment paths must be existing files"
+                                  {:path path :worktree (:worktree task)})))
+      (when-not (= expected-unowned extension-files)
+        (scope-extension-error! "Scope amendment must account for every observed unowned file"
+                                {:expected (vec (sort expected-unowned)) :actual paths}))
+      (when-not (= (:dirty-diff-sha256 current) (:dirty-diff-sha256 extension))
+        (scope-extension-error! "Scope amendment dirty diff changed after inspection"
+                                {:expected (:dirty-diff-sha256 extension)
+                                 :actual (:dirty-diff-sha256 current)}))
+      (when-not (= (:file-sha256 current) (:file-sha256 extension))
+        (scope-extension-error! "Scope amendment file bytes changed after inspection"
+                                {:expected (:file-sha256 extension) :actual (:file-sha256 current)}))
+      (scope-authorization! extension paths)
+      (assert-no-unsettled-scope-effects! ctx)
+      {:paths (vec (concat original-paths paths))
+       :extension extension
+       :snapshot current})))
+
+(defn- amend-scope! [ctx key task inspection scope]
+  (let [lease (or (rt/claim-paths! ctx key (:paths scope) :checking)
+                  (scope-extension-error!
+                   "Scope amendment paths are busy; preserve the finding and wait for the current owner"
+                   {:key key :paths (:paths scope)}))]
+    (try
+      (let [history {:kind :inspected-scope-extension
+                     :original (select-keys task [:paths :description :base :candidate :tree :worktree
+                                                  :error :checks :review :head-workflows])
+                     :inspection inspection
+                     :observed (:snapshot scope)
+                     :amended-paths (:paths scope)}]
+        (rt/update! ctx update-in [:tasks key]
+                    (fn [current]
+                      (-> current
+                          (update :history (fnil conj []) history)
+                          (update :scope-inspection-history (fnil conj []) history)
+                          (assoc :paths (:paths scope)
+                                 :description (assoc (:description current) :paths (:paths scope))
+                                 :checks nil :review nil :head-workflows nil
+                                 :feedback inspection :status :repair)))))
+      (catch Exception e
+        (throw e))
+      (finally
+        (rt/release-paths! ctx lease)))
+    true))
 
 (defn probe! [ctx argv]
   (let [result (rt/command ctx (get-in ctx [:config :repo-dir]) argv)]
@@ -135,7 +282,8 @@
         (rt/update! ctx #(-> % (update :inspections (fnil conj []) {:planning planning :completion (:completion %) :interruption interruption :inspection inspection})
                              (assoc :round (max (or (:round %) 0) (or (:round planning) 0)) :planning nil)
                              (dissoc :completion :interruption))))
-      (let [task (workflow/task ctx key)]
+      (let [task (workflow/task ctx key)
+            scope (validate-scope-extension! ctx key task inspection)]
         (when-not (= :attention (:status task)) (rt/fail! "Only Attention work needs an inspected retry" {}))
         (when (get-in task [:error :details :restricted])
           (rt/fail! "Restricted work cannot be retried" {:restricted true}))
@@ -174,10 +322,13 @@
               (when (get-in @(:state ctx) [:effects next-id])
                 (rt/fail! "Inspected successor already has a retained effect; inspect that outcome" {:effect next-id :main-effect true}))
               (workflow/task! ctx key :merge-recovery (assoc (select-keys task [:base :candidate :tree]) :id next-id)))))
-        (rt/update! ctx update-in [:tasks key :history] (fnil conj []) {:error (:error task) :inspection inspection})
-        (workflow/task! ctx key :feedback inspection
-                        :status (if (or (:merged task) (:merge-recovery (workflow/task ctx key))
-                                        (#{:ci :merge} (:resume-status task))) :ci :repair))))))
+        (if scope
+          (amend-scope! ctx key task inspection scope)
+          (do
+            (rt/update! ctx update-in [:tasks key :history] (fnil conj []) {:error (:error task) :inspection inspection})
+            (workflow/task! ctx key :feedback inspection
+                            :status (if (or (:merged task) (:merge-recovery (workflow/task ctx key))
+                                            (#{:ci :merge} (:resume-status task))) :ci :repair))))))))
 
 (defn dispatch! [ctx command args]
   (case command
