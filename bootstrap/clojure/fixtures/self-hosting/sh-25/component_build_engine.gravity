@@ -93,61 +93,29 @@
             current (first entry)
             depth (second entry)
             next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (seq? current)
-              {:status :rejected :reason :carrier-sequence-unsupported}
-              (if (sh25-aggregate? current)
-                (let [width (sh25-aggregate-width current)]
-                  (if (> width 65536)
-                    {:status :rejected :reason :carrier-width-bound}
-                    (let [components
-                          (sh25-aggregate-components current)]
-                      (if (> (+ (- (count frontier) cursor)
-                                (count components))
-                             1048576)
-                        {:status :rejected
-                         :reason :carrier-node-bound}
-                        (let [next-frontier
-                              (loop [index 0
-                                     result frontier]
-                                (if (= index (count components))
-                                  result
-                                  (recur
-                                   (+ index 1)
-                                   (conj
-                                    result
-                                    [(get components index)
-                                     (+ depth 1)]))))]
-                          (recur
-                           next-frontier
-                           (+ cursor 1)
-                           next-nodes
-                           scalar-units
-                           (sh25-max observed-depth depth)
-                           (sh25-max observed-width width)))))))
-                (let [current-scalar-units
-                      (sh25-scalar-units current)]
-                  (if (< current-scalar-units 0)
-                    {:status :rejected
-                     :reason :carrier-scalar-type}
-                    (if (> current-scalar-units 1048576)
-                      {:status :rejected
-                       :reason :carrier-scalar-bound}
-                      (let [next-scalar-units
-                            (+ scalar-units current-scalar-units)]
-                        (if (> next-scalar-units 16777216)
-                          {:status :rejected
-                           :reason :carrier-scalar-bound}
-                          (recur
-                           frontier
-                           (+ cursor 1)
-                           next-nodes
-                           next-scalar-units
-                           (sh25-max observed-depth depth)
-                           observed-width))))))))))))))
+        (if (seq? current)
+          {:status :rejected :reason :carrier-sequence-unsupported}
+          (if (sh25-aggregate? current)
+            (let [width (sh25-aggregate-width current)
+                  components (sh25-aggregate-components current)
+                  next-frontier
+                  (loop [index 0 result frontier]
+                    (if (= index (count components))
+                      result
+                      (recur
+                       (+ index 1)
+                       (conj result
+                             [(get components index) (+ depth 1)]))))]
+              (recur next-frontier (+ cursor 1) next-nodes scalar-units
+                     (sh25-max observed-depth depth)
+                     (sh25-max observed-width width)))
+            (let [current-scalar-units (sh25-scalar-units current)]
+              (if (< current-scalar-units 0)
+                {:status :rejected :reason :carrier-scalar-type}
+                (recur frontier (+ cursor 1) next-nodes
+                       (+ scalar-units current-scalar-units)
+                       (sh25-max observed-depth depth)
+                       observed-width)))))))))
 
 (defn sh25-exact-keys? [value expected]
   (if (map? value)
@@ -557,10 +525,6 @@
    :maximum-outputs-per-component 8
    :maximum-diagnostics-per-component 16
    :maximum-source-bytes 16777216
-   :maximum-carrier-nodes 1048576
-   :maximum-carrier-depth 128
-   :maximum-carrier-width 65536
-   :maximum-carrier-scalar-units 16777216
    :profile :meta
    :effects #{}
    :capabilities #{}

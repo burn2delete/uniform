@@ -339,14 +339,14 @@
                    "sha256:paired-prerequisite-change")
          (assoc-in request [:lock :unexpected] true)]]
     (is (= :rejected (:status (build deep-request))))
-    (is (= :carrier-depth-bound
-           (get-in (build deep-request)
-                   [:diagnostics 0 :facts :reason])))
+    (is (= :accepted
+           (:status (invoke engine-plan 'sh25-carrier-preflight
+                            [deep-request]))))
     (is (= :rejected
            (:status
             (invoke engine-plan 'sh25-verify-component-build
                     [request deep-candidate]))))
-    (is (= :carrier-depth-bound
+    (is (= :component-build-result-altered
            (get-in
             (invoke engine-plan 'sh25-verify-component-build
                     [request deep-candidate])
@@ -358,6 +358,31 @@
             (invoke
              engine-plan 'sh25-verify-component-build
              [request (assoc result :unexpected true)]))))))
+
+(deftest carrier-preflight-accepts-finite-carriers-beyond-former-quotas
+  (let [large-string (apply str (repeat 262145 "x"))]
+    (doseq [[label carrier]
+            [[:depth (nested-vector 140 nil)]
+             [:width (vec (repeat 65537 nil))]
+             [:scalar large-string]
+             [:total-scalar-units (vec (repeat 17 large-string))]
+             [:scalar-domain [nil true false \a :component 'component
+                              Long/MIN_VALUE Long/MAX_VALUE]]]]
+      (testing (name label)
+        (is (= :accepted
+               (:status (invoke engine-plan 'sh25-carrier-preflight
+                                [carrier]))))))))
+
+(deftest carrier-preflight-rejects-late-unsupported-values
+  (doseq [carrier [(nested-vector 140 1.5)
+                   (conj (vec (repeat 65537 nil)) 1.5)
+                   (conj
+                    (vec (repeat 17 (apply str (repeat 262145 "x"))))
+                    1.5)
+                   [(dec (bigint Long/MIN_VALUE))]
+                   [(inc (bigint Long/MAX_VALUE))]]]
+    (is (= {:status :rejected :reason :carrier-scalar-type}
+           (invoke engine-plan 'sh25-carrier-preflight [carrier])))))
 
 (deftest sh25-carrier-preflight-does-not-realize-unbounded-sequences
   (let [request
@@ -371,17 +396,12 @@
          (lazy-seq
           (throw
            (ex-info "SH-25 must not realize this sequence"
-                    {:id "SH25-LAZY-REALIZATION"}))))
-        oversized-request
-        (assoc request :carrier-probe
-               (apply str (repeat 262145 "x")))]
+                    {:id "SH25-LAZY-REALIZATION"}))))]
     (doseq [[label carrier expected-reason]
             [[:infinite infinite-request
               :carrier-sequence-unsupported]
              [:throwing throwing-request
-              :carrier-sequence-unsupported]
-             [:oversized-scalar oversized-request
-              :carrier-scalar-bound]]]
+              :carrier-sequence-unsupported]]]
       (testing (str label " build boundary")
         (let [outcome (bounded-result #(build carrier))]
           (is (not= ::timeout outcome))

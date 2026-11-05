@@ -39,20 +39,21 @@ against the Gravity-owned source revision catalog.
 - at most 16 dependencies per component;
 - at most 8 output kinds per component;
 - at most 16 diagnostic identifiers per component; and
-- at most 16 MiB per declared source;
-- at most 1,048,576 carrier nodes;
-- at most 128 carrier levels;
-- at most 65,536 children in one carrier aggregate; and
-- at most 1,048,576 conservative UTF-8 storage units for one scalar; and
-- at most 16,777,216 scalar units.
+- at most 16 MiB per declared source.
 
 Every request, candidate, and verification carrier is preflighted iteratively
 before schema recursion, projection, or complete-result equality. Arbitrary
 sequence carriers are rejected before `count`, `first`, `rest`, or realization;
-maps, vectors, and sets are traversed through a bounded indexed frontier.
-Strings are charged directly from their existing character count at the
-maximum four-byte UTF-8 width, so the preflight does not construct a duplicate
-string or byte vector.
+maps, vectors, and sets are traversed through an indexed frontier. Carrier
+node, depth, width and scalar-unit ceilings are removed. Unsupported scalars
+and integers outside the signed 64-bit domain remain rejected.
+
+This implementation checkpoint retains the descriptive census fields consumed
+by SH-26, including scalar-unit estimates. Removing that accounting and its
+consumer plumbing, separating scalar-domain validation from estimation, and
+removing the remaining population ceilings are still pending. Carrier-kernel
+tests exercise finite inputs beyond the former limits and late invalid entries;
+they do not establish whole-build or authenticated composition evidence.
 
 ## Honest Boundary
 
