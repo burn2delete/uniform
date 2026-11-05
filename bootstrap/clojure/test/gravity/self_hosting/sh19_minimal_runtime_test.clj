@@ -409,9 +409,11 @@
         deep-value (reduce (fn [value _] {:next value}) :leaf (range 25))
         wide-map (into {} (map #(vector (keyword (str "field-" %)) %)
                                (range 65)))
+        shared {:leaf [:shared :acyclic]}
         node-heavy (vec (repeat 32 {:nodes (vec (repeat 200 {:leaf :scalar}))}))
         candidates
         [(assoc base :extra deep-value)
+         (assoc base :extra [shared shared {:again shared}])
          (assoc base :extra (vec (range 513)))
          (assoc base :extra (subvec (into [(Object.)] (range 513)) 1))
          (assoc base :extra (set (range 513)))
@@ -441,11 +443,14 @@
         valid-result (handle base)
         physical (object-array [:next nil])
         cyclic (clojure.lang.PersistentArrayMap. physical)
+        duplicate-physical (object-array [:k :safe :k nil])
+        duplicate-cyclic (clojure.lang.PersistentArrayMap. duplicate-physical)
         forced (atom 0)
         delayed (lazy-seq (swap! forced inc) (repeat :never-force))
         wide-map (into {} (map #(vector (keyword (str "field-" %)) %)
                                (range 65)))]
     (aset physical 1 cyclic)
+    (aset duplicate-physical 3 duplicate-cyclic)
     (doseq [value [(conj (vec (repeat 513 :scalar)) (Object.))
                    (assoc wide-map "not-a-keyword" :invalid-key)
                    (reduce (fn [value _] {:next value}) '(unsupported-list) (range 25))
@@ -453,7 +458,12 @@
                    (clojure.lang.APersistentVector$SubVector. nil [1] 0 2)
                    #{(Object.)}
                    delayed
-                   cyclic]]
+                   cyclic
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k :safe]))
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k (Object.)]))
+                   duplicate-cyclic]]
       (let [candidate (assoc base :extra value)
             result (handle candidate)
             request-verification
@@ -464,6 +474,8 @@
           (is (= :rejected (:status rejection)))
           (is (= "R1-MANIFEST" (get-in rejection [:diagnostics 0 :rule]))))
         (is (= :malformed-runtime-request (get-in result [:diagnostics 0 :reason])))
+        (is (= :malformed-runtime-request
+               (get-in request-verification [:diagnostics 0 :reason])))
         (is (= :malformed-carrier (get-in result [:identity-input :request-omitted])))
         (is (= :malformed-runtime-result
                (get-in result-verification [:diagnostics 0 :reason])))))
@@ -477,7 +489,9 @@
                  (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))
         foreign-map (sorted-map-by (fn [a b] (swap! calls inc) (compare a b)) :field 1)]
     (reset! calls 0)
-    (doseq [value [opaque foreign-map]]
+    (doseq [value [opaque foreign-map
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k :safe opaque :invalid-key]))]]
       (let [result (handle (assoc base :extra value))]
         (is (= :rejected (:status result)))
         (is (= :malformed-runtime-request (get-in result [:diagnostics 0 :reason])))))

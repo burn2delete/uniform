@@ -177,8 +177,12 @@
                     (if (>= (get header 2) 0)
                       (let [map-keys (vec (keys value))]
                         (if (sh19-keyword-sequence? map-keys)
-                          (recur (sh19-enqueue-map-values
-                                  value map-keys next-ancestors remaining))
+                          ; Lookup must not hide duplicate native map entries.
+                          ; Only validated keyword keys may be hashed here.
+                          (if (= (count map-keys) (count (set map-keys)))
+                            (recur (sh19-enqueue-map-values
+                                    value map-keys next-ancestors remaining))
+                            false)
                           false))
                       false)
                     false))))))))))
