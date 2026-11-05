@@ -567,7 +567,11 @@
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
    (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
-   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")])
+   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")
+   ["tooling-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.tooling.pipeline-test")]
+   ["ownership-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)

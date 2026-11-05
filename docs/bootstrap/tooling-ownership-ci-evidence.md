@@ -23,7 +23,7 @@ Append two complete-namespace commands to the existing contracts group:
 tooling-native-validation and ownership-native-validation. Each uses the
 existing command constructor, 2g heap, 180-second host child watchdog and
 development test runner with progress. Preserve every prior command, workflow,
-matrix mode and affected-path decision. Do not change compiler source, tests,
+matrix mode and affected-path decision. Do not change compiler or pipeline tests,
 runtime/dependency versions, dependency repositories, authorization or pins.
 
 Selection controls must prove both exact namespace commands select every
@@ -55,3 +55,17 @@ ownership/Core admission, capability grant, source authentication, package or
 release operation, migration, self-hosting or seed retirement is established.
 There is no controller/service/Main grant. The scope record itself earns no
 implementation or integration credit.
+
+## Implemented selection and initial local checks
+
+The two commands are appended after the four existing contract scripts with
+complete namespace selection and no test subset selectors. The new control
+checks exact command labels/order, heap/watchdog/runner arguments, every
+current source deftest, and omission/substitution negatives. Existing CI
+harness controls pass 51 tests / 545 assertions; format and direct CI lint
+pass. The language-boundary test passes 6 tests / 11 assertions. The 13 local
+harness output files are retained separately from the source checkout.
+
+The real changed contracts group, exact-source contextual lint, independent
+review and hosted CI/artifact acceptance remain pending. This candidate does
+not retry PR1206's failed dependency request or transfer its other job results.
