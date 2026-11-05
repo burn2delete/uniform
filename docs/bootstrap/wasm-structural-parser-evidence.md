@@ -89,7 +89,54 @@ fc5d583a0d1020ee1b79273fcd77b2c44ec687c7f6067098935bc977aab50c4d.
 
 The constant and exactly three size predicates are now removed. Minimum
 header/octet checks remain; the integrity function hashes every valid byte
-vector, including oversized vectors. No other source binding, authentication,+hash or envelope rule changes. Before extraction, the whole Wasm namespace
+vector, including oversized vectors. No other source binding, authentication,
+hash or envelope rule changes. Before extraction, the whole Wasm namespace
 passes 8 tests / 185 assertions, including genuine Gravity-emitted small
 modules, malformed-module refusals and the 67417-byte module's complete
 relative report and operation map. No private B4 or Node route is exercised.
+
+The corrected clean baseline is
+0f8a2e66e845ceb3dcde41f858ed543d644c024b, tree
+b63fff2745c8330b469e174bcbea617d5e32793b. Its complete 27-record capture
+contains three reports and 24 refusals; SHA256:
+cc4159c4c22fc4a0ae902b7c7c9e18198ac4620f42a690098659b5efc070dd30.
+Only the intentional large-module outcome changes from the original quota.
+
+## Implemented extraction and initial verification
+
+The four bodies now live in gravity.backend.wasm, with explicit per-use
+function Vars and a late comparison-catalog Var. Bootstrap facades retain
+their old arities. The stage exposes 23 public APIs, cold-loads with no aliases
+and does not load Bootstrap. Its new reports remain native relative data.
+
+The immutable corrected-baseline bodies and extracted bodies consume the same
+live inputs in the independent-algorithm control. All 27 complete raw and
+parsed outcomes match, including the large module; inputs remain unchanged.
+The paired record SHA256 is
+c8e50b68031b4d949fec151f7fd27c77c188b1ad61342fb5c82da815da4de8a1.
+Conservation recovers all four prior bodies and the entire prior Wasm stage,
+and preserves every other byte in the three parser components. One redundant
+nested let is merged with its outer bindings to satisfy lint; reconstruction
+restores its original scope and text. The constant and two private-envelope
+components differ only at the three declared quota clauses and definition.
+Their other hash/authentication/provenance code is unchanged; private routes
+remain unexecuted.
+
+The whole namespace passes 12 tests / 282 assertions. New controls cover
+genuine compiled Gravity byte modules, large emission, header/section/opcode/
+stack/initialization/result/byte-plan refusals, relative byte coordinates,
+input retention, recursive Var interposition, callable selection before
+argument lookup, late catalogs, returning failures and original exceptions.
+The initial new returning-failure assertion indexed a list as a map; that
+observation NONPASS is retained and corrected without changing production.
+The initial source helper compared freshly generated anonymous-fn symbols;
+its NONPASS is retained and corrected with exact single-form boundary checks.
+
+CI harness controls pass 52 tests / 552 assertions, format and direct lint
+pass, and language/ownership checks pass 48 tests / 1202 assertions. The
+complete Wasm namespace is appended to the existing contracts group with
+2g/180 seconds, all prior commands retained, and exact whole-namespace plus
+omission/substitution controls. Contextual lint, final document validation,
+independent implementation review, own hosted CI/artifact acceptance and
+current-Main integration remain pending. PR1210's Macro watchdog NONPASS is
+separate retained history; it grants no acceptance to this increment.

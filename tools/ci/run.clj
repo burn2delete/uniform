@@ -571,7 +571,9 @@
    ["tooling-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.tooling.pipeline-test")]
    ["ownership-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]
+   ["wasm-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.wasm.pipeline-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
