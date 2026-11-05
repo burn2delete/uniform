@@ -108,26 +108,45 @@
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest unsettled-native-effects-and-main-fences-block-scope-amendment
-  (doseq [block [(fn [ctx]
-                   (rt/update! ctx assoc-in [:effects "pending"] {:status :pending}))
-                 (fn [ctx]
-                   (rt/coordinate! ctx
-                                   (fn [state]
-                                     [(assoc-in state [:main-effects "merge/scope"]
-                                                {:state-file (:state-file ctx) :state-dir (:state-dir ctx)})
-                                      nil])))]]
-    (let [{:keys [ctx key task] :as case} (case-context)
-          unowned (io/file (:repo case) "unowned.edn")
-          inspection-file (io/file (:root ctx) "inspection.edn")]
-      (try
-        (spit unowned "{:observed true}\n")
-        (rt/write-edn! inspection-file (inspection ctx task key))
-        (block ctx)
-        (let [before @(:state ctx)]
-          (is (thrown? Exception (run-retry! case inspection-file)))
-          (is (= before @(:state ctx)))
-          (is (empty? (writers ctx))))
-        (finally (fixture/delete-tree! (:root ctx)))))))
+  (let [effect-blocks (map (fn [status]
+                             (fn [ctx]
+                               (rt/update! ctx assoc-in [:effects (name status)] {:status status})))
+                           [:pending :uncertain :restricted])
+        main-block (fn [ctx]
+                     (rt/coordinate! ctx
+                                     (fn [state]
+                                       [(assoc-in state [:main-effects "merge/scope"]
+                                                  {:state-file (:state-file ctx) :state-dir (:state-dir ctx)})
+                                        nil])))]
+    (doseq [block (concat effect-blocks [main-block])]
+      (let [{:keys [ctx key task] :as case} (case-context)
+            unowned (io/file (:repo case) "unowned.edn")
+            inspection-file (io/file (:root ctx) "inspection.edn")]
+        (try
+          (spit unowned "{:observed true}\n")
+          (rt/write-edn! inspection-file (inspection ctx task key))
+          (block ctx)
+          (let [before @(:state ctx)]
+            (is (thrown? Exception (run-retry! case inspection-file)))
+            (is (= before @(:state ctx)))
+            (is (empty? (writers ctx))))
+          (finally (fixture/delete-tree! (:root ctx))))))))
+
+(deftest directory-or-unobserved-scope-is-rejected-without-state-change
+  (let [{:keys [ctx key task] :as case} (case-context)
+        unowned (io/file (:repo case) "unowned.edn")
+        inspection-file (io/file (:root ctx) "inspection.edn")]
+    (try
+      (spit unowned "{:observed true}\n")
+      (let [record (inspection ctx task key)
+            before @(:state ctx)
+            invalid (assoc-in record [:scope-extension :paths] ["."])]
+        (rt/write-edn! inspection-file invalid)
+        (is (thrown-with-msg? Exception #"observed unowned files"
+                               (run-retry! case inspection-file)))
+        (is (= before @(:state ctx)))
+        (is (empty? (writers ctx))))
+      (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest busy-amended-paths-fail-closed-and-retain-the-original-owner
   (let [{:keys [ctx key task] :as case} (case-context)

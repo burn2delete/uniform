@@ -21,6 +21,8 @@
 
 (defn- current-dirty-snapshot [ctx task]
   (let [worktree (:worktree task)
+        candidate (rt/git ctx worktree "rev-parse" "HEAD")
+        tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")
         changed (shared-workflow/changed-paths ctx worktree)
         diff (rt/git ctx worktree "diff" "--binary" "--no-ext-diff" "--no-renames" "HEAD")
         untracked (rt/git ctx worktree "ls-files" "--others" "--exclude-standard" "-z")
@@ -29,7 +31,9 @@
                           (map (fn [path]
                                  [path (rt/digest (slurp (io/file worktree path)))])
                                changed))]
-    {:paths (vec changed)
+    {:candidate candidate
+     :tree tree
+     :paths (vec changed)
      :dirty-diff-sha256 (rt/digest content)
      :file-sha256 file-sha256}))
 
@@ -91,6 +95,11 @@
         (scope-extension-error! "Scope amendment does not bind the retained task"
                                 {:task (select-keys task [:paths :base :candidate :tree :worktree :error])
                                  :extension (select-keys extension [:original-paths :base :candidate :tree :worktree :original-error])}))
+      (when-not (and (= (:candidate task) (:candidate current))
+                     (= (:tree task) (:tree current)))
+        (scope-extension-error! "Scope amendment candidate changed after the retained failure"
+                                {:expected (select-keys task [:candidate :tree])
+                                 :actual (select-keys current [:candidate :tree])}))
       (when-not (and (= :attention (:status task))
                      (= "Worker changed an unowned path" task-message)
                      (true? (or (:writer-ended? original-error) (:writer-ended? details)))
