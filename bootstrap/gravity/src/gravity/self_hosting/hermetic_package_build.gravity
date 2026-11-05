@@ -15,12 +15,6 @@
 (defn sh23-build-policy []
   {:artifact :gravity/sh23-hermetic-build-policy
    :schema-version 1
-   :maximum-packages 32
-   :maximum-components 32
-   :maximum-component-dependencies 128
-   :maximum-source-roots 16
-   :maximum-environment-variables 16
-   :maximum-build-authorities 16
    :allowed-profiles #{:meta}
    :allowed-targets #{:portable-mir}
    :allowed-effects #{:build/read-file :build/write-artifact}
@@ -115,12 +109,10 @@
         (sh23-unique-vector-from?
          values (+ index 1) (conj seen value))))))
 
-(defn sh23-keyword-vector? [values maximum allow-empty]
+(defn sh23-keyword-vector? [values allow-empty]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (if (if allow-empty true (> (count values) 0))
-        (sh23-keyword-vector-from? values 0 #{})
-        false)
+    (if (if allow-empty true (> (count values) 0))
+      (sh23-keyword-vector-from? values 0 #{})
       false)
     false))
 
@@ -146,12 +138,10 @@
            values (+ index 1) (conj seen value)))
         false))))
 
-(defn sh23-string-vector? [values maximum allow-empty]
+(defn sh23-string-vector? [values allow-empty]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (if (if allow-empty true (> (count values) 0))
-        (sh23-string-vector-from? values 0 #{})
-        false)
+    (if (if allow-empty true (> (count values) 0))
+      (sh23-string-vector-from? values 0 #{})
       false)
     false))
 
@@ -161,12 +151,6 @@
     (if (contains? allowed (first values))
       (sh23-set-subset? (rest values) allowed)
       false)))
-
-(defn sh23-bounded-authority-set? [values]
-  (if (set? values)
-    (<= (count values)
-        (get (sh23-build-policy) :maximum-build-authorities))
-    false))
 
 (defn sh23-required-capabilities [effects result]
   (if (= 0 (count effects))
@@ -189,19 +173,18 @@
           (if (sh23-nonempty-string? (get project :edition))
             (if (sh23-string-vector?
                  (get project :source-roots)
-                 (get (sh23-build-policy) :maximum-source-roots)
                  false)
               (if (= :meta (get project :profile))
                 (if (sh23-member?
                      (get (sh23-build-policy) :allowed-targets)
                      (get project :target))
                   (if (sh23-keyword-vector?
-                       (get project :entrypoints) 32 false)
+                       (get project :entrypoints) false)
                     (if (sh23-keyword-vector?
-                         (get project :dependency-roots) 32 true)
-                      (if (sh23-bounded-authority-set?
+                         (get project :dependency-roots) true)
+                      (if (set?
                            (get project :effects))
-                        (if (sh23-bounded-authority-set?
+                        (if (set?
                              (get project :capabilities))
                           (if (= (get project :effects)
                                  (get (sh23-build-policy)
@@ -229,8 +212,8 @@
                             ["PKG1005"
                              :exact-project-build-effects-required])
                           ["PKG1005"
-                           :bounded-capability-set-required])
-                        ["PKG1005" :bounded-effect-set-required])
+                           :capability-set-required])
+                        ["PKG1005" :effect-set-required])
                       ["PKG1004" :dependency-root-vector-required])
                     ["PKG1001" :entrypoint-vector-required])
                   ["PKG1002" :unknown-project-target])
@@ -251,12 +234,12 @@
             (if (sh23-content-id? (get package :provenance-id))
               (if (= :verified (get package :provenance-status))
                 (if (= false (get package :revoked))
-                  (if (sh23-bounded-authority-set?
+                  (if (set?
                        (get package :effects))
-                    (if (sh23-bounded-authority-set?
+                    (if (set?
                          (get package :capabilities))
                       (if (sh23-keyword-vector?
-                           (get package :targets) 1 false)
+                           (get package :targets) false)
                         nil
                         ["PKG5003" :locked-target-vector-required])
                       ["PKG5002" :locked-capability-set-invalid])
@@ -290,11 +273,8 @@
         (if (= true (get lockfile :complete))
           (if (= true (get lockfile :offline))
             (if (vector? (get lockfile :packages))
-              (if (<= (count (get lockfile :packages))
-                      (get (sh23-build-policy) :maximum-packages))
-                (sh23-package-records-error
-                 (get lockfile :packages) 0 #{})
-                ["PKG5004" :locked-package-bound-exceeded])
+              (sh23-package-records-error
+               (get lockfile :packages) 0 #{})
               ["PKG5004" :locked-package-vector-required])
             ["PKG7003" :offline-lockfile-required])
           ["PKG5004" :lockfile-incomplete])
@@ -350,16 +330,16 @@
   (let [effects (get request :effects)
         capabilities (get request :capabilities)
         policy (sh23-build-policy)]
-    (if (sh23-bounded-authority-set? effects)
-      (if (sh23-bounded-authority-set? capabilities)
+    (if (set? effects)
+      (if (set? capabilities)
         (if (= effects (get policy :allowed-effects))
           (if (= (sh23-required-capabilities effects #{})
                  capabilities)
             nil
             ["PKG2001" :build-effect-capability-mismatch])
           ["PKG2001" :undeclared-or-unsupported-build-effect])
-        ["PKG6004" :bounded-build-capability-set-required])
-      ["PKG2001" :bounded-build-effect-set-required])))
+        ["PKG6004" :build-capability-set-required])
+      ["PKG2001" :build-effect-set-required])))
 
 (defn sh23-request-authority-error [request]
   (let [error (sh23-authority-error request)
@@ -383,8 +363,6 @@
               (if (integer? (get environment :random-seed))
                 (if (sh23-keyword-vector?
                      (get environment :allowed-environment)
-                     (get (sh23-build-policy)
-                          :maximum-environment-variables)
                      true)
                   nil
                   ["PKG7005" :environment-allowlist-invalid])
@@ -460,35 +438,31 @@
              (get component :source-content-id))
           (if (keyword? (get component :compiler-module-id))
             (if (vector? (get component :dependencies))
-              (if (<= (count (get component :dependencies))
-                      (get (sh23-build-policy)
-                           :maximum-component-dependencies))
-                (if (sh23-unique-vector-from?
-                     (get component :dependencies) 0 #{})
-                  (if (sh23-keyword-vector?
-                       (get component :stdlib-dependencies) 32 true)
-                    (if (keyword? (get component :output-id))
-                      (if (sh23-sha256-digest?
-                           (get component :output-content-hash))
-                        (if (integer?
-                             (get component :topological-ordinal))
-                          (if (> (get component
-                                      :topological-ordinal) 0)
-                            (if (sh23-nonempty-string?
-                                 (get component :actual-source-path))
-                              nil
-                              ["PKG7005"
-                               :actual-source-path-required])
-                            ["PKG2004"
-                             :component-ordinal-must-be-positive])
+              (if (sh23-unique-vector-from?
+                   (get component :dependencies) 0 #{})
+                (if (sh23-keyword-vector?
+                     (get component :stdlib-dependencies) true)
+                  (if (keyword? (get component :output-id))
+                    (if (sh23-sha256-digest?
+                         (get component :output-content-hash))
+                      (if (integer?
+                           (get component :topological-ordinal))
+                        (if (> (get component
+                                    :topological-ordinal) 0)
+                          (if (sh23-nonempty-string?
+                               (get component :actual-source-path))
+                            nil
+                            ["PKG7005"
+                             :actual-source-path-required])
                           ["PKG2004"
-                           :component-ordinal-must-be-integer])
-                        ["PKG3003"
-                         :component-output-content-hash-required])
-                      ["PKG3003" :component-output-identity-required])
-                    ["PKG3003" :stdlib-dependency-vector-invalid])
-                  ["PKG2004" :duplicate-component-dependency])
-                ["PKG2004" :component-dependency-bound-exceeded])
+                           :component-ordinal-must-be-positive])
+                        ["PKG2004"
+                         :component-ordinal-must-be-integer])
+                      ["PKG3003"
+                       :component-output-content-hash-required])
+                    ["PKG3003" :component-output-identity-required])
+                  ["PKG3003" :stdlib-dependency-vector-invalid])
+                ["PKG2004" :duplicate-component-dependency])
               ["PKG2004" :component-dependency-vector-required])
             ["BOOT8002" :compiler-module-identity-required])
           ["PKG3003" :component-source-identity-required])
@@ -642,35 +616,28 @@
                                               (if (= nil library-error)
                                                 (if (vector? components)
                                                   (if (> (count components) 0)
-                                                    (if (<=
-                                                         (count components)
-                                                         (get
-                                                          (sh23-build-policy)
-                                                          :maximum-components))
-                                                      (if (vector? order)
-                                                        (if (=
-                                                             (count order)
-                                                             (count components))
-                                                          (let [records-error
-                                                                (sh23-component-records-error
-                                                                 components 0 #{})]
-                                                            (if (= nil records-error)
-                                                              (let [component-lock-error
-                                                                    (sh23-component-package-dependencies-error
-                                                                     components
-                                                                     (get lockfile :packages)
-                                                                     0 0)]
-                                                                (if (= nil component-lock-error)
-                                                                  (sh23-components-error
-                                                                   components order 0 #{})
-                                                                  component-lock-error))
-                                                              records-error))
-                                                          ["PKG2004"
-                                                           :component-order-size-mismatch])
+                                                    (if (vector? order)
+                                                      (if (=
+                                                           (count order)
+                                                           (count components))
+                                                        (let [records-error
+                                                              (sh23-component-records-error
+                                                               components 0 #{})]
+                                                          (if (= nil records-error)
+                                                            (let [component-lock-error
+                                                                  (sh23-component-package-dependencies-error
+                                                                   components
+                                                                   (get lockfile :packages)
+                                                                   0 0)]
+                                                              (if (= nil component-lock-error)
+                                                                (sh23-components-error
+                                                                 components order 0 #{})
+                                                                component-lock-error))
+                                                            records-error))
                                                         ["PKG2004"
-                                                         :component-order-vector-required])
+                                                         :component-order-size-mismatch])
                                                       ["PKG2004"
-                                                       :component-bound-exceeded])
+                                                       :component-order-vector-required])
                                                     ["PKG2004"
                                                      :build-component-required])
                                                   ["PKG2004"
