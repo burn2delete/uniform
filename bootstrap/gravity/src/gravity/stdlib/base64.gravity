@@ -1,16 +1,19 @@
 (ns gravity.stdlib.base64
   (:profile :meta)
   (:target :jvm)
-  (:exports [base64-encode-group])
+  (:exports [base64-encode base64-encode-group])
   (:effects #{:memory/allocate})
   (:capabilities #{})
   (:safety :safe))
 
-; Internal, experimental SH-22 codec kernel (STD1/STD4/STD10).
-; Encode one terminal group of zero to three unsigned octets. The group
-; extent is the Base64 radix boundary, not an input work allowance.
-; Arbitrary-length traversal and production cache adoption remain separate.
-; Result Strings and structured errors allocate; there are no IO effects.
+; Internal SH-22 codec increment (STD1/STD4/STD10/STD20), meta/JVM only.
+; Encode a native octet Vector as standard padded Base64, without whitespace.
+; Every element must be an exact integer in 0..255; no coercion or input quota.
+; Result Strings and structured errors allocate; there are no IO effects or
+; capabilities. Validation precedes encoding and never renders rejected data.
+; Native carrier inspection and primitive execution remain JVM-hosted.
+; Production cache adoption and authoritative migration remain separate.
+; The terminal-group entrypoint retains its zero-to-three-octet radix boundary.
 
 (defn base64-octet? [value]
   (let [kind (get (bootstrap-native-carrier-header value) 0)]
@@ -34,12 +37,12 @@
         "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"
         "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "+" "/"] index))
 
-(defn base64-group-text [octets extent]
+(defn base64-group-text [octets start extent]
   (if (= extent 0)
     ""
-    (let [a (get octets 0)
-          b (if (< 1 extent) (get octets 1) 0)
-          c (if (< 2 extent) (get octets 2) 0)
+    (let [a (get octets start)
+          b (if (< 1 extent) (get octets (+ start 1)) 0)
+          c (if (< 2 extent) (get octets (+ start 2)) 0)
           high (quot a 4)
           second-index (+ (* (- a (* high 4)) 16) (quot b 16))
           third-index (+ (* (- b (* (quot b 16) 16)) 4) (quot c 64))
@@ -55,7 +58,22 @@
       (let [extent (get header 2)]
         (if (<= extent 3)
           (if (base64-group-valid? octets extent)
-            {:status :accepted :value (base64-group-text octets extent)}
+            {:status :accepted :value (base64-group-text octets 0 extent)}
             {:status :rejected :rule "STD4001" :reason :expected-octet})
           {:status :rejected :rule "STD4001" :reason :invalid-group-extent}))
+      {:status :rejected :rule "STD4001" :reason :expected-native-octet-vector})))
+
+(defn base64-encode [octets]
+  (let [header (bootstrap-native-carrier-header octets)]
+    (if (= :vector (get header 0))
+      (let [extent (get header 2)]
+        (if (base64-group-valid? octets extent)
+          (loop [start 0 text ""]
+            (if (= start extent)
+              {:status :accepted :value text}
+              (let [remaining (- extent start)
+                    group-extent (if (< remaining 3) remaining 3)]
+                (recur (+ start group-extent)
+                       (str text (base64-group-text octets start group-extent))))))
+          {:status :rejected :rule "STD4001" :reason :expected-octet}))
       {:status :rejected :rule "STD4001" :reason :expected-native-octet-vector})))
