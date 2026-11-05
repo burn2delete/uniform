@@ -115,7 +115,49 @@ manifests, CI, legacy alias and dispatch bytes remain unchanged. An editor-added
 EOF newline in surrounding 00029 content was detected by conservation and
 restored before this check passed; the initial nonpass remains recorded.
 
-Genuine before/after parity, contextual lint, independent reviews, exact own
-hosted CI and current-base integration remain outstanding at this source
-implementation checkpoint. New tests stay in the existing native-report and
-pipeline namespaces already selected by Macro CI.
+New tests stay in the existing native-report and pipeline namespaces already
+selected by Macro CI. Completed genuine comparison and its observer limitation
+are recorded below; own hosted CI and current-base integration remain separate.
+
+## Genuine parity, observer limitation and independent review
+
+The initial cross-process full-record raw comparison is NONPASS: after reading
+the genuine capture as EDN, reprinting it changes ordering in an upstream C3
+public-function-hashes map. The first different character is 745498 (zero
+based), and both records are 31770844 bytes. The original raw assertion is not
+weakened, passed or reclassified; no genuine-after file was written by that
+failed check. Its source/input record remains the original SHA256 above.
+
+A separate control recompiles the exact old native tail and old identity
+adapter from immutable source 5e85510e2a9892af9c599fe68768b6598f726e57.
+On the same decoded genuine inputs, old and candidate results are byte/parsed
+identical across all 22 records, including inputs, sources, outputs and ids;
+there are zero parsed outcome/identity differences from the original capture.
+Decoded comparison SHA256 is
+4433f84b68130658b2eb184b1626bdf950a3c1895c25eecc5ef75b5d103e367c.
+This establishes decoded-input parity without erasing the failed raw observer.
+
+The final comparison uses genuine products from both actual source extensions
+in candidate 7d51734fca30bb8d4d0d01523558b349c037d505, tree
+7d74b59c05f114c2461ce335a0799e562ebbec55. The immutable old native tail
+and identity adapter and the extracted candidate consume identical live C3 and
+hosted macro objects, with no serialization between the two algorithms. All
+22 complete outcomes match as data and as metadata-aware raw output, and input
+immutability is checked: eight emitted artifacts and fourteen C4 refusals.
+Full input/source/old-result/candidate-result artifact SHA256 is
+e21b4882db7b95eae437c9d18e476e3fe52bb0cc8a5b818ea9ea942d4c8a4822.
+No legacy source constructor, admission/guard replacement or migration admission
+is used. The initial same-object helper's final delimiter error remains a
+technical nonpass; only its corrected terminal run earns comparison credit.
+
+Both independent semantic and adversarial reviews accept this bounded source
+and genuine evidence, retaining the earlier raw NONPASS and all unsupported
+boundaries. Complete 54-path contextual lint against captured Main
+594f7ca139bbf6c158b7ad9f6d6bb452975273d7 has 3459 unchanged baseline
+warnings and zero blockers. Eleven known Main-only paths are excluded from
+that source-branch comparison; this branch has not imported them. Cold load
+exposes 62 public entries without Bootstrap. Source remains clean at the
+implementation commit. Local check processes are terminal; successful checks
+and historical nonpasses remain distinct. Exact own hosted CI, provider
+composition and immediate clean current-base coordinator integration remain
+outstanding; no Main/controller authority is granted here.
