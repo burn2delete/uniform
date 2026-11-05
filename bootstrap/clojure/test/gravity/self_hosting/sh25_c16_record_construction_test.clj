@@ -16,9 +16,20 @@
     (let [emitter
           (:emitter
            (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-            source-path :jvm))]
-      (bootstrap/p15-s23-stage2-compiler-artifact-plan
-       emitter source-path @source-text))))
+            source-path :jvm))
+          compiled-plan
+          (bootstrap/p15-s23-stage2-compiler-artifact-plan
+           emitter source-path @source-text)
+          ;; Generic compiler artifact plans omit location. Keep the actual
+          ;; compilation path in this development invocation's envelope for
+          ;; runtime diagnostics, with an identity over the complete envelope.
+          located-plan
+          (assoc-in (dissoc compiled-plan :plan-id)
+                    [:source :path] source-path)]
+      (assoc located-plan :plan-id
+             (str "sha256:"
+                  (bootstrap/sha256-hex
+                   (pr-str (bootstrap/c-backend-canonical-value located-plan))))))))
 
 (defn- invoke [function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
@@ -155,6 +166,14 @@
 
 (deftest all-five-constructors-execute-complete-records
   (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan)))
+  (is (= source-path (get-in @plan [:source :path])))
+  (is (= (str "sha256:" (bootstrap/sha256-hex @source-text))
+         (get-in @plan [:source :sha256])))
+  (is (= (str "sha256:"
+              (bootstrap/sha256-hex
+               (pr-str (bootstrap/c-backend-canonical-value
+                        (dissoc @plan :plan-id)))))
+         (:plan-id @plan)))
   (doseq [{:keys [function contract-artifact arguments] :as case}
           constructor-cases]
     (testing (str function)
