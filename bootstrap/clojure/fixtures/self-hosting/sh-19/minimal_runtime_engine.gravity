@@ -154,38 +154,46 @@
             ancestors (get item :ancestors)
             header (bootstrap-native-carrier-header value)
             kind (get header 0)]
-        (if (contains? #{:nil :boolean :character :integer8 :integer16
-                        :integer32 :integer64 :big-int :big-integer :ratio
-                        :big-decimal :float32 :float64 :string :symbol :keyword}
-                       kind)
-          (recur remaining)
-          (if (sh19-ancestor? value ancestors)
-            false
-            (let [next-ancestors (conj ancestors value)]
-              (if (contains? #{:vector :subvector} kind)
-                (if (sh19-native-vector? value)
-                  (recur (sh19-enqueue-values value next-ancestors remaining))
-                  false)
-                (if (= :set kind)
-                  (if (>= (get header 2) 0)
-                    (recur (sh19-enqueue-values (vec value) next-ancestors remaining))
+        (if (get item :check-set-members)
+          ; Hash members only after their complete carrier traversal succeeds.
+          (if (= (count value) (count (set value)))
+            (recur remaining)
+            false)
+          (if (contains? #{:nil :boolean :character :integer8 :integer16
+                          :integer32 :integer64 :big-int :big-integer :ratio
+                          :big-decimal :float32 :float64 :string :symbol :keyword}
+                         kind)
+            (recur remaining)
+            (if (sh19-ancestor? value ancestors)
+              false
+              (let [next-ancestors (conj ancestors value)]
+                (if (contains? #{:vector :subvector} kind)
+                  (if (sh19-native-vector? value)
+                    (recur (sh19-enqueue-values value next-ancestors remaining))
                     false)
-                  (if (if (= :map kind) true
-                        (if (= :tree-map kind)
-                          (= :default-comparator (get header 4))
-                          false))
+                  (if (= :set kind)
                     (if (>= (get header 2) 0)
-                      (let [map-keys (vec (keys value))]
-                        (if (sh19-keyword-sequence? map-keys)
-                          ; Lookup must not hide duplicate native map entries.
-                          ; Only validated keyword keys may be hashed here.
-                          (if (= (count map-keys) (count (set map-keys)))
-                            (recur (sh19-enqueue-map-values
-                                    value map-keys next-ancestors remaining))
-                            false)
-                          false))
+                      (let [members (vec value)]
+                        (recur (sh19-enqueue-values
+                                members next-ancestors
+                                (conj remaining {:value members :check-set-members true}))))
                       false)
-                    false))))))))))
+                    (if (if (= :map kind) true
+                          (if (= :tree-map kind)
+                            (= :default-comparator (get header 4))
+                            false))
+                      (if (>= (get header 2) 0)
+                        (let [map-keys (vec (keys value))]
+                          (if (sh19-keyword-sequence? map-keys)
+                            ; Lookup must not hide duplicate native map entries.
+                            ; Only validated keyword keys may be hashed here.
+                            (if (= (count map-keys) (count (set map-keys)))
+                              (recur (sh19-enqueue-map-values
+                                      value map-keys next-ancestors remaining))
+                              false)
+                            false))
+                        false)
+                      false)))))))))))
 
 (defn sh19-required-effect [operation]
   (if (= operation :allocate)

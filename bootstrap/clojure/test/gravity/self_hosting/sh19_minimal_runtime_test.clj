@@ -92,6 +92,17 @@
   [request]
   (invoke-engine 'sh19-handle-request [request]))
 
+(defn- raw-native-set
+  [members]
+  (let [backing (clojure.lang.PersistentArrayMap.
+                 (object-array (mapcat (fn [member] [member member]) members)))
+        ctor (.getDeclaredConstructor
+              clojure.lang.PersistentHashSet
+              (into-array Class [clojure.lang.IPersistentMap
+                                 clojure.lang.IPersistentMap]))]
+    (is (.trySetAccessible ctor))
+    (.newInstance ctor (object-array [nil backing]))))
+
 (def ^:private accepted-functions
   '[sh19-startup-request
     sh19-allocation-request
@@ -438,6 +449,48 @@
                                       [candidate (assoc-in result [:decision-log :decision] :deny)])
                        [:diagnostics 0 :reason])))))))
 
+(deftest sh19-rejects-duplicate-native-set-members-before-replay
+  (let [base (assoc (request accepted-gravity-plan 'sh19-file-read-request)
+                   :extra #{:a :b})
+        valid-result (handle base)]
+    (doseq [members [[] [:a :b] [nil false :a]
+                     [[1 #{:x :y}] {:nested [2 3]}]]]
+      (let [candidate (assoc base :extra (raw-native-set members))
+            result (handle candidate)]
+        (is (= :accepted (:status result)))
+        (is (= (set members) (get-in result [:identity-input :request :extra])))
+        (is (= result (handle candidate)))
+        (is (= :passed
+               (:status (invoke-engine 'sh19-verify-result [candidate result]))))))
+    (doseq [members [[:a :a] [nil nil] [false false]
+                     [[1 #{:x}] [1 #{:x}]]
+                     [{:k :a} {:k :a}]
+                     [(raw-native-set [:a :a])]]]
+      (let [value (raw-native-set members)
+            candidate (assoc base :extra value)
+            result (handle candidate)
+            request-verification
+            (invoke-engine 'sh19-verify-result [candidate valid-result])]
+        (is (= (count members) (count value)))
+        (doseq [rejection [result request-verification]]
+          (is (= :rejected (:status rejection)))
+          (is (= "R1-MANIFEST" (get-in rejection [:diagnostics 0 :rule])))
+          (is (= :malformed-runtime-request
+                 (get-in rejection [:diagnostics 0 :reason]))))
+        (is (= :malformed-carrier (get-in result [:identity-input :request-omitted])))
+        ;; The duplicate :a storage has the same count as #{:a :b}; hosted
+        ;; set equality alone can accept this substitution in either copy.
+        (doseq [location [[:identity-input :request :extra]
+                          [:action :action-identity :semantic-request :extra]
+                          [:extra]]]
+          (let [verification
+                (invoke-engine 'sh19-verify-result
+                               [base (assoc-in valid-result location value)])]
+            (is (= :rejected (:status verification)))
+            (is (= "R1-MANIFEST" (get-in verification [:diagnostics 0 :rule])))
+            (is (= :malformed-runtime-result
+                   (get-in verification [:diagnostics 0 :reason])))))))))
+
 (deftest sh19-traverses-malformed-carriers-beyond-former-cutoffs
   (let [base (request accepted-gravity-plan 'sh19-file-read-request)
         valid-result (handle base)
@@ -459,6 +512,8 @@
                    #{(Object.)}
                    delayed
                    cyclic
+                   (raw-native-set [cyclic])
+                   (raw-native-set [delayed])
                    (clojure.lang.PersistentArrayMap.
                     (object-array [:k :safe :k :safe]))
                    (clojure.lang.PersistentArrayMap.
@@ -490,6 +545,9 @@
         foreign-map (sorted-map-by (fn [a b] (swap! calls inc) (compare a b)) :field 1)]
     (reset! calls 0)
     (doseq [value [opaque foreign-map
+                   (raw-native-set [opaque])
+                   (raw-native-set [[opaque]])
+                   (raw-native-set [{:nested opaque}])
                    (clojure.lang.PersistentArrayMap.
                     (object-array [:k :safe :k :safe opaque :invalid-key]))]]
       (let [result (handle (assoc base :extra value))]
