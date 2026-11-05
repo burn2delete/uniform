@@ -144,7 +144,7 @@
                                         :candidate (rt/git ctx cwd "rev-parse" "HEAD")
                                         :tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}") :kind "completion"})]
                            (ownership! :review)
-                           (swap! events conj [:review key (:base t)])
+                           (swap! events conj [:review key (select-keys t [:base :candidate :tree])])
                            (merge (select-keys t [:base :candidate :tree])
                                   {:verdict "approved" :evidence-scope (:kind t) :summary "Independent fixture review"
                                    :findings [] :residual-host-boundary "Fixture host remains"})))))
@@ -203,21 +203,29 @@
   (harness :retained
            (fn [ctx events phases prs]
              (add-task! ctx (slice "a"))
-             (w/prepare! ctx "a")
-             (let [t (w/task ctx "a") repo (get-in ctx [:config :repo-dir])]
-               (is (= :ci (:status t)))
-               (is (= "ready" (get-in t [:implementation :outcome])))
-               (is (= 2 (get @phases "a")))
-               (is (= "1" (rt/git ctx (:worktree t) "rev-list" "--count"
-                                  (str (:base t) ".." (:candidate t)))))
-               (is (= (:candidate t) (get-in t [:checks :candidate])))
-               (is (= (:tree t) (get-in t [:checks :tree])))
-               (is (seq (filter #(= :check (first %)) @events)))
-               (is (= 1 (count (filter #(and (= :api (first %)) (= "POST" (second %))) @events))))
-               (is (= (:candidate t) (:published-candidate t)))
-               (is (= "1" (rt/git ctx repo "rev-list" "--count"
-                                  (str (:base t) ".." (:candidate t)))))
-               (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers])))))))
+             (let [effects (atom []) original rt/effect!]
+               (with-redefs [rt/effect! (fn [context id operation]
+                                          (swap! effects conj id)
+                                          (original context id operation))]
+                 (w/prepare! ctx "a"))
+               (let [t (w/task ctx "a") repo (get-in ctx [:config :repo-dir])]
+                 (is (= :ci (:status t)))
+                 (is (= "ready" (get-in t [:implementation :outcome])))
+                 (is (= 2 (get @phases "a")))
+                 (is (= "1" (rt/git ctx (:worktree t) "rev-list" "--count"
+                                    (str (:base t) ".." (:candidate t)))))
+                 (is (= (:candidate t) (get-in t [:checks :candidate])))
+                 (is (= (:tree t) (get-in t [:checks :tree])))
+                 (is (seq (filter #(= :check (first %)) @events)))
+                 (is (= 1 (count (filter #(and (= :api (first %)) (= "POST" (second %))) @events))))
+                 (is (= 1 (count (filter #(str/starts-with? % "push/") @effects))))
+                 (is (= 1 (count (filter #(str/starts-with? % "pr/") @effects))))
+                 (is (= (select-keys t [:base :candidate :tree])
+                        (nth (first (filter #(= :review (first %)) @events)) 2)))
+                 (is (= (:candidate t) (:published-candidate t)))
+                 (is (= "1" (rt/git ctx repo "rev-list" "--count"
+                                    (str (:base t) ".." (:candidate t)))))
+                 (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers]))))))))
 
 (deftest initial-ready-without-retained-candidate-still-refuses
   (harness :empty-ready
@@ -247,6 +255,13 @@
                (rt/git ctx (:worktree t) "add" "staged.txt")
                (is (thrown-with-msg? Exception #"Candidate worktree is dirty"
                                      (retained? ctx t)))
+               (rt/git ctx (:worktree t) "reset" "--hard" "HEAD")
+               (let [side (str/trim (:out (rt/command ctx repo
+                                                      ["git" "commit-tree" base-tree "-p" (:base t)]
+                                                      "retained-candidate merge marker")))]
+                 (rt/git ctx (:worktree t) "merge" "--no-ff" "--no-commit" side))
+               (is (not (retained? ctx t)))
+               (rt/git ctx (:worktree t) "merge" "--abort")
                (is (= (:candidate t) (get-in (w/task ctx "a") [:checks :candidate])))
                (is (= (:base t) (rt/git ctx repo "rev-parse" (:base t))))))))
 
