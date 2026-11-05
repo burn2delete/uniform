@@ -311,9 +311,12 @@
         item {:id "git-cache-fixture" :type "commandExecution" :status "completed" :exitCode 0
               :command "fixture-data-not-executed" :aggregatedOutput (str/join "\n" git-cache-refusal-lines)}]
     (is (= git-cache-refusal-lines (vec (classify item))))
-    ;; Quoted source, ordinary errors and unfinished actions are not an OS refusal.
+    ;; Quoted source and ordinary errors stay data; missing exits stay unknown.
     (doseq [other [(assoc item :aggregatedOutput (pr-str (:aggregatedOutput item)))
                    (assoc item :aggregatedOutput "git: error: fixture malformed input")
+                   (assoc item :aggregatedOutput "git: error: Permission denied")
+                   (assoc item :aggregatedOutput "git: error: Operation not permitted")
+                   (assoc item :aggregatedOutput "git: error: couldn't create cache file '/tmp/xcrun_db-fixture' (note: Operation not permitted)")
                    (assoc item :exitCode nil)
                    (assoc item :type "agentMessage")]]
       (is (empty? (classify other))))))
