@@ -1,9 +1,12 @@
 (ns requirement-current-task-sources
   "Authenticate explicitly current task references without renewing evidence."
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [clojure.string :as str]))
 
 (def current-view :qualified-current-task-source-v1)
+(def bridge-transition-kind :qualified-task-source-version-transition-v1)
+(def bridge-successor-class :qualified-current-task-source-successor)
 
 (defn current-reference? [reference]
   (= current-view (:source-view reference)))
@@ -42,6 +45,114 @@
       (require! (java.util.Arrays/equals selected (.getBytes result "UTF-8"))
                 "Current task criterion splits a UTF-8 code point")
       result)))
+
+(defn- record-digest [record sha256]
+  (sha256 (pr-str (select-keys record [:id :checked? :status :acceptance]))))
+
+(defn- task-ids [text marker require!]
+  (let [begin (str "<!-- " marker ":start -->") end (str "<!-- " marker ":end -->")
+        a (str/index-of text begin) z (str/index-of text end)]
+    (require! (and a z (< a z)) "Task source transition lacks its authority region")
+    (let [ids (mapv second (re-seq #"(?m)^- \[[ xX]\] `([^`]+)`" (subs text a z)))]
+      (require! (and (seq ids) (= (count ids) (count (set ids))))
+                "Task source transition has absent or duplicate task identities")
+      ;; The existing body reader also requires exactly one begin/end marker.
+      (task-body-span text marker (first ids) require!)
+      ids)))
+
+(defn- validate-body-observation! [text marker id observation sha256 require!]
+  (let [actual (task-body-span text marker id require!)]
+    (require! (= actual (select-keys observation [:start-byte :end-byte]))
+              "Task source transition body observation changes its task boundaries")
+    (require! (= (or (:whole-record-body-sha256 observation) (:sha256 observation))
+                 (sha256 (source-span text actual require!)))
+              "Task source transition body observation digest drift")))
+
+(defn validate-bridge-transition!
+  "Authenticate the complete prior bridge table and task-body observations.
+  This extends existing source-view history; it confers no evidence acceptance.
+  The latest transition entry governs the current table; earlier entries remain
+  preserved history. Source readers have the same strict commit contract as refs."
+  [manifest {:keys [read-ref read-commit-tree task-record sha256 require!]}]
+  (let [bridges (:task-source-version-bridges manifest)
+        frames (filter #(= bridge-transition-kind (:kind %)) (:source-view-review-history manifest))
+        successors (filter #(or (= bridge-successor-class (:change-class %)) (:predecessor-bridge %)) bridges)]
+    (when (or (seq successors) (seq frames))
+      (let [{:keys [source-commit source-tree manifest-sha256 prior-task-source-version-bridges qualification] :as frame} (last frames)
+            by-path (into {} (map (juxt :path identity) bridges))]
+        (require! (and frame (digest? 40 source-commit) (digest? 40 source-tree)
+                       (digest? 64 manifest-sha256) (vector? prior-task-source-version-bridges)
+                       (seq prior-task-source-version-bridges)
+                       (string? qualification) (not (str/blank? qualification))
+                       (ifn? read-commit-tree))
+                  "Task source successor lacks its complete authenticated predecessor table")
+        (require! (= source-tree (read-commit-tree source-commit))
+                  "Task source predecessor model tree drift")
+        (let [text (read-ref source-commit "contracts/requirement-reconciliation.edn")
+              prior-model (edn/read-string text)
+              prior-table (:task-source-version-bridges prior-model)
+              prior-paths (set (map :path prior-table))]
+          (require! (= manifest-sha256 (sha256 text)) "Task source predecessor model file digest drift")
+          (require! (= prior-task-source-version-bridges prior-table)
+                    "Task source transition does not preserve the complete prior bridge table")
+          (require! (and (= frame (last (:source-view-review-history manifest)))
+                         (= (vec (butlast (:source-view-review-history manifest)))
+                            (vec (:source-view-review-history prior-model))))
+                    "Task source transition rewrites prior source-view review history")
+          (require! (= (count prior-table) (count prior-paths)) "Task source predecessor has duplicate bridge paths")
+          (require! (every? by-path prior-paths) "Task source transition drops a prior bridge")
+          (doseq [old prior-table :let [current (by-path (:path old))] :when (not= old current)]
+            (require! (and (= bridge-successor-class (:change-class current)) (= old (:predecessor-bridge current)))
+                      "Changed task source bridge loses its complete predecessor")
+            (require! (= (select-keys old [:path :marker :historical-ref :historical-sha256])
+                         (select-keys current [:path :marker :historical-ref :historical-sha256]))
+                      "Task source successor rewrites historical identity")
+            (require! (= (mapv #(select-keys % [:id :historical-record-sha256]) (:changed-records old))
+                         (mapv #(select-keys % [:id :historical-record-sha256]) (:changed-records current)))
+                      "Task source successor rewrites historical record identities")
+            (require! (= (mapv :id (:current-only-records old)) (mapv :id (:current-only-records current)))
+                      "Task source successor rewrites prior current-only record identities"))
+          (doseq [{:keys [path marker historical-ref historical-sha256 current-ref current-tree current-sha256
+                         predecessor-bridge previously-declared-record-observations record-observations]
+                   :as bridge} successors]
+            (require! (= bridge-successor-class (:change-class bridge)) "Unknown task source successor class")
+            (require! (= (contains? prior-paths path) (some? predecessor-bridge))
+                      "Task source successor invents or omits a predecessor")
+            (require! (= current-tree (read-commit-tree current-ref)) "Task source successor current commit/tree drift")
+            (read-commit-tree historical-ref)
+            (let [previous-ref (or (:current-ref predecessor-bridge) historical-ref)
+                  previous (read-ref previous-ref path)
+                  historical (read-ref historical-ref path)
+                  current (read-ref current-ref path)
+                  observations (or previously-declared-record-observations record-observations)
+                  expected-ids (if predecessor-bridge
+                                 (set (concat (map :id (:changed-records predecessor-bridge))
+                                              (map :id (:current-only-records predecessor-bridge))))
+                                 (set (map :id (:changed-records bridge))))
+                  old-ids (task-ids previous marker require!) new-ids (task-ids current marker require!)]
+              (when predecessor-bridge
+                (require! (= (:current-tree predecessor-bridge) (read-commit-tree previous-ref)) "Prior task source commit/tree drift")
+                (require! (= (:current-sha256 predecessor-bridge) (sha256 previous)) "Prior task source file digest drift"))
+              (require! (= historical-sha256 (sha256 historical)) "Task source successor historical file digest drift")
+              (require! (= current-sha256 (sha256 current)) "Task source successor current file digest drift")
+              (require! (= (set old-ids) (set new-ids)) "Task source successor changes task identities")
+              (doseq [id old-ids]
+                (let [old-record (task-record previous marker id) new-record (task-record current marker id)]
+                  (require! (= ((juxt :checked? :status) old-record) ((juxt :checked? :status) new-record))
+                            "Task source successor relabels task acceptance")))
+              (require! (and (vector? observations) (= (count observations) (count (set (map :id observations)))))
+                        "Task source successor has absent or duplicate body observations")
+              (require! (every? (set (map :id observations)) expected-ids)
+                        "Task source successor omits a declared record observation")
+              (doseq [{:keys [id prior-captured-record-sha256 current-captured-record-sha256 prior-whole-body current-whole-body]} observations]
+                (let [old-record (task-record previous marker id) new-record (task-record current marker id)]
+                  (require! (= prior-captured-record-sha256 (record-digest old-record sha256)) "Task source successor prior captured record drift")
+                  (require! (= current-captured-record-sha256 (record-digest new-record sha256)) "Task source successor current captured record drift")
+                  (validate-body-observation! previous marker id prior-whole-body sha256 require!)
+                  (validate-body-observation! current marker id current-whole-body sha256 require!))))))
+        {:kind bridge-transition-kind :source-commit source-commit :source-tree source-tree
+         :prior-bridge-count (count prior-task-source-version-bridges)
+         :implementation-acceptance :unassessed}))))
 
 (defn validate!
   "Check current Git/file/record/criterion identity only. The caller supplies

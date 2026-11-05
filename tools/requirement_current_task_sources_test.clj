@@ -145,6 +145,86 @@
     (is (thrown? Exception (current/validate! (update-in ref [:criterion-source :start-byte] inc) nil fixture-readers)))
     (is (thrown? Exception (current/validate! (update-in ref [:criterion-source :end-byte] dec) nil fixture-readers)))))
 
+(defn transition-fixture []
+  (let [path "fixture/tasks.md" marker "fixture" id "fixture/task"
+        historical-ref (apply str (repeat 40 "1")) prior-ref (apply str (repeat 40 "2"))
+        current-ref (apply str (repeat 40 "3")) model-ref (apply str (repeat 40 "4"))
+        tree-of #(apply str (repeat 40 (str ({historical-ref 5 prior-ref 6 current-ref 7 model-ref 8} %))))
+        text "<!-- fixture:start -->\n- [ ] `fixture/task` Task\nStatus: Open\nClosing evidence: Original predicate.\n<!-- fixture:end -->\n"
+        current-text (str/replace text "Original predicate." "Original predicate. Current source clause.")
+        digest #(rr/task-record-digest (evidence/task-record % marker id) rr/sha256)
+        old {:path path :marker marker :historical-ref historical-ref :historical-sha256 (rr/sha256 text)
+             :current-ref prior-ref :current-tree (tree-of prior-ref) :current-sha256 (rr/sha256 text)
+             :changed-records [{:id id :historical-record-sha256 (digest text) :current-record-sha256 (digest text)}]
+             :current-only-records [] :change-class :fixture :qualification "Prior source only."}
+        other (assoc old :path "fixture/reader.md")
+        prior-table [old other]
+        model-text (pr-str {:task-source-version-bridges prior-table :source-view-review-history [{:kind :older-unrelated-source-history}]})
+        observation (fn [t] (let [span (current/task-body-span t marker id rr/require!)
+                                  bytes (.getBytes t "UTF-8")]
+                              (assoc span :sha256 (rr/sha256 (String. (java.util.Arrays/copyOfRange bytes (:start-byte span) (:end-byte span)) "UTF-8")))))
+        successor (assoc old :change-class current/bridge-successor-class :predecessor-bridge old
+                         :current-ref current-ref :current-tree (tree-of current-ref) :current-sha256 (rr/sha256 current-text)
+                         :changed-records [{:id id :historical-record-sha256 (digest text) :current-record-sha256 (digest current-text)}]
+                         :previously-declared-record-observations [{:id id :prior-captured-record-sha256 (digest text) :current-captured-record-sha256 (digest current-text)
+                                                                   :prior-whole-body (observation text) :current-whole-body (observation current-text)}])
+        frame {:kind current/bridge-transition-kind :source-commit model-ref :source-tree (tree-of model-ref)
+               :manifest-sha256 (rr/sha256 model-text) :prior-task-source-version-bridges prior-table
+               :qualification "Preserve complete predecessor source without evidence acceptance."}
+        manifest {:task-source-version-bridges [successor other] :source-view-review-history [{:kind :older-unrelated-source-history} frame]}
+        source-readers {:read-commit-tree (fn [ref] (rr/require! (contains? #{historical-ref prior-ref current-ref model-ref} ref) "Actual commit required") (tree-of ref))
+                        :read-ref (fn [ref p] (cond (= p "contracts/requirement-reconciliation.edn") model-text
+                                                   (= current-ref ref) current-text :else text))
+                        :task-record evidence/task-record :sha256 rr/sha256 :require! rr/require!}]
+    {:manifest manifest :readers source-readers :current-text current-text}))
+
+(deftest task-source-transition-preserves-complete-source-history
+  (let [{:keys [manifest readers]} (transition-fixture)
+        result (current/validate-bridge-transition! manifest readers)]
+    (is (= current/bridge-transition-kind (:kind result)))
+    (is (= 2 (:prior-bridge-count result)))
+    (is (= :unassessed (:implementation-acceptance result)))
+    (is (nil? (current/validate-bridge-transition! {:task-source-version-bridges []} readers)))
+    (is (thrown? Exception (current/validate-bridge-transition! (update manifest :source-view-review-history #(into [{:kind :historical-unrelated}] %)) readers)))))
+
+(deftest task-source-transition-rejects-history-and-body-forgeries
+  (let [{:keys [manifest readers current-text]} (transition-fixture)
+        b [:task-source-version-bridges 0]
+        h [:source-view-review-history 1]
+        o (into b [:previously-declared-record-observations 0])]
+    (doseq [forged [(update manifest :source-view-review-history pop)
+                    (update-in manifest (conj h :prior-task-source-version-bridges) pop)
+                    (assoc-in manifest (conj h :source-commit) (apply str (repeat 40 "9")))
+                    (assoc-in manifest (conj h :source-tree) (apply str (repeat 40 "9")))
+                    (assoc-in manifest (conj h :manifest-sha256) (rr/sha256 "other model"))
+                    (update manifest :task-source-version-bridges pop)
+                    (update-in manifest b dissoc :predecessor-bridge)
+                    (assoc-in manifest (conj b :change-class) :unknown)
+                    (assoc-in manifest (conj b :historical-ref) (apply str (repeat 40 "9")))
+                    (assoc-in manifest (conj b :predecessor-bridge :qualification) "Rewritten prior source")
+                    (assoc-in manifest (conj b :changed-records 0 :historical-record-sha256) (rr/sha256 "other record"))
+                    (assoc-in manifest (conj b :previously-declared-record-observations) [])
+                    (update-in manifest (conj b :previously-declared-record-observations) #(conj % (first %)))
+                    (assoc-in manifest (conj o :current-captured-record-sha256) (rr/sha256 "other scalar"))
+                    (update-in manifest (into o [:current-whole-body :start-byte]) inc)
+                    (assoc-in manifest (into o [:current-whole-body :sha256]) (rr/sha256 "other body"))]]
+      (is (thrown? Exception (current/validate-bridge-transition! forged readers))))
+    (is (thrown? Exception (current/validate-bridge-transition! manifest (dissoc readers :read-commit-tree))))
+    (let [accepted (-> current-text
+                       (str/replace "- [ ]" "- [x]")
+                       (str/replace "Status: Open" "Status: Accepted; forged"))
+          forged (assoc-in manifest (conj b :current-sha256) (rr/sha256 accepted))]
+      (is (thrown-with-msg? Exception #"relabels task acceptance"
+             (current/validate-bridge-transition! forged
+               (assoc readers :read-ref (fn [ref p]
+                                         (if (= (get-in manifest (conj b :current-ref)) ref)
+                                           accepted ((:read-ref readers) ref p))))))))
+    (is (thrown? Exception (current/validate-bridge-transition! manifest
+                             (assoc readers :read-ref (fn [ref p]
+                                                       (if (= (get-in manifest (conj b :current-ref)) ref)
+                                                         (str/replace current-text "Status: Open" "Status: Accepted; forged")
+                                                         ((:read-ref readers) ref p)))))))))
+
 (let [result (run-tests 'requirement-current-task-sources-test)]
   (shutdown-agents)
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

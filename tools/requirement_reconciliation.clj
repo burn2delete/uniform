@@ -258,6 +258,7 @@
           text)))))
 
 (defn validate-task-source-versions! [root manifest]
+  (requirement-current-task-sources/validate-bridge-transition! manifest (current-task-reference-readers root))
   (let [bridges (:task-source-version-bridges manifest)
         by-path (into {} (map (juxt :path identity) bridges))
         refs (mapcat (fn [requirement]
