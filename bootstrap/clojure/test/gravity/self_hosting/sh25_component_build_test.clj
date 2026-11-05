@@ -115,6 +115,12 @@
         (invoke engine-plan 'sh25-component-build-policy [])]
     (is (= 42 (:authoritative-owned-module-count policy)))
     (is (= 43 (:required-component-count policy)))
+    (is (not-any? #(contains? policy %)
+                  [:maximum-components
+                   :maximum-dependencies-per-component
+                   :maximum-outputs-per-component
+                   :maximum-diagnostics-per-component
+                   :maximum-source-bytes]))
     (is (= :meta (:profile policy)))
     (is (= #{} (:effects policy)))
     (is (= #{} (:capabilities policy)))
@@ -195,6 +201,7 @@
     (is (= gravity-request qst-request))
     (is (= gravity qst))
     (is (= :accepted (:status gravity)))
+    (is (= {:status :accepted} (:request-census gravity)))
     (is (= 43 (:component-count gravity)))
     (is (= 43 (count (:actions gravity))))
     (is (= 43 (count (:sh26-component-templates gravity))))
@@ -207,6 +214,7 @@
     (is (every? #(= :pending (:sh25-verification-status %))
                 (:sh26-component-templates gravity)))
     (is (= :passed (:status verification)))
+    (is (= {:status :accepted} (:candidate-census verification)))
     (is (= :pending (:status projection)))
     (is (= #{:artifact :schema-version :status :build-id
              :verification :components}
@@ -291,14 +299,50 @@
                  (get-in gravity [:diagnostics 0 :rule])))
           (is (= reason
                  (get-in gravity [:diagnostics 0 :facts :reason]))))))
-    (let [over-bound
-          (assoc-in base [:components 1 :dependencies]
-                    (vec (repeat 17 :authenticated-envelope)))]
-      (is (= :rejected (:status (build over-bound)))))
     (is (= (set
             (:diagnostics
              (invoke engine-plan 'sh25-component-build-policy [])))
            @emitted-rules))))
+
+(deftest sh25-retains-exact-catalog-and-output-joins
+  (let [base (request accepted-gravity-plan 'sh25-component-build-request)
+        components (:components base)]
+    (doseq [[label altered reason]
+            [[:extra-component
+              (assoc base :components (conj components (last components)))
+              :incomplete-catalog]
+             [:population-beyond-former-ceiling
+              (assoc base :components (vec (repeat 65 (first components))))
+              :incomplete-catalog]
+             [:reordered-components
+              (assoc base :components
+                     (assoc components 0 (nth components 1)
+                                       1 (nth components 0)))
+              :catalog-mismatch]
+             [:dependency-order
+              (assoc-in base [:components 42 :dependencies]
+                        (vec (reverse (:dependencies (nth components 42)))))
+              :dependency-order]
+             [:compiler-identity
+              (assoc-in base [:components 42 :source-identity :compiler-id]
+                        "gravityc:substituted")
+              :source-identity]
+             [:output-join
+              (assoc-in base
+                        [:components 42 :build-product :records :manifest
+                         :content-id]
+                        "sha256:substituted-output")
+              :complete-output]
+             [:provenance-join
+              (assoc-in base
+                        [:components 42 :build-product :records :provenance
+                         :envelope-provenance-root]
+                        "sha256:substituted-provenance")
+              :complete-output]]]
+      (testing (name label)
+        (let [result (build altered)]
+          (is (= :rejected (:status result)))
+          (is (= reason (get-in result [:diagnostics 0 :facts :reason]))))))))
 
 (deftest sh25-result-alteration-fails-exact-verification
   (let [request
@@ -366,12 +410,12 @@
              [:width (vec (repeat 65537 nil))]
              [:scalar large-string]
              [:total-scalar-units (vec (repeat 17 large-string))]
+             [:aggregates {:nested [#{nil true :component} {'component \a}]}]
              [:scalar-domain [nil true false \a :component 'component
                               Long/MIN_VALUE Long/MAX_VALUE]]]]
       (testing (name label)
-        (is (= :accepted
-               (:status (invoke engine-plan 'sh25-carrier-preflight
-                                [carrier]))))))))
+        (is (= {:status :accepted}
+               (invoke engine-plan 'sh25-carrier-preflight [carrier])))))))
 
 (deftest carrier-preflight-rejects-late-unsupported-values
   (doseq [carrier [(nested-vector 140 1.5)
@@ -379,10 +423,31 @@
                    (conj
                     (vec (repeat 17 (apply str (repeat 262145 "x"))))
                     1.5)
+                   {:supported [nil true] :unsupported #{1.5}}
+                   {1.5 :unsupported-map-key}
+                   [(Object.)]
                    [(dec (bigint Long/MIN_VALUE))]
                    [(inc (bigint Long/MAX_VALUE))]]]
     (is (= {:status :rejected :reason :carrier-scalar-type}
            (invoke engine-plan 'sh25-carrier-preflight [carrier])))))
+
+(deftest carrier-preflight-rejects-sequences-without-realizing-them
+  @engine-plan
+  (let [throwing (lazy-seq
+                  (throw (ex-info "SH-25 must not realize this sequence"
+                                  {:id "SH25-LAZY-REALIZATION"})))]
+    (doseq [carrier [(list :unsupported)
+                     (iterate inc 0)
+                     throwing
+                     (nested-vector 140 throwing)
+                     (conj (vec (repeat 65537 nil)) throwing)
+                     {:sequence throwing}]]
+      (let [outcome (bounded-result
+                     #(invoke engine-plan 'sh25-carrier-preflight [carrier]))]
+        (is (not= ::timeout outcome))
+        (is (nil? (:throwable outcome)))
+        (is (= {:status :rejected :reason :carrier-sequence-unsupported}
+               (:value outcome)))))))
 
 (deftest sh25-carrier-preflight-does-not-realize-unbounded-sequences
   (let [request

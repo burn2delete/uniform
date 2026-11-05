@@ -1,4 +1,4 @@
-# SH-25 Bounded Component-Build Leaf
+# SH-25 Component-Build Leaf
 
 This fixture root exercises an early Gravity-owned SH-25 component-build
 contract governed by `D1`, `D3`, `D8`, `D9`, `BOOT1`, `BOOT3`, `BOOT5`,
@@ -32,28 +32,32 @@ top-level effects. Complete-result alteration is rejected by exact
 recomputation. A paired source/envelope/legality/output substitution is rejected
 against the Gravity-owned source revision catalog.
 
-## Bounds
+## Carrier validation and catalog authority
 
-- at most 64 components;
-- exactly 43 components for this inventory revision;
-- at most 16 dependencies per component;
-- at most 8 output kinds per component;
-- at most 16 diagnostic identifiers per component; and
-- at most 16 MiB per declared source.
+This inventory revision requires exactly 43 components with the declared
+dependency vectors, source byte counts and source hashes. These equality checks
+define catalog authority; there are no additional population ceilings.
 
 Every request, candidate, and verification carrier is preflighted iteratively
 before schema recursion, projection, or complete-result equality. Arbitrary
 sequence carriers are rejected before `count`, `first`, `rest`, or realization;
 maps, vectors, and sets are traversed through an indexed frontier. Carrier
-node, depth, width and scalar-unit ceilings are removed. Unsupported scalars
-and integers outside the signed 64-bit domain remain rejected.
+node, depth, width and scalar-unit accounting is removed. Unsupported scalars
+and integers outside the signed 64-bit domain remain rejected independently of
+input size. Host heap and process-watchdog restrictions remain separate.
 
-This implementation checkpoint retains the descriptive census fields consumed
-by SH-26, including scalar-unit estimates. Removing that accounting and its
-consumer plumbing, separating scalar-domain validation from estimation, and
-removing the remaining population ceilings are still pending. Carrier-kernel
-tests exercise finite inputs beyond the former limits and late invalid entries;
-they do not establish whole-build or authenticated composition evidence.
+Successful preflight returns only `{:status :accepted}`. The legacy
+`:request-census` and `:candidate-census` field names carry that validation
+result without estimates. SH-26 still compares those fields with its own
+accounting preflight, so authenticated SH-25-to-SH-26 composition needs a
+separate consumer update before it can pass. Its integration assertions remain
+in place; this slice does not change SH-26 or manufacture replacement evidence.
+
+Carrier-kernel tests exercise finite inputs beyond former depth, width and
+scalar-unit limits, late unsupported entries and sequence non-realization.
+Separate complete-request and replay tests retain the 43-component population,
+catalog order, identity and output/provenance joins. Neither group establishes
+actual component compilation or authenticated composition evidence.
 
 ## Honest Boundary
 
@@ -75,11 +79,11 @@ than coordinator-routed authenticated artifacts.
 
 This is executable Gravity-owned validation and deterministic construction, not
 SH-25 completion. `sh25-verify-component-build` proves exact reconstruction of
-the bounded supplied records only. The emitted SH-26 projection and every
+the supplied records only. The emitted SH-26 projection and every
 component in it remain `:pending`; exact reconstruction does not promote
 component conformance or SH-25 verification to `:passed`. The projection keeps
 the current SH-26 closed top-level schema; outstanding work remains explicit in
-the SH-25 policy and complete result. SH-26 must reject this bounded projection
+the SH-25 policy and complete result. SH-26 must reject this projection
 because its status is `:pending`. A future authoritative adapter may emit a
 passed projection only after it connects genuine prerequisite products, reruns
 their owning verifiers, promotes an authoritative runtime source, executes

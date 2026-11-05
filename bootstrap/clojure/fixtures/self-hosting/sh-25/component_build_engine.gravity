@@ -32,11 +32,6 @@
       true
       (set? value))))
 
-(defn sh25-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
 (defn sh25-aggregate-components [value]
   (if (map? value)
     (let [map-keys (vec (keys value))]
@@ -52,70 +47,45 @@
       value
       (vec value))))
 
-(defn sh25-max [left right]
-  (if (> left right) left right))
-
-(defn sh25-scalar-units [value]
+(defn sh25-scalar-valid? [value]
   (if (= nil value)
-    3
+    true
     (if (boolean? value)
-      5
+      true
       (if (string? value)
-        (* 4 (count value))
+        true
         (if (char? value)
-          4
+          true
           (if (keyword? value)
-            64
+            true
             (if (symbol? value)
-              64
+              true
               (if (integer? value)
-                (if (if (>= value -9223372036854775808)
-                      (<= value 9223372036854775807)
-                      false)
-                  20
-                  -1)
-                -1))))))))
+                (if (>= value -9223372036854775808)
+                  (<= value 9223372036854775807)
+                  false)
+                false))))))))
 
 (defn sh25-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         cursor 0
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
+  (loop [frontier [value] cursor 0]
     (if (= cursor (count frontier))
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (get frontier cursor)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
+      {:status :accepted}
+      (let [current (get frontier cursor)]
         (if (seq? current)
           {:status :rejected :reason :carrier-sequence-unsupported}
           (if (sh25-aggregate? current)
-            (let [width (sh25-aggregate-width current)
-                  components (sh25-aggregate-components current)
+            (let [components (sh25-aggregate-components current)
                   next-frontier
                   (loop [index 0 result frontier]
                     (if (= index (count components))
                       result
                       (recur
                        (+ index 1)
-                       (conj result
-                             [(get components index) (+ depth 1)]))))]
-              (recur next-frontier (+ cursor 1) next-nodes scalar-units
-                     (sh25-max observed-depth depth)
-                     (sh25-max observed-width width)))
-            (let [current-scalar-units (sh25-scalar-units current)]
-              (if (< current-scalar-units 0)
-                {:status :rejected :reason :carrier-scalar-type}
-                (recur frontier (+ cursor 1) next-nodes
-                       (+ scalar-units current-scalar-units)
-                       (sh25-max observed-depth depth)
-                       observed-width)))))))))
+                       (conj result (get components index)))))]
+              (recur next-frontier (+ cursor 1)))
+            (if (sh25-scalar-valid? current)
+              (recur frontier (+ cursor 1))
+              {:status :rejected :reason :carrier-scalar-type})))))))
 
 (defn sh25-exact-keys? [value expected]
   (if (map? value)
@@ -520,11 +490,6 @@
    "docs/self-hosting-slice-ownership.edn"
    :authoritative-owned-module-count 42
    :required-component-count 43
-   :maximum-components 64
-   :maximum-dependencies-per-component 16
-   :maximum-outputs-per-component 8
-   :maximum-diagnostics-per-component 16
-   :maximum-source-bytes 16777216
    :profile :meta
    :effects #{}
    :capabilities #{}
@@ -667,38 +632,6 @@
               false)
             false)
           false)
-        false)
-      false)
-    false))
-
-(defn sh25-vector-of-keywords-from? [values index]
-  (if (= index (count values))
-    true
-    (if (keyword? (get values index))
-      (sh25-vector-of-keywords-from? values (+ index 1))
-      false)))
-
-(defn sh25-vector-of-keywords? [values maximum]
-  (if (vector? values)
-    (if (> (count values) 0)
-      (if (<= (count values) maximum)
-        (sh25-vector-of-keywords-from? values 0)
-        false)
-      false)
-    false))
-
-(defn sh25-vector-of-strings-from? [values index]
-  (if (= index (count values))
-    true
-    (if (sh25-nonempty-string? (get values index))
-      (sh25-vector-of-strings-from? values (+ index 1))
-      false)))
-
-(defn sh25-vector-of-strings? [values maximum]
-  (if (vector? values)
-    (if (> (count values) 0)
-      (if (<= (count values) maximum)
-        (sh25-vector-of-strings-from? values 0)
         false)
       false)
     false))
@@ -900,20 +833,18 @@
     (let [component (get components index)
           expected (get catalog index)
           dependencies (get component :dependencies)]
-      (if (<= (count dependencies) 16)
-        (if (sh25-component-valid?
-             component expected (get revisions index)
-             compiler-id sh21-product-id index)
-          (if (sh25-seen-component?
-               components index (get component :component-id) 0)
-            false
-            (if (sh25-dependencies-seen-from?
-                 components index dependencies 0)
-              (sh25-components-valid-from?
-               components catalog revisions compiler-id
-               sh21-product-id (+ index 1))
-              false))
-          false)
+      (if (sh25-component-valid?
+           component expected (get revisions index)
+           compiler-id sh21-product-id index)
+        (if (sh25-seen-component?
+             components index (get component :component-id) 0)
+          false
+          (if (sh25-dependencies-seen-from?
+               components index dependencies 0)
+            (sh25-components-valid-from?
+             components catalog revisions compiler-id
+             sh21-product-id (+ index 1))
+            false))
         false))))
 
 (defn sh25-components-valid? [components compiler-id sh21-product-id]
@@ -921,10 +852,8 @@
         revisions (sh25-authoritative-source-revisions)]
     (if (vector? components)
       (if (= (count catalog) (count components))
-        (if (<= (count components) 64)
-          (sh25-components-valid-from?
-           components catalog revisions compiler-id sh21-product-id 0)
-          false)
+        (sh25-components-valid-from?
+         components catalog revisions compiler-id sh21-product-id 0)
         false)
       false)))
 
@@ -1200,12 +1129,10 @@
   (let [catalog (sh25-authoritative-component-catalog)
         revisions (sh25-authoritative-source-revisions)]
     (if (vector? components)
-      (if (<= (count components) 64)
-        (if (= (count catalog) (count components))
-          (sh25-components-error-from?
-           components catalog revisions compiler-id sh21-product-id 0)
-          :incomplete-catalog)
-        :component-bound)
+      (if (= (count catalog) (count components))
+        (sh25-components-error-from?
+         components catalog revisions compiler-id sh21-product-id 0)
+        :incomplete-catalog)
       :component-schema)))
 
 (defn sh25-request-error [request]
@@ -1601,7 +1528,7 @@
            :source
            (get (get request :physical-provenance) :actual-build-root)
            :facts {:reason (get candidate-preflight :reason)}
-           :remediation "Provide a bounded candidate carrier."}]})
+           :remediation "Provide a supported candidate carrier."}]})
       {:artifact :gravity/sh25-component-build-verification
        :schema-version 1
        :status :rejected
@@ -1612,7 +1539,7 @@
          :stage :bootstrap
          :source nil
          :facts {:reason (get request-preflight :reason)}
-         :remediation "Provide a bounded request carrier."}]})))
+         :remediation "Provide a supported request carrier."}]})))
 
 (defn sh25-project-verified-sh26-components
   [request candidate verification]
