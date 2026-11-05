@@ -56,7 +56,7 @@
                                        :substantive? true
                                        :evidence "The coordinator's exact inventory inspection authorizes these files only."}}}))
 
-(defn- run-retry! [{:keys [ctx key task]} file]
+(defn- run-retry! [{:keys [ctx key]} file]
   (rt/with-lock ctx #(main/retry! ctx key (str file))))
 
 (defn- writers [ctx]
