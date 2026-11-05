@@ -947,7 +947,7 @@
           :qualification "The PR554 Platform rows and applying blob remain preserved as an immutable historical bridge. The current composition is separately bound to the exact current task-ledger bytes, including pending additive parent criteria; no implementation or product acceptance is conferred."}
          :qualification "Native and resolution ownership source composition plus the PR564 Stdlib task-ledger source transition; immutable predecessor projections remain pinned, all current states unassessed."))
 
-(def mapping-review
+(def original-dependency-predecessor-mapping-review
   (assoc readiness-predecessor-mapping-review
          :status :pending-source-version-review
          ;; Successor disposition for the authenticated ff783 -> 4202
@@ -964,6 +964,18 @@
                 "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")
          :qualification
          "Exact task-source and Governance routing successor, including the reviewed foundation/policy/L6 records and pending facet, alternative-type, interop and backend source inputs. The composed source successor binds 28 current transition paths and a 47-file reviewed-source census to the authenticated bc7 current checkpoint while retaining the old 4202/ff783 frame, all historical pins/digests and task statuses. Current source/routing, implementation, migration, release and whole-SH acceptance remain pending."))
+
+(def mapping-review
+  (assoc original-dependency-predecessor-mapping-review
+         :input-fingerprint "dc7a6d91cd3b75e368170cbd039308983f57e65781986402a991ece56b891f49"
+         :predecessor-input-fingerprint (:input-fingerprint original-dependency-predecessor-mapping-review)
+         :original-dependency-source-successor
+         {:commit "9ef3622060652f339fa75b73fefa4963db272a10"
+          :tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009"
+          :prior-review-commit "f989a01024d4ef0f595b7bf685e0fbf17648469b"
+          :prior-review-path "specs/sh-family-crosswalk/crosswalk.edn"
+          :scope :original-fourteen-selected-result-routes}
+         :qualification "The fourteen original selected-result dependency rows are normally composed with the reviewed f989 binder. Their separate whole-document transition preserves the complete previous transition and the unchanged earlier source census, pins, snapshots, task statuses and narrow evidence. Current source/routing review remains pending; typed execution acyclicity, implementation, migration, release and full-240 verification remain separate obligations."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")

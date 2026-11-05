@@ -532,7 +532,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 104 (count (:declared-parent-consumers review))))
+    (is (= 118 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (is (every? dependencies/selected-parent-consumers
                 ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
@@ -590,7 +590,18 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [99 11] (mapv count (:declared-output-cycles review))))
+    (is (= [138] (mapv count (:declared-output-cycles review))))
+    ;; Fourteen original result routes join the two coarse feedback groups.
+    ;; Their older memberships survive; executable typed edges stay acyclic.
+    (let [text (requirement-sources/git-source "." "f989a01024d4ef0f595b7bf685e0fbf17648469b"
+                                               dependencies/future-dependency-path dependencies/require!)
+          prior (dependencies/future-task-view future current snapshots
+                  #(if (= dependencies/future-dependency-path %) text (slurp %)))
+          old-members (set (mapcat identity (get-in prior [:dependency-review :declared-output-cycles])))
+          added #{"release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures" "ui" "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" "evolution/stabilization-decision" "backend-mlir" "backend-workflow" "backend-llvm" "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters" "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface" "backend-query" "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures" "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations" "backend-emission" "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures" "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures" "backend-jvm" "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions" "backend-ai" "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures" "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations" "release/remaining-tasks-and-evidence/execute-formal-evidence-checks" "backend-js" "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures" "evolution/library-admission" "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations" "backend-c" "backend-mobile" "backend-wasm"}]
+      (is (= [99 11] (mapv count (get-in prior [:dependency-review :declared-output-cycles]))))
+      (is (= (into old-members added) (set (first (:declared-output-cycles review))))))
+
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
@@ -605,7 +616,7 @@
                 ["evolution/security-review" "formal" "math/independent-proof-and-certificate-checking"
                  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"]))
-    (is (every? (set (second (:declared-output-cycles review)))
+    (is (every? (set (first (:declared-output-cycles review)))
                 ["schema/checked-consumer-projection" "schema/compatibility-and-migration"
                  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
                  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"]))
@@ -818,6 +829,64 @@
       (is (thrown? Exception (parse (str/replace text #"(?m)^\| `SH-29` \|[^\n]*\n" ""))))
       (is (thrown? Exception (parse (str/replace text "<!-- finish-line-dependencies:end -->"
                                  "| `SH-29` | `pipeline` | always | Duplicate. |\n<!-- finish-line-dependencies:end -->")))))))
+
+(deftest original-fourteen-dependency-rows-have-a-bounded-source-successor
+  (let [t requirement-sources/original-dependency-row-successor
+        prior (:successor-of t)
+        path (:path t)
+        read-ref #(requirement-sources/git-source "." %1 %2 dependencies/require!)
+        before (read-ref (:baseline-ref t) path)
+        after (read-ref (:applying-ref t) path)
+        source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        original (read-ref "0f4dbda97c69fc67dad7eb8824702ae44959607b" path)
+        original-before (read-ref "895dea1ddbce13b8deae461144e57b8245caefc8" path)
+        ids ["evolution/library-admission" "evolution/stabilization-decision" "ui"
+             "backend-emission" "backend-c" "backend-llvm" "backend-wasm" "backend-jvm"
+             "backend-js" "backend-mlir" "backend-mobile" "backend-query" "backend-workflow" "backend-ai"]
+        rows #(vec (for [line (str/split-lines %)
+                        :when (some (fn [id] (str/starts-with? line (str "| `" id "` |"))) ids)] line))
+        inserted (rows after)
+        task-ids (set (for [rs (concat (vals (:task-authorities source)) (vals (:future-task-authorities source))) r rs] (:id r)))
+        routes (dependencies/future-dependency-routes
+                (str "<!-- future-composition-dependencies:start -->\n| Consumer | Start results | Composition results | Selected output contract |\n| --- | --- | --- | --- |\n" (str/join "\n" inserted) "\n<!-- future-composition-dependencies:end -->")
+                task-ids (set ids))
+        inverse (fn [text rs] (reduce #(str/replace %1 (str %2 "\n") "") text rs))
+        validate #(requirement-sources/validate-current-source-transition!
+                   % t read-ref slurp dependencies/sha256 dependencies/require!)]
+    (is (= prior (first (filter #(= path (:path %)) requirement-sources/current-source-transition-successor-contracts))))
+    (is (= 14 (count inserted) (count (rows original))))
+    (is (= inserted (rows original)))
+    (is (= (set ids) (set (map :consumer routes))))
+    (is (= 361 (reduce + (map (comp count :composition-results) routes))))
+    (is (every? (comp empty? :start-results) routes))
+    (is (empty? (rows before)))
+    (is (= before (inverse after inserted)))
+    (is (= original-before (inverse original inserted)))
+    (is (= before (read-ref "f989a01024d4ef0f595b7bf685e0fbf17648469b" path)))
+    (is (= after (slurp path)))
+    (is (every? #(str/includes? % " | none | ") inserted))
+    (is (= :current-source-interface-only (:authority (validate t))))
+    (is (= :unassessed (:implementation-acceptance (validate t))))
+    (is (= t (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
+    ;; The old census continues to describe its exact prior Git checkpoint.
+    (let [binding (get-in source [:implementation-readiness-source-version :source-successor-binding])
+          old-source (edn/read-string (read-ref "f216b540663d7c23ba5af646abdcb153654ad9c9" dependencies/sh-crosswalk-path))]
+      (is (= binding (get-in old-source [:implementation-readiness-source-version :source-successor-binding])))
+      (is (= (:baseline-ref t) (get-in binding [:composition :commit])))
+      (is (not-any? #(= path (:path %)) (:source-census binding)))
+      (is (= (:baseline-sha256 t) (:live-sha256 prior))))
+    (doseq [forged [(assoc t :applying-ref (:baseline-ref t))
+                    (assoc t :applying-tree (:baseline-tree t))
+                    (assoc t :applying-blob (:baseline-blob t))
+                    (assoc t :live-sha256 (:baseline-sha256 t))
+                    (update-in t [:changed-spans 0 :after :end-byte] dec)
+                    (assoc t :successor-of (assoc prior :authority :implementation-accepted))
+                    (assoc t :authority :implementation-accepted)]]
+      (is (thrown? Exception (validate forged))))
+    (doseq [current [before (str after "\nUnbound change.\n") (str after (first inserted) "\n")]]
+      (is (thrown? Exception
+                   (requirement-sources/validate-current-source-transition!
+                    t t read-ref #(if (= path %) current (slurp %)) dependencies/sha256 dependencies/require!))))))
 
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

@@ -732,3 +732,14 @@ source/data integrity evidence only. The historical PR767 source frames remain h
 implementation, compiler, runtime, migration, release, self-hosting and
 public-admission states remain open, pending or unassessed. No native/C,
 compiler migration, held route or restricted operation was executed.
+
+
+## Original selected-result dependency rows: current source binding
+
+The normal composition `9ef3622060652f339fa75b73fefa4963db272a10` retains ordered parents `f989a01024d4ef0f595b7bf685e0fbf17648469b` and `0f4dbda97c69fc67dad7eb8824702ae44959607b`. It adds exactly the fourteen original independently reviewed dependency rows; removing them restores the entire prior document. Every start-result list remains empty. The separate document transition authenticates its current Git tree/blob, complete UTF-8 span and digest and preserves the complete previous transition. The earlier source census and all historical pins, statuses and evidence remain unchanged.
+
+The derived crosswalk changes only that current transition and its pending review metadata. All 535 normalized source payloads, 149 captured current task records, future records, SH requirement dispositions, finish-line sources and narrow accepted evidence remain identical. These are observed source populations, not implementation completion units. The fourteen rows add 361 selected-result joins; current parent routes increase from 104 to 118, and the coarse feedback groups join into one group of 138 members. Existing typed execution acyclicity, independent producer interfaces and later actual-result/acceptance boundaries remain mandatory.
+
+Final pure Source checks: dependency suite 28 tests/6958 assertions and crosswalk suite 80 tests/65048 assertions, both with zero failures/errors; both current-source checks pass. Pinned lint has zero errors/warnings and the identical pre-existing informational redundant-string finding at acceptance_dependencies_test.clj:197. Canonical documentation, roadmap structure, 185-workstream governance and six/eleven language-boundary checks pass at their unchanged input scope. Earlier failed observations remain preserved; they are not relabeled as passing checks.
+
+This is source/interface provenance awaiting independent current-tuple review and Main integration. No newer 240-spec source proposal is adopted here. No task status, implementation, provider execution, migration, release, seed retirement, T002/T003/T005 closure or full 240-spec verification is granted.
