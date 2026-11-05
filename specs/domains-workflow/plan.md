@@ -646,6 +646,26 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Supply actual source-schema/validator/type-projection, checked migration/projection and Query/schema/taint/numeric/lineage results through existing owners. Library facade execution does not produce those outcomes or establish storage WAL/recovery. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual AI/Workflow semantics, policy/review/eval and schema/migration/projection outcomes through the existing owners; callable adapters are not a second domain implementation. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply actual selected crypto/provider/secret/constant-time and UI/component/schema/taint/source-map products. Broader passkeys/private computation and DOM6 browser/ticket-list outcomes stay separately Open; callable library facades do not accept those domains. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual AI/workflow/schema model/prompt/tool/memory/policy/review, recorded/live-only traces and source-bound schema facts. Specialist tools consume these rather than redefining domain engines or provider authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply genuine selected domain/math/proof/certificate input/output and checker evidence. EML form identity, a provider name or sampled equality does not prove equivalence or an approximation bound. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

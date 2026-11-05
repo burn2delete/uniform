@@ -351,6 +351,34 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume genuine callable exports, schema/codec/canonical vectors, query/transaction/provider, denial/cleanup/replay and migration results for exact subjects. Metadata summaries, mocks and unavailable held cases cannot close library/domain release claims. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Consume actual callable example/subject, denial/replay/compensation/migration/generated-code and provider/tool/memory/eval/probe evidence. Existing independent suites retain their own exact execution and acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Consume actual library/subject fixtures and exact compiler/runtime/profile/target reports for independent library/compiler/property/formal/performance and stage comparisons. API availability does not execute or close those suites. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual callable platform/hardware fixtures, exact target/device/profile/provider subjects, genuine audits and independent results. Simulator agreement claims retain exact live-target artifact scope and unavailable physical operations; no API name accepts a target or Product. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual vectors, provider/policy/audit and component/snapshot/interaction plus old/new stability fixtures for exact subjects. Independent suites, full-language/bootstrap/seed retirement, signed distribution and release acceptance keep separate actual evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Consume actual scoped specialist service/protocol/measurement/report results where the selected recipe or claimed release requires them. Wider tool portfolio, independent acceptance and full-language/bootstrap/seed-retirement remain distinct outcomes. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Implement the existing independent performance-regression task's actual manifests, samples/statistics, compatible fingerprints, correctness/safety gates, threshold/drift/noise classification and reviewed baseline use, with real worst-case evidence for realtime claims. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

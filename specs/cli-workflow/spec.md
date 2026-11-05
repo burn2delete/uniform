@@ -55,6 +55,8 @@ requires all declared families; selected compiler command acceptance and Release
 remain narrower separate outcomes. Preserve reserved writers, operation holds
 and applicable custody/policy restrictions; no task status changes here.
 
+The [command and source service criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria) refine T1 public command/output/exit behavior and T2/T3/T4 actual REPL/formatter/linter services over existing authorities. Real checked sessions, source-preserving transformations, fact-based lint and public routing/results remain distinct from supplied coverage/status records. Existing task identities/statuses, historical evidence, selected compiler scope and execution holds persist.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: CLI workflow migration

@@ -404,7 +404,7 @@
             manifest (edn/read-string (read-source manifest-path))
             source (first (filter #(= id (:id %)) (concat (:original-documents manifest) (:extension-sources manifest))))
             bridge (first (filter #(= id (:document-id %)) (:source-version-bridges manifest)))
-            baseline-texts (if (= requirement-sources/std3-accounting-kind (:kind bridge))
+            baseline-texts (if (requirement-sources/baseline-projection-kind? (:kind bridge))
                             {id (requirement-sources/git-source "." (:baseline-ref bridge)
                                                                (:path bridge) require!)}
                             {})]

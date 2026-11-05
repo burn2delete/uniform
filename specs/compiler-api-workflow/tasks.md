@@ -129,6 +129,17 @@ L14 actual facet extension-registration criterion (Open): Expose authentic versi
 <!-- compiler-api-facet-source-registration:end -->
 
 
+
+<!-- library-testing-meta-source-plugin-context-enforcement:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library plugin-context-enforcement criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+At the actual compiler operation boundary validate package/API/compiler/trust/effect/grant compatibility before initialization, expose only scoped pass-context facts, deny read-only writes or hidden-state mutation and verify returned artifacts before use. Preserve current plugin/package/input/output/grant/build-effect/decision/diagnostic/replay traces and cache invalidation. Exercise real allowed analysis/transformation and wrong-scope/sandbox/output/compatibility denials with no operation after denial, subject to actual plugin/callback/C12 restrictions. Library manifests do not establish these host results. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-plugin-context-enforcement:end -->
+
+
 - [ ] `pass-evidence` Pass Evidence: finite remaining tasks
 
 Status: Open
