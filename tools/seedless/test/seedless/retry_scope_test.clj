@@ -59,6 +59,12 @@
 (defn- run-retry! [{:keys [ctx key task]} file]
   (rt/with-lock ctx #(main/retry! ctx key (str file))))
 
+(defn- writers [ctx]
+  (let [file (:coordination-file ctx)]
+    (if (.isFile (io/file file))
+      (:writers (rt/read-edn file))
+      {})))
+
 (deftest inspected-scope-extension-preserves-dirty-bytes-and-retires-old-credit
   (let [{:keys [ctx key task repo] :as case} (case-context)
         unowned (io/file repo "unowned.edn")
@@ -83,7 +89,7 @@
           (is (= (:review task) (get-in history [:original :review])))
           (is (= (:head-workflows task) (get-in history [:original :head-workflows])))
           (is (= ["unowned.edn"] (:amended-paths history)))
-          (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))
+          (is (empty? (writers ctx)))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest stale-or-mismatched-scope-is-rejected-without-state-change
@@ -96,9 +102,9 @@
             before @(:state ctx)]
         (spit unowned "{:changed after inspection}\n")
         (rt/write-edn! inspection-file record)
-        (is (thrown-with-msg? Exception #"dirty diff changed" (run-retry! case inspection-file)))
+        (is (thrown-with-msg? Exception #"file bytes changed" (run-retry! case inspection-file)))
         (is (= before @(:state ctx)))
-        (is (empty? (:writers (rt/read-edn (:coordination-file ctx))))))
+        (is (empty? (writers ctx))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest unsettled-native-effects-and-main-fences-block-scope-amendment
@@ -109,7 +115,7 @@
                                    (fn [state]
                                      [(assoc-in state [:main-effects "merge/scope"]
                                                 {:state-file (:state-file ctx) :state-dir (:state-dir ctx)})
-                                      nil]))))]]
+                                      nil])))]]
     (let [{:keys [ctx key task] :as case} (case-context)
           unowned (io/file (:repo case) "unowned.edn")
           inspection-file (io/file (:root ctx) "inspection.edn")]
@@ -120,7 +126,7 @@
         (let [before @(:state ctx)]
           (is (thrown? Exception (run-retry! case inspection-file)))
           (is (= before @(:state ctx)))
-          (is (empty? (:writers (rt/read-edn (:coordination-file ctx))))))
+          (is (empty? (writers ctx))))
         (finally (fixture/delete-tree! (:root ctx)))))))
 
 (deftest busy-amended-paths-fail-closed-and-retain-the-original-owner

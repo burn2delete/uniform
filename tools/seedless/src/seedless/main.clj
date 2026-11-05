@@ -141,7 +141,7 @@
                                                   :error :checks :review :head-workflows])
                      :inspection inspection
                      :observed (:snapshot scope)
-                     :amended-paths (:paths scope)}]
+                     :amended-paths (get-in scope [:extension :paths])}]
         (rt/update! ctx update-in [:tasks key]
                     (fn [current]
                       (-> current
