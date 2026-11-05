@@ -136,7 +136,36 @@ CI harness controls pass 52 tests / 552 assertions, format and direct lint
 pass, and language/ownership checks pass 48 tests / 1202 assertions. The
 complete Wasm namespace is appended to the existing contracts group with
 2g/180 seconds, all prior commands retained, and exact whole-namespace plus
-omission/substitution controls. Contextual lint, final document validation,
-independent implementation review, own hosted CI/artifact acceptance and
-current-Main integration remain pending. PR1210's Macro watchdog NONPASS is
-separate retained history; it grants no acceptance to this increment.
+omission/substitution controls. PR1210's Macro watchdog NONPASS is separate
+retained history; it grants no acceptance to this increment.
+
+## Completed local source verification
+
+The semantic source is ae324685d0f6cbace6de6cd9821aff72fd924104,
+tree eb3add9831104414b8eb612e3fcf0321aa759b15. A clean-source capture
+contains three reports and 24 refusals; SHA256:
+b3785d44c3143cc806772279ebad69de71c4f4f0a26afad583f0295eee6a1b8c.
+Its parsed records equal the corrected 0f8a2e66 capture. Top-level source
+identities differ intentionally; these cross-process files are not claimed
+byte-identical. The same-live control above supplies complete raw parity.
+
+Complete source-context lint against the imported Main 9c34e295 includes
+106 changed paths and all 65 present Clojure/EDN paths, with no exclusions:
+3458 unchanged baseline warnings and zero blockers. Both document validators
+pass. Independent semantic and adversarial reviewers accept this bounded
+source extraction; their acceptance grants no hosted CI or Main authority.
+
+The complete seven-command local contracts group passes on that source:
+four existing validators, Tooling 28 tests / 525 assertions, Ownership
+23 / 970 and Wasm 12 / 282. All prior command selections remain intact.
+Fifteen output files are preserved outside the checkout; their local binding
+SHA256 is
+e24a891f57532a7c91652f250fd3e733492ad553de4fd1e5f597c93a5a01ad91.
+The actual receipts have nil commit/run/attempt fields. This explicit local
+source binding does not turn them into hosted CI receipts. The checkout was
+clean after preserving its own generated products.
+
+Own hosted CI, artifact/provenance review, exact current-Main composition and
+coordinator integration remain separate requirements. No earlier PR's green
+run, source review or infrastructure failure supplies that evidence. This
+record does not claim source-authoring lease release or integration eligibility.
