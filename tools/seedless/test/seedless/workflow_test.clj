@@ -242,7 +242,8 @@
            (fn [ctx _ _ _]
              (add-task! ctx (slice "a"))
              (w/prepare! ctx "a")
-             (let [t (w/task ctx "a")
+             (let [source-t (w/task ctx "a")
+                   t (assoc source-t :implementation (assoc (:implementation source-t) :outcome "checkpoint"))
                    retained? (deref (ns-resolve 'seedless.workflow 'retained-clean-candidate?))
                    repo (get-in ctx [:config :repo-dir])
                    base-tree (rt/git ctx (:worktree t) "rev-parse" (str (:base t) "^{tree}"))]
@@ -264,6 +265,31 @@
                (rt/git ctx (:worktree t) "merge" "--abort")
                (is (= (:candidate t) (get-in (w/task ctx "a") [:checks :candidate])))
                (is (= (:base t) (rt/git ctx repo "rev-parse" (:base t))))))))
+
+(deftest retained-ready-repair-without-new-delta-still-refuses
+  (harness :retained
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a"))
+             (w/prepare! ctx "a")
+             (w/task! ctx "a" :status :repair
+                      :implementation {:outcome "ready" :summary "Prior candidate was already ready"
+                                       :evidence "The existing published candidate was reviewed"
+                                       :residual-host-boundary "Fixture host remains"
+                                       :checks [["clojure" "-M" "focused.clj"]]}
+                      :feedback {:github-reviews [{:state "CHANGES_REQUESTED"}]})
+             (let [before-checks (count (filter #(= :check (first %)) @events))
+                   before-reviews (count (filter #(= :review (first %)) @events))]
+               (with-redefs [w/job! (fn [_ role _ _ _]
+                                      (if (= role :implement)
+                                        {:outcome "ready" :summary "No edit on repair"
+                                         :evidence "The candidate remains unchanged"
+                                         :residual-host-boundary "Fixture host remains"
+                                         :checks [["clojure" "-M" "focused.clj"]]}
+                                        (throw (ex-info "Review must not be reached" {}))))]
+                 (is (thrown-with-msg? Exception #"Implementation made no source change"
+                                       (w/prepare! ctx "a"))))
+               (is (= before-checks (count (filter #(= :check (first %)) @events))))
+               (is (= before-reviews (count (filter #(= :review (first %)) @events))))))))
 
 (deftest stacked-child-starts-before-parent-merge-and-retargets-after-it
   (harness :normal

@@ -421,6 +421,7 @@
     (and (not (:merge-in-progress t))
          (not (merge-in-progress? ctx cwd))
          (pos-int? (get-in t [:pr :number]))
+         (= "checkpoint" (get-in t [:implementation :outcome]))
          (= candidate (:published-candidate t))
          (every? complete-sha? [base candidate tree])
          (= candidate (rt/git ctx cwd "rev-parse" "HEAD"))
