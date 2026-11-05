@@ -201,7 +201,7 @@
 
 (deftest retained-clean-candidate-continues-without-recommit-or-republish
   (harness :retained
-           (fn [ctx events phases prs]
+           (fn [ctx events phases _]
              (add-task! ctx (slice "a"))
              (let [effects (atom []) original rt/effect!]
                (with-redefs [rt/effect! (fn [context id operation]
