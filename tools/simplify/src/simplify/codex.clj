@@ -142,7 +142,9 @@
       ;; can quote refusal text; recognize the observed cache diagnostic forms
       ;; rather than elevating arbitrary source examples into policy decisions.
       (if (zero? (:exitCode item))
-        (filter #(re-find #"(?i)^\s*(?:xcrun:\s+error:|Error building classpath[.:]|java\.[^:\r\n]+Exception:)" %) lines)
+        (filter #(or (re-find #"(?i)^\s*(?:xcrun:\s+error:|Error building classpath[.:]|java\.[^:\r\n]+Exception:)" %)
+                     (re-matches #"(?i)\s*git:\s+error:\s+couldn't create cache file '[^'\r\n]+' \(errno=Operation not permitted\)\s*" %))
+                lines)
         lines))))
 
 (defn- model-command-refusal! [client item]
