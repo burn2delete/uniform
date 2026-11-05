@@ -143,7 +143,7 @@
     (is (= :minimal-self-hosting (:family policy)))
     (is (= 1048576 (:maximum-allocation-bytes policy)))
     (is (= 16777216 (:maximum-file-read-bytes policy)))
-    (is (= 256 (:maximum-inline-utf8-bytes policy)))
+    (is (not (contains? policy :maximum-inline-utf8-bytes)))
     (is (= 4096 (:maximum-request-nodes policy)))
     (is (= 16384 (:maximum-result-nodes policy)))
     (is (= 16 (:maximum-request-depth policy)))
@@ -264,7 +264,7 @@
               (invoke-engine
                'sh19-verify-result [request result])))))))
 
-(deftest sh19-validates-complete-bounded-utf8-without-host-decoding
+(deftest sh19-validates-complete-utf8-without-inline-byte-quota
   (let [base
         (request accepted-gravity-plan 'sh19-string-request)
         valid-byte-vectors
@@ -276,7 +276,9 @@
          [237 159 191]
          [238 128 128]
          [240 144 128 128]
-         [244 143 191 191]]
+         [244 143 191 191]
+         (vec (repeat 257 65))
+         (vec (mapcat identity (repeat 65 [240 144 128 128])))]
         invalid-byte-vectors
         [[128]
          [192 128]
@@ -291,13 +293,27 @@
          [245 128 128 128]
          [256]
          [1.5]
-         (vec (repeat 257 65))]]
+         (conj (vec (repeat 257 65)) 128)
+         (into (vec (repeat 257 65)) [237 160 128])
+         (into (vec (repeat 257 65)) [240 144 128])]]
     (doseq [bytes valid-byte-vectors]
-      (let [result (handle (assoc base :bytes bytes))]
+      (let [candidate (assoc base :bytes bytes)
+            result (handle candidate)]
         (is (= :accepted (:status result)) (str bytes))
         (is (= bytes (get-in result [:action :payload :bytes])))
         (is (= (count bytes)
-               (get-in result [:action :payload :byte-count])))))
+               (get-in result [:action :payload :byte-count])))
+        (is (= result (handle candidate)))
+        (is (= :passed
+               (:status
+                (invoke-engine 'sh19-verify-result [candidate result]))))
+        (is (= :runtime-result-substitution
+               (get-in
+                (invoke-engine
+                 'sh19-verify-result
+                 [candidate (assoc-in result [:action :payload :byte-count]
+                                      (inc (count bytes)))])
+                [:diagnostics 0 :reason])))))
     (doseq [bytes invalid-byte-vectors]
       (let [result (handle (assoc base :bytes bytes))]
         (is (= :rejected (:status result)) (str bytes))

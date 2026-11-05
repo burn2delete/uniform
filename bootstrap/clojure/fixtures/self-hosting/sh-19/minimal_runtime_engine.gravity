@@ -32,7 +32,6 @@
                  :process-exit}
    :maximum-allocation-bytes 1048576
    :maximum-file-read-bytes 16777216
-   :maximum-inline-utf8-bytes 256
    :maximum-request-nodes 4096
    :maximum-result-nodes 16384
    :maximum-request-depth 16
@@ -460,64 +459,62 @@
   (sh19-between? value 128 191))
 
 (defn sh19-utf8-valid-from? [bytes index]
-  (let [length (count bytes)]
-    (if (= index length)
-      true
-      (if (> index length)
-        false
-        (let [first-byte (get bytes index)]
-          (if (sh19-between? first-byte 0 127)
-            (sh19-utf8-valid-from? bytes (+ index 1))
-            (if (sh19-between? first-byte 194 223)
-              (if (< (+ index 1) length)
-                (if (sh19-continuation-byte?
-                     (get bytes (+ index 1)))
-                  (sh19-utf8-valid-from? bytes (+ index 2))
+  (loop [index index]
+    (let [length (count bytes)]
+      (if (= index length)
+        true
+        (if (> index length)
+          false
+          (let [first-byte (get bytes index)]
+            (if (sh19-between? first-byte 0 127)
+              (recur (+ index 1))
+              (if (sh19-between? first-byte 194 223)
+                (if (< (+ index 1) length)
+                  (if (sh19-continuation-byte?
+                       (get bytes (+ index 1)))
+                    (recur (+ index 2))
+                    false)
                   false)
-                false)
-              (if (sh19-between? first-byte 224 239)
-                (if (< (+ index 2) length)
-                  (let [second-byte (get bytes (+ index 1))
-                        third-byte (get bytes (+ index 2))
-                        second-valid
-                        (if (= first-byte 224)
-                          (sh19-between? second-byte 160 191)
-                          (if (= first-byte 237)
-                            (sh19-between? second-byte 128 159)
-                            (sh19-continuation-byte? second-byte)))]
-                    (if second-valid
-                      (if (sh19-continuation-byte? third-byte)
-                        (sh19-utf8-valid-from? bytes (+ index 3))
-                        false)
-                      false))
-                  false)
-                (if (sh19-between? first-byte 240 244)
-                  (if (< (+ index 3) length)
+                (if (sh19-between? first-byte 224 239)
+                  (if (< (+ index 2) length)
                     (let [second-byte (get bytes (+ index 1))
                           third-byte (get bytes (+ index 2))
-                          fourth-byte (get bytes (+ index 3))
                           second-valid
-                          (if (= first-byte 240)
-                            (sh19-between? second-byte 144 191)
-                            (if (= first-byte 244)
-                              (sh19-between? second-byte 128 143)
+                          (if (= first-byte 224)
+                            (sh19-between? second-byte 160 191)
+                            (if (= first-byte 237)
+                              (sh19-between? second-byte 128 159)
                               (sh19-continuation-byte? second-byte)))]
                       (if second-valid
                         (if (sh19-continuation-byte? third-byte)
-                          (if (sh19-continuation-byte? fourth-byte)
-                            (sh19-utf8-valid-from?
-                             bytes (+ index 4))
-                            false)
+                          (recur (+ index 3))
                           false)
                         false))
                     false)
-                  false)))))))))
+                  (if (sh19-between? first-byte 240 244)
+                    (if (< (+ index 3) length)
+                      (let [second-byte (get bytes (+ index 1))
+                            third-byte (get bytes (+ index 2))
+                            fourth-byte (get bytes (+ index 3))
+                            second-valid
+                            (if (= first-byte 240)
+                              (sh19-between? second-byte 144 191)
+                              (if (= first-byte 244)
+                                (sh19-between? second-byte 128 143)
+                                (sh19-continuation-byte? second-byte)))]
+                        (if second-valid
+                          (if (sh19-continuation-byte? third-byte)
+                            (if (sh19-continuation-byte? fourth-byte)
+                              (recur (+ index 4))
+                              false)
+                            false)
+                          false))
+                      false)
+                    false))))))))))
 
 (defn sh19-utf8-valid? [bytes]
   (if (vector? bytes)
-    (if (<= (count bytes) 256)
-      (sh19-utf8-valid-from? bytes 0)
-      false)
+    (sh19-utf8-valid-from? bytes 0)
     false))
 
 (defn sh19-unique-values? [remaining seen]
