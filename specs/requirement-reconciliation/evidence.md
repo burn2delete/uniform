@@ -651,3 +651,12 @@ tamper tests reject altered authority, rationale or fragment metadata even
 when a forged digest is recomputed. Structural docs, roadmap, language-
 boundary and governance checks pass. No compiler replay, implementation
 acceptance, integration eligibility or whole-project denominator is claimed.
+
+
+## Explicit current task-source reference support
+
+The new qualified-current-task-source-v1 reference view authenticates a named Git commit/tree, complete task file, strict captured task record/state and an exact UTF-8 criterion span inside that same task. Existing version bridges must agree with the current pin. Projection returns the authenticated Git snapshot after checking the working file, and rejects unknown views, wrong tasks, stale files, altered metadata and invalid or cross-task spans. Historical references retain their original digest checks; they cannot be relabeled merely by copying a current file hash.
+
+Source identity does not establish predicate entailment or implementation acceptance. Every new current reference requires an explicit qualification and unassessed detailed acceptance. The existing strict parser, original manifest/240 pins, requirement/alias/task statuses, source bridge history and all existing references remain unchanged. No current reference is assigned in this increment. Exact source ownership, the current task-source bridge successor table, current evidence qualification and the full reconciliation remain separate open work.
+
+Pre-commit controls pass: six new source-integrity tests/59 assertions and eight existing task/evidence regressions/48 assertions; lint has no findings and the 240-document/19-phase-index ASCII validation passes. A literal Unicode test character triggered the initial ASCII check; its escaped source representation preserves the same runtime UTF-8 boundary test, and the failed observation remains historical. Final checks are recorded against the immutable committed tuple before releasing the native writer claim. No product compiler/provider/native operation or Main write is performed.
