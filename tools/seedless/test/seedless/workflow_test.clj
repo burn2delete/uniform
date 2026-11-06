@@ -749,7 +749,10 @@
 
 (deftest stale-independent-review-is-rejected
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
-        t (assoc (w/worktree! ctx "review-fixture" base) :base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}"))]
+        t (assoc (w/worktree! ctx "review-fixture" base) :kind "adoption" :paths ["module.clj"]
+                 :base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+                 :checks {:candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+                          :commands [["clojure" "-M" "focused"]] :result :passed})]
     (try
       (with-redefs [rt/event! (fn [& _]) w/job! (fn [& _] (assoc (select-keys t [:base :candidate :tree]) :candidate "wrong"
                                                                  :verdict "approved" :evidence-scope "adoption"))]
@@ -836,3 +839,87 @@
                                                (simplify.schema/object-of {:value simplify.schema/text}))))
         (is (= "uniform_seedless" (get-in @requests [0 1 :clientInfo :name]))))
       (finally (delete-tree! (:root ctx))))))
+
+(deftest fresh-review-snapshot-binds-source-patch-checks-and-passive-prompt
+  (let [ctx (repository! (context))
+        worktree (io/file (get-in ctx [:config :worktree-root]) "review-snapshot")
+        source (io/file worktree "module.clj")
+        calls (atom [])
+        t {:key "fresh-review" :kind "adoption" :base "base" :candidate "candidate"
+           :tree "tree" :paths ["module.clj"] :worktree (str worktree)
+           :checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                    :result :passed}}]
+    (try
+      (.mkdirs worktree)
+      (spit source "(ns fixture)\n(def seed :clojure)\n")
+      (rt/update! ctx assoc-in [:tasks "fresh-review"] t)
+      (with-redefs [w/assert-identity! (fn [& _] (swap! calls conj :identity))
+                    w/assert-clean! (fn [& _] (swap! calls conj :clean))
+                    rt/assert-authorized! (fn [& _] (swap! calls conj :authorized))
+                    rt/command (fn [_ _ argv & _]
+                                 (swap! calls conj [:snapshot argv])
+                                 {:exit 0 :out "diff --git a/module.clj b/module.clj\n" :err ""})
+                    w/job! (fn [_ _ _ prompt _ job]
+                             (swap! calls conj [:review job prompt])
+                             {:verdict "approved" :base "base" :candidate "candidate" :tree "tree"
+                              :evidence-scope "adoption" :summary "evidence supplied"
+                              :findings [] :residual-host-boundary "Fixture host remains"})]
+        (is (= "approved" (:verdict (w/review! ctx t "adoption"))))
+        (let [receipt (get-in @(:state ctx) [:tasks "fresh-review" :review-evidence])
+              review-call (some #(when (and (vector? %) (= :review (first %))) %) @calls)
+              prompt (nth review-call 2)]
+          (is (= {:base "base" :candidate "candidate" :tree "tree"} (:tuple receipt)))
+          (is (= "adoption" (:scope receipt)))
+          (is (= (rt/digest "diff --git a/module.clj b/module.clj\n")
+                 (:patch-sha256 receipt)))
+          (is (= "module.clj" (get-in receipt [:source 0 :path])))
+          (is (= (rt/digest "(ns fixture)\n(def seed :clojure)\n")
+                 (get-in receipt [:source 0 :sha256])))
+          (is (= (rt/digest prompt) (:prompt-sha256 receipt)))
+          (is (some #(and (vector? %) (= :snapshot (first %))) @calls))
+          (is (some #(and (vector? %) (= :review (first %))) @calls))
+          (is (.contains ^String prompt "diff --git a/module.clj b/module.clj"))
+          (is (.contains ^String prompt "(def seed :clojure)"))
+          (is (.contains ^String prompt "Do not run Git, Clojure, tests, builds"))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest tampered-review-evidence-is-rejected-before-a-review-turn
+  (let [checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                :result :passed}
+        t {:key "evidence" :base "base" :candidate "candidate" :tree "tree"
+           :paths ["module.clj"] :checks checks}
+        source "(ns fixture)\n"
+        evidence {:tuple {:base "base" :candidate "candidate" :tree "tree"}
+                  :scope "adoption" :paths ["module.clj"] :patch "patch"
+                  :patch-sha256 (rt/digest "patch")
+                  :source [{:path "module.clj" :sha256 (rt/digest source)
+                            :executable false :content source}]
+                  :checks checks :checks-sha256 (rt/digest (pr-str checks))}]
+    (is (= evidence (w/validate-review-evidence! t "adoption" evidence)))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (w/validate-review-evidence! t "adoption"
+                                               (assoc-in evidence [:source 0 :content]
+                                                         "(ns tampered)\n"))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (w/validate-review-evidence! t "adoption"
+                                               (assoc-in evidence [:tuple :candidate]
+                                                         "other"))))))
+
+(deftest restricted-candidate-refuses-before-review-snapshot
+  (let [ctx (context)
+        t {:key "restricted-review" :kind "adoption" :base "base" :candidate "candidate"
+           :tree "tree" :paths ["module.clj"] :worktree "/tmp/never-read"
+           :error {:details {:restricted true}}
+           :checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                    :result :passed}}
+        called (atom [])]
+    (rt/update! ctx assoc-in [:tasks "restricted-review"] t)
+    (with-redefs [w/assert-identity! (fn [& _] (swap! called conj :identity))
+                  rt/command (fn [& _] (swap! called conj :snapshot) {:exit 0 :out "" :err ""})
+                  w/job! (fn [& _] (swap! called conj :review))]
+      (let [failure (try (w/review! ctx t "adoption")
+                         nil
+                         (catch clojure.lang.ExceptionInfo e e))]
+        (is (some? failure))
+        (is (true? (:restricted (ex-data failure))))
+        (is (empty? @called))))))
