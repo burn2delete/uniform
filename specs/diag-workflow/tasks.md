@@ -185,3 +185,14 @@ acceptance remains pending. PR767 shared-file append composition belongs to the
 controller; none of its implementation or acceptance is adopted here. Broader
 producer normalization, severity emission policy, internal-error context,
 rendering, release and parent closure remain separate obligations.
+
+### Projection-check repair feedback
+
+The supplied controller result reports exit 1 for the proposed diagnostic
+projection check: `tools/diag_task_projection.clj` is missing. This check is
+failed before validation, not passed or merely unrun. Preserve the projection
+obligation and historical receipts. Its repair needs controller disposition
+of the missing tool outside the five owned paths; no alternative check has
+been accepted as equivalent. The existing severity implementation and fixtures
+remain authored, with their executable checks unrun by this worker. Independent
+acceptance is pending and the parent remains Open.

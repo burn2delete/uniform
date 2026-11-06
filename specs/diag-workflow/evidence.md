@@ -178,3 +178,42 @@ normalization, views and rendering remain outside this increment. Independent
 acceptance and integration are pending. Historical results above do not accept
 this behavior. The parent remains Open; no release, self-hosting or
 seed-retirement authority is claimed.
+
+### Projection-check repair feedback
+
+2026-11-06, Codex bounded worker in `increment-1268`, same finding and owner
+task. The subsequent user-supplied controller result supersedes the earlier
+"All listed checks are unrun" description for this one command only:
+
+```clojure
+["clojure" "-M" "tools/diag_task_projection.clj" "--check"]
+```
+
+Reported result: exit 1, empty stdout, and `FileNotFoundException` naming
+`tools/diag_task_projection.clj (No such file or directory)` before any
+projection assertions ran. The feedback reports `:restricted false` and
+`:capture-truncated false`. This is an attributed controller failure, not a
+worker execution or a denial. The historical 2026-10-26 passing receipts above
+remain historical and do not establish current tool availability.
+
+Passive source reads found the severity membership check and requested
+positive/negative constructor/validator fixtures already authored. No source
+change is justified by this missing-file failure. The available generic
+`tools/task_projection.clj` explicitly provides no CLI or file IO; the
+platform projector owns Platform inputs. Neither establishes an equivalent
+Diagnostics check. No substitute, weakened assertion or skipped projection
+obligation is claimed.
+
+This repair turn changes only supplemental plan/task/evidence text. Restoring
+the missing projector requires edits outside the five owned paths. Missing
+authority: ownership of `tools/diag_task_projection.clj` and any required
+supporting tests, or controller identification of an existing equivalent
+Diagnostics check with its contract. That verification dependency remains
+unresolved. No semantic ambiguity was found in the canonical five severities.
+The six other proposed vectors above remain unrun worker checks for controller
+verification under retained permissions; their success is not inferred from
+passive inspection. No tests, builds, checks, Git, network operations or commits
+were executed in this repair turn, and no retained refusal was retried or
+transferred. PR767 composition and independent acceptance remain controller
+obligations. The parent remains Open; no release, self-hosting or seed-retirement
+authority is claimed.

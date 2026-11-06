@@ -356,3 +356,17 @@ pending; release has its separate evidence dependencies. Append this finding
 separately from PR767's planning work; the controller coordinates their shared
 artifact composition without adopting that candidate's implementation. The
 parent remains Open.
+
+### Projection-check repair feedback
+
+The controller's subsequent local check of
+`["clojure" "-M" "tools/diag_task_projection.clj" "--check"]` failed
+before validation because that script is absent in this checkout. The
+historical projection receipts do not establish current availability. Keep
+the projection obligation unresolved; the severity tests and document
+validators are not substitutes for it. Restoring the projector requires
+ownership of `tools/diag_task_projection.clj`, outside this increment's five
+owned paths, or a controller-supplied current equivalent with its governing
+contract and checks. Do not reconstruct the historical tool from its receipts
+or change task criteria/statuses to satisfy the check. The severity behavior
+has no new semantic ambiguity; this is a verification-tool ownership gap.
