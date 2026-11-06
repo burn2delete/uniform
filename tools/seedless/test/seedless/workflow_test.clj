@@ -751,6 +751,7 @@
 
 (deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
   (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}
+                     {:number 13 :head nil :base {:ref "main" :repo nil}}
                      "not-a-pull-request"]]
     (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
           repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
@@ -765,6 +766,41 @@
         (is (nil? (:planning @(:state ctx))))
         (is (empty? (:effects @(:state ctx))))
         (finally (delete-tree! (:root ctx)))))))
+
+(deftest planner-accepts-deleted-repository-in-valid-pr-boundaries
+  (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+        repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        model-calls (atom 0)
+        open-prs [{:number 14 :head {:ref "codex/deleted-repo" :repo nil}
+                   :base {:ref "main" :repo nil}}]
+        valid {:coverage ["module.clj"] :source-closure ["module.clj"] :target "fixture target"
+               :subset "required fixture closure" :summary "fixture audit" :blockers [] :slices []}]
+    (try
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/pages (fn [& _] open-prs)
+                    gh/comment! (fn [& _])
+                    w/campaign-issue! (fn [& _] {})
+                    w/admit! (fn [& _])
+                    w/job! (fn [& _] (swap! model-calls inc) valid)]
+        (is (= valid (w/plan! ctx))))
+      (is (= 1 @model-calls))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest planner-verifies-a-valid-non-root-snapshot-selector
+  (let [ctx (context)
+        file (io/file (:state-dir ctx) "nested.raw-input.edn")
+        repository {:id 99 :full_name "fixture/repo"}
+        raw {:open-prs [{:head {:repo repository}}]}
+        serialized (pr-str repository)
+        reference {:file (str file) :format "edn" :selector [:open-prs 0 :head :repo]
+                   :sha256 (rt/digest serialized) :chars (count serialized)
+                   :bytes (alength (.getBytes serialized "UTF-8"))}
+        verify (ns-resolve 'seedless.workflow 'verify-planning-snapshot!)]
+    (try
+      (rt/write-edn! file raw)
+      (is (= repository (verify reference)))
+      (finally (delete-tree! (:root ctx))))))
 
 (deftest retained-planner-snapshot-must-pass-file-digest-edn-and-selector-validation
   (doseq [[scenario write-artifact reference-transform]
@@ -803,6 +839,38 @@
         (is (zero? @provider-calls))
         (is (= before @(:state ctx)))
         (finally (delete-tree! (:root ctx)))))))
+
+(deftest pending-planner-input-must-match-verified-raw-snapshot
+  (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+        repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        file (io/file (:state-dir ctx) "plan-1.raw-input.edn")
+        raw {:tasks {} :open-prs [] :completion nil :inspections nil}
+        serialized (pr-str raw)
+        reference {:file (str file) :format "edn" :selector []
+                   :sha256 (rt/digest serialized) :chars (count serialized)
+                   :bytes (alength (.getBytes serialized "UTF-8"))}
+        changed-open-prs [{:number 99 :head {:ref "codex/changed" :repo nil}
+                           :base {:ref "main" :repo nil}}]
+        planning {:base base :round 1 :worktree {:worktree repo :branch "codex/plan"}
+                  :effect "plan/1" :open-prs changed-open-prs :raw-input-reference reference}
+        before (assoc @(:state ctx) :planning planning)
+        model-calls (atom 0) provider-calls (atom 0)]
+    (try
+      (rt/write-edn! file raw)
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/pages (fn [& _] (swap! provider-calls inc) [])
+                    w/job! (fn [& _] (swap! model-calls inc))]
+        (rt/update! ctx assoc :planning planning)
+        (try
+          (w/plan! ctx)
+          (is false "pending input divergence must fail closed")
+          (catch clojure.lang.ExceptionInfo error
+            (is (= :pending-input-mismatch (:reason (ex-data error)))))))
+      (is (zero? @model-calls))
+      (is (zero? @provider-calls))
+      (is (= before @(:state ctx)))
+      (finally (delete-tree! (:root ctx))))))
 
 (deftest completion-needs-checks-independent-review-and-unchanged-main
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")

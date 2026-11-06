@@ -801,16 +801,17 @@
                     (catch Exception error
                       (invalid-planning-snapshot! reference :file-unreadable
                                                   {:file (:file reference) :message (.getMessage error)})))
-          actual-bytes (utf8-size text)]
-      (when (or (not= (:chars reference) (count text))
-                (not= (:bytes reference) actual-bytes))
+          actual-root {:sha256 (rt/digest text) :chars (count text) :bytes (utf8-size text)}
+          root? (empty? (:selector reference))]
+      (when (and root?
+                 (or (not= (:chars reference) (:chars actual-root))
+                     (not= (:bytes reference) (:bytes actual-root))))
         (invalid-planning-snapshot! reference :file-size-mismatch
                                     {:expected {:chars (:chars reference) :bytes (:bytes reference)}
-                                     :actual {:chars (count text) :bytes actual-bytes}}))
-      (when (and (empty? (:selector reference))
-                 (not= (:sha256 reference) (rt/digest text)))
+                                     :actual (select-keys actual-root [:chars :bytes])}))
+      (when (and root? (not= (:sha256 reference) (:sha256 actual-root)))
         (invalid-planning-snapshot! reference :file-digest-mismatch
-                                    {:expected (:sha256 reference) :actual (rt/digest text)}))
+                                    {:expected (:sha256 reference) :actual (:sha256 actual-root)}))
       (let [snapshot (try (rt/read-edn (:file reference))
                           (catch Exception error
                             (invalid-planning-snapshot! reference :edn-invalid
@@ -826,26 +827,40 @@
                                        :actual {:sha256 (rt/digest serialized)
                                                 :chars (count serialized)
                                                 :bytes (utf8-size serialized)}}))
-        reference))))
+        selected))))
 
 (defn- validate-open-pr-snapshot! [open-prs]
   (doseq [[index pr] (map-indexed vector open-prs)]
     (when-not (map? pr)
       (rt/fail! "Open PR snapshot is malformed"
                 {:provider-shape :pull-request :index index :actual-type (type pr)}))
-    (doseq [location [:head :base]
-            :when (contains? pr location)]
+    (doseq [location [:head :base]]
+      (when-not (and (contains? pr location) (map? (get pr location)))
+        (rt/fail! "Open PR reference is malformed"
+                  {:provider-shape :pull-request-reference :index index :location location
+                   :actual-type (type (get pr location))
+                   :missing (not (contains? pr location))}))
       (let [reference (get pr location)]
-        (when (and (some? reference) (not (map? reference)))
-          (rt/fail! "Open PR reference is malformed"
-                    {:provider-shape :pull-request-reference :index index :location location
-                     :actual-type (type reference)}))
-        (when (and (map? reference) (contains? reference :repo)
+        (when (and (contains? reference :repo)
                    (some? (:repo reference)) (not (map? (:repo reference))))
           (rt/fail! "Open PR repository is malformed"
                     {:provider-shape :repository :index index :location location
                      :actual-type (type (:repo reference))})))))
   open-prs)
+
+(defn- verify-pending-planning-input! [pending reference snapshot raw-input]
+  (let [fields [:tasks :open-prs :completion :inspections]]
+    (when-not (and (map? snapshot) (every? #(contains? snapshot %) fields))
+      (invalid-planning-snapshot! reference :pending-input-shape
+                                  {:fields fields :actual-type (type snapshot)}))
+    (let [mismatched (filterv #(not= (get snapshot %) (get raw-input %)) fields)]
+      (when (seq mismatched)
+        (invalid-planning-snapshot! reference :pending-input-mismatch
+                                    {:fields mismatched
+                                     :expected-digest (rt/digest (pr-str (select-keys snapshot fields)))
+                                     :actual-digest (rt/digest (pr-str (select-keys raw-input fields)))
+                                     :pending-effect (:effect pending)}))))
+  snapshot)
 
 (defn- repository-identity [repository]
   (select-keys repository [:id :node_id :name :full_name :fullName :html_url :url]))
@@ -902,7 +917,8 @@
                    :inspections (:inspections @(:state ctx))}
         raw-reference (or (:raw-input-reference pending)
                           (planning-snapshot! ctx id raw-input))
-        _ (verify-planning-snapshot! raw-reference)
+        verified-snapshot (verify-planning-snapshot! raw-reference)
+        _ (when pending (verify-pending-planning-input! pending raw-reference verified-snapshot raw-input))
         planning {:base base :round n :worktree wt :effect id :open-prs open-prs
                   :raw-input-reference raw-reference}
         feedback (latest-planning-feedback ctx)
