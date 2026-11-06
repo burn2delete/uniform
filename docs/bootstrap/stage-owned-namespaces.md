@@ -52,6 +52,18 @@ only after its callers and evidence move to the stage API.
 
 ## Boundary and interface assignments
 
+The [C runtime-plan extraction](c-runtime-validation-evidence.md) adds the
+internal `gravity.backend.c/validate-runtime-plan!` API over caller-owned native
+plans and explicit live recognizer/refusal/catalog operations. It owns the
+existing iterative runtime-C subset decisions and returns the existing relative
+`:passed` label or B2-UNSUPPORTED owner refusal. Bootstrap retains the exact
+three-argument adapter, scalar/local recognizers, diagnostic construction,
+packet/source authentication, source discovery and all native execution
+authority. C pipeline tests cover actual paired Gravity plan compilation and
+deterministic runtime C text emission, malformed/unsupported plans, lexical
+locals, deep traversal, provenance, live ports and exception/order identity.
+This adds no canonical B1/C14 admission or whole-B2/native execution claim.
+
 All APIs below are intended stage interfaces unless explicitly listed as
 implemented in the slice record. They do not add callable stubs. `verify`
 means verification under the owning contract, not acceptance of caller claims.

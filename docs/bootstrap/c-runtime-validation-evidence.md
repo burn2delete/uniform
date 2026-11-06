@@ -58,3 +58,56 @@ C6/C11 authentication or replay, release, migration, self-hosting or seed
 retirement. Existing native heap/stack/platform boundaries remain explicit.
 Synthetic plan controls and emitted C text are not authenticated artifacts or
 native executable conformance evidence.
+
+## Implemented source and local evidence
+
+The existing 220-line validator body now lives in gravity.backend.c with six
+per-use recognizer/refusal ports and one live instruction-catalog port. The
+stage reuses its existing private owner-value selector; no new abstraction or
+Bootstrap import is added. Public APIs increase from 20 to 21. The original
+three-argument adapter passes actual Bootstrap Vars, preserving late lookup
+and callable-before-argument selection. Recognizers, source-path resolver,
+packet ordering, diagnostics and CI remain byte-identical. P15 receipt lineage
+continues to name the actual Bootstrap compatibility entrypoint; historical
+evidence is neither repinned nor relabelled as direct stage admission.
+
+The immutable original validator at scope commit
+f0b8cf79755a58dd73bdb3bbe95680ba2672447e and current wrapper consume
+identical live inputs. All 22 complete raw and parsed outcomes match: ten
+returns and twelve real B2 refusals. The paired actual Hello Gravity sources
+compile through the existing ordinary current compiler route, retain equal
+plan identities, and emit identical deterministic runtime C text after
+validation. Capture records actual source paths/hashes and compiler metadata.
+Inputs, including unsafe/runtime-check/human-review metadata, remain unchanged.
+Capture SHA256:
+4b634643c144fdbaec67ac920e404aa375362ceeee09a74ab171f24f8e1d0783.
+No private C6/C11 factory, packet authentication, source replay or native
+process is invoked by this evidence route.
+
+The unchanged complete C pipeline baseline passes 18 tests / 265 assertions
+under its existing 2g/180-second child. The expanded complete pipeline passes
+25 tests / 365 assertions. Added controls include real paired compilation and
+C text emission, actual source-span diagnostics, lexical string locals,
+6000 nested do instructions without host recursion, retained large strings,
+live catalog/recognizer/refusal Vars, function selection before comparator-
+observed argument lookup, original exception identity and returning failures.
+The historical ignored statement-literal boundary is pinned without claiming
+that a subset-pass label validates arbitrary literal representation.
+
+The first expanded run had nine failures from an incorrect test expectation
+for a nonexistent fallback-status diagnostic field. The original diagnostic
+owner supplies severity :error. Only the assertion was corrected; production
+semantics remain unchanged, and the failed log remains preserved as NONPASS.
+Independent reconstruction recovers the exact original validator body and
+entire prior stage bytes. All eleven named recognizer, caller, loader, receipt
+and CI/workflow files remain byte-identical. No tools directly load component
+00642 and no C-specific construction/receipt dependency inventory exists.
+No unrelated Core root list or isolated Core caller is changed.
+
+The language boundary passes 6 tests / 11 assertions. Four affected JVM adapter
+controls pass 53 assertions without running a native toolchain. Cold loading
+exposes exactly 21 declared public APIs/arglists, zero namespace aliases and
+no Bootstrap. Changed stage/test lint, ASCII/diff checks and both document
+validators pass. Complete current-Main contextual lint, independent review,
+hosted CI/artifact audit and exact coordinator integration remain separate
+evidence requirements.

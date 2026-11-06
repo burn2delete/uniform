@@ -114,6 +114,172 @@
    {:engine :gravity-c-emission-data-development :compiler-artifact-plan? true}
    @gravity-plan name arguments))
 
+(defn- runtime-validation-ports []
+  {:instructions #'bootstrap/c-backend-runtime-derived-instructions
+   :reject! #'bootstrap/c-backend-runtime-reject!
+   :literal? #'bootstrap/c-backend-runtime-literal?
+   :local-present? #'bootstrap/c-backend-runtime-local-present?
+   :string-expression-supported? #'bootstrap/c-backend-runtime-string-expression-supported?
+   :test-expression-supported? #'bootstrap/c-backend-runtime-test-expression-supported?
+   :next-local-kinds #'bootstrap/c-backend-runtime-next-local-kinds})
+
+(defn- runtime-plan [instruction]
+  {:entrypoint 'main :functions (sorted-map 'main {:instructions [instruction]})})
+
+(defn- runtime-refusal [plan]
+  (try (bootstrap/c-backend-validate-runtime-plan! "runtime-data.gravity" :c plan)
+       nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
+
+(deftest runtime-validator-contract-retains-native-data-boundary
+  (let [contract (:gravity/namespace-contract (meta #'c/validate-runtime-plan!))]
+    (is (= 21 (count (ns-publics 'gravity.backend.c)) (count (:public-api contract))))
+    (is (= '([operations source-path target plan])
+           (:arglists (meta #'c/validate-runtime-plan!))
+           (get-in contract [:public-api 'validate-runtime-plan! :arglists])))
+    (is (= '([source-path target plan])
+           (:arglists (meta #'bootstrap/c-backend-validate-runtime-plan!))))
+    (is (= (set (keys (runtime-validation-ports)))
+           (set (get-in contract [:public-api 'validate-runtime-plan! :operation-inputs]))))
+    (is (every? var? (vals (runtime-validation-ports))))
+    (is (= :none (get-in contract [:public-api 'validate-runtime-plan! :admission])))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:issues-certificates? contract)))
+    (is (false? (get-in contract [:public-api 'validate-runtime-plan! :grants-authority?])))
+    (is (empty? (ns-aliases 'gravity.backend.c)))))
+
+(deftest real-paired-gravity-plans-validate-emit-and-retain-identity
+  ;; Same ordinary current compiler route as the Runtime pipeline. No public
+  ;; Core constructor, private artifact factory or native process runs.
+  (let [products
+        (mapv
+         (fn [extension]
+           (let [path (.getCanonicalPath (io/file (str "examples/hello" extension)))
+                 text (slurp path :encoding "UTF-8")
+                 emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :c))
+                 plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text)
+                 before (pr-str plan)]
+             (is (= :passed (bootstrap/c-backend-validate-runtime-plan! path :c plan)))
+             (let [source (bootstrap/c-backend-runtime-source plan)]
+               (is (= source (bootstrap/c-backend-runtime-source plan)))
+               (is (str/includes? source "int main(void)"))
+               (is (str/includes? source "fwrite("))
+               (is (= before (pr-str plan)))
+               (is (= (:plan-id plan)
+                      (str "sha256:" (bootstrap/sha256-hex
+                                      (pr-str (bootstrap/c-backend-canonical-value
+                                               (dissoc plan :plan-id)))))))
+               (let [span {:source path :start {:line 5 :column 1} :end {:line 5 :column 2}}
+                     bad (assoc-in plan [:functions (:entrypoint plan) :instructions 0]
+                                   {:op :function-call :function 'unsupported :args []
+                                    :source-span span :generated-origin [{:source path}]})
+                     refusal (try (bootstrap/c-backend-validate-runtime-plan! path :c bad)
+                                  nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+                 (is (= "B2-UNSUPPORTED" (:id refusal)))
+                 (is (= span (:source-span refusal) (get-in refusal [:primary :span])))
+                 (is (= :function-call (:unsupported-op refusal)))
+                 (is (= :runtime-c-lowering-rule (:missing-fact refusal))))
+               {:source source :plan-id (:plan-id plan)})))
+         [".gravity" ".qst"])]
+    (is (= (first products) (second products)))))
+
+(deftest runtime-validator-rejects-actual-shape-local-and-value-gaps
+  (doseq [[instruction fact]
+          [[42 :instruction-record]
+           [{:op :local :name 'unknown} :runtime-local-binding]
+           [{:op :println :args '()} :runtime-c-value-lowering]
+           [{:op :let :bindings 42 :body []} :runtime-let-shape]
+           [{:op :let :bindings [{:name 'x :expr {:op :vector-literal :items []}}]
+             :body []} :runtime-let-binding-lowering]
+           [{:op :println :args [{:op :literal :value []}]} :runtime-c-value-lowering]
+           [{:op :println :args [{:op :builtin-call :function 'str :args []}]}
+            :runtime-str-arity-lowering]
+           [{:op :println :args [{:op :builtin-call :function 'str
+                                 :args [{:op :literal :value 1}]}]}
+            :runtime-str-operand-lowering]
+           [{:op :if :test {:op :do :body []}
+             :then {:op :literal :value 1} :else {:op :literal :value 0}}
+            :runtime-c-test-lowering]]]
+    (let [plan (runtime-plan instruction) before (pr-str plan)
+          result (runtime-refusal plan)]
+      (is (= "B2-UNSUPPORTED" (:id result)))
+      (is (= fact (:missing-fact result)))
+      (is (= :runtime-derived (:lowering-mode result)))
+      (is (= :c (:target result)))
+      (is (= :error (:severity result)))
+      (is (= before (pr-str plan))))))
+
+(deftest runtime-validator-keeps-lexical-string-and-iterative-boundaries
+  (let [plan (runtime-plan
+              {:op :let :bindings [{:name 'x :expr {:op :literal :value "left"}}]
+               :body [{:op :if :test {:op :local :name 'x}
+                       :then {:op :println :args [{:op :builtin-call :function 'str
+                                                  :args [{:op :local :name 'x}
+                                                         {:op :quote :value "right"}]}]}
+                       :else {:op :println :args [{:op :literal :value nil}]}}]})
+        before (pr-str plan)]
+    (is (= :passed (c/validate-runtime-plan! (runtime-validation-ports) "lexical.gravity" :c plan)))
+    (is (= before (pr-str plan)))
+    (is (str/includes? (bootstrap/c-backend-runtime-source plan) "int main(void)")))
+  (let [deep (loop [n 6000 body {:op :literal :value nil}]
+               (if (zero? n) body (recur (dec n) {:op :do :body [body]})))]
+    (is (= :passed (bootstrap/c-backend-validate-runtime-plan! "deep.gravity" :c (runtime-plan deep)))))
+  ;; A historical statement literal is ignored; do not invent scalar or
+  ;; input-size admission requirements while moving the existing validator.
+  (is (= :passed (bootstrap/c-backend-validate-runtime-plan!
+                 "literal-data.gravity" :c (runtime-plan {:op :literal :value []}))))
+  (is (= :passed (bootstrap/c-backend-validate-runtime-plan!
+                 "large-data.gravity" :c
+                 (runtime-plan {:op :println :args [{:op :literal :value (apply str (repeat 65537 "x"))}]})))))
+
+(deftest runtime-validator-retains-live-catalog-recognizer-and-refusal-vars
+  (let [ports (runtime-validation-ports)
+        plan (runtime-plan {:op :println :args [{:op :literal :value "x"}]})
+        calls (atom []) failure (ex-info "late runtime refusal" {:identity :owner})]
+    (with-redefs [bootstrap/c-backend-runtime-derived-instructions #{:literal}]
+      (is (= "B2-UNSUPPORTED" (:id (runtime-refusal plan)))))
+    (with-redefs [bootstrap/c-backend-runtime-literal?
+                  (fn [value]
+                    (swap! calls conj [:literal value])
+                    (alter-var-root #'bootstrap/c-backend-runtime-reject!
+                                    (constantly (fn [& _] (throw failure)))) false)
+                  bootstrap/c-backend-runtime-reject! (fn [& _] (throw (Exception. "stale refusal")))]
+      (is (identical? failure
+                     (try (c/validate-runtime-plan! ports "late.gravity" :c plan)
+                          nil (catch Throwable error error)))))
+    (is (= [[:literal "x"]] @calls))))
+
+(deftest runtime-validator-selects-callable-before-instruction-value
+  (let [events (atom []) armed (atom false)
+        instruction (sorted-map-by
+                     (fn [left right]
+                       (when (and @armed (= :value left))
+                         (swap! events conj :argument)
+                         (alter-var-root #'bootstrap/c-backend-runtime-literal?
+                                         (constantly (fn [_] (swap! events conj :late) true))))
+                       (compare left right))
+                     :op :literal :value "text")
+        plan (runtime-plan {:op :println :args [instruction]})]
+    (with-redefs [bootstrap/c-backend-runtime-literal? (fn [_] (swap! events conj :original) true)]
+      (reset! armed true)
+      (is (= :passed (bootstrap/c-backend-validate-runtime-plan! "order.gravity" :c plan)))
+      (reset! armed false)
+      (is (= [:argument :argument :original] @events)))))
+
+(deftest runtime-validator-preserves-owner-error-and-returning-failure
+  (let [failure (ex-info "owner validator error" {:identity :owner})
+        calls (atom []) ports (runtime-validation-ports)
+        plan (runtime-plan {:op :function-call :function 'unsupported :args []})]
+    (is (identical? failure
+                   (try (c/validate-runtime-plan! (assoc ports :reject! (fn [& _] (throw failure)))
+                                                 "owner.gravity" :c plan)
+                        nil (catch Throwable error error))))
+    (is (= :passed
+           (c/validate-runtime-plan! (assoc ports :reject! (fn [& args] (swap! calls conj args) false))
+                                     "owner.gravity" :c plan)))
+    (is (= 2 (count @calls)))
+    (is (= [[:function-call :runtime-c-lowering-rule] [:function-call :runtime-c-lowering-rule]]
+           (mapv #(vec (take-last 2 %)) @calls)))))
+
 (deftest assembles-relative-c17-artifacts-with-complete-source-associations
   (let [data (assembly-fixture) before (pr-str data) artifact (assemble data)
         native-output (capture-native)]

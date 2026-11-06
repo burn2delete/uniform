@@ -5,7 +5,13 @@
   (quote
 {:authenticates-inputs? false,
  :public-api
- {assemble-native
+ {validate-runtime-plan!
+  {:arglists ([operations source-path target plan]), :admission :none,
+   :operation-inputs [:reject! :literal? :local-present? :string-expression-supported?
+                      :test-expression-supported? :next-local-kinds :instructions],
+   :input-boundary :caller-owned-native-runtime-plan,
+   :authenticates-plan? false, :grants-authority? false},
+  assemble-native
   {:arglists ([owner-operations source-path c11-artifact c-packet b1-record payload mir preflight]),
    :admission :none},
   run-compiler!
@@ -71,6 +77,7 @@
   value-name {:arglists ([operation-index operation-id])}},
  :supported
  [:existing-scalar-c17-data-emission
+  :iterative-runtime-c-subset-validation
   :stable-source-and-proof-associations
   :native-constructed-unverified-artifact-assembly
   :pending-toolchain-manifests
@@ -81,7 +88,7 @@
  {:requires [],
   :consumed-by [gravity.bootstrap],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
- :governing-contracts [D1 D2 D3 D6 D8 D9 C1 C14 C15 B1 B2 B13 B14 TEST2],
+ :governing-contracts [D1 D2 D3 D6 D8 D9 C1 C14 C15 C18 B1 B2 B13 B14 BOOT8 TEST2],
  :unsupported
  [:untrusted-input-validation
   :b1-c11-admission
@@ -97,7 +104,9 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:caller-validated-mir-operations
+ [:caller-owned-native-runtime-plan
+  :late-runtime-recognizer-refusal-and-catalog-vars
+  :caller-validated-mir-operations
   :operation-index
   :b1-shaped-manifest-data
   :source-and-proof-associations
@@ -109,14 +118,15 @@
   :caller-supplied-preflight-data-and-live-assembly-ports],
  :namespace gravity.backend.c,
  :diagnostic-ownership
- {:stage ["B2-MANIFEST" "B2-DIALECT" :exact-data-mismatch
+ {:stage ["B2-UNSUPPORTED" "B2-MANIFEST" "B2-DIALECT" :exact-data-mismatch
            :c11-compiler-acceptance :c-runtime-execution :c11-compiler],
   :existing-owner
   [:diagnostic-construction-and-publication :input-admission
    :native-broker-and-staging :process-watchdog-and-capture
    :cleanup-implementation :native-authority-and-publication]},
  :artifact-outputs
- [:c17-source-text
+ [:relative-runtime-c-subset-pass-or-owner-refusal
+  :c17-source-text
   :c-header-text
   :operation-records
   :build-manifest
@@ -130,7 +140,7 @@
   :owner-supplied-compile-runtime-record
   :original-exception-interruption-or-cleanup-failure],
  :issues-certificates? false,
- :contract-boundary :internal-c-emission-data-and-compiler-call-sequencing}
+ :contract-boundary :internal-c-data-runtime-subset-validation-and-compiler-call-sequencing}
 ))
 
 (defn build-manifest-record
@@ -642,6 +652,227 @@
      :public? false
      :release? false
      :self-hosted? false}))
+
+(defn validate-runtime-plan!
+  "Fail closed before lowering when the explicitly requested runtime-derived
+  mode sees an instruction outside its closed scalar control-flow subset.
+
+  Validation is iterative so malformed or adversarially deep plans cannot
+  exhaust the host stack.  The lexical-local set travels with each pending
+  frame and value-position failures retain the stable parent `println`
+  diagnostic used by the earlier runtime-derived slice."
+  [operations source-path target plan]
+  (loop [pending (vec (mapcat (fn [[_ function]]
+                                (map (fn [instruction]
+                                       {:kind :statement
+                                        :instruction instruction
+                                        :locals {}})
+                                     (:instructions function)))
+                              (:functions plan)))]
+    (when-let [{:keys [kind instruction locals parent]} (peek pending)]
+      (let [pending (pop pending)
+            op (when (map? instruction) (:op instruction))]
+        (when-not (map? instruction)
+          ((owner-value operations :reject!)
+           source-path target instruction
+           "runtime-derived C lowering received a malformed instruction"
+           op :instruction-record))
+        (when-not (contains? (owner-value operations :instructions) op)
+          ((owner-value operations :reject!)
+           source-path target (or parent instruction)
+           "runtime-derived C lowering does not implement this instruction"
+           op :runtime-c-lowering-rule))
+        (case kind
+          :expression
+          (cond
+            (#{:literal :quote} op)
+            (do
+              (when-not ((owner-value operations :literal?) (:value instruction))
+                ((owner-value operations :reject!)
+                 source-path target (or parent instruction)
+                 "runtime-derived C lowering only accepts scalar literals"
+                 op (if parent :runtime-c-value-lowering
+                        :scalar-literal-lowering)))
+              (recur pending))
+            (= :local op)
+            (do
+              (when-not ((owner-value operations :local-present?)
+                         locals (:name instruction))
+                ((owner-value operations :reject!)
+                 source-path target (or parent instruction)
+                 "runtime-derived C lowering cannot resolve this local"
+                 :local (if parent :runtime-c-value-lowering
+                            :runtime-local-binding)))
+              (recur pending))
+            (= :builtin-call op)
+            (let [str? (= 'str (:function instruction))
+                  supported-arity? (contains? #{1 2}
+                                               (count (:args instruction)))
+                  direct-println? (= :println (:op parent))
+                  operands? (and (vector? (:args instruction))
+                                 (every? #((owner-value operations :string-expression-supported?)
+                                            % locals)
+                                         (:args instruction)))]
+              (when-not (and str? direct-println? supported-arity? operands?)
+                ((owner-value operations :reject!)
+                 source-path target (or parent instruction)
+                 (if (and str? direct-println? supported-arity?)
+                   "runtime-derived str requires one or two string scalar literals, quotes, or proven string locals"
+                   (if (and str? direct-println?)
+                     "runtime-derived str supports one or two operands"
+                     "runtime-derived str is only supported as a direct println value"))
+                 (:function instruction)
+                 (if (and str? direct-println? supported-arity?)
+                   :runtime-str-operand-lowering
+                   (if (and str? direct-println?)
+                     :runtime-str-arity-lowering
+                     :runtime-c-value-lowering))))
+              (recur pending))
+            (= :if op)
+            (do
+              (when-not ((owner-value operations :test-expression-supported?)
+                         (:test instruction) locals)
+                ((owner-value operations :reject!)
+                 source-path target (or parent instruction)
+                 "runtime-derived C lowering requires a scalar local or literal test"
+                 :if :runtime-c-test-lowering))
+              (recur (into pending
+                           [{:kind :expression
+                             :instruction (:else instruction)
+                             :locals locals
+                             :parent instruction}
+                            {:kind :expression
+                             :instruction (:then instruction)
+                             :locals locals
+                             :parent instruction}
+                            {:kind :expression
+                             :instruction (:test instruction)
+                             :locals locals
+                             :parent instruction}])))
+            (= :let op)
+            (let [bindings (:bindings instruction)]
+              (when-not (and (vector? bindings)
+                             (vector? (:body instruction)))
+                ((owner-value operations :reject!)
+                 source-path target (or parent instruction)
+                 "runtime-derived let has a malformed binding or body shape"
+                 :let :runtime-let-shape))
+              (let [next-locals ((owner-value operations :next-local-kinds)
+                                 locals bindings)]
+                (when-not (= 1 (count (:body instruction)))
+                  ((owner-value operations :reject!)
+                   source-path target (or parent instruction)
+                   "runtime-derived let value requires one scalar body expression"
+                   :let :runtime-c-value-lowering))
+                (doseq [{:keys [name expr]} bindings]
+                  (when-not (and (symbol? name)
+                                 (#{:literal :quote} (:op expr))
+                                 ((owner-value operations :literal?)
+                                  (:value expr)))
+                    ((owner-value operations :reject!)
+                     source-path target (or parent instruction)
+                     "runtime-derived let bindings must be scalar literals"
+                     :let :runtime-let-binding-lowering)))
+                (recur (conj pending {:kind :expression
+                                      :instruction (first (:body instruction))
+                                      :locals next-locals
+                                      :parent instruction}))))
+            :else
+            ((owner-value operations :reject!)
+             source-path target (or parent instruction)
+             "runtime-derived C lowering does not implement this value expression"
+             (or (some-> parent :op) op)
+             :runtime-c-value-lowering))
+
+          :statement
+          (case op
+            :literal (recur pending)
+            :quote (recur pending)
+            :local
+            (do
+              (when-not ((owner-value operations :local-present?)
+                         locals (:name instruction))
+                ((owner-value operations :reject!)
+                 source-path target instruction
+                 "runtime-derived C lowering cannot resolve this local"
+                 :local :runtime-local-binding))
+              (recur pending))
+            :println
+            (do
+              (when-not (vector? (:args instruction))
+                ((owner-value operations :reject!)
+                 source-path target instruction
+                 "runtime-derived println has a malformed argument shape"
+                 :println :runtime-c-value-lowering))
+              (recur (into pending
+                           (map (fn [arg]
+                                  {:kind :expression
+                                   :instruction arg
+                                   :locals locals
+                                   :parent instruction})
+                                (:args instruction)))))
+            :do
+            (do
+              (when-not (vector? (:body instruction))
+                ((owner-value operations :reject!)
+                 source-path target instruction
+                 "runtime-derived do has a malformed body shape"
+                 :do :runtime-c-lowering-rule))
+              (recur (into pending
+                           (map (fn [child]
+                                  {:kind :statement
+                                   :instruction child
+                                   :locals locals})
+                                (:body instruction)))))
+            :if
+            (do
+              (when-not ((owner-value operations :test-expression-supported?)
+                         (:test instruction) locals)
+                ((owner-value operations :reject!)
+                 source-path target instruction
+                 "runtime-derived C lowering requires a scalar local or literal test"
+                 :if :runtime-c-test-lowering))
+              (recur (into pending
+                           [{:kind :statement
+                             :instruction (:else instruction)
+                             :locals locals}
+                            {:kind :statement
+                             :instruction (:then instruction)
+                             :locals locals}
+                            {:kind :expression
+                             :instruction (:test instruction)
+                             :locals locals}])) )
+            :let
+            (let [bindings (:bindings instruction)]
+              (when-not (and (vector? bindings)
+                             (vector? (:body instruction)))
+                ((owner-value operations :reject!)
+                 source-path target instruction
+                 "runtime-derived let has a malformed binding or body shape"
+                 :let :runtime-let-shape))
+              (let [next-locals ((owner-value operations :next-local-kinds)
+                                 locals bindings)]
+                (doseq [{:keys [name expr]} bindings]
+                  (when-not (and (symbol? name)
+                                 (#{:literal :quote} (:op expr))
+                                 ((owner-value operations :literal?)
+                                  (:value expr)))
+                    ((owner-value operations :reject!)
+                     source-path target instruction
+                     "runtime-derived let bindings must be scalar literals"
+                     :let :runtime-let-binding-lowering)))
+                (recur (into pending
+                             (map (fn [child]
+                                    {:kind :statement
+                                     :instruction child
+                                     :locals next-locals})
+                                  (:body instruction))))))
+            ;; A statement value is legal only for the closed scalar forms.
+            ((owner-value operations :reject!)
+             source-path target instruction
+             "runtime-derived C lowering does not implement this statement"
+             op :runtime-c-lowering-rule))))))
+  :passed)
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
