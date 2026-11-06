@@ -4935,3 +4935,748 @@ dependency/source controls are bounded evidence only. Runtime C2-HASH baseline
 nonpasses remain visible; no pin change, compiler/runtime/native/C7 execution,
 complete L7 implementation, migration/release authority, or integration is
 claimed. Independent review remains pending.
+## Complete pattern-matching source continuation
+
+Source `a4f6d9b543bb47db8ba5438f39db8c1cbe2b8726` adds thirteen L7
+criteria to eleven existing Open tasks in five authorities. The exact earlier
+977-byte pattern-change predicate remains unchanged with Evolution: fourteen
+criteria name twelve existing tasks across six authorities. Five task files,
+twenty-one existing plans and the Core specification are refined; no new
+feature or task identity is created. All 149 current keys, 25 authorities and
+forty future records remain. The original 139 bodies retain 44 identical and
+95 explicitly amended bodies; this continuation amends no previously identical
+body. Statuses, checkboxes and historical evidence retain their scope.
+
+Direct complete L7 review preserves 92 facet identities, 66 source occurrences,
+fifteen full section conjunctions and seven original owner obligations. The
+preserved census labels seventy facets semantic and 22 context. This proposal
+separately classifies 69 facets as complete source predicates and 23 as
+hierarchy/dependency context, over 46 semantic and twenty context occurrences.
+Two headings are retained as context and the rejection-list preamble remains
+joined to its full list; original census identities/labels are not rewritten.
+Preambles, lists, examples and following conditions are conjoined by complete
+source section. These populations establish conservation, not independent
+semantic acceptance or a coverage percentage.
+
+Resolve owns lexical pattern/branch/guard identities and duplicate-name
+refusal. Types owns actual scrutinee/branch narrowing, closed-domain coverage,
+normally returning Boolean guards and trusted-shape evidence. Legality derives
+real move/borrow/linear-flow and profile results. The inherited check-and-bind
+allocation retains its original Legality task plus Resolve/Types witnesses;
+it does not move lexical resolution or type inference to ownership analysis.
+Whole attached-owner entailment remains unassessed.
+
+Keep all fourteen pattern families in scope under their actual governing
+profile/runtime/ownership conditions. An unsupported implementation refusal
+does not complete a required family. Actual Result constructor bindings retain
+their source types; canonical-if-only List/nil joins do not widen match joins.
+Normally returning guards establish Bool; nil, nil-or-Bool, numeric/text,
+unknown or Dynamic results do not become truthy guards. Structural failure
+skips guard/body, success makes bindings available before once-only guard
+evaluation, false continues and non-returning transfers survive. Effects owns
+real guard/branch summaries, mutation-sensitive order and replay records, with
+actual legality and separate grants before admitted operations.
+
+Closed enum/union, formal, opted-in safety-critical and sound internal-analysis
+coverage needs actual domain/constructor/clause/guard evidence. Defaults retain
+governing compatibility policy and cannot suppress required safety proof;
+formal closed matches require totality or explicit partiality proof. Matching
+does not validate untrusted network/filesystem/database/AI/tool values. Actual
+authentic schema/typed-boundary dataflow and surviving checks precede trusted
+closed shapes, variant constructors and required keys. Schema/Runtime own the
+actual validators/checks rather than a type annotation or nonempty link.
+
+Initial structural candidate Core precedes analysis. The actual checked
+decision product later joins owner narrowing/coverage/effect/resource/schema/
+profile results, preserving all seven artifact families, eight L7 diagnostic
+meanings and every pattern/branch source/generated span. Deterministic lowered
+tests/bindings/guards/branches and representative backend behavior preserve
+observable order and diagnostics. Stale/coherently substituted facts, hidden
+validation/proof or changed guard behavior reject. Changed premises invalidate
+affected consumers. Owner fixtures precede independent harnesses, and the
+unchanged Evolution producer consumes affected-family/consumer conformance
+only for the existing conditional stable pattern-semantic adoption.
+
+Scoped static inspection covers two complete hosted C6 files and selected
+Gravity checked_core/C7 ranges. Hosted C6 retains raw patterns and lowered
+bodies with general structural/presence checking. The inspected Gravity Core
+route builds authentic quoted-symbol/map/guard/binding records and duplicate
+refusals, with explicit nested-guard/variable-width/other-leaf deferrals in that
+path. Selected C7 code performs real Boolean domain subtraction, structural
+narrowing and Bool/Never guard analysis with actual clause/source/invalidation
+records; unsupported/partial cases retain explicit refusals. Evaluation labels
+and carried declarations are not effect legality or runtime proof. No complete
+11,346-line checked_core/25,894-line C7 review, absence of other real behavior,
+fresh semantic execution or full-family implementation claim is made.
+
+The existing profile74 witness remains byte-identical at source
+`45fc1420cfe4373e5a20b1fcd80d46f87e4edb63`, raw SHA-256
+`5219e50e9ed8ebc8c230ddde2da452aa76288edfc24dadad6f6de2dfd4344349`.
+Its original predicate/dependencies and qualified review scope remain; no
+receipt is renewed or consumed and no full L7 review is inferred. The Types
+dependency regression now reads its complete frozen
+`b47b8ddbc10f68e44bba23708568fa3abb1a46c9` subject, including all source
+reads and function-valued readers. Other historical test source is unchanged.
+
+Current proposal input fingerprint:
+`7545c1e9913a75ec97101bcababb67dc512db7dc7bf30205202335b288d2696f`.
+All applying source pins verify against local Git. Final validation passes
+four focused crosswalk tests / 9,523 assertions: complete current pattern
+source/owner conjunctions, entire frozen Types dependency/source subjects and
+global task/history conservation. All 23 dependency tests / 5,467 assertions
+and both pinned projection checks pass. Canonical validation passes 240
+documents / nineteen phase indexes, and full-language roadmap structural
+validation passes with dated counts non-authoritative. The language-boundary
+gate passes six tests / eleven assertions. Navigation/conservation passes
+91 changed files, 85 Markdown files, 3,789 local references, 139 original task
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. The first conservation attempt
+rejected unrecognized new block framing in the temporary comparator; the
+corrected exact byte comparison passes without altering the source additions
+or earlier task text. ASCII and whitespace checks pass. The full current
+74-test crosswalk suite was not rerun; the previous complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These planning and source checks
+confer no compiler/runtime/provider/target/migration/release conformance.
+
+The existing 1,893 dependency joins, 137 routes, 97 current parents, forty
+future records and 95-/nine-task coarse cycles are unchanged. Complete L7
+selected-result producer/consumer staging is next. Reader contract coverage
+remains the first actual implementation increment. Current complete source/
+owner/interface entailment, implementation acceptance, independent current
+review and integration remain pending or unassessed. Every actual restriction,
+writer reservation and stopped handoff remains; no held execution, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
+
+## Complete L7 selected-result dependency continuation
+
+Source `bc8639e09c53b6f8c6877997a38649d067767a30` refines the sole
+selected-result dependency table for 59 consumers: 57 existing routes plus the
+existing backend-conformance and query tasks. All 1,893 prior result joins,
+every prior input and eighty unaffected route meanings remain. The 118 added
+inputs yield 2,011 joins over 139 routes, 99 current parents and forty unchanged
+future records. Selected inputs grow from 1,014 to 1,132. Twenty-two existing
+plans expose 324 concrete staged input subjects. All fourteen L7 criteria
+remain routed through twelve existing tasks; the unchanged 977-byte conditional
+Evolution pattern-change predicate retains its earlier source and review scope.
+No task, status, source criterion, implementation receipt or future declaration
+changes. The 149 current keys, 25 authorities and original 44 identical / 95
+explicitly amended bodies retain their populations.
+
+The main coarse cycle now has 97 members: all 95 predecessors plus the existing
+backend-conformance and query tasks. The separate nine-member release/schema/
+governance cycle is unchanged. Those visible coarse cycles do not establish an
+executable whole-task order. Actual selected-result contracts distinguish these
+stages rather than hiding the dependencies or inventing acceptance:
+
+- Real source identities and an initial structural Core candidate precede
+  preliminary independent scrutinee/domain/guard inference. Core verification
+  at that stage does not demand a future fully checked decision tree.
+- Early authentic schema, validator and wrapper contracts support Types-owned
+  trusted-shape checking. Actual validation dataflow precedes final trusted
+  coverage; actual runtime validation precedes matching untrusted values.
+- The existing future Formal task and compiler proof checker establish actual
+  property, assumption, kernel and checker interfaces before checking proofs
+  over real preliminary coverage facts. Required current totality or explicit
+  partiality proof precedes proof-dependent admission. A later checked-program
+  anchor cannot be the first property model or checker input. Selected P12/
+  DOM19 interface context confers no whole formal-domain acceptance and adopts
+  no retired work/cost quotas, wider ZK obligation or held solver execution.
+- Actual effect summaries and guard ordering precede allowance/profile/resource
+  verdicts, with separate authentic grants. Bool, defaults and closed shapes
+  confer no authority. Later Core enrichment/export consumes real owner facts.
+- Actual MIR graph/fact/verifier/readback products precede consumption. Optional
+  transforms regenerate affected products and verify the changed subject with
+  the governing preservation evidence. Valid raw MIR retains its path.
+- Existing backend-conformance work establishes early fixtures, matrix and
+  availability interfaces, then compares real checked inputs, emitted bytes,
+  metadata, diagnostics and behavior. Core export precedes that comparison;
+  later representative target evidence is not its first input. B14 unavailable
+  targets do not pass, and shared manifest/refusal checks still apply. The
+  selected B1/B14 contracts do not establish full backend conformance.
+- Existing query source-checker/predicate contracts precede later real Core,
+  MIR and backend anchors. Host filtering cannot substitute for query semantics.
+  Runtime validator/resource/error/session/replay contracts precede actual
+  interpreter or compiled-path execution records; a compiled native artifact
+  is not a prerequisite for every selected path. No held query/runtime action
+  occurs.
+
+Source-only tools/cache work remains possible before later semantic/session
+products exist; consumers claiming those products must use actual current
+owner results. Owner fixtures precede independent harnesses. Conditional stable
+pattern adoption remains conditional rather than a new ordinary-work gate.
+All current result joins remain proposals with implementation/acceptance
+unassessed. Canonical source, task bodies and earlier evidence are preserved.
+
+Current proposal fingerprint:
+`a0bd54b7c5556141b1b415a938a7290b8f80f29ec4119d3b960f620db2809a05`.
+All applying source pins verify against local Git. Four focused crosswalk tests
+/ 12,267 assertions pass: current L7 dependencies, the entire frozen
+L7 source and Types dependency subjects, and global task/history conservation.
+The L7 source regression now reads its complete frozen
+`e7e4adfa6c9dc36dd026d67a5155626103d73023` subject, including all source
+readers; every other earlier test byte remains unchanged. All 23 dependency
+tests / 5,727 assertions and both pinned projection checks pass.
+Canonical validation passes 240 documents / nineteen phase indexes;
+full-language roadmap structural validation passes with dated counts
+non-authoritative. The language-boundary gate passes six tests / eleven
+assertions. Conservation/navigation passes 91 changed files, 85 Markdown files,
+3,812 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. The full current 75-test crosswalk suite was
+not rerun; the prior complete 68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These checks establish planning/
+traceability consistency, not compiler, runtime, provider, target, proof,
+migration or release conformance.
+
+Complete L8 protocol/dispatch source reconciliation through existing owners
+remains source work to assess next. Reader contract coverage remains the first
+actual implementation increment. Global source/owner/task entailment, complete
+producer/consumer entailment, implementation acceptance, independent current
+review and integration remain pending or unassessed. Every actual restriction,
+writer reservation and stopped handoff remains. No held execution, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
+
+## Complete L8 source and owner continuation
+
+Source `0aff3e592e1d3e7e7d6323e86b057f2be394d0fe` adds fourteen L8
+criteria to eleven existing Open tasks in seven authorities, with twenty-one
+existing plans and the Types specification refined. The earlier Types
+select-checked-dispatch criterion and exact 1,011-byte conditional Evolution
+stable-change predicate remain unchanged: sixteen criteria name twelve tasks
+across eight authorities. No feature, task identity, status or acceptance is
+created. All 149 current keys, 25 authorities and forty future declarations
+remain. Original task-body accounting stays 44 identical / 95 explicitly amended;
+no previously identical original body becomes amended in this continuation.
+
+Direct complete L8 review conserves 81 facets, sixty source occurrences,
+fourteen complete section conjunctions and five original owner obligations.
+The preserved census labels 61 facets semantic and twenty context; this
+proposal separately classifies 59 as source predicates and 22 as retained
+hierarchy/dependency context, over 41 semantic and nineteen context occurrences.
+Four originally semantic heading facets are retained as context, while the two
+originally contextual requires/rejects preambles join their complete lists as
+source predicates. Earlier identities and census labels are not rewritten.
+Complete preambles, lists, examples and following conditions remain
+conjoined by section. Counts establish conservation, not independent semantic
+acceptance or a coverage percentage.
+
+Types owns actual nine-field method contracts, checked extensions and real
+implementation sets/modes; Effects owns selected-implementation or declared-
+upper-bound call effects and actual allowance. The inherited selection owner
+retains Effects2 plus Types selection and Effects3 admission witnesses, rather
+than transferring inference to propagation. Separate Auth grants remain real
+authority. The foreign-error owner gains explicit Types boundary and Runtime
+normalization witnesses without an invented prior full-owner acceptance.
+
+Keep all eight dispatch modes visible under governing conditions. Conditional
+multimethod support preserves declared dispatch functions/cases, hosted open
+behavior or actual generated profile-specific coverage tables, and closed
+matching/jump-table behavior. Missing selection and ambiguity without a declared
+priority reject; L8 does not supply a new global priority/coherence policy or
+universal default-method allowance. Source examples do not implement methods,
+prove effects or grant filesystem authority.
+
+Core, hosted, native, constrained, distributed, AI and formal rules remain
+concrete: actual portable interfaces, declared native reflection providers,
+required bounded-behavior artifacts, schema/artifact boundaries, real schema
+validation and separate grants, and closed dispatch or actual total-coverage
+proof. Constrained semantic/profile proofs do not revive removed compiler
+work/cost quotas. No method/table may hide allocation, IO, FFI, network/database,
+model/tool, unsafe or reflection effects. An indeterminate safe implementation
+set rejects or follows an actually supported checked provider with explicit
+effects/capabilities and surviving checks.
+
+Source protocols remain semantic authority while Lower produces actual selected
+direct/vtable/dictionary/host/C-ABI/Wasm/profile-defined-HDL interfaces. Runtime
+executes actual host null/exception/failure-resource normalization before safe
+core entry; Types boundary metadata does not execute conversion. AI/tool
+invocation requires actual schema validation dataflow and authentic grants.
+Optimization performs actual dispatch specialization under surviving governing
+proof and preserves source diagnostics and fallback, or proves fallback
+unreachable. Changed assumptions invalidate affected facts and require real
+regeneration/verification. Valid unspecialized portable dispatch needs no
+universal optimizer or native artifact.
+
+Retain all nine artifact families, seven L8 diagnostic meanings, actual failure
+subjects and current producer/source/generated/binding/type/effect/grant/profile/
+target/ABI/schema/provider/proof references. Owner fixtures cover real method/
+extension/dispatch behavior, visible call effects, constrained refusals, host
+normalization, specialization and diagnostic/fallback preservation, and actual
+mode/implementation identity. Fixture construction precedes independent final
+harnesses; a complete flag, table or representative receipt cannot close L8.
+
+Scoped static inspection of two complete hosted C7 files finds protocol/value
+recognition emitting fixed Displayable/String/hosted-dynamic records and copied
+node effects/capabilities, with typed/complete labels. The verifier checks the
+dispatch container's complete status rather than all actual L8 method,
+implementation, profile, ABI and host-normalization relations. This is neither
+fresh execution, whole-compiler inspection nor proof that no other real
+implementation exists; implementation credit remains none.
+
+The first source-pin refresh correctly rejected changed future-record file
+provenance after the existing Domains AI task criterion moved later text. An
+explicit protocol-source successor now conserves all forty literal declarations
+and records sixteen changed Domains whole-file/source bindings. Removing that
+successor or forging a captured body hash rejects. The historical Macro
+successor stays unchanged; no earlier receipt is renewed or consumed.
+
+Current proposal fingerprint:
+`db180122aa26733d8838b1a4a68f88ba14cbf49fc09d4d6db9f34eab373bdeff`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+9,489 assertions pass: complete current L8 source/owner conjunctions,
+entire frozen L7 dependency/source subjects and global task/history conservation.
+The L7 dependency regression now reads its complete frozen
+`fa1866623a979758ead8e2bd9e522c01db2d10d4` subject including every source
+reader. All other earlier test bytes remain unchanged. All 23 dependency tests /
+5,727 assertions and both pinned projection checks pass. Canonical validation
+passes 240 documents / nineteen phase indexes; full-language roadmap structural
+validation passes with dated counts non-authoritative. The final language-
+boundary gate passes six tests / eleven assertions. Conservation/navigation
+passes 91 changed files, 85 Markdown files, 3,848 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII/whitespace checks pass.
+The full current 76-test suite was not rerun; the prior complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These are planning/traceability
+checks, not compiler/runtime/provider/target/proof/migration/release conformance.
+
+The existing 2,011 joins, 139 routes, 99 current parents, forty future records
+and 97-/nine-task coarse cycles retain their meanings. Complete L8 selected-
+result producer/consumer staging is next; Reader contract coverage remains the
+first actual implementation increment. Global source/owner/task and complete
+interface entailment, implementation acceptance, independent current review and
+integration remain pending/unassessed. All actual restrictions, writer
+reservations and stopped handoffs remain; no held execution, other-chat message,
+reviewer wake, aggregate publication or merge occurs.
+
+## Complete L8 selected-result dependency continuation
+
+Source `14cf692ed5951fcda637c870dcabdbe6baa3fcbc` refines seventy
+consumers in the sole selected-result table: 68 existing routes plus two missing
+routes for the existing backend-interface and pass-evidence tasks. Preserve all
+2,011 prior result joins, every prior input and 71 unaffected route meanings.
+The 117 added inputs yield 2,128 joins across 141 routes, 101 current parents
+and forty future records. Selected inputs grow from 1,227 to 1,344. Twenty-two
+existing plans expose 443 concrete staged input subjects. All sixteen L8
+criteria retain twelve existing task routes. Task bodies, statuses, source
+criteria, historical receipts and forty future declarations are unchanged,
+including the existing explicit sixteen-binding Domains source successor.
+The 149 current keys, 25 authorities and original 44 identical / 95 amended
+bodies retain their populations; no new task or feature is created.
+
+The main coarse cycle has 99 members: all 97 predecessors plus backend-interface
+and pass-evidence. The separate nine-member release/schema/governance cycle is
+unchanged. Whole tasks still do not form a topological implementation order;
+the actual selected subjects distinguish construction, checking, composition,
+independent acceptance and release:
+
+- Actual source/generated protocol/type/method/implementation/case and call
+  identities precede structural Core and whole structural verification. Later
+  typed selection/effect/profile facts are not the first structural input.
+- Types derives independent receiver/argument/result premises, then publishes
+  actual nine-field method contracts and preliminary applicable implementation/
+  mode sets. Missing candidates or ambiguity without declared priority reject;
+  no new default/coherence/priority policy is invented.
+- Actual preliminary typed call/implementation edges feed real body/call effect
+  inference: selected-implementation effects or the declared upper bound when
+  selection is not statically known. Later implementation effect compatibility
+  and real effect admission consume those actual summaries with separate grants
+  and concrete service/profile/resource facts. Final admitted dispatch cannot
+  gate its own first tentative typed candidate or call graph.
+- Early actual ABI/layout requirements, provider declarations, runtime support
+  and independent flow/policy contracts precede checking. Later combined
+  verdicts precede admitted use. Core portable static/dictionary/interfaces
+  cannot hide a foreign runtime under L19. Native reflection and constrained
+  lookup/allocation retain actual declared-provider and bounded-behavior proof
+  requirements, without restoring compiler work/cost quotas.
+- Early authentic host identity/nullability/exception/ownership/lifetime/
+  affinity/wrapper/ABI and schema/validator contracts precede Types boundary
+  checking. Later actual admitted selected calls perform real validation,
+  null/exception/failure-resource normalization before safe core consumption.
+  Concrete layout evidence precedes affected adapters; final emitted callers
+  cannot be the first wrapper signature. This selected R10/L19 interface
+  adopts no full-document acceptance or new class/callback execution.
+- Real checked dispatch precedes actual MIR construction, owner tables,
+  verification and round-trip. Optional specialization uses real checker/pass/
+  preservation contracts and surviving exact-subject proof, preserves source
+  diagnostics and fallback or proves fallback unreachable, then regenerates
+  affected owner facts and verifies the changed subject. High-risk correctness
+  evidence exceeds structural validity. Valid unspecialized programs compile
+  earlier; complete L8 acceptance still needs its required optimizer fixtures.
+- Early method/representation/support contracts precede later actual admitted
+  program/interface layouts, target artifacts and readback or refusal. Source
+  protocols remain semantic authority across all required selected interface
+  representations; Lower cannot legalize source-rejected dispatch or introduce
+  hidden effects, authority or runtime behavior.
+- Actual closed dispatch suffices for the applicable formal route; required
+  total-coverage proof is checked against real preliminary method/case/type/
+  effect facts before dependent use. Later checked-Core/MIR anchors cannot be
+  the first property model or checker. Existing future Formal and pass-evidence
+  authorities remain distinct, without a universal full-Formal prerequisite,
+  wider DOM19/ZK/cost-quota adoption or held solver action.
+
+Early execution/error/session/recording and owner fixture contracts precede
+callers; later actual checked-Core interpreter or emitted compiled input
+precedes real call/fallback/normalization/resource/tool observations. No universal
+native artifact or optimizer is added. Source-only tools/caches remain available
+before absent semantic products; claimed semantic/debug facts require real
+current producers and program/session observations. Changed assumptions require
+actual affected regeneration with current file/source provenance. Owner fixtures
+precede independent harnesses; unavailable targets are unrun and shared rejection/
+manifest checks still run. All nine artifacts and seven L8 diagnostic meanings
+retain actual subjects and producer dependencies.
+
+The unchanged 1,011-byte Evolution stable-protocol-change predicate and earlier
+Types selection criterion retain their exact source and qualified review scope.
+Conditional adoption consumes affected type/effect/performance/ABI/host/library/
+AI/formal compatibility/conformance; unchanged-contract development gains no new
+ceremony. No review is renewed, consumed or self-conferred.
+
+Current proposal fingerprint:
+`c48a01a26af096fd4f12748584d69941c8d5534813c3339eaeee54dff0e02005`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+14,702 assertions pass: current L8 dependencies, the entire frozen L8
+source and L7 dependency subjects, and global task/history conservation. The L8
+source regression now reads its complete frozen
+`b7499ce86055682167401c45a85b25782e91b51d` subject including every source
+reader; all other earlier test bytes remain unchanged. All 23 dependency tests /
+5,973 assertions and both pinned projection checks pass. Canonical
+validation passes 240 documents / nineteen phase indexes; full-language roadmap
+structural validation passes with dated counts non-authoritative. The language-
+boundary gate passes six tests / eleven assertions. Conservation/navigation
+passes 91 changed files, 85 Markdown files, 3,871 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII/whitespace checks pass.
+The full current 77-test crosswalk suite was not rerun; the prior complete
+68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These checks establish planning/
+traceability consistency, not compiler/runtime/provider/target/proof/migration/
+release conformance.
+
+The first focused run failed one new regression assertion because a numeric
+conversion changed the preserved conditional Lower5/Opt5 route to Lower6/Opt6.
+The actual composition route remained correct and unchanged. Correcting only
+that new assertion yields the passing focused result above; the failed run
+receives no passing credit.
+
+Complete L9 error-handling source reconciliation through existing owners is the
+next source work to assess. Reader contract coverage remains the first actual
+implementation increment. Global source/owner/task and complete interface
+entailment, implementation acceptance, independent current review and integration
+remain pending/unassessed. All actual restrictions, writer reservations and
+stopped handoffs remain; no held execution, other-chat message, reviewer wake,
+aggregate publication or merge occurs.
+
+## Complete L9 source and owner continuation
+
+Source `d2c4d26d4a29e511283543203a6424fad61da56c` adds sixteen L9
+criteria and restores five exact earlier Runtime predicates in eighteen existing
+Open tasks across nine authorities. Nine task files, twenty-two existing plans
+and the Core specification are refined. The earlier 534-byte Types outcome and
+1,032-byte conditional Evolution representation-change predicates are unchanged:
+23 criteria name nineteen existing tasks across ten authorities. No feature,
+task identity, status, acceptance or previously identical original body changes.
+All 149 current keys, 25 authorities, forty future declarations and original
+44 identical / 95 explicitly amended body populations remain.
+
+Direct complete L9 review conserves 89 facets, 56 source occurrences, fourteen
+complete section conjunctions and eight original owner obligations. The original
+census labels 65 semantic, 23 context and one unresolved mixed policy facet;
+this proposal retains those labels while classifying 67 full source predicates
+and 22 hierarchy/dependency facets over 37 semantic and nineteen context
+occurrences. These counts establish conservation, not independent acceptance or
+a semantic coverage percentage. The mixed budget-exhaustion facet retains its
+existing exact policy proposal, source witness and pending independent facet
+acceptance; it is not silently promoted to accepted semantics.
+
+All five recovered Runtime predicates match verified published source
+`45fc1420cfe4373e5a20b1fcd80d46f87e4edb63`, file SHA-256
+`507d80a34a2d99d749c07a36a6069e5ee8d02e4a323446b6fd5ce1ad20053a50`.
+A connected GitHub fetch returned bytes identical to local Git. Their 6,269
+bytes are restored to their same existing tasks: structured AI failure (1,125),
+durable workflow failure (1,111), defined check failure (995), panic/error
+lowering (1,229) and foreign/nullable failure normalization (1,809). Preserve
+original typed-contract, runtime-consumer and conditional-adoption roles,
+qualified profile74 review scope and declared dependencies. No receipt is
+renewed, newly consumed or expanded into full L9/current implementation credit.
+
+Keep all eleven error families distinct: Option absence, Result recoverable
+error, typed throws, panic, assertion/contract failure, safety-check failure,
+capability denial, foreign boundary errors, workflow retry/compensation failures,
+AI/model/tool/policy/evaluation failures and compiler diagnostics. Some/None and
+Ok/Err remain typed data across applicable constrained profiles; source nil is
+its own L2 value. Capability denial cannot become absence, replay failure cannot
+be an unrelated local exception and AI failure cannot disappear into text.
+Recoverable library APIs should use Result/Option unless a real profile-specific
+reason justifies throw, without a new universal compiler ban.
+
+Core owns real value-before-transfer and protected-before-typed-handler control,
+source order, bindings, nonreturning and cleanup edges. Types derives actual
+payload/handler/call/normal-result and Result/Option coverage facts. Effects
+computes genuine thrown, handler-raised and residual requirements and actual
+admission under source/profile/runtime/safety conditions with separate authentic
+grants. Source-error potential or coverage is not effect discharge, authority or
+runtime proof. Ordinary try/catch remains distinct from L6 resumable-effect
+continuations; no resume or multi-shot permission is invented.
+
+Profiles define actual throw/try lowering or rejection and unrecoverable panic:
+hosted exception/task abort, native handler, kernel trap/platform path, firmware
+reset/halt, hardware runtime-panic rejection or permitted synthesis-time
+unreachable/trap artifact, distributed durable state and AI policy/orchestration
+record. Panic is not ordinary stable-API control flow or a new Core primitive.
+Retained bounds/initialization/numeric/capability/taint/replay checks have actual
+specified typed failures or profile/runtime/safety-mode traps, with current
+identity, surviving checks and D8's four outcomes. Target undefined behavior or
+an unspecified failure cannot substitute.
+
+FFI boundaries retain all eight error fields: return convention, errno-like
+state, exceptions, nullability, ownership on failure, cleanup, panic/abort and
+typed error mapping. Declared Option absence may become None; actual errors or
+denials may not. Types owns real boundary/dataflow checking and Runtime actual
+normalization and failure-resource behavior before safe/non-null core entry.
+Early authentic wrapper/error/ABI/service contracts precede callers; later actual
+selected interpreter or compiled behavior, target artifacts and cleanup traces
+establish claimed execution. Metadata does not execute a conversion or trap.
+
+Workflow failures retain actual step/input/output-error schema, retry,
+compensation, time, external results and replay identity, with real durable
+failure/compensation replay and no silent live re-execution. AI failures retain
+actual model/tool/schema/policy/defense/review/evaluation identities and required
+structured audit/replay artifacts. The existing policy proposal explicitly
+retains actual external billing/account failures and removes project
+work/cost/input quotas and exhaustion refusals. Its independent facet review
+stays pending. No new accounting, prospective allowance or held action authority
+is introduced.
+
+Preserve all eight artifact families and seven L9 diagnostic meanings with
+actual source/generated and type/effect/grant/profile/runtime/target/provider/
+schema/check/replay/policy identities and affected invalidation. Owner fixtures
+cover all ten named conformance families, constrained-versus-hosted dispositions,
+Result/Option exhaustiveness, host/FFI normalization, durable failure/compensation
+replay and AI schema/policy records. Unsupported or held required cases remain
+work; source tables, catalogs and complete flags do not close them.
+
+Scoped static inspection finds hosted C6 carrying try handlers/throw payloads
+with evaluation labels, and the selected hosted function builder emitting
+Dynamic returns/copied latent effects/fixed String throws. Selected complete
+Gravity C7 definitions instead authenticate real direct typed throw transfers,
+payloads and function owners, seed exact atomic catch bindings, partition ordered
+source errors and derive an acyclic local-call error graph with owning refusals.
+Their coverage explicitly leaves effect/profile/handler/capability discharge
+pending. Inspection covers selected C6 lines, one hosted function and C7 lines
+6147-6587; it is not fresh execution, whole-C7/Runtime review, general error or
+profile support, or proof that no other real implementation exists.
+
+Current proposal fingerprint:
+`609651e317524ca9ba2ef3331aa72de0293aaf3116d86b66973524fabfc5c279`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+10,934 assertions pass: complete current L9 source/owner/finite predicates and
+policy context, entire frozen L8 dependency/source subjects, and global task/
+history conservation. The L8 dependency regression reads its complete frozen
+`aa5254942671b603ca2a96fa014b5e6719c7c8b4` subject including every source
+reader; all other earlier test bytes remain unchanged. All 23 dependency tests /
+5,973 assertions and both pinned projection checks pass. Canonical validation
+passes 240 documents / nineteen phase indexes; full-language roadmap structural
+validation passes with dated counts non-authoritative. The language-boundary
+gate passes six tests / eleven assertions. Conservation/navigation passes
+91 changed files, 85 Markdown files, 3,915 local references, 139 original routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents
+after declared additions are removed. ASCII/whitespace checks pass. The full
+current 78-test suite was not rerun; the prior complete 68-test / 44,978-assertion
+run remains bound to `25a96a0c03536270001449c00676e644ea353521`.
+These are planning/traceability checks, not compiler/runtime/provider/target/
+proof/migration/release conformance.
+
+The source successor conserves all forty literal future declarations with
+sixteen explicit Domains whole-file/source bindings after its current workflow/
+AI error criteria; the historical Protocol successor remains unchanged. Missing
+or forged successors reject. Existing 2,128 joins, 141 routes, 101 current parents
+and 99-/nine-task coarse cycles retain their meanings. Complete L9 selected-
+result producer/consumer staging is next. Reader contract coverage remains the
+first actual implementation increment. Global source/owner/task and complete
+interface entailment, implementation acceptance, independent current review and
+integration remain pending/unassessed. All actual restrictions, writer
+reservations and stopped handoffs remain; no held execution, other-chat message,
+reviewer wake, aggregate publication or merge occurs.
+
+## PR767 frozen protocol and error current-source successor
+
+This bounded successor covers the frozen PR767 source continuation through
+`f634e58c3228544a76476758cc9d3ca679193a88` only: four authored commits, forty
+paths, 67,760 additions and 35,078 deletions. It ports the existing L8 protocol
+and L9 error source contracts, task/source provenance, selected dependency
+joins, finite retained predicates and tamper controls onto current source
+checkpoint `b886fe2599916b1a302e17e02c45eae9ebd8a34d` (tree
+`1558fa1e9612c72e19ea030e367a6288c0e2d4b7`). The current map fingerprint is
+`f7c9b0a89913badae41ae7e46c809585a5ed63d3505fd73aca886a8264402f83`.
+
+The current Stdlib task transition is bound to that same source checkpoint
+because the port changes the five existing Stdlib task rows; historical and
+applying transition identities remain separate and unchanged. Protocol and
+error future successors are both required and each is checked against the
+current forty-row source population; removing either successor or forging a
+body hash fails closed. No new task identity, implementation credit,
+implementation acceptance, migration authority, release claim or compiler,
+runtime, native or C7 execution is conferred.
+
+Focused current checks passed: the protocol bridge and error bridge regressions;
+the acceptance-dependency suite (24 tests / 5,995 assertions); the crosswalk
+projection write/check (180 criteria / 18 sequence rows); the language boundary
+gate (6 tests / 11 assertions); the 240-document validator and full-language
+roadmap validator. The broad current crosswalk suite was not credited: an
+attempt was stopped after six minutes while traversing unrelated historical Git
+source rows. Independent review and integration remain pending.
+
+The later live PR767 continuation after `f634e58c` remains open and unported,
+including the L13/Stdlib portability block, its three existing consumer routes,
+and later selected-result/protocol additions. This receipt does not claim whole
+live-PR incorporation or ordinary-development migration authority.
+
+## Complete L13 library-principles source continuation
+
+This bounded successor carries the complete L13 source proposal from
+`5e4acae89f2b3c20723c855b791cf5163e8e3325`, following the complete L9
+checkpoint `d272cdda029c3195bca7b5b9bea9f52f48f4b85c`. The governing
+[L13 source](../docs/phase-01-core-language/023-l13-standard-library-design-principles.md)
+is preserved at SHA256
+`c14b680b66c13f20ef383d4e872fe72bf3e707405706396c0d21cb9e1b1268cd`.
+STD1, TEST7, GOV3, C17 and selected L6/L15 clauses are supporting interfaces;
+they do not confer complete source acceptance for those documents or for the
+wider STD1-STD20 library surface.
+
+The proposal conserves 26 criteria, 125 source facets, 84 occurrences, 19
+complete section conjunctions and 13 original owner joins. Its census labels 92
+semantic and 33 context facets, while the current proposal assigns 93 complete
+source predicates and 32 retained hierarchy/dependency predicates over 60
+predicate and 24 context occurrences. These are source identity and
+conservation facts, not an adopted aggregate or a semantic coverage claim.
+
+The existing Library plan routes the criteria through 13 existing tasks across
+the existing authorities: 15 new criteria, 10 exact restored predicates and
+one unchanged generated-program predicate. Twelve task bodies change across
+eight authorities, three of them the existing consumer routes added by this
+successor. The 8 task files, 13 plans and existing Library specification remain
+the 22 authored source paths. No task status, checkbox, historical record or
+evidence file is silently changed. All 149 current task keys, 25 authorities,
+40 future declarations and source bindings retain their identities.
+
+The ten earlier Library predicates (5,758 UTF-8 bytes) remain restored under
+their original tasks and their prior profile-74 review remains historical. The
+exact generated-program predicate remains 857 bytes. No review is renewed,
+consumed or broadened into implementation, whole-library, migration or release
+authority. The later Stdlib source/index review and all later live PR767
+continuations remain separate and pending.
+
+Declarations and callable exports remain distinct products. The source contract
+requires public profile/type/effect/capability/allocation/resource/error/
+panic/blocking/scheduling/nondeterminism/replay/target/stability facts, five
+portability layers and the complete 55-name namespace population. Seven API
+classifications retain their metadata, documentation, lint, check and fixture
+obligations. Labels, signatures, host builtins and provider descriptors do not
+establish behavior, authority or support. Actual dependency checking still
+rejects upward-layer edges and identifies the shipped profile subset.
+
+List, Vector, Map, Set, byte and String contracts, physical capacity,
+region-backed alternatives, numeric modes/proofs, resources and source
+concurrency remain semantic requirements. Fixed capacity, queues, indices,
+arity, layout and target representability are distinct from removed project
+work/cost/input/attempt quotas. Actual selected services, values and cleanup
+establish resource/API support; a declaration cannot substitute for a callable
+implementation.
+
+Resolve owns imports and layer graphs; Types owns declaration/call compatibility;
+Effects owns actual inferred call admission; Auth owns authentic scoped grants;
+Legality owns safe-wrapper/profile/resource verdicts; Opt owns preservation;
+Diag owns failure carriers. Inherited census references remain context and do
+not reassign those roles. L13 IR inspection names L6 `:compiler/read-ir` and
+C17 scoped `:compiler/ir-transform`; a `:read-mir` grant supplies no write
+authority. Safe wrappers retain D8's four outcomes and no undefined behavior.
+
+All six L13 artifact families and nine diagnostic meanings retain actual
+producer, namespace/symbol/profile/target/contract/caller-effect/capability,
+remediation and source/generated identities. Documentation is executable
+conformance: claimed profiles need actual positive examples and forbidden
+profile/capability/allocation negatives. Library fixtures are later consumed by
+the independent TEST7/T7/Release harness; a source table, catalog or class label
+does not close those obligations.
+
+The selected static inspection is limited to the hosted library-artifact builder
+and its artifact/fixture/validator/proof helpers. It is not callable API
+execution, whole-library implementation, provider execution, target behavior,
+native/C execution or migration evidence. Current source composition is bound
+to task/source checkpoint `485cfd2c54c6d1a2695cbd7e8e34495fbeb34799`, tree
+`3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5`, with current applicability pending.
+
+The three existing consumer routes are explicitly present in the current
+dependency graph: export inventory reconciliation, schema/query/workflow/AI/
+metadata/crypto/UI adapters, and platform/release assembly. The current graph
+has 2,156 selected-result joins, 144 routes, 104 current parents and 40 future
+records. These counts are derived from the current route declarations; the
+historical PR767 count of 2,199 joins and 141 routes is retained only as
+historical context and is not reused as current evidence.
+
+The current source view rejects missing or forged L13 criteria, source-census
+identity, current-source file digests, witness spans, owner joins and consumer
+routes. It keeps `:implementation-acceptance` and `:global-source-conjunctions`
+`:unassessed`, and `:independent-current-review` `:pending`. Focused checks for
+this successor are recorded separately from the historical PR767 receipt;
+neither source projection nor route composition confers implementation,
+migration, release or self-hosting authority. Preserve every actual restriction,
+writer reservation and stopped handoff; no held execution, other-chat message,
+aggregate publication or merge is implied.
+
+### Bounded current evidence
+
+The current source-view/build reports 180 requirements, 40 future declarations
+and `:pending-source-version-review`; the L13 refinement reports 2,156 joins,
+144 routes, 104 current parents and 40 future records. The focused L13 guard
+test (`clojure -J-Xmx512m -M /tmp/l13-focused-test.clj`) exits 0. The focused
+acceptance-dependency suite exits 0 with 24 tests and 6,052 assertions. The
+normalized projection check exits 0 with 180 criteria and 18 sequence rows.
+The document validator, full-language roadmap validator, six-test/eleven-
+assertion language-boundary gate and workstream-governance validator all exit 0.
+
+The complete crosswalk namespace was attempted once and stopped after roughly
+six minutes while traversing unrelated historical Git source rows; it produced
+no passing result and receives no credit. The pinned cljfmt check also remains
+non-passing for the same two pre-existing files in an unchanged base checkout;
+this increment does not claim a formatter repair. These planning and
+traceability checks do not establish callable implementation, compiler/runtime,
+provider/target, native/C, proof, migration or release conformance.
+
+## Current source-successor binding continuation
+
+This bounded source successor uses the exact reviewed policy-followup input
+`895dea1ddbce13b8deae461144e57b8245caefc8` (tree
+`65c32e6f3677fdbd6492923cb10a002eb00d907a`) as a normal second parent of the
+current source checkpoint `bc7cadae5450978ac9a3ec6a0ee9b1ebb1a471cb` (tree
+`f85ed1594f21c7c975a41b531d98a1fcdffc3457`). The resulting candidate is
+`cc8a79074fc8eeeb65d72333e5d64542b201f0d4` (tree
+`72d15504280f60dd3056bf59cb58293ed734928f`), with 28 authenticated current
+source transitions and a 47-file source census across 9 reviewed successor
+segments. The follow-up delta is limited to its exact 9 policy/source paths and
+its independent receipt, while the candidate inherits the previously reviewed
+foundation, L17/L19 and backend source-successor chain through D542 with each
+prior status and receipt preserved. Later data, STD13, AI/test-metadata and
+new dependency-row proposals are not inputs here.
+
+The human decision for the follow-up is `:L12-declared-replayable-inputs`.
+The canonical L6 source retains the historical SHA256
+`a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5` and the
+current canonical SHA256
+`529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72`, with the
+old review and both source statuses preserved. The current feature count is
+34 versus the historical 33; this is a census fact, not implementation or
+completion credit. The authorized three-chat integration exception remains a
+coordination record only, and all remaining no-messaging holds remain in force.
+
+The source view and normalized projection preserve the historical and applying
+pins, source digests, evidence hashes, owner joins, negative controls and
+current-source provenance. They keep source/routing, implementation, migration,
+release, seedless and whole-source acceptance pending or unassessed. The later
+main checkpoint `70927eee6c8dc77d0fec2a826de29380ef068ef5` is coordinator-owned
+integration context outside this nine-path source-input identity; it is not
+silently substituted for the reviewed source successor. The report records
+status and provenance only and does not claim callable implementation or
+authority to merge.
