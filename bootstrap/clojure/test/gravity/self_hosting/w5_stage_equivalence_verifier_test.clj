@@ -236,6 +236,14 @@
                  'w5-stage-equivalence-alternate-path-request)
         left (compare-request left-request)
         right (compare-request right-request)]
+    (is (= :accepted (:status left) (:status right)))
+    (doseq [result [left right]
+            [record path-key] [[:toolchain-a :actual-path]
+                               [:toolchain-b :actual-path]
+                               [:toolchain-c :actual-path]
+                               [:independent-verifier :actual-source-path]]]
+      (is (= (dissoc (get left-request record) path-key)
+             (get-in result [:identity-input record]))))
     (is (= (:identity-input left) (:identity-input right)))
     (is (not= (:provenance left) (:provenance right)))
     (is (not (str/includes? (pr-str (:identity-input left)) "/checkout-a/")))

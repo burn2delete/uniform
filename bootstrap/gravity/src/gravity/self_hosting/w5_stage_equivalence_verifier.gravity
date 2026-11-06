@@ -1520,6 +1520,24 @@
   {:transcript-id (get transcript :transcript-id)
    :status (get transcript :status)})
 
+(defn w5-se-identity-toolchain [toolchain]
+  {:toolchain-id (get toolchain :toolchain-id)
+   :family (get toolchain :family)
+   :version (get toolchain :version)
+   :target (get toolchain :target)
+   :compiler-id (get toolchain :compiler-id)
+   :source-id (get toolchain :source-id)
+   :status (get toolchain :status)})
+
+(defn w5-se-identity-verifier [verifier]
+  {:verifier-id (get verifier :verifier-id)
+   :source-id (get verifier :source-id)
+   :executable-id (get verifier :executable-id)
+   :artifact-id (get verifier :artifact-id)
+   :independent? (get verifier :independent?)
+   :authority (get verifier :authority)
+   :status (get verifier :status)})
+
 (defn w5-se-identity-input [request]
   {:comparison-id (get request :comparison-id)
    :candidate-target (get request :candidate-target)
@@ -1539,9 +1557,9 @@
                    (get request :environment-b))
    :environment-c (w5-se-identity-environment
                    (get request :environment-c))
-   :toolchain-a (dissoc (get request :toolchain-a) :actual-path)
-   :toolchain-b (dissoc (get request :toolchain-b) :actual-path)
-   :toolchain-c (dissoc (get request :toolchain-c) :actual-path)
+   :toolchain-a (w5-se-identity-toolchain (get request :toolchain-a))
+   :toolchain-b (w5-se-identity-toolchain (get request :toolchain-b))
+   :toolchain-c (w5-se-identity-toolchain (get request :toolchain-c))
    :modes (get request :modes)
    :products (w5-se-identity-products (get request :products))
    :accepted-deltas (get request :accepted-deltas)
@@ -1553,7 +1571,7 @@
                  (w5-se-identity-transcript
                   (get (get request :transcripts) :rejected))}
    :independent-verifier
-   (dissoc (get request :independent-verifier) :actual-source-path)
+   (w5-se-identity-verifier (get request :independent-verifier))
    :execution (get request :execution)})
 
 (defn w5-se-pending-gaps []
