@@ -1,6 +1,5 @@
 (ns seedless.main
   (:require [clojure.java.io :as io]
-            [clojure.set :as set]
             [clojure.string :as str]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
@@ -37,13 +36,21 @@
         diff (rt/git ctx worktree "diff" "--binary" "--no-ext-diff" "--no-renames" "HEAD")
         untracked (rt/git ctx worktree "ls-files" "--others" "--exclude-standard" "-z")
         content (str diff "\u0000" untracked)
+        files (filter #(.isFile (io/file worktree %)) changed)
+        deleted-paths (vec (sort (filter #(not (.exists (io/file worktree %))) changed)))
+        non-file-paths (vec (sort (filter #(and (.exists (io/file worktree %))
+                                              (not (.isFile (io/file worktree %)))) changed)))
         file-sha256 (into (sorted-map)
                           (map (fn [path]
                                  [path (raw-file-sha256 (io/file worktree path))])
-                               changed))]
+                               files))]
     {:candidate candidate
      :tree tree
      :paths (vec changed)
+     ;; Deletions have no bytes to hash. Keep them explicit so an owned
+     ;; deletion can be retained while an unowned deletion remains fail-closed.
+     :deleted-paths deleted-paths
+     :non-file-paths non-file-paths
      :dirty-diff-sha256 (rt/digest content)
      :file-sha256 file-sha256}))
 
@@ -111,7 +118,9 @@
           _ (assert-scope-extension-authority! ctx key task extension paths)
           current (current-dirty-snapshot ctx task)
           changed (set (:paths current))
-          expected-unowned (set/difference changed (set original-paths))
+          expected-unowned (set (remove (fn [path]
+                                         (some #(shared-workflow/covers? % path) original-paths))
+                                       changed))
           extension-files (set paths)]
       (when-not (= key (:task extension))
         (scope-extension-error! "Scope amendment is bound to a different task"
@@ -145,7 +154,7 @@
         (try (rt/safe-path! path)
              (catch Exception e (scope-extension-error! "Scope amendment path is unsafe"
                                                         {:path path :cause (.getMessage e)})))
-        (when (some #(or (= path %) (str/starts-with? path (str % "/"))) original-paths)
+        (when (some #(shared-workflow/covers? % path) original-paths)
           (scope-extension-error! "Scope amendment may not reclassify an already-owned path"
                                   {:path path :original-paths original-paths}))
         (when-not (contains? expected-unowned path)
@@ -164,6 +173,16 @@
       (when-not (= (:file-sha256 current) (:file-sha256 extension))
         (scope-extension-error! "Scope amendment file bytes changed after inspection"
                                 {:expected (:file-sha256 extension) :actual (:file-sha256 current)}))
+      (when-not (= (vec (or (:deleted-paths current) []))
+                   (vec (or (:deleted-paths extension) [])))
+        (scope-extension-error! "Scope amendment deleted-path snapshot changed after inspection"
+                                {:expected (vec (or (:deleted-paths extension) []))
+                                 :actual (vec (or (:deleted-paths current) []))}))
+      (when-not (= (vec (or (:non-file-paths current) []))
+                   (vec (or (:non-file-paths extension) [])))
+        (scope-extension-error! "Scope amendment non-file snapshot changed after inspection"
+                                {:expected (vec (or (:non-file-paths extension) []))
+                                 :actual (vec (or (:non-file-paths current) []))}))
       (assert-no-unsettled-scope-effects! ctx)
       {:paths (vec (concat original-paths paths))
        :extension extension
