@@ -188,7 +188,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "gpu-native-manifest"
+ [{:test-id "hdl-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/hdl/native_manifest_test.clj"
+   :namespace gravity.backend.hdl.native-manifest-test
+   :jvm-group "hdl-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "gpu-native-manifest"
    :path "bootstrap/clojure/test/gravity/backend/gpu/native_manifest_test.clj"
    :namespace gravity.backend.gpu.native-manifest-test
    :jvm-group "gpu-native-manifest"
