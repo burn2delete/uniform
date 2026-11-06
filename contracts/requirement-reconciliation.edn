@@ -51885,74 +51885,88 @@
    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
    :change-class :qualified-current-task-source-successor,
    :previously-declared-record-observations
-   [{:prior-captured-record-sha256
+   [{:id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :prior-captured-record-sha256
      "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
      :current-captured-record-sha256
      "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
-     :current-checked? false,
-     :current-implementation-acceptance :unassessed,
-     :prior-status "Open",
-     :prior-checked? false,
      :prior-whole-body
-     {:start-byte 591,
-      :end-byte 1903,
-      :whole-record-body-sha256
-      "b3134d9eadd2012d6094302eb0dfc776383e0ae963f9a0848007f374036cc608"},
-     :id
-     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
-     :current-whole-body
      {:start-byte 591,
       :end-byte 7549,
       :whole-record-body-sha256
       "c526d5e93e38da985da9ba068931951c7dccb44ca823bfaad163b24e5de7574d"},
-     :current-status "Open",
-     :captured-fields-relation :exact}
-    {:prior-captured-record-sha256
+     :current-whole-body
+     {:start-byte 591,
+      :end-byte 8799,
+      :whole-record-body-sha256
+      "c983763a04970c83af7c8202b97cdb90e4d5106fee1556f938a6c3b06769427d"}}
+    {:id
+     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+     :prior-captured-record-sha256
      "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
      :current-captured-record-sha256
      "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
-     :current-checked? false,
-     :current-implementation-acceptance :unassessed,
-     :prior-status "Open",
-     :prior-checked? false,
      :prior-whole-body
-     {:start-byte 1903,
-      :end-byte 2600,
-      :whole-record-body-sha256
-      "704929a3076b4078b4c752d6aa0320c1e98fcf8c8b786600ab741747ee237adc"},
-     :id
-     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
-     :current-whole-body
      {:start-byte 7549,
       :end-byte 12379,
       :whole-record-body-sha256
       "e35c246469feb8ab66d75842c2d724e349d927bfed06100d4910718adef89304"},
-     :current-status "Open",
-     :captured-fields-relation :exact}
-    {:prior-captured-record-sha256
+     :current-whole-body
+     {:start-byte 8799,
+      :end-byte 13629,
+      :whole-record-body-sha256
+      "e35c246469feb8ab66d75842c2d724e349d927bfed06100d4910718adef89304"}}
+    {:id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :prior-captured-record-sha256
+     "f77c79cb0eccd9b283ba29b2ff81a581d2b278f21efa8fcf6405caf7246abcb5",
+     :current-captured-record-sha256
+     "f77c79cb0eccd9b283ba29b2ff81a581d2b278f21efa8fcf6405caf7246abcb5",
+     :prior-whole-body
+     {:start-byte 12379,
+      :end-byte 29060,
+      :whole-record-body-sha256
+      "eb9dc9e8219c010a245062173b5c426ebf906f6421571fe788e12785b618e5ae"},
+     :current-whole-body
+     {:start-byte 13629,
+      :end-byte 30310,
+      :whole-record-body-sha256
+      "eb9dc9e8219c010a245062173b5c426ebf906f6421571fe788e12785b618e5ae"}}
+    {:id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :prior-captured-record-sha256
      "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
      :current-captured-record-sha256
      "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
-     :current-checked? false,
-     :current-implementation-acceptance :unassessed,
-     :prior-status "Open",
-     :prior-checked? false,
      :prior-whole-body
-     {:start-byte 2950,
-      :end-byte 3820,
-      :whole-record-body-sha256
-      "ee3bb48d79f9a13686056276c86c28dd48aefef7e89579b380d2ec4176922362"},
-     :id
-     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
-     :current-whole-body
      {:start-byte 29060,
       :end-byte 34697,
       :whole-record-body-sha256
       "f8139d1093fcbe0745036ecceb9552a58b52577d855402f94f07ca315e0d707b"},
-     :current-status "Open",
-     :captured-fields-relation :exact}],
+     :current-whole-body
+     {:start-byte 30310,
+      :end-byte 35947,
+      :whole-record-body-sha256
+      "f8139d1093fcbe0745036ecceb9552a58b52577d855402f94f07ca315e0d707b"}}
+    {:id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :prior-captured-record-sha256
+     "ca09bc69f7d0332c124241729cde747f7f9e9556b9824c8dde9bfd01aa23cd86",
+     :current-captured-record-sha256
+     "ca09bc69f7d0332c124241729cde747f7f9e9556b9824c8dde9bfd01aa23cd86",
+     :prior-whole-body
+     {:start-byte 34697,
+      :end-byte 50314,
+      :whole-record-body-sha256
+      "fdc6e33fb2b3cbc6f5f553b330a86c622ac8ee8a0d51a1a7de45eb6df30b3e51"},
+     :current-whole-body
+     {:start-byte 35947,
+      :end-byte 53008,
+      :whole-record-body-sha256
+      "df9797031abc7f93a1940cd0ba3f06b74bd72c1aa375a991a1376d6172c94750"}}],
    :marker "build-implementation-tasks",
-   :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+   :current-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
    :changed-records
    [{:id
      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
@@ -51974,17 +51988,84 @@
      "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}],
    :current-only-records [],
    :qualification
-   "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+   "Only the existing Build task file advances after the two independently identified B1-B3 consumer source repairs. The complete prior bridge/table/model and all five real before/after scalar and whole-body observations remain authenticated; every task ID, checked state and Open status is unchanged. Old source subjects and reviews remain historical, and unchanged L12 criterion bytes are rebound explicitly rather than silently refreshed. Exact successor model/source review and actual implementation acceptance remain pending; no execution or whole-component gate is added.",
    :current-sha256
-   "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+   "9675337c127fe1357b345a45973a5fe1093b1d63aae00ca46cd00feb17562124",
    :predecessor-bridge
    {:path "specs/build-workflow/tasks.md",
     :historical-sha256
     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
-    :change-class :acceptance-boundary-extension,
+    :change-class :qualified-current-task-source-successor,
+    :previously-declared-record-observations
+    [{:prior-captured-record-sha256
+      "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
+      :current-captured-record-sha256
+      "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
+      :current-checked? false,
+      :current-implementation-acceptance :unassessed,
+      :prior-status "Open",
+      :prior-checked? false,
+      :prior-whole-body
+      {:start-byte 591,
+       :end-byte 1903,
+       :whole-record-body-sha256
+       "b3134d9eadd2012d6094302eb0dfc776383e0ae963f9a0848007f374036cc608"},
+      :id
+      "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+      :current-whole-body
+      {:start-byte 591,
+       :end-byte 7549,
+       :whole-record-body-sha256
+       "c526d5e93e38da985da9ba068931951c7dccb44ca823bfaad163b24e5de7574d"},
+      :current-status "Open",
+      :captured-fields-relation :exact}
+     {:prior-captured-record-sha256
+      "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
+      :current-captured-record-sha256
+      "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
+      :current-checked? false,
+      :current-implementation-acceptance :unassessed,
+      :prior-status "Open",
+      :prior-checked? false,
+      :prior-whole-body
+      {:start-byte 1903,
+       :end-byte 2600,
+       :whole-record-body-sha256
+       "704929a3076b4078b4c752d6aa0320c1e98fcf8c8b786600ab741747ee237adc"},
+      :id
+      "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+      :current-whole-body
+      {:start-byte 7549,
+       :end-byte 12379,
+       :whole-record-body-sha256
+       "e35c246469feb8ab66d75842c2d724e349d927bfed06100d4910718adef89304"},
+      :current-status "Open",
+      :captured-fields-relation :exact}
+     {:prior-captured-record-sha256
+      "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
+      :current-captured-record-sha256
+      "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
+      :current-checked? false,
+      :current-implementation-acceptance :unassessed,
+      :prior-status "Open",
+      :prior-checked? false,
+      :prior-whole-body
+      {:start-byte 2950,
+       :end-byte 3820,
+       :whole-record-body-sha256
+       "ee3bb48d79f9a13686056276c86c28dd48aefef7e89579b380d2ec4176922362"},
+      :id
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+      :current-whole-body
+      {:start-byte 29060,
+       :end-byte 34697,
+       :whole-record-body-sha256
+       "f8139d1093fcbe0745036ecceb9552a58b52577d855402f94f07ca315e0d707b"},
+      :current-status "Open",
+      :captured-fields-relation :exact}],
     :marker "build-implementation-tasks",
-    :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+    :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
     :changed-records
     [{:id
       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
@@ -52004,12 +52085,45 @@
       "a8c1f10da623479a8d4565f241568d7dfbdcb83644f1be8ced39e0f276230a00",
       :current-record-sha256
       "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}],
+    :current-only-records [],
     :qualification
-    "The PR560 safety-source qualification appends SAFE14 build boundary criteria to three existing Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No Build implementation or requirement acceptance is inferred.",
+    "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
     :current-sha256
-    "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4",
-    :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"},
-   :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+    :predecessor-bridge
+    {:path "specs/build-workflow/tasks.md",
+     :historical-sha256
+     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+     :change-class :acceptance-boundary-extension,
+     :marker "build-implementation-tasks",
+     :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+     :changed-records
+     [{:id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :historical-record-sha256
+       "b9e236813f1dcab8b65dda7c8a54fcf24eea341dbdcd23556ccf3b209e87f993",
+       :current-record-sha256
+       "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c"}
+      {:id
+       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+       :historical-record-sha256
+       "8fb18943d675dc477f05953f757fc695293228f23314147c2913b9c62f8df44c",
+       :current-record-sha256
+       "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c"}
+      {:id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :historical-record-sha256
+       "a8c1f10da623479a8d4565f241568d7dfbdcb83644f1be8ced39e0f276230a00",
+       :current-record-sha256
+       "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}],
+     :qualification
+     "The PR560 safety-source qualification appends SAFE14 build boundary criteria to three existing Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No Build implementation or requirement acceptance is inferred.",
+     :current-sha256
+     "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4",
+     :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"},
+    :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"},
+   :current-ref "9f6f43f93725e65b93464f62b922bcd16f2f17d9"}
   {:path "specs/domains-workflow/tasks.md",
    :historical-sha256
    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
@@ -270604,7 +270718,8 @@
      :id "bootstrap/native-carrier-header",
      :historical-support [],
      :equivalence-proposals
-     [{:target-description "L2 invocation evaluation and errors (alias)",
+     [{:target-description
+       "L2 invocation evaluation and errors (alias)",
        :kind :alias-or-refinement,
        :decision :root-required}
       {:target-description "BOOT2 Symbol units shared metric",
@@ -271303,7 +271418,2066 @@
    :qualification
    "The complete prior bridge table, prior review history and six original requirement records remain preserved. Current clauses establish qualified source interfaces only. Existing additional consumer interfaces, historical receipts, facets, aliases, statuses and implementation dispositions remain unchanged. Current model-binding review, source-facet evidence and full-scope reconciliation remain open.",
    :manifest-sha256
-   "09ff1b6fd00fb9072c0e727f58cf67ce46d8274f52609d64d77ed109994df6e1"}],
+   "09ff1b6fd00fb9072c0e727f58cf67ce46d8274f52609d64d77ed109994df6e1"}
+  {:kind :qualified-task-source-version-transition-v1,
+   :source-commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+   :source-tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+   :manifest-sha256
+   "2531d42c4c27af9ce9b133bf928b61311481fef19fa9b2bd4aa11e0a183b2393",
+   :prior-task-source-version-bridges
+   [{:path "specs/stdlib-workflow/tasks.md",
+     :historical-sha256
+     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+     :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "stdlib-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+     :predecessor-bridge
+     {:path "specs/stdlib-workflow/tasks.md",
+      :historical-sha256
+      "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+      :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+      :change-class :acceptance-boundary-extension,
+      :marker "stdlib-implementation-tasks",
+      :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55",
+      :qualification
+      "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance.",
+      :current-sha256
+      "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+      :current-ref "80d8a655cea00218799446986a976ca64043a1f8"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/auth-workflow/tasks.md",
+     :historical-sha256
+     "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+     :historical-ref "d5d8e15c773929337e1d9646da4f32af2d461e17",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "c582045a0fb3e7dc093b855ead9a853d6a7ce8ec7e174c6bbafca82c3fc81518",
+       :current-captured-record-sha256
+       "c582045a0fb3e7dc093b855ead9a853d6a7ce8ec7e174c6bbafca82c3fc81518",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 883,
+        :end-byte 1994,
+        :whole-record-body-sha256
+        "2af7881a7dca67ee13732a4aa8eef9a6f7d4367b3edaee9918c2145d3e8f1e49"},
+       :id
+       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+       :current-whole-body
+       {:start-byte 9937,
+        :end-byte 42323,
+        :whole-record-body-sha256
+        "182e0ff3f3013ee8b9f0fbcb9ca3ef69466001fcd4ca495db5aef3deae4547f0"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "8efdc01479b066f7636295567d7295c7b123c605f0507ac3453f00a34b964460",
+       :current-captured-record-sha256
+       "8efdc01479b066f7636295567d7295c7b123c605f0507ac3453f00a34b964460",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 1994,
+        :end-byte 2828,
+        :whole-record-body-sha256
+        "9fda59cbd16555129d5e6eca007b4ae8cd1a4c0ceaa8885400fa39cc2f43a590"},
+       :id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :current-whole-body
+       {:start-byte 42323,
+        :end-byte 46431,
+        :whole-record-body-sha256
+        "41fced02ce705d8aec7aa26b22344b8eb585f2611b6dd8ff9aa0d747d03f2fd1"},
+       :current-status "Open",
+       :captured-fields-relation :exact}],
+     :marker "auth-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id
+       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+       :historical-record-sha256
+       "c6bfbed5bd51a95693f7ac964a3230f5238e63638a6bc4d086db4d6da120aab8",
+       :current-record-sha256
+       "c582045a0fb3e7dc093b855ead9a853d6a7ce8ec7e174c6bbafca82c3fc81518"}
+      {:id
+       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+       :historical-record-sha256
+       "53e74d05a035ec574a55b511340ed8c9e95bf115c118eb49ad1570d1ac9ce3e4",
+       :current-record-sha256
+       "8efdc01479b066f7636295567d7295c7b123c605f0507ac3453f00a34b964460"}],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "9a48036280d3ec34758f5c8b8e075db60f4512821ecb454f08bf3b5402d21e86",
+     :predecessor-bridge
+     {:path "specs/auth-workflow/tasks.md",
+      :historical-sha256
+      "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
+      :historical-ref "d5d8e15c773929337e1d9646da4f32af2d461e17",
+      :change-class :acceptance-boundary-extension,
+      :marker "auth-implementation-tasks",
+      :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+      :changed-records
+      [{:id
+        "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+        :historical-record-sha256
+        "c6bfbed5bd51a95693f7ac964a3230f5238e63638a6bc4d086db4d6da120aab8",
+        :current-record-sha256
+        "c582045a0fb3e7dc093b855ead9a853d6a7ce8ec7e174c6bbafca82c3fc81518"}
+       {:id
+        "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+        :historical-record-sha256
+        "53e74d05a035ec574a55b511340ed8c9e95bf115c118eb49ad1570d1ac9ce3e4",
+        :current-record-sha256
+        "8efdc01479b066f7636295567d7295c7b123c605f0507ac3453f00a34b964460"}],
+      :qualification
+      "The current ledger preserves the historical task identities and navigation boundary while adding PR560 SAFE10 enforcement criteria to two existing Open records. The exact current source is authenticated at the pre-repair integration checkpoint; no Auth implementation or requirement acceptance is inferred.",
+      :current-sha256
+      "67e9a9b93d753ac1c6f1269cf2987c1010ade2331aeba678ff43b3b5930a31aa",
+      :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/backends-workflow/tasks.md",
+     :historical-sha256
+     "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+     :historical-ref "4e12c6a6703223d1f5b2d8a5468fd338864cc518",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "backends-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "489828146db1d0cbf9894452d0ad0c5b96d0419c118a7b2cd9e75889262391a2",
+     :predecessor-bridge
+     {:path "specs/backends-workflow/tasks.md",
+      :historical-sha256
+      "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0",
+      :historical-ref "4e12c6a6703223d1f5b2d8a5468fd338864cc518",
+      :change-class :navigation-only,
+      :marker "backends-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger changes only generated-view wording to current-ledger navigation. Existing backend task records and their acceptance limits remain equivalent; no backend implementation or requirement acceptance is inferred.",
+      :current-sha256
+      "11a2f0af81732e0f9759a0553d037f304d5aeee0accd26f0a983f233d7f6b54f",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :historical-sha256
+     "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+     :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "4748427391ab8de0f74ae800d85cf18aa0b1c567801aa1ac8faaaee8b34e22d6",
+       :current-captured-record-sha256
+       "398cdd8748b27f490df648040a3ac022ac6b0a499c425f88f5b867fa428ebe86",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 743,
+        :end-byte 16614,
+        :whole-record-body-sha256
+        "1b8cc132589a6ba0221ffb8e59570d804ce71a25165a0ef58e26f829716e0952"},
+       :id "pipeline",
+       :current-whole-body
+       {:start-byte 743,
+        :end-byte 17800,
+        :whole-record-body-sha256
+        "74fdb89b968e330464eca3c9de579feee9b1ce0e6747ca04079bf35bfe802b1b"},
+       :current-status "Open",
+       :captured-fields-relation :changed}
+      {:prior-captured-record-sha256
+       "acb4250fdd8b0b8ecde0696a264aff50b2412e0e1b57b1e1c945e19faf1158f0",
+       :current-captured-record-sha256
+       "c30f34a3c8ba8823510c6bd48fcf9da81890090aefecbbd22de3e761349da220",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 16614,
+        :end-byte 29651,
+        :whole-record-body-sha256
+        "5015f73a67e6e65c4b0eea9764205fec359767c1879d533824317557ffe12f19"},
+       :id "plugins",
+       :current-whole-body
+       {:start-byte 17800,
+        :end-byte 35635,
+        :whole-record-body-sha256
+        "9af100b950f856f70553e1f0ed548a68d695d8d247ac51ec2523e11f0fcc5ffc"},
+       :current-status "Open",
+       :captured-fields-relation :changed}
+      {:prior-captured-record-sha256
+       "e0babcbbe2774655501d5789941dc10067d4cc5bd464fb2653191b7baa84063d",
+       :current-captured-record-sha256
+       "51bc1bd7d0569b0ea1b1a4565848e2a4493ebabfd511de7769d3bc71759f6984",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 29651,
+        :end-byte 41652,
+        :whole-record-body-sha256
+        "d959425494c927e54f5f32392313c3ae1e6a9d972b790d69df2f3258a3cee5c5"},
+       :id "pass-evidence",
+       :current-whole-body
+       {:start-byte 35635,
+        :end-byte 53804,
+        :whole-record-body-sha256
+        "87b1be0b8f14eb0029d5e50e86aa5b15e07920a67ec4c17a35d12f2098ff9f5d"},
+       :current-status "Open",
+       :captured-fields-relation :changed}
+      {:prior-captured-record-sha256
+       "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09",
+       :current-captured-record-sha256
+       "dc83f6254dc840f5efc047f50b33c8d6015a586912070eea48f6687c2e6ea8b4",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 41652,
+        :end-byte 51511,
+        :whole-record-body-sha256
+        "a6ed26160850e969ccd7753459b2284f5264043e207b6ff0d2f25f472f2bc212"},
+       :id "domain-ir-boundaries",
+       :current-whole-body
+       {:start-byte 53804,
+        :end-byte 66513,
+        :whole-record-body-sha256
+        "5a5e91b720c8df341f2d43b3b8d980b9489757e74f1b3657b0f62c24b2111229"},
+       :current-status "Open",
+       :captured-fields-relation :changed}],
+     :marker "compiler-api-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id "pipeline",
+       :historical-record-sha256
+       "2cd9bd26bdfe71294362391ba21766bdcb7af204dc71853547316b44350004cc",
+       :current-record-sha256
+       "398cdd8748b27f490df648040a3ac022ac6b0a499c425f88f5b867fa428ebe86"}
+      {:id "plugins",
+       :historical-record-sha256
+       "4b28cd35c9652c689442f73c56765509bd9fc752733cddc6ec37b0d5d2df4172",
+       :current-record-sha256
+       "c30f34a3c8ba8823510c6bd48fcf9da81890090aefecbbd22de3e761349da220"}
+      {:id "pass-evidence",
+       :historical-record-sha256
+       "f1fe06b12d0a70265ac959d72951974a90503ceb00e239015e5931f698b6dc22",
+       :current-record-sha256
+       "51bc1bd7d0569b0ea1b1a4565848e2a4493ebabfd511de7769d3bc71759f6984"}],
+     :current-only-records
+     [{:id "domain-ir-boundaries",
+       :current-record-sha256
+       "dc83f6254dc840f5efc047f50b33c8d6015a586912070eea48f6687c2e6ea8b4"}],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "5ba49e3cc67928a172e6e2e1a734f40d8a15920730b040976bb5bf456321745b",
+     :predecessor-bridge
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :historical-sha256
+      "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+      :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+      :change-class :acceptance-boundary-extension,
+      :marker "compiler-api-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :changed-records
+      [{:id "pipeline",
+        :historical-record-sha256
+        "2cd9bd26bdfe71294362391ba21766bdcb7af204dc71853547316b44350004cc",
+        :current-record-sha256
+        "4748427391ab8de0f74ae800d85cf18aa0b1c567801aa1ac8faaaee8b34e22d6"}
+       {:id "plugins",
+        :historical-record-sha256
+        "4b28cd35c9652c689442f73c56765509bd9fc752733cddc6ec37b0d5d2df4172",
+        :current-record-sha256
+        "acb4250fdd8b0b8ecde0696a264aff50b2412e0e1b57b1e1c945e19faf1158f0"}
+       {:id "pass-evidence",
+        :historical-record-sha256
+        "f1fe06b12d0a70265ac959d72951974a90503ceb00e239015e5931f698b6dc22",
+        :current-record-sha256
+        "e0babcbbe2774655501d5789941dc10067d4cc5bd464fb2653191b7baa84063d"}],
+      :current-only-records
+      [{:id "domain-ir-boundaries",
+        :current-record-sha256
+        "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}],
+      :qualification
+      "Three historically referenced Compiler API records retain their historical owner/status/boundary and gain appended Foundation/Bootstrap/Decision criteria in current main. Current main also contains the current-only domain-ir-boundaries development-boundary record; it is explicitly unassessed scope and is not attached to an older requirement. These current source obligations preserve record identity and do not claim implementation or acceptance.",
+      :current-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/core-workflow/tasks.md",
+     :historical-sha256
+     "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+     :historical-ref "88f621ee7633be6965f34d33a43a361cbdd26157",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "core-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "a3edb3d9b274e77149d098b05db38273465465b7cbe55fe5572fb65766889e69",
+     :predecessor-bridge
+     {:path "specs/core-workflow/tasks.md",
+      :historical-sha256
+      "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97",
+      :historical-ref "88f621ee7633be6965f34d33a43a361cbdd26157",
+      :change-class :navigation-only,
+      :marker "core-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Core task records and acceptance boundaries remain equivalent; no implementation acceptance is inferred.",
+      :current-sha256
+      "40a5b6c724741f3efc6dc3b16780bfb0d0656c649648d6165e328166a24aea95",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/diag-workflow/tasks.md",
+     :historical-sha256
+     "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+     :historical-ref "963f70c41b1da261da3a3acfdfe055f23cee6971",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "diag-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "05050c2e3f03b410934a857e3a9a3dbae2528bb81d3d44024edd3ba09b5b73be",
+     :predecessor-bridge
+     {:path "specs/diag-workflow/tasks.md",
+      :historical-sha256
+      "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4",
+      :historical-ref "963f70c41b1da261da3a3acfdfe055f23cee6971",
+      :change-class :navigation-only,
+      :marker "diag-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Diagnostic task records and acceptance boundaries remain equivalent; no diagnostic implementation acceptance is inferred.",
+      :current-sha256
+      "c3c0c33e30aa33d70afca4b863be94f7412a8d154df566e96f433dfbaacae502",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/effects-workflow/tasks.md",
+     :historical-sha256
+     "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+     :historical-ref "ce3b268fd84bf9d7bbd85cd83eb5ee5db312448d",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "effects-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "ffd8e09758643b5207053331929f08cbd2501405083055e0239be2e934451bc2",
+     :predecessor-bridge
+     {:path "specs/effects-workflow/tasks.md",
+      :historical-sha256
+      "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0",
+      :historical-ref "ce3b268fd84bf9d7bbd85cd83eb5ee5db312448d",
+      :change-class :navigation-only,
+      :marker "effects-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Effects task records and acceptance boundaries remain equivalent; no effects implementation acceptance is inferred.",
+      :current-sha256
+      "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/expand-workflow/tasks.md",
+     :historical-sha256
+     "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+     :historical-ref "da0c035c50acd02b67885d37f4c0b7fb41f4a777",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "expand-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "20a0dc66f08f66c66590b42ed29bfdfad975a0e3799eee30059920e0d48e39ab",
+     :predecessor-bridge
+     {:path "specs/expand-workflow/tasks.md",
+      :historical-sha256
+      "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f",
+      :historical-ref "da0c035c50acd02b67885d37f4c0b7fb41f4a777",
+      :change-class :navigation-only,
+      :marker "expand-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Expand task records and acceptance boundaries remain equivalent; no expansion implementation acceptance is inferred.",
+      :current-sha256
+      "216dbb577f552d65f263bc7943a847b77500de1f50e06f5cb340e5419054ed74",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/legality-workflow/tasks.md",
+     :historical-sha256
+     "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+     :historical-ref "846644db7402c26a421eb7afd52615d52f145590",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "75c9f330182952f0e6cef039c12a2fe5cb70d0d49b4170c1f8ec43fab9df760d",
+       :current-captured-record-sha256
+       "75c9f330182952f0e6cef039c12a2fe5cb70d0d49b4170c1f8ec43fab9df760d",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 500,
+        :end-byte 1267,
+        :whole-record-body-sha256
+        "a47ee4372bb999fe3db374df5933f9ca081afdc9185a7dff8766f80b0df53723"},
+       :id
+       "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+       :current-whole-body
+       {:start-byte 500,
+        :end-byte 22621,
+        :whole-record-body-sha256
+        "d2cb37e22792e6d5704e2cbc0690303fc5851ed89ab8f46ee90d6c09842a7796"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "38d822712784b06947898a746d4998ba589854f78ee8c89ed4b452fead533465",
+       :current-captured-record-sha256
+       "38d822712784b06947898a746d4998ba589854f78ee8c89ed4b452fead533465",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 1267,
+        :end-byte 2284,
+        :whole-record-body-sha256
+        "fb8d140db895aa86985ddbb22284b54646cdf04d12edc92df27e7fee2bff2aba"},
+       :id
+       "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+       :current-whole-body
+       {:start-byte 22621,
+        :end-byte 63015,
+        :whole-record-body-sha256
+        "96bb1dcb3da13d67c88522db6007c56427c72c109973c3dbdfcf73de2ce4015a"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "85d45afeca8597bad2f46ae8f1b60da22108db23752574f7bac62169eaf1760e",
+       :current-captured-record-sha256
+       "85d45afeca8597bad2f46ae8f1b60da22108db23752574f7bac62169eaf1760e",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 2284,
+        :end-byte 3460,
+        :whole-record-body-sha256
+        "169022407d9144cbe0eb801e56202de7d2413a9736539ca7a57196baf50c3a75"},
+       :id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :current-whole-body
+       {:start-byte 63015,
+        :end-byte 110396,
+        :whole-record-body-sha256
+        "3568fbb3dd382ab640d8d473f550a9380a0522db2c75de58946bf7cdaca2dff7"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "9eed90d186c90fd238352d7fc06aa4ff81c58200f1efefd15ae64c3e19df6ad4",
+       :current-captured-record-sha256
+       "9eed90d186c90fd238352d7fc06aa4ff81c58200f1efefd15ae64c3e19df6ad4",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 3460,
+        :end-byte 4480,
+        :whole-record-body-sha256
+        "25dacf54d01602b538411881894fcca23ba53270d2bb02e37304721e37ab2fd9"},
+       :id
+       "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+       :current-whole-body
+       {:start-byte 110396,
+        :end-byte 125789,
+        :whole-record-body-sha256
+        "a1f20f8ec5f01d26c04bc5b0106dc29b68cf39ab122c8586f507339ea6dd83c8"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "c5156259843d92e75b0043be9d183c548e1c2220d617293accf9a193f0e7c269",
+       :current-captured-record-sha256
+       "c5156259843d92e75b0043be9d183c548e1c2220d617293accf9a193f0e7c269",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 4480,
+        :end-byte 5495,
+        :whole-record-body-sha256
+        "9ae2e48a4e7d0ec16bc76665b0d670521b7407512bd58350d94f882be23ec7b8"},
+       :id
+       "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+       :current-whole-body
+       {:start-byte 125789,
+        :end-byte 139592,
+        :whole-record-body-sha256
+        "1aa47acd3e5cccc302611b847b97fa74dd62ad8252b022bc541da775411f011c"},
+       :current-status "Open",
+       :captured-fields-relation :exact}],
+     :marker "legality-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id
+       "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+       :historical-record-sha256
+       "7a0bcabe93e9e5a7f76700ff374b0080a542c5890d4f6af81d9359f1bb4e918f",
+       :current-record-sha256
+       "75c9f330182952f0e6cef039c12a2fe5cb70d0d49b4170c1f8ec43fab9df760d"}
+      {:id
+       "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+       :historical-record-sha256
+       "6d0b50cd707641b1ec1910dd768f571ffcf54b33905bf45fa43dbb24e6f8d88b",
+       :current-record-sha256
+       "38d822712784b06947898a746d4998ba589854f78ee8c89ed4b452fead533465"}
+      {:id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :historical-record-sha256
+       "1998850b245addfaaa4611bc800f26028eb34231bc61b42e9b477f7b8fdb4651",
+       :current-record-sha256
+       "85d45afeca8597bad2f46ae8f1b60da22108db23752574f7bac62169eaf1760e"}
+      {:id
+       "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+       :historical-record-sha256
+       "edd895c0fe9ae5ab394e7492efb3ac42b244ed94eef4f8dd2fa5a3351558546c",
+       :current-record-sha256
+       "9eed90d186c90fd238352d7fc06aa4ff81c58200f1efefd15ae64c3e19df6ad4"}
+      {:id
+       "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+       :historical-record-sha256
+       "56b048f85f2dbb3e42b8ab9d2d14074729a4b9be324ec5c1ca4063db9aa7e895",
+       :current-record-sha256
+       "c5156259843d92e75b0043be9d183c548e1c2220d617293accf9a193f0e7c269"}],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "fdd2770993d1e9f848def12b7741b21f01462192616b3b843acbe49508d03e1f",
+     :predecessor-bridge
+     {:path "specs/legality-workflow/tasks.md",
+      :historical-sha256
+      "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
+      :historical-ref "846644db7402c26a421eb7afd52615d52f145590",
+      :change-class :acceptance-boundary-extension,
+      :marker "legality-implementation-tasks",
+      :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+      :changed-records
+      [{:id
+        "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+        :historical-record-sha256
+        "7a0bcabe93e9e5a7f76700ff374b0080a542c5890d4f6af81d9359f1bb4e918f",
+        :current-record-sha256
+        "75c9f330182952f0e6cef039c12a2fe5cb70d0d49b4170c1f8ec43fab9df760d"}
+       {:id
+        "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+        :historical-record-sha256
+        "6d0b50cd707641b1ec1910dd768f571ffcf54b33905bf45fa43dbb24e6f8d88b",
+        :current-record-sha256
+        "38d822712784b06947898a746d4998ba589854f78ee8c89ed4b452fead533465"}
+       {:id
+        "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+        :historical-record-sha256
+        "1998850b245addfaaa4611bc800f26028eb34231bc61b42e9b477f7b8fdb4651",
+        :current-record-sha256
+        "85d45afeca8597bad2f46ae8f1b60da22108db23752574f7bac62169eaf1760e"}
+       {:id
+        "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+        :historical-record-sha256
+        "edd895c0fe9ae5ab394e7492efb3ac42b244ed94eef4f8dd2fa5a3351558546c",
+        :current-record-sha256
+        "9eed90d186c90fd238352d7fc06aa4ff81c58200f1efefd15ae64c3e19df6ad4"}
+       {:id
+        "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+        :historical-record-sha256
+        "56b048f85f2dbb3e42b8ab9d2d14074729a4b9be324ec5c1ca4063db9aa7e895",
+        :current-record-sha256
+        "c5156259843d92e75b0043be9d183c548e1c2220d617293accf9a193f0e7c269"}],
+      :qualification
+      "The current ledger preserves the historical task identities and Open status while adding PR560 SAFE1-SAFE16 profile, ownership, proof and conformance criteria to all five Legality records. The exact current source is authenticated at the pre-repair integration checkpoint; no profile or safety implementation acceptance is inferred.",
+      :current-sha256
+      "9ca56250bb856a277b4ea2f5d68271c427345f1843a1e82a2865cd3e677090ce",
+      :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/lower-workflow/tasks.md",
+     :historical-sha256
+     "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+     :historical-ref "176c4ee65bb3ceb545f51edfaa599902030a0cb7",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "lower-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "ca83727a3fdb84b4f325273da1f047bed0e74c3d3ce975318e6cd2ae7b315320",
+     :predecessor-bridge
+     {:path "specs/lower-workflow/tasks.md",
+      :historical-sha256
+      "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c",
+      :historical-ref "176c4ee65bb3ceb545f51edfaa599902030a0cb7",
+      :change-class :navigation-only,
+      :marker "lower-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Lower task records and acceptance boundaries remain equivalent; no lowering implementation acceptance is inferred.",
+      :current-sha256
+      "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/mir-workflow/tasks.md",
+     :historical-sha256
+     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+     :historical-ref "063989e153b88c00f3ac3f69c2f7a04b5981ab2d",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "mir-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "62c38cf3a309e67992bc38256aae5fe0678b5a8c717eb59629a46e1f8bb0aebf",
+     :predecessor-bridge
+     {:path "specs/mir-workflow/tasks.md",
+      :historical-sha256
+      "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6",
+      :historical-ref "063989e153b88c00f3ac3f69c2f7a04b5981ab2d",
+      :change-class :navigation-only,
+      :marker "mir-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. MIR task records and acceptance boundaries remain equivalent; no MIR implementation acceptance is inferred.",
+      :current-sha256
+      "866445b8e7591782d51f8646d304ad40652e3bf76643bd4de9f897f0555d9c93",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/opt-workflow/tasks.md",
+     :historical-sha256
+     "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+     :historical-ref "b394258a06950bcc69d57cae99f9ff6b582d0ad8",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "opt-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "58e2feda7ac60a99594e3ef737e35cd94ce19bda5c044c8c8549cdf65c97b303",
+     :predecessor-bridge
+     {:path "specs/opt-workflow/tasks.md",
+      :historical-sha256
+      "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908",
+      :historical-ref "b394258a06950bcc69d57cae99f9ff6b582d0ad8",
+      :change-class :navigation-only,
+      :marker "opt-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Optimization task records and acceptance boundaries remain equivalent; no optimization implementation acceptance is inferred.",
+      :current-sha256
+      "4422b1927be2fbd877aa5ee9bf208f44a30b5da0b4b14282c5ee58a503113225",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/reader-workflow/tasks.md",
+     :historical-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :historical-ref "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :change-class :status-and-development-evidence,
+     :marker "reader-implementation-tasks",
+     :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+     :changed-records
+     [{:id
+       "reader/finite-remaining-work/lexical-products-and-origins-closure",
+       :historical-record-sha256
+       "e040e2ca28b78aea30993d1702dd39726c7d0b86548d72c6e450016718ee7a6c",
+       :current-record-sha256
+       "611f1d594fb58fe5b2063a57c8b445f5d42bee3312e212255b693a3a778e7746"}
+      {:id "reader/finite-remaining-work/extension-policy-closure",
+       :historical-record-sha256
+       "033a0d8caa3d5ef5e17d469ae3d9730f546dcfbade101149bfd500c5011747b0",
+       :current-record-sha256
+       "bddef1c0be3c3580e69855ae2b0c3a4e23d4bd0362421d687e29cd09428d6439"}],
+     :qualification
+     "The current Reader ledger preserves the old acceptance boundaries but changes two scoped status records: lexical/origin is an accepted current development report, while extension policy remains unchecked with a bootstrap dispatch note. These statuses are source facts only; they do not confer whole Reader or requirement acceptance.",
+     :current-sha256
+     "9e278efbe41cc3d6e9f83eca2ea5b670c9cd83641876ce7cb317808bb7314181",
+     :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"}
+    {:path "specs/resolve-workflow/tasks.md",
+     :historical-sha256
+     "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+     :historical-ref "31193e634ec99b2cd5ebfd90304e323840fcf7b9",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "resolve-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "dddecd1a6e4e221cbd4bb91dcfd5c9af0e1d4e125ee25afc60e308baa669f99a",
+     :predecessor-bridge
+     {:path "specs/resolve-workflow/tasks.md",
+      :historical-sha256
+      "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4",
+      :historical-ref "31193e634ec99b2cd5ebfd90304e323840fcf7b9",
+      :change-class :navigation-only,
+      :marker "resolve-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Resolve task records and acceptance boundaries remain equivalent; no resolve implementation acceptance is inferred.",
+      :current-sha256
+      "17013d1a1ad2f63a5191d5495d5104e93888c31039c7d8537c9504ff74336181",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/syntax-workflow/tasks.md",
+     :historical-sha256
+     "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+     :historical-ref "df98aa43be9df61e96aaac723bdfdb4eae619963",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "syntax-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "bbae3ccae165e17fa83250042f375a08d7826b57eb8d041eefd1775a1d892f9b",
+     :predecessor-bridge
+     {:path "specs/syntax-workflow/tasks.md",
+      :historical-sha256
+      "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10",
+      :historical-ref "df98aa43be9df61e96aaac723bdfdb4eae619963",
+      :change-class :navigation-only,
+      :marker "syntax-implementation-tasks",
+      :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
+      :qualification
+      "The current ledger replaces generated-roadmap wording with navigation wording. Syntax task records and acceptance boundaries remain equivalent; no syntax implementation acceptance is inferred.",
+      :current-sha256
+      "feadfc4136f886d5981efedfb8f52d1a3a3e68a1858af3e7fd31e5924b8be6d5",
+      :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/types-workflow/tasks.md",
+     :historical-sha256
+     "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+     :historical-ref "fcb23737be00f646a74200fc26faaa8908f77164",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations [],
+     :marker "types-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :known-current-main
+     {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+      :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+      :current-sha256
+      "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f",
+      :change-class :current-main-composition,
+      :qualification
+      "Immutable d544 source checkpoint before the PR565 Types boundary; no Types implementation acceptance is inferred."},
+     :changed-records [],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "6c681ea228458bbcc02fbdb45c765ae22859d86a41092c30eb6c264c518cab43",
+     :predecessor-bridge
+     {:path "specs/types-workflow/tasks.md",
+      :historical-sha256
+      "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
+      :historical-ref "fcb23737be00f646a74200fc26faaa8908f77164",
+      :change-class :current-candidate-composition,
+      :marker "types-implementation-tasks",
+      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+      :known-current-main
+      {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+       :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+       :current-sha256
+       "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f",
+       :change-class :current-main-composition,
+       :qualification
+       "Immutable d544 source checkpoint before the PR565 Types boundary; no Types implementation acceptance is inferred."},
+      :qualification
+      "The current candidate preserves the Types task identity and adds the scoped PR565 schema-static-projection boundary. Source/compiler/profile/target and provider/checker identities remain required; Types implementation and requirement acceptance remain unassessed.",
+      :current-sha256
+      "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946",
+      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/runtime-workflow/tasks.md",
+     :known-pr560-current
+     {:current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+      :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+      :current-sha256
+      "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4",
+      :change-class :acceptance-boundary-extension,
+      :qualification
+      "Authenticated PR560 intermediate retained for transition provenance; no implementation or requirement acceptance is inferred.",
+      :changed-records
+      [{:id
+        "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+        :historical-record-sha256
+        "a959ffa3f2a8e71d03007d32f480e4e0e4706a8185da0e6dfc3d501ebcb91665",
+        :current-record-sha256
+        "18e3804dca27d058b7c8bf45c68df55ddfbbcb482cfc5f061396b129025d5408"}
+       {:id
+        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+        :historical-record-sha256
+        "5e4f1d813c397bb8946a44bd74f80dddd046021d272456a9351e18667ec4ec87",
+        :current-record-sha256
+        "c0a1d3ad673000a5272fd774b017e2e904cf0f8020ab660d06e46af6bdca6dbc"}]},
+     :historical-sha256
+     "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "3476ab8cb6e56e918accf27a9ce4eef88287f6248454962f9b13b17f38e3dd2c",
+       :current-captured-record-sha256
+       "3476ab8cb6e56e918accf27a9ce4eef88287f6248454962f9b13b17f38e3dd2c",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 688,
+        :end-byte 1836,
+        :whole-record-body-sha256
+        "4723a7369dab1473851f2053a601e3f1bc9e6a99cc9591d040603d90612c9325"},
+       :id
+       "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+       :current-whole-body
+       {:start-byte 688,
+        :end-byte 5478,
+        :whole-record-body-sha256
+        "5ac432268a375fbf0c3be8f575d7e316602a10a76f28fd2cc14fac75c3f0ef04"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "ded8d9ad5290cdc450f58c1d64e2bdf14936e0683fc0ea89f7c16dd185e22dac",
+       :current-captured-record-sha256
+       "ded8d9ad5290cdc450f58c1d64e2bdf14936e0683fc0ea89f7c16dd185e22dac",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 1836,
+        :end-byte 3129,
+        :whole-record-body-sha256
+        "7ca74f679ba4b743cd913de63df1f52fcced4de02eac4191ac32c676f9f2aaa5"},
+       :id
+       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+       :current-whole-body
+       {:start-byte 5478,
+        :end-byte 22504,
+        :whole-record-body-sha256
+        "f720ca707852da2016856fd99311c793b5785997fa55810f5ae2536ad86b7b43"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "25b8b3f355a36d9b1846803690a044edab9e7db33da0b83bea5b60eef1137474",
+       :current-captured-record-sha256
+       "25b8b3f355a36d9b1846803690a044edab9e7db33da0b83bea5b60eef1137474",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 3129,
+        :end-byte 5218,
+        :whole-record-body-sha256
+        "150545cfc6e6ad6a4f82e88d5709adde4c13b2d4b48598474ec30fbbcfbb32f0"},
+       :id
+       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+       :current-whole-body
+       {:start-byte 22504,
+        :end-byte 50847,
+        :whole-record-body-sha256
+        "919d2d24f948080741f8c250e46936b62199f21e21cf70704d7a89137b6cd001"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "8cee6bd5d4c8c3012453747cdd27414c43cad271e874802f6a3abad64b8e4722",
+       :current-captured-record-sha256
+       "8cee6bd5d4c8c3012453747cdd27414c43cad271e874802f6a3abad64b8e4722",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 5218,
+        :end-byte 7993,
+        :whole-record-body-sha256
+        "5be929178e5886398be1217d223e9e39b60bc1a75fa5fe4128c8ba8e90ed669d"},
+       :id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :current-whole-body
+       {:start-byte 50847,
+        :end-byte 73687,
+        :whole-record-body-sha256
+        "55fc56591145f1f5b8553e9156d5602f9b38727c128f0f97bdb1c53f9f3a7f5f"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "cc826b58d9ebfe81c5e98b893e39982043969cf51efd9e91828954e2edc4cadb",
+       :current-captured-record-sha256
+       "cc826b58d9ebfe81c5e98b893e39982043969cf51efd9e91828954e2edc4cadb",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 7993,
+        :end-byte 10392,
+        :whole-record-body-sha256
+        "02b7705708fdbae8d18a5073bb32ef3bbb01ad02aefad326aec0c3948bc7bc08"},
+       :id
+       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+       :current-whole-body
+       {:start-byte 73687,
+        :end-byte 88873,
+        :whole-record-body-sha256
+        "3e14a1b0ed8a4d09ba375a382425aa5c6a4181d4fbaf5c591cb57fe02cf76eb4"},
+       :current-status "Open",
+       :captured-fields-relation :exact}],
+     :marker "runtime-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :known-current-main
+     {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+      :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+      :current-sha256
+      "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
+      :change-class :current-main-composition,
+      :qualification
+      "Immutable d544 source checkpoint before the PR565 Runtime boundary; no Runtime implementation acceptance is inferred."},
+     :changed-records
+     [{:id
+       "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+       :historical-record-sha256
+       "8388b2ad2d041741572b9325b6e6935021659a325332de2d335a6e4bb4c60923",
+       :current-record-sha256
+       "3476ab8cb6e56e918accf27a9ce4eef88287f6248454962f9b13b17f38e3dd2c"}
+      {:id
+       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+       :historical-record-sha256
+       "a540878e6ff34284f935a20e8da6557627ff81d402ceb65cc9f88ede6f1fdbcb",
+       :current-record-sha256
+       "ded8d9ad5290cdc450f58c1d64e2bdf14936e0683fc0ea89f7c16dd185e22dac"}
+      {:id
+       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+       :historical-record-sha256
+       "a959ffa3f2a8e71d03007d32f480e4e0e4706a8185da0e6dfc3d501ebcb91665",
+       :current-record-sha256
+       "25b8b3f355a36d9b1846803690a044edab9e7db33da0b83bea5b60eef1137474"}
+      {:id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :historical-record-sha256
+       "5e4f1d813c397bb8946a44bd74f80dddd046021d272456a9351e18667ec4ec87",
+       :current-record-sha256
+       "8cee6bd5d4c8c3012453747cdd27414c43cad271e874802f6a3abad64b8e4722"}
+      {:id
+       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+       :historical-record-sha256
+       "25fe11f723f512d9885d2422d64186e1c07d1d937fd5e33da267230906fc4825",
+       :current-record-sha256
+       "cc826b58d9ebfe81c5e98b893e39982043969cf51efd9e91828954e2edc4cadb"}],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "c6605ecd2a5edd903ef1e64957a17423446bd4f0ad2adb64e194c5883819ef10",
+     :predecessor-bridge
+     {:path "specs/runtime-workflow/tasks.md",
+      :known-pr560-current
+      {:current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+       :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+       :current-sha256
+       "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4",
+       :change-class :acceptance-boundary-extension,
+       :qualification
+       "Authenticated PR560 intermediate retained for transition provenance; no implementation or requirement acceptance is inferred.",
+       :changed-records
+       [{:id
+         "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+         :historical-record-sha256
+         "a959ffa3f2a8e71d03007d32f480e4e0e4706a8185da0e6dfc3d501ebcb91665",
+         :current-record-sha256
+         "18e3804dca27d058b7c8bf45c68df55ddfbbcb482cfc5f061396b129025d5408"}
+        {:id
+         "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+         :historical-record-sha256
+         "5e4f1d813c397bb8946a44bd74f80dddd046021d272456a9351e18667ec4ec87",
+         :current-record-sha256
+         "c0a1d3ad673000a5272fd774b017e2e904cf0f8020ab660d06e46af6bdca6dbc"}]},
+      :historical-sha256
+      "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+      :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+      :change-class :current-candidate-composition,
+      :marker "runtime-implementation-tasks",
+      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+      :known-current-main
+      {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+       :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+       :current-sha256
+       "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
+       :change-class :current-main-composition,
+       :qualification
+       "Immutable d544 source checkpoint before the PR565 Runtime boundary; no Runtime implementation acceptance is inferred."},
+      :changed-records
+      [{:id
+        "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+        :historical-record-sha256
+        "8388b2ad2d041741572b9325b6e6935021659a325332de2d335a6e4bb4c60923",
+        :current-record-sha256
+        "3476ab8cb6e56e918accf27a9ce4eef88287f6248454962f9b13b17f38e3dd2c"}
+       {:id
+        "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+        :historical-record-sha256
+        "a540878e6ff34284f935a20e8da6557627ff81d402ceb65cc9f88ede6f1fdbcb",
+        :current-record-sha256
+        "ded8d9ad5290cdc450f58c1d64e2bdf14936e0683fc0ea89f7c16dd185e22dac"}
+       {:id
+        "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+        :historical-record-sha256
+        "a959ffa3f2a8e71d03007d32f480e4e0e4706a8185da0e6dfc3d501ebcb91665",
+        :current-record-sha256
+        "25b8b3f355a36d9b1846803690a044edab9e7db33da0b83bea5b60eef1137474"}
+       {:id
+        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+        :historical-record-sha256
+        "5e4f1d813c397bb8946a44bd74f80dddd046021d272456a9351e18667ec4ec87",
+        :current-record-sha256
+        "8cee6bd5d4c8c3012453747cdd27414c43cad271e874802f6a3abad64b8e4722"}
+       {:id
+        "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+        :historical-record-sha256
+        "25fe11f723f512d9885d2422d64186e1c07d1d937fd5e33da267230906fc4825",
+        :current-record-sha256
+        "cc826b58d9ebfe81c5e98b893e39982043969cf51efd9e91828954e2edc4cadb"}],
+      :qualification
+      "The current candidate preserves the Runtime task identity and adds the scoped PR565 hosted source-map boundary, requiring actual runtime failure and source/generated-origin evidence. Runtime implementation and requirement acceptance remain unassessed.",
+      :current-sha256
+      "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d",
+      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/build-workflow/tasks.md",
+     :historical-sha256
+     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
+       :current-captured-record-sha256
+       "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 591,
+        :end-byte 1903,
+        :whole-record-body-sha256
+        "b3134d9eadd2012d6094302eb0dfc776383e0ae963f9a0848007f374036cc608"},
+       :id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :current-whole-body
+       {:start-byte 591,
+        :end-byte 7549,
+        :whole-record-body-sha256
+        "c526d5e93e38da985da9ba068931951c7dccb44ca823bfaad163b24e5de7574d"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
+       :current-captured-record-sha256
+       "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 1903,
+        :end-byte 2600,
+        :whole-record-body-sha256
+        "704929a3076b4078b4c752d6aa0320c1e98fcf8c8b786600ab741747ee237adc"},
+       :id
+       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+       :current-whole-body
+       {:start-byte 7549,
+        :end-byte 12379,
+        :whole-record-body-sha256
+        "e35c246469feb8ab66d75842c2d724e349d927bfed06100d4910718adef89304"},
+       :current-status "Open",
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
+       :current-captured-record-sha256
+       "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 2950,
+        :end-byte 3820,
+        :whole-record-body-sha256
+        "ee3bb48d79f9a13686056276c86c28dd48aefef7e89579b380d2ec4176922362"},
+       :id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :current-whole-body
+       {:start-byte 29060,
+        :end-byte 34697,
+        :whole-record-body-sha256
+        "f8139d1093fcbe0745036ecceb9552a58b52577d855402f94f07ca315e0d707b"},
+       :current-status "Open",
+       :captured-fields-relation :exact}],
+     :marker "build-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id
+       "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+       :historical-record-sha256
+       "b9e236813f1dcab8b65dda7c8a54fcf24eea341dbdcd23556ccf3b209e87f993",
+       :current-record-sha256
+       "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c"}
+      {:id
+       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+       :historical-record-sha256
+       "8fb18943d675dc477f05953f757fc695293228f23314147c2913b9c62f8df44c",
+       :current-record-sha256
+       "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c"}
+      {:id
+       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+       :historical-record-sha256
+       "a8c1f10da623479a8d4565f241568d7dfbdcb83644f1be8ced39e0f276230a00",
+       :current-record-sha256
+       "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+     :predecessor-bridge
+     {:path "specs/build-workflow/tasks.md",
+      :historical-sha256
+      "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+      :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+      :change-class :acceptance-boundary-extension,
+      :marker "build-implementation-tasks",
+      :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+      :changed-records
+      [{:id
+        "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+        :historical-record-sha256
+        "b9e236813f1dcab8b65dda7c8a54fcf24eea341dbdcd23556ccf3b209e87f993",
+        :current-record-sha256
+        "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c"}
+       {:id
+        "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+        :historical-record-sha256
+        "8fb18943d675dc477f05953f757fc695293228f23314147c2913b9c62f8df44c",
+        :current-record-sha256
+        "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c"}
+       {:id
+        "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+        :historical-record-sha256
+        "a8c1f10da623479a8d4565f241568d7dfbdcb83644f1be8ced39e0f276230a00",
+        :current-record-sha256
+        "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}],
+      :qualification
+      "The PR560 safety-source qualification appends SAFE14 build boundary criteria to three existing Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No Build implementation or requirement acceptance is inferred.",
+      :current-sha256
+      "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4",
+      :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/domains-workflow/tasks.md",
+     :historical-sha256
+     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+     :change-class :qualified-current-task-source-successor,
+     :previously-declared-record-observations
+     [{:prior-captured-record-sha256
+       "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b",
+       :current-captured-record-sha256
+       "322ec9fcf75d98be0fe34f03043926484aac3c958171b8f713e3229e0259a414",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 591,
+        :end-byte 2220,
+        :whole-record-body-sha256
+        "2aec243ab695a9227454b83986bc917d5c6524ff887f3662e011f8b84b3c847c"},
+       :id "math",
+       :current-whole-body
+       {:start-byte 591,
+        :end-byte 69279,
+        :whole-record-body-sha256
+        "37a3c1266a9cda53f995277cada6fb0b4c45a3fd26571a2f8dc99e121d26deb7"},
+       :current-status "Open",
+       :captured-fields-relation :changed}
+      {:prior-captured-record-sha256
+       "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4",
+       :current-captured-record-sha256
+       "440de2ac04752ff2edf94e0cd24ffa429b1cab1ea264ba5479a78d411e4deae1",
+       :current-checked? false,
+       :current-implementation-acceptance :unassessed,
+       :prior-status "Open",
+       :prior-checked? false,
+       :prior-whole-body
+       {:start-byte 20776,
+        :end-byte 22449,
+        :whole-record-body-sha256
+        "564fbb70e246e9da4d1de54a7fdaa642870281dd65b7a416518d7a8538041d50"},
+       :id "ai",
+       :current-whole-body
+       {:start-byte 117846,
+        :end-byte 272129,
+        :whole-record-body-sha256
+        "55e87aa4bbe4d7ab5b0cbb050ee5cd1bdaea8788cb493856f583620277572ddd"},
+       :current-status "Open",
+       :captured-fields-relation :changed}],
+     :marker "domains-implementation-tasks",
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :known-current-main
+     {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+      :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+      :current-sha256
+      "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943",
+      :change-class :current-main-composition,
+      :qualification
+      "Immutable d544 source checkpoint before the PR565 Domain joins; no Domain implementation acceptance is inferred."},
+     :changed-records
+     [{:id "math",
+       :historical-record-sha256
+       "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7",
+       :current-record-sha256
+       "322ec9fcf75d98be0fe34f03043926484aac3c958171b8f713e3229e0259a414"}
+      {:id "ai",
+       :historical-record-sha256
+       "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139",
+       :current-record-sha256
+       "440de2ac04752ff2edf94e0cd24ffa429b1cab1ea264ba5479a78d411e4deae1"}],
+     :current-only-records [],
+     :qualification
+     "The original task-source bridge and historical task-reference identities remain preserved in full. This proposed successor authenticates the current file, previously declared captured record fields and complete record bodies separately. Existing identities, statuses and checkboxes are unchanged. Current clauses require their own semantic/consumer/evidence qualification; no old receipt, implementation, provider execution or acceptance is renewed by these digests.",
+     :current-sha256
+     "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+     :predecessor-bridge
+     {:path "specs/domains-workflow/tasks.md",
+      :historical-sha256
+      "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+      :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+      :change-class :current-candidate-composition,
+      :marker "domains-implementation-tasks",
+      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+      :known-current-main
+      {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+       :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+       :current-sha256
+       "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943",
+       :change-class :current-main-composition,
+       :qualification
+       "Immutable d544 source checkpoint before the PR565 Domain joins; no Domain implementation acceptance is inferred."},
+      :changed-records
+      [{:id "math",
+        :historical-record-sha256
+        "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7",
+        :current-record-sha256
+        "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
+       {:id "ai",
+        :historical-record-sha256
+        "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139",
+        :current-record-sha256
+        "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}],
+      :qualification
+      "The current candidate preserves the Domain task identity and adds the scoped PR565 schema source joins while retaining the existing Math/AI criteria. Domain implementation and requirement acceptance remain unassessed.",
+      :current-sha256
+      "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc",
+      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"},
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/cli-workflow/tasks.md",
+     :record-observations
+     [{:prior-captured-record-sha256
+       "17560c6a18f5fed5ec927693ab020cb959d5dcda0c11bc4fc4e21febf3163a92",
+       :current-captured-record-sha256
+       "17560c6a18f5fed5ec927693ab020cb959d5dcda0c11bc4fc4e21febf3163a92",
+       :current-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Executed success/failure fixtures and artifact paths at public command boundary"},
+       :prior-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Executed success/failure fixtures and artifact paths at public command boundary"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 951,
+        :end-byte 1340,
+        :sha256
+        "b25ba8b39d9e7a3522f27e6dbcd4a59bb9a57f263d2eae5f08c8cc42af25a212"},
+       :id
+       "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+       :current-whole-body
+       {:start-byte 2140,
+        :end-byte 5214,
+        :sha256
+        "3c62d33eecb594dd7e0672463d8acca57bd0cf1d32487fc900f70588f33235f1"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "582a4c33798eab46057cf302a3633394048f3ea8e05ee9b003829a1813106889",
+       :current-captured-record-sha256
+       "582a4c33798eab46057cf302a3633394048f3ea8e05ee9b003829a1813106889",
+       :current-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Each declared command has a genuine service result and negative fixture; no metadata-only success"},
+       :prior-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Each declared command has a genuine service result and negative fixture; no metadata-only success"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 1340,
+        :end-byte 1768,
+        :sha256
+        "f328aff537689cb3bb9d89d61e7c87d37e60c6ad70f85ec01104000a77afbb91"},
+       :id
+       "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+       :current-whole-body
+       {:start-byte 5214,
+        :end-byte 7068,
+        :sha256
+        "85d4db3c5d0741dcea098c165cc35a394a3799bae1f3623d8f3dea2fee97992d"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "19e63f53fa0cdc27d3346b42ece5c978572bbfac686879bc6a84b588c3c1cef3",
+       :current-captured-record-sha256
+       "19e63f53fa0cdc27d3346b42ece5c978572bbfac686879bc6a84b588c3c1cef3",
+       :current-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Golden success/error outputs including source, target, grants and redacted secrets"},
+       :prior-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Golden success/error outputs including source, target, grants and redacted secrets"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 1768,
+        :end-byte 2133,
+        :sha256
+        "098dddb964379cab0a3dc5efe52d23a9d4588d38199c76ee721fd6c85c8efc36"},
+       :id
+       "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+       :current-whole-body
+       {:start-byte 7068,
+        :end-byte 11065,
+        :sha256
+        "72b4b1f271b8e677efee6ed0d428d38dcaad84e3ca528254cbc2ba7809b233b0"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "b8a6fc0ff828832e1422709602f8db9ba2a0b9f6120cf7ebb4aef628e941125b",
+       :current-captured-record-sha256
+       "b8a6fc0ff828832e1422709602f8db9ba2a0b9f6120cf7ebb4aef628e941125b",
+       :current-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Installed invocation, source-extension provenance and unsupported-option rejection"},
+       :prior-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Installed invocation, source-extension provenance and unsupported-option rejection"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 2133,
+        :end-byte 2473,
+        :sha256
+        "7b2ada82f9532e52b54fc253f97880daac95d906a98968997f8779bb4ed8a7cf"},
+       :id
+       "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
+       :current-whole-body
+       {:start-byte 11065,
+        :end-byte 12678,
+        :sha256
+        "6e80f734799f274540043b6266900e152a1f83cbc980e65f2bcc7e63e0c389ea"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "3ee12f7c8cc6dfb11748489c279fd68a8114b70e12324df1eaadb77f625cea71",
+       :current-captured-record-sha256
+       "3ee12f7c8cc6dfb11748489c279fd68a8114b70e12324df1eaadb77f625cea71",
+       :current-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Command matrix that distinguishes implemented, rejected and unavailable operations"},
+       :prior-captured-record
+       {:id
+        "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Command matrix that distinguishes implemented, rejected and unavailable operations"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 587,
+        :end-byte 951,
+        :sha256
+        "a3e072013373a7eb5b021f2dae5e6ac964898d2e00034fba20d2df6e277b1f82"},
+       :id
+       "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+       :current-whole-body
+       {:start-byte 587,
+        :end-byte 2140,
+        :sha256
+        "513dadc9371bdfdee073be6c513eb4257ddc3450f7ba96f2e66335cb5b8649a5"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}],
+     :current-source
+     {:ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+      :tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+      :blob "2da6f571cb6d7d78a5f607e0e38a35dde2eaef9a",
+      :sha256
+      "6e376d8b3ffefcb956604bf5a8582c17d48fa03320f04cb3022e4e4cf5d339a2"},
+     :historical-sha256
+     "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7",
+     :historical-ref "1ca3f2c1383e2606dab8ed938eb508256939078e",
+     :change-class :qualified-current-task-source-successor,
+     :marker "cli-implementation-tasks",
+     :historical-source
+     {:ref "1ca3f2c1383e2606dab8ed938eb508256939078e",
+      :tree "b7fb415f4a3cbf7164e2a3173760456adb5590e1",
+      :blob "abeaaece5fba4d031f5a1a901ed676165e3f899f",
+      :sha256
+      "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7"},
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id
+       "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+       :historical-record-sha256
+       "17560c6a18f5fed5ec927693ab020cb959d5dcda0c11bc4fc4e21febf3163a92",
+       :current-record-sha256
+       "17560c6a18f5fed5ec927693ab020cb959d5dcda0c11bc4fc4e21febf3163a92"}
+      {:id
+       "cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services",
+       :historical-record-sha256
+       "582a4c33798eab46057cf302a3633394048f3ea8e05ee9b003829a1813106889",
+       :current-record-sha256
+       "582a4c33798eab46057cf302a3633394048f3ea8e05ee9b003829a1813106889"}
+      {:id
+       "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction",
+       :historical-record-sha256
+       "19e63f53fa0cdc27d3346b42ece5c978572bbfac686879bc6a84b588c3c1cef3",
+       :current-record-sha256
+       "19e63f53fa0cdc27d3346b42ece5c978572bbfac686879bc6a84b588c3c1cef3"}
+      {:id
+       "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints",
+       :historical-record-sha256
+       "b8a6fc0ff828832e1422709602f8db9ba2a0b9f6120cf7ebb4aef628e941125b",
+       :current-record-sha256
+       "b8a6fc0ff828832e1422709602f8db9ba2a0b9f6120cf7ebb4aef628e941125b"}
+      {:id
+       "cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families",
+       :historical-record-sha256
+       "3ee12f7c8cc6dfb11748489c279fd68a8114b70e12324df1eaadb77f625cea71",
+       :current-record-sha256
+       "3ee12f7c8cc6dfb11748489c279fd68a8114b70e12324df1eaadb77f625cea71"}],
+     :current-only-records [],
+     :qualification
+     "The existing canonical task references retain their authenticated original file digest. This proposed bridge pins current CLI/Tools source clauses under the same actual task identities, with unchanged statuses and checkboxes. Full task-body differences and captured scalar fields are separate observations; current semantic/evidence applicability remains unassessed. This does not assign a new task authority or renew earlier execution acceptance.",
+     :current-sha256
+     "6e376d8b3ffefcb956604bf5a8582c17d48fa03320f04cb3022e4e4cf5d339a2",
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}
+    {:path "specs/tools-workflow/tasks.md",
+     :record-observations
+     [{:prior-captured-record-sha256
+       "e7a5d90a582b76ed66bc0b00dfd4330f9439cb9466716dc0da38c624dfbd8542",
+       :current-captured-record-sha256
+       "e7a5d90a582b76ed66bc0b00dfd4330f9439cb9466716dc0da38c624dfbd8542",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Repository/tool-output instructions remain untrusted data? Unreviewed writes rejected? Applied change has model/prompt/tool/reviewer identity? [AI tooling](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Repository/tool-output instructions remain untrusted data? Unreviewed writes rejected? Applied change has model/prompt/tool/reviewer identity? [AI tooling](../../docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 6992,
+        :end-byte 7639,
+        :sha256
+        "3a526e7ac7d24d04b0292fcc1b3262cc37e12ad233dec8ac36e6698eb3f87c67"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+       :current-whole-body
+       {:start-byte 51603,
+        :end-byte 56064,
+        :sha256
+        "a618854fbfe95146545d43baa403be74b252b498d573e68b1b1d71f1f65a970c"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "08f4314b7d7c1de25a9d50b1c5e4a10dc4c93a99438552f1f393c496508d2c34",
+       :current-captured-record-sha256
+       "08f4314b7d7c1de25a9d50b1c5e4a10dc4c93a99438552f1f393c496508d2c34",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Source maps resolve? Unavailable versus optimized-away values distinguished? Unauthorized mutation and secret inspection rejected? [Debugger](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Source maps resolve? Unavailable versus optimized-away values distinguished? Unauthorized mutation and secret inspection rejected? [Debugger](../../docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 2367,
+        :end-byte 2943,
+        :sha256
+        "35e911c29e29bdf651ad1d9603fb1a676f37f23abc2d807e9eaeb5af2ec31716"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+       :current-whole-body
+       {:start-byte 16479,
+        :end-byte 20452,
+        :sha256
+        "e2002c0cd6f180d2fc9936921745a4d3248dd923b539658d9a1cd8bf75fc4552"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "64bf69e10768235b29e82402c40e451e4aa819256d1c9be0edf95e9125b1d098",
+       :current-captured-record-sha256
+       "64bf69e10768235b29e82402c40e451e4aa819256d1c9be0edf95e9125b1d098",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Changes produce actual updated artifacts? Incompatible hot reload restarts? Grants remain explicit? [Dev server](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Changes produce actual updated artifacts? Incompatible hot reload restarts? Grants remain explicit? [Dev server](../../docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 5270,
+        :end-byte 5836,
+        :sha256
+        "1e1eb5f268e8a9404303963e5028efd47e131cdf281b5837c0c55fd24ba9eae1"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+       :current-whole-body
+       {:start-byte 39494,
+        :end-byte 43514,
+        :sha256
+        "d024f3694bd28d5cda9ba72c9c0fd365132a7c14b7b43187c8167bd9ca7bfabe"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "f98936bef6cca2b089b5e73b472b638aecbde48ff6dd39f3c1bd4162a6c26a08",
+       :current-captured-record-sha256
+       "f98936bef6cca2b089b5e73b472b638aecbde48ff6dd39f3c1bd4162a6c26a08",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Signatures/effects/profiles match exports? Failing examples and stale docs rejected? [Documentation generator](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Signatures/effects/profiles match exports? Failing examples and stale docs rejected? [Documentation generator](../../docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 4714,
+        :end-byte 5270,
+        :sha256
+        "272d639e91b6be916b889351cfc5ef7e4211d21b53fedcf95310da2a7ca9ed67"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+       :current-whole-body
+       {:start-byte 35409,
+        :end-byte 39494,
+        :sha256
+        "929cad28f0cf14bca8226e47774bdcef5cea8168bf097550b5bd8eeab49b2c99"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "b53f6b7d4c9a75c878792a7e4e39a1ad87913e843b466b259ad5d85149a25857",
+       :current-captured-record-sha256
+       "b53f6b7d4c9a75c878792a7e4e39a1ad87913e843b466b259ad5d85149a25857",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Reader output and semantic syntax identity preserved? Comments retained? Invalid input rejected? Generated-file policy respected? [Formatter](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Reader output and semantic syntax identity preserved? Comments retained? Invalid input rejected? Generated-file policy respected? [Formatter](../../docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 589,
+        :end-byte 1169,
+        :sha256
+        "e17ec19c0cbf6f5773ae325327642d8b477b2d89dbc123f9cb133fcde85e673f"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+       :current-whole-body
+       {:start-byte 589,
+        :end-byte 4929,
+        :sha256
+        "853925132935705ca50d991935cc36cb717b666479fca00bda784031edba5881"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "84dc5dcb6ef6a66af5548a4be58a47affd48edd229e34f231f2aa881396e2b7f",
+       :current-captured-record-sha256
+       "84dc5dcb6ef6a66af5548a4be58a47affd48edd229e34f231f2aa881396e2b7f",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Version/profile/target and artifact IDs present? Missing/stale stages shown honestly? Check-elision evidence visible? [IR inspector](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Version/profile/target and artifact IDs present? Missing/stale stages shown honestly? Check-elision evidence visible? [IR inspector](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 3524,
+        :end-byte 4122,
+        :sha256
+        "2a6c64b635b57f46354f3f23ce7a5a4de33aa61868cc17d355134705e2907201"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+       :current-whole-body
+       {:start-byte 25842,
+        :end-byte 31277,
+        :sha256
+        "8f81d65096a9b847dddc0b0e8692751128742757d428081def072afaba45568c"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "7736a242b6d3fa468038190dd01fffc01152d786028452564270540219c1b2a9",
+       :current-captured-record-sha256
+       "7736a242b6d3fa468038190dd01fffc01152d786028452564270540219c1b2a9",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Incremental state converges to CLI checks? Visibility/profile rules preserved? Stale edits and unsafe rename rejected? [Language server](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Incremental state converges to CLI checks? Visibility/profile rules preserved? Stale edits and unsafe rename rejected? [Language server](../../docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 1748,
+        :end-byte 2367,
+        :sha256
+        "a1e6c0d2b534289a5bd78aa43e2decbfd0a5b493f26d1cbd03372169a8a82f10"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+       :current-whole-body
+       {:start-byte 12357,
+        :end-byte 16479,
+        :sha256
+        "2aadfc0b0428c897bf9bab3b4f452e4232c19c557f6772affea13ebe6a3e5339"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "7e69fedcbf542b21cb976bf82a2613e57615f6ead734ed3581aa11ab60f092e6",
+       :current-captured-record-sha256
+       "7e69fedcbf542b21cb976bf82a2613e57615f6ead734ed3581aa11ab60f092e6",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fail-on-new reproducible? [Linter](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fail-on-new reproducible? [Linter](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 1169,
+        :end-byte 1748,
+        :sha256
+        "a862d80f8984e87a8283c11a8f5795ada1e8d44fb37b71e1bf2ee908a5d17566"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+       :current-whole-body
+       {:start-byte 4929,
+        :end-byte 12357,
+        :sha256
+        "c84671730255864e9848f101946b7b1b81a755a35224d252dd5c9d6d3fcbf443"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "2eefe0f6ad6b5020cecd669758549587e4c5a726076e664e4803f7b958d8eff0",
+       :current-captured-record-sha256
+       "2eefe0f6ad6b5020cecd669758549587e4c5a726076e664e4803f7b958d8eff0",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Samples measured rather than generated? Unavailable counters explicit? No unrelated grant or proofless elision? [Profiler](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Samples measured rather than generated? Unavailable counters explicit? No unrelated grant or proofless elision? [Profiler](../../docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 4122,
+        :end-byte 4714,
+        :sha256
+        "6cc7f4c8a28d837bc58813f0b32863d710da72c0f828ce24b41cf74051118e38"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+       :current-whole-body
+       {:start-byte 31277,
+        :end-byte 35409,
+        :sha256
+        "954d93a6883229917486c8005d0f1588bccaff186e255df6d3adc4a3c01fd701"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "e2426bc4567a291c849a90994a8c933e9831470435b1f5abcdd25924a32e40b5",
+       :current-captured-record-sha256
+       "e2426bc4567a291c849a90994a8c933e9831470435b1f5abcdd25924a32e40b5",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "CLI/API package facts agree? Capability changes visible before install? Unauthorized package existence not disclosed? [Registry UX](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "CLI/API package facts agree? Capability changes visible before install? Unauthorized package existence not disclosed? [Registry UX](../../docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 5836,
+        :end-byte 6419,
+        :sha256
+        "c6f84c1f9ec2b468375002c2a34ccd1ad2faaaad55125c7b832a42c79ddf87c7"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+       :current-whole-body
+       {:start-byte 43514,
+        :end-byte 47677,
+        :sha256
+        "ac84fa5b07effb3472198ddb526d5eb08b3f52794a78f8145a7995da41f31624"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "83f79e823679d9a81cb21c13db71e0657567acc06027c35b30b095689bb6b53c",
+       :current-captured-record-sha256
+       "83f79e823679d9a81cb21c13db71e0657567acc06027c35b30b095689bb6b53c",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Same legality as compiled code? Grant denial before effect? Load/inspect/evaluate run in actual session? [REPL](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Same legality as compiled code? Grant denial before effect? Load/inspect/evaluate run in actual session? [REPL](../../docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 2943,
+        :end-byte 3524,
+        :sha256
+        "9be925d09624f973face131cf6a995932b5292eb7b95dbc61540dbccb369ed23"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+       :current-whole-body
+       {:start-byte 20452,
+        :end-byte 25842,
+        :sha256
+        "7e6f320558ffd2ff7441d970f246f5557e6457ded2989c31b23a3e909cf83e48"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}
+      {:prior-captured-record-sha256
+       "ae4195431b68e6caebd67fbd5d927a61a4506555b6ce3d86161f4b2f16792f3d",
+       :current-captured-record-sha256
+       "ae4195431b68e6caebd67fbd5d927a61a4506555b6ce3d86161f4b2f16792f3d",
+       :current-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Requested/granted/denied/used authority distinguished? Missing evidence visible? Certificate/checker identities retained? [Safety audit](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md)"},
+       :prior-captured-record
+       {:id
+        "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+        :checked? false,
+        :status "Open",
+        :acceptance
+        "Requested/granted/denied/used authority distinguished? Missing evidence visible? Certificate/checker identities retained? [Safety audit](../../docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md)"},
+       :whole-body-relation :changed,
+       :prior-whole-body
+       {:start-byte 6419,
+        :end-byte 6992,
+        :sha256
+        "a83e640b705ace39916ce20a081773243c9a39652303da51925e26e28a5c20d8"},
+       :id
+       "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+       :current-whole-body
+       {:start-byte 47677,
+        :end-byte 51603,
+        :sha256
+        "0b0bf69de109e05fe0a137a495f2cf2a8d3716e56fd8ab41e362691e4eb3ba52"},
+       :checked-and-status-preserved true,
+       :current-evidence-qualification :unassessed,
+       :captured-fields-relation :exact}],
+     :current-source
+     {:ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+      :tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+      :blob "f8365604c70b1d2dde54c51c470a866c6a3e153d",
+      :sha256
+      "97c7c0f45d767ec962db7af3f81fa58434bfd2b6ad75fe4ee770b5dde92dec6f"},
+     :historical-sha256
+     "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+     :historical-ref "d704e9f651246fb9635432b78925ae88341172d4",
+     :change-class :qualified-current-task-source-successor,
+     :marker "tools-implementation-tasks",
+     :historical-source
+     {:ref "d704e9f651246fb9635432b78925ae88341172d4",
+      :tree "affa8939f2b596b434fbc303aac11badc50ec6c3",
+      :blob "3a9fc9e39d683546d3303ca94b84e6bbcb4f2163",
+      :sha256
+      "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
+     :current-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+     :changed-records
+     [{:id
+       "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
+       :historical-record-sha256
+       "e7a5d90a582b76ed66bc0b00dfd4330f9439cb9466716dc0da38c624dfbd8542",
+       :current-record-sha256
+       "e7a5d90a582b76ed66bc0b00dfd4330f9439cb9466716dc0da38c624dfbd8542"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
+       :historical-record-sha256
+       "08f4314b7d7c1de25a9d50b1c5e4a10dc4c93a99438552f1f393c496508d2c34",
+       :current-record-sha256
+       "08f4314b7d7c1de25a9d50b1c5e4a10dc4c93a99438552f1f393c496508d2c34"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
+       :historical-record-sha256
+       "64bf69e10768235b29e82402c40e451e4aa819256d1c9be0edf95e9125b1d098",
+       :current-record-sha256
+       "64bf69e10768235b29e82402c40e451e4aa819256d1c9be0edf95e9125b1d098"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
+       :historical-record-sha256
+       "f98936bef6cca2b089b5e73b472b638aecbde48ff6dd39f3c1bd4162a6c26a08",
+       :current-record-sha256
+       "f98936bef6cca2b089b5e73b472b638aecbde48ff6dd39f3c1bd4162a6c26a08"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
+       :historical-record-sha256
+       "b53f6b7d4c9a75c878792a7e4e39a1ad87913e843b466b259ad5d85149a25857",
+       :current-record-sha256
+       "b53f6b7d4c9a75c878792a7e4e39a1ad87913e843b466b259ad5d85149a25857"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+       :historical-record-sha256
+       "84dc5dcb6ef6a66af5548a4be58a47affd48edd229e34f231f2aa881396e2b7f",
+       :current-record-sha256
+       "84dc5dcb6ef6a66af5548a4be58a47affd48edd229e34f231f2aa881396e2b7f"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
+       :historical-record-sha256
+       "7736a242b6d3fa468038190dd01fffc01152d786028452564270540219c1b2a9",
+       :current-record-sha256
+       "7736a242b6d3fa468038190dd01fffc01152d786028452564270540219c1b2a9"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+       :historical-record-sha256
+       "7e69fedcbf542b21cb976bf82a2613e57615f6ead734ed3581aa11ab60f092e6",
+       :current-record-sha256
+       "7e69fedcbf542b21cb976bf82a2613e57615f6ead734ed3581aa11ab60f092e6"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
+       :historical-record-sha256
+       "2eefe0f6ad6b5020cecd669758549587e4c5a726076e664e4803f7b958d8eff0",
+       :current-record-sha256
+       "2eefe0f6ad6b5020cecd669758549587e4c5a726076e664e4803f7b958d8eff0"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
+       :historical-record-sha256
+       "e2426bc4567a291c849a90994a8c933e9831470435b1f5abcdd25924a32e40b5",
+       :current-record-sha256
+       "e2426bc4567a291c849a90994a8c933e9831470435b1f5abcdd25924a32e40b5"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
+       :historical-record-sha256
+       "83f79e823679d9a81cb21c13db71e0657567acc06027c35b30b095689bb6b53c",
+       :current-record-sha256
+       "83f79e823679d9a81cb21c13db71e0657567acc06027c35b30b095689bb6b53c"}
+      {:id
+       "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
+       :historical-record-sha256
+       "ae4195431b68e6caebd67fbd5d927a61a4506555b6ce3d86161f4b2f16792f3d",
+       :current-record-sha256
+       "ae4195431b68e6caebd67fbd5d927a61a4506555b6ce3d86161f4b2f16792f3d"}],
+     :current-only-records [],
+     :qualification
+     "The existing canonical task references retain their authenticated original file digest. This proposed bridge pins current CLI/Tools source clauses under the same actual task identities, with unchanged statuses and checkboxes. Full task-body differences and captured scalar fields are separate observations; current semantic/evidence applicability remains unassessed. This does not assign a new task authority or renew earlier execution acceptance.",
+     :current-sha256
+     "97c7c0f45d767ec962db7af3f81fa58434bfd2b6ad75fe4ee770b5dde92dec6f",
+     :current-ref "66ca91c531593157bfc01b6fb684cc37fa1eb42c"}],
+   :qualification
+   "The complete prior21 current-task bridge table and prior source-view history are preserved from exact0293. Only Build's current file changes after two explicit criterion additions; all old references and actual task states remain, and this source identity successor confers no renewed semantic review, implementation or full240 acceptance."}],
  :proposal-batches
  [{:source-document-ids
    ["P1"
@@ -280465,165 +282639,338 @@
   {:additional-task-interfaces [], :observable-boundary "Read/load/expand/analyze/validate/constant-evaluate/extensions/revalidate/core/backend-preparation boundaries; no exact orchestration task established.", :historical-discovery-support [{:kind :prior-semantic-proposal-and-source-binding-receipt, :origin-proposal-id "language/compiletime/preserve-phase-artifacts", :artifact {:sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"}, :receipt {:sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"}, :qualification "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}], :obligation "Schedule compile-time stages in the declared semantic order and prevent later stages or memoization from mutating earlier artifacts or losing original source/generated provenance.", :source-facet-ids ["facet/language/863dd3318d633027659e2fe6" "facet/language/047bd7f53d1c09658acb3697" "facet/language/ad5f338f3f668addc53c696c"], :acceptance-authority :canonical-task-only, :task-gap "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance.", :origin-proposal-id "language/compiletime/preserve-phase-artifacts", :atomicity :reviewed, :original-task-coverage-gap {:state :missing-exact-task, :reason "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."}, :nonoverlap :proposed, :id "language/compiletime/preserve-phase-artifacts", :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/047bd7f53d1c09658acb3697" "facet/language/863dd3318d633027659e2fe6" "facet/language/ad5f338f3f668addc53c696c"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :source-contracts ["L12"], :proposal-batch "language"}
   {:additional-task-interfaces [{:path "specs/expand-workflow/tasks.md", :marker "expand-implementation-tasks", :id "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects", :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"}], :observable-boundary "Compile-time output redaction; named-secret read may remain visible without the secret value.", :historical-discovery-support [{:kind :prior-semantic-proposal-and-source-binding-receipt, :origin-proposal-id "language/compiletime/redact-secret-material", :artifact {:sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"}, :receipt {:sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"}, :qualification "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}], :obligation "Prevent secret values from entering generated source, diagnostics, stable public cache keys or provenance, recording only safe identity/presence unless an explicitly private artifact store accepts the material.", :source-facet-ids ["facet/language/fce8a56f9bab3b09dfcaeb4c" "facet/language/f8f3f3f96b7db802d82e10a4" "facet/language/85297c1bffdecb34669cb382" "facet/language/2cb0c526bf2ad04c7a9e81f7" "facet/language/6a471086f8100c8336b814e8" "facet/language/d446acc1a12bfbb0d82e7d1e"], :acceptance-authority :canonical-task-only, :origin-proposal-id "language/compiletime/redact-secret-material", :atomicity :reviewed, :original-task-coverage-gap nil, :nonoverlap :proposed, :id "language/compiletime/redact-secret-material", :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/2cb0c526bf2ad04c7a9e81f7" "facet/language/6a471086f8100c8336b814e8" "facet/language/85297c1bffdecb34669cb382" "facet/language/d446acc1a12bfbb0d82e7d1e" "facet/language/f8f3f3f96b7db802d82e10a4" "facet/language/fce8a56f9bab3b09dfcaeb4c"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :source-contracts ["L12" "L15"], :task-reference {:path "specs/auth-workflow/tasks.md", :marker "auth-implementation-tasks", :id "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime", :sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"}, :proposal-batch "language"}
   {:additional-task-interfaces [],
-   :task-source-version-history
-   [{:kind :qualified-current-producer-source-binding,
-     :source-model "68b82b46044d3967d2dc02676689ca91df9e3bad",
-     :source-model-sha256
-     "0a33969d26928cb7c816a6b5c4ef5f7e5167e4a92455e2316311e72d0e9fd414",
-     :prior-requirement-record
-     {:additional-task-interfaces [],
-      :observable-boundary
-      "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
-      :historical-discovery-support
-      [{:kind :prior-semantic-proposal-and-source-binding-receipt,
-        :origin-proposal-id
-        "language/compiletime/reproduce-hermetic-core",
-        :artifact
-        {:sha256
-         "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
-        :receipt
-        {:sha256
-         "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
-        :qualification
-        "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
-      :obligation
-      "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
-      :source-facet-ids
-      ["facet/language/7e9d560218d37ff6cf52c941"
-       "facet/language/a617953764775a150012fbc0"
-       "facet/language/9bccf1054626b9464ee5b368"
-       "facet/language/34bdae417e193174f26a2cd8"
-       "facet/language/3e54981767c24a30d658eeaf"
-       "facet/language/ab99acbee558b754c8fbbb77"
-       "facet/language/027df5c9e68f9d5ba04208b1"
-       "facet/language/6a06c9e83647b17a04f5588f"],
-      :acceptance-authority :canonical-task-only,
-      :task-gap
-      "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance.",
-      :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
-      :atomicity :reviewed,
-      :original-task-coverage-gap
-      {:state :missing-exact-task,
-       :reason
-       "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
-      :nonoverlap :proposed,
-      :id "language/compiletime/reproduce-hermetic-core",
-      :historical-support [],
-      :scope-reviews
-      [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
-        :current-expanded-context-review :not-needed,
-        :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
-        :scope :bounded-source-predicate-atomicity,
-        :artifact-sha256
-        "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
-        :reviewed-source-facet-ids
-        ["facet/language/027df5c9e68f9d5ba04208b1"
-         "facet/language/34bdae417e193174f26a2cd8"
-         "facet/language/3e54981767c24a30d658eeaf"
-         "facet/language/6a06c9e83647b17a04f5588f"
-         "facet/language/7e9d560218d37ff6cf52c941"
-         "facet/language/9bccf1054626b9464ee5b368"
-         "facet/language/a617953764775a150012fbc0"
-         "facet/language/ab99acbee558b754c8fbbb77"],
-        :additional-current-context-facet-ids [],
-        :implementation-acceptance :not-conferred,
-        :global-nonoverlap :pending}],
-      :source-contracts ["L12"],
-      :proposal-batch "language"},
-     :proposal
-     {:path "/tmp/uniform-two-language-current-reference-proposal.edn",
-      :sha256
-      "9b731e2e6d01e34261d9062636e0738f85203a6e7073e5839ad05e5a533000a3"},
-     :independent-source-reviews
-     [{:path
-       "/tmp/uniform-two-language-current-reference-proposal-independent-review.edn",
-       :sha256
-       "6ee2899ad44aed8580f1c48a6ac0738098f64d7d797e37019a90a363d352f8ae"}
-      {:path
-       "/tmp/uniform-two-language-current-reference-proposal-independent-review-model-supplement.edn",
-       :sha256
-       "eea6390573c0c326055cf210e16f512f811e6ae4e97ba000b5490f4e9dfaebf4"}],
-     :model-binding-review :pending,
-     :implementation-acceptance :unassessed}],
-   :observable-boundary
-   "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
-   :historical-discovery-support
-   [{:kind :prior-semantic-proposal-and-source-binding-receipt,
-     :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
-     :artifact
-     {:sha256
-      "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
-     :receipt
-     {:sha256
-      "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
-     :qualification
-     "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
-   :obligation
-   "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
-   :source-facet-ids
-   ["facet/language/7e9d560218d37ff6cf52c941"
-    "facet/language/a617953764775a150012fbc0"
-    "facet/language/9bccf1054626b9464ee5b368"
-    "facet/language/34bdae417e193174f26a2cd8"
-    "facet/language/3e54981767c24a30d658eeaf"
-    "facet/language/ab99acbee558b754c8fbbb77"
-    "facet/language/027df5c9e68f9d5ba04208b1"
-    "facet/language/6a06c9e83647b17a04f5588f"],
-   :acceptance-authority :canonical-task-only,
-   :task-gap
-   "The exact current Open task supplies the independently reviewed qualified producer source interface. The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed. Independent review of this exact model binding and complete source-facet/consumer/implementation acceptance remain pending.",
-   :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
-   :atomicity :reviewed,
-   :original-task-coverage-gap
-   {:state :missing-exact-task,
-    :reason
-    "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
-   :nonoverlap :proposed,
-   :id "language/compiletime/reproduce-hermetic-core",
-   :historical-support [],
-   :scope-reviews
-   [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
-     :current-expanded-context-review :not-needed,
-     :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
-     :scope :bounded-source-predicate-atomicity,
-     :artifact-sha256
-     "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
-     :reviewed-source-facet-ids
-     ["facet/language/027df5c9e68f9d5ba04208b1"
+  :task-source-version-history
+  [{:kind :qualified-current-producer-source-binding,
+    :source-model "68b82b46044d3967d2dc02676689ca91df9e3bad",
+    :source-model-sha256
+    "0a33969d26928cb7c816a6b5c4ef5f7e5167e4a92455e2316311e72d0e9fd414",
+    :prior-requirement-record
+    {:additional-task-interfaces [],
+     :observable-boundary
+     "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
+     :historical-discovery-support
+     [{:kind :prior-semantic-proposal-and-source-binding-receipt,
+       :origin-proposal-id
+       "language/compiletime/reproduce-hermetic-core",
+       :artifact
+       {:sha256
+        "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
+       :receipt
+       {:sha256
+        "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
+       :qualification
+       "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
+     :obligation
+     "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
+     :source-facet-ids
+     ["facet/language/7e9d560218d37ff6cf52c941"
+      "facet/language/a617953764775a150012fbc0"
+      "facet/language/9bccf1054626b9464ee5b368"
       "facet/language/34bdae417e193174f26a2cd8"
       "facet/language/3e54981767c24a30d658eeaf"
-      "facet/language/6a06c9e83647b17a04f5588f"
-      "facet/language/7e9d560218d37ff6cf52c941"
-      "facet/language/9bccf1054626b9464ee5b368"
-      "facet/language/a617953764775a150012fbc0"
-      "facet/language/ab99acbee558b754c8fbbb77"],
-     :additional-current-context-facet-ids [],
-     :implementation-acceptance :not-conferred,
-     :global-nonoverlap :pending}],
-   :source-contracts ["L12"],
-   :task-reference
-   {:path "specs/build-workflow/tasks.md",
-    :detailed-acceptance :unassessed,
-    :criterion-source
-    {:start-byte 36648,
-     :end-byte 38202,
+      "facet/language/ab99acbee558b754c8fbbb77"
+      "facet/language/027df5c9e68f9d5ba04208b1"
+      "facet/language/6a06c9e83647b17a04f5588f"],
+     :acceptance-authority :canonical-task-only,
+     :task-gap
+     "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance.",
+     :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
+     :atomicity :reviewed,
+     :original-task-coverage-gap
+     {:state :missing-exact-task,
+      :reason
+      "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
+     :nonoverlap :proposed,
+     :id "language/compiletime/reproduce-hermetic-core",
+     :historical-support [],
+     :scope-reviews
+     [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+       :current-expanded-context-review :not-needed,
+       :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+       :scope :bounded-source-predicate-atomicity,
+       :artifact-sha256
+       "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+       :reviewed-source-facet-ids
+       ["facet/language/027df5c9e68f9d5ba04208b1"
+        "facet/language/34bdae417e193174f26a2cd8"
+        "facet/language/3e54981767c24a30d658eeaf"
+        "facet/language/6a06c9e83647b17a04f5588f"
+        "facet/language/7e9d560218d37ff6cf52c941"
+        "facet/language/9bccf1054626b9464ee5b368"
+        "facet/language/a617953764775a150012fbc0"
+        "facet/language/ab99acbee558b754c8fbbb77"],
+       :additional-current-context-facet-ids [],
+       :implementation-acceptance :not-conferred,
+       :global-nonoverlap :pending}],
+     :source-contracts ["L12"],
+     :proposal-batch "language"},
+    :proposal
+    {:path "/tmp/uniform-two-language-current-reference-proposal.edn",
      :sha256
-     "32bdfc024784cea73f8fcf307a729d2f06a9b5142013db276d3ddf88392d16ec"},
-    :marker "build-implementation-tasks",
-    :observed-checked? false,
-    :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
-    :observed-status "Open",
-    :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
-    :source-record-sha256
-    "ca09bc69f7d0332c124241729cde747f7f9e9556b9824c8dde9bfd01aa23cd86",
-    :source-view :qualified-current-task-source-v1,
-    :id
-    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
-    :sha256
-    "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+     "9b731e2e6d01e34261d9062636e0738f85203a6e7073e5839ad05e5a533000a3"},
+    :independent-source-reviews
+    [{:path
+      "/tmp/uniform-two-language-current-reference-proposal-independent-review.edn",
+      :sha256
+      "6ee2899ad44aed8580f1c48a6ac0738098f64d7d797e37019a90a363d352f8ae"}
+     {:path
+      "/tmp/uniform-two-language-current-reference-proposal-independent-review-model-supplement.edn",
+      :sha256
+      "eea6390573c0c326055cf210e16f512f811e6ae4e97ba000b5490f4e9dfaebf4"}],
+    :model-binding-review :pending,
+    :implementation-acceptance :unassessed}
+   {:kind :qualified-current-source-file-successor,
+    :source-model "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+    :source-model-sha256
+    "2531d42c4c27af9ce9b133bf928b61311481fef19fa9b2bd4aa11e0a183b2393",
+    :prior-requirement-record
+    {:additional-task-interfaces [],
+     :task-source-version-history
+     [{:kind :qualified-current-producer-source-binding,
+       :source-model "68b82b46044d3967d2dc02676689ca91df9e3bad",
+       :source-model-sha256
+       "0a33969d26928cb7c816a6b5c4ef5f7e5167e4a92455e2316311e72d0e9fd414",
+       :prior-requirement-record
+       {:additional-task-interfaces [],
+        :observable-boundary
+        "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
+        :historical-discovery-support
+        [{:kind :prior-semantic-proposal-and-source-binding-receipt,
+          :origin-proposal-id
+          "language/compiletime/reproduce-hermetic-core",
+          :artifact
+          {:sha256
+           "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
+          :receipt
+          {:sha256
+           "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
+          :qualification
+          "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
+        :obligation
+        "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
+        :source-facet-ids
+        ["facet/language/7e9d560218d37ff6cf52c941"
+         "facet/language/a617953764775a150012fbc0"
+         "facet/language/9bccf1054626b9464ee5b368"
+         "facet/language/34bdae417e193174f26a2cd8"
+         "facet/language/3e54981767c24a30d658eeaf"
+         "facet/language/ab99acbee558b754c8fbbb77"
+         "facet/language/027df5c9e68f9d5ba04208b1"
+         "facet/language/6a06c9e83647b17a04f5588f"],
+        :acceptance-authority :canonical-task-only,
+        :task-gap
+        "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance.",
+        :origin-proposal-id
+        "language/compiletime/reproduce-hermetic-core",
+        :atomicity :reviewed,
+        :original-task-coverage-gap
+        {:state :missing-exact-task,
+         :reason
+         "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
+        :nonoverlap :proposed,
+        :id "language/compiletime/reproduce-hermetic-core",
+        :historical-support [],
+        :scope-reviews
+        [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+          :current-expanded-context-review :not-needed,
+          :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+          :scope :bounded-source-predicate-atomicity,
+          :artifact-sha256
+          "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+          :reviewed-source-facet-ids
+          ["facet/language/027df5c9e68f9d5ba04208b1"
+           "facet/language/34bdae417e193174f26a2cd8"
+           "facet/language/3e54981767c24a30d658eeaf"
+           "facet/language/6a06c9e83647b17a04f5588f"
+           "facet/language/7e9d560218d37ff6cf52c941"
+           "facet/language/9bccf1054626b9464ee5b368"
+           "facet/language/a617953764775a150012fbc0"
+           "facet/language/ab99acbee558b754c8fbbb77"],
+          :additional-current-context-facet-ids [],
+          :implementation-acceptance :not-conferred,
+          :global-nonoverlap :pending}],
+        :source-contracts ["L12"],
+        :proposal-batch "language"},
+       :proposal
+       {:path
+        "/tmp/uniform-two-language-current-reference-proposal.edn",
+        :sha256
+        "9b731e2e6d01e34261d9062636e0738f85203a6e7073e5839ad05e5a533000a3"},
+       :independent-source-reviews
+       [{:path
+         "/tmp/uniform-two-language-current-reference-proposal-independent-review.edn",
+         :sha256
+         "6ee2899ad44aed8580f1c48a6ac0738098f64d7d797e37019a90a363d352f8ae"}
+        {:path
+         "/tmp/uniform-two-language-current-reference-proposal-independent-review-model-supplement.edn",
+         :sha256
+         "eea6390573c0c326055cf210e16f512f811e6ae4e97ba000b5490f4e9dfaebf4"}],
+       :model-binding-review :pending,
+       :implementation-acceptance :unassessed}],
+     :observable-boundary
+     "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
+     :historical-discovery-support
+     [{:kind :prior-semantic-proposal-and-source-binding-receipt,
+       :origin-proposal-id
+       "language/compiletime/reproduce-hermetic-core",
+       :artifact
+       {:sha256
+        "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
+       :receipt
+       {:sha256
+        "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
+       :qualification
+       "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
+     :obligation
+     "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
+     :source-facet-ids
+     ["facet/language/7e9d560218d37ff6cf52c941"
+      "facet/language/a617953764775a150012fbc0"
+      "facet/language/9bccf1054626b9464ee5b368"
+      "facet/language/34bdae417e193174f26a2cd8"
+      "facet/language/3e54981767c24a30d658eeaf"
+      "facet/language/ab99acbee558b754c8fbbb77"
+      "facet/language/027df5c9e68f9d5ba04208b1"
+      "facet/language/6a06c9e83647b17a04f5588f"],
+     :acceptance-authority :canonical-task-only,
+     :task-gap
+     "The exact current Open task supplies the independently reviewed qualified producer source interface. The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed. Independent review of this exact model binding and complete source-facet/consumer/implementation acceptance remain pending.",
+     :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
+     :atomicity :reviewed,
+     :original-task-coverage-gap
+     {:state :missing-exact-task,
+      :reason
+      "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
+     :nonoverlap :proposed,
+     :id "language/compiletime/reproduce-hermetic-core",
+     :historical-support [],
+     :scope-reviews
+     [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+       :current-expanded-context-review :not-needed,
+       :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+       :scope :bounded-source-predicate-atomicity,
+       :artifact-sha256
+       "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+       :reviewed-source-facet-ids
+       ["facet/language/027df5c9e68f9d5ba04208b1"
+        "facet/language/34bdae417e193174f26a2cd8"
+        "facet/language/3e54981767c24a30d658eeaf"
+        "facet/language/6a06c9e83647b17a04f5588f"
+        "facet/language/7e9d560218d37ff6cf52c941"
+        "facet/language/9bccf1054626b9464ee5b368"
+        "facet/language/a617953764775a150012fbc0"
+        "facet/language/ab99acbee558b754c8fbbb77"],
+       :additional-current-context-facet-ids [],
+       :implementation-acceptance :not-conferred,
+       :global-nonoverlap :pending}],
+     :source-contracts ["L12"],
+     :task-reference
+     {:path "specs/build-workflow/tasks.md",
+      :detailed-acceptance :unassessed,
+      :criterion-source
+      {:start-byte 36648,
+       :end-byte 38202,
+       :sha256
+       "32bdfc024784cea73f8fcf307a729d2f06a9b5142013db276d3ddf88392d16ec"},
+      :marker "build-implementation-tasks",
+      :observed-checked? false,
+      :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+      :observed-status "Open",
+      :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+      :source-record-sha256
+      "ca09bc69f7d0332c124241729cde747f7f9e9556b9824c8dde9bfd01aa23cd86",
+      :source-view :qualified-current-task-source-v1,
+      :id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :sha256
+      "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+      :qualification
+      "The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed."},
+     :proposal-batch "language"},
+    :source-content-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+    :unchanged-criterion-sha256
+    "32bdfc024784cea73f8fcf307a729d2f06a9b5142013db276d3ddf88392d16ec",
+    :model-binding-review :pending,
+    :implementation-acceptance :unassessed}],
+  :observable-boundary
+  "Pinned/replayable external results, time/random seeds and declared target probes; native object metadata variance needs an explicitly marked and conformance-accepted nonsemantic exception.",
+  :historical-discovery-support
+  [{:kind :prior-semantic-proposal-and-source-binding-receipt,
+    :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
+    :artifact
+    {:sha256
+     "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"},
+    :receipt
+    {:sha256
+     "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"},
     :qualification
-    "The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed."},
-   :proposal-batch "language"}
+    "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}],
+  :obligation
+  "Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs.",
+  :source-facet-ids
+  ["facet/language/7e9d560218d37ff6cf52c941"
+   "facet/language/a617953764775a150012fbc0"
+   "facet/language/9bccf1054626b9464ee5b368"
+   "facet/language/34bdae417e193174f26a2cd8"
+   "facet/language/3e54981767c24a30d658eeaf"
+   "facet/language/ab99acbee558b754c8fbbb77"
+   "facet/language/027df5c9e68f9d5ba04208b1"
+   "facet/language/6a06c9e83647b17a04f5588f"],
+  :acceptance-authority :canonical-task-only,
+  :task-gap
+  "The exact current Open task supplies the independently reviewed qualified producer source interface. The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed. Independent review of this exact model binding and complete source-facet/consumer/implementation acceptance remain pending. The Build source-file successor preserves the exact L12 criterion and full old record; its new source identity still requires exact binding review and no actual behavior is accepted.",
+  :origin-proposal-id "language/compiletime/reproduce-hermetic-core",
+  :atomicity :reviewed,
+  :original-task-coverage-gap
+  {:state :missing-exact-task,
+   :reason
+   "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."},
+  :nonoverlap :proposed,
+  :id "language/compiletime/reproduce-hermetic-core",
+  :historical-support [],
+  :scope-reviews
+  [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa",
+    :current-expanded-context-review :not-needed,
+    :source-baseline "a1b991be499d50579a8b4366976c519ae8949224",
+    :scope :bounded-source-predicate-atomicity,
+    :artifact-sha256
+    "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8",
+    :reviewed-source-facet-ids
+    ["facet/language/027df5c9e68f9d5ba04208b1"
+     "facet/language/34bdae417e193174f26a2cd8"
+     "facet/language/3e54981767c24a30d658eeaf"
+     "facet/language/6a06c9e83647b17a04f5588f"
+     "facet/language/7e9d560218d37ff6cf52c941"
+     "facet/language/9bccf1054626b9464ee5b368"
+     "facet/language/a617953764775a150012fbc0"
+     "facet/language/ab99acbee558b754c8fbbb77"],
+    :additional-current-context-facet-ids [],
+    :implementation-acceptance :not-conferred,
+    :global-nonoverlap :pending}],
+  :source-contracts ["L12"],
+  :task-reference
+  {:path "specs/build-workflow/tasks.md",
+   :detailed-acceptance :unassessed,
+   :criterion-source
+   {:start-byte 37898,
+    :end-byte 39452,
+    :sha256
+    "32bdfc024784cea73f8fcf307a729d2f06a9b5142013db276d3ddf88392d16ec"},
+   :marker "build-implementation-tasks",
+   :observed-checked? false,
+   :source-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+   :observed-status "Open",
+   :source-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+   :source-record-sha256
+   "ca09bc69f7d0332c124241729cde747f7f9e9556b9824c8dde9bfd01aa23cd86",
+   :source-view :qualified-current-task-source-v1,
+   :id
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :sha256
+   "9675337c127fe1357b345a45973a5fe1093b1d63aae00ca46cd00feb17562124",
+   :qualification
+   "The existing Build producer criterion requires paired byte-identical typed-core results for the same declared source/compiler/lock/target/grants/input subjects in the required modes. It explicitly covers declared environment policies, pinned or replayable external inputs, recorded time/randomness, manifest-based targets, generated-input hashes and the restricted nonsemantic native-object exception. This is the selected L12 declared/replayable-input policy and grants no live compile-time authority here. Actual paired builds, providers, diagnostics, per-target exception acceptance, consumer closure and independent implementation acceptance remain unassessed. Explicit Build-file successor: the selected L12 criterion bytes and scalar task record are identical; two separate B1-B3 consumer criteria were appended after complete prior bodies. The prior current reference/reviews remain preserved and no applying review or actual implementation acceptance is renewed. Exact successor binding review remains pending."},
+  :proposal-batch "language"}
   {:additional-task-interfaces [], :observable-boundary "Source/spans/extensions/functions/lock/grants/files/environment/target/profile/compiler/facet/replay key facets; Expand task is a macro-cache interface, not proof that every compile-time cache is covered.", :historical-discovery-support [{:kind :prior-semantic-proposal-and-source-binding-receipt, :origin-proposal-id "language/compiletime/validate-cache-reuse", :artifact {:sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"}, :receipt {:sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"}, :qualification "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}], :obligation "Reuse a compile-time result only when all semantic input identities match and its trace remains legal under current policy, invalidating stricter-policy entries and never blessing hidden effects through policy relaxation.", :source-facet-ids ["facet/language/6251e60e57c108648ebf3e31" "facet/language/0137c45fc132358c03c1c25c" "facet/language/d588727520b611fd91f9dcd8" "facet/language/3b9906cef847468e5230156f" "facet/language/32a2aee4ee97a2b50de22ae1" "facet/language/f6cb3316c5b9d27a1624e554" "facet/language/19a4f3d91cc08c62a523e1ca" "facet/language/a3719d52133ae9449ec82411" "facet/language/ce6e6fd3ad1509964dd418eb" "facet/language/f491c71983cd7b6a6ac0bef3" "facet/language/f9e3e88001ea08aef06a13dd" "facet/language/e1ebd611401c117ebc0ead9a"], :acceptance-authority :canonical-task-only, :origin-proposal-id "language/compiletime/validate-cache-reuse", :atomicity :reviewed, :original-task-coverage-gap nil, :nonoverlap :proposed, :id "language/compiletime/validate-cache-reuse", :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/0137c45fc132358c03c1c25c" "facet/language/19a4f3d91cc08c62a523e1ca" "facet/language/32a2aee4ee97a2b50de22ae1" "facet/language/3b9906cef847468e5230156f" "facet/language/6251e60e57c108648ebf3e31" "facet/language/a3719d52133ae9449ec82411" "facet/language/ce6e6fd3ad1509964dd418eb" "facet/language/d588727520b611fd91f9dcd8" "facet/language/e1ebd611401c117ebc0ead9a" "facet/language/f491c71983cd7b6a6ac0bef3" "facet/language/f6cb3316c5b9d27a1624e554" "facet/language/f9e3e88001ea08aef06a13dd"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :source-contracts ["L12" "L16"], :task-reference {:path "specs/expand-workflow/tasks.md", :marker "expand-implementation-tasks", :id "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination", :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"}, :proposal-batch "language"}
   {:additional-task-interfaces [], :observable-boundary "Kernel/workgroup/address-space/barrier/target assumptions are facets of GPU parallel-access validation.", :historical-discovery-support [{:kind :prior-semantic-proposal-and-source-binding-receipt, :origin-proposal-id "language/concurrency/check-gpu-parallel-access", :artifact {:sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"}, :receipt {:sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"}, :qualification "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}], :obligation "Prove GPU race freedom or require valid synchronization before parallel shared/device memory access, otherwise reject.", :source-facet-ids ["facet/language/f87a83262cdbdb134c633e15" "facet/language/ea723a39f49fd2b4286cab30" "facet/language/70c9b77b35515b3f7fcd5a49" "facet/language/99c97f2e05918c6576777945"], :acceptance-authority :canonical-task-only, :origin-proposal-id "language/concurrency/check-gpu-parallel-access", :atomicity :reviewed, :original-task-coverage-gap nil, :nonoverlap :proposed, :id "language/concurrency/check-gpu-parallel-access", :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/70c9b77b35515b3f7fcd5a49" "facet/language/99c97f2e05918c6576777945" "facet/language/ea723a39f49fd2b4286cab30" "facet/language/f87a83262cdbdb134c633e15"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :source-contracts ["L11"], :task-reference {:path "specs/legality-workflow/tasks.md", :marker "legality-implementation-tasks", :id "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis", :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}, :proposal-batch "language"}
   {:additional-task-interfaces [], :observable-boundary "Atomic/lock/STM/actor/channel/linear/synchronized-cell variants are alternatives of this admission check.", :historical-discovery-support [{:kind :prior-semantic-proposal-and-source-binding-receipt, :origin-proposal-id "language/concurrency/check-safe-shared-mutation", :artifact {:sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"}, :receipt {:sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"}, :qualification "Discovery/proposal lineage only. This receipt checks source binding, not implementation, historical acceptance, current applicability, consumed closure or denominator approval."}], :obligation "Require declared synchronization/ownership mediation for safe shared mutation or explicit audited unsafe responsibility, rejecting an unprotected race.", :source-facet-ids ["facet/language/4acc452587bf6211436a63c0" "facet/language/6cca72865aa7acd56c861dee" "facet/language/2d68eab0ccfed19c234be75c" "facet/language/13b6350f726d384aa9703760" "facet/language/72c23b45cf65f4c425c9115a" "facet/language/fb9c249f2020afc51e2f32c2" "facet/language/2a78430ac86dca4acc67bb64" "facet/language/d8c0f6695f4d2444d3a7f04b" "facet/language/25d904371c7c5d4705c24ea8" "facet/language/d2e4e02684b7504c22b5a938" "facet/language/ffffdc24bb3541168560fb5e" "facet/language/b31a81ef33d5c986baca9032"], :acceptance-authority :canonical-task-only, :origin-proposal-id "language/concurrency/check-safe-shared-mutation", :atomicity :reviewed, :original-task-coverage-gap nil, :nonoverlap :proposed, :id "language/concurrency/check-safe-shared-mutation", :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/13b6350f726d384aa9703760" "facet/language/25d904371c7c5d4705c24ea8" "facet/language/2a78430ac86dca4acc67bb64" "facet/language/2d68eab0ccfed19c234be75c" "facet/language/4acc452587bf6211436a63c0" "facet/language/6cca72865aa7acd56c861dee" "facet/language/72c23b45cf65f4c425c9115a" "facet/language/b31a81ef33d5c986baca9032" "facet/language/d2e4e02684b7504c22b5a938" "facet/language/d8c0f6695f4d2444d3a7f04b" "facet/language/fb9c249f2020afc51e2f32c2" "facet/language/ffffdc24bb3541168560fb5e"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :source-contracts ["L11"], :task-reference {:path "specs/legality-workflow/tasks.md", :marker "legality-implementation-tasks", :id "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis", :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}, :proposal-batch "language"}

@@ -225,6 +225,77 @@
                                                          (str/replace current-text "Status: Open" "Status: Accepted; forged")
                                                          ((:read-ref readers) ref p)))))))))
 
+(defn successive-transition-fixture []
+  (let [{first-manifest :manifest first-readers :readers} (transition-fixture)
+        introduced (assoc (first (:task-source-version-bridges first-manifest))
+                          :path "fixture/introduced.md" :predecessor-bridge nil)
+        prior (update first-manifest :task-source-version-bridges conj introduced)
+        prior-text (pr-str prior)
+        model-ref (apply str (repeat 40 "b")) model-tree (apply str (repeat 40 "d"))
+        next-ref (apply str (repeat 40 "a")) next-tree (apply str (repeat 40 "c"))
+        old (second (:task-source-version-bridges prior))
+        p (:path old) m (:marker old) id (get-in old [:changed-records 0 :id])
+        before ((:read-ref first-readers) (:current-ref old) p)
+        after (str/replace before "Original predicate." "Original predicate. Later scoped clause.")
+        digest #(rr/task-record-digest (evidence/task-record % m id) rr/sha256)
+        observation (fn [text]
+                      (let [span (current/task-body-span text m id rr/require!)]
+                        (assoc span :sha256
+                               (rr/sha256
+                                (String. (java.util.Arrays/copyOfRange
+                                          (.getBytes text "UTF-8") (:start-byte span) (:end-byte span))
+                                         "UTF-8")))))
+        next-bridge (assoc old :change-class current/bridge-successor-class :predecessor-bridge old
+                           :current-ref next-ref :current-tree next-tree :current-sha256 (rr/sha256 after)
+                           :changed-records [(assoc (first (:changed-records old)) :current-record-sha256 (digest after))]
+                           :previously-declared-record-observations
+                           [{:id id :prior-captured-record-sha256 (digest before) :current-captured-record-sha256 (digest after)
+                             :prior-whole-body (observation before) :current-whole-body (observation after)}])
+        frame {:kind current/bridge-transition-kind :source-commit model-ref :source-tree model-tree
+               :manifest-sha256 (rr/sha256 prior-text) :prior-task-source-version-bridges (:task-source-version-bridges prior)
+               :qualification "Advance one source; authenticate unchanged introduced paths in their earlier frame."}
+        manifest (-> prior (assoc-in [:task-source-version-bridges 1] next-bridge)
+                     (update :source-view-review-history conj frame))
+        source-readers (assoc first-readers
+                             :read-commit-tree (fn [ref]
+                                                 (cond (= ref model-ref) model-tree
+                                                       (= ref next-ref) next-tree
+                                                       :else ((:read-commit-tree first-readers) ref)))
+                             :read-ref (fn [ref path]
+                                         (cond (= ref model-ref) (do (rr/require! (= path "contracts/requirement-reconciliation.edn") "Unexpected prior-model path") prior-text)
+                                               (= ref next-ref) (do (rr/require! (= p path) "Unexpected successor path") after)
+                                               :else ((:read-ref first-readers) ref path))))]
+    {:prior prior :manifest manifest :readers source-readers :model-ref model-ref}))
+
+(deftest later-transition-keeps-older-introduced-paths-and-authenticates-their-history
+  (let [{:keys [prior manifest readers model-ref]} (successive-transition-fixture)
+        result (current/validate-bridge-transition! manifest readers)]
+    (is (= 3 (:prior-bridge-count result)))
+    (is (= :unassessed (:implementation-acceptance result)))
+    (is (= (get-in prior [:task-source-version-bridges 2])
+           (get-in manifest [:task-source-version-bridges 2])))
+    (is (nil? (get-in manifest [:task-source-version-bridges 2 :predecessor-bridge])))
+    (is (thrown-with-msg? Exception #"New task source bridge lacks"
+          (current/validate-bridge-transition!
+           (assoc-in prior [:task-source-version-bridges 2 :change-class] :undeclared)
+           readers)))
+    (doseq [forged [(update-in manifest [:task-source-version-bridges 1] dissoc :predecessor-bridge)
+                    (assoc-in manifest [:task-source-version-bridges 1 :predecessor-bridge :qualification] "Forged predecessor")
+                    (assoc-in manifest [:task-source-version-bridges 2 :qualification] "Changed older introduced record")
+                    (update manifest :task-source-version-bridges pop)]]
+      (is (thrown? Exception (current/validate-bridge-transition! forged readers))))
+    ;; The latest frame correctly authenticates these forged prior bytes and
+    ;; copies their complete history. Only validation in the prior frame's own
+    ;; context exposes its wrong predecessor digest.
+    (let [forged-prior (assoc-in prior [:source-view-review-history 1 :manifest-sha256] (rr/sha256 "Wrong original model"))
+          text (pr-str forged-prior)
+          latest (assoc (last (:source-view-review-history manifest)) :manifest-sha256 (rr/sha256 text))
+          forged (assoc manifest :source-view-review-history (conj (:source-view-review-history forged-prior) latest))
+          forged-readers (assoc readers :read-ref (fn [ref path]
+                                                   (if (= ref model-ref) text ((:read-ref readers) ref path))))]
+      (is (thrown-with-msg? Exception #"predecessor model file digest drift"
+            (current/validate-bridge-transition! forged forged-readers))))))
+
 (let [result (run-tests 'requirement-current-task-sources-test)]
   (shutdown-agents)
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

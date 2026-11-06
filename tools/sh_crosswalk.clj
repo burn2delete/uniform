@@ -982,13 +982,21 @@
           :scope :original-fourteen-selected-result-routes}
          :qualification "The fourteen original selected-result dependency rows are normally composed with the reviewed f989 binder. Their separate whole-document transition preserves the complete previous transition and the unchanged earlier source census, pins, snapshots, task statuses and narrow evidence. Current source/routing review remains pending; typed execution acyclicity, implementation, migration, release and full-240 verification remain separate obligations."))
 
-(def mapping-review
+(def source-consumer-predecessor-mapping-review
   (assoc source-composition-predecessor-mapping-review
          :status :pending-source-version-review
          :input-fingerprint "f222c901f01af375bae81ce0d7c3857b8d5e84f8b1638305dc6ebaa1ead794dc"
          :predecessor-input-fingerprint (:input-fingerprint source-composition-predecessor-mapping-review)
          :predecessor-current-source-review source-composition-predecessor-mapping-review
          :qualification "Explicit current-source successor only. The complete earlier review remains preserved with its original subject. Current source/routing review, semantic scope, implementation, migration, release and full-240 verification remain pending."))
+
+(def mapping-review
+  (assoc source-consumer-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "8c458da0bf1453a8091a0ba1337dc6eae98d85f2f5c3f3e92466b863098b4f30"
+         :predecessor-input-fingerprint (:input-fingerprint source-consumer-predecessor-mapping-review)
+         :predecessor-current-source-review source-consumer-predecessor-mapping-review
+         :qualification "Explicit Build-file source successor only. The complete previous current-source review, its original fingerprint and every older review remain preserved with their original subjects. New B1-B3 criteria and source/routing identity still require exact independent review; semantic scope, actual behavior, implementation, migration, release, Main integration and full240 verification are not accepted by this source projection."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")

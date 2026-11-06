@@ -96402,7 +96402,42 @@
    "This explicit successor authenticates current source bytes separately from the complete predecessor frame. Historical snapshots, receipts, evidence subjects, task states and implementation dispositions remain unchanged; this source binding grants no execution, implementation, migration, release or full-240 acceptance.",
    :baseline-sha256
    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
-   :baseline-blob "b414b0a0008450882853a5400b5b559ddefd0758"}],
+   :baseline-blob "b414b0a0008450882853a5400b5b559ddefd0758"}
+  {:role :current-source-interface-proposal,
+   :path "specs/build-workflow/tasks.md",
+   :changed-spans
+   [{:id "SOURCE-COMPOSITION/specs/build-workflow/tasks.md",
+     :kind :complete-file-transition,
+     :before
+     {:start-byte 0,
+      :end-byte 52214,
+      :start-line 1,
+      :end-line 342,
+      :sha256
+      "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234"},
+     :after
+     {:start-byte 0,
+      :end-byte 54908,
+      :start-line 1,
+      :end-line 356,
+      :sha256
+      "9675337c127fe1357b345a45973a5fe1093b1d63aae00ca46cd00feb17562124"}}],
+   :live-sha256
+   "9675337c127fe1357b345a45973a5fe1093b1d63aae00ca46cd00feb17562124",
+   :applying-blob "72d8816b2bf342528ed25672c3ffbafb286e2beb",
+   :review-state :pending-independent-source-version-review,
+   :baseline-ref "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+   :authority :current-source-interface-only,
+   :baseline-tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+   :applying-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+   :kind :authenticated-current-source-file-transition-v1,
+   :document-id "source-consumer-build-b1-b3",
+   :applying-ref "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+   :qualification
+   "Only Build's file advances after two explicit B1-B3 consumer clauses. Its previous file bytes remain bound to exact0293; it had no separate current-file transition among the preserved48, so one explicit Build file transition is added without inventing an older transition. The complete previous frame, all48 prior transitions, all prior raw payload subjects, source pins, ordinary/future task identities and actual states remain preserved. The two edited task bodies retain every complete old body as a unique prefix. All other file transitions and31 library-IO predicates remain exact. This is a source identity successor, not renewed historical review, execution, task admission, Main integration, release or full240 acceptance.",
+   :baseline-sha256
+   "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+   :baseline-blob "395f8261e74db5dc9b1480f1a27991691e09ed5f"}],
  :source-criteria
  {:original-sh-criteria 180,
   :original-milestones 30,
@@ -242435,6 +242470,55 @@
    :blob "6b17993d44428726df5e2c68c2a9ef695156466e",
    :sha256
    "4dbd84f1bedc95ef064e06a0d44d6b4d8d0a48978319b2b6522e2f9f5c9f5498"},
+  :source-consumer-file-successor
+  {:predecessor-crosswalk
+   {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+    :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+    :path "specs/sh-family-crosswalk/crosswalk.edn",
+    :blob "b115846f12e743af4b5cbd2ea7d239bcba99f9d9",
+    :sha256
+    "064b4a0795fb36c0181a1c4b73685af56ef529e77cf6c6f379c933eded37b03e"},
+   :predecessor-frame
+   {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+    :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+    :blob "4064953c6b65cdb074ffeb12d1808325d46c41e2",
+    :sha256
+    "e6cf072c34530d82e150d90e3176169e8cba75b2c9554264aae20fb735a8c182"},
+   :review-state :pending-independent-source-version-review,
+   :authority :current-source-interface-only,
+   :source-content-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+   :previous-file-transition-present false,
+   :kind :authenticated-build-consumer-source-successor-v1,
+   :qualification
+   "Only Build's file advances after two explicit B1-B3 consumer clauses. Its previous file bytes remain bound to exact0293; it had no separate current-file transition among the preserved48, so one explicit Build file transition is added without inventing an older transition. The complete previous frame, all48 prior transitions, all prior raw payload subjects, source pins, ordinary/future task identities and actual states remain preserved. The two edited task bodies retain every complete old body as a unique prefix. All other file transitions and31 library-IO predicates remain exact. This is a source identity successor, not renewed historical review, execution, task admission, Main integration, release or full240 acceptance.",
+   :current-criteria
+   [{:task-id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :path "specs/build-workflow/tasks.md",
+     :source-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+     :source-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+     :source-span
+     {:start-byte 7818,
+      :end-byte 8758,
+      :sha256
+      "146514c214f9077201f9ffe759ff6eaeb28b1f957725711613592080b20722e5"},
+     :implementation-acceptance :unassessed}
+    {:task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :path "specs/build-workflow/tasks.md",
+     :source-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+     :source-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+     :source-span
+     {:start-byte 51835,
+      :end-byte 52965,
+      :sha256
+      "23306850e905b2cb490062f7d7e544a215cc0c3e63eef350fd6a74b3000c5912"},
+     :implementation-acceptance :unassessed}],
+   :source-content-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+   :changed-source-paths ["specs/build-workflow/tasks.md"],
+   :implementation-acceptance :unassessed},
   :current-source-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
   :review-state :pending-independent-source-version-review,
   :authority :current-source-interface-only,

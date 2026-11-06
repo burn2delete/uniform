@@ -73,7 +73,7 @@
   This extends existing source-view history; it confers no evidence acceptance.
   The latest transition entry governs the current table; earlier entries remain
   preserved history. Source readers have the same strict commit contract as refs."
-  [manifest {:keys [read-ref read-commit-tree task-record sha256 require!]}]
+  [manifest {:keys [read-ref read-commit-tree task-record sha256 require!] :as readers}]
   (let [bridges (:task-source-version-bridges manifest)
         frames (filter #(= bridge-transition-kind (:kind %)) (:source-view-review-history manifest))
         successors (filter #(or (= bridge-successor-class (:change-class %)) (:predecessor-bridge %)) bridges)]
@@ -91,7 +91,9 @@
         (let [text (read-ref source-commit "contracts/requirement-reconciliation.edn")
               prior-model (edn/read-string text)
               prior-table (:task-source-version-bridges prior-model)
-              prior-paths (set (map :path prior-table))]
+              prior-by-path (into {} (map (juxt :path identity) prior-table))
+              prior-paths (set (keys prior-by-path))
+              latest-successors (filterv #(not= % (prior-by-path (:path %))) successors)]
           (require! (= manifest-sha256 (sha256 text)) "Task source predecessor model file digest drift")
           (require! (= prior-task-source-version-bridges prior-table)
                     "Task source transition does not preserve the complete prior bridge table")
@@ -101,6 +103,14 @@
                     "Task source transition rewrites prior source-view review history")
           (require! (= (count prior-table) (count prior-paths)) "Task source predecessor has duplicate bridge paths")
           (require! (every? by-path prior-paths) "Task source transition drops a prior bridge")
+          ;; A path introduced in an older frame keeps that frame's nil
+          ;; predecessor. Authenticate the older transition in its own context,
+          ;; then validate only this frame's changed or newly introduced paths.
+          ;; The complete, strictly shorter history was checked above.
+          (validate-bridge-transition! prior-model readers)
+          (doseq [bridge bridges :when (not (contains? prior-paths (:path bridge)))]
+            (require! (= bridge-successor-class (:change-class bridge))
+                      "New task source bridge lacks its explicit successor class"))
           (doseq [old prior-table :let [current (by-path (:path old))] :when (not= old current)]
             (require! (and (= bridge-successor-class (:change-class current)) (= old (:predecessor-bridge current)))
                       "Changed task source bridge loses its complete predecessor")
@@ -114,7 +124,7 @@
                       "Task source successor rewrites prior current-only record identities"))
           (doseq [{:keys [path marker historical-ref historical-sha256 current-ref current-tree current-sha256
                          predecessor-bridge previously-declared-record-observations record-observations]
-                   :as bridge} successors]
+                   :as bridge} latest-successors]
             (require! (= bridge-successor-class (:change-class bridge)) "Unknown task source successor class")
             (require! (= (contains? prior-paths path) (some? predecessor-bridge))
                       "Task source successor invents or omits a predecessor")

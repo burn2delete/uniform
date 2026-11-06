@@ -2961,11 +2961,94 @@
 (def source-composition-transition-contracts
   (mapv composition-source-transition source-composition-file-data))
 
-(def current-source-transition-contracts
+(def source-composition-current-source-transition-contracts
   (let [successors (into {} (map (juxt :path identity) source-composition-transition-contracts))
         prior-paths (set (map :path predecessor-current-source-transition-contracts))]
     (vec (concat (map #(get successors (:path %) %) predecessor-current-source-transition-contracts)
                  (remove #(contains? prior-paths (:path %)) source-composition-transition-contracts)))))
+
+(def source-consumer-file-data
+ {:path "specs/build-workflow/tasks.md",
+ :before
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+  :blob "395f8261e74db5dc9b1480f1a27991691e09ed5f",
+  :sha256
+  "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234",
+  :bytes 52214,
+  :span-end-line 342},
+ :after
+ {:commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+  :tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+  :blob "72d8816b2bf342528ed25672c3ffbafb286e2beb",
+  :sha256
+  "9675337c127fe1357b345a45973a5fe1093b1d63aae00ca46cd00feb17562124",
+  :bytes 54908,
+  :span-end-line 356}})
+
+(def source-consumer-file-history-contract
+ {:predecessor-crosswalk
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+  :path "specs/sh-family-crosswalk/crosswalk.edn",
+  :blob "b115846f12e743af4b5cbd2ea7d239bcba99f9d9",
+  :sha256
+  "064b4a0795fb36c0181a1c4b73685af56ef529e77cf6c6f379c933eded37b03e"},
+ :predecessor-frame
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c",
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9",
+  :path
+  "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+  :blob "4064953c6b65cdb074ffeb12d1808325d46c41e2",
+  :sha256
+  "e6cf072c34530d82e150d90e3176169e8cba75b2c9554264aae20fb735a8c182"},
+ :review-state :pending-independent-source-version-review,
+ :authority :current-source-interface-only,
+ :source-content-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+ :previous-file-transition-present false,
+ :kind :authenticated-build-consumer-source-successor-v1,
+ :qualification
+ "Only Build's file advances after two explicit B1-B3 consumer clauses. Its previous file bytes remain bound to exact0293; it had no separate current-file transition among the preserved48, so one explicit Build file transition is added without inventing an older transition. The complete previous frame, all48 prior transitions, all prior raw payload subjects, source pins, ordinary/future task identities and actual states remain preserved. The two edited task bodies retain every complete old body as a unique prefix. All other file transitions and31 library-IO predicates remain exact. This is a source identity successor, not renewed historical review, execution, task admission, Main integration, release or full240 acceptance.",
+ :current-criteria
+ [{:task-id
+   "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+   :path "specs/build-workflow/tasks.md",
+   :source-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+   :source-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+   :source-span
+   {:start-byte 7818,
+    :end-byte 8758,
+    :sha256
+    "146514c214f9077201f9ffe759ff6eaeb28b1f957725711613592080b20722e5"},
+   :implementation-acceptance :unassessed}
+  {:task-id
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :path "specs/build-workflow/tasks.md",
+   :source-commit "9f6f43f93725e65b93464f62b922bcd16f2f17d9",
+   :source-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+   :source-span
+   {:start-byte 51835,
+    :end-byte 52965,
+    :sha256
+    "23306850e905b2cb490062f7d7e544a215cc0c3e63eef350fd6a74b3000c5912"},
+   :implementation-acceptance :unassessed}],
+ :source-content-tree "cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6",
+ :changed-source-paths ["specs/build-workflow/tasks.md"],
+ :implementation-acceptance :unassessed})
+
+(def source-consumer-file-transition
+  (let [path (:path source-consumer-file-data)
+        prior (first (filter #(= path (:path %)) source-composition-current-source-transition-contracts))]
+    (cond-> (assoc (composition-source-transition source-consumer-file-data)
+           :document-id "source-consumer-build-b1-b3"
+           :qualification (:qualification source-consumer-file-history-contract))
+      prior (assoc :successor-of prior))))
+
+(def current-source-transition-contracts
+  (let [prior source-composition-current-source-transition-contracts
+        path (:path source-consumer-file-data)]
+    (cond-> (mapv #(if (= path (:path %)) source-consumer-file-transition %) prior)
+      (not-any? #(= path (:path %)) prior) (conj source-consumer-file-transition))))
 
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
@@ -4076,10 +4159,9 @@
 
 (def ^:private read-composition-source-edn (memoize edn/read-string))
 
-(defn source-composition-predecessor-snapshots
-  "Retain authenticated payload subjects; current locators add separate subjects."
-  [read-ref sha256 require!]
-  (let [{:keys [commit tree path blob] expected-sha :sha256} (:predecessor-crosswalk source-composition-history-contract)
+(defn- authenticated-source-payloads
+  [descriptor read-ref sha256 require!]
+  (let [{:keys [commit tree path blob] expected-sha :sha256} descriptor
         text (read-ref commit path)]
     (require! (= tree (git-commit-tree "." commit require!)) "Prior crosswalk source commit/tree drift")
     (require! (= blob (git-blob-id text)) "Prior crosswalk source blob drift")
@@ -4091,9 +4173,40 @@
         (require! (and (string? raw) (= digest (sha256 raw))) "Prior crosswalk source payload identity drift"))
       snapshots)))
 
+(defn source-composition-predecessor-snapshots
+  "Retain both earlier authenticated payload tables before adding current subjects."
+  [read-ref sha256 require!]
+  (let [original (authenticated-source-payloads (:predecessor-crosswalk source-composition-history-contract) read-ref sha256 require!)
+        previous (authenticated-source-payloads (:predecessor-crosswalk source-consumer-file-history-contract) read-ref sha256 require!)]
+    (doseq [[digest raw] original]
+      (require! (= raw (get previous digest)) "Consumer source successor loses an earlier payload subject"))
+    (merge original previous)))
+
+(defn validate-source-consumer-file-history!
+  "Authenticate the exact previous frame while advancing only the Build file."
+  [frame read-ref sha256 require!]
+  (let [history (get-in frame [:source-composition-transition-history :source-consumer-file-successor])
+        {:keys [commit tree path blob] expected-sha :sha256} (:predecessor-frame source-consumer-file-history-contract)
+        text (read-ref commit path) previous (read-composition-source-edn text)
+        inverse (-> frame
+                    (assoc :current-source-transitions (:current-source-transitions previous))
+                    (update :source-composition-transition-history dissoc :source-consumer-file-successor))]
+    (require! (= source-consumer-file-history-contract history)
+              "Build consumer source successor history identity or qualification changed")
+    (require! (= tree (git-commit-tree "." commit require!)) "Build consumer predecessor is not the actual commit/tree")
+    (require! (= blob (git-blob-id text)) "Build consumer predecessor frame blob drift")
+    (require! (= expected-sha (sha256 text)) "Build consumer predecessor frame bytes drift")
+    (require! (= source-composition-current-source-transition-contracts (:current-source-transitions previous))
+              "Build consumer source successor loses its complete previous transition table")
+    (require! (= current-source-transition-contracts (:current-source-transitions frame))
+              "Build consumer source successor current transitions differ from exact contracts")
+    (require! (= previous inverse) "Build consumer source successor changes unlisted previous frame values")
+    previous))
+
 (defn validate-source-composition-history!
   [frame read-ref sha256 require!]
-  (let [{:keys [commit tree path blob] expected-sha :sha256} (:predecessor source-composition-history-contract)
+  (let [frame (validate-source-consumer-file-history! frame read-ref sha256 require!)
+        {:keys [commit tree path blob] expected-sha :sha256} (:predecessor source-composition-history-contract)
         text (read-ref commit path)
         previous (read-composition-source-edn text)
         inverse (-> frame
@@ -4110,7 +4223,7 @@
               "Source composition loses its complete prior transition table")
     (require! (= current-source-library-io-criterion-contracts (:current-source-library-io-criterion-joins previous))
               "Source composition loses its complete prior library IO joins")
-    (require! (= current-source-transition-contracts (:current-source-transitions frame))
+    (require! (= source-composition-current-source-transition-contracts (:current-source-transitions frame))
               "Source composition current transition table differs from exact contracts")
     (require! (= source-composition-library-io-criterion-contracts (:current-source-library-io-criterion-joins frame))
               "Source composition current library IO joins differ from exact contracts")

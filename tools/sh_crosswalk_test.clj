@@ -821,7 +821,7 @@
       (is (= review (if (= :main kind) sh-crosswalk/resolution-main-predecessor-review
                        sh-crosswalk/resolution-runtime-current-review))))
     (is (= (apply dissoc sh-crosswalk/resolution-main-predecessor-review ignored)
-           (apply dissoc (get-in view [:mapping-review :predecessor-current-source-review]) ignored)))
+           (apply dissoc (:predecessor-current-source-review sh-crosswalk/source-consumer-predecessor-mapping-review) ignored)))
     (is (= (get-in bridge [:predecessors :main :review])
            (get-in view [:mapping-review :resolution-main-predecessor-review])))
     (is (= (get-in bridge [:predecessors :resolution :review])
@@ -841,6 +841,44 @@
                    (sh-crosswalk/validate-pinned-sources!
                     {:applying-source-pins {path wrong} :source-digests {path (:sha256 after)}}
                     sh-crosswalk/git-source))))))
+
+(deftest build-consumer-source-successor-retains-reviews-payloads-and-dispositions
+  (let [descriptor (:predecessor-crosswalk requirement-sources/source-consumer-file-history-contract)
+        previous-text (sh-crosswalk/git-source (:commit descriptor) (:path descriptor))
+        previous (edn/read-string previous-text)
+        view (sh-crosswalk/build)
+        old-payloads (:source-snapshots previous) new-payloads (:source-snapshots view)
+        added-keys (set/difference (set (keys new-payloads)) (set (keys old-payloads)))
+        tasks (into {} (for [[_ rows] (:task-authorities view) row rows] [(:id row) row]))
+        ids ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+             "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"]
+        new-task-digests (set (map #(sh-inventory/sha256
+                                     (acceptance-dependencies/source-raw (:source (tasks %)) new-payloads)) ids))
+        changes (for [[before after] (map vector (:requirements previous) (:requirements view))]
+                  {:id (:id before)
+                   :before before :after after
+                   :added (set/difference (set (:evidence-source-locators after))
+                                          (set (:evidence-source-locators before)))})]
+    (is (= (:sha256 descriptor) (sh-inventory/sha256 previous-text)))
+    (is (= (:mapping-review previous) sh-crosswalk/source-consumer-predecessor-mapping-review))
+    (is (= (:mapping-review previous) (get-in view [:mapping-review :predecessor-current-source-review])))
+    (is (= (:source-snapshots previous) (select-keys new-payloads (keys old-payloads))))
+    (is (= new-task-digests added-keys))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= #{"SH-23.1" "SH-23.2" "SH-26.1" "SH-27.1" "SH-27.6" "SH-28.1"}
+           (set (map :id (filter #(seq (:added %)) changes)))))
+    (doseq [{:keys [before after added]} changes]
+      (is (= (dissoc before :evidence-source-locators) (dissoc after :evidence-source-locators)))
+      (is (= (:evidence-source-locators before) (vec (remove added (:evidence-source-locators after)))))
+      (doseq [locator added]
+        (is (= "specs/backends-workflow/plan.md" (:path locator)))
+        (is (= :source-inspection-not-execution (:kind locator)))
+        (is (= :unassessed (:current-applicability locator)))
+        (is (= (:sha256 locator) (sh-inventory/sha256
+                                  (sh-crosswalk/git-source (:source-commit locator) (:path locator)))))))
+    (is (= (:requirements previous)
+           (mapv (fn [{:keys [before after]}]
+                   (assoc after :evidence-source-locators (:evidence-source-locators before))) changes)))))
 
 (deftest readiness-successor-conserves-task-bodies-routes-and-historical-subjects
   (let [bridge sh-crosswalk/readiness-source-version

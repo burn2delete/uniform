@@ -14,9 +14,10 @@
 (deftest current-composition-preserves-the-complete-previous-frame
   (is (= sources/source-composition-history-contract
          (sources/validate-source-composition-history! frame read-ref sha require!)))
-  (let [predecessor (:predecessor sources/source-composition-history-contract)
+  (let [consumer-prior (sources/validate-source-consumer-file-history! frame read-ref sha require!)
+        predecessor (:predecessor sources/source-composition-history-contract)
         before (edn/read-string (read-ref (:commit predecessor) (:path predecessor)))
-        inverse (-> frame
+        inverse (-> consumer-prior
                     (assoc :current-source-transitions (:current-source-transitions before)
                            :current-source-library-io-criterion-joins (:current-source-library-io-criterion-joins before))
                     (dissoc :source-composition-transition-history :source-composition-future-task-records))]
@@ -71,10 +72,42 @@
   (let [descriptor (:predecessor-crosswalk sources/source-composition-history-contract)
         old (edn/read-string (read-ref (:commit descriptor) (:path descriptor)))
         snapshots (sources/source-composition-predecessor-snapshots read-ref sha require!)]
-    (is (= (:source-snapshots old) snapshots))
+    (is (= (:source-snapshots old) (select-keys snapshots (keys (:source-snapshots old)))))
+    (let [previous (:predecessor-crosswalk sources/source-consumer-file-history-contract)
+          previous-crosswalk (edn/read-string (read-ref (:commit previous) (:path previous)))]
+      (is (= (:source-snapshots previous-crosswalk) snapshots)))
     (is (every? (fn [[digest raw]] (= digest (sha raw))) snapshots))
     (is (thrown? Exception (sources/source-composition-predecessor-snapshots
                            (fn [commit path] (str (read-ref commit path) "\nUnbound predecessor")) sha require!)))))
+
+(deftest build-consumer-successor-preserves-the-exact-previous-frame
+  (let [history sources/source-consumer-file-history-contract
+        descriptor (:predecessor-frame history)
+        previous (edn/read-string (read-ref (:commit descriptor) (:path descriptor)))
+        path "specs/build-workflow/tasks.md"
+        old-transitions (:current-source-transitions previous)
+        current-transitions (:current-source-transitions frame)]
+    (is (= previous (sources/validate-source-consumer-file-history! frame read-ref sha require!)))
+    (is (= 48 (count old-transitions)))
+    (is (= 49 (count current-transitions)))
+    (is (not-any? #(= path (:path %)) old-transitions))
+    (is (= old-transitions (vec (remove #(= path (:path %)) current-transitions))))
+    (is (not (contains? sources/source-consumer-file-transition :successor-of)))
+    (is (= (:source-composition-future-task-records previous) (:source-composition-future-task-records frame)))
+    (doseq [forged [(update frame :source-composition-transition-history dissoc :source-consumer-file-successor)
+                    (assoc-in frame [:source-composition-transition-history :source-consumer-file-successor :authority] :implementation)
+                    (assoc-in frame [:source-composition-transition-history :source-consumer-file-successor :predecessor-frame :sha256] (sha "Wrong previous frame"))
+                    (update frame :current-source-transitions pop)
+                    (update frame :current-source-library-io-criterion-joins pop)
+                    (assoc frame :source-snapshots {})
+                    (assoc frame :source-composition-future-task-records [])]]
+      (is (thrown? Exception (sources/validate-source-consumer-file-history! forged read-ref sha require!))))
+    ;; A tree:path serves identical bytes; authenticating it as the previous
+    ;; commit must fail even when both the expected and supplied labels change.
+    (let [forged-history (assoc-in history [:predecessor-frame :commit] (:tree descriptor))
+          forged-frame (assoc-in frame [:source-composition-transition-history :source-consumer-file-successor] forged-history)]
+      (with-redefs [sources/source-consumer-file-history-contract forged-history]
+        (is (thrown? Exception (sources/validate-source-consumer-file-history! forged-frame read-ref sha require!)))))))
 
 (let [result (run-tests 'requirement-sources-test)]
   (shutdown-agents)
