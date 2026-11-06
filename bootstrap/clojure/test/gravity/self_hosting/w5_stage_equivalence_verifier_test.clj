@@ -447,6 +447,26 @@
     (is (= rule (:rule diagnostic) (:diagnostic-id diagnostic)))
     (is (= reason (get-in diagnostic [:facts :reason])))))
 
+(deftest w5-stage-equivalence-stage-bindings-reject-substitution-on-either-side
+  (let [base (request accepted-gravity-plan 'w5-stage-equivalence-request)]
+    (is (= :accepted (:status (compare-request base))))
+    (doseq [[product-index mutator drift-reason]
+            [[0 'w5-invalid-artifact-drift :artifact-drift]
+             [1 'w5-invalid-manifest-drift :manifest-drift]]]
+      (let [invalid (invoke rejected-gravity-plan mutator [base])
+            replacement (get-in invalid [:products product-index :right])]
+        (doseq [sides [[:left] [:right] [:left :right]]]
+          (testing (str "product " product-index " substituted on " sides)
+            (assert-rejected-comparison
+             (reduce (fn [request-value side]
+                       (assoc-in request-value [:products product-index side]
+                                 replacement))
+                     base sides)
+             "BOOT7002"
+             (if (and (= product-index 0) (= 2 (count sides)))
+               :artifact
+               drift-reason))))))))
+
 (deftest w5-stage-equivalence-traverses-large-diagnostic-records
   (let [long-message (apply str (repeat 4097 "m"))
         expand
