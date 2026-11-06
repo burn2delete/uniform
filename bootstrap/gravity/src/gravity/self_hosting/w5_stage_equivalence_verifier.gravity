@@ -256,9 +256,10 @@
               (if (w5-sha256-id? (get stage :executable-id))
                 (if (w5-sha256-id? (get stage :artifact-id))
                   (if (w5-sha256-id? (get stage :output-artifact-id))
-                    (if (or (= nil (get stage :compiler-input-artifact-id))
-                            (w5-sha256-id?
-                             (get stage :compiler-input-artifact-id)))
+                    (if (if (= nil (get stage :compiler-input-artifact-id))
+                          true
+                          (w5-sha256-id?
+                           (get stage :compiler-input-artifact-id)))
                       (if (= :meta (get stage :profile))
                         (if (= w5-se-candidate-target (get stage :target))
                           (if (= :pending (get stage :execution-status))
@@ -1380,27 +1381,21 @@
       (w5-se-first-failure-from? outcomes (+ index 1)))))
 
 (defn w5-se-diagnostic-rule [reason]
-  (if (or (= reason :request-shape) (= reason :target)
-          (= reason :lineage) (= reason :environment)
-          (= reason :lock) (= reason :toolchain)
-          (= reason :producer-authority))
+  (if (w5-se-member? [:request-shape :target :lineage :environment
+                     :lock :toolchain :producer-authority] reason)
     "BOOT7001"
-    (if (or (= reason :artifact) (= reason :artifact-drift)
-            (= reason :manifest-drift)
-            (= reason :ir-normalization-drift)
-            (= reason :artifact-shape))
+    (if (w5-se-member? [:artifact :artifact-drift :manifest-drift
+                       :ir-normalization-drift :artifact-shape] reason)
       "BOOT7002"
-        (if (or (= reason :diagnostic-drift)
-              (= reason :diagnostic-span-drift)
-              (= reason :diagnostic-shape)
-              (= reason :diagnostic-evidence))
+      (if (w5-se-member? [:diagnostic-drift :diagnostic-span-drift
+                         :diagnostic-shape :diagnostic-evidence] reason)
         "BOOT7003"
         (if (= reason :unreviewed-delta)
           "BOOT7004"
           (if (= reason :missing-stage-output)
             "BOOT7005"
-            (if (or (= reason :conformance-drift)
-                    (= reason :runtime-output-drift))
+            (if (w5-se-member? [:conformance-drift :runtime-output-drift]
+                               reason)
               "BOOT7006"
               (if (= reason :performance-bound)
                 "BOOT7007"

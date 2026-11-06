@@ -356,14 +356,42 @@
                         'w5-stage-equivalence-diagnostic-catalog [])]
     (is (contains? (set (:reasons catalog)) :diagnostic-evidence)))
   (doseq [[reason code]
-          [[:artifact "BOOT7002"]
-           [:missing-stage-output "BOOT7005"]
-           [:performance-bound "BOOT7007"]
-           [:conformance-drift "BOOT7006"]
+          [[:request-shape "BOOT7001"]
+           [:target "BOOT7001"]
            [:lineage "BOOT7001"]
-           [:diagnostic-evidence "BOOT7003"]]]
+           [:environment "BOOT7001"]
+           [:lock "BOOT7001"]
+           [:toolchain "BOOT7001"]
+           [:producer-authority "BOOT7001"]
+           [:artifact "BOOT7002"]
+           [:artifact-drift "BOOT7002"]
+           [:manifest-drift "BOOT7002"]
+           [:ir-normalization-drift "BOOT7002"]
+           [:artifact-shape "BOOT7002"]
+           [:diagnostic-drift "BOOT7003"]
+           [:diagnostic-span-drift "BOOT7003"]
+           [:diagnostic-shape "BOOT7003"]
+           [:diagnostic-evidence "BOOT7003"]
+           [:unreviewed-delta "BOOT7004"]
+           [:missing-stage-output "BOOT7005"]
+           [:conformance-drift "BOOT7006"]
+           [:runtime-output-drift "BOOT7006"]
+           [:performance-bound "BOOT7007"]
+           [:unknown "BOOT7001"]]]
     (is (= code
            (invoke engine-plan 'w5-se-diagnostic-rule [reason])))))
+
+(deftest w5-stage-equivalence-optional-input-retains-digest-legality
+  (let [base (request accepted-gravity-plan 'w5-stage-equivalence-request)
+        stage (:stage-a base)]
+    (doseq [input [nil (:source-id stage)]]
+      (is (true? (invoke engine-plan 'w5-se-stage-valid?
+                         [(assoc stage :compiler-input-artifact-id input)
+                          :stage-a 0]))))
+    (doseq [input ["" "sha256:bad" (apply str (repeat 4097 "a")) 0]]
+      (is (false? (invoke engine-plan 'w5-se-stage-valid?
+                          [(assoc stage :compiler-input-artifact-id input)
+                           :stage-a 0]))))))
 
 (deftest w5-stage-equivalence-result-verifier-recomputes-and-rejects-substitution
   (let [request-value (request accepted-gravity-plan
