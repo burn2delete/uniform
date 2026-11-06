@@ -137,11 +137,64 @@
                  (= sha256 (file-digest path))) "Dependency source evidence is missing or changed")
   (rt/read-edn path))
 
-(defn- ended-source-phase! [shared candidate tree source-paths phase]
+(defn- source-status [shared owners paths]
+  {:writers (into {} (filter (fn [[_ writer]] (and (contains? owners (:state-file writer))
+                                                    (rt/overlap? paths (:paths writer)))) (:writers shared)))
+   :refusals (into {} (for [[kind records] (:restrictions shared)
+                            [key record] records :when (contains? owners (:state-file record))]
+                        [[kind key] record]))})
+
+(defn- admitted-source! [ctx shared candidate tree source-paths phase]
+  (let [admission (referenced-evidence! (:acceptance-evidence phase))
+        subject (:subject admission) paths (:paths phase) owners (set (:owner-state-files subject))
+        snapshot (referenced-evidence! (:status-evidence phase))
+        required-nonclaims #{:no-retroactive-source-ownership :no-standalone-held-source-admission
+                             :no-release :no-migration-authority}
+        live (source-status shared owners paths)]
+    (require! (and (= :source-only-admission (:kind admission))
+                   (= :accepted-source-only (:disposition admission))
+                   (= candidate (:candidate subject)) (= tree (:tree subject))
+                   (= (set paths) (set (:paths subject)) (set (keys (:entries subject))))
+                   (seq paths) (every? string? paths) (seq owners)
+                   (every? #(and (string? %) (= % (rt/canonical %))) owners)
+                   (every? (set (:nonclaims admission)) required-nonclaims)
+                   (seq (:evidence admission))
+                   (every? (fn [p] (some #(rt/covers? % p) paths)) source-paths))
+              "Dependency admission does not bind the exact source-only value, scope and nonclaims")
+    (doseq [reference (:evidence admission)] (referenced-evidence! reference))
+    (doseq [[path {:keys [mode blob]}] (:entries subject)]
+      (rt/safe-path! path)
+      (require! (and (= "100644" mode) (string? blob) (re-matches #"[0-9a-f]{40}" blob)
+                     (= (str mode " blob " blob "\t" path "\u0000")
+                        (path-output! ctx (get-in ctx [:config :repo-dir]) ["git" "ls-tree" "-z" candidate "--" path])))
+                "Dependency source blob or mode differs from its admission"))
+    (when (= :accepted-immutable-lineage (:kind phase))
+      (let [repo (get-in ctx [:config :repo-dir]) parent (:source-parent subject)]
+        (require! (and (string? parent) (re-matches #"[0-9a-f]{40}" parent)
+                       (= parent (first (str/split (rt/git ctx repo "show" "-s" "--format=%P" candidate) #" ")))
+                       (= (:source-parent-tree subject) (rt/git ctx repo "rev-parse" (str parent "^{tree}"))))
+                  "Immutable dependency source-parent identity changed")
+        (doseq [path paths]
+          (require! (= (path-output! ctx repo ["git" "ls-tree" "-z" parent "--" path])
+                       (path-output! ctx repo ["git" "ls-tree" "-z" candidate "--" path]))
+                    "Immutable dependency source value differs from its admitted lineage"))))
+    (require! (and (= :dependency-source-status (:kind snapshot)) (= subject (:subject snapshot))
+                   (true? (:known-end snapshot)) (= live (:current-status snapshot))
+                   (empty? (:writers live)) (empty? (:refusals live)))
+              "Dependency source status is stale, has a current writer, or retains a relevant refusal")
+    subject))
+
+(defn- ended-source-phase! [ctx shared candidate tree source-paths phase]
+  (admitted-source! ctx shared candidate tree source-paths phase)
+  (if (= :accepted-immutable-lineage (:kind phase))
+    ;; The admitted immutable value can have joined source history. A missing
+    ;; creation lease is not permission to fabricate one or erase old holds.
+    (require! (and (= candidate (:candidate phase)) (= tree (:tree phase))
+                   (true? (:writer-ended? phase)) (true? (:no-unresolved-authority phase)))
+              "Immutable dependency lineage is not bound to its inspected current value")
   (let [{:keys [owner-state-file lease-id lease-token paths]} phase
         release (referenced-evidence! (:release-evidence phase))
         lease (or (:lease release) release)]
-    (referenced-evidence! (:acceptance-evidence phase))
     (require! (and (string? owner-state-file) (= owner-state-file (rt/canonical owner-state-file))
                    (string? lease-id) (not (str/blank? lease-id))
                    (string? lease-token) (not (str/blank? lease-token))
@@ -163,7 +216,7 @@
               "The dependency source phase still has a writer requiring inspection")
     (require! (not-any? #(= owner-state-file (:state-file %))
                         (mapcat vals (vals (:restrictions shared))))
-              "The dependency source owner retains an unresolved refusal")))
+              "The dependency source owner retains an unresolved refusal"))))
 
 (defn verified-dependencies! [ctx task receipt]
   (let [dependencies (:verified-source-dependencies receipt)
@@ -178,7 +231,7 @@
       (require! (and (string? owner-state-file) (string? intent-id)
                      (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [commit candidate tree])
                      (seq source-paths) (every? string? source-paths)) "Dependency merge identity is incomplete")
-      (ended-source-phase! shared candidate tree source-paths source-phase)
+      (ended-source-phase! ctx shared candidate tree source-paths source-phase)
       (let [entry (some #(when (and (= :main-verified (:kind %))
                                     (= owner-state-file (get-in % [:intent :state-file]))
                                     (= intent-id (get-in % [:intent :id]))
@@ -322,10 +375,120 @@
     (require! (= stored observed) "Inspected authored continuation is stale")
     observed))
 
+(defn inspect-fresh-source! [ctx task evidence-file]
+  (let [file (io/file (rt/canonical evidence-file))
+        _ (require! (.startsWith (.toPath file) (.toPath (io/file (rt/canonical (:state-dir ctx)))))
+                    "Fresh validation evidence must be retained by this controller")
+        receipt (rt/read-edn file)
+        classification (:operator-classification receipt)
+        authorization (referenced-evidence! (:authorization receipt))
+        [_ authorized-pr authorized-step] (when (keyword? (:authorization-scope receipt))
+                                           (re-matches #"fresh-pr([0-9]+)-(status|whitespace)-validation"
+                                                       (name (:authorization-scope receipt))))
+        proof (referenced-evidence! (:source-acceptance receipt))
+        validation (:validation receipt)
+        {:keys [base candidate tree worktree branch]} validation
+        old-error (:error task)
+        status-read? (and (= "Command failed" (:message old-error))
+                          (true? (get-in old-error [:details :restricted]))
+                          (= ["gh" "pr" "view"] (take 3 (get-in old-error [:details :argv]))))
+        failed-check? (and (= "Sandboxed check failed" (:message old-error))
+                           (not (get-in old-error [:details :restricted]))
+                           (not= false (get-in old-error [:details :writer-ended?]))
+                           (= 1 (get-in old-error [:details :result :exitCode])))
+        commands (vec (distinct (concat (get-in ctx [:config :checks]) (:checks receipt))))
+        repo (get-in ctx [:config :repo-dir])]
+    (require! (and (= :fresh-source-validation (:kind receipt)) (= (:key task) (:task-key receipt))
+                   (= (:pr task) (:original-pr receipt))
+                   (= (rt/digest (pr-str task)) (:original-task-sha256 receipt))
+                   (= :controller-operator (:inspector classification))
+                   (= :fresh-source-validation (:kind classification))
+                   (= (error-digest task) (:original-error-sha256 classification))
+                   (true? (:no-unresolved-source-semantics classification))
+                   (true? (:old-actions-remain-prohibited classification))
+                   (string? (:basis classification)) (not (str/blank? (:basis classification)))
+                   (vector? (:preserved-nonclaims receipt)) (seq (:preserved-nonclaims receipt))
+                   (or status-read? failed-check?))
+              "This is not an inspected fresh validation of a retained failed source candidate")
+    (require! (and (= :direct-human-question-reply (:source authorization))
+                   (contains? (set (:scope authorization)) (:authorization-scope receipt))
+                   (= (str (get-in task [:pr :number])) authorized-pr)
+                   (= (if status-read? "status" "whitespace") authorized-step))
+              "Fresh validation needs the specific human authorization; old refusals are not cleared")
+    (when status-read?
+      (let [status (referenced-evidence! (:status-validation receipt))]
+        (require! (and (= (get-in receipt [:authorization :sha256]) (:authorization-sha256 status))
+                       (= (:argv status) (get-in old-error [:details :argv]))
+                       (= (get-in task [:pr :number]) (:pr-number status))
+                       (= (:candidate task) (:head status) (get-in status [:provider-result :headRefOid]))
+                       (= "OPEN" (get-in status [:provider-result :state]))
+                       (= (get-in ctx [:config :base-branch]) (get-in status [:provider-result :baseRefName]))
+                       (= 0 (:exit status)))
+                  "The newly authorized original PR status read has not been verified")))
+    (require! (and (= :accepted-scoped-source-only (get-in proof [:source-review :disposition]))
+                   (zero? (get-in proof [:source-review :finding-count] -1))
+                   (= (:candidate task) (get-in proof [:source-review :source-input]))
+                   (= (set (:paths task)) (set (get-in proof [:source-review :owned-paths])))
+                   (= (select-keys validation [:base :candidate])
+                      (select-keys (:composition proof) [:base :candidate]))
+                   (= tree (get-in proof [:composition :candidate-tree]))
+                   (= [(:candidate task) base] (get-in proof [:composition :parents])))
+              "Fresh candidate has no matching independent source and composition acceptance")
+    (require! (and (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [base candidate tree])
+                   (string? worktree) (string? branch) (str/starts-with? branch "codex/")
+                   (not= branch (:branch task))
+                   (not= (rt/canonical worktree) (rt/canonical (:worktree task)))
+                   (= (rt/common-git-directory worktree) (rt/common-git-directory repo))
+                   (= (rt/canonical worktree) (rt/canonical (rt/git ctx worktree "rev-parse" "--show-toplevel")))
+                   (= branch (rt/git ctx worktree "symbolic-ref" "--short" "HEAD"))
+                   (= candidate (rt/git ctx worktree "rev-parse" "HEAD"))
+                   (= tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}"))
+                   (empty? (changes ctx worktree)))
+              "Fresh validation needs a distinct clean named worktree in the original repository")
+    (require! (= [(:candidate task) base]
+                 (str/split (rt/git ctx repo "show" "-s" "--format=%P" candidate) #" "))
+              "Fresh candidate is not the recorded normal source/Main composition")
+    (require! (= tree (rt/git ctx repo "merge-tree" "--write-tree" (:candidate task) base))
+              "Fresh candidate differs from the original committed source composition")
+    (let [changed (remove empty? (str/split (path-output! ctx worktree
+                                                ["git" "diff" "--name-only" "--no-renames" "-z" base candidate "--"]) #"\u0000"))]
+      (require! (seq changed) "Fresh validation has no remaining source change")
+      (doseq [path changed] (owned-file! (assoc task :worktree worktree) path)))
+    (require! (and (seq commands) (every? #(and (vector? %) (seq %) (every? string? %)
+                                               (contains? (get-in ctx [:config :check-executables]) (first %))) commands))
+              "Fresh checks are outside the configured toolset")
+    (doseq [argv commands]
+      (require! (and (not (get-in @(:state ctx) [:restricted-checks (codex/check-key ctx argv)]))
+                     (not (get-in @(:state ctx) [:restricted-commands (rt/digest (pr-str argv))])))
+                "A fresh check is still locally refused")
+      (rt/assert-authorized! ctx :check (codex/check-key ctx argv))
+      (rt/assert-authorized! ctx :command (rt/digest (pr-str argv))))
+    (let [shared (rt/coordinate! ctx (fn [s] [s (select-keys s [:main-effects :restrictions])]))]
+      (require! (not-any? #(= (:state-file ctx) (:state-file %)) (vals (:main-effects shared)))
+                "An original Main operation still needs inspection")
+      (require! (not (get-in shared [:restrictions :api (rt/digest (pr-str ["POST" "graphql"]))]))
+                "The separate shared API refusal still blocks productive continuation"))
+    (rt/git ctx repo "merge-base" "--is-ancestor" base (rt/fresh-main! ctx))
+    {:kind :fresh-source-validation :stage :queued :validation validation :commands commands
+     :original-error-sha256 (error-digest task) :evidence-file (str file) :evidence-sha256 (file-digest file)
+     :authorization (:authorization receipt) :source-acceptance (:source-acceptance receipt)
+     :preserved-nonclaims (:preserved-nonclaims receipt)}))
+
+(defn validate-fresh-queued! [ctx task]
+  (let [inspection (:fresh-source-validation task)
+        original (get-in task [:fresh-source-validation-history (dec (count (:fresh-source-validation-history task))) :original-task])]
+    (require! (= inspection (inspect-fresh-source! ctx original (:evidence-file inspection)))
+              "The fresh validation handoff changed before native checking")
+    inspection))
+
 (defn review-permitted? [task]
-  (let [inspection (:inspected-authored task)]
-    (and (= :inspected-reported-implementation (:kind inspection)) (= :checked (:stage inspection))
+  (let [inspection (:inspected-authored task) fresh (:fresh-source-validation task)]
+    (or (and (= :inspected-reported-implementation (:kind inspection)) (= :checked (:stage inspection))
          (= (:original-error-sha256 inspection) (error-digest task))
          (= (:checked-implementation-job inspection) (:implementation-job task))
          (= (select-keys task [:base :candidate :tree]) (:checked-candidate inspection))
-         (= :passed (get-in task [:checks :result])))))
+         (= :passed (get-in task [:checks :result])))
+        (and (= :fresh-source-validation (:kind fresh)) (= :checked (:stage fresh))
+             (= (:original-error-sha256 fresh) (error-digest task))
+             (= (select-keys task [:base :candidate :tree]) (:checked-candidate fresh))
+             (= :passed (get-in task [:checks :result]))))))

@@ -207,6 +207,27 @@ unrelated historical owner identities remain separate held evidence. A later
 unchanged published-Main import may use an authenticated evidence join without
 inventing a new lease or rewriting the original release or acceptance records.
 
+For an admitted immutable lineage, tag the phase `:accepted-immutable-lineage`
+instead of inventing a creation lease. Its `:acceptance-evidence` is parsed as a
+`:source-only-admission` record with `:disposition :accepted-source-only`, a
+`:subject` binding the candidate, tree, exact paths, per-path blob/mode entries,
+known current `:owner-state-files`, and the admitted source parent/tree. Every
+source entry must equal Git at both that parent and the current candidate.
+Immutable references to the genuine independent reviews remain in `:evidence`.
+The admission's `:nonclaims` must retain `:no-retroactive-source-ownership`,
+`:no-standalone-held-source-admission`, `:no-release` and
+`:no-migration-authority`. This is source evidence, not integration authority.
+The strict original-lease branch remains available for an owned dirty source
+phase and uses the same parsed source-value admission.
+
+Both variants require `:status-evidence`: an immutable
+`:dependency-source-status` record binding that entire subject, `:known-end true`
+and `:current-status {:writers {} :refusals {}}`. The controller compares it to
+the current shared records for those exact Source identities and paths. An old
+Main publisher or unrelated historical hold is not relabeled as the Source
+creator; relevant active or unknown writers and refusals still block. Protected
+Main history and actual merge parentage are separately required in both cases.
+
 `:preserved-failed-actions` is the exact ordered vector of completed exit-one
 semantic checks, each with `:id`, `:command`, `:exit` and `:output-sha256`.
 `:preserved-nonclaims` explicitly retains historical nonpasses and evidence
@@ -222,6 +243,47 @@ retained owned patch, normally composes fresh main, runs the configured and
 originally proposed checks, and obtains independent exact review and new-head
 CI. The old job, output, error and nonpasses remain unchanged. A changed queued
 inspection or later refusal stops the continuation before authoring or checks.
+
+### Fresh validation after a retained status or check failure
+
+`recover-authored` and `recover-dependency` do not reclassify a genuine HTTP
+refusal, failed check or unknown cleanup. When the human specifically authorizes
+fresh validation of the committed source, a distinct route preserves those
+records and uses a separate, clean, independently accepted normal composition:
+
+```text
+clojure -M:run recover-fresh-source config.edn FINDING-KEY fresh-source.edn
+```
+
+The evidence is retained inside this controller's state directory. It binds the
+entire original task SHA, PR, error SHA, explicit operator classification and
+preserved nonclaims; immutable human authorization and independent Source and
+composition evidence; the exact fresh base/commit/tree/normal parents, named
+branch and worktree; and specific configured-toolset checks. The authorization
+scope `:fresh-prNNN-status-validation` or `:fresh-prNNN-whitespace-validation`
+must name this original PR and cover the actual validation step. A retained
+status-read refusal additionally needs the newly authorized identical argv,
+successful original-provider response, matching original head and open/main
+identity bound to that authorization. An old approval or cached old status
+result is insufficient. An unresolved shared API refusal still blocks.
+
+The accepted Source bookend binds `:source-review` (source-only disposition,
+zero findings, original committed source and owned paths) and `:composition`
+(fresh base/candidate/tree and ordered source/Main parents). The controller
+checks the real Git merge tree and rejects foreign paths, a dirty/detached or
+reused original worktree, stale input, or any refused proposed check. It never
+reads or edits the abandoned old worktree or retries its failed commands.
+
+Queueing archives the complete original task in
+`:fresh-source-validation-history`, retains its original error and all global
+guards, and records a distinct fresh phase. Native preparation imports current
+Main, performs fresh checks and passive independent review, then publishes a
+native-owned follow-up PR with a new durable creation-effect identity. It does
+not replay the original PR creation or close the original PR. No new author turn
+is needed for already committed source. New failures replace the current phase's
+error normally while the complete old records remain immutable in history.
+Old Macro/process-cleanup results stay nonpasses with their original unknown
+boundaries; only fresh exact-head CI can satisfy the new candidate's gates.
 
 Known-ended, nonrestricted semantic check failures return to repair with the
 failed source tuple and check result retained. The repair must preserve meaningful

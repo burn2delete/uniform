@@ -149,6 +149,11 @@
         (rt/update! ctx update-in [:tasks (:key t) :inspected-authored] assoc :stage :checked
                     :checked-candidate (select-keys t [:base :candidate :tree])
                     :checked-implementation-job (:implementation-job t)))
+      (when (and (= :fresh-source-validation (get-in t [:fresh-source-validation :kind]))
+                 (#{:continuing :checked} (get-in t [:fresh-source-validation :stage]))
+                 (= (get-in t [:fresh-source-validation :original-error-sha256]) (recovery/error-digest t)))
+        (rt/update! ctx update-in [:tasks (:key t) :fresh-source-validation] assoc
+                    :stage :checked :checked-candidate (select-keys t [:base :candidate :tree])))
       result)))
 
 (defn changed-paths [ctx cwd]
@@ -174,7 +179,7 @@
         existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t)))))
         _ (when (and existing (not= "open" (:state existing))) (rt/fail! "Existing PR is terminal; preserving its history" {:pr (:html_url existing)}))
         pr (or existing
-               (rt/effect! ctx (str "pr/" (:key t))
+               (rt/effect! ctx (str "pr/" (or (:publication-effect-key t) (:key t)))
                            #(gh/api ctx "POST" (gh/repo-path ctx "pulls")
                                     {:title (:title t) :head (:branch t) :base base-branch
                                      :draft (boolean (get-in ctx [:config :early-draft]))
@@ -233,10 +238,32 @@
 
 (defn recover-dependency! [ctx key evidence-file] (recover-inspected! ctx key evidence-file true))
 
-(defn prepare!
+(defn recover-fresh-source! [ctx key evidence-file]
+  (let [original (task ctx key)]
+    (when-not (= :attention (:status original)) (rt/fail! "Only an Attention source can enter fresh validation" {:finding key}))
+    (if-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
+      (rt/with-claimed-paths ctx lease
+        (fn []
+          (let [inspection (recovery/inspect-fresh-source! ctx original evidence-file)
+                validation (:validation inspection)]
+            ;; The old record, PR, failed checks and unknown old-worktree boundary
+            ;; stay immutable in history; only this explicit new phase is queued.
+            (rt/update! ctx update-in [:tasks key]
+              (fn [t] (-> t
+                          (update :fresh-source-validation-history (fnil conj []) {:original-task original :inspection inspection})
+                          (merge (select-keys validation [:base :candidate :tree :worktree :branch]))
+                          (assoc :fresh-source-validation inspection :status :repair :checks nil :review nil :feedback nil :ci nil
+                                 :publication-effect-key (str key "/fresh-source/" (rt/digest (pr-str inspection))))
+                          (dissoc :pr :inspected-authored :main-intent-id))))
+            (rt/event! ctx :fresh-source-validation-queued {:finding key :candidate (:candidate validation)
+                                                          :original-error-preserved true :old-worktree-untouched true})
+            inspection)))
+      (rt/fail! "Fresh source validation is waiting for its actual paths" {:finding key :ownership-wait true}))))
+
+(defn- prepare-authored!
   ([ctx key]
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
-     (prepare! ctx key lease)))
+     (prepare-authored! ctx key lease)))
   ([ctx key lease]
    (rt/with-claimed-paths
     ctx lease
@@ -307,6 +334,31 @@
        "approved" (publish! ctx (task ctx key))
        "changes_requested" (do (task! ctx key :feedback result) (transition! ctx key :repair))
        (rt/fail! "Independent review requires input" {:review result})))))
+
+(defn prepare!
+  ([ctx key]
+   (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
+     (prepare! ctx key lease)))
+  ([ctx key lease]
+   (if (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
+     (do
+       (rt/with-claimed-paths ctx lease
+         (fn []
+           (let [t (task ctx key) inspection (recovery/validate-fresh-queued! ctx t)]
+             (prepare-base! ctx t)
+             (when-let [validate (:before-implement ctx)] (validate ctx (task ctx key)))
+             (rt/update! ctx assoc-in [:tasks key :fresh-source-validation :stage] :continuing)
+             (transition! ctx key :implementing)
+             (rt/lease-phase! ctx lease :checking)
+             (checks! ctx (task ctx key) (:commands inspection))
+             (assert-clean! ctx (:worktree (task ctx key))))))
+       (transition! ctx key :review)
+       (let [review (review! ctx (task ctx key))]
+         (case (:verdict review)
+           "approved" (publish! ctx (task ctx key))
+           "changes_requested" (do (task! ctx key :feedback review) (transition! ctx key :repair))
+           (rt/fail! "Independent fresh source review requires input" {:review review}))))
+     (prepare-authored! ctx key lease))))
 
 (defn attention! [ctx key e]
   (task! ctx key :resume-status (:status (task ctx key))

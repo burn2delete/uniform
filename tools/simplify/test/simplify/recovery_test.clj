@@ -168,27 +168,56 @@
         _ (spit (io/file dependency dependency-path) "{:semantic-dependency :fixed}\n")
         _ (rt/git ctx dependency "add" dependency-path)
         _ (rt/git ctx dependency "commit" "-m" "Fix external semantic dependency")
+        source-parent (rt/git ctx dependency "rev-parse" "HEAD")
+        source-parent-tree (rt/git ctx dependency "rev-parse" "HEAD^{tree}")
+        merge-base (if (:immutable-lineage options)
+                     (do (rt/git ctx dependency "checkout" "--detach" base)
+                         (spit (io/file dependency "published-main.edn") "{:published-main :unchanged-import}\n")
+                         (rt/git ctx dependency "add" "published-main.edn")
+                         (rt/git ctx dependency "commit" "-m" "Published Main fixture")
+                         (let [main (rt/git ctx dependency "rev-parse" "HEAD")]
+                           (rt/git ctx dependency "push" "origin" "HEAD:main")
+                           (rt/git ctx dependency "checkout" "--detach" source-parent)
+                           (rt/git ctx dependency "merge" "--no-ff" "--no-edit" main)
+                           main))
+                     base)
         candidate (rt/git ctx dependency "rev-parse" "HEAD")
         tree (rt/git ctx dependency "rev-parse" "HEAD^{tree}")
-        merge (rt/git ctx dependency "commit-tree" tree "-p" base "-p" candidate "-m" "Verified dependency fixture merge")
+        merge (rt/git ctx dependency "commit-tree" tree "-p" merge-base "-p" candidate "-m" "Verified dependency fixture merge")
         _ (rt/git ctx dependency "push" "origin" (str merge ":main"))
         entry {:kind :main-verified
                :intent {:id "fixture-dependency" :state-file "fixture-original-owner/state.edn"
-                        :base base :candidate candidate :tree tree :method :merge}
-               :actual {:commit merge :main merge :tree tree :parents [base candidate]}}
+                        :base merge-base :candidate candidate :tree tree :method :merge}
+               :actual {:commit merge :main merge :tree tree :parents [merge-base candidate]}}
         _ (rt/coordinate! ctx (fn [state] [(update state :history conj entry) nil]))
         source-owner (rt/canonical (io/file (:state-dir ctx) "original-dependency-source.edn"))
         source-lease {:id "fixture-source-phase" :token "fixture-original-token"
                       :state-file source-owner :paths [dependency-path]}
         release-file (str (io/file (:state-dir ctx) "dependency-source-release.edn"))
         acceptance-file (str (io/file (:state-dir ctx) "dependency-source-acceptance.edn"))
+        review-file (str (io/file (:state-dir ctx) "dependency-original-source-review.edn"))
+        status-file (str (io/file (:state-dir ctx) "dependency-current-source-status.edn"))
+        entry-text (rt/git ctx dependency "ls-tree" candidate "--" dependency-path)
+        [_ mode blob] (re-find #"^([0-9]+) blob ([0-9a-f]{40})\t" entry-text)
+        subject (cond-> {:candidate candidate :tree tree :paths [dependency-path] :owner-state-files [source-owner]
+                         :entries {dependency-path {:mode mode :blob blob}}}
+                  (:immutable-lineage options) (assoc :source-parent source-parent :source-parent-tree source-parent-tree))
         _ (rt/write-edn! release-file {:lease source-lease :released true :checks-ended true})
-        _ (rt/write-edn! acceptance-file {:candidate candidate :tree tree :disposition :accepted-scoped-source})
-        source-phase {:owner-state-file source-owner :lease-id (:id source-lease) :lease-token (:token source-lease)
+        _ (rt/write-edn! review-file {:candidate candidate :tree tree :disposition :accepted-scoped-source})
+        _ (rt/write-edn! acceptance-file {:kind :source-only-admission :subject subject :disposition :accepted-source-only
+                                         :nonclaims [:no-retroactive-source-ownership :no-standalone-held-source-admission
+                                                     :no-release :no-migration-authority]
+                                         :evidence [{:path review-file :sha256 (recovery/file-digest review-file)}]})
+        _ (rt/write-edn! status-file {:kind :dependency-source-status :subject subject :known-end true
+                                     :current-status {:writers {} :refusals {}}})
+        source-phase (cond-> {:owner-state-file source-owner :lease-id (:id source-lease) :lease-token (:token source-lease)
                       :paths [dependency-path] :candidate candidate :tree tree
                       :writer-ended? true :no-unresolved-authority true
                       :release-evidence {:path release-file :sha256 (recovery/file-digest release-file)}
-                      :acceptance-evidence {:path acceptance-file :sha256 (recovery/file-digest acceptance-file)}}
+                      :acceptance-evidence {:path acceptance-file :sha256 (recovery/file-digest acceptance-file)}
+                      :status-evidence {:path status-file :sha256 (recovery/file-digest status-file)}}
+                       (:immutable-lineage options) (assoc :kind :accepted-immutable-lineage)
+                       (:immutable-lineage options) (dissoc :release-evidence :lease-id :lease-token :owner-state-file))
         output (assoc output :outcome "needs_input" :summary "External semantic source dependency is missing")
         error {:message "Implementation requires attention" :details {:restricted false :output output :writer-ended? true}}
         _ (rt/update! ctx assoc-in [:jobs "implement-1" :output] output)
@@ -223,7 +252,7 @@
      :error error :output output :receipt receipt}))
 
 (deftest resolved-dependency-commits-retained-work-and-composes-verified-main-without-reauthoring
-  (doseq [options [{} {:semantic-failure true :quoted-refusal-data true
+  (doseq [options [{} {:immutable-lineage true} {:semantic-failure true :quoted-refusal-data true
                       :dependency-path " dependency\nsource.edn"}]]
   (let [{:keys [ctx repo dependency-worktree dependency-path evidence merge error output]} (dependency-fixture! options)
         stages (atom [])
@@ -267,8 +296,14 @@
                     :stale-file :file-mode :unproven-source :unknown-failure :unfinished-action :refusal-action
                     :own-main-pending :watchdog-failure :xcrun-refusal :failed-refusal
                     :forged-parentage :wrong-candidate :live-dependency-writer :dependency-refusal
-                    :stale-source-release :wrong-source-phase]]
-    (let [{:keys [ctx repo evidence receipt source-phase source-lease]} (dependency-fixture!)]
+                    :stale-source-release :wrong-source-phase :admission-candidate :admission-scope
+                    :admission-disposition :admission-blob :admission-nonclaims :status-ended :status-subject]]
+    (let [{:keys [ctx repo evidence receipt source-phase source-lease]} (dependency-fixture!)
+          change-reference! (fn [key f]
+                                (let [position [:verified-source-dependencies 0 :source-phase key]
+                                      path (:path (get-in receipt position))]
+                                  (rt/write-edn! path (f (rt/read-edn path)))
+                                  (rt/write-edn! evidence (assoc-in receipt (conj position :sha256) (recovery/file-digest path)))))]
       (case mutation
         :real-restriction (flow/task! ctx "authored" :error {:message "Actual denied action" :details {:restricted true}})
         :unresolved-semantics (rt/write-edn! evidence (assoc-in receipt [:operator-classification :no-unresolved-semantics] false))
@@ -281,6 +316,13 @@
                                                                :message "Original source refusal remains"}) nil]))
         :stale-source-release (spit (get-in source-phase [:release-evidence :path]) "{:changed true}\n")
         :wrong-source-phase (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :source-phase :lease-token] "foreign-token"))
+        :admission-candidate (change-reference! :acceptance-evidence #(assoc-in % [:subject :candidate] (apply str (repeat 40 "f"))))
+        :admission-scope (change-reference! :acceptance-evidence #(assoc-in % [:subject :paths] []))
+        :admission-disposition (change-reference! :acceptance-evidence #(assoc % :disposition :held))
+        :admission-blob (change-reference! :acceptance-evidence #(assoc-in % [:subject :entries "dependency.edn" :blob] (apply str (repeat 40 "f"))))
+        :admission-nonclaims (change-reference! :acceptance-evidence #(assoc % :nonclaims []))
+        :status-ended (change-reference! :status-evidence #(assoc % :known-end false))
+        :status-subject (change-reference! :status-evidence #(assoc-in % [:subject :tree] (apply str (repeat 40 "f"))))
         :forged-parentage (let [entry (last (:history (rt/coordinate! ctx (fn [s] [s s]))))
                                changed (assoc-in entry [:actual :parents] [(:base (flow/task ctx "authored"))])]
                            (rt/coordinate! ctx (fn [s] [(update s :history #(conj (vec (butlast %)) changed)) nil]))
@@ -332,3 +374,112 @@
     (is (some #{path} (recovery/changes ctx repo)))
     (is (thrown? Exception (flow/recover-dependency! ctx "authored" evidence)))
     (is (= :attention (:status (flow/task ctx "authored"))))))
+
+(defn fresh-source-fixture! [& [status-read?]]
+  (let [{:keys [ctx repo]} (held-fixture!)
+        old-task (flow/task ctx "authored")
+        base (:base old-task)
+        _ (rt/git ctx repo "add" "work.edn")
+        _ (rt/git ctx repo "commit" "-m" "Original committed source")
+        source (rt/git ctx repo "rev-parse" "HEAD")
+        source-tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+        main-worktree (str (io/file (:state-dir ctx) "published-main"))
+        fresh (str (io/file (:state-dir ctx) "fresh-validation"))
+        _ (rt/git ctx repo "worktree" "add" "--detach" main-worktree base)
+        _ (spit (io/file main-worktree "main-only.edn") "{:main :advanced}\n")
+        _ (rt/git ctx main-worktree "add" "main-only.edn")
+        _ (rt/git ctx main-worktree "commit" "-m" "Fresh Main")
+        main (rt/git ctx main-worktree "rev-parse" "HEAD")
+        _ (rt/git ctx main-worktree "push" "origin" "HEAD:main")
+        _ (rt/git ctx repo "worktree" "add" "-b" "codex/fresh-validation-fixture" fresh source)
+        _ (rt/git ctx fresh "merge" "--no-ff" "--no-edit" main)
+        candidate (rt/git ctx fresh "rev-parse" "HEAD") tree (rt/git ctx fresh "rev-parse" "HEAD^{tree}")
+        argv ["gh" "pr" "view" "fixture-original-pr" "--json" "headRefOid,state"]
+        error (if status-read?
+                {:message "Command failed" :details {:argv argv :exit 1 :restricted true :err "HTTP 401"}}
+                {:message "Sandboxed check failed"
+                 :details {:command ["clojure" "-M" "old-macro.clj"]
+                           :result {:exitCode 1 :stdout "Old semantic nonpass"} :old-cleanup :unknown}})
+        original (assoc old-task :candidate source :tree source-tree :error error :pr {:number (if status-read? 913 912)})
+        _ (rt/update! ctx assoc-in [:tasks "authored"] original)
+        old-pr-effect {:status :done :result {:number (get-in original [:pr :number]) :html_url "fixture-original-pr"}}
+        _ (rt/update! ctx assoc-in [:effects "pr/authored"] old-pr-effect)
+        authorization (str (io/file (:state-dir ctx) "fresh-human-authorization.edn"))
+        _ (rt/write-edn! authorization {:source :direct-human-question-reply :answer "Allow fresh A1 validation"
+                                        :scope [:fresh-pr913-status-validation :fresh-pr912-whitespace-validation]})
+        proof (str (io/file (:state-dir ctx) "fresh-source-peer-binding.edn"))
+        validation {:base main :candidate candidate :tree tree :worktree fresh :branch "codex/fresh-validation-fixture"}
+        _ (rt/write-edn! proof {:source-review {:disposition :accepted-scoped-source-only :finding-count 0
+                                               :source-input source :owned-paths (:paths original)}
+                               :composition {:base main :candidate candidate :candidate-tree tree :parents [source main]}})
+        status (str (io/file (:state-dir ctx) "fresh-approved-status-result.edn"))
+        _ (rt/write-edn! status {:authorization-sha256 (recovery/file-digest authorization) :argv argv
+                                :head source :pr-number (get-in original [:pr :number]) :exit 0
+                                :provider-result {:headRefOid source :state "OPEN" :baseRefName "main"}})
+        evidence (str (io/file (:state-dir ctx) "fresh-source-inspection.edn"))
+        receipt {:kind :fresh-source-validation :task-key "authored" :original-pr (:pr original)
+                 :original-task-sha256 (rt/digest (pr-str original)) :validation validation :checks [check-command]
+                 :operator-classification {:kind :fresh-source-validation :inspector :controller-operator
+                                           :original-error-sha256 (recovery/error-digest original)
+                                           :no-unresolved-source-semantics true :old-actions-remain-prohibited true
+                                           :basis "Original operator inspected the distinct fresh candidate; old failures and unknown cleanup stay history."}
+                 :authorization {:path authorization :sha256 (recovery/file-digest authorization)}
+                 :authorization-scope (if status-read? :fresh-pr913-status-validation :fresh-pr912-whitespace-validation)
+                 :source-acceptance {:path proof :sha256 (recovery/file-digest proof)}
+                 :status-validation {:path status :sha256 (recovery/file-digest status)}
+                 :preserved-nonclaims [:old-failure-is-not-a-pass :old-process-inspection-prohibited :old-cleanup-unknown]}
+        _ (rt/write-edn! evidence receipt)]
+    {:ctx ctx :repo repo :fresh fresh :main-worktree main-worktree :original original :evidence evidence :receipt receipt
+     :old-pr-effect old-pr-effect :authorization authorization :proof proof :status-proof status}))
+
+(deftest fresh-source-validation-keeps-original-records-and-runs-native-check-review-publication
+  (doseq [status-read? [false true]]
+    (let [{:keys [ctx repo fresh main-worktree original evidence old-pr-effect]} (fresh-source-fixture! status-read?)
+          jobs (:jobs @(:state ctx)) original-bytes (slurp (io/file repo "work.edn")) calls (atom [])]
+      (flow/recover-fresh-source! ctx "authored" evidence)
+      (is (= original (get-in (flow/task ctx "authored") [:fresh-source-validation-history 0 :original-task])))
+      (is (= (:error original) (:error (flow/task ctx "authored"))))
+      (is (nil? (:pr (flow/task ctx "authored"))))
+      (is (false? (boolean (recovery/review-permitted? (flow/task ctx "authored")))) "Fresh checks are required before review")
+      ;; Native preparation, rather than the old validation receipt, owns later Main composition.
+      (spit (io/file main-worktree "later.edn") "{:later-main :preserved}\n")
+      (rt/git ctx main-worktree "add" "later.edn")
+      (rt/git ctx main-worktree "commit" "-m" "Later unrelated Main")
+      (rt/git ctx main-worktree "push" "origin" "HEAD:main")
+      (with-redefs [gh/status! (fn [& _] nil) gh/comment! (fn [& _] nil) gh/draft! (fn [& _] nil)
+                    gh/api (fn ([_ _] [])
+                             ([_ method endpoint body]
+                              (is (= "POST" method)) (is (.endsWith endpoint "/pulls"))
+                              (swap! calls conj :create-new-pr)
+                              {:number 2000 :node_id "fresh-pr" :html_url "fixture-fresh-pr" :draft (:draft body)}))
+                    codex/command! (fn [_ _ cwd argv]
+                                     (is (= fresh cwd)) (is (= check-command argv))
+                                     (swap! calls conj :fresh-check) {:exitCode 0})
+                    codex/job! (fn [c _ _ mode _ _ _]
+                                 (is (= :read mode) "No author turn or denied old action is replayed")
+                                 (swap! calls conj :fresh-review)
+                                 (assoc (select-keys (flow/task c "authored") [:base :candidate :tree])
+                                        :verdict "approved" :findings []))]
+        (flow/prepare! ctx "authored"))
+      (is (= [:fresh-check :fresh-review :create-new-pr] @calls))
+      (is (= 2000 (get-in (flow/task ctx "authored") [:pr :number])))
+      (is (= old-pr-effect (get-in @(:state ctx) [:effects "pr/authored"])) "Original creation effect is never reused")
+      (is (= jobs (:jobs @(:state ctx))))
+      (is (= original-bytes (slurp (io/file repo "work.edn")))))
+    ))
+
+(deftest fresh-source-validation-rejects-stale-or-unapproved-handoffs
+  (doseq [mutation [:no-authority :wrong-scope :stale-task :stale-status :different-tree :foreign-scope :dirty :same-worktree :shared-api]]
+    (let [{:keys [ctx repo fresh evidence receipt authorization proof status-proof original]} (fresh-source-fixture! true)]
+      (case mutation
+        :no-authority (spit authorization "{:source :model-report}\n")
+        :wrong-scope (rt/write-edn! evidence (assoc receipt :authorization-scope :fresh-pr912-whitespace-validation))
+        :stale-task (flow/task! ctx "authored" :error {:message "A new actual failure" :details {:restricted true}})
+        :stale-status (rt/write-edn! status-proof (assoc (rt/read-edn status-proof) :head "different"))
+        :different-tree (rt/write-edn! evidence (assoc-in receipt [:validation :tree] (:tree original)))
+        :foreign-scope (rt/write-edn! proof (assoc-in (rt/read-edn proof) [:source-review :owned-paths] ["foreign.edn"]))
+        :dirty (spit (io/file fresh "foreign.edn") "dirty\n")
+        :same-worktree (rt/write-edn! evidence (assoc-in receipt [:validation :worktree] repo))
+        :shared-api (rt/shared-restrict! ctx :api (rt/digest (pr-str ["POST" "graphql"])) {:message "The separate API refusal stays held"}))
+      (is (thrown? Exception (flow/recover-fresh-source! ctx "authored" evidence)) (name mutation))
+      (is (= :attention (:status (flow/task ctx "authored")))))))
