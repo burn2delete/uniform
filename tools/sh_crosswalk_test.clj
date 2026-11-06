@@ -985,7 +985,7 @@
     (is (= (:input-fingerprint bridge)
            (:predecessor-input-fingerprint sh-crosswalk/original-dependency-predecessor-mapping-review)))
     (is (= (:input-fingerprint sh-crosswalk/original-dependency-predecessor-mapping-review)
-           (get-in view [:mapping-review :predecessor-current-source-review :predecessor-input-fingerprint])))
+           (get-in sh-crosswalk/source-consumer-predecessor-mapping-review [:predecessor-current-source-review :predecessor-input-fingerprint])))
     (is (= (get-in view [:mapping-review :original-dependency-source-successor :prior-review-commit])
            "f989a01024d4ef0f595b7bf685e0fbf17648469b"))
     (is (= (get-in view [:mapping-review :input-fingerprint])
