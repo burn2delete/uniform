@@ -968,8 +968,8 @@
                            (assoc-in [:planning :admission-hold] hold)
                            (assoc :last-discovery-key (discovery-key ctx base))))
       (rt/event! ctx :admission-attention
-                  {:slice key :kind (:kind hold) :effect-ids ids
-                   :message (.getMessage error)}))))
+                 {:slice key :kind (:kind hold) :effect-ids ids
+                  :message (.getMessage error)}))))
 
 (defn- attention-error [error effect-status]
   (cond-> {:message (.getMessage error) :details (ex-data error)}

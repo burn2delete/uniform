@@ -821,23 +821,23 @@
                     gh/milestone! (fn [& _] {:number 1})
                     gh/relation! (fn [& _])
                     gh/issue! (fn [_ key & _]
-                               {:number 42 :id 42 :node_id (if (= key "blocked") "content-1" "other-content")})
+                                {:number 42 :id 42 :node_id (if (= key "blocked") "content-1" "other-content")})
                     gh/status! (fn [context issue status]
                                  (swap! statuses conj [(:node_id issue) status])
                                  (when (= "content-1" (:node_id issue))
                                    (rt/tracking-effect! context "project-status/project/content-1"
-                                                         (fn []
-                                                           (rt/effect! context "project-item/project/content-1"
-                                                                       (fn []
-                                                                         (swap! add-attempts inc)
-                                                                         (rt/fail! "Duplicate Project membership has no verified readback"
-                                                                                   {:project "project" :content "content-1"
-                                                                                    :duplicate true :restricted false})))))))
+                                                        (fn []
+                                                          (rt/effect! context "project-item/project/content-1"
+                                                                      (fn []
+                                                                        (swap! add-attempts inc)
+                                                                        (rt/fail! "Duplicate Project membership has no verified readback"
+                                                                                  {:project "project" :content "content-1"
+                                                                                   :duplicate true :restricted false})))))))
                     w/job! (fn [_ role _ _ _]
                              (when (= :plan role)
                                {:coverage ["module.clj"] :source-closure ["module.clj"]
                                 :target "Fixture target" :subset "Required fixture closure"
-                                :summary "Fixture audit" :blockers [] :slices [(slice "blocked")] }))
+                                :summary "Fixture audit" :blockers [] :slices [(slice "blocked")]}))
                     w/plan! (fn [context]
                               (swap! plan-calls inc)
                               (rt/update! context assoc-in [:tasks "other"]
