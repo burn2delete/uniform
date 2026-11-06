@@ -61,3 +61,50 @@ runtime family/provider, publish/redact diagnostics, or claim full R1/R4/R11/R12
 release, migration, self-hosting or seed retirement. Legacy complete/failed
 labels remain relative observations. Existing compiler, seed, target and
 native-execution boundaries remain explicit.
+
+## Implemented extraction and local verification
+
+Both existing bodies now live in gravity.runtime. Bootstrap retains its exact
+old arities and passes seven live rule ports and two live diagnostic ports.
+Cold loading exposes exactly 37 declared public APIs, no aliases and no
+Bootstrap import. Catalogs, failure publication, private source-artifact/proof
+builders and all scope/bridge/admission code remain untouched.
+
+The original pure functions from
+a0cbd290cae29dcd86ed226091eb68aa52fe0b23 and extracted functions consume
+the same live actual compiler-source kernel definition and changed variants.
+Nineteen complete records match as raw serialized and parsed data: ten rule
+records (two complete, eight failed) and nine diagnostic records. Inputs remain
+unchanged. The capture also records two real paired Hello Gravity executions,
+equal plan identities, source/compiler hashes and six actual unknown-function,
+arity and missing-entry refusals. Capture SHA256:
+7dec761d035540034cef913abd45592ab46f57d038dba391dc941c607baeaad8.
+These are ordinary development compiler/runtime calls, not the private runtime
+source-artifact builder or authenticated Reader bridge.
+
+The original complete Runtime namespace passes 58 tests / 2417 assertions
+under the canonical 2g/180-second child. The final namespace passes 63 / 2484,
+covering actual source rule/primitive gaps, arity/contract differences,
+Reader-bridge exclusion, stable diagnostic identity/source/facts, compatibility
+arities/ports, late Vars and callable-before-data lookup. Boundary/ownership
+passes 48 / 1202; CI harness 54 / 566, direct lint and CI format pass. The
+complete Runtime namespace is appended to contracts at 2g/180 seconds; all
+eight prior commands, matrix/workflow and selectors remain unchanged. Coverage
+controls detect omission/substitution.
+
+The first complete comparison caught an actual extraction defect: a broad
+function-name replacement also renamed the rule artifact kind. The initial
+facade/stage comparisons passed together and the reverse-rename conservation
+observer masked that literal change. Those initial results do not prove
+identity preservation. Their logs remain preserved. The original
+gravity/p15-s23-stage2-runtime-kernel-rule-record identity is restored, an exact
+artifact-kind assertion is added, and both generation and independent reverse
+checks now rename only defn headers. Corrected complete-record parity and
+strict reconstruction pass, recovering both original bodies, the entire prior
+Runtime file, every other component byte and all prior CI command/selector
+bytes. No earlier identity-changing result receives acceptance.
+
+Document validation, complete contextual lint, independent semantic/adversarial
+acceptance, own hosted CI/artifact provenance review and exact current-Main
+coordinator integration remain separate required evidence. Local checks grant
+no hosted CI, source authentication, release or migration credit.

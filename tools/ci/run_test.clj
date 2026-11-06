@@ -463,7 +463,7 @@
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
     (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
             "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
-            "c-native-validation"] (mapv first commands)))
+            "c-native-validation" "runtime-native-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -496,11 +496,25 @@
                  (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
 
 (deftest contracts-include-the-complete-native-c-namespace
-  (let [[label timeout argv] (last (ci/commands-for-selection "contracts" {:kind :full}))
+  (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 7)
         namespace "gravity.backend.c.pipeline-test"
         source-vars (binding [*read-eval* false]
                       (source-deftest-names "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj"))]
     (is (= "c-native-validation" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
+
+(deftest contracts-include-the-complete-native-runtime-namespace
+  (let [[label timeout argv] (last (ci/commands-for-selection "contracts" {:kind :full}))
+        namespace "gravity.runtime.pipeline-test"
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"))]
+    (is (= "runtime-native-validation" label))
     (is (= 180 timeout))
     (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
     (is (seq source-vars))
