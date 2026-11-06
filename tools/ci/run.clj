@@ -585,7 +585,9 @@
    ["llvm-manifest-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.llvm.native-manifest-test")]
    ["mlir-manifest-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mlir.native-manifest-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mlir.native-manifest-test")]
+   ["gpu-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.gpu.native-manifest-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
