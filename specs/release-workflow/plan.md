@@ -274,6 +274,83 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Independent language/compiler/backend harnesses consume actual owner family/profile/guard/coverage/validation/resource and representative target products. Record availability and nondeterminism honestly; first fixture construction does not wait for final harness or release acceptance.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Independent conformance consumes actual owner fixtures, selected target/runtime behavior, seven diagnostics and mode/implementation identity across required L8 surfaces. Owner fixture construction precedes final independent harnesses; narrow receipts do not close L8.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Independent language/compiler/backend harnesses consume actual owner method/mode/effect/profile/host/tool/proof/fallback/diagnostic products; complete L8 needs its required specialization fixtures while initial valid compilation remains earlier.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Independent conformance consumes actual owner Option/Result/try/throw/panic/check/host/FFI/workflow/AI fixtures, constrained-versus-hosted lowering, Result/Option exhaustiveness, normalization, failure/compensation replay and schema/policy records. Held/unsupported/unavailable cases remain work, and owner construction precedes final harness execution.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Consume real library owner examples/fixtures/properties/audits and current module/profile results through existing independent conformance routes. Compiler-support closure, wider library modules, source acceptance, seed retirement and final release remain distinct.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Existing TEST7 and broader language/runtime/profile/AI-workflow suites produce real legal/illegal module, race/lifetime, path/encoding/durability, TLS/schema/redaction and replay results for exact claimed subjects. Library assembles those outputs; Release consumes them with current independent audits/review. Existing future suite predicates/roles remain exact; no test catalog, p16 status, seed package or narrow Linux LLVM receipt closes wider service support.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Independent library conformance consumes actual callable module/profile/representation fixtures, expected STD3001-STD3008 diagnostics, complete-census and invalid tail/value cases, type/flow and lifetime/proof products, property/benchmark/schema-boundary results and real selected target comparisons. Source inventory, p16 summary status flags and an injected fixture do not establish module acceptance. Preserve finite receipt scopes and actual holds.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Independent library suites consume actual callable positives, required refusals, per-profile examples, proof/provider/audit and benchmark/compatibility products. Bootstrap/compiler owners retain unsafe implementation boundaries; actual self-hosted closure/trust evidence consumes their audits without treating metadata, plans or seed packaging as execution.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Consume actual owner facet fixtures through the existing independent compiler/language/profile/safety/domain harness tasks as applicable. Real at-least-two-facet composition and zk/schema/security/formal privacy cases, actual examples and eleven diagnostic families remain distinct from artifact inventories and final release/self-hosting acceptance. Held/unavailable required cases stay Open.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume actual owner L5 accepted/rejected and provider/common-Core fixtures through existing independent language/compiler/profile/safety/formal harnesses as applicable. Compare the exact declared soundness population; one fixture, family counter or compatibility status cannot establish full provider or profile support.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing independent language/compiler/profile/runtime/safety/library harnesses execute actual selected owner cases and incumbent oracles for all eight compatibility-evidence families, including performance where sensitive and at least one real incumbent-language/schema parity report. Unavailable/held execution remains Open; projected passed reports and final release checkboxes are not first fixtures.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Compose actual B14 shared/per-family matrices and exact diagnostic/metadata/artifact/differential-reference/replay packs, including accepted/refused and partial-output cases. Target availability explains only justified skips; required shared checks remain and a default-target run cannot accept wider support. Preserve TEST6's original conditional scope without weakening B14. Actual policy-required conformance/reproduction and content provenance govern stabilization/release; final self-hosting/seedless work is not the first family fixture gate.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration
