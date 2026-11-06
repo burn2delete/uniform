@@ -853,7 +853,9 @@
                 (str "<!-- future-composition-dependencies:start -->\n| Consumer | Start results | Composition results | Selected output contract |\n| --- | --- | --- | --- |\n" (str/join "\n" inserted) "\n<!-- future-composition-dependencies:end -->")
                 task-ids (set ids))
         inverse (fn [text rs] (reduce #(str/replace %1 (str %2 "\n") "") text rs))
-        current-transition (first (filter #(= path (:path %)) requirement-sources/current-source-transition-contracts))
+        ;; The fourteen-row successor is checked in its preserved composition layer.
+        current-transition (first (filter #(= path (:path %)) requirement-sources/build-consumer-current-source-transition-contracts))
+        live-transition (first (filter #(= path (:path %)) requirement-sources/current-source-transition-contracts))
         validate #(requirement-sources/validate-current-source-transition!
                    % t read-ref (fn [p] (if (= path p) after (slurp p))) dependencies/sha256 dependencies/require!)]
     (is (= prior (first (filter #(= path (:path %)) requirement-sources/current-source-transition-successor-contracts))))
@@ -868,11 +870,13 @@
     (is (= before (read-ref "f989a01024d4ef0f595b7bf685e0fbf17648469b" path)))
     (is (= after (read-ref (:baseline-ref current-transition) path)))
     (is (= t (:successor-of current-transition)))
-    (is (= (read-ref (:applying-ref current-transition) path) (slurp path)))
+    (is (= current-transition (:successor-of live-transition)))
+    (is (= (read-ref (:applying-ref current-transition) path) (read-ref (:baseline-ref live-transition) path)))
+    (is (= (read-ref (:applying-ref live-transition) path) (slurp path)))
     (is (every? #(str/includes? % " | none | ") inserted))
     (is (= :current-source-interface-only (:authority (validate t))))
     (is (= :unassessed (:implementation-acceptance (validate t))))
-    (is (= current-transition (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
+    (is (= live-transition (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
     ;; The old census continues to describe its exact prior Git checkpoint.
     (let [binding (get-in source [:implementation-readiness-source-version :source-successor-binding])
           old-source (edn/read-string (read-ref "f216b540663d7c23ba5af646abdcb153654ad9c9" dependencies/sh-crosswalk-path))]
