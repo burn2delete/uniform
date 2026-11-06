@@ -243,6 +243,51 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Supply actual source/generated pattern carriers before analyses; later transport only real narrowing/coverage/effect/resource/validation products with current producer conditions, full references and affected invalidation.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Preserve actual declaration/extension/call metadata, documentation/stability and source/generated identity. Raw syntax is earlier than typed contracts; attached facts need actual current producers and invalidation.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Actual source declaration/call carriers and immutable origin-preserving transforms precede real semantic facts; source labels are not admitted dispatch.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve actual typed-outcome/throw/try/handler/error declarations and source/generated syntax identities before analysis. Attached error/effect/profile facts require real current producers and invalidation.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Preserve actual facet/base-macro/external-syntax identity, spans, hygiene, metadata, origins and valid fact versions through transformations and serialization. Changed subjects invalidate facts before owner regeneration; opaque strings and preserved=true labels do not supply structured semantics.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Preserve real type annotation syntax, spans/hygiene/metadata, source and generated-origin chains for alternative checker diagnostics and fact identities. Changed subjects invalidate facts; a preserved-map label is not actual mapping.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual structured generated binding/shim syntax keeps source schema and foreign provenance, spans/hygiene/metadata and normal compiler checks. Generated code is never relabeled handwritten, and changed sources invalidate affected maps and owner facts.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation
