@@ -27,6 +27,7 @@
             [gravity.backend.query]
             [gravity.backend.mobile]
             [gravity.types]
+            [gravity.effects]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]
             [clojure.edn :as edn]

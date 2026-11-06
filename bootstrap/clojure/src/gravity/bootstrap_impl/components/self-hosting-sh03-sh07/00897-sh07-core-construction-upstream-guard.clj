@@ -174,6 +174,29 @@
  #'gravity.checked-core/plan-identities
  #'gravity.checked-core/source-key
  #'gravity.checked-core/source-path
+ #'gravity.checked-core/exact-digest-ref-present?
+ #'gravity.checked-core/structure-kind
+ #'gravity.checked-core/strict-map-index
+ #'gravity.checked-core/strict-first-mismatch
+ #'gravity.checked-core/strict-structure!
+ #'gravity.checked-core/canonical-identical?
+ #'gravity.checked-core/rehydrate-candidate-template!
+ #'gravity.checked-core/zipper-operation
+ #'p15-s23-c6c10-exact-digest-ref-present?
+ #'p15-s23-c6c10-structure-kind
+ #'p15-s23-c6c10-strict-map-index
+ #'p15-s23-c6c10-strict-first-mismatch
+ #'p15-s23-c6c10-strict-structure!
+ #'p15-s23-c6c10-canonical-identical?
+ #'p15-s23-c6c10-rehydrate-candidate-template!
+ #'p15-s23-c6c10-digest-ref-shape?
+ #'p15-s23-c6c10-canonical-identity
+ #'p15-s23-c6c10-canonical-sort-key
+ #'p15-s23-c6c10-canonical-digest
+ #'p15-s23-c6c10-canonical-record
+ #'p15-s23-c6c10-host-fail!
+ #'p15-s23-c6c10-resolve-digest-references!
+ #'p15-s23-c6c10-unique-resolved-values!
  #'sh07-core-build-binding!
  #'sh07-core-current-binding!
  #'sh07-core-current-source-key

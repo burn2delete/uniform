@@ -27,40 +27,16 @@
   target independence, and the narrow B1 handoff without recursively walking
   attacker-controlled graphs."
   [source-path checked-core mir]
-  (p15-s23-c11-mir-bounded-value!
-   source-path :gravity-c11-builder-result mir)
-  (let [envelope
-        (p15-s23-c11-mir-validate-module-envelope!
-         source-path checked-core mir)
-        _ (p15-s23-c11-mir-validate-fact-tables!
-           source-path checked-core mir)
-        operation-products
-        (p15-s23-c11-mir-validate-operations!
-         source-path checked-core mir)
-        runtime-checks
-        (p15-s23-c11-mir-validate-runtime-checks!
-         source-path checked-core mir operation-products)
-        cfg (p15-s23-c11-mir-validate-cfg!
-             source-path checked-core mir envelope operation-products)
-        _ (p15-s23-c11-mir-validate-effect-edge-placement!
-           source-path mir operation-products)
-        data-flow
-        (p15-s23-c11-mir-validate-data-flow!
-         source-path checked-core mir operation-products)]
-    {:status :passed
-     :module-shape-valid? true
-     :block-count (count (:blocks operation-products))
-     :operation-count (count (:operations operation-products))
-     :conditional-count (:conditional-count cfg)
-     :dominance-valid? true
-     :type-facts-valid? true
-     :direct-effects-valid? true
-     :safety-facts-valid? true
-     :origin-closure-valid? true
-     :runtime-checks-valid? true
-     :runtime-checks runtime-checks
-     :target-independent? true
-     :data-flow data-flow}))
+  (gravity.mir/validate-constructed!
+   {:validate-carrier! #'p15-s23-c11-mir-bounded-value!
+    :validate-module-envelope! #'p15-s23-c11-mir-validate-module-envelope!
+    :validate-fact-tables! #'p15-s23-c11-mir-validate-fact-tables!
+    :validate-operations! #'p15-s23-c11-mir-validate-operations!
+    :validate-runtime-checks! #'p15-s23-c11-mir-validate-runtime-checks!
+    :validate-cfg! #'p15-s23-c11-mir-validate-cfg!
+    :validate-effect-edge-placement! #'p15-s23-c11-mir-validate-effect-edge-placement!
+    :validate-data-flow! #'p15-s23-c11-mir-validate-data-flow!}
+   source-path checked-core mir))
 
 (defn p15-s23-c11-mir-validate-constructed!
   [source-path checked-core mir]

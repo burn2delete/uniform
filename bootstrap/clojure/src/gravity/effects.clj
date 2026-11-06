@@ -4,10 +4,35 @@
 
 (def ^:private namespace-contract
   '{:namespace gravity.effects
-    :contract-boundary :hosted-seed-effect-data-and-native-reports
-    :governing-contracts [D1 D2 D3 D8 D9 L6 L15 C1 C7 C8 C15 BOOT8 TEST2]
+    :contract-boundary :hosted-seed-effect-data-reports-and-native-checks
+    :governing-contracts [D1 D2 D3 D8 D9 L6 L12 L15 C1 C7 C8 C15 BOOT8 TEST2]
     :public-api
     {
+     native-handled-effect?
+     {:arglists ([ctx effect]) :admission :none
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-native-effect-premises :operation-inputs []}
+     check-native-registry!
+     {:arglists ([operations node effect]) :admission :none
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-native-effect-premises :operation-inputs [:registry-entry :diagnostic!]}
+     check-native-build-effects!
+     {:arglists ([operations checker ctx node effects opts]) :admission :none
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-native-effect-premises :operation-inputs [:build-effect? :diagnostic! :record!]}
+     check-native-replay-effects!
+     {:arglists ([operations checker ctx node effects]) :admission :none
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-native-effect-premises :operation-inputs [:replay-sensitive-effect? :needs-replay? :diagnostic! :record!]}
+     check-native-effect-legality!
+     {:arglists ([operations checker ctx node effects opts]) :admission :none
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-native-effect-premises :operation-inputs [:check-registry! :profile-denied-effects :diagnostic! :handled-effect? :internal-effects :check-build-effects! :check-replay-effects!]}
      native-diagnostic-ids
      {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
@@ -85,18 +110,18 @@
       :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}}
     :dependency-direction
-    {:requires [clojure.set] :consumed-by [gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
+    {:requires [clojure.set] :consumed-by [gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
      :forbids [gravity.bootstrap gravity.cli gravity.release gravity.c8-effect-checker]}
-    :artifact-inputs [:native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
+    :artifact-inputs [:caller-owned-native-effect-premises :checker-context-cells-and-source-nodes :live-effect-check-operations-and-catalogs :native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
                       :explicit-classifier-and-selection-callbacks :replay-sensitive-effect-catalog :native-effect-catalog-and-diagnostic-ids :native-legality-capability-build-replay-ordering-residual-and-diagnostic-records :trusted-projection-and-failure-callbacks]
-    :artifact-outputs [:native-catalog-defaults-and-message-text :native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
+    :artifact-outputs [:legacy-native-effect-predicates-and-owner-returns :original-build-and-replay-checker-records-or-l6-refusals :native-catalog-defaults-and-message-text :native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
     :diagnostic-ownership
     {:projection [:native-catalog-defaults :native-message-text :native-payload-fields :fixture-override-selection :fixture-registry-data]
-     :stage [C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
+     :stage [L6-EFFECT-UNKNOWN L6-EFFECT-PROFILE L6-EFFECT-UNDECLARED L6-BUILD-EFFECT L6-REPLAY-EFFECT C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
      :existing-c8-owner [:effect-rules :legality :capabilities :replay :ordering :source-admission-and-diagnostic-publication]}
     :legacy-status-labels-authoritative? false
     :legacy-build-grants-prove-performed-effects? false
-    :unsupported [:canonical-effect-registration :canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
+    :unsupported [:canonical-scoped-grants :hermetic-input-authentication :live-build-effects :canonical-effect-registration :canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
                   :pure-native-graph-ordering-gap :canonical-diagnostic-coverage :untrusted-report-authentication :call-effect-fixed-point :latent-body-inference :handlers-and-continuations
                   :performed-build-effects :package-deployment-provider-authority :profile-and-safety-legality
                   :canonical-full-source-pipeline :authority-admission :migration :release :self-hosting :seed-retirement]})
@@ -601,5 +626,82 @@
                       {:missing-fields [field]}))))
   :complete)
 
-(doseq [operation [#'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-known-effects #'native-effect-capability #'native-replay-sensitive-effects #'native-effect-message #'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
+(defn- effect-operation [operations key]
+  (let [value (get operations key)] (if (var? value) @value value)))
+
+(defn native-handled-effect?
+  [ctx effect]
+  (contains? (:handler-covered-effects @ctx) effect))
+
+(defn check-native-registry!
+  [operations node effect]
+  (when-not ((effect-operation operations :registry-entry) effect)
+    ((effect-operation operations :diagnostic!) "L6-EFFECT-UNKNOWN"
+                       "effect kind is unknown or lacks governance registration"
+                       node
+                       "Register the effect with profile legality, capability requirements, ordering, and artifact representation."
+                       {:effect effect})))
+
+(defn check-native-build-effects!
+  [operations checker ctx node effects opts]
+  (doseq [effect effects
+          :when ((effect-operation operations :build-effect?) effect)]
+    (when-not (contains? (:build-grants @ctx) effect)
+      ((effect-operation operations :diagnostic!) (or (:build-grant-diagnostic opts)
+                             "L6-BUILD-EFFECT")
+                         "build-time effect is not granted by build policy"
+                         node
+                         "Grant the build effect in metadata or move the operation behind an approved build provider."
+                         {:effect effect
+                          :granted-build-effects (:build-grants @ctx)}))
+    ((effect-operation operations :record!) checker :build-effect-log
+                     {:node-id (:node-id node)
+                      :effect effect
+                      :phase :build
+                      :grant :metadata-build-grant
+                      :status :granted})))
+
+(defn check-native-replay-effects!
+  [operations checker ctx node effects]
+  (doseq [effect effects
+          :when (and ((effect-operation operations :replay-sensitive-effect?) effect)
+                     ((effect-operation operations :needs-replay?) ctx))]
+    (when-not (contains? (:replay-records @ctx) effect)
+      ((effect-operation operations :diagnostic!) "L6-REPLAY-EFFECT"
+                         "replay-sensitive effect lacks a replay record"
+                         node
+                         "Record replay evidence for this nondeterministic effect or use a replay-aware handler."
+                         {:effect effect
+                          :profile (:profile @ctx)}))
+    ((effect-operation operations :record!) checker :replay-effect-log
+                     {:node-id (:node-id node)
+                      :effect effect
+                      :profile (:profile @ctx)
+                      :replay-record :metadata-replay-record
+                      :mode :recorded})))
+
+(defn check-native-effect-legality!
+  [operations checker ctx node effects opts]
+  (doseq [effect effects]
+    ((effect-operation operations :check-registry!) node effect)
+    (when (contains? (get (effect-operation operations :profile-denied-effects) (:profile @ctx) #{}) effect)
+      ((effect-operation operations :diagnostic!) "L6-EFFECT-PROFILE"
+                         "active profile rejects an inferred effect"
+                         node
+                         "Move the operation behind a profile-supported provider or remove the effect."
+                         {:effect effect
+                          :active-profile (:profile @ctx)}))
+    (when (and (not ((effect-operation operations :handled-effect?) ctx effect))
+               (not (contains? (effect-operation operations :internal-effects) effect))
+               (not (contains? (:declared-effects @ctx) effect)))
+      ((effect-operation operations :diagnostic!) "L6-EFFECT-UNDECLARED"
+                         "inferred effect exceeds namespace declaration"
+                         node
+                         "Declare the effect in the namespace, function, package, and runtime policy or remove the operation."
+                          {:effect effect
+                           :declared-effects (:declared-effects @ctx)})))
+  ((effect-operation operations :check-build-effects!) checker ctx node effects opts)
+  ((effect-operation operations :check-replay-effects!) checker ctx node effects))
+
+(doseq [operation [#'native-handled-effect? #'check-native-registry! #'check-native-build-effects! #'check-native-replay-effects! #'check-native-effect-legality! #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-known-effects #'native-effect-capability #'native-replay-sensitive-effects #'native-effect-message #'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
