@@ -6,7 +6,14 @@
     :contract-boundary :hosted-seed-stage2-invocation-instruction-evaluation-and-value-operations
     :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
-    {hosted-add
+    {kernel-rule-record
+     {:arglists ([kernel operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:declared-builtin-exact-arities :declared-builtin-contracts :required-instructions :builtin-functions :reader-bridge-builtins :difference :sort-values]
+      :completion-label-admits? false}
+     kernel-diagnostic-record
+     {:arglists ([message-table-var lower-case-var source-path id value data]) :admission :none :hosted-seed-only? true
+      :operation-vars [message-table-var lower-case-var] :publication :none}
+     hosted-add
      {:arglists ([args]) :admission :none :hosted-seed-only? true
       :arity-validation-owner :existing-builtin-dispatcher
       :error-translation-owner :existing-builtin-dispatcher}
@@ -132,13 +139,14 @@
                       :trusted-environment-bindings-instruction-and-map-entry-carriers :opaque-invocation-scope
                       :trusted-late-instruction-and-recurrence-operation-vars
                       :trusted-instruction-function-and-data-operation-vars
-                      :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :call-signature-and-arity-data :trusted-late-policy-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
+                      :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :native-kernel-and-diagnostic-data :late-native-kernel-operation-and-catalog-vars :call-signature-and-arity-data :trusted-late-policy-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
     :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
                            :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :instruction-selection-core-control-and-fast-paths :stage
                            :map-entry-recurrence-facts-and-call-sequencing :stage
                            :arity-guards-call-facts-unary-selection-and-rule-data :stage
+                           :native-kernel-rule-and-diagnostic-record-construction :stage
                            :stage [L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [:recurrence-representation :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-primitives-and-call-authority
@@ -1089,6 +1097,80 @@
        runtime plan instruction external-authority args public-invocation-scope)
       ((deref (get operations :execute-function-scoped)) runtime plan function args public-invocation-scope))))
 
+
+	(defn kernel-diagnostic-record
+	  [message-table-var lower-case-var source-path id value data]
+	  {:artifact :gravity/diagnostic
+	   :diagnostic-id (str "diag-" ((deref lower-case-var) id))
+	   :diagnostic id
+	   :severity :error
+	   :stage :p15-s23-stage2-runtime-kernel
+	   :source-span {:source source-path}
+	   :message (get (deref message-table-var) id)
+	   :facts data
+	   :observed value
+	   :remediation :repair_stage2_runtime_kernel})
+
+
+	(defn kernel-rule-record
+	  [kernel operations]
+	  (let [instruction-rules (set (keys (:instruction-rules kernel)))
+	        runtime-primitives (set (get-in kernel
+	                                        [:runtime-primitives :functions]))
+	        primitive-exact-arities
+	        (get-in kernel
+	                [:runtime-primitives :compiler-internal-builtin-arities])
+	        primitive-contracts
+	        (get-in kernel
+	                [:runtime-primitives :compiler-internal-builtin-contracts])
+	        declared-arities-current?
+	        (= (deref (get operations :declared-builtin-exact-arities))
+	           primitive-exact-arities)
+	        declared-contracts-current?
+	        (= (deref (get operations :declared-builtin-contracts)) primitive-contracts)
+	        missing-instructions
+	        ((deref (get operations :difference))
+	         (deref (get operations :required-instructions))
+	         instruction-rules)
+	        missing-primitives
+	        ((deref (get operations :difference))
+	         ((deref (get operations :difference)) (deref (get operations :builtin-functions))
+                          (deref (get operations :reader-bridge-builtins)))
+	         runtime-primitives)
+	        primitive-boundary
+	        (get-in kernel [:runtime-primitives
+	                        :host-primitive-boundary])
+	        complete?
+	        (and (= :gravity-stage2-runtime-kernel-v1
+	                (:engine kernel))
+	             (= :stage2-instruction-plan (:input kernel))
+	             (= :stage2-runtime-kernel-execution-record
+	                (:output kernel))
+	             (= :gravity-runtime-primitives primitive-boundary)
+	             (empty? missing-instructions)
+	             (empty? missing-primitives)
+	             declared-arities-current?
+	             declared-contracts-current?)]
+	    {:artifact :gravity/p15-s23-stage2-runtime-kernel-rule-record
+	     :engine (:engine kernel)
+	     :primitive-engine (get-in kernel [:runtime-primitives :engine])
+	     :input (:input kernel)
+	     :output (:output kernel)
+	     :primitive-boundary primitive-boundary
+	     :instruction-rules ((deref (get operations :sort-values))
+	                         instruction-rules)
+	     :runtime-primitives ((deref (get operations :sort-values))
+	                          runtime-primitives)
+	     :primitive-exact-arities primitive-exact-arities
+	     :declared-builtin-arities-current? declared-arities-current?
+	     :compiler-internal-builtin-contracts primitive-contracts
+	     :declared-builtin-contracts-current? declared-contracts-current?
+	     :missing-instructions ((deref (get operations :sort-values))
+	                            missing-instructions)
+	     :missing-runtime-primitives ((deref (get operations :sort-values))
+	                                  missing-primitives)
+	     :rule-set-complete? complete?
+	     :status (if complete? :complete :failed)}))
 
 (doseq
  [name (keys (:public-api namespace-contract))

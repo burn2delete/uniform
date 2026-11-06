@@ -2,7 +2,7 @@
 
 (defn handled-effect?
   [ctx effect]
-  (contains? (:handler-covered-effects @ctx) effect))
+  (gravity.effects/native-handled-effect? ctx effect))
 
 (defn handled-capability?
   [ctx capability]
@@ -10,75 +10,38 @@
 
 (defn check-effect-registry!
   [node effect]
-  (when-not (effect-registry-entry effect)
-    (typed-diagnostic! "L6-EFFECT-UNKNOWN"
-                       "effect kind is unknown or lacks governance registration"
-                       node
-                       "Register the effect with profile legality, capability requirements, ordering, and artifact representation."
-                       {:effect effect})))
+  (gravity.effects/check-native-registry!
+   {:registry-entry #'effect-registry-entry
+    :diagnostic! #'typed-diagnostic!} node effect))
 
 (defn check-build-effects!
   [checker ctx node effects opts]
-  (doseq [effect effects
-          :when (build-effect? effect)]
-    (when-not (contains? (:build-grants @ctx) effect)
-      (typed-diagnostic! (or (:build-grant-diagnostic opts)
-                             "L6-BUILD-EFFECT")
-                         "build-time effect is not granted by build policy"
-                         node
-                         "Grant the build effect in metadata or move the operation behind an approved build provider."
-                         {:effect effect
-                          :granted-build-effects (:build-grants @ctx)}))
-    (record-checker! checker :build-effect-log
-                     {:node-id (:node-id node)
-                      :effect effect
-                      :phase :build
-                      :grant :metadata-build-grant
-                      :status :granted})))
+  (gravity.effects/check-native-build-effects!
+   {:build-effect? #'build-effect?
+    :diagnostic! #'typed-diagnostic!
+    :record! #'record-checker!} checker ctx node effects opts))
 
 (defn check-replay-effects!
   [checker ctx node effects]
-  (doseq [effect effects
-          :when (and (replay-sensitive-effect? effect)
-                     (active-profile-needs-replay? ctx))]
-    (when-not (contains? (:replay-records @ctx) effect)
-      (typed-diagnostic! "L6-REPLAY-EFFECT"
-                         "replay-sensitive effect lacks a replay record"
-                         node
-                         "Record replay evidence for this nondeterministic effect or use a replay-aware handler."
-                         {:effect effect
-                          :profile (:profile @ctx)}))
-    (record-checker! checker :replay-effect-log
-                     {:node-id (:node-id node)
-                      :effect effect
-                      :profile (:profile @ctx)
-                      :replay-record :metadata-replay-record
-                      :mode :recorded})))
+  (gravity.effects/check-native-replay-effects!
+   {:replay-sensitive-effect? #'replay-sensitive-effect?
+    :needs-replay? #'active-profile-needs-replay?
+    :diagnostic! #'typed-diagnostic!
+    :record! #'record-checker!} checker ctx node effects))
 
 (defn check-effects-and-capabilities!
   ([checker ctx node effects capabilities]
    (check-effects-and-capabilities! checker ctx node effects capabilities {}))
   ([checker ctx node effects capabilities opts]
-  (doseq [effect effects]
-    (check-effect-registry! node effect)
-    (when (contains? (get profile-denied-effects (:profile @ctx) #{}) effect)
-      (typed-diagnostic! "L6-EFFECT-PROFILE"
-                         "active profile rejects an inferred effect"
-                         node
-                         "Move the operation behind a profile-supported provider or remove the effect."
-                         {:effect effect
-                          :active-profile (:profile @ctx)}))
-    (when (and (not (handled-effect? ctx effect))
-               (not (contains? typed-internal-effects effect))
-               (not (contains? (:declared-effects @ctx) effect)))
-      (typed-diagnostic! "L6-EFFECT-UNDECLARED"
-                         "inferred effect exceeds namespace declaration"
-                         node
-                         "Declare the effect in the namespace, function, package, and runtime policy or remove the operation."
-                          {:effect effect
-                           :declared-effects (:declared-effects @ctx)})))
-  (check-build-effects! checker ctx node effects opts)
-  (check-replay-effects! checker ctx node effects)
+  (gravity.effects/check-native-effect-legality!
+   {:check-registry! #'check-effect-registry!
+    :profile-denied-effects #'profile-denied-effects
+    :diagnostic! #'typed-diagnostic!
+    :handled-effect? #'handled-effect?
+    :internal-effects #'typed-internal-effects
+    :check-build-effects! #'check-build-effects!
+    :check-replay-effects! #'check-replay-effects!}
+   checker ctx node effects opts)
 	  (doseq [capability capabilities]
 	    (when (and (not (handled-capability? ctx capability))
 	               (not (contains? (:declared-capabilities @ctx) capability)))

@@ -53,8 +53,10 @@
 (deftest effects-stage-contract-preserves-the-native-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'effects/effect-graph))
         publics (ns-publics 'gravity.effects)]
-    (is (= :hosted-seed-effect-data-and-native-reports (:contract-boundary contract)))
-    (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph
+    (is (= :hosted-seed-effect-data-reports-and-native-checks (:contract-boundary contract)))
+    (is (= #{'native-handled-effect? 'check-native-registry! 'check-native-build-effects!
+             'check-native-replay-effects! 'check-native-effect-legality!
+             'fact-direct-effects 'effectful-facts 'effect-graph
              'native-verifier-report 'native-capability-proof 'validate-native-report!
              'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
              'native-override-diagnostics 'native-known-effects 'native-effect-capability
@@ -67,12 +69,15 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= contract (:gravity/namespace-contract (meta (publics name)))))
       (is (= :none (:admission api)))
-      (is (true? (:seed-compatibility-data-only? api)))
+      (if (:seed-compatibility-checks-only? api)
+        (do (is (false? (:seed-compatibility-data-only? api)))
+            (is (= :caller-owned-native-effect-premises (:input-boundary api))))
+        (is (true? (:seed-compatibility-data-only? api))))
       (is (false? (:authenticates-inputs? api)))
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
+    (is (= '[gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
