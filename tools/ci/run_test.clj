@@ -464,7 +464,10 @@
     (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
             "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
             "c-native-validation" "runtime-native-validation" "effects-native-validation"
-            "types-native-validation"] (mapv first commands)))
+            "types-native-validation" "llvm-manifest-native-validation"
+            "mlir-manifest-native-validation" "gpu-manifest-native-validation"
+            "hdl-manifest-native-validation" "workflow-manifest-native-validation"
+            "query-manifest-native-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -517,7 +520,19 @@
            [9 "effects-native-validation" "gravity.effects.pipeline-test"
             "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]
            [10 "types-native-validation" "gravity.types.pipeline-test"
-            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]]]
+            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]
+           [11 "llvm-manifest-native-validation" "gravity.backend.llvm.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"]
+           [12 "mlir-manifest-native-validation" "gravity.backend.mlir.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/mlir/native_manifest_test.clj"]
+           [13 "gpu-manifest-native-validation" "gravity.backend.gpu.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/gpu/native_manifest_test.clj"]
+           [14 "hdl-manifest-native-validation" "gravity.backend.hdl.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/hdl/native_manifest_test.clj"]
+           [15 "workflow-manifest-native-validation" "gravity.backend.workflow.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"]
+           [16 "query-manifest-native-validation" "gravity.backend.query.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]
