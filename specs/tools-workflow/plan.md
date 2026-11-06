@@ -120,6 +120,51 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Source-only services can begin with genuine source/binding interfaces. Semantic hover/IR/docs use actual current narrowing/coverage/decision/diagnostics; debugging uses actual selected program/session maps and observations, with no invented runtime values or inspection-to-execution authority.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Expose actual current protocol/method/implementation/mode/effect/host/interface facts only when their owners produced them. Source-only tools need no absent later target/runtime products; debugging needs real selected execution/session records.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Source-only editing/index/docs/inspection precedes absent semantic facts; claimed method/mode/effect/profile and debug observations require real current owner and selected session/program products.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Source-only error API docs/editing and structural inspection precede missing later facts. Claimed type/effect/handler/profile/error semantics and debug observations require real current producers and actual selected program/session results, with no inspection-to-execution authority.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Use common typed-Core/fact/proof/diagnostic schemas for actual documentation and language-server semantic views, without requiring every tool to know the alternative theory. Source-only inspection can start earlier; claimed semantic results need current selected-provider products and source maps.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Documentation, LSP, debug and inspection services consume actual foreign/schema/generated source, type/error/ownership/provider/version/target and wrapper/migration artifacts. Origins map to real source spans or manifest entries with redaction; tools cannot fabricate normalization, parity or executed foreign behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Use stable common artifact-kind schemas and genuine source/generated/IR/target/proof/dependency graphs without loading backend implementation code. Queries and diagnostic views must resolve actual emitted constructs to source and justifying evidence, preserving current toolchain/profile/target/provider/fixture identity and invalidation. A graph-shaped supplied record, hash or equal execution result cannot establish provenance or conformance.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

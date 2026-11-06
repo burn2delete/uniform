@@ -109,6 +109,15 @@ Actually invoke the prior Gravity compiler process on the complete declared next
 
 Closing evidence: Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution.
 
+
+<!-- library-base-source-compiler-unsafe:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation compiler-unsafe criterion (Open): When the self-hosted compiler/runtime/library/build closure uses unsafe internals, keep the actual compiler implementation boundary explicitly isolated and audited, with named source owners, safe wrappers, invariants, target/profile assumptions and current independent GOV9/required security evidence. Bootstrap/compiler maintainers own source; this existing Release outcome owns actual closure/trust/provenance and executable evidence consumption. Refuse hidden unsafe code, stale audit, self-certified safety, leaked seed boundaries or summary flags as proof. Evidence: actual owned source boundary and negative/preservation/audit/TCB products tied to real self-hosting subjects, with held execution and final seed-retirement still separate; no code ownership transfer occurs.
+<!-- library-base-source-compiler-unsafe:end -->
+
+
 - [ ] `release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom` Build reproducible signed distributions with provenance/SBOM
 
 Status: Open
