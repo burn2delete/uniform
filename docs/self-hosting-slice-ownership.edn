@@ -512,6 +512,8 @@
   {:namespace gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}
   "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"
   {:namespace gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
+  "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"
+  {:namespace gravity.backend.llvm.native-manifest-test :slice "SH-18" :owner :sh-target-llvm}
   "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj"
   {:namespace gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
   "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"

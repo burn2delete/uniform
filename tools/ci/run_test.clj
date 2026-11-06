@@ -464,7 +464,7 @@
     (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
             "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
             "c-native-validation" "runtime-native-validation" "effects-native-validation"
-            "types-native-validation"] (mapv first commands)))
+            "types-native-validation" "llvm-manifest-native-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -517,7 +517,9 @@
            [9 "effects-native-validation" "gravity.effects.pipeline-test"
             "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]
            [10 "types-native-validation" "gravity.types.pipeline-test"
-            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]]]
+            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]
+           [11 "llvm-manifest-native-validation" "gravity.backend.llvm.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]
