@@ -188,7 +188,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "workflow-native-manifest"
+ [{:test-id "query-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"
+   :namespace gravity.backend.query.native-manifest-test
+   :jvm-group "query-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "workflow-native-manifest"
    :path "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"
    :namespace gravity.backend.workflow.native-manifest-test
    :jvm-group "workflow-native-manifest"
