@@ -457,35 +457,35 @@
 
 (defn build-c18-pass-risk
   [pass-id pass-version stage risk reason affected-profiles affected-targets minimum-evidence release-gate]
-  (quote {:artifact :gravity/pass-risk
-          :pass pass-id
-          :pass-version pass-version
-          :stage stage
-          :risk risk
-          :reason reason
-          :affected-profiles affected-profiles
-          :affected-targets affected-targets
-          :minimum-evidence minimum-evidence
-          :release-gate release-gate
-          :contract c18-pass-risk-contract}))
+  {:artifact :gravity/pass-risk
+   :pass pass-id
+   :pass-version pass-version
+   :stage stage
+   :risk risk
+   :reason reason
+   :affected-profiles affected-profiles
+   :affected-targets affected-targets
+   :minimum-evidence minimum-evidence
+   :release-gate release-gate
+   :contract c18-pass-risk-contract})
 
 (defn build-c18-proof-obligation
   [obligation-id pass-id pass-version claim input-artifact output-artifact properties assumptions checker required-evidence profile target]
-  (quote {:artifact :gravity/pass-proof-obligation
-          :obligation-id obligation-id
-          :pass-id pass-id
-          :pass-version pass-version
-          :claim claim
-          :input-artifact input-artifact
-          :output-artifact output-artifact
-          :properties properties
-          :assumptions assumptions
-          :checker checker
-          :required-evidence required-evidence
-          :profile profile
-          :target target
-          :status :pending
-          :contract c18-pass-proof-obligation-contract}))
+  {:artifact :gravity/pass-proof-obligation
+   :obligation-id obligation-id
+   :pass-id pass-id
+   :pass-version pass-version
+   :claim claim
+   :input-artifact input-artifact
+   :output-artifact output-artifact
+   :properties properties
+   :assumptions assumptions
+   :checker checker
+   :required-evidence required-evidence
+   :profile profile
+   :target target
+   :status :pending
+   :contract c18-pass-proof-obligation-contract})
 
 (defn build-c18-translation-validation
   [validation-id pass-id input output changed-functions properties method proofs certificates fixtures counterexamples result diagnostics source-map]
