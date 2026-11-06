@@ -114,7 +114,10 @@
                   inspection-digest (assoc :main-inspection-digest inspection-digest)))
     (rt/event! ctx :effect-reconciled {:effect effect-id :evidence (:evidence result)})))
 
-(defn retry! [ctx key]
+(defn retry!
+  "Queue the inspected native phase without clearing an error or restriction.
+  Optional EDN guidance is retained as hashed repair data, never an authority grant."
+  [ctx key & [guidance-file]]
   (let [t (workflow/task ctx key)
         intent (workflow/main-intent t)
         effect (get-in @(:state ctx) [:effects (:id intent)])
@@ -141,10 +144,19 @@
         (when (get-in @(:state ctx) [:effects (:id next-intent)])
           (rt/fail! "Inspected successor effect already exists; inspect its actual outcome" {:finding key}))
         (workflow/task! ctx key :merge-intent next-intent)))
-    (workflow/task! ctx key :feedback (:error t)
+    (let [guidance (when guidance-file (rt/read-edn guidance-file))
+          ci-ready? (and (every? some? ((juxt :base :candidate :tree) t))
+                         (= :passed (get-in t [:checks :result]))
+                         (seq (get-in t [:checks :commands]))
+                         (= (select-keys t [:candidate :tree]) (select-keys (:checks t) [:candidate :tree]))
+                         (= "approved" (get-in t [:review :verdict]))
+                         (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree])))]
+    (workflow/task! ctx key :feedback (cond-> (:error t)
+                                      guidance-file (assoc :operator-guidance {:path (rt/canonical guidance-file)
+                                                                             :value guidance :value-sha256 (rt/digest (pr-str guidance))}))
                     :status (cond (:merge-verification t) :finalizing
-                                  (or (:merged t) not-applied? (#{:ci :merge} (:resume-status t))) :ci
-                                  :else :repair))
+                                  (or (:merged t) not-applied? (and ci-ready? (#{:ci :merge} (:resume-status t)))) :ci
+                                  :else :repair)))
     (println "Finding queued at its inspected recovery phase. Use resume to continue.")))
 
 (defn dispatch! [ctx command args]
@@ -159,7 +171,7 @@
     "run" (controller! ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
     "resume" (controller! ctx #(when-not (= :complete (:status @(:state ctx)))
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
-    "retry" (with-current-state ctx #(retry! ctx (first args)))
+    "retry" (with-current-state ctx #(retry! ctx (first args) (second args)))
     "recover-authored" (with-current-state ctx #(workflow/recover-authored! ctx (first args) (second args)))
     "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
