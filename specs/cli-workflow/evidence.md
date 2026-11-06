@@ -80,7 +80,7 @@ the public PR receipt; no command service or public compiler was executed.
 Date: 2026-11-04. Finding:
 `cli.source-command-usage.check-and-run-compiled-v1`. Existing owning task:
 `cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`.
-Scope and source authority: [plan](plan.md#source-command-usage-increment).
+Scope and source authority: [relocated plan](tasks.md#source-command-usage-plan).
 Candidate context supplied by the controller: current `increment-1216`
 worktree. This is an uncommitted source edit; no commit/tree identity was
 provided or inspected, and no independent acceptance is claimed.
@@ -199,4 +199,53 @@ The same argument vectors in the preceding controller-check list apply,
 subject to all retained refusals. No missing implementation authority or
 semantic ambiguity was identified. The parent remains Open for its wider
 command matrix and independent acceptance; no integration, release,
+self-hosting or seed-retirement result is claimed.
+
+### SH inspection input repair
+
+Date: 2026-11-05. Same finding
+`cli.source-command-usage.check-and-run-compiled-v1` and existing parent task
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`.
+The controller reported
+`["clojure" "-M" "tools/acceptance_dependencies_test.clj"]` exiting 1 with
+28 tests, 6653 assertions, 0 failures and 5 errors, capture not truncated,
+`:restricted false`. Each error reported stale `specs/cli-workflow/plan.md`.
+These are supplied pre-repair observations, not worker-executed checks or
+passing evidence for this repair. Candidate identity remains the supplied
+current `increment-1216` worktree; no exact commit/tree was supplied or inspected.
+
+Passive source review found that `task-sh-view` authenticates this entire plan
+against the crosswalk's source digest. The crosswalk and its inspection-source
+record pin SHA-256
+`b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735`.
+Task-ledger appendices are permitted separately from the exact captured task
+bodies. The new plan appendix and its subsequent stage-repair note changed
+the full-file input without any authorized source-version transition.
+
+Restore the pre-increment plan by removing those appended sections and retain
+their contract and repair note in the
+[task appendix](tasks.md#source-command-usage-plan), with relocation provenance
+and corrected links. The earlier descriptions of plan appends above remain
+history for those attempts. The speckit-implement skill was applied within
+this existing feature/task authority. No task body/status, captured region,
+crosswalk digest, transition contract, acceptance checker, CLI implementation
+or positive/negative fixture was changed by this repair. No PR767 readiness
+changes are adopted. This corrects the owned input rather than weakening its
+authenticity or provenance checks.
+
+Actual worker actions were passive source reads and owned Markdown patches.
+No Git, Clojure, test, build, check or hash command was executed. The expected
+digest above is copied from retained source records; restored byte identity
+and test results require controller verification and are not asserted here.
+The existing proposed controller argument vectors all remain applicable and
+unrun for this repair, including acceptance-dependency controls, focused CLI
+and boundary regressions, language boundary and document validators. Existing
+CLI fixtures retain their meaningful accepted/rejected cases and service-error
+controls; injected positives still establish routing/presentation only.
+
+No missing implementation authority or semantic ambiguity was identified.
+No retained refused action was retried, transferred or rerouted; none is
+requested by this repair. Unrun controller-owned checks alone do not make
+this authored repair restricted. The parent stays Open pending its remaining
+command matrix and independent acceptance. No commit, integration, release,
 self-hosting or seed-retirement result is claimed.
