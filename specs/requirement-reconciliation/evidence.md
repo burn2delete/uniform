@@ -813,3 +813,867 @@ exact model assignment and Main integration remain pending. T002/T003/T005,
 the admitted denominator and full 240-spec verification remain open. No held
 provider, compiler, native, replay, migration, release or seed-retirement action
 is performed or accepted by these source changes.
+
+
+## 2026-11-06 existing Product, error and final Release source references
+
+This bounded successor binds 22 existing requirement records to independently reviewed current Open task criteria: 13 Product adoption/decision interfaces, two error interfaces and seven final Release interfaces. It creates no task, requirement, alias, denominator or implementation acceptance. Shared task references do not merge distinct requirements.
+
+The input is `0a0962f83d1167de6c05979c9bcd947289d8e1e1`, whose canonical model bytes equal the preserved a580 subject (SHA-256 `5231b56e3a63500d48bd4fa0d81209dd975293e9609c328900498ac33d898cdf`). The new model SHA-256 is `27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355`. The preparation receipt is `e31cc60456fb902443fdc3aec6b19ee92c9a6ac3e4cf3f05ba76f70212dcf7c1`. Reversing the 22 recorded replacements recovers the exact prior model bytes and values, with complete prior records and history preserved; the updated file changes those 22 records. All 21 existing source bridges validate; no bridge or task file changes.
+
+Every existing task gap is exactly unchanged, including the Runtime missing-exact-task gap for the full expanded foreign-normalization predicate and all 13 Product adoption gaps. A current source criterion is navigation and an interface contract, not an accepted complete predicate or executed product. All source facets, dispositions, atomicity/nonoverlap flags, IDs and task/implementation states remain unchanged. The other nine Release primary references and all global family relations remain unassessed.
+
+The archived reviews below conserve their complete qualifications. Types representation, Runtime foreign normalization, CLI/Test/Build producers, governance/signing and actual protected actions retain their separate contracts and evidence. This successor does not adopt the later two-error semantic review as an atomicity/global promotion, and it does not restore the separately reviewed Auth/Crypto row. It does not use the stopped public-contract-cluster handoff.
+
+The fixture parent separately passed its focused two tests (968 assertions), full 81 tests (65,522 assertions), lint and whitespace checks and ended its isolated one-file writer. Those checks concern the fixture parent. The exact 27223 model has scoped source-binding acceptance in review `ac41ded6978c5ecc2baa09d8925daead37b2f5540a1eb6c4c719a087270ccc1b`, archived below. Fresh author-surface checks, archive integrity and Main composition remain required. T002 through T006 and full 240-spec verification remain Open; no product Reader/compiler/provider/native/signing/publication or seed-retirement execution occurred.
+
+### Scoped source review archive: product-four
+
+Original artifact: `/tmp/uniform-four-product-decision-reference-independent-review.edn`; SHA-256 `908b48ca7be65af5ad4bed1ef787e0d8c7d9f37af0a6c362a7128dbb471dfd42`.
+The exact UTF-8 artifact bytes are inside the following fence; its scope and nonclaims remain binding.
+
+<!-- source-reference-review-archive:product-four:start -->
+~~~~~~edn
+{:report-kind :bounded-independent-source-reference-review
+ :reviewer :review-922-bb12-semantics
+ :proposal
+ {:path "/tmp/uniform-four-product-decision-reference-proposal.edn"
+  :sha256 "1a957c7239b4b98fc529550c9468cadbb48ba84e55ac902913a84b57408f583f"
+  :kind :bounded-four-existing-product-decision-task-reference-proposal}
+ :scope
+ {:source-only true
+  :main-eligibility :not-claimed
+  :full240-verification :not-claimed
+  :implementation-acceptance :not-claimed
+  :architecture-target-owner-selection :none
+  :decision-adoption :none
+  :new-task-canonical-unit-alias-denominator :none
+  :product-scope-decision :unresolved
+  :provider-device-signing-publication-execution :none}
+ :subject
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c"
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9"
+  :parent "68b82b46044d3967d2dc02676689ca91df9e3bad"
+  :tree-verified true
+  :model
+  {:path "contracts/requirement-reconciliation.edn"
+   :sha256 "2531d42c4c27af9ce9b133bf928b61311481fef19fa9b2bd4aa11e0a183b2393"
+   :blob "c56165b271bf58b35e16796c16c7c7c8f7bc7734"}}
+ :source-extension
+ {:id "platform-product"
+  :path "docs/component-roadmaps/platform.md"
+  :source-commit "a1b991be499d50579a8b4366976c519ae8949224"
+  :file-sha256 "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f"
+  :blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"
+  :relation :declared-project-extension
+  :verified true}
+ :current-task-source
+ {:path "specs/platform-workflow/tasks.md"
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6"
+  :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9"
+  :file-sha256 "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb"
+  :blob "d67a0908c27714071566e1a2da51e5617718fdaf"
+  :verified true}
+ :facets
+ {:entries 24
+  :unique-facet-ids 6
+  :source-paths ["docs/component-roadmaps/platform.md"]
+  :source-commits ["a1b991be499d50579a8b4366976c519ae8949224"]
+  :raw-utf8-span-sha-file-sha-and-blob-checks :all-24-pass
+  :raw-span-content-checks :all-24-pass
+  :repeated-shared-facets :six-source-rows-reused-by-four-distinct-units
+  :strict-reference-and-existing21-bridge-field :passed
+  :independent-bridge-reverification :bounded-source-check-not-broad-suite}
+ :task-references
+ [{:unit "platform/product-isa-device-decision"
+   :task-id "platform-product/adopt-hardware-contract"
+   :criterion-byte-span [99217 99419]
+   :criterion-sha256 "b675b06fbaa8436d2354d05c9f79e418d02e5bd617870b44198083c5138a7c08"
+   :source-record-sha256 "06a5c2cc523443edf0cc0c5e04eab6aeedeb575f0e14d52077897d63732240a7"
+   :body-sha256 "fec0124ae53255813304b7182f65923eafcf442c13c00602a05f63fbc1b007cf"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-kernel-services-decision"
+   :task-id "platform-product/adopt-kernel-contract"
+   :criterion-byte-span [99657 99846]
+   :criterion-sha256 "5246eafe321a5c3752481394783725b1f5dc643e2e222571a980ed043552f954"
+   :source-record-sha256 "4cbfb1ce1163b3e1dbfba28a1eec6e16db85959f414480cea278a10489cb6a64"
+   :body-sha256 "7e963af8bdd06f1a78e328feb3577cb86291d4094d9a9be9d31a703267ef0d88"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-application-surface-decision"
+   :task-id "platform-product/adopt-application-contract"
+   :criterion-byte-span [100080 100284]
+   :criterion-sha256 "74bb2cebd9fa71e083aa494ce9a152671f454fcc241dcb36b31013a2243e5c15"
+   :source-record-sha256 "bb6bb861e0907058e301ef87bcbae6752d425b856e0decf0ae482c761c3ae72d"
+   :body-sha256 "d6ae874658fed492c8c015c908419b3b9c3e2c277d64e2148d77ae40a9453c15"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-physical-boundary-decision"
+   :task-id "platform-product/adopt-physical-boundary"
+   :criterion-byte-span [100505 101318]
+   :criterion-sha256 "277429a19de882a0dbc2b352eacd14354fd37ad1fd697da8cf09b43f42ce8c55"
+   :source-record-sha256 "89db20f0554ca27cb026c8f188835d91b0b1d8490db6d20c4825eb3fe3734e1b"
+   :body-sha256 "b6d5ae5225691588cd5016c59246efdee92696a2d565e731e7479b983324639d"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}]
+ :metadata-conservation
+ {:proposed-change :add-only-task-reference
+  :existing-fields :exact-unchanged
+  :task-gaps :open-and-preserved
+  :atomicity :unchanged-proposed
+  :nonoverlap :unchanged-proposed
+  :four-task-authorities-distinct true
+  :no-alias-or-global-closure true
+  :body-digest-clarification
+  "Each body-sha256 equals the canonical trimr task-record digest used by the historical 0876063f41e2ad3e13f3c332f4877daecb62b45d bridge and is unchanged by the 1615 source; it is not the raw byte hash of the proposal's actual-task-body-span. The current source-record-sha256 values independently recompute from the parsed current records."}
+ :findings []
+ :disposition :scoped-source-acceptance
+ :nonclaims
+ [:no-product-or-architecture-selection
+  :no-implementation-or-provider-execution
+  :no-task-status-or-checkbox-advancement
+  :no-atomicity-or-nonoverlap-conference
+  :no-main-or-full240-credit
+  :no-release-or-publication-credit]
+ :verification
+ {:language :clojure
+  :read-only true
+  :commands
+  ["clojure -M /tmp/verify-three-proposals.clj"
+   "clojure -M /tmp/check-task-digests.clj"
+   "git grep -n -F <task-id> 1615d7a37b7c35d8ad4dabf7d719e906e75277c6 -- specs/platform-workflow/tasks.md"]
+  :working-tree-unchanged true}}
+~~~~~~
+<!-- source-reference-review-archive:product-four:end -->
+
+### Scoped source review archive: product-nine
+
+Original artifact: `/tmp/uniform-nine-product-future-reference-independent-review.edn`; SHA-256 `74fd96cf5b8bde9f7cfbeb6345e7a74a4c369c852663b2bd8f59e51d872b7303`.
+The exact UTF-8 artifact bytes are inside the following fence; its scope and nonclaims remain binding.
+
+<!-- source-reference-review-archive:product-nine:start -->
+~~~~~~edn
+{:report-kind :bounded-independent-source-reference-review
+ :reviewer :review-922-bb12-semantics
+ :proposal
+ {:path "/tmp/uniform-nine-product-future-reference-proposal.edn"
+  :sha256 "1331c56bdd1bde603948ea4cb7244711b2a4a5f4fadea5e2f89e0263dfc01fce"
+  :kind :bounded-nine-existing-product-and-external-prerequisite-future-task-reference-proposal}
+ :scope
+ {:source-only true
+  :main-eligibility :not-claimed
+  :full240-verification :not-claimed
+  :implementation-acceptance :not-claimed
+  :product-scope-decision :unresolved
+  :decision-target-owner-adoption :none
+  :new-task-canonical-unit-alias-ledger-denominator :none
+  :implementation-provider-device-signing-publication-execution :none
+  :future-physical-bringup-and-distribution-conditional true}
+ :subject
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c"
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9"
+  :parent "68b82b46044d3967d2dc02676689ca91df9e3bad"
+  :tree-verified true
+  :model
+  {:path "contracts/requirement-reconciliation.edn"
+   :sha256 "2531d42c4c27af9ce9b133bf928b61311481fef19fa9b2bd4aa11e0a183b2393"
+   :blob "c56165b271bf58b35e16796c16c7c7c8f7bc7734"}}
+ :source-extension
+ {:id "platform-product"
+  :path "docs/component-roadmaps/platform.md"
+  :source-commit "a1b991be499d50579a8b4366976c519ae8949224"
+  :file-sha256 "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f"
+  :blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"
+  :relation :declared-project-extension
+  :verified true}
+ :current-task-source
+ {:path "specs/platform-workflow/tasks.md"
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6"
+  :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9"
+  :file-sha256 "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb"
+  :blob "d67a0908c27714071566e1a2da51e5617718fdaf"
+  :verified true}
+ :facets
+ {:entries 13
+  :unique-facet-ids 6
+  :source-paths ["docs/component-roadmaps/platform.md"]
+  :source-commits ["a1b991be499d50579a8b4366976c519ae8949224"]
+  :raw-utf8-span-sha-file-sha-and-blob-checks :all-13-pass
+  :raw-span-content-checks :all-13-pass
+  :strict-reference-and-existing21-bridge-field :passed
+  :independent-bridge-reverification :bounded-source-check-not-broad-suite}
+ :task-references
+ [{:unit "platform/product-hardware-implementation"
+   :task-id "platform-product/implement-hardware"
+   :criterion-byte-span [101546 101793]
+   :criterion-sha256 "c514fe44369d11b1185ffac1a254157450e86dfdafda0f4c19413d87c96f27f2"
+   :source-record-sha256 "56e4de448093691525dbb2b027cabcd6ef9f5ed70525eecce9c6b39500d50bff"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-boot-firmware"
+   :task-id "platform-product/implement-firmware"
+   :criterion-byte-span [102079 102275]
+   :criterion-sha256 "0c0c77cea00387ce40a060ad8b4dadce86a32a76af236e45196d4844bbf0750c"
+   :source-record-sha256 "9ec66fa372514c993432ab10c90109c114f775600a85b3c556674280fc5b2a89"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-os-services-isolation"
+   :task-id "platform-product/implement-os"
+   :criterion-byte-span [102550 102750]
+   :criterion-sha256 "34800dfa42012e758c4758b7a231392e719758f627db629303bd849022541d33"
+   :source-record-sha256 "9e9604de6d5f0b5e3c882e4e161149751cdfc68603c829a6363b59c1932a5a55"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-device-drivers"
+   :task-id "platform-product/implement-drivers"
+   :criterion-byte-span [103042 103224]
+   :criterion-sha256 "7a0e516c2bde82601366cc841f81b8cba3be7677f9ab0b3ccec6069dbd4be490"
+   :source-record-sha256 "442bb42959b0272542af95789664f8d8f21db90b4a7ecc337454e41e2e7bf85a"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-applications"
+   :task-id "platform-product/implement-applications"
+   :criterion-byte-span [103481 103688]
+   :criterion-sha256 "4ea3263df12987b75ae9241a4109c9c6b7ad52acb4352c9fc104045ec886e1cc"
+   :source-record-sha256 "1ae3174225ecfa8a8ca5bfae1fdc02380c62b2e861b1ef4ed78fc9eea86f0abe"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-boot-to-application-integration"
+   :task-id "platform-product/integrate-execution"
+   :criterion-byte-span [103936 104174]
+   :criterion-sha256 "255de515641b1d98fdee2861e11c8a4ec75a7f7b97abcd039b045490cedea9ba"
+   :source-record-sha256 "3b45c78b8fd50b7c57748042750bfc28dcfc471c52c4cb7c0f8ed807d4b71ef0"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-reproducible-distribution"
+   :task-id "platform-product/distribute-product"
+   :criterion-byte-span [104423 104661]
+   :criterion-sha256 "5752e875107a84038452ba9120e43dbbe09b03c6ce3a1c066716514fef554b63"
+   :source-record-sha256 "6fb5cd5a683494009bdae2078cf6260f3b9e259015a80d772ac23b4c7f112e38"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/product-physical-bringup"
+   :task-id "platform-product/distribute-product"
+   :criterion-byte-span [104423 104661]
+   :criterion-sha256 "5752e875107a84038452ba9120e43dbbe09b03c6ce3a1c066716514fef554b63"
+   :source-record-sha256 "6fb5cd5a683494009bdae2078cf6260f3b9e259015a80d772ac23b4c7f112e38"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "platform/external-tool-dependency-provenance"
+   :task-id "platform-product/adopt-physical-boundary"
+   :criterion-byte-span [100505 101318]
+   :criterion-sha256 "277429a19de882a0dbc2b352eacd14354fd37ad1fd697da8cf09b43f42ce8c55"
+   :source-record-sha256 "89db20f0554ca27cb026c8f188835d91b0b1d8490db6d20c4825eb3fe3734e1b"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}]
+ :metadata-conservation
+ {:all-existing-record-fields-and-gaps :preserved
+  :task-statuses :unchanged-open
+  :atomicity :unchanged-proposed
+  :nonoverlap :unchanged-proposed
+  :unit-count 9
+  :distinct-canonical-task-count 8
+  :shared-task-ownership
+  {:distribute-product
+   "Canonical distribution task is deliberately referenced by both distribution and conditional physical-bringup units; the proposal explicitly keeps the units distinct and does not confer alias/global closure."
+   :adopt-physical-boundary
+   "Canonical physical-boundary task is deliberately referenced by the external-prerequisite unit; the proposal keeps prerequisite provenance conditional and grants no purchase, fabrication, signing or service operation."}
+  :distribution-vs-physical-bringup-not-aliased true
+  :external-provenance-preserved true
+  :no-isa-os-device-app-selection true
+  :no-new-ids-or-denominators true}
+ :findings []
+ :disposition :scoped-source-acceptance
+ :nonclaims
+ [:no-product-or-architecture-selection
+  :no-physical-bringup-or-distribution-execution
+  :no-provider-device-signing-or-publication-action
+  :no-task-status-or-checkbox-advancement
+  :no-atomicity-or-nonoverlap-conference
+  :no-main-or-full240-credit
+  :no-release-or-publication-credit]
+ :verification
+ {:language :clojure
+  :read-only true
+  :commands
+  ["clojure -M /tmp/verify-three-proposals.clj"
+   "clojure -M /tmp/check-task-digests.clj"
+   "git grep -n -F <task-id> 1615d7a37b7c35d8ad4dabf7d719e906e75277c6 -- specs/platform-workflow/tasks.md"]
+  :working-tree-unchanged true}}
+~~~~~~
+<!-- source-reference-review-archive:product-nine:end -->
+
+### Scoped source review archive: error-two
+
+Original artifact: `/tmp/uniform-two-error-current-reference-independent-review.edn`; SHA-256 `7ca26b6ba7b603074013a27b6a8ed721013f946bbc3263c673769b29b63fba0e`.
+The exact UTF-8 artifact bytes are inside the following fence; its scope and nonclaims remain binding.
+
+<!-- source-reference-review-archive:error-two:start -->
+~~~~~~edn
+{:report-kind :bounded-independent-source-reference-review
+ :reviewer :review-922-bb12-semantics
+ :proposal
+ {:path "/tmp/uniform-two-error-current-reference-proposal.edn"
+  :sha256 "1af4ac8f9434a066841e0766e188e0d22cafb4f409ba7cc1383ae7216b9a6b0a"
+  :kind :bounded-two-existing-error-outcome-and-foreign-normalization-current-reference-proposal}
+ :scope
+ {:source-only true
+  :main-eligibility :not-claimed
+  :full240-verification :not-claimed
+  :implementation-acceptance :unassessed
+  :source-edit :none
+  :new-task-unit-alias-ledger :none
+  :host-native-ffi-callback-provider-or-compiler-execution :none
+  :preservation-required :complete-prior-records-references-gaps-and-scoped-reviews}
+ :subject
+ {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c"
+  :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9"
+  :parent "68b82b46044d3967d2dc02676689ca91df9e3bad"
+  :tree-verified true
+  :model
+  {:path "contracts/requirement-reconciliation.edn"
+   :sha256 "2531d42c4c27af9ce9b133bf928b61311481fef19fa9b2bd4aa11e0a183b2393"
+   :blob "c56165b271bf58b35e16796c16c7c7c8f7bc7734"}}
+ :facets
+ {:entries 53
+  :unique-facet-ids 53
+  :raw-utf8-span-sha-file-sha-and-blob-checks :all-53-pass
+  :raw-span-content-checks :all-53-pass
+  :source-commits ["a1b991be499d50579a8b4366976c519ae8949224"]
+  :source-files
+  [{:path "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md"
+    :entries 8 :file-sha256 "398fa6ef060559ad16006444279b6e138b1f164be855c3d8094d6ec7910217f7"
+    :blob "9fc8ee67274c44b95ec53e3e4d57ef6d37f896ad"}
+   {:path "docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md"
+    :entries 6 :file-sha256 "71cf1fd126f4e0bd249dfad4f2b85504ce66328f6ef17c0605a65b0866f73c05"
+    :blob "9e7275d467af9558ea31073b5a156ea96b666abc"}
+   {:path "docs/phase-01-core-language/019-l9-error-handling-specification.md"
+    :entries 29 :file-sha256 "0f154c2a10c21458e123b868d3225ec29f56dbf072097ad7824fe48c82c805f5"
+    :blob "ec91b9b287506c68cf36aa3d34a7c8b481215b71"}
+   {:path "docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md"
+    :entries 6 :file-sha256 "93b025b627dac0101995ed15fb68efad958e04146bbec41a0b4124dc813f6abb"
+    :blob "791236395eacf45fe34d9cb668ea7f2427d0313d"}
+   {:path "docs/phase-03-profile-system/047-p2-core-profile-specification.md"
+    :entries 4 :file-sha256 "2b798e10ec4b716252d697b190f6735ac2a2db9332c448ed6bfa0f5a8f3f8645"
+    :blob "8dfe1e5e55ad83ce8bad79f254eb9a07222d9ec3"}]}
+ :current-task-sources
+ [{:unit "language/errors/normalize-foreign-failure"
+   :task-id "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+   :path "specs/runtime-workflow/tasks.md"
+   :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c"
+   :tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b"
+   :file-sha256 "c6605ecd2a5edd903ef1e64957a17423446bd4f0ad2adb64e194c5883819ef10"
+   :blob "919d68eb4a2c5c6752bc9247bf80e5bdc5715226"
+   :criterion-byte-span [45725 46776]
+   :criterion-sha256 "d7fce91b1f5bf2f7e9eb82f07a466960f7982beb8121f947a05eb12c9b83f32b"
+   :source-record-sha256 "25b8b3f355a36d9b1846803690a044edab9e7db33da0b83bea5b60eef1137474"
+   :status "Open" :checked? false :implementation-acceptance :unassessed}
+  {:unit "language/errors/represent-typed-outcome"
+   :task-id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+   :path "specs/types-workflow/tasks.md"
+   :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c"
+   :tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b"
+   :file-sha256 "6c681ea228458bbcc02fbdb45c765ae22859d86a41092c30eb6c264c518cab43"
+   :blob "69f864017f6f95a26c479b4aaba3cb7b114d201d"
+   :criterion-byte-span [30173 31117]
+   :criterion-sha256 "504345105b3e5647d0e072346ba27f81b89c978b43e7b4305d5f78ba53b64737"
+   :source-record-sha256 "d8828cd1b74f156d0e042a98228f3aa7ae28021a62329cbf8b54462686f07801"
+   :status "Open; partial source evidence above is not closure"
+   :checked? false :implementation-acceptance :unassessed}]
+ :semantic-binding
+ {:runtime-normalization
+  {:contracts ["L8" "L9" "L19"]
+   :required-outcomes
+   [:foreign-exception :panic :error-code-or-errno :rejected-promise :signal :process-exit
+    :unexpected-null-refusal :declared-option-absence :ownership-transfer-borrow-release
+    :success-and-failure]
+   :residuals
+   [:actual-host-and-ffi-operation-maps :actual-safe-wrapper-and-profile-facts
+    :real-values-failures-resource-cleanup-and-refusal-traces
+    :exact-abi-provider-thread-and-lifetime :independent-implementation-acceptance]}
+  :typed-outcome
+  {:contract "L9"
+   :distinct-families
+   [:option-absence :recoverable-result :typed-thrown-error :panic
+    :assertion-or-contract-failure :safety-check-failure :capability-denial
+    :ffi-error :workflow-retry-or-compensation :ai-model-tool-policy-evaluation
+    :compiler-diagnostic]
+   :source-nil-remains-l2-value true
+   :some-none-and-ok-err-payloads-preserved true
+   :residuals
+   [:actual-type-and-constructor-declarations :pure-and-other-profile-restrictions
+    :real-positive-and-refused-conversion-and-match-cases
+    :actual-control-effect-authority-and-runtime-consumers
+    :independent-implementation-acceptance]}}
+ :history-and-preservation
+ {:original-records-preserved true
+  :prior-discovery-artifact-sha256 "9338ce0d46792cb17062650d42f56687baa4c4b066edea259a81793d8c619bf1"
+  :prior-discovery-receipt-sha256 "a0c974bd459476bba4119501d6153a0e9dd8d7a4a4686d651dba14635b85090e"
+  :typed-outcome-prior-scope-review
+  {:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa"
+   :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8"
+   :source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
+   :implementation-acceptance :not-conferred
+   :global-nonoverlap :pending}
+  :prior-gaps-and-references-preserved true
+  :host-native-error-profile-cleanup-execution-residuals-preserved true
+  :existing21-source-bridge-field :passed
+  :independent-bridge-reverification :bounded-source-check-not-broad-suite}
+ :findings []
+ :disposition :scoped-source-acceptance
+ :nonclaims
+ [:no-runtime-or-type-implementation-acceptance
+  :no-provider-or-ffi-execution
+  :no-error-outcome-status-upgrade
+  :no-atomicity-or-nonoverlap-conference
+  :no-main-or-full240-credit
+  :no-release-or-publication-credit]
+ :verification
+ {:language :clojure
+  :read-only true
+  :commands
+  ["clojure -M /tmp/verify-three-proposals.clj"
+   "clojure -M /tmp/check-task-digests.clj"]
+  :working-tree-unchanged true}}
+~~~~~~
+<!-- source-reference-review-archive:error-two:end -->
+
+### Scoped source review archive: release-seven
+
+Original artifact: `/tmp/uniform-seven-release-source-references-independent-verdict.edn`; SHA-256 `21e1e10304710ba35a93ee6148ae25eeb90cedc18e6d5bad6ec37b2aebb3cfb9`.
+The exact UTF-8 artifact bytes are inside the following fence; its scope and nonclaims remain binding.
+
+<!-- source-reference-review-archive:release-seven:start -->
+~~~~~~edn
+{:schema :uniform/seven-release-source-references-independent-verdict-v1
+ :reviewer :codex/review-892-bookend
+ :review-mode :independent-read-only-source-review
+ :reviewed-at "2026-11-06"
+ :proposal
+ {:path "/tmp/uniform-seven-release-source-references-proposal.edn"
+  :sha256 "6070693624af4b1924b8c3ca6f7fd6956e5afe546dde25487351a795003cbb6e"
+  :kind :seven-existing-final-release-current-source-reference-proposal}
+ :source-identity
+ {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6"
+  :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9"
+  :path "specs/release-workflow/tasks.md"
+  :git-blob "394f46938cf1df31452b1ebe4a6853608aef4345"
+  :file-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+  :source-content-hash-verified? true}
+ :authenticated-extension-context
+ {:source-commit "a1b991be499d50579a8b4366976c519ae8949224"
+  :source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+  :readme
+  {:path "docs/phase-18-binary-distribution-and-seedless-release/README.md"
+   :git-blob "69c2cea741eca69e8339201d12c2fa64a4d5a2a9"
+   :file-sha256 "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
+  :roadmap
+  {:path "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
+   :git-blob "c85727f1ae546ddc6e6d8d58d6bccbc0c9725365"
+   :file-sha256 "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57"}
+  :facet-occurrences 154
+  :distinct-facet-ids 85
+  :distinct-source-files 2
+  :raw-facet-sha-mismatches 0}
+ :case-bindings
+ [{:unit :release/selfhosted-artifact-production
+   :task-id "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "7e3908f4a57f3007a9b251d4a51601f375d64db77dd25749e9f0e821dd8e705c"
+   :criterion-range [25980 26497]
+   :criterion-sha256 "70f6ec53e0b268678f35eb7c7e67faf3ecf6dbaf58b3fc0f72ad519456c8af0e"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 18
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "The existing task owns final executable production by the real self-hosted compiler/emitter and full closure. It rejects Clojure packaging and consumes, rather than reassigns, compiler/emitter/build/package producer outputs."
+   :residual :execution-lineage-conformance-and-release-evidence-open}
+  {:unit :release/seed-boundary-exclusion
+   :task-id "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "7e3908f4a57f3007a9b251d4a51601f375d64db77dd25749e9f0e821dd8e705c"
+   :criterion-range [26498 27041]
+   :criterion-sha256 "05e58404171e747ebc9eb9602ce6078f1a4e9946554d36cc43a0ef992d83068e"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 39
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "The four-boundary seed exclusion is separately identified, retains library/package/build closure and residual provenance, and keeps gravity-bootstrap explicit as recovery rather than final release."
+   :residual :seed-boundary-proof-open}
+  {:unit :release/selfhosted-full-language-conformance
+   :task-id "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "7e3908f4a57f3007a9b251d4a51601f375d64db77dd25749e9f0e821dd8e705c"
+   :criterion-range [27042 27541]
+   :criterion-sha256 "d13eed2e9f93a74d8ee13b7d40018cb2c49cf9aadcfeb20b1bd57efb576a7d67"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 15
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "Final full-language conformance remains through the actual self-hosted public binary with exact binaries, transcripts, suites and accepted/rejected cases; inherited subset counters cannot narrow the final surface."
+   :residual :full-language-execution-open}
+  {:unit :release/successful-selfhost-verification
+   :task-id "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "7e3908f4a57f3007a9b251d4a51601f375d64db77dd25749e9f0e821dd8e705c"
+   :criterion-range [27542 28005]
+   :criterion-sha256 "0574c01b76251063a134a8d6541e57114d145a7b10372927d6486bd2b9f05286"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 15
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "Final public verification is distinct from full-language suite success and requires the actual source/compiler/runtime/release chain, false seed-boundary proof and refusal of missing or stale seed evidence."
+   :residual :final-verification-open}
+  {:unit :release/final-rebuild-reproducibility
+   :task-id "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "2a9671e5c0dd915cdb2c201d121e05cc36c38817628206948385280276dbeabd"
+   :criterion-range [31478 31964]
+   :criterion-sha256 "c732c11639364156a163677d6914f644fce604c8bfe0cf4c609887021d18fb6b"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 11
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "The existing Build consumer requires twice-rebuilt final artifacts, locked recipe/environment and canonical comparisons; it consumes Build producer outputs and does not create a second producer or accept hosted packaging."
+   :residual :rebuild-and-comparison-evidence-open}
+  {:unit :release/final-supply-chain-governance-bundle
+   :task-id "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "2a9671e5c0dd915cdb2c201d121e05cc36c38817628206948385280276dbeabd"
+   :criterion-range [31965 32558]
+   :criterion-sha256 "921bd19b2f781b137c2f84679375411c725ef6552de1a25bf96f35c23f8127c7"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 23
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "The existing distribution consumer validates the selected final bundle against actual binary/build/source/compiler/dependency/target identities and rejects stale, tampered, revoked or mismatched records. It grants no signing or publication action and does not replace governance/security producers."
+   :residual :supply-chain-and-governance-evidence-open}
+  {:unit :release/candidate-eligibility-failclosed
+   :task-id "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+   :task-reference-sha256 "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98"
+   :source-record-sha256 "da51a35ae3b8ab718d577af230e4e10fb56b872f4c07c19df822371bcfb0d7f7"
+   :criterion-range [36553 37183]
+   :criterion-sha256 "c6f52c2ca32463d5bd1a642a4febfdc4c0f3d52debb6bddffd39f59e8e286eee"
+   :criterion-hash-verified? true
+   :authenticated-facet-occurrences 33
+   :observed-status "Open"
+   :observed-checked? false
+   :implementation-acceptance :unassessed
+   :actual-operation-evidence :unassessed
+   :entailment
+   "The exact-candidate acceptance consumer requires actual P15/P18 conformance, seed, rebuild, supply-chain and governance evidence, including success and invalid-evidence refusals; under-evidenced candidates retain the packaged fallback."
+   :residual :independent-final-acceptance-open}]
+ :source-facet-verification
+ {:criterion-slices 7
+  :criterion-hash-mismatches 0
+  :facet-hash-mismatches 0
+  :distinct-facet-ids 85
+  :facet-occurrences 154
+  :source-file-count 2
+  :all-source-contexts-bound? true}
+ :producer-and-context-preservation
+ {:source-edit :none
+  :repository-write :none
+  :new-source-bridge :none
+  :new-unit-task-alias-or-denominator :none
+  :atomicity :unchanged-proposed
+  :nonoverlap :unchanged-proposed
+  :existing21-source-bridge-validation :passed-as-supplied
+  :unchanged-task-lines [95 107 110 121 133 136 138 150 153]
+  :acceptance-dependency-rows [341 342 343]
+  :cli-test-build-governance-signing-producers-preserved? true
+  :shared-required-contexts-preserved? true
+  :interpretation
+  "The proposal binds existing Release consumers to existing canonical task criteria; it does not reassign CLI, Test, Build, governance, signing, compiler, runtime, library, provider or publication ownership. The source rows explicitly retain real execution, positive/negative evidence, locked rebuild, provenance/SBOM/signing, governance and fail-closed refusal obligations."}
+ :residual-scope
+ {:remaining-existing-release-records-without-primary-reference
+  ["release/public-launcher-dispatch"
+   "release/bootstrap-boundary-disclosure"
+   "release/public-check-command"
+   "release/public-run-command"
+   "release/public-compile-output-command"
+   "release/generated-application-execution"
+   "release/public-rejection-diagnostics"
+   "release/public-subset-test-bridge"
+   "release/public-incomplete-selfhost-verifier"]
+  :unassessed-reference-count 9
+  :global-240-review :unassessed
+  :full240-verification :not-claimed
+  :implementation-acceptance :unassessed
+  :actual-operation-evidence :unassessed
+  :phase-checkboxes-or-manifests-prove-execution? false}
+ :source-verdict
+ {:decision :accepted-scoped-source-reference-binding
+  :findings []
+  :qualification
+  "The seven references are entailed by the exact existing task criteria and preserve their producers and residual gaps. They are source navigation/binding evidence only: all seven canonical records remain Open and unchecked, and no execution, acceptance, release, seed retirement, signing, publication or Main authority follows."}
+ :nonclaims
+ [:not-new-release-units
+  :not-new-tasks
+  :not-denominator-change
+  :not-status-change
+  :not-execution
+  :not-independent-final-acceptance
+  :not-seed-retirement
+  :not-self-hosting
+  :not-full240-review
+  :not-global-nonoverlap-closure
+  :not-cli-or-test-execution
+  :not-build-or-signing-action
+  :not-governance-approval
+  :not-publication
+  :not-Main]
+ :review-actions
+ {:source-edits 0
+  :new-units 0
+  :new-tasks 0
+  :aliases 0
+  :denominator-changes 0
+  :tests-run 0
+  :provider-actions 0
+  :worktrees-created 0}
+ :verification-commands
+ ["shasum -a 256 on supplied Release proposal"
+  "git show and sha256 the immutable 1615d7a3 task source"
+  "git rev-parse and sha256 the two a1b991be source facet files"
+  "read-only EDN verification of all seven criterion byte ranges and 154 facet raw hashes"
+  "read-only inspection of task source lines 95-153 and dependency rows 341-343"]}
+~~~~~~
+<!-- source-reference-review-archive:release-seven:end -->
+
+### Scoped source review archive: exact-model-twenty-two
+
+Original artifact: `/tmp/uniform-product-error-release-source-bindings-independent-review.edn`; SHA-256 `ac41ded6978c5ecc2baa09d8925daead37b2f5540a1eb6c4c719a087270ccc1b`.
+The exact UTF-8 artifact bytes are inside the following fence; its scope and nonclaims remain binding.
+
+<!-- source-reference-review-archive:exact-model-twenty-two:start -->
+~~~~~~edn
+{:schema :uniform/product-error-release-source-bindings-independent-review-v1
+ :reviewer :codex/review-892-bookend
+ :reviewed-at "2026-11-06"
+ :decision :accepted-scoped-source-model-binding
+ :findings []
+ :scope
+ {:source-and-model-binding-only true
+  :predicate-or-implementation-acceptance :not-conferred
+  :provider-native-ffi-or-compiler-execution :none
+  :Main :not-claimed
+  :full240-verification :not-claimed
+  :release-publication-seed-retirement :not-claimed
+  :new-task-unit-alias-or-denominator :none}
+ :inputs
+ {:preparation
+  {:path "/tmp/uniform-product-error-release-source-bindings-preparation.edn"
+   :sha256 "e31cc60456fb902443fdc3aec6b19ee92c9a6ac3e4cf3f05ba76f70212dcf7c1"}
+  :proposed-model
+  {:path "/tmp/uniform-product-error-release-source-bindings-proposed-model.edn"
+   :sha256 "27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355"}
+  :base-model
+  {:commit "a580f666c0c8431f88ae987dae0f840e43fedfbb"
+   :tree "671ff47efcd9082ae48aea5036ad079e77abfeab"
+   :path "contracts/requirement-reconciliation.edn"
+   :git-blob "78dd94760a33360a44a0815b2d1b52c1a9dc0029"
+   :sha256 "5231b56e3a63500d48bd4fa0d81209dd975293e9609c328900498ac33d898cdf"}
+  :compatible-author-parent
+  {:commit "0a0962f83d1167de6c05979c9bcd947289d8e1e1"
+   :tree "0c7f5308684acca40c3ce8c7447f8d1cd7e6f13f"
+   :parent "a580f666c0c8431f88ae987dae0f840e43fedfbb"}}
+ :model-comparison
+ {:base-requirement-count 1231
+  :proposed-requirement-count 1231
+  :top-level-value-differences [:requirements]
+  :non-requirement-values-exact true
+  :changed-requirement-count 22
+  :preparation-reference-unit-count 22
+  :changed-id-set-equals-preparation-reference-unit-set true
+  :changed-ids
+  ["language/errors/normalize-foreign-failure"
+   "language/errors/represent-typed-outcome"
+   "platform/external-tool-dependency-provenance"
+   "platform/product-application-surface-decision"
+   "platform/product-applications"
+   "platform/product-boot-firmware"
+   "platform/product-boot-to-application-integration"
+   "platform/product-device-drivers"
+   "platform/product-hardware-implementation"
+   "platform/product-isa-device-decision"
+   "platform/product-kernel-services-decision"
+   "platform/product-os-services-isolation"
+   "platform/product-physical-boundary-decision"
+   "platform/product-physical-bringup"
+   "platform/product-reproducible-distribution"
+   "release/candidate-eligibility-failclosed"
+   "release/final-rebuild-reproducibility"
+   "release/final-supply-chain-governance-bundle"
+   "release/seed-boundary-exclusion"
+   "release/selfhosted-artifact-production"
+   "release/selfhosted-full-language-conformance"
+   "release/successful-selfhost-verification"]
+  :all-common-requirement-fields-exact-except-task-reference true
+  :task-gap-equality-count 22
+  :source-facet-id-equality-count 22
+  :atomicity-and-nonoverlap-unchanged-for-all-22 true
+  :prior-record-history-present-for-all-22 true
+  :prior-requirement-record-byte-value-equal-for-all-22 true
+  :model-file-literal-byte-identity false
+  :model-inverse-qualification
+  "The proposed model intentionally has a new file hash. Exact inverse is established by nesting each replaced a580 requirement record byte/value-equivalently in task-source-version-history; it is not literal equality of the whole proposed file to the base file."}
+ :qualified-task-reference-delta
+ {:records-with-new-task-reference 21
+  :records-with-replaced-existing-task-reference 1
+  :replaced-existing-record "language/errors/represent-typed-outcome"
+  :replaced-record-prior-task-reference
+  {:path "specs/types-workflow/tasks.md"
+   :marker "types-implementation-tasks"
+   :id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+   :sha256 "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e"}
+  :replaced-record-current-task-reference
+  {:path "specs/types-workflow/tasks.md"
+   :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c"
+   :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b"
+   :source-record-sha256 "d8828cd1b74f156d0e042a98228f3aa7ae28021a62329cbf8b54462686f07801"
+   :criterion-sha256 "504345105b3e5647d0e072346ba27f81b89c978b43e7b4305d5f78ba53b64737"
+   :id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+   :sha256 "6c681ea228458bb02fbdb45c765ae22859d86a41092c30eb6c264c518cab43"
+   :observed-status "Open; partial source evidence above is not closure"
+   :detailed-acceptance :unassessed}
+  :old-reference-preserved-in-history true
+  :current-source-identity-is-not-implementation-acceptance true
+  :platform-and-release-current-source
+  {:platform-source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6"
+   :platform-source-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9"
+   :release-source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6"
+   :release-source-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9"
+   :runtime-and-types-source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c"
+   :runtime-and-types-source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b"}}
+ :runtime-gap-preservation
+ {:record "language/errors/normalize-foreign-failure"
+  :task-reference-id "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  :task-status "Open"
+  :task-gap-state :missing-exact-task
+  :task-gap
+  "No real canonical implementation marker/task was established for this complete runtime/governance behavior. Navigation plans or broad checker tasks are not substituted for implementation acceptance."
+  :original-task-coverage-gap-preserved true
+  :expanded-predicate-gap-preserved true
+  :implementation-acceptance :unassessed
+  :operation-profile-provider-and-independent-acceptance-open true}
+ :scoped-evidence
+ {:product-four
+  {:report "/tmp/uniform-four-product-decision-reference-independent-review.edn"
+   :sha256 "908b48ca7be65af5ad4bed1ef787e0d8c7d9f37af0a6c362a7128dbb471dfd42"
+   :units 4
+   :facets 24
+   :disposition :scoped-source-acceptance
+   :findings []
+   :task-statuses :open
+   :metadata-conservation :exact
+   :product-decision-implementation-main-and-full240 :not-claimed}
+  :product-nine
+  {:report "/tmp/uniform-nine-product-future-reference-independent-review.edn"
+   :sha256 "74fd96cf5b8bde9f7cfbeb6345e7a74a4c369c852663b2bd8f59e51d872b7303"
+   :units 9
+   :facets 13
+   :disposition :scoped-source-acceptance
+   :findings []
+   :task-statuses :open
+   :distribution-and-conditional-physical-bringup-not-aliased true
+   :product-adoption-implementation-main-and-full240 :not-claimed}
+  :error-current
+  {:report "/tmp/uniform-two-error-current-reference-independent-review.edn"
+   :sha256 "7ca26b6ba7b603074013a27b6a8ed721013f946bbc3263c673769b29b63fba0e"
+   :units 2
+   :facets 53
+   :disposition :scoped-source-acceptance
+   :findings []
+   :implementation-acceptance :unassessed
+   :runtime-task-gap-preserved true}
+  :error-semantic
+  {:report "/tmp/uniform-two-error-semantic-independent-review.edn"
+   :sha256 "3e34f2014a8aea46e0b0bf8c8af8464d52cbef2cd599d2bfcb55c8f47473eefc"
+   :disposition :accepted-scoped-two-unit-semantic-boundary
+   :findings []
+   :source-contexts 53
+   :facet-intersection []
+   :residuals
+   [:typed-outcome-implementation-and-consumers
+    :foreign-host-ffi-operation-wrapper-traces
+    :runtime-missing-exact-task
+    :global-nonoverlap
+    :full240
+    :Main]}
+  :error-erratum
+  {:report "/tmp/uniform-two-error-semantic-independent-review-erratum-v1.edn"
+   :sha256 "d644c109d7be160100a128956308d7f511624e5e200bd7d451473594bcdcbbb5"
+   :correction :append-final-e-to-old-63-hex-proposal-sha
+   :old-value "b2dbd957be8c906d5e91e58469f7092cf137aa60b78edd16520b93635c7ac17"
+   :correct-value "b2dbd957be8c906d5e91e58469f7092cf137aa60b78edd16520b93635c7ac17e"
+   :semantic-rerun :none
+   :original-verdict-preserved true}
+  :release-seven
+  {:report "/tmp/uniform-seven-release-source-references-independent-verdict.edn"
+   :sha256 "21e1e10304710ba35a93ee6148ae25eeb90cedc18e6d5bad6ec37b2aebb3cfb9"
+   :units 7
+   :decision :accepted-scoped-source-reference-binding
+   :findings []
+   :task-statuses :open-and-unchecked
+   :unassessed-existing-release-references 9
+   :execution-acceptance-release-seed-retirement-and-Main :not-claimed}}
+ :aggregate-preservation
+ {:reference-units 22
+  :product-units 13
+  :error-units 2
+  :release-units 7
+  :source-version-bridges 9
+  :task-source-version-bridges 21
+  :original-documents 240
+  :requirements 1231
+  :source-dispositions 10096
+  :source-facets 29177
+  :aliases 90
+  :aliased-candidate-records 90
+  :semantic-source-corrections 8
+  :source-citation-corrections 1
+  :source-adjudications 1
+  :scope-amendments 0
+  :existing-task-gaps :unchanged
+  :existing-records-and-histories :exact
+  :existing21-current-source-bridges :unchanged
+  :other-model-ids-states-facets-dispositions :unchanged}
+ :nonclaims
+ [:no-predicate-implementation-acceptance
+  :no-task-status-or-checkbox-advancement
+  :no-atomicity-or-global-nonoverlap-closure
+  :no-provider-native-ffi-host-or-compiler-execution
+  :no-ci-or-test-execution
+  :no-product-decision-or-architecture-selection
+  :no-release-signing-publication-or-seed-retirement
+  :no-Main-or-full240-credit]
+ :qualifications
+ [{:kind :model-inverse-wording
+   :severity :informational
+   :text "The preparation's whole-model-byte-inverse field must not be read as literal whole-file byte equality; the proposed model hash necessarily differs. This review verified exact recoverable prior records and unchanged common values instead."}]
+ :verification
+ {:commands
+  ["git status --short"
+   "git show -s --format=%H%n%T%n%P a580f666c0c8431f88ae987dae0f840e43fedfbb"
+   "git show -s --format=%H%n%T%n%P 0a0962f83d1167de6c05979c9bcd947289d8e1e1"
+   "git cat-file -e <source-commit>^{commit} for 1615d7a37b7c35d8ad4dabf7d719e906e75277c6 and 66ca91c531593157bfc01b6fb684cc37fa1eb42c"
+   "clojure EDN parse and base/proposed requirement-id comparison"
+   "clojure EDN parse and prior-record/history/common-field comparison"
+   "clojure EDN parse of Product/Error/Release independent reports"
+   "shasum -a 256 of all input and cited evidence files"]
+  :worktree-clean true
+  :source-edits none
+  :provider-actions none
+  :tests-run none}
+ :conclusion
+ "The 22-record private proposal is independently acceptable as a source-reference/model-binding change only. It exactly targets the declared 13 Product, 2 Error, and 7 Release IDs; current task-source identities are authenticated and the prior record for every target is recoverable exactly. The Runtime missing-exact-task/full-expanded-predicate gap, Open/partial statuses, implementation residuals, nine unreferenced Release records, and all global/Main/release nonclaims remain open."
+}
+~~~~~~
+<!-- source-reference-review-archive:exact-model-twenty-two:end -->
