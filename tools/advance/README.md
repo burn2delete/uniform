@@ -76,8 +76,9 @@ accepted completion remain distinct. Removed source outcomes are retained for
 attention rather than treated as completed. The immutable selected source base
 and whole-file digest remain recorded as the merge base advances. Changed,
 closed or removed selected task criteria invalidate stale selection. Changes
-to other tasks in the file preserve selection only when the selected task body
-and authority match exactly at both published revisions.
+to other tasks in the file preserve selection only when the selected task body,
+authority, region markers and file context outside task bodies match exactly at
+both published revisions.
 
 Authors own only declared paths, including their source task file for scoped
 evidence. The controller commits the first meaningful change and opens a draft

@@ -574,12 +574,14 @@
       (is (= base (:source-base (flow/task ctx "selected"))) "Later preparation never rebinds the selected source"))))
 
 (deftest changed-or-unverifiable-selected-task-authority-remains-held
-  (doseq [case-id [:changed :checked :removed :wrong-digest :wrong-origin :missing-origin]]
+  (doseq [case-id [:changed :checked :removed :wrong-digest :wrong-origin :missing-origin :context :region]]
     (let [{:keys [ctx repo task]} (authority-fixture!)
           text (case case-id
                  :changed (str/replace authority-text "the value is independently accepted" "the value and new semantics are accepted")
                  :checked (str/replace authority-text "- [ ] `demo/value`" "- [x] `demo/value`")
                  :removed (str/replace authority-text #"- \[ \] `demo/value`[^\n]*\nDone when:[^\n]*\n" "")
+                 :context (str/replace authority-text "# Tasks\n" "# Tasks\nGlobal closing rule: every task needs new verifier evidence.\n")
+                 :region (str/replace authority-text "demo-implementation-tasks" "changed-implementation-tasks")
                  (str/replace authority-text "other behavior is accepted" "other behavior and its diagnostics are accepted"))
           current (publish-authority! ctx repo text)
           task (cond-> (assoc task :base current :worktree repo)

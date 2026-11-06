@@ -2,6 +2,7 @@
   "Select real Spec Kit increments, implement, review and merge until proven complete."
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
+            [clojure.string :as str]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.github :as gh]
@@ -112,6 +113,14 @@
       (when-not (zero? (:exit result)) (rt/fail! "Cannot inspect task source" {:task (:task t) :result result}))
       (:out result))))
 
+(defn authority-context [path text]
+  (let [rows (catalog/parse path text)
+        task-lines (into #{} (mapcat (fn [row]
+                                      (let [start (dec (:line row))]
+                                        (range start (+ start (count (str/split (:body row) #"\n" -1)))))) rows))]
+    (str/join "\n" (keep-indexed (fn [index line] (when-not (contains? task-lines index) line))
+                                  (str/split-lines text)))))
+
 (defn validate-source! [ctx t]
   (let [current-text (source-text! ctx t (:base t))
         row (fn [text] (first (filter #(= (:task t) (:key %)) (catalog/parse (:task-path t) text))))
@@ -123,6 +132,8 @@
                     selected (row selected-text)]
                 (and (= (:task-digest t) (rt/digest selected-text))
                      selected (not (:checked selected))
+                     (= (authority-context (:task-path t) selected-text)
+                        (authority-context (:task-path t) current-text))
                      (= (select-keys selected [:key :path :body :authority])
                         (select-keys current [:key :path :body :authority]))))))
       (rt/fail! "Source task changed on main; reselect rather than implementing a stale plan" {:task (:task t)}))))
