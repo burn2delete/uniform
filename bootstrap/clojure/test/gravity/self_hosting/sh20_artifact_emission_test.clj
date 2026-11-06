@@ -277,20 +277,20 @@
   (let [base (request accepted-gravity-plan function)
         origins (mapv (fn [index]
                         {:kind :generated
-                         :generator (keyword "generator" (str index))
-                         :source-id (keyword "source" (str index))})
+                         :generator (keyword "generator" (str "item-" index))
+                         :source-id (keyword "source" (str "item-" index))})
                       (range 17))
         source-map (mapv (fn [index]
                            (-> (first (:source-map base))
                                (assoc :target-offset (* index 4)
-                                      :mir-node-id (keyword "mir" (str index)))
+                                      :mir-node-id (keyword "mir" (str "item-" index)))
                                (assoc-in [:source-span :start-byte] (* index 4))
                                (assoc-in [:source-span :end-byte]
                                          (* (inc index) 4))))
                          (range 130))
         dependencies (mapv (fn [index]
-                             {:node-id (keyword "dependency" (str index))
-                              :artifact-id (keyword "artifact" (str index))
+                             {:node-id (keyword "dependency" (str "item-" index))
+                              :artifact-id (keyword "artifact" (str "item-" index))
                               :topological-ordinal (inc index)
                               :content-hash
                               (assoc (:content-hash base)
@@ -307,14 +307,14 @@
                        (:node-id (dependencies (dec index)))])
                     (range 1 130)))
         edges (mapv (fn [index [from to]]
-                      {:edge-id (keyword "edge" (str index))
+                      {:edge-id (keyword "edge" (str "item-" index))
                        :edge-ordinal index :from-node from :to-node to})
                     (range) pairs)
         references (mapv (fn [index]
-                           {:artifact-id (keyword "evidence" (str index))
+                           {:artifact-id (keyword "evidence" (str "item-" index))
                             :content-hash (:content-hash (dependencies index))})
                          (range 129))
-        keywords (mapv #(keyword "input" (str %)) (range 33))]
+        keywords (mapv #(keyword "input" (str "item-" %)) (range 33))]
     (cond-> (-> base
                 (assoc :source-map source-map :origin-chain origins
                        :dependencies dependencies :dependency-edges edges
@@ -365,7 +365,7 @@
                (:release-evidence bundle)))
         (is (= bundle (edn/read-string (pr-str bundle))))
         (is (= :passed
-               (:status (invoke-engine 'sh20-verify-bundle [request bundle])))))))
+               (:status (invoke-engine 'sh20-verify-bundle [request bundle]))))))))
 
 (deftest sh20-large-bundle-identity-is-path-neutral-and-binds-late-records
   (let [request (large-bundle-request 'sh20-release-executable-request)
@@ -448,7 +448,7 @@
                         (:edge-id (edges 257))) "B13-GRAPH"]
              [:late-duplicate-pair
               (assoc-in request [:dependency-edges 258]
-                        (assoc (edges 257) :edge-id :edge/258 :edge-ordinal 258))
+                        (assoc (edges 257) :edge-id :edge/item-258 :edge-ordinal 258))
               "B13-GRAPH"]
              [:late-forward-edge
               (-> request
@@ -493,7 +493,7 @@
              [[:target-metadata :target-features] "B13-TARGET" false]
              [[:reproducibility :declared-environment] "B13-REPRODUCIBILITY" false]
              [[:reproducibility :nondeterminism] "B13-REPRODUCIBILITY" true]]
-            invalid (cond-> [nil '(:input/0) [false]
+            invalid (cond-> [nil '(:input/item-0) [false]
                               (assoc (get-in request key-path) 32 false)
                               (assoc (get-in request key-path) 32
                                      (first (get-in request key-path)))]
@@ -509,8 +509,8 @@
         origins
         (mapv (fn [index]
                 {:kind :generated
-                 :generator (keyword "generator" (str index))
-                 :source-id (keyword "source" (str index))})
+                 :generator (keyword "generator" (str "item-" index))
+                 :source-id (keyword "source" (str "item-" index))})
               (range 17))
         candidate
         (-> base-request
