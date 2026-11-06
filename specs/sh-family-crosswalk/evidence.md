@@ -743,3 +743,47 @@ The derived crosswalk changes only that current transition and its pending revie
 Final pure Source checks: dependency suite 28 tests/6958 assertions and crosswalk suite 80 tests/65048 assertions, both with zero failures/errors; both current-source checks pass. Pinned lint has zero errors/warnings and the identical pre-existing informational redundant-string finding at acceptance_dependencies_test.clj:197. Canonical documentation, roadmap structure, 185-workstream governance and six/eleven language-boundary checks pass at their unchanged input scope. Earlier failed observations remain preserved; they are not relabeled as passing checks.
 
 This is source/interface provenance awaiting independent current-tuple review and Main integration. No newer 240-spec source proposal is adopted here. No task status, implementation, provider execution, migration, release, seed retirement, T002/T003/T005 closure or full 240-spec verification is granted.
+
+## Reviewed 240-spec source composition: explicit current bindings
+
+The source checkpoint is `1615d7a37b7c35d8ad4dabf7d719e906e75277c6`, tree
+`2fe775403b016510a7828389bcbb8c1bd710c1b9`. This continuation binds its
+42 reviewed source files through explicit commit/tree/blob, complete UTF-8
+span and file digest contracts. Twenty-two existing paths receive complete
+predecessor-preserving successors and twenty additional paths receive explicit
+bindings; six unchanged earlier transitions remain. The resulting current
+table has 48 paths. The 31 STD7-STD9 criterion predicates and sole owners
+remain byte-exact, with separate current locators and complete old joins.
+
+The complete predecessor frame and crosswalk are authenticated at
+`5a8791e36dd7816b686bd9a1b07bc238ef2d0df4`, tree
+`7327dff1b1c1d6416ef8b22b6b937d93e3af4764`. Reversing only the declared
+transition, criterion-join and future-observation additions restores the
+whole previous frame. All 535 prior normalized evidence payloads remain
+byte-exact; 41 distinct current payloads are added without relabeling old
+subjects. The complete old mapping review is retained with its original
+fingerprint. Current mapping review remains pending.
+
+The 149 ordinary and 40 future task observations preserve every identity,
+route and checked state. Current future observations are separate from the
+unchanged historical error/protocol tables. Platform current-source lookup
+now uses the same explicit successor precedence as the existing Stdlib
+lookup while retaining the historical ordinary Platform rows. All 180 SH
+requirement dispositions, narrow Reader evidence, conflicts, finish-line
+sources and the rollup remain unchanged. Newly located source clauses carry
+source-inspection-only and unassessed-current-applicability qualifications.
+
+Before freeze, the dependency suite passes 28 tests/7199 assertions, the seven
+focused historical/current crosswalk controls pass 6331 assertions, and the
+source-history guards pass five tests/79 assertions. The complete crosswalk
+run ended with one failure in 80 tests/65130 assertions: an older review
+comparison selected the new review layer. That comparison now selects the
+complete preserved predecessor; its focused regression passes one test/26
+assertions. Exact committed-source checks are recorded separately. Earlier
+failed preparations and the interrupted first crosswalk run (terminal 130)
+remain nonpasses, with their original observations preserved.
+
+These are source provenance and conservation results awaiting independent
+review and Main integration. They grant no task completion, current
+implementation acceptance, provider/native execution, migration, release,
+seed retirement, T002/T003/T005 closure or full 240-spec verification.

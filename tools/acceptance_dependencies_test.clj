@@ -1,6 +1,7 @@
 (ns acceptance-dependencies-test
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.edn :as edn]
+            [clojure.set :as set]
             [clojure.string :as str]
             [requirement-sources :as requirement-sources]))
 
@@ -532,7 +533,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 118 (count (:declared-parent-consumers review))))
+    (is (= 128 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (is (every? dependencies/selected-parent-consumers
                 ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
@@ -590,7 +591,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [138] (mapv count (:declared-output-cycles review))))
+    (is (= [146] (mapv count (:declared-output-cycles review))))
     ;; Fourteen original result routes join the two coarse feedback groups.
     ;; Their older memberships survive; executable typed edges stay acyclic.
     (let [text (requirement-sources/git-source "." "f989a01024d4ef0f595b7bf685e0fbf17648469b"
@@ -600,7 +601,8 @@
           old-members (set (mapcat identity (get-in prior [:dependency-review :declared-output-cycles])))
           added #{"release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures" "ui" "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" "evolution/stabilization-decision" "backend-mlir" "backend-workflow" "backend-llvm" "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters" "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface" "backend-query" "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures" "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations" "backend-emission" "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures" "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures" "backend-jvm" "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions" "backend-ai" "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures" "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations" "release/remaining-tasks-and-evidence/execute-formal-evidence-checks" "backend-js" "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures" "evolution/library-admission" "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations" "backend-c" "backend-mobile" "backend-wasm"}]
       (is (= [99 11] (mapv count (get-in prior [:dependency-review :declared-output-cycles]))))
-      (is (= (into old-members added) (set (first (:declared-output-cycles review))))))
+      (is (set/subset? (into old-members added) (set (first (:declared-output-cycles review)))))
+      (is (= 8 (count (set/difference (set (first (:declared-output-cycles review))) (into old-members added))))))
 
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
@@ -851,8 +853,9 @@
                 (str "<!-- future-composition-dependencies:start -->\n| Consumer | Start results | Composition results | Selected output contract |\n| --- | --- | --- | --- |\n" (str/join "\n" inserted) "\n<!-- future-composition-dependencies:end -->")
                 task-ids (set ids))
         inverse (fn [text rs] (reduce #(str/replace %1 (str %2 "\n") "") text rs))
+        current-transition (first (filter #(= path (:path %)) requirement-sources/current-source-transition-contracts))
         validate #(requirement-sources/validate-current-source-transition!
-                   % t read-ref slurp dependencies/sha256 dependencies/require!)]
+                   % t read-ref (fn [p] (if (= path p) after (slurp p))) dependencies/sha256 dependencies/require!)]
     (is (= prior (first (filter #(= path (:path %)) requirement-sources/current-source-transition-successor-contracts))))
     (is (= 14 (count inserted) (count (rows original))))
     (is (= inserted (rows original)))
@@ -863,11 +866,13 @@
     (is (= before (inverse after inserted)))
     (is (= original-before (inverse original inserted)))
     (is (= before (read-ref "f989a01024d4ef0f595b7bf685e0fbf17648469b" path)))
-    (is (= after (slurp path)))
+    (is (= after (read-ref (:baseline-ref current-transition) path)))
+    (is (= t (:successor-of current-transition)))
+    (is (= (read-ref (:applying-ref current-transition) path) (slurp path)))
     (is (every? #(str/includes? % " | none | ") inserted))
     (is (= :current-source-interface-only (:authority (validate t))))
     (is (= :unassessed (:implementation-acceptance (validate t))))
-    (is (= t (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
+    (is (= current-transition (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
     ;; The old census continues to describe its exact prior Git checkpoint.
     (let [binding (get-in source [:implementation-readiness-source-version :source-successor-binding])
           old-source (edn/read-string (read-ref "f216b540663d7c23ba5af646abdcb153654ad9c9" dependencies/sh-crosswalk-path))]

@@ -1822,10 +1822,1151 @@
  "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
  :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"}
 )
-(def current-source-transition-contracts
+(def predecessor-current-source-transition-contracts
   (mapv #(if (= "docs/acceptance-dependencies.md" (:path %))
            original-dependency-row-successor %)
         current-source-transition-successor-contracts))
+(def source-composition-file-data
+  [{:path ".specify/memory/constitution.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "4bd99817a4f09ce7418886b40293f2b5d8cae821",
+   :sha256
+   "055229478b7e9ff487227077199f9af57b4987699ff5bab72ac838ef502061a8",
+   :bytes 7336,
+   :lines 122,
+   :span-end-line 121},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "65783a5ac089590662c61152482d485f0d11cdc6",
+   :sha256
+   "e400c13add80ae7ab66ca435956410b658bc7b7000ce5c6232e0dba87dee2e0c",
+   :bytes 8681,
+   :lines 145,
+   :span-end-line 144}}
+ {:path "docs/acceptance-dependencies.md",
+  :before
+  {:commit "9ef3622060652f339fa75b73fefa4963db272a10",
+   :tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
+   :blob "7a036ee82a481d9f7c84a5935e4137f4b4931804",
+   :sha256
+   "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
+   :bytes 583986,
+   :lines 721,
+   :span-end-line 720},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "3d6d1f9043943e3737206113c7348547b2ecf1f2",
+   :sha256
+   "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
+   :bytes 624580,
+   :lines 760,
+   :span-end-line 759}}
+ {:path
+  "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md",
+  :before
+  {:commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+   :blob "e1417db32e7ab319c595dee9fcb917b0950b44f7",
+   :sha256
+   "b578d3d39ed72930f3b6c838349fa3dbcdebe77698b98b88f3d93531f87a853f",
+   :bytes 6827,
+   :lines 112,
+   :span-end-line 111},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "a2e8355b6e3f2423e1d70bcd405717eaa7ca82a2",
+   :sha256
+   "25dab04498281cc51537bb0aec2ba046670ccf3fd3dbc3cafc419d8ab79ee71c",
+   :bytes 7589,
+   :lines 121,
+   :span-end-line 120}}
+ {:path "specs/auth-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "aaef141d94381b8bc5f38c17aaa330c617e50e6a",
+   :sha256
+   "166a13d939e53507fda977c0af034fe6e875c09ad9d94d795ca0aa5db401cc0b",
+   :bytes 42692,
+   :lines 474,
+   :span-end-line 473},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "27746875730b17a1f3851548c64557a2febb5685",
+   :sha256
+   "d4e74c0e9ea9bb6c860e6cb3e146333ed0ad262c939073e0b207cb26537eab23",
+   :bytes 46652,
+   :lines 506,
+   :span-end-line 505}}
+ {:path "specs/auth-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "ad1f82fa6a0a03362df053c76dd8ec31125751ab",
+   :sha256
+   "e507459f4ce7152f6aa48aa8154a67bab82faf2f0bdc551d8d04f82329793946",
+   :bytes 55649,
+   :lines 378,
+   :span-end-line 377},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "eacc8b08da24682cce054701f6f664ec4d91d247",
+   :sha256
+   "9a48036280d3ec34758f5c8b8e075db60f4512821ecb454f08bf3b5402d21e86",
+   :bytes 60217,
+   :lines 413,
+   :span-end-line 412}}
+ {:path "specs/backends-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "c247762a0312aac95baacd59cd6e3d5551c67c33",
+   :sha256
+   "633c3118d3521b8521efa96a0d4b59df3a202091ac5f3e0c363f2e4a3d834d49",
+   :bytes 47504,
+   :lines 530,
+   :span-end-line 529},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "089fbbca496d6583a633ca32b3349035c80ee99a",
+   :sha256
+   "d73112dcc7caa1c768a592fad09ac4e7743fb6f61dd37e71f2df99fbe669cdf9",
+   :bytes 50502,
+   :lines 554,
+   :span-end-line 553}}
+ {:path "specs/build-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "0416193da25e2ca5b511ce2a73f5d81cd7a50658",
+   :sha256
+   "538102419b21e39048912f6ed8eccfc5dbe3a7823faab356d1eaf8f9ff2a892c",
+   :bytes 38352,
+   :lines 390,
+   :span-end-line 389},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "fb2ed8343fefbb01cb37b140c319b33fd9ec28a9",
+   :sha256
+   "4b2bd5bc9ab4074251098f2e83a00008391f7b1b0d1d63cf39fbe1d8a6723056",
+   :bytes 42419,
+   :lines 422,
+   :span-end-line 421}}
+ {:path "specs/cli-workflow/plan.md",
+  :before
+  {:commit "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
+   :tree "db2239aa57777b22b20aabf052dd11f93783e13c",
+   :blob "fa41e362af38b94538e156aa339cc63cd7b81723",
+   :sha256
+   "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
+   :bytes 5811,
+   :lines 87,
+   :span-end-line 86},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "7b654869f83dfd20e96033505e07780ad49f76aa",
+   :sha256
+   "7c5bba798813507b05e22525344c011bf91c02db597f1815bfffab4b5f5f6807",
+   :bytes 6827,
+   :lines 95,
+   :span-end-line 94}}
+ {:path "specs/cli-workflow/spec.md",
+  :before
+  {:commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+   :blob "d5b0f9f48c051235f61f14751e110904438cda11",
+   :sha256
+   "fa8c8d454cb98c6ab791e26258aedd65fa5d7ceca04fca36f8190dfedf9385da",
+   :bytes 8717,
+   :lines 103,
+   :span-end-line 102},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "20077e588910710d7ffac84c5b2ca992949f2c3b",
+   :sha256
+   "5f7a220dc1f802ad6eaf4b5950bfc4f014c1e604bcee5d1a4df69f06f6902ad6",
+   :bytes 9221,
+   :lines 105,
+   :span-end-line 104}}
+ {:path "specs/cli-workflow/tasks.md",
+  :before
+  {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+   :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+   :blob "fcd44645e75b3b0c17abb964c2fb18ca0831cb34",
+   :sha256
+   "4e98c91c8beeb40ef78c8305db99f11b05b3095bbf9076204b55f319d854b73b",
+   :bytes 9642,
+   :lines 150,
+   :span-end-line 149},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "2da6f571cb6d7d78a5f607e0e38a35dde2eaef9a",
+   :sha256
+   "6e376d8b3ffefcb956604bf5a8582c17d48fa03320f04cb3022e4e4cf5d339a2",
+   :bytes 18424,
+   :lines 227,
+   :span-end-line 226}}
+ {:path "specs/compiler-api-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "43ca1e7a0c435b991b593a0efaa2453025df2bbb",
+   :sha256
+   "1fb11b8832ea2d88478553cc363bf0ae4f6fb11572c3713d697c6d040d0f0736",
+   :bytes 39932,
+   :lines 380,
+   :span-end-line 379},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "4764b65083570dc625b9052036c29663e1822d0e",
+   :sha256
+   "c859a327caa86c26f299f9fd001aabe67d6fb6d174424cb720b8a430da1bf417",
+   :bytes 41842,
+   :lines 396,
+   :span-end-line 395}}
+ {:path "specs/compiler-api-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "b5640ee34ca334b89e50f106740d814907814de5",
+   :sha256
+   "a0d0928ea767f5f6901d8ae4045f28d7bea45f89fc3607737812f2e53a2558e5",
+   :bytes 69276,
+   :lines 281,
+   :span-end-line 280},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "8ec915f3131bb67b5f3c086b89c3d2c3c21826a4",
+   :sha256
+   "5ba49e3cc67928a172e6e2e1a734f40d8a15920730b040976bb5bf456321745b",
+   :bytes 70634,
+   :lines 292,
+   :span-end-line 291}}
+ {:path "specs/core-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "1f7193e32e5d1342e33127dabf5250588c43ee60",
+   :sha256
+   "9e3197fa1ca305cbb2ce50e65698b663779cb4db2876ab97aa89a68487770498",
+   :bytes 63419,
+   :lines 430,
+   :span-end-line 429},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "410a685f08714e2bf5590caa7527a5831872649e",
+   :sha256
+   "69944812333a02bd56806c27f187311472ed522596a7d76eacb22ac320b359ba",
+   :bytes 63849,
+   :lines 434,
+   :span-end-line 433}}
+ {:path "specs/diag-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "847bdf592ea2d38181e0198b351c99573bd9f1dd",
+   :sha256
+   "02519403a80757d900109e54ab505fa52099334dd928cef8570bd090bd07891b",
+   :bytes 28669,
+   :lines 320,
+   :span-end-line 319},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "5c91b889aadc54dc18b9bd255e7815d75670b4fb",
+   :sha256
+   "6143db8d1bee0d5a6b2973c2739172f0a6ae86e27993cefbc2c0c519badf39dc",
+   :bytes 32685,
+   :lines 352,
+   :span-end-line 351}}
+ {:path "specs/domains-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "7701724947c68749ca40243703719760aade9d11",
+   :sha256
+   "58fcfa28a601df460cdfaff1a6e2322ba86b18388641752e9d923d02d614fd77",
+   :bytes 75932,
+   :lines 761,
+   :span-end-line 760},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "ff66bfd032902189965d62f466a63fd50e4bdb39",
+   :sha256
+   "e6173ce1138b17d10fcde874dafd69e2fdc29cc4d9caed2d2577c16e6aa2f41c",
+   :bytes 78511,
+   :lines 781,
+   :span-end-line 780}}
+ {:path "specs/domains-workflow/tasks.md",
+  :before
+  {:commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+   :blob "0831a57f201cd974d81d1d8c6583eef4b7f45ecd",
+   :sha256
+   "3294ee20a756529102efebcc745022cbb9f795be7ece97d2bdd691b9edb2f62c",
+   :bytes 440047,
+   :lines 3399,
+   :span-end-line 3398},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "052598b8a1e20984e3347b1fb55e0ccae1564a3a",
+   :sha256
+   "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+   :bytes 440113,
+   :lines 3399,
+   :span-end-line 3398}}
+ {:path "specs/effects-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "3affa278147c837c7a742681c3f0041177f34699",
+   :sha256
+   "d076f683c306449427c1afbc60e5a6f4fe5f517954b5ebd1d85e6b3c06390685",
+   :bytes 49732,
+   :lines 544,
+   :span-end-line 543},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "051e7903a7584061cb35d8938040c14c632e3e96",
+   :sha256
+   "9a39e24ce44fb94f24177f9b199633704b11b4a1cb3d71a39706ee508d7e1d9f",
+   :bytes 52693,
+   :lines 568,
+   :span-end-line 567}}
+ {:path "specs/effects-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "b67c5af90d668c3bc6dcdde302d8d2bcdc08e552",
+   :sha256
+   "d2681a1c12eea5e437603e804de8d37f07df667e5909b5d06fc5a5232fbf566d",
+   :bytes 40520,
+   :lines 290,
+   :span-end-line 289},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "39bf0000f2fa10458efd16739602e1f01fbfdb29",
+   :sha256
+   "ffd8e09758643b5207053331929f08cbd2501405083055e0239be2e934451bc2",
+   :bytes 47205,
+   :lines 343,
+   :span-end-line 342}}
+ {:path "specs/evolution-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "72a85d3e122986eb6a3461bea8bb354e230ecbfc",
+   :sha256
+   "9265abbc90bc30cb124487e1887d8fd79beae79bdb1036e863da6535ea3d054c",
+   :bytes 21196,
+   :lines 221,
+   :span-end-line 220},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "f0311945b4181f3e8ea257d5309234d2d9959661",
+   :sha256
+   "d3ea6c08c5c5b7de475b892f35d96a540522639ed24f7fe0ef4b110e74b7dc02",
+   :bytes 23633,
+   :lines 241,
+   :span-end-line 240}}
+ {:path "specs/expand-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "7a9283c5c58e0d6459483adefd608b4e45fa7f9c",
+   :sha256
+   "5523b19e3a987e47651be031aac6cbf6f94ccefd48c1b96258de9ed824140fbc",
+   :bytes 97472,
+   :lines 815,
+   :span-end-line 814},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "07c3892b48752cdc49a756f0576025a4480901bf",
+   :sha256
+   "b957ae9de3a3611817c99661e8ec24c200087e6fb819abf4d21cb6635594d547",
+   :bytes 99003,
+   :lines 827,
+   :span-end-line 826}}
+ {:path "specs/legality-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "76da4f7e507f2b92dd3035f88859ec801830655e",
+   :sha256
+   "125243566745de1607ddcec6f16936e208027dfc91e6693235ece59f2c68fd32",
+   :bytes 98005,
+   :lines 1086,
+   :span-end-line 1085},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "d57596ade61465e2ed59bd9f0d8675c76b5574ff",
+   :sha256
+   "cf7b67dc7e205c3ddb1498d556a772d42a47b251d3b2b63731a48f068869494c",
+   :bytes 101112,
+   :lines 1110,
+   :span-end-line 1109}}
+ {:path "specs/legality-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "64454da9025341130c863ee2d6b1976c1b0f0287",
+   :sha256
+   "f8201c4ba70b1ae3e4279ba5ea055bced5d094af0c94e060739979eab67cece7",
+   :bytes 138236,
+   :lines 723,
+   :span-end-line 722},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "64e79b97de95454ca9276450c043349333a22cad",
+   :sha256
+   "fdd2770993d1e9f848def12b7741b21f01462192616b3b843acbe49508d03e1f",
+   :bytes 141167,
+   :lines 741,
+   :span-end-line 740}}
+ {:path "specs/lower-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "c2957cb6562f91ccb8e9be3b44f3f0e89642e1a3",
+   :sha256
+   "e10b7b3514d7811000a1ca688366f65fbc0eb057c9c9b0c88a9ce2230ebf069b",
+   :bytes 25517,
+   :lines 283,
+   :span-end-line 282},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "a27056e1fd7860f3e21c9f97c041f484240cd738",
+   :sha256
+   "25385e2a7ba1929f248213ad610b29efc33007b0b5a99f2f809cadf362d42f9e",
+   :bytes 26521,
+   :lines 291,
+   :span-end-line 290}}
+ {:path "specs/lower-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "0e155bb9c937fd5ca514a4c9107798604037cd12",
+   :sha256
+   "8f18064c581a2550248e67650615f117e30b995221a24a9c90cb7a08154a95a7",
+   :bytes 22526,
+   :lines 171,
+   :span-end-line 170},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "3668d5a8e13367fdf86d7f3c28804adf14e0f4b9",
+   :sha256
+   "ca83727a3fdb84b4f325273da1f047bed0e74c3d3ce975318e6cd2ae7b315320",
+   :bytes 25256,
+   :lines 193,
+   :span-end-line 192}}
+ {:path "specs/mir-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "a61f5a10038db932159fb17c8ed97177eeed030a",
+   :sha256
+   "02531797b65766c126508628b49cc84caa5b6119495e47e1a325cadca4646289",
+   :bytes 20057,
+   :lines 223,
+   :span-end-line 222},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "25ae0d3bbc243aeede26bb8845eb75bf3fe0339e",
+   :sha256
+   "acf32c648b7aa71792c1c5dd4f25cba3263b2ced7623d2412d7735d94c89ac0f",
+   :bytes 20479,
+   :lines 227,
+   :span-end-line 226}}
+ {:path "specs/opt-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "295124295b3328efc5a5d3d1ed5a57dfb0f95a6c",
+   :sha256
+   "8a89196fbc9b984507524a434ba92ee2b04d7b2fbb24956a28197782a196acfc",
+   :bytes 26291,
+   :lines 280,
+   :span-end-line 279},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "89e0d104f65c382a51034c186be5464399e6c50e",
+   :sha256
+   "0151b0070306aa2b25c9e0636371237866764afef0dcfb7ca734763b2e073449",
+   :bytes 54551,
+   :lines 457,
+   :span-end-line 456}}
+ {:path "specs/opt-workflow/spec.md",
+  :before
+  {:commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+   :blob "135d3d60ef605b535e58da90f96e64189d26d83d",
+   :sha256
+   "38f4706a44057d0dde7bb8025b0d47be222c419078c3e158d823502b8fd203a0",
+   :bytes 9548,
+   :lines 139,
+   :span-end-line 138},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "b126cac09b8b1580ff9f7178b21a82f316b3c237",
+   :sha256
+   "c6ea664a2e976c2302f46e2336863c4ca2da26dc8a3b73fc025e26db9f3a2988",
+   :bytes 10062,
+   :lines 141,
+   :span-end-line 140}}
+ {:path "specs/opt-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "52a0f27e8dfa6e047f30459ceba43822a494d13b",
+   :sha256
+   "507fcaac02c2c415e66af2de5d1a56d46e3ffad71a735864582d0ca8a7a84e1b",
+   :bytes 19726,
+   :lines 159,
+   :span-end-line 158},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "f723ee5d62e89052b291233dfbc68c4e60828ad4",
+   :sha256
+   "58e2feda7ac60a99594e3ef737e35cd94ce19bda5c044c8c8549cdf65c97b303",
+   :bytes 39628,
+   :lines 313,
+   :span-end-line 312}}
+ {:path "specs/platform-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "39c0cbca4f0bc6aeba37322fd0589c208478427f",
+   :sha256
+   "44f8c924be1a0d7b523b96f4666ba60b883159c8e71c2b2749613065dc4b574b",
+   :bytes 23582,
+   :lines 231,
+   :span-end-line 230},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "6e6a548b5a638f731ab33bdaab46b11f3626a29c",
+   :sha256
+   "2a9b6383561d05ddc15a577e22ee46c3ea11d85c4b0f00902bfb270e57d7ea07",
+   :bytes 24615,
+   :lines 239,
+   :span-end-line 238}}
+ {:path "specs/platform-workflow/tasks.md",
+  :before
+  {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+   :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+   :blob "536da4ae764a3c985d758fa3f2e8435d06430862",
+   :sha256
+   "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
+   :bytes 107482,
+   :lines 339,
+   :span-end-line 338},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "d67a0908c27714071566e1a2da51e5617718fdaf",
+   :sha256
+   "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+   :bytes 107550,
+   :lines 339,
+   :span-end-line 338}}
+ {:path "specs/reader-workflow/plan.md",
+  :before
+  {:commit "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
+   :tree "db2239aa57777b22b20aabf052dd11f93783e13c",
+   :blob "a139e7b84c0e1ce7972a504dcd88f65e52d6ecd7",
+   :sha256
+   "b3116d43e345cdb8fd211b151be62d5644c9c4aa3de3e86d16cd03876c65c774",
+   :bytes 14807,
+   :lines 195,
+   :span-end-line 194},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "818ef2638714d9fff2b508daa3e1d105820d51d2",
+   :sha256
+   "23bc8032561ac4329a55702d2d07dc78b0296ecc9d97352065db354d6084b36e",
+   :bytes 15332,
+   :lines 199,
+   :span-end-line 198}}
+ {:path "specs/release-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "21c5401e2b02ddc4344216b1162adbaa0d5fa71f",
+   :sha256
+   "983e2f3a3598c8da62b71ef61ab39be7ac1bcf4ffda52409602826440bf15c7e",
+   :bytes 42143,
+   :lines 444,
+   :span-end-line 443},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "11afac6090f28ac842205c85c3def15f3908ed7e",
+   :sha256
+   "4850d741b9d25d2e0c2103ca19d6deafe4ce808950efae64a18f562c94e6f59e",
+   :bytes 45946,
+   :lines 472,
+   :span-end-line 471}}
+ {:path "specs/release-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "a554b8acf59d56f34528e2ac86cddbba5abded70",
+   :sha256
+   "8931f162a0f7b9847a501ed0dc95fc027da0baa7ae91c4d7df6bcefebdb0356c",
+   :bytes 102132,
+   :lines 333,
+   :span-end-line 332},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "394f46938cf1df31452b1ebe4a6853608aef4345",
+   :sha256
+   "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+   :bytes 106505,
+   :lines 366,
+   :span-end-line 365}}
+ {:path "specs/runtime-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "4841be0e06c702ab1cc401b3a9f6620ab07140a2",
+   :sha256
+   "be52f3406a144149486a78636925b91643f679eb7cd65c153e65744cc4a782a8",
+   :bytes 47160,
+   :lines 499,
+   :span-end-line 498},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "1ed8740341e1771a78d4dfda5bf10de0dd69c084",
+   :sha256
+   "c8f90375e5b24eee8cf5b8cf5a262db5a53d59c4c2273261f265c9b1f1cce278",
+   :bytes 51249,
+   :lines 531,
+   :span-end-line 530}}
+ {:path "specs/runtime-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "09da9f8f231be0797c20f5f2d7bed7573df85711",
+   :sha256
+   "a23e226cbafa81d144eef2ac12c5ff6d3928d76f57bf8d76deefc681700696df",
+   :bytes 76867,
+   :lines 430,
+   :span-end-line 429},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "919d68eb4a2c5c6752bc9247bf80e5bdc5715226",
+   :sha256
+   "c6605ecd2a5edd903ef1e64957a17423446bd4f0ad2adb64e194c5883819ef10",
+   :bytes 90777,
+   :lines 540,
+   :span-end-line 539}}
+ {:path "specs/stdlib-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "2c11af264fb81cb0b7e7aa74fc7345ab20592cc2",
+   :sha256
+   "90b45f98672fac1400a9ee13e0c844d9c98aac473eb3f7063a89163b0dd9eb35",
+   :bytes 153923,
+   :lines 518,
+   :span-end-line 517},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "5db3208ec4e97730ce62aa23cf233bb62a8a98a8",
+   :sha256
+   "31ff0a020e87a59f3b44592f3b73ac526c03e4aa2876da7475bfc7744b32f874",
+   :bytes 242330,
+   :lines 1001,
+   :span-end-line 1000}}
+ {:path "specs/stdlib-workflow/spec.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "865f1aebf7b20c00a6c19b1e856891dac1d22b1c",
+   :sha256
+   "7e684efa393242d159945251c40e4b1e361042f8d7afad5e93c224aafb9f8cd8",
+   :bytes 16597,
+   :lines 147,
+   :span-end-line 146},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "840c64600eecf6e525f29ba18a37cc8155925c07",
+   :sha256
+   "5d93a7bb945e85d2636a042ebf7928be4db944e0554ea793cf263b00aa768b90",
+   :bytes 19127,
+   :lines 157,
+   :span-end-line 156}}
+ {:path "specs/stdlib-workflow/tasks.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "19015ee759302bb92dc961c5e00e68ec5b7fd5fd",
+   :sha256
+   "af2e0623460653e39ae637820e56c8420a344e3148ace26dff87fc7cea59911e",
+   :bytes 118497,
+   :lines 898,
+   :span-end-line 897},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "e44f6f266530fee734af97f94130a2c5f4e9f911",
+   :sha256
+   "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+   :bytes 239031,
+   :lines 1868,
+   :span-end-line 1867}}
+ {:path "specs/syntax-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "8191b896c0191f438c400847279ed92f04c5d05c",
+   :sha256
+   "27e8eb62c7c0a96a1d985eb3bf1b9efac04ca72a04bb6fcc91b122de4d103985",
+   :bytes 48260,
+   :lines 337,
+   :span-end-line 336},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "25b97c17d3fb2cc0eee55d2b12738892fb4612ba",
+   :sha256
+   "330cc9fe6d7f70596023d29af9c5642b51c1302e694a6368c1049a98aa2f37a7",
+   :bytes 49200,
+   :lines 345,
+   :span-end-line 344}}
+ {:path "specs/tools-workflow/plan.md",
+  :before
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f",
+   :blob "632e48c59327cc48fb1b90d2578f5e82e9cb02ff",
+   :sha256
+   "71e5df6ef0787d6d6c7662959e2a0becd1c4674795e44e0e1356dfde04ba3749",
+   :bytes 21512,
+   :lines 220,
+   :span-end-line 219},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "a5eeb294bc58febfcf55453fa133593cf16422df",
+   :sha256
+   "366b4efc4f29370b279e54f532f9340ce292711e75cb6a8877f729efdbe43ec4",
+   :bytes 69644,
+   :lines 497,
+   :span-end-line 496}}
+ {:path "specs/tools-workflow/spec.md",
+  :before
+  {:commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+   :blob "eea3d6ba91a5c6b9dd2f1aa234e18b6bc0c70c8a",
+   :sha256
+   "aedf62910f4ac59305483fe5f123bfba529d3ee9cfa57434ddde6436fa8b2ae3",
+   :bytes 13509,
+   :lines 129,
+   :span-end-line 128},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "3927f398b2b7a826d821155076b32c6c8d72348e",
+   :sha256
+   "d5cb1aeb1a16e6a1c923fc25d4e4987d013fe1c54e22869c5b0f1ae69c4ae181",
+   :bytes 14549,
+   :lines 133,
+   :span-end-line 132}}
+ {:path "specs/tools-workflow/tasks.md",
+  :before
+  {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+   :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+   :blob "b414b0a0008450882853a5400b5b559ddefd0758",
+   :sha256
+   "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
+   :bytes 14022,
+   :lines 157,
+   :span-end-line 156},
+  :after
+  {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :blob "f8365604c70b1d2dde54c51c470a866c6a3e153d",
+   :sha256
+   "97c7c0f45d767ec962db7af3f81fa58434bfd2b6ad75fe4ee770b5dde92dec6f",
+   :bytes 57724,
+   :lines 564,
+   :span-end-line 563}}])
+
+(def source-composition-library-io-span-data
+  [{:id "service-contracts",
+  :current-span
+  {:start-byte 26350,
+   :end-byte 27450,
+   :start-line 207,
+   :end-line 207,
+   :sha256
+   "c31b79557f07fd82b59b8ab8ade6f4ff51bdabf1b06ede6a8e26ca2f854fabeb"}}
+ {:id "concurrency-api",
+  :current-span
+  {:start-byte 27451,
+   :end-byte 28817,
+   :start-line 208,
+   :end-line 208,
+   :sha256
+   "b4650307a9261af76c8e0746d8e41ed73df655ae7f51186d2e792f3fd446f928"}}
+ {:id "channels-and-actors",
+  :current-span
+  {:start-byte 28818,
+   :end-byte 29854,
+   :start-line 209,
+   :end-line 209,
+   :sha256
+   "6acee921026c085995e66210eb6fd4d40fca3959f8596b3adf536758d2bf4b9e"}}
+ {:id "scheduler-and-atomic-apis",
+  :current-span
+  {:start-byte 29855,
+   :end-byte 31151,
+   :start-line 210,
+   :end-line 210,
+   :sha256
+   "b3ab686bea6e919df6683314a02fabf7c75e6c645589f827f0104b86584ac4af"}}
+ {:id "stream-and-handle-apis",
+  :current-span
+  {:start-byte 31152,
+   :end-byte 32238,
+   :start-line 211,
+   :end-line 211,
+   :sha256
+   "13129429b60b526b9bed75042a3d97561d5149bd958ca0605c9f4e53fd5f5483"}}
+ {:id "typed-path-policy",
+  :current-span
+  {:start-byte 32239,
+   :end-byte 33133,
+   :start-line 212,
+   :end-line 212,
+   :sha256
+   "ab42f96fd11c402a66b8966e1ac53e2426e618ac00de66cf88c70db54bdda843"}}
+ {:id "text-io",
+  :current-span
+  {:start-byte 33134,
+   :end-byte 34004,
+   :start-line 213,
+   :end-line 213,
+   :sha256
+   "f07d3c06c899c2f489613771de7454868b726a6862bd5baeea77f7111869cb79"}}
+ {:id "directory-traversal",
+  :current-span
+  {:start-byte 34005,
+   :end-byte 34800,
+   :start-line 214,
+   :end-line 214,
+   :sha256
+   "64fd85e3df4e2c6e3d1f3c62fdc1995901438fbc77c7ce5ff72304e23cca3f1a"}}
+ {:id "atomic-file-replacement",
+  :current-span
+  {:start-byte 34801,
+   :end-byte 35703,
+   :start-line 215,
+   :end-line 215,
+   :sha256
+   "fc6bec8e38bc9c7765d8663603cdb258f4008811fa721a11eadbe3b76af47f62"}}
+ {:id "network-surface",
+  :current-span
+  {:start-byte 35704,
+   :end-byte 36872,
+   :start-line 216,
+   :end-line 216,
+   :sha256
+   "bdfa2332f3979c0ee3d54f878d1ee963f26fcb6caed5f8f78626b69da3e38da6"}}
+ {:id "http-client",
+  :current-span
+  {:start-byte 36873,
+   :end-byte 37999,
+   :start-line 217,
+   :end-line 217,
+   :sha256
+   "ca928d41a86300210073da1f6f04ffdf8556d6ff9d49660a71cb668cc0c3ff4a"}}
+ {:id "http-server",
+  :current-span
+  {:start-byte 38000,
+   :end-byte 39026,
+   :start-line 218,
+   :end-line 218,
+   :sha256
+   "b60ede05f2f1f1a1a3806557ac8f105c103df7902e71c406bacad485cecf5b51"}}
+ {:id "tls-policy",
+  :current-span
+  {:start-byte 39027,
+   :end-byte 39953,
+   :start-line 219,
+   :end-line 219,
+   :sha256
+   "2817598718a5b9bbb50559290da0b016c9247501b71cc80e435cf1c4773aa4eb"}}
+ {:id "network-schema-boundary",
+  :current-span
+  {:start-byte 39954,
+   :end-byte 40949,
+   :start-line 220,
+   :end-line 220,
+   :sha256
+   "e795a01ad166a52270b45f23cdd6cb7be5d5b0593b309309e9782ee0fa2bd063"}}
+ {:id "service-profile-matrix",
+  :current-span
+  {:start-byte 40950,
+   :end-byte 42329,
+   :start-line 221,
+   :end-line 221,
+   :sha256
+   "3ee352972dc29677aa8b026fb9c3f2a20390a0f8cb8f862497246bc7b2aef366"}}
+ {:id "resource-cleanup",
+  :current-span
+  {:start-byte 42330,
+   :end-byte 43340,
+   :start-line 222,
+   :end-line 222,
+   :sha256
+   "92a7ba41928ae3583c182ccdde662d8365a5cd6724449c6853fc4132e3a1ba80"}}
+ {:id "recorded-service-replay",
+  :current-span
+  {:start-byte 43341,
+   :end-byte 44622,
+   :start-line 223,
+   :end-line 223,
+   :sha256
+   "7e6c5aa3bdc0487ad414bfa6cf8a52cfad839ccb74cabfd7fcb2569529c16708"}}
+ {:id "actual-service-enforcement",
+  :current-span
+  {:start-byte 44623,
+   :end-byte 45773,
+   :start-line 224,
+   :end-line 224,
+   :sha256
+   "34904257fb26ca811ad16449ec91d3f8177f378c7f46fe383af39788c617f6e4"}}
+ {:id "service-observation",
+  :current-span
+  {:start-byte 45774,
+   :end-byte 46864,
+   :start-line 225,
+   :end-line 225,
+   :sha256
+   "5a23e9fee1b80ef184fb53d66cf74dc51af59249d46b96c35977df559f2665e6"}}
+ {:id "service-effect-admission",
+  :current-span
+  {:start-byte 46865,
+   :end-byte 47992,
+   :start-line 226,
+   :end-line 226,
+   :sha256
+   "8863a2c90e779286172f8f7b6cd38eada3fa320d5d28777edee187e02c938768"}}
+ {:id "operation-grants",
+  :current-span
+  {:start-byte 47993,
+   :end-byte 49125,
+   :start-line 227,
+   :end-line 227,
+   :sha256
+   "a94a42e78d8440e6dcb172d4f90fb135692933ef85ef2ebdf54a703b6cf1ca6c"}}
+ {:id "unsafe-service-wrappers",
+  :current-span
+  {:start-byte 49126,
+   :end-byte 50134,
+   :start-line 228,
+   :end-line 228,
+   :sha256
+   "bd8e4c6aabae7749d61b665023b53ef0bb7a39264a5641cdc90967baaf3e0184"}}
+ {:id "library-service-conformance",
+  :current-span
+  {:start-byte 50135,
+   :end-byte 51582,
+   :start-line 229,
+   :end-line 229,
+   :sha256
+   "176f554a076d04f5eea155ee7c68b0d194ed02e5f5b72b70caaf5c0b39dcea5e"}}
+ {:id "atomic-existing",
+  :current-span
+  {:start-byte 51583,
+   :end-byte 52192,
+   :start-line 230,
+   :end-line 230,
+   :sha256
+   "fe1c527506170e667ac19c7faee7e8255fd35c5333af7452fbea83b3de791569"}}
+ {:id "channel-existing",
+  :current-span
+  {:start-byte 52192,
+   :end-byte 52814,
+   :start-line 231,
+   :end-line 231,
+   :sha256
+   "e43b6fc42c2632c1447862d46ce7c41f33e57e8a5f9ff4c4cb756e44ab19b868"}}
+ {:id "preservation-existing",
+  :current-span
+  {:start-byte 52814,
+   :end-byte 53858,
+   :start-line 232,
+   :end-line 232,
+   :sha256
+   "18a148170b6bc76c0c691d690b3eb9ca758c5a1b136c513fe8ed11e2e12f5de4"}}
+ {:id "profile-existing",
+  :current-span
+  {:start-byte 53858,
+   :end-byte 54717,
+   :start-line 233,
+   :end-line 233,
+   :sha256
+   "43c194cfee2f0f0a026de07d611cc9436fa42cae003d431a63368a0fddacba92"}}
+ {:id "race-analysis-existing",
+  :current-span
+  {:start-byte 54717,
+   :end-byte 55764,
+   :start-line 234,
+   :end-line 234,
+   :sha256
+   "1e8af63b32c741351cf1fda8ad7302b9d620ea2f1da23935115187164b52f07b"}}
+ {:id "runtime-concurrency-existing",
+  :current-span
+  {:start-byte 55764,
+   :end-byte 57078,
+   :start-line 235,
+   :end-line 235,
+   :sha256
+   "4b6714e6b0e6685d60d9ed5e4b1339b5f3040459f826772d2b416dc1eae6ccc4"}}
+ {:id "safety-existing",
+  :current-span
+  {:start-byte 57078,
+   :end-byte 58588,
+   :start-line 236,
+   :end-line 236,
+   :sha256
+   "cf41a2cff0de1ddca2f07e3318c1f9048a1f537b29636f3474c6bfee73368563"}}
+ {:id "structured-existing",
+  :current-span
+  {:start-byte 58588,
+   :end-byte 59232,
+   :start-line 237,
+   :end-line 237,
+   :sha256
+   "c0b89b2a160d0312125851f6644d3f41ef558cd486c0d543091630aa255e3ad7"}}])
+
+(def source-composition-history-contract
+  {:predecessor-crosswalk
+ {:commit "5a8791e36dd7816b686bd9a1b07bc238ef2d0df4",
+  :tree "7327dff1b1c1d6416ef8b22b6b937d93e3af4764",
+  :path "specs/sh-family-crosswalk/crosswalk.edn",
+  :blob "6b17993d44428726df5e2c68c2a9ef695156466e",
+  :sha256
+  "4dbd84f1bedc95ef064e06a0d44d6b4d8d0a48978319b2b6522e2f9f5c9f5498"},
+ :current-source-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+ :review-state :pending-independent-source-version-review,
+ :authority :current-source-interface-only,
+ :predecessor
+ {:commit "5a8791e36dd7816b686bd9a1b07bc238ef2d0df4",
+  :tree "7327dff1b1c1d6416ef8b22b6b937d93e3af4764",
+  :path
+  "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+  :blob "f39ebafc150ee31b44701bb28271d2d6f3172ee6",
+  :sha256
+  "4b9e15bd885bc6c648a30f7b034dffe149873f9f9e94fb095cf69042a65f86e6"},
+ :kind :authenticated-source-composition-transition-history-v1,
+ :qualification
+ "The complete 5a879 predecessor frame remains authenticated history. Explicit current file and unchanged-predicate span transitions bind only reviewed source bytes. Prior source snapshots, evidence subjects, receipts, task identities, dispositions and seed-retirement limits remain unchanged; current-source binding grants no implementation, migration, release or full-240 acceptance.",
+ :current-source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+ :changed-source-paths
+ [".specify/memory/constitution.md"
+  "docs/acceptance-dependencies.md"
+  "docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md"
+  "specs/auth-workflow/plan.md"
+  "specs/auth-workflow/tasks.md"
+  "specs/backends-workflow/plan.md"
+  "specs/build-workflow/plan.md"
+  "specs/cli-workflow/plan.md"
+  "specs/cli-workflow/spec.md"
+  "specs/cli-workflow/tasks.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/compiler-api-workflow/tasks.md"
+  "specs/core-workflow/plan.md"
+  "specs/diag-workflow/plan.md"
+  "specs/domains-workflow/plan.md"
+  "specs/domains-workflow/tasks.md"
+  "specs/effects-workflow/plan.md"
+  "specs/effects-workflow/tasks.md"
+  "specs/evolution-workflow/plan.md"
+  "specs/expand-workflow/plan.md"
+  "specs/legality-workflow/plan.md"
+  "specs/legality-workflow/tasks.md"
+  "specs/lower-workflow/plan.md"
+  "specs/lower-workflow/tasks.md"
+  "specs/mir-workflow/plan.md"
+  "specs/opt-workflow/plan.md"
+  "specs/opt-workflow/spec.md"
+  "specs/opt-workflow/tasks.md"
+  "specs/platform-workflow/plan.md"
+  "specs/platform-workflow/tasks.md"
+  "specs/reader-workflow/plan.md"
+  "specs/release-workflow/plan.md"
+  "specs/release-workflow/tasks.md"
+  "specs/runtime-workflow/plan.md"
+  "specs/runtime-workflow/tasks.md"
+  "specs/stdlib-workflow/plan.md"
+  "specs/stdlib-workflow/spec.md"
+  "specs/stdlib-workflow/tasks.md"
+  "specs/syntax-workflow/plan.md"
+  "specs/tools-workflow/plan.md"
+  "specs/tools-workflow/spec.md"
+  "specs/tools-workflow/tasks.md"],
+ :implementation-acceptance :unassessed})
+
+(defn- composition-source-transition [{:keys [path before after]}]
+  (let [prior (first (filter #(= path (:path %)) predecessor-current-source-transition-contracts))
+        whole (fn [facts] {:start-byte 0 :end-byte (:bytes facts) :start-line 1
+                          :end-line (:span-end-line facts) :sha256 (:sha256 facts)})]
+    (cond-> {:kind current-source-transition-kind :role :current-source-interface-proposal
+             :path path :document-id (str "source-composition-" (str/replace path #"[^A-Za-z0-9]+" "-"))
+             :baseline-ref (:commit before) :baseline-tree (:tree before) :baseline-blob (:blob before) :baseline-sha256 (:sha256 before)
+             :applying-ref (:commit after) :applying-tree (:tree after) :applying-blob (:blob after) :live-sha256 (:sha256 after)
+             :changed-spans [{:id (str "SOURCE-COMPOSITION/" path) :kind :complete-file-transition :before (whole before) :after (whole after)}]
+             :authority :current-source-interface-only :review-state :pending-independent-source-version-review
+             :qualification "This explicit successor authenticates current source bytes separately from the complete predecessor frame. Historical snapshots, receipts, evidence subjects, task states and implementation dispositions remain unchanged; this source binding grants no execution, implementation, migration, release or full-240 acceptance."}
+      prior (assoc :successor-of prior))))
+
+(def source-composition-transition-contracts
+  (mapv composition-source-transition source-composition-file-data))
+
+(def current-source-transition-contracts
+  (let [successors (into {} (map (juxt :path identity) source-composition-transition-contracts))
+        prior-paths (set (map :path predecessor-current-source-transition-contracts))]
+    (vec (concat (map #(get successors (:path %) %) predecessor-current-source-transition-contracts)
+                 (remove #(contains? prior-paths (:path %)) source-composition-transition-contracts)))))
+
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
 
@@ -2008,7 +3149,7 @@
   not accept implementation, migration, release or whole-source semantics."
   [binding _transitions read-ref read-text sha256-fn require!]
   (let [composition (assoc current-source-successor-composition
-                           :current-transition-count (count current-source-transition-contracts)
+                           :current-transition-count (count predecessor-current-source-transition-contracts)
                            :source-census-count (count (:source-census binding)))
         predecessor current-source-successor-predecessor-frame-contract
         expected-segments (into {} (map (juxt :id identity) source-successor-segment-specs))
@@ -2035,7 +3176,7 @@
     (require! (= current-source-transition-successor-history-contract
                  (:predecessor-transition-history binding))
               "Source successor transition history reference changed")
-    (require! (= (vec (sort (map :path current-source-transition-contracts)))
+    (require! (= (vec (sort (map :path predecessor-current-source-transition-contracts)))
                  (:current-transition-paths binding))
               "Source successor current-transition population changed")
     (require! (= (count (:current-transition-paths binding))
@@ -2454,7 +3595,7 @@
                 (str "STD7-STD9 criterion owner is absent from source span: " id)))
   joins))
 
-(defn validate-current-source-library-io-criterion-joins!
+(defn validate-prior-current-source-library-io-criterion-joins!
   [joins read-ref read-text sha256 require!]
   (require! (= joins current-source-library-io-criterion-contracts)
             "Current-source STD7-STD9 library IO successor changed")
@@ -2505,6 +3646,510 @@
       (require! (str/includes? raw (str "`" owner "`"))
                 (str "Current-source STD7-STD9 criterion owner is absent: " id)))
   joins))
+
+(def source-composition-future-task-records
+[{:id "automation",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "c0d940760c13936487d8065806937d98852b711242806d86fab66d684ce90f39"}
+ {:id "blockchain",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "da21d377d58d70dba73dbd3cccc91c718661c596dc9bc2ba262ab89e3dd767df"}
+ {:id "crypto",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "14dd4ffeb48ca157548f4b3bc0fe40b8b58d982af6b6d5d175a10d3306fc061c"}
+ {:id "formal",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "468632c36cc7b57fbcfe0fee8f3961ce83d34bdcefbc440585a4d835829ac4d6"}
+ {:id "native",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "af96d8e0dc3c008b2aef077da854396109c2519f9bd407284a4e542077bef1b8"}
+ {:id "services",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "a85cdfee26c4448ad5efd9d008431da16e3a42369eb403de2a86e7f569d1d749"}
+ {:id "simulation",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "f9d45597ff23e8679b8c82bd5c5c9440ce7e74c3b69127e0c2a0cf18e9a1e7ac"}
+ {:id "storage",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "18954329abf5f416d8576a86c8b2a806ba5f6e45d27fe1dd8ad64296b208405a"}
+ {:id "visual",
+  :region "domains-wider-integration-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "a48950198a5ec0be8f0632378886ed42fb12179b2f20da6d2ea9731212c7e469"}
+ {:id "math/eml-normalization-and-search",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"}
+ {:id "math/certified-implementation-synthesis",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"}
+ {:id "math/interval-and-real-proof-production",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"}
+ {:id "math/symbolic-rule-and-trace-production",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"}
+ {:id "math/independent-proof-and-certificate-checking",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"}
+ {:id "schema/compatibility-and-migration",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "03c13f0584589ae0399bef9726510206fcbaaedc51f4b754fd3e6c5927456859"}
+ {:id "schema/checked-consumer-projection",
+  :region "domains-math-schema-proposals",
+  :component "domains",
+  :path "specs/domains-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+  :body-sha256
+  "8749844f61158b1cf15fee34f14ea990fdd7f7e88238245911d362a6ad5130ef"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "beb2425e264fe00eed110f9e675f0e98a340c8cb6a875265f96cc47b7b855ba8"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"}
+ {:id
+  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"}
+ {:id
+  "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+  :region "release-testing-proposals",
+  :component "release",
+  :path "specs/release-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9e27b1f19437fbacb1945981d4c3cb418145d71b99da0e7d39bdb3130bb09d98",
+  :body-sha256
+  "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"}
+ {:id "platform-product/adopt-hardware-contract",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "fec0124ae53255813304b7182f65923eafcf442c13c00602a05f63fbc1b007cf"}
+ {:id "platform-product/adopt-kernel-contract",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "7e963af8bdd06f1a78e328feb3577cb86291d4094d9a9be9d31a703267ef0d88"}
+ {:id "platform-product/adopt-application-contract",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "d6ae874658fed492c8c015c908419b3b9c3e2c277d64e2148d77ae40a9453c15"}
+ {:id "platform-product/adopt-physical-boundary",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "b6d5ae5225691588cd5016c59246efdee92696a2d565e731e7479b983324639d"}
+ {:id "platform-product/implement-hardware",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "9afd6d0715b4614216813137210b85d49763af277b2985e7afc2cd1bc9d52685"}
+ {:id "platform-product/implement-firmware",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "ea937a0345b50e2a446c8cdd03b82538addd59da12315e1d02ba47c7796717e9"}
+ {:id "platform-product/implement-os",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "dc1f4223d6182750a5c63737bc3985178d9c3f78629cee426380d46251db4a10"}
+ {:id "platform-product/implement-drivers",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "4abb5a6001e4cb2f62c1dbc1d72d750a685dacafa414f46accbb2c0714263f54"}
+ {:id "platform-product/implement-applications",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "981134ff3dd2d3f9b04cd48bf901251ea0966943dae9d068f96b13699d38e6b5"}
+ {:id "platform-product/integrate-execution",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "a9e22d269cfc79831a3777d6f228d32703b1fe6a141c24d8231436e0376f1d1f"}
+ {:id "platform-product/distribute-product",
+  :region "platform-product-implementation-tasks",
+  :component "platform",
+  :path "specs/platform-workflow/tasks.md",
+  :checked false,
+  :source-commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+  :file-sha256
+  "9d70f86f192379e5b7e70144766781128a5823d3cd8ffe637bf932976e98a5fb",
+  :body-sha256
+  "1be8a612524fecf067df3ad086880bfef4d62ca4296b3ad568f5d2794e1797de"}]
+)
+
+(def source-composition-library-io-criterion-contracts
+  (let [observations (into {} (map (juxt :id identity) source-composition-library-io-span-data))
+        current (->> source-composition-file-data (filter #(= "specs/stdlib-workflow/plan.md" (:path %))) first :after)]
+    (mapv (fn [prior]
+            (let [observation (observations (:id prior))]
+              (when-not observation (throw (ex-info "Missing current library IO source span" {:id (:id prior)})))
+              (assoc prior :source-commit (:commit current) :source-tree (:tree current) :source-blob (:blob current)
+                     :source-sha256 (:sha256 current) :source-span (:current-span observation) :successor-of prior
+                     :qualification "The prior join remains complete history. This current source binding preserves the unique exact predicate bytes and owner while separately authenticating the current file and UTF8 span. No receipt, task acceptance, implementation, migration or release claim is renewed.")))
+          current-source-library-io-criterion-contracts)))
+
+(def ^:private read-composition-source-edn (memoize edn/read-string))
+
+(defn source-composition-predecessor-snapshots
+  "Retain authenticated payload subjects; current locators add separate subjects."
+  [read-ref sha256 require!]
+  (let [{:keys [commit tree path blob] expected-sha :sha256} (:predecessor-crosswalk source-composition-history-contract)
+        text (read-ref commit path)]
+    (require! (= tree (git-commit-tree "." commit require!)) "Prior crosswalk source commit/tree drift")
+    (require! (= blob (git-blob-id text)) "Prior crosswalk source blob drift")
+    (require! (= expected-sha (sha256 text)) "Prior crosswalk source bytes drift")
+    (let [data (read-composition-source-edn text) snapshots (:source-snapshots data)]
+      (require! (and (= :sh-family-derived-crosswalk (:kind data)) (= 2 (:schema-version data))
+                     (map? snapshots) (seq snapshots)) "Prior crosswalk lacks its authenticated payload table")
+      (doseq [[digest raw] snapshots]
+        (require! (and (string? raw) (= digest (sha256 raw))) "Prior crosswalk source payload identity drift"))
+      snapshots)))
+
+(defn validate-source-composition-history!
+  [frame read-ref sha256 require!]
+  (let [{:keys [commit tree path blob] expected-sha :sha256} (:predecessor source-composition-history-contract)
+        text (read-ref commit path)
+        previous (read-composition-source-edn text)
+        inverse (-> frame
+                    (assoc :current-source-transitions (:current-source-transitions previous)
+                           :current-source-library-io-criterion-joins (:current-source-library-io-criterion-joins previous))
+                    (dissoc :source-composition-transition-history :source-composition-future-task-records))]
+    (require! (= source-composition-history-contract (:source-composition-transition-history frame))
+              "Current source composition history identity, scope or authority changed")
+    (require! (= tree (git-commit-tree "." commit require!)) "Source composition predecessor is not the actual commit/tree")
+    (require! (= blob (git-blob-id text)) "Source composition predecessor frame blob changed")
+    (require! (= expected-sha (sha256 text)) "Source composition predecessor frame bytes changed")
+    (require! (= previous inverse) "Source composition changes unlisted predecessor frame values")
+    (require! (= predecessor-current-source-transition-contracts (:current-source-transitions previous))
+              "Source composition loses its complete prior transition table")
+    (require! (= current-source-library-io-criterion-contracts (:current-source-library-io-criterion-joins previous))
+              "Source composition loses its complete prior library IO joins")
+    (require! (= current-source-transition-contracts (:current-source-transitions frame))
+              "Source composition current transition table differs from exact contracts")
+    (require! (= source-composition-library-io-criterion-contracts (:current-source-library-io-criterion-joins frame))
+              "Source composition current library IO joins differ from exact contracts")
+    (require! (= source-composition-future-task-records (:source-composition-future-task-records frame))
+              "Source composition current future-task observations differ from exact contracts")
+    (let [old-error (get-in previous [:error-refinement :future-task-source-successor :after])
+          old-protocol (get-in previous [:protocol-refinement :future-task-source-successor :after])
+          stable-fields [:id :region :component :path :checked]
+          stable (fn [rows] (into {} (map (fn [row] [(:id row) (select-keys row stable-fields)]) rows)))]
+      (require! (= old-error old-protocol) "Source composition predecessor future-task subjects disagree")
+      (require! (= (stable old-error) (stable source-composition-future-task-records))
+                "Source composition changes future-task identities, routing or checked state"))
+    (:source-composition-transition-history frame)))
+
+(defn validate-current-source-library-io-criterion-joins!
+  [joins read-ref read-text sha256 require!]
+  (require! (= source-composition-library-io-criterion-contracts joins)
+            "Current library IO source composition contracts changed")
+  (validate-prior-current-source-library-io-criterion-joins!
+   current-source-library-io-criterion-contracts read-ref
+   #(read-ref (:commit current-source-successor-composition) %) sha256 require!)
+  (doseq [{:keys [id owner consumer-task-id path source-commit source-tree source-blob source-sha256 source-span successor-of]} joins]
+    (let [text (read-ref source-commit path)
+          prior (first (filter #(= id (:id %)) current-source-library-io-criterion-contracts))
+          raw (utf8-span-text text (:start-byte source-span) (:end-byte source-span) require!)
+          old-text (read-ref (:source-commit prior) path)
+          old-span (:source-span prior)
+          old-raw (utf8-span-text old-text (:start-byte old-span) (:end-byte old-span) require!)]
+      (require! (= prior successor-of) "Current library IO join loses its complete predecessor")
+      (require! (= source-tree (git-commit-tree "." source-commit require!)) "Current library IO source commit/tree drift")
+      (require! (= source-blob (git-blob-id text)) "Current library IO source blob drift")
+      (require! (= source-sha256 (sha256 text)) "Current library IO source file digest drift")
+      (require! (= text (read-text path)) "Current library IO source is not the live file")
+      (require! (= (:sha256 source-span) (sha256 raw)) "Current library IO source span digest drift")
+      (require! (= (:start-line source-span) (utf8-line-number text (:start-byte source-span))) "Current library IO span start line drift")
+      (require! (= (:end-line source-span) (utf8-line-number text (dec (:end-byte source-span)))) "Current library IO span end line drift")
+      (require! (= raw old-raw) "Current library IO source changes the prior predicate")
+      (require! (= owner consumer-task-id (:owner prior)) "Current library IO source changes the predicate owner")))
+  joins)
 
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,
