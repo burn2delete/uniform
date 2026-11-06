@@ -1,7 +1,8 @@
 (ns simplify.core-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is testing use-fixtures]]
             [simplify.codex :as codex]
             [simplify.github :as gh]
             [simplify.main :as main]
@@ -11,11 +12,56 @@
   (:import [java.nio.file Files]))
 
 (defn temp-dir [] (str (Files/createTempDirectory "uniform-simplify-test-" (make-array java.nio.file.attribute.FileAttribute 0))))
+(defn no-github-network [f]
+  (let [command rt/command]
+    (with-redefs [rt/command (fn
+                              ([ctx cwd argv]
+                               (when (= "gh" (first argv)) (throw (AssertionError. (str "Unmocked GitHub command: " argv))))
+                               (command ctx cwd argv))
+                              ([ctx cwd argv input]
+                               (when (= "gh" (first argv)) (throw (AssertionError. (str "Unmocked GitHub command: " argv))))
+                               (command ctx cwd argv input)))]
+      (f))))
+(use-fixtures :each no-github-network)
 (defn context []
-  (let [dir (temp-dir)]
-    {:state-dir dir :state-file (str (io/file dir "state.edn")) :control-file (str (io/file dir "control.edn"))
+  (let [dir (temp-dir)
+        config {:repo-dir dir :state-dir dir}]
+    (merge {:state-dir dir :state-file (str (io/file dir "state.edn")) :control-file (str (io/file dir "control.edn"))
      :log-lock (Object.) :state (atom {:schema 1 :tasks {} :jobs {} :effects {}})
-     :config {:repo-dir dir}}))
+     :config config}
+           (rt/coordination dir config))))
+
+(deftest exact-command-capture-does-not-split-credential-redaction
+  (let [ctx (context)
+        log (str (io/file (:state-dir ctx) "capture.jsonl"))
+        secret (str "ghp_" (apply str (repeat 48 "A")))
+        output (str (apply str (repeat 4094 "x")) secret "\r\n" "nul\u0000tail")
+        error-output "stderr\rwith-cr\r\nnul\u0000tail"
+        classpath (str/join java.io.File/pathSeparator
+                            (map #(.getAbsolutePath (io/file %))
+                                 (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
+        java [(str (io/file (System/getProperty "java.home") "bin/java")) "-cp" classpath "clojure.main"]
+        baseline (rt/command ctx (:state-dir ctx) (into java ["-e" "nil"]))
+        expected-error (str (:err baseline) error-output)
+        argv (into java ["-e" (str/replace (str "(print " (pr-str output) ") (flush) "
+                                                  "(binding [*out* *err*] (print " (pr-str error-output) ") (flush))")
+                                               "\u0000" "\\u0000")])
+        result (rt/command (assoc ctx :log-file log) (:state-dir ctx) argv)
+        events (mapv #(json/read-str % :key-fn keyword) (str/split-lines (slurp log)))
+        streamed (fn [stream]
+                   (str/join "\n" (map :line (filter #(and (= "command-output" (:event %))
+                                                         (= stream (:stream %))) events))))]
+    (is (zero? (:exit result)))
+    (is (zero? (:exit baseline)))
+    (is (= "" (:out baseline)))
+    (is (= output (:out result)))
+    (is (= expected-error (:err result)))
+    ;; Inspect only output events: command-start already redacts the argv and
+    ;; must not make a leaking chunk logger look as though it redacted output.
+    (is (= (rt/redact output) (streamed "stdout")))
+    (is (= (rt/redact expected-error) (streamed "stderr")))
+    (is (not (str/includes? (slurp log) secret)))
+    (is (str/includes? (slurp log) "[REDACTED]"))))
 
 (deftest schema-rejects-unusable-results
   (is (= {:coverage ["tools"] :summary "No candidates" :findings []}
@@ -52,9 +98,158 @@
     (is (= 1 @calls))
     (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects "ambiguous" :status])))))
 
+(deftest recovery-keeps-verified-merges-out-of-authoring
+  (let [ctx (context)
+        cases [[{:merge-verification {:actual {:commit "merged"}} :merged "merged"} :finalizing]
+               [{:merged "merged"} :ci]
+               [{:resume-status :ci} :ci]
+               [{:resume-status :merge} :ci]
+               [{:resume-status :implementing} :repair]]]
+    (doseq [[extra phase] cases]
+      (rt/update! ctx assoc-in [:tasks "recovery"] (merge {:key "recovery" :status :attention} extra))
+      (main/dispatch! ctx "retry" ["recovery"])
+      (is (= phase (:status (flow/task ctx "recovery")))))
+    (doseq [status [:pending :uncertain :restricted]]
+      (rt/update! ctx assoc-in [:tasks "recovery"] {:key "recovery" :status :attention :merged "merged"
+                                                    :error {:details {:effect "close/recovery"}}})
+      (rt/update! ctx assoc-in [:effects "close/recovery"] {:status status})
+      (is (thrown-with-msg? Exception #"reconciliation before retry" (main/dispatch! ctx "retry" ["recovery"])))
+      (is (= :attention (:status (flow/task ctx "recovery")))))))
+
+(deftest review-thread-pagination-never-assumes-the-first-page-is-complete
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")]
+    (doseq [last-resolved? [true false]]
+      (let [seen (atom [])]
+        (with-redefs [gh/graphql (fn [_ _ variables]
+                                  (swap! seen conj (:after variables))
+                                  {:repository {:pullRequest {:reviewThreads
+                                                               {:nodes [{:isResolved (if (:after variables) last-resolved? true)}]
+                                                                :pageInfo {:hasNextPage (nil? (:after variables)) :endCursor "next"}}}}})]
+          (is (= last-resolved? (gh/review-threads-clear? ctx 3)))
+          (is (= [nil "next"] @seen)))))
+    (with-redefs [gh/graphql (fn [& _] {})]
+      (is (thrown-with-msg? Exception #"evidence is unavailable" (gh/review-threads-clear? ctx 3))))
+    (with-redefs [gh/graphql (fn [& _] {:repository {:pullRequest {:reviewThreads
+                                                                 {:nodes [] :pageInfo {:hasNextPage true :endCursor "same"}}}}})]
+      (is (thrown-with-msg? Exception #"cursor did not advance" (gh/review-threads-clear? ctx 3))))))
+
+(deftest required-workflow-completion-is-not-inferred-from-a-partial-rollup
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")
+        run {:id 1 :workflow_id 10 :event "pull_request" :head_sha "candidate"
+             :path ".github/workflows/ci.yml" :status "completed" :conclusion "success"}
+        harness (assoc run :id 2 :workflow_id 11 :path ".github/workflows/simplify-harness.yml")]
+    (doseq [[runs expected] [[[harness] :pending]
+                            [[harness (assoc run :status "queued" :conclusion nil)] :pending]
+                            [[harness (assoc run :conclusion "failure")] :failed]
+                            [[harness (assoc run :conclusion "skipped")] :failed]
+                            [[harness (assoc run :head_sha "old")] :pending]
+                            [[harness (assoc run :conclusion "cancelled") (assoc run :id 3)] :passed]]]
+      (with-redefs [gh/api (fn [& _] {:total_count (count runs) :workflow_runs runs})]
+        (is (= expected (:state (gh/head-workflow-state ctx "candidate"))))))
+    (let [seen (atom [])]
+      (with-redefs [gh/api (fn [_ endpoint]
+                            (swap! seen conj endpoint)
+                            {:total_count 2 :workflow_runs [(if (str/ends-with? endpoint "page=1") harness run)]})]
+        (is (= :passed (:state (gh/head-workflow-state ctx "candidate"))))
+        (is (= 2 (count @seen)))))
+    (with-redefs [gh/api (fn [& _] {:total_count 2 :workflow_runs []})]
+      (is (thrown-with-msg? Exception #"pagination did not advance" (gh/head-workflow-state ctx "candidate"))))))
+
+(deftest existing-project-membership-is-read-before-add-without-replaying-uncertain-effects
+  (let [ctx (context) seen (atom [])]
+    (rt/update! ctx assoc :project {:id "project"})
+    (with-redefs [gh/graphql (fn [_ query variables]
+                              (is (str/starts-with? query "query"))
+                              (swap! seen conj (:after variables))
+                              {:node {:items {:nodes (if (:after variables) [{:id "existing-item" :content {:id "issue"}}] [])
+                                              :pageInfo {:hasNextPage (nil? (:after variables)) :endCursor "next"}}}})]
+      (is (= "existing-item" (gh/item! ctx {:node_id "issue"})))
+      (is (= [nil "next"] @seen))
+      (is (= "existing-item" (gh/item! ctx {:node_id "issue"})))
+      (is (= [nil "next"] @seen)))
+    (rt/update! ctx assoc-in [:effects "project-item/project/unknown"] {:status :uncertain :message "Retain original ambiguity"})
+    (with-redefs [gh/graphql (fn [& _] (throw (AssertionError. "Uncertain effect must stop before even the membership read")))]
+      (is (thrown-with-msg? Exception #"needs reconciliation" (gh/item! ctx {:node_id "unknown"}))))
+    (with-redefs [gh/graphql (fn [& _] {})]
+      (is (thrown-with-msg? Exception #"evidence is unavailable" (gh/existing-item ctx "project" "missing"))))
+    (with-redefs [gh/graphql (fn [& _] {:node {:items {:nodes [] :pageInfo {:hasNextPage true :endCursor "same"}}}})]
+      (is (thrown-with-msg? Exception #"cursor did not advance" (gh/existing-item ctx "project" "missing"))))))
+
+(deftest retained-uncertain-effects-do-not-trigger-attention-writes
+  (let [ctx (context) calls (atom 0)]
+    (doseq [status [:pending :uncertain :restricted]]
+      (rt/update! ctx assoc-in [:effects "close/finding"] {:status status})
+      (rt/update! ctx assoc-in [:tasks "finding"] {:key "finding" :status :finalizing})
+      (with-redefs [gh/status! (fn [& _] (swap! calls inc))
+                    gh/comment! (fn [& _] (swap! calls inc))]
+        (try (rt/effect! ctx "close/finding" #(swap! calls inc))
+             (catch Exception e (flow/attention! ctx "finding" e))))
+      (is (= :attention (:status (flow/task ctx "finding"))))
+      (is (= :finalizing (:resume-status (flow/task ctx "finding")))))
+    (is (zero? @calls))))
+
+(deftest legacy-applied-receipts-remain-valid
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:effects "issue"] {:status :uncertain :message "Original response lost"})
+    (rt/write-edn! receipt {:result {:id 7} :evidence "Inspected exact remote issue"})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= {:id 7} (rt/effect! ctx "issue" (fn [] (throw (ex-info "Must not replay" {}))))))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :status])))))
+
+(deftest confirmed-unapplied-mutations-can-be-repaired-with-original-history-retained
+  (let [ctx (context) calls (atom 0) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (is (thrown? Exception (rt/effect! ctx "issue" #(do (swap! calls inc) (throw (ex-info "HTTP 422: body rejected" {}))))))
+    (is (thrown? Exception (rt/effect! ctx "issue" #(swap! calls inc))))
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected HTTP 422 validation response and repository issue markers; no issue was created."})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :status])))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(do (swap! calls inc) {:id 7}))))
+    (is (= {:id 7} (rt/effect! ctx "issue" #(swap! calls inc))))
+    (is (= 2 @calls))
+    (is (= :not-applied (get-in @(:state ctx) [:effects "issue" :previous :status])))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :previous :status])))))
+
+(deftest unapplied-reconciliation-cannot-reclassify-a-restriction-or-an-existing-result
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc :effects {"restricted" {:status :restricted} "unknown" {:status :uncertain}})
+    (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected"})
+    (is (thrown? Exception (main/reconcile! ctx "restricted" receipt)))
+    (is (thrown? Exception (rt/effect! ctx "restricted" (fn [] :must-not-run))))
+    (rt/write-edn! receipt {:outcome :not-applied :result {:id 1} :evidence "An issue exists"})
+    (is (thrown? Exception (main/reconcile! ctx "unknown" receipt)))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "unknown" :status])))))
+
+(deftest confirmed-unapplied-tracking-write-does-not-block-a-new-observed-transition
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn")) calls (atom 0)]
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" (fn [] (throw (ex-info "Connection closed" {}))))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+    (let [id (get-in @(:state ctx) [:tracking-intents "status"])]
+      (rt/write-edn! receipt {:outcome :not-applied :result nil :evidence "Inspected remote field and operation response; transition did not apply."})
+      (main/reconcile! ctx id receipt)
+      (is (= 1 (rt/tracking-effect! ctx "status" #(swap! calls inc))))
+      (is (= :not-applied (get-in @(:state ctx) [:effects id :status]))))))
+
 (deftest redacts-known-secrets
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}
          (rt/redact {:apiKey "private" :message "Bearer abc.def.ghi" :value "ghp_somecredential"}))))
+
+(deftest review-feedback-binds-latest-opinion-to-current-head
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")
+        reviews (atom [{:id 1 :user {:id 10} :state "CHANGES_REQUESTED" :commit_id "head"}
+                       {:id 2 :user {:id 10} :state "APPROVED" :commit_id "head"}
+                       {:id 3 :user {:id 20} :state "CHANGES_REQUESTED" :commit_id "head"}
+                       {:id 4 :user {:id 20} :state "COMMENTED" :commit_id "head"}
+                       {:id 5 :user {:id 30} :state "CHANGES_REQUESTED" :commit_id "old"}])]
+    (with-redefs [gh/pages (fn [_ endpoint]
+                            (if (str/ends-with? endpoint "/reviews") @reviews
+                                [{:id 30 :pull_request_review_id 3 :body "Current actionable finding"}
+                                 {:id 50 :pull_request_review_id 5 :body "Old finding"}]))]
+      (let [feedback (gh/requested-review-feedback ctx "head" 3)]
+        (is (= [3] (mapv :id (:github-reviews feedback))))
+        (is (= [30] (mapv :id (:inline-comments feedback)))))
+      (is (nil? (gh/requested-review-feedback ctx "new-head" 3)))
+      (swap! reviews conj {:id 6 :user {:id 20} :state "DISMISSED" :commit_id "head"})
+      (is (nil? (gh/requested-review-feedback ctx "head" 3))))))
 
 (deftest checks-are-observed-not-inferred
   (is (= :missing (flow/check-state [])))
@@ -73,15 +268,32 @@
                             (map #(.getAbsolutePath (io/file %))
                                  (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
         command [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server"]]
-    (doseq [mode ["ok" "malformed" "failed" "interrupted" "approval"]]
+    (doseq [mode ["ok" "quoted-denial" "tool-output-data" "malformed" "failed" "interrupted" "unfinished-action" "approval"
+                 "tool-denied-zero" "tool-denied-nonzero"]]
       (let [ctx (assoc-in (context) [:config :codex-command] (conj command mode))]
         (testing mode
-          (if (= "ok" mode)
+          (if (#{"ok" "quoted-denial" "tool-output-data"} mode)
             (do
               (is (= "approved" (:verdict (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review))))
-              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status]))))
+              (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status])))
+              (is (empty? (:restricted-commands @(:state ctx)))))
             (do
-              (is (thrown? Exception (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)))
+              (let [failure (try (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)
+                                 (catch Exception e e))]
+                (is (instance? Exception failure))
+                (when (= "unfinished-action" mode)
+                  (is (false? (:writer-ended? (ex-data failure))))
+                  (is (= {"fixture-active" "commandExecution"}
+                         (get-in @(:state ctx) [:jobs "fixture" :active-items]))))
+                (when (#{"tool-denied-zero" "tool-denied-nonzero"} mode)
+                  (is (:restricted (ex-data failure)))
+                  (is (:writer-ended? (ex-data failure)))
+                  (is (= "fixture-read" (get-in (ex-data failure) [:refusal :item :command])))
+                  (is (= 1 (count (get-in @(:state ctx) [:jobs "fixture" :tool-refusals]))))
+                  (let [[key refusal] (first (:restricted-commands @(:state ctx)))]
+                    (is (= "fixture-read" (get-in refusal [:item :command])))
+                    (is (= refusal (select-keys (rt/shared-restriction ctx :commands key) (keys refusal))))
+                    (is (thrown? Exception (rt/assert-authorized! ctx :command key))))))
               (is (= :attention (get-in @(:state ctx) [:jobs "fixture" :status]))))))))))
 
 (deftest restricted-findings-cannot-be-retried
@@ -89,6 +301,83 @@
     (rt/update! ctx assoc-in [:tasks "blocked"] {:status :attention :error {:details {:restricted true}}})
     (with-redefs [rt/with-lock (fn [_ f] (f))]
       (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))
+
+(def ^:private git-cache-refusal-lines
+  ["git: error: couldn't create cache file '/tmp/xcrun_db-fixture-a' (errno=Operation not permitted)"
+   "git: error: couldn't create cache file '/tmp/xcrun_db-fixture-b' (errno=Operation not permitted)"])
+
+(deftest zero-exit-git-cache-diagnostics-are-refusals
+  (let [classify (ns-resolve 'simplify.codex 'model-command-denial-lines)
+        item {:id "git-cache-fixture" :type "commandExecution" :status "completed" :exitCode 0
+              :command "fixture-data-not-executed" :aggregatedOutput (str/join "\n" git-cache-refusal-lines)}]
+    (is (= git-cache-refusal-lines (vec (classify item))))
+    ;; Quoted source and ordinary errors stay data; missing exits stay unknown.
+    (doseq [other [(assoc item :aggregatedOutput (pr-str (:aggregatedOutput item)))
+                   (assoc item :aggregatedOutput "git: error: fixture malformed input")
+                   (assoc item :aggregatedOutput "git: error: Permission denied")
+                   (assoc item :aggregatedOutput "git: error: Operation not permitted")
+                   (assoc item :aggregatedOutput "git: error: couldn't create cache file '/tmp/xcrun_db-fixture' (note: Operation not permitted)")
+                   (assoc item :exitCode nil)
+                   (assoc item :type "agentMessage")]]
+      (is (empty? (classify other))))))
+
+(deftest zero-exit-git-refusals-persist-without-command-replay
+  (let [ctx (context) queue (java.util.concurrent.LinkedBlockingQueue.)
+        job "git-cache-fixture" output (str/join "\n" git-cache-refusal-lines)
+        client {:ctx ctx :job job :events queue :restricted (atom nil)
+                :interrupt-requested (atom false) :active-items (atom {})}
+        interrupts (atom [])]
+    (rt/update! ctx assoc-in [:jobs job] {:thread "fixture-thread" :status :running})
+    (doseq [event [{:method "item/started" :params {:item {:id "git-item" :type "commandExecution"}}}
+                   {:method "item/completed"
+                    :params {:item {:id "git-item" :type "commandExecution" :status "completed" :exitCode 0
+                                    :command "fixture-data-not-executed" :aggregatedOutput output}}}
+                   {:method "turn/completed" :params {:turn {:id "fixture-turn" :status "interrupted"}}}]]
+      (.put queue event))
+    (let [failure (with-redefs [codex/request! (fn [_ method params] (swap! interrupts conj [method params]) {})]
+                    (try (codex/await-turn! client "fixture-turn") (catch Exception e e)))
+          refusals (get-in @(:state ctx) [:jobs job :tool-refusals])]
+      (is (:restricted (ex-data failure)))
+      (is (= 1 (count refusals)))
+      (is (= git-cache-refusal-lines (:denial-lines (first refusals))))
+      (is (= (rt/digest output) (:output-sha256 (first refusals))))
+      (is (= [["turn/interrupt" {:threadId "fixture-thread" :turnId "fixture-turn"}]] @interrupts))
+      (is (true? (get-in @(:state ctx) [:jobs job :turn-terminal?])))
+      (is (empty? @(:active-items client)))
+      (is (= 1 (count (:restricted-commands @(:state ctx)))))
+      (when-let [[key refusal] (first (:restricted-commands @(:state ctx)))]
+        (is (= 0 (get-in refusal [:item :exitCode])))
+        (is (= "fixture-data-not-executed" (get-in refusal [:item :command])))
+        (is (= refusal (select-keys (rt/shared-restriction ctx :commands key) (keys refusal))))
+        (is (thrown? Exception (rt/assert-authorized! ctx :command key)))))))
+
+(deftest a-refusal-does-not-interrupt-another-active-action
+  (doseq [active-type ["commandExecution" "fileChange"]]
+    (let [ctx (context)
+          queue (java.util.concurrent.LinkedBlockingQueue.)
+          client {:ctx ctx :job "parallel-fixture" :events queue
+                  :restricted (atom nil) :interrupt-requested (atom false) :active-items (atom {})}
+          interruptions (atom [])]
+      (rt/update! ctx assoc-in [:jobs "parallel-fixture"] {:thread "fixture-thread" :status :running})
+      (doseq [event [{:method "item/started" :params {:item {:id "remaining-action" :type active-type}}}
+                     {:method "item/completed"
+                      :params {:item {:id "denied-action" :type "commandExecution" :command "fixture-read"
+                                      :exitCode 0 :status "completed"
+                                      :aggregatedOutput "xcrun: error: fixture cache: Operation not permitted"}}}
+                     {:method "item/completed" :params {:item {:id "remaining-action" :type active-type :exitCode 0}}}
+                     {:method "turn/completed" :params {:turn {:id "fixture-turn" :status "interrupted"}}}]]
+        (.put queue event))
+      (with-redefs [codex/request! (fn [_ method params]
+                                    (swap! interruptions conj
+                                           {:method method :params params
+                                            :pending-action-completion
+                                            (boolean (some #(= "remaining-action" (get-in % [:params :item :id]))
+                                                           (.toArray queue)))})
+                                    {})]
+        (is (thrown? Exception (codex/await-turn! client "fixture-turn"))))
+      (is (= [{:method "turn/interrupt" :params {:threadId "fixture-thread" :turnId "fixture-turn"}
+               :pending-action-completion false}] @interruptions))
+      (is (true? (get-in @(:state ctx) [:jobs "parallel-fixture" :turn-terminal?]))))))
 
 (deftest checks-use-agentless-sandbox-protocol
   (let [classpath (str/join java.io.File/pathSeparator
@@ -99,8 +388,16 @@
     (is (= "fixture command" (:stdout (codex/command! ctx "check-fixture" (:state-dir ctx) ["clojure" "-M:test"]))))
     (is (empty? (:jobs @(:state ctx))))
     (is (empty? @(:processes ctx)))
+    (let [data-result {:exitCode 0 :stdout "Fixture expected: Permission denied" :stderr ""}]
+      (is (= data-result (codex/validate-command-result! ctx ["fixture-output-data"] data-result))))
     (is (thrown? Exception (codex/command! (assoc-in ctx [:config :codex-command] (conj command "failed"))
-                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))))
+                                          "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))
+    (let [denied-ctx (assoc-in ctx [:config :codex-command] (conj command "stream-denied-zero"))
+          argv ["fixture-zero-exit-check"]]
+      (is (thrown? Exception (codex/command! denied-ctx "check-zero-denial" (:state-dir ctx) argv)))
+      (is (= 0 (get-in (rt/shared-restriction ctx :checks (codex/check-key ctx argv)) [:result :exitCode])))
+      (with-redefs [codex/open! (fn [& _] (throw (AssertionError. "A retained refusal must block before starting another process")))]
+        (is (thrown? Exception (codex/command! denied-ctx "must-not-retry" (:state-dir ctx) argv)))))))
 
 (deftest denied-github-actions-are-persistent-and-not-retried
   (let [ctx (context) calls (atom 0)]
@@ -200,8 +497,11 @@
     (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
     (with-redefs [gh/graphql (fn [_ query _]
                               (swap! calls conj query)
-                              (if (str/includes? query "addProjectV2ItemById")
+                              (cond
+                                (str/includes? query "items(first") {:node {:items {:nodes [] :pageInfo {:hasNextPage false}}}}
+                                (str/includes? query "addProjectV2ItemById")
                                 {:addProjectV2ItemById {:item {:id "item"}}}
+                                :else
                                 {:updateProjectV2ItemFieldValue {:projectV2Item {:id "item"}}}))]
       (gh/status! ctx issue "Ready")
       (gh/status! ctx issue "Ready"))
@@ -210,18 +510,51 @@
     (is (= 3 (count (:effects @(:state ctx)))))
     (is (every? #(= :done (:status %)) (vals (:effects @(:state ctx)))))))
 
+(deftest streamed-command-capture-preserves-split-utf8-bytes
+  (let [java (str (io/file (System/getProperty "java.home") "bin/java"))
+        classpath (str/join java.io.File/pathSeparator
+                            (map #(.getAbsolutePath (io/file %))
+                                 (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
+        ctx (assoc-in (context) [:config :codex-command]
+                      [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server" "stream-utf8"])
+        result (codex/command! ctx "utf8-fixture" (:state-dir ctx) ["clojure" "-M:test"])]
+    (is (zero? (:exitCode result)))
+    (is (= "path-\u00e9.clj\u0000" (:stdout result)))
+    (is (= "path-\u00e9.clj\u0000" (:stderr result)))))
+
+(deftest main-reconciliation-requires-observed-main-without-requiring-it-to-equal-the-merge
+  (let [ctx (context) sha #(apply str (repeat 40 %))
+        intent {:id "merge/fixture" :base (sha "a") :candidate (sha "b") :tree (sha "c") :method :merge}
+        actual {:commit (sha "d") :tree (sha "c") :parents [(sha "a") (sha "b")]}
+        native {:status :uncertain :message "Original result unknown"}]
+    (rt/update! ctx assoc-in [:effects (:id intent)] native)
+    (rt/try-with-main-lock ctx #(rt/begin-main-merge! ctx intent))
+    (doseq [main [nil "invalid" (sha "z")]]
+      (is (thrown-with-msg? Exception #"Inspected main result differs"
+                           (rt/reconcile-main-merge! ctx (:id intent) {:outcome :merged :evidence "Fixture observation"
+                                                                     :actual (assoc actual :main main)})))
+      (is (:pending (rt/main-merge-state ctx (:id intent)))))
+    (rt/reconcile-main-merge! ctx (:id intent) {:outcome :merged :evidence "Fixture observed actual merge on advanced main"
+                                              :actual (assoc actual :main (sha "e"))})
+    (is (nil? (:pending (rt/main-merge-state ctx (:id intent)))))
+    (is (= (sha "e") (get-in (rt/main-merge-state ctx (:id intent)) [:inspection :inspection :actual :main])))
+    (is (= native (get-in @(:state ctx) [:effects (:id intent)])))))
+
 (deftest denied-project-status-cannot-be-reissued-or-reported-remotely
   (let [ctx (context) calls (atom 0) issue {:node_id "issue"}]
     (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
     (with-redefs [gh/graphql (fn [_ query _]
                               (swap! calls inc)
-                              (if (str/includes? query "addProjectV2ItemById")
+                              (cond
+                                (str/includes? query "items(first") {:node {:items {:nodes [] :pageInfo {:hasNextPage false}}}}
+                                (str/includes? query "addProjectV2ItemById")
                                 {:addProjectV2ItemById {:item {:id "item"}}}
+                                :else
                                 (throw (ex-info "Forbidden" {:restricted true}))))]
       (try (gh/status! ctx issue "Ready")
            (catch Exception e (flow/attention! ctx "blocked" e)))
       (is (thrown? Exception (gh/status! ctx issue "Ready")))
-      (is (= 2 @calls))
+      (is (= 3 @calls))
       (is (some #(= :restricted (:status %)) (vals (:effects @(:state ctx)))))
       (with-redefs [rt/with-lock (fn [_ f] (f))]
         (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"])))))))

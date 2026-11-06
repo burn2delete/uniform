@@ -39,6 +39,14 @@ C13 pass-family/legal-variant criterion compiler/c13/legal-variant-selection (Op
 Ownership clarification: consume the actual constant-fold/branch/dead-code/common-expression implementations owned by opt1-execute-pass-contracts. This task owns full family coverage and the remaining structural transforms; do not create a duplicate basic-pass implementation or a second task authority.
 <!-- opt-canonical-families:end -->
 
+
+<!-- opt-protocol-source-specialize:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 proved dispatch-specialization criterion (Open): Perform actual legal dispatch specialization using current implementation/type/profile/target facts and surviving governing proof. Preserve source diagnostics and fallback behavior, or prove that fallback unreachable for the exact subject before erasing it; refusal to transform preserves the original legal dispatch. Reject speculative closed-world assumptions, stale/missing proof, hidden effects/capabilities/unsafe checks or changed fallback/diagnostics. Preserve actual before/after identities, proof/checker assumptions, residual/fallback paths, source/generated mappings and affected fact invalidation/regeneration through verification. Benchmarks or a direct-call label do not prove semantic equivalence. Required evidence: specialized execution/artifact comparisons and negative proof/fallback/diagnostic/staleness fixtures under L8 and C13.
+<!-- opt-protocol-source-specialize:end -->
+
 - [ ] `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` opt/3: Protect checks and anchors
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -51,6 +59,32 @@ Apply the [complete optimization source criteria](plan.md#complete-optimization-
 
 C13 proof/check/anchor criterion (Open): Preserve bounds, overflow, null, initialization and lifetime checks unless actual applicable PERF10 evidence justifies their elision for the exact subject with required dominance and surviving assumptions. Domain entry/exit, EFIR fusion and provider selection preserve typed-core/MIR anchors and governing MATH10/SAFE15 semantics/certificates. Consume actual domain/math/proof-checker results; a proof name or target metadata is not verification. Regenerate invalidated type/effect/ownership/capability/safety/math/profile facts and evidence, keep lawful residual checks or reject the transformation. Required outputs: proof/certificate-use and check-elision/retention records, residual checks, actual accepted/rejected missing/non-dominating/stale-proof and invalid-anchor fixtures, and preserved source/generated origins. Reject proofless check erasure, stale safety outcomes, invalid domain transformations and illegal effect reorder with C13-PROOF/CHECK-ELISION/SAFETY/DOMAIN/EFFECT; no required policy or authority check disappears for speed.
 <!-- opt-canonical-checks:end -->
+
+
+<!-- opt-library-source-preservation:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 library numeric and safe-API preservation criterion (Open): Preserve actual declared public numeric width/overflow/floating/vector/rounding/NaN/infinity mode and library error/resource/wrapper/authority semantics through each selected optimization, specialization and inline/lowering path. Explicitly relaxed source modes permit only their declared variation; host defaults, normal-result equality, metadata retention or structural validity cannot justify lost failures, checks, cleanup, diagnostics or audit. Obtain the governing exact-subject proof/certificate/validation before dependent use, regenerate affected owner facts and verify the changed subject. Required evidence: actual before/after accepted/refused mode, check, resource and wrapper products plus preserved source/profile/target identity. Valid unoptimized programs remain usable; no universal optimizer or full future Formal prerequisite is introduced.
+<!-- opt-library-source-preservation:end -->
+
+
+<!-- library-base-source-mode-preservation:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation mode-preservation criterion (Open): Preserve declared width/signedness, overflow, floating/vector/rounding/exceptional-value/domain and error semantics through actual library specialization/inlining/optimization/lowering. A faster mode requires explicit source relaxation or governing current proof; checks cannot become unchecked target behavior by default. Exact dominating proof must remain valid after transformations, and invalidation needs repair/rechecking, check restoration or rejection. Evidence: real original/transformed comparisons, selected independent certificate/check results and negative mode/target/proof cases; no blanket fast-math, host default or source metadata proves execution.
+<!-- library-base-source-mode-preservation:end -->
+
+
+
+<!-- opt-alternative-types-source-refinement:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual refinement-proof consumption criterion (Open): Use alternative type facts only when produced by the actual selected provider, valid for the active profile/target, serialized in common typed-Core proof/refinement facts or a proof artifact, stable under the selected transformation and rechecked or invalidated with changed source/provider/profile/target/macro/facet/grant inputs. When erasing a runtime check, retain the actual proof reference that justifies that exact removal and the governing checked preservation evidence under D9/SAFE15/PERF10/C18. Unchecked casts, assigned profile-safe flags, structural validity or a provider manifest are not safe proof. Reject stale/wrong-subject/unselected/incompatible facts and evidence-erasing transforms. Required evidence: actual selected before/after check/fact/proof/diagnostic products and erased-check/proof-link refusals; valid unoptimized programs need no universal optimizer or whole future Formal gate.
+<!-- opt-alternative-types-source-refinement:end -->
+
 
 - [ ] `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` opt/4: Verify and regenerate
 
@@ -65,6 +99,15 @@ Apply the [complete optimization source criteria](plan.md#complete-optimization-
 C13 post-pass/invalidation criterion compiler/c13/post-pass-verification (Open): Actually run the MIR verifier after every pass changing control flow, data flow, effects, safety facts, ownership facts or domain anchors, and gate exposed output on the actual current report. Structural MIR verification is distinct from high-risk semantic evidence: attach and identify applicable local proof, translation validation, differential fixture, certificate checker, domain verifier or conformance acceptance only for nonsemantic differences. Required outputs: execution-derived verifier reports, checked evidence references and a conservative invalidation ledger naming invalidated analyses/facts, required rerun passes, invalid proofs/certificates, restored runtime checks, cleared caches and affected diagnostics, plus actual regeneration results. If continued fact validity cannot be proved, invalidate it. Positive fixtures verify each mutation family and lawful regeneration/residual path; reject verifier failure, stale or fabricated success, missing invalidation/regeneration and absent required high-risk evidence with C13-VERIFY/INVALIDATE/PRESERVE/PROOF. Actual MIR verifiers and proof/translation/domain checkers retain their own implementations; decision metadata cannot stand in for execution.
 Current C18 application: consume the actual pass risk/evidence policy and checker products from Compiler API's existing pass-evidence owner. For behavior-relevant MIR changes retain checked translation validation per affected function with exact input/output/function/result/effect/safety identities. Stronger mechanized pass proof is optional unless applicable policy requires it and cannot waive checked matrix minimum evidence; a mechanized method must establish the required affected-function validation rather than merely name a proof. Generic differential fixtures, structural success or nonsemantic conformance cannot replace that scope. Failed validation retains the prior valid artifact and counterexample evidence. This task owns invocation and current applicability, not another proof checker or policy authority.
 <!-- opt-canonical-verification:end -->
+
+
+<!-- opt-alternative-types-source-regeneration:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-fact regeneration criterion (Open): Expose actual invalidation dependencies for changed source, provider, profile, target, macro, facet and grants, requiring real affected owner/type/refinement/ownership/effect/domain rechecking or invalidation before a transformed subject is consumed. Preserve check-erasure proof references and recompute their exact applicability rather than copying complete/safe/preserved records. Early actual checker/property interfaces precede work and actual new facts/verifier results follow; no whole alternative theory or future final release is the first regeneration service. Reject stale serialized proof/type facts and mismatched changed subjects. Required evidence: real unchanged/changed-input fact lifecycle, actual owner regeneration and changed-subject refusal/verification records for all seven governing trigger categories.
+<!-- opt-alternative-types-source-regeneration:end -->
+
 
 - [ ] `opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline` opt/5: Integrate reproducible pipeline
 

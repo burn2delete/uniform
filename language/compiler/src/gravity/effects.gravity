@@ -12814,7 +12814,9 @@
                 {:status :rejected :reason :invalid-checked-bare-set-equality-source})
               (if (get producer-info :dse-domain?)
                 {:status :rejected :reason :invalid-checked-bare-set-equality-source}
-                (recur (rest remaining) items descriptors)))
+                (if (body-ledger-known-producer? row producer)
+                  (recur (rest remaining) items descriptors)
+                  {:status :rejected :reason :invalid-checked-bare-set-equality-source})))
             {:status :rejected :reason :invalid-checked-bare-set-equality-source}))))))
     {:status :rejected :reason :invalid-checked-bare-set-equality-source})
     {:status :rejected :reason :invalid-checked-bare-set-equality-source}))
@@ -12845,7 +12847,9 @@
                           {:status :rejected :reason :invalid-checked-bare-set-equality-source})))
                     (if (get dispatch-info :dse-domain?)
                       {:status :rejected :reason :invalid-checked-bare-set-equality-source}
-                      (recur (rest remaining) items seen)))
+                      (if (body-ledger-known-dispatch? fact dispatch)
+                        (recur (rest remaining) items seen)
+                        {:status :rejected :reason :invalid-checked-bare-set-equality-source})))
                   {:status :rejected :reason :invalid-checked-bare-set-equality-source})))
             {:status :rejected :reason :invalid-checked-bare-set-equality-source}))))
     {:status :rejected :reason :invalid-checked-bare-set-equality-source})

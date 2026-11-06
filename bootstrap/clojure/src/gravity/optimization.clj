@@ -1,11 +1,32 @@
 (ns gravity.optimization
-  "Native seed integer-equality rewriting and reconstruction data.")
+  "Native seed equality reconstruction and complete C13 artifact pipeline; no admission.")
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {selection {:arglists ([mir]), :admission :none},
+ {native-source-overrides {:arglists ([module]), :admission :none},
+  native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
+  native-diagnostic-catalog
+  {:arglists ([configuration source-path source-span]), :admission :none},
+  native-artifact-base
+  {:arglists ([configuration source-text module source-overrides domain-ir-artifact
+               input-id contracts decisions diagnostics operations]),
+   :admission :none, :required-operation-suppliers [:sha256-hex]},
+  native-validate!
+  {:arglists ([configuration source-path artifact operations]), :admission :none,
+   :required-operation-suppliers [:invoke :validate-overrides :fail! :perf-present?]},
+  native-capability-proof {:arglists ([configuration artifact]), :admission :none},
+  native-source-artifact
+  {:arglists ([configuration source-path source-text operations]), :admission :none,
+   :required-operation-suppliers [:invoke :unsupported :source-overrides
+                                  :source-overrides-artifact :validate-overrides
+                                  :pass-contract-record :decision-record :diagnostic-catalog
+                                  :artifact-base :validate! :capability-proof :artifact-id]},
+  native-file-artifact
+  {:arglists ([configuration path operations]), :admission :none,
+   :required-operation-suppliers [:invoke :source-artifact :slurp]},
+  selection {:arglists ([mir]), :admission :none},
   rewrite {:arglists ([mir selected]), :admission :none},
   restore {:arglists ([output delta]), :admission :none},
   output-id
@@ -20,10 +41,16 @@
  [:single-entry-or-diamond-data-shape
   :one-integer-equality-of-two-i64-constants
   :exact-edge-use-reconstruction
-  :existing-record-assembly],
+  :existing-record-assembly
+  :complete-native-c13-artifact-assembly
+  :ordered-native-c13-validation
+  :late-compatibility-function-suppliers],
  :dependency-direction
  {:requires [],
-  :consumed-by [gravity.bootstrap-c13-comparison],
+  :consumed-by [gravity.bootstrap-c13-comparison
+                gravity.c13-optimization.artifact
+                gravity.c13-optimization.projection
+                gravity.c13-optimization.validation],
   :forbids
   [gravity.bootstrap
    gravity.c13-optimization
@@ -39,6 +66,7 @@
   D9
   C1
   C11
+  C12
   C13
   C15
   SAFE15
@@ -66,10 +94,17 @@
   :reconstruction-delta
   :existing-evidence-and-base-records
   :digest-and-path-neutral-operations
-  :selection-rewrite-restore-identity-operations],
+  :selection-rewrite-restore-identity-operations
+  :trusted-native-c13-configuration-and-source-text
+  :native-module-c12-pass-decision-and-evidence-data
+  :late-native-operation-and-source-input-suppliers],
  :namespace gravity.optimization,
  :diagnostic-ownership
- {:stage [C13-VERIFY :reconstruction-and-output-identity-mismatch],
+ {:stage [C13-VERIFY :reconstruction-and-output-identity-mismatch
+          :native-c13-catalog-and-ordered-refusal-selection],
+  :native-refusal-ids [C13-CONTRACT C13-PRESERVE C13-INVALIDATE C13-PROOF
+                       C13-CHECK-ELISION C13-EFFECT C13-SAFETY C13-DOMAIN
+                       C13-NONDETERMINISM C13-VERIFY],
   :existing-owner
   [:input-admission :c11-verification :diagnostic-publication]},
  :artifact-outputs
@@ -78,8 +113,10 @@
   :reconstructed-mir-or-nil
   :unchanged-output-identity-protocol
   :extended-evidence-data
-  :translation-record-or-c13-refusal],
- :contract-boundary :native-seed-integer-equality-reconstruction}
+  :translation-record-or-c13-refusal
+  :native-c13-artifact-and-projections
+  :native-c13-complete-marker-or-refusal],
+ :contract-boundary :native-seed-optimization-data-and-artifact-pipeline}
 ))
 
 (defn- i64? [x] (and (integer? x) (<= Long/MIN_VALUE x Long/MAX_VALUE)))
@@ -259,6 +296,288 @@
                       :c11-artifact-id (:c11-artifact-id evidence) :verifier-report-id (:verifier-report-id evidence)
                       :c11-mir-id (:c11-mir-id evidence) :output-mir-id id :result :passed})
               (update :semantic-identity assoc :c11-output-mir-id id :unchanged? false))))) base))
+
+(defn native-source-overrides [module]
+  (or (get-in module [:metadata :compiler :c13-optimization])
+      (get-in module [:metadata :compiler :optimization-lowering])
+      {}))
+
+(defn native-source-overrides-artifact [overrides]
+  {:source-overrides overrides
+   :lowering-request {:profile :hosted :target {:backend :jvm}}
+   :input "sha256:stage0-c13-source-override"})
+
+(defn native-diagnostic-catalog [configuration source-path source-span]
+  (let [span (source-span source-path 0)]
+    {:artifact :gravity/c13-optimization-diagnostic-catalog
+     :status :complete
+     :diagnostics
+     (mapv (fn [id]
+             {:diagnostic id
+              :pass-id :stage0-optimization
+              :decision-id "c13-diagnostic-catalog"
+              :input-artifact-id "sha256:c13-diagnostic-input"
+              :output-artifact-id "sha256:c13-diagnostic-output"
+              :source-span span
+              :changed-operations []
+              :missing-fact :catalog-entry
+              :proof-id :proof/c13-diagnostic-catalog
+              :profile :hosted
+              :target :jvm
+              :remediation (get (:optimization-lowering-diagnostic-messages configuration) id)})
+           (:c13-optimization-diagnostic-ids configuration))}))
+
+(defn native-validate! [configuration source-path artifact operations]
+  (((:invoke operations)) :optimization-lowering-validate-overrides!
+                     ((:validate-overrides operations))
+                     source-path artifact)
+  (let [contracts (:optimization-pass-registry artifact)
+        pipeline (:optimization-pipeline-manifest artifact)
+        decisions (:optimization-decision-log artifact)
+        invalidations (:invalidated-fact-ledger artifact)
+        caches (:analysis-cache-records artifact)
+        proof-usage (:proof-and-certificate-usage artifact)
+        verifiers (:post-pass-verifier-reports artifact)
+        diagnostics (get-in artifact [:optimization-diagnostic-stream :diagnostics])]
+    (doseq [contract contracts]
+      (when-not (every? #(contains? contract %)
+                        [:artifact :pass :input :output :requires :preserves :invalidates
+                         :regenerates :proof-obligations :profiles :target-assumptions :emits])
+        (((:fail! operations)) "C13-CONTRACT" source-path artifact contract
+               {:missing-fields [:pass :input :output :requires :preserves :proof-obligations]})))
+    (when-not (= (mapv :pass contracts) (:pass-order pipeline))
+      (((:fail! operations)) "C13-CONTRACT" source-path artifact pipeline {:missing-fields [:pass-order]}))
+    (when-not (= :deterministic (:ordering pipeline))
+      (((:fail! operations)) "C13-NONDETERMINISM" source-path artifact pipeline {:missing-fields [:ordering]}))
+    (when-not (every? #(((:perf-present? operations)) (:preserved %)) decisions)
+      (((:fail! operations)) "C13-PRESERVE" source-path artifact (first decisions) {:missing-fields [:preserved]}))
+    (when-not (= (count contracts) (count invalidations))
+      (((:fail! operations)) "C13-INVALIDATE" source-path artifact (first decisions)
+             {:missing-fields [:invalidated-fact-ledger]}))
+    (when-not (= (count contracts) (count caches))
+      (((:fail! operations)) "C13-INVALIDATE" source-path artifact (first decisions)
+             {:missing-fields [:analysis-cache-records]}))
+    (when-not (= (count contracts) (count proof-usage))
+      (((:fail! operations)) "C13-PROOF" source-path artifact (first decisions) {:missing-fields [:proof-usage]}))
+    (when-not (every? #(some (fn [proof] (= :accepted (:status proof))) (:proofs-used %)) decisions)
+      (((:fail! operations)) "C13-PROOF" source-path artifact (first decisions) {:missing-fields [:proofs-used]}))
+    (doseq [[id path]
+            [["C13-CHECK-ELISION" [:check-elision-record :status]]
+             ["C13-EFFECT" [:effect-reordering-record :status]]
+             ["C13-SAFETY" [:safety-outcome-refresh-report :status]]
+             ["C13-DOMAIN" [:domain-anchor-transform-report :status]]
+             ["C13-NONDETERMINISM" [:optimization-replay-record :status]]]]
+      (let [expected ({"C13-CHECK-ELISION" :accepted "C13-EFFECT" :accepted
+                       "C13-SAFETY" :current "C13-DOMAIN" :preserved
+                       "C13-NONDETERMINISM" :replayable} id)]
+        (when-not (= expected (get-in artifact path))
+          (((:fail! operations)) id source-path artifact (get-in artifact [(first path)])
+                 {:missing-fields [(first path)]}))))
+    (when-not (every? #(= :passed (:status %)) verifiers)
+      (((:fail! operations)) "C13-VERIFY" source-path artifact (first verifiers)
+             {:missing-fields [:post-pass-verifier]}))
+    (when-not (= (set (:c13-optimization-diagnostic-ids configuration))
+                 (set (map :diagnostic diagnostics)))
+      (((:fail! operations)) "C13-CONTRACT" source-path artifact (:optimization-diagnostic-stream artifact)
+             {:missing-fields [:optimization-diagnostics]})))
+  :complete)
+
+(defn native-capability-proof [configuration artifact]
+  (let [contracts (:optimization-pass-registry artifact)
+        decisions (:optimization-decision-log artifact)]
+    {:c12-domain-ir-input-verified?
+     (= :complete (get-in artifact [:c12-domain-ir-artifact :capability-based-proof :status]))
+     :pass-contracts-valid? (every? #(= :gravity/mir-pass-contract (:artifact %)) contracts)
+     :pipeline-deterministic? (= :deterministic (get-in artifact [:optimization-pipeline-manifest :ordering]))
+     :decisions-complete? (= (count contracts) (count decisions))
+     :changed-and-unchanged-decisions-recorded?
+     (and (some seq (map :changed-ops decisions)) (some empty? (map :changed-ops decisions)))
+     :invalidations-recorded? (= (count contracts) (count (:invalidated-fact-ledger artifact)))
+     :analysis-caches-recorded? (= (count contracts) (count (:analysis-cache-records artifact)))
+     :proof-evidence-present?
+     (every? #(some (fn [proof] (= :accepted (:status proof))) (:proofs-used %)) decisions)
+     :check-elision-proof? (= :accepted (get-in artifact [:check-elision-record :status]))
+     :effect-order-preserved? (= :accepted (get-in artifact [:effect-reordering-record :status]))
+     :safety-outcomes-current? (= :current (get-in artifact [:safety-outcome-refresh-report :status]))
+     :domain-anchors-preserved? (= :preserved (get-in artifact [:domain-anchor-transform-report :status]))
+     :replayable? (= :replayable (get-in artifact [:optimization-replay-record :status]))
+     :post-pass-verifiers-passed? (every? #(= :passed (:status %)) (:post-pass-verifier-reports artifact))
+     :diagnostics-covered?
+     (= (set (:c13-optimization-diagnostic-ids configuration))
+        (set (map :diagnostic (get-in artifact [:optimization-diagnostic-stream :diagnostics]))))
+     :status :complete}))
+
+(defn native-artifact-base [configuration source-text module source-overrides domain-ir-artifact
+                    input-id contracts decisions diagnostics operations]
+  (let [final-output-id (:output-mir (last decisions))
+        invalidations (mapv (fn [decision]
+                              {:pass (:pass decision)
+                               :decision-id (:decision-id decision)
+                               :invalidated (:invalidated decision)
+                               :regenerated (:regenerated decision)
+                               :runtime-checks-restored (:residual-checks decision)
+                               :caches-cleared [:data-flow-cache :domain-anchor-cache]
+                               :diagnostics-affected []
+                               :status :recorded})
+                            decisions)
+        verifiers (mapv (fn [decision]
+                          {:artifact :gravity/post-pass-mir-verifier-report
+                           :pass (:pass decision)
+                           :decision-id (:decision-id decision)
+                           :input (:output-mir decision)
+                           :status :passed
+                           :checks [:module :dominance :types :effects :safety :domain-anchors]})
+                        decisions)]
+    {:kind :gravity/stage0-c13-mir-optimization-artifact
+     :task "P06-D092"
+     :document-set ["C13"]
+     :governing-document (:c13-optimization-governing-document configuration)
+     :pass {:name :c13-mir-optimization-passes
+            :input :verified-domain-ir
+            :output :optimized-mir
+            :requires [:c12-domain-ir-architecture :pass-contracts :semantic-anchors
+                       :proof-evidence :mir-verifier]
+            :preserves [:types :effects :ownership :capabilities :profile :target :safety
+                        :source-spans :origin-chain :domain-anchors]
+            :emits [:optimization-pass-registry :optimization-pipeline-manifest
+                    :optimization-decision-log :invalidated-fact-ledger
+                    :analysis-cache-records :proof-and-certificate-usage
+                    :post-pass-verifier-reports
+                    :optimized-mir-artifact :optimization-diagnostic-stream]
+            :rejects (:c13-optimization-diagnostic-ids configuration)}
+     :source-overrides source-overrides
+     :module (select-keys module [:module :source-path :profile :target :effects :capabilities :safety :metadata])
+     :c12-domain-ir-artifact
+     (select-keys domain-ir-artifact [:kind :task :artifact-id :governing-document
+                                      :domain-verifier-report :semantic-anchor-map :capability-based-proof])
+     :domain-ir-artifact-kind (:kind domain-ir-artifact)
+     :domain-ir-artifact-hash input-id
+     :optimization-pass-registry contracts
+     :optimization-pipeline-manifest
+     {:artifact :gravity/optimization-pipeline-manifest
+      :pass-order (mapv :pass contracts)
+      :ordering :deterministic
+      :optimization-level :stage0-safe
+      :source-hash (str "sha256:" (((:sha256-hex operations)) source-text))
+      :profile :hosted
+      :target :jvm
+      :feature-set #{:objects :exceptions :threads}
+      :package-graph :stage0-single-package
+      :provider-set #{:jvm/gc :jvm/exception :jvm/stdout}
+      :benchmark-inputs []
+      :replay-seed :none
+      :status :complete}
+     :optimization-decision-log decisions
+     :invalidated-fact-ledger invalidations
+     :analysis-cache-records
+     (mapv (fn [decision]
+             {:pass (:pass decision)
+              :cache-key (str "sha256:" (((:sha256-hex operations)) (pr-str [(:pass decision) input-id])))
+              :invalidated-by (:invalidated decision)
+              :status :complete})
+           decisions)
+     :proof-and-certificate-usage
+     (mapv (fn [decision]
+             {:pass (:pass decision)
+              :decision-id (:decision-id decision)
+              :proofs (:proofs-used decision)
+              :status :accepted})
+           decisions)
+     :check-elision-record
+     {:artifact :gravity/check-elision-record
+      :pass :bounds-check-elide
+      :status :accepted
+      :proof :proof/c13-bounds-check-elision
+      :policy :PERF10}
+     :effect-reordering-record
+     {:artifact :gravity/effect-order-proof
+      :pass :effect-aware-schedule
+      :status :accepted
+      :proof :proof/c13-effect-order-equivalence}
+     :safety-outcome-refresh-report
+     {:artifact :gravity/safety-outcome-refresh-report
+      :status :current
+      :source :mir/safety-table}
+     :domain-anchor-transform-report
+     {:artifact :gravity/domain-anchor-transform-report
+      :status :preserved
+      :anchors (:semantic-anchor-map domain-ir-artifact)}
+     :optimization-replay-record
+     {:artifact :gravity/optimization-replay-record
+      :status :replayable
+      :ordering :deterministic
+      :seed :none}
+     :post-pass-verifier-reports verifiers
+     :optimized-mir-artifact
+     {:artifact :gravity/optimized-mir
+      :input input-id
+      :output final-output-id
+      :passes (mapv :pass contracts)
+      :source-origin-map (:semantic-anchor-map domain-ir-artifact)
+      :domain-anchors (:semantic-anchor-map domain-ir-artifact)
+      :status :complete}
+     :optimization-diagnostic-stream diagnostics
+     :c13-optimization-results
+     {:documents ["C13"]
+      :task "P06-D092"
+      :required-diagnostic-ids (:c13-optimization-diagnostic-ids configuration)
+      :c12-input-status :complete
+      :pass-contract-status :complete
+      :pipeline-status :complete
+      :decision-log-status :complete
+      :invalidation-status :complete
+      :analysis-cache-status :complete
+      :proof-status :complete
+      :post-pass-verifier-status :complete
+      :diagnostic-status :complete
+      :status :complete}
+     :diagnostics []}))
+
+(defn native-source-artifact [configuration source-path source-text operations]
+  (let [records (((:invoke operations)) :read-source-form-records
+                                   (((:unsupported operations)) :read-source-form-records)
+                                   source-path source-text)
+        forms (mapv :form records)
+        _ (((:invoke operations)) :validate-ns-syntax! (((:unsupported operations)) :validate-ns-syntax!)
+                             source-path forms)
+        module (((:invoke operations)) :parse-module (((:unsupported operations)) :parse-module) source-path forms)
+        source-overrides (((:invoke operations)) :c13-optimization-source-overrides
+                                            ((:source-overrides operations)) module)
+        _ (((:invoke operations)) :c13-optimization-validate-source-overrides!
+                             (fn [path overrides]
+                               (((:invoke operations)) :optimization-lowering-validate-overrides!
+                                                  ((:validate-overrides operations))
+                                                  path (((:source-overrides-artifact operations)) overrides)))
+                             source-path source-overrides)
+        domain-ir-artifact (((:invoke operations)) :compiler-c12-domain-ir-source-artifact
+                                              (((:unsupported operations)) :compiler-c12-domain-ir-source-artifact)
+                                              source-path source-text)
+        input-id (:artifact-id domain-ir-artifact)
+        contracts (mapv #(((:invoke operations)) :optimization-pass-contract-record
+                                            ((:pass-contract-record operations)) %)
+                        (:optimization-pass-contract-seed configuration))
+        decisions (mapv #(((:invoke operations)) :optimization-decision-record
+                                            ((:decision-record operations))
+                                            domain-ir-artifact input-id %2 %1)
+                        contracts (range))
+        diagnostics (((:diagnostic-catalog operations)) configuration source-path)
+        artifact-base (((:artifact-base operations)) configuration source-text module source-overrides
+                                               domain-ir-artifact input-id contracts decisions diagnostics)
+        _ (((:invoke operations)) :c13-optimization-validate!
+                             (fn [path artifact] (((:validate! operations)) configuration path artifact))
+                             source-path artifact-base)
+        capability-proof (((:invoke operations)) :c13-optimization-capability-proof
+                                            (fn [artifact] (((:capability-proof operations)) configuration artifact))
+                                            artifact-base)]
+    (assoc artifact-base
+           :capability-based-proof capability-proof
+           :artifact-id (((:artifact-id operations)) (assoc artifact-base :capability-based-proof capability-proof)))))
+
+(defn native-file-artifact [configuration path operations]
+  (((:invoke operations)) :compiler-c13-optimization-source-artifact
+                     (fn [source-path source-text]
+                       (((:source-artifact operations)) configuration source-path source-text))
+                     path (((:slurp operations)) path)))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

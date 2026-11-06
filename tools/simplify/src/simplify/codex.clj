@@ -2,9 +2,11 @@
   "Version-pinned app-server JSON-RPC client. One managed process per bounded job."
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [simplify.runtime :as rt]
             [simplify.schema :as schema])
-  (:import [java.util.concurrent LinkedBlockingQueue]))
+  (:import [java.io ByteArrayOutputStream]
+           [java.util.concurrent LinkedBlockingQueue]))
 
 (defn send! [client message]
   (rt/event! (:ctx client) :rpc-send {:job (:job client) :message message})
@@ -28,7 +30,12 @@
     (:id message) (when-let [response (get @(:pending client) (:id message))] (deliver response message))
     (= "command/exec/outputDelta" (:method message))
     (let [params (:params message)
-          output (String. (.decode (java.util.Base64/getDecoder) ^String (:deltaBase64 params)) "UTF-8")]
+          bytes (.decode (java.util.Base64/getDecoder) ^String (:deltaBase64 params))
+          output (String. bytes "UTF-8")]
+      (when-let [capture (:command-output client)]
+        (swap! capture conj {:stream (:stream params) :bytes bytes}))
+      (when (and (:capReached params) (:capture-truncated client))
+        (reset! (:capture-truncated client) true))
       (rt/event! (:ctx client) :sandbox-command-output {:job (:job client) :stream (:stream params) :output output :capture-truncated (:capReached params)}))
     :else (.put ^LinkedBlockingQueue (:events client) message)))
 
@@ -37,7 +44,9 @@
                          (.directory (io/file cwd))))
         _ (when-let [processes (:processes ctx)] (swap! processes conj process))
         client {:ctx ctx :job job :process process :writer (io/writer (.getOutputStream process) :encoding "UTF-8")
-                :pending (atom {}) :next-id (atom 0) :restricted (atom nil) :closed (atom false) :events (LinkedBlockingQueue.)}
+                :pending (atom {}) :next-id (atom 0) :restricted (atom nil) :closed (atom false)
+                :command-output (atom []) :capture-truncated (atom false)
+                :interrupt-requested (atom false) :active-items (atom {}) :events (LinkedBlockingQueue.)}
         reader (future
                  (try
                    (with-open [input (io/reader (.getInputStream process) :encoding "UTF-8")]
@@ -75,32 +84,129 @@
   @(:reader client)
   @(:stderr client))
 
+(defn check-key [ctx argv] (rt/digest (pr-str [(get-in ctx [:config :repository]) argv])))
+
+(defn validate-command-result! [ctx argv result]
+  (let [output (str (:stderr result) "\n" (:stdout result))
+        ;; Successful stdout may be source or negative-fixture data. Zero-exit
+        ;; OS diagnostics must come from the separate error stream here.
+        diagnostic (if (zero? (:exitCode result)) (:stderr result) output)
+        restricted (or (rt/authorization-denied? diagnostic) (boolean (re-find #"(?i)sysctl failed" (or diagnostic ""))))
+        ended? (and (number? (:exitCode result)) (not (re-find #"(?i)owned process cleanup failed" output)))]
+    (when (or restricted (not (zero? (:exitCode result))))
+      (when restricted (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :result result}))
+      (rt/fail! "Sandboxed check failed" {:command argv :result result :restricted restricted :writer-ended? ended?})))
+  result)
+
 (defn command!
   "Execute checks without inference. Model-selected argv stays inside the worker sandbox."
   [ctx job-id cwd argv]
+  (rt/assert-authorized! ctx :check (check-key ctx argv))
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"}})
+      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
+                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
       (send! client {:method "initialized" :params {}})
-      (let [result (request! client "command/exec"
+      (let [response (request! client "command/exec"
                              {:command argv :cwd cwd :processId job-id :streamStdoutStderr true
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
-                              :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})]
-        (when @(:restricted client) (rt/fail! "Check encountered a restricted request; not retrying" {:restricted true}))
-        (when-not (zero? (:exitCode result)) (rt/fail! "Sandboxed check failed" {:command argv :result result}))
-        result)
+                              :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})
+            chunks @(:command-output client)
+            stream (fn [name]
+                     (with-open [out (ByteArrayOutputStream.)]
+                       (doseq [chunk (filter #(= name (:stream %)) chunks)]
+                         (.write out ^bytes (:bytes chunk) 0 (alength ^bytes (:bytes chunk))))
+                       (.toString out "UTF-8")))
+            result (assoc response
+                          :stdout (if (seq (:stdout response)) (:stdout response) (stream "stdout"))
+                          :stderr (if (seq (:stderr response)) (:stderr response) (stream "stderr"))
+                          :capture-truncated @(:capture-truncated client))
+            output (str (:stdout result) "\n" (:stderr result))
+            cleanup-unknown? (boolean (re-find #"(?i)owned process cleanup failed" output))
+            ended? (and (number? (:exitCode result)) (not cleanup-unknown?))]
+        (when @(:restricted client)
+          (rt/fail! "Check encountered a restricted request; not retrying"
+                    {:restricted true :writer-ended? ended? :result result}))
+        (validate-command-result! ctx argv result))
+      (catch Exception e
+        (when (and (:restricted (ex-data e))
+                   (not (rt/shared-restriction ctx :checks (check-key ctx argv))))
+          (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :message (.getMessage e)}))
+        (throw e))
       (finally (close! client)))))
+
+(defn- model-command-denial-lines [item]
+  (when (and (= "commandExecution" (:type item)) (number? (:exitCode item)))
+    (let [lines (filter rt/authorization-denied? (str/split-lines (or (:aggregatedOutput item) "")))]
+      ;; The model-tool protocol merges stdout/stderr. A successful source read
+      ;; can quote refusal text; recognize the observed cache diagnostic forms
+      ;; rather than elevating arbitrary source examples into policy decisions.
+      (if (zero? (:exitCode item))
+        (filter #(or (re-find #"(?i)^\s*(?:xcrun:\s+error:|Error building classpath[.:]|java\.[^:\r\n]+Exception:)" %)
+                     (re-matches #"(?i)\s*git:\s+error:\s+couldn't create cache file '[^'\r\n]+' \(errno=Operation not permitted\)\s*" %))
+                lines)
+        lines))))
+
+(defn- model-command-refusal! [client item]
+  ;; A model's summary is data, not a denial signal. Inspect the actual
+  ;; completed tool result, including successful exits with OS refusal output.
+  (when-let [lines (seq (model-command-denial-lines item))]
+    (let [ctx (:ctx client) job (:job client)
+          output (:aggregatedOutput item)
+          refusal {:job job :item (select-keys item [:id :type :command :cwd :exitCode :status])
+                   :output-sha256 (rt/digest output)
+                   :denial-lines (vec lines)}
+          ;; The server renders a shell command as text, not an argv vector.
+          ;; Preserve that exact identity; never invent or execute parsed argv.
+          key (rt/digest (pr-str [:model-command (get-in ctx [:config :repository]) (:command item)]))]
+      (rt/remember-denial! ctx :command key refusal)
+      (rt/update! ctx update-in [:jobs job :tool-refusals] (fnil conj []) refusal)
+      (compare-and-set! (:restricted client) nil refusal)
+      refusal)))
 
 (defn await-turn! [client turn-id]
   (loop [messages []]
     (let [{:keys [method params]} (.take ^LinkedBlockingQueue (:events client))]
       (case method
-        "harness/closed" (rt/fail! "App-server closed before turn completion" {:job (:job client)})
+        "harness/closed" (rt/fail! "App-server closed before turn completion"
+                                   {:job (:job client) :restricted (boolean @(:restricted client))})
+        "item/started" (do
+                         (when-not (#{"agentMessage" "userMessage" "reasoning" "plan"} (get-in params [:item :type]))
+                           (swap! (:active-items client) assoc (get-in params [:item :id]) (get-in params [:item :type])))
+                         (recur messages))
         "item/completed" (let [item (:item params)]
+                           (if (and (= "commandExecution" (:type item))
+                                    (not (number? (:exitCode item)))
+                                    (not= "declined" (:status item)))
+                             ;; A completed wrapper with no process exit is not
+                             ;; evidence that its underlying command has ended.
+                             (swap! (:active-items client) assoc (:id item) (:type item))
+                             (swap! (:active-items client) dissoc (:id item)))
+                           (model-command-refusal! client item)
+                           (when (and @(:restricted client)
+                                      (empty? @(:active-items client))
+                                      (compare-and-set! (:interrupt-requested client) false true))
+                             ;; Every observed action has ended. Stop inference
+                             ;; from selecting a retry without cutting off a
+                             ;; parallel tool/test; still await the terminal event.
+                             (try
+                               (request! client "turn/interrupt"
+                                         {:threadId (get-in @(:state (:ctx client)) [:jobs (:job client) :thread])
+                                          :turnId turn-id})
+                               (catch Exception e
+                                 (rt/event! (:ctx client) :restricted-turn-interrupt-error
+                                            {:job (:job client) :message (.getMessage e)}))))
                            (recur (if (= "agentMessage" (:type item)) (conj messages item) messages)))
         "turn/completed" (if (= turn-id (get-in params [:turn :id]))
                            (do
-                             (when @(:restricted client) (rt/fail! "Agent encountered a restricted request; not retrying" {:restricted true}))
+                             (rt/update! (:ctx client) update-in [:jobs (:job client)]
+                                         assoc :turn-terminal? true :active-items @(:active-items client))
+                             (when @(:restricted client)
+                               (rt/fail! "Agent encountered a restriction; not retrying"
+                                         {:job (:job client) :restricted true :refusal @(:restricted client)}))
+                             (when (seq @(:active-items client))
+                               (rt/fail! "Agent ended with unfinished command actions"
+                                         {:job (:job client) :active-items @(:active-items client)}))
                              (when-not (= "completed" (get-in params [:turn :status]))
                                (rt/fail! "Agent turn did not complete" {:turn (:turn params)}))
                              (or (:text (last (filter #(= "final_answer" (:phase %)) messages)))
@@ -112,7 +218,8 @@
 (defn job! [ctx job-id cwd mode instructions prompt output-schema]
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"}})
+      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
+                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
       (send! client {:method "initialized" :params {}})
       (let [model (get-in ctx [:config :model])
             started (request! client "thread/start"
@@ -135,5 +242,8 @@
         output)
       (catch Exception e
         (rt/update! ctx update-in [:jobs job-id] merge {:status :attention :message (.getMessage e) :restricted (boolean (:restricted (ex-data e)))})
-        (throw e))
+        (throw (ex-info (.getMessage e)
+                        (assoc (or (ex-data e) {}) :writer-ended?
+                               (and (true? (get-in @(:state ctx) [:jobs job-id :turn-terminal?]))
+                                    (empty? @(:active-items client)))) e)))
       (finally (close! client)))))

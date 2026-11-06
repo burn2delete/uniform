@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.2.0 | Adopted: 2026-10-25 | Updated: 2026-11-01 | Change authority: Matt; integration coordinator: Deus (parent)
+Version: 1.4.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -15,6 +15,33 @@ Preserve Gravity semantics, compiler-stage boundaries, source provenance,
 effects/capabilities and safety evidence. Host behavior is not a language
 contract. Use positive and negative fixtures when the owning contract requires
 them. A passing structural check is not semantic conformance.
+
+## Hermetic compile-time inputs
+
+Matt's 2026-11-04 decision selects the detailed
+[L12 hermetic-input policy](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds)
+when reconciling the unconditional wording in
+[L6 Build Effects](../../docs/phase-01-core-language/016-l6-effect-system-specification.md#build-effects).
+Hermetic compile-time inputs may be declared and replayable:
+
+- Filesystem inputs are declared; environment keys and their value policies are explicit.
+- Network, shell/process, model and tool effects require a configured replayable provider or pinned result as well as their actual declared, scoped build authority.
+- Clock/random effects use recorded values or deterministic seeds; target probes use declared target manifests.
+- Generated forms carry input hashes. Identical declared semantic inputs require byte-identical typed Core under L12; native metadata exceptions do not weaken this equality.
+
+A grant or generic replay exception alone satisfies none of these input,
+phase, provider, policy or evidence requirements. Secret redaction and all
+existing execution restrictions remain. This decision enables no held action
+and supplies no implementation, independent review or release acceptance.
+Pure constant evaluation keeps its separate prohibition on these effects.
+
+Build and Expand apply this selection in their existing tasks. The ef88 checkpoint recorded a future canonical clarification. That
+clarification was authored and independently source-reviewed at
+`d2a0378bdd530857d97d530aab15268fc333ce80`, with L6 SHA-256
+`529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72`.
+Authenticated current-source succession, `main` integration and implementation
+evidence remain separate. No historical L6 applying source review is renewed. This record changes neither
+the canonical bytes nor their historical source/review identities.
 
 ## Autonomy without project accounting quotas
 
@@ -66,6 +93,19 @@ C12 cybersecurity, the denied oracle Git action and advisory reviewer wake
 remain restricted and cannot be retried, transferred or reframed here. The old
 coordinator hourly automation remains paused. This adoption PR is reviewed by
 Deus; it does not grant itself merge authority.
+
+## Implementation harness delegation
+
+Matt's 2026-11-03 decision authorizes `tools/advance` to select from all current
+Spec Kit implementation tasks and own the full draft, implementation,
+independent review, CI and verified merge loop toward project completion. This
+controller is an integration delegate for its own increments, superseding the
+Deus-only integration wording above within that scope. It has its own GitHub
+Project and coordinates conflicting writers and main integration with
+`tools/simplify`. Existing restrictions and required external approvals persist.
+Repository tasks remain authoritative; finite merged increments do not close
+broad parent outcomes. No service, schedule, global configuration or credential
+change is authorized by this delegation.
 
 ## Semantic implementation names
 

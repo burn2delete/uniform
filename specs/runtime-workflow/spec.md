@@ -67,6 +67,8 @@ Preserve operation holds, reserved writers and trust/custody boundaries.
 Independent acceptance, integration, complete runtime coverage and final
 seedless release remain distinct.
 
+The [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) bind complete L19 foreign declarations, ten boundary families, directional conversions, real wrapper/ownership/error/profile/host/schema/provenance and incumbent parity obligations to existing owners. Two published Expand predicates are restored exactly and three current conversion/error predicates stay exact; historical reviews retain their scope, with current whole-source/interface and implementation acceptance pending.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Runtime workflow migration

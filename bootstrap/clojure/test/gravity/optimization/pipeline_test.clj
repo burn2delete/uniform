@@ -20,7 +20,10 @@
 
 (deftest contract-declares-the-data-and-reconstruction-boundary
   (is (empty? (ns-aliases 'gravity.optimization)))
-  (is (= #{'selection 'rewrite 'restore 'output-id 'extend-evidence 'translated-record}
+  (is (= #{'selection 'rewrite 'restore 'output-id 'extend-evidence 'translated-record
+           'native-source-overrides 'native-source-overrides-artifact
+           'native-diagnostic-catalog 'native-artifact-base 'native-validate!
+           'native-capability-proof 'native-source-artifact 'native-file-artifact}
          (set (keys (ns-publics 'gravity.optimization)))))
   (doseq [[name operation] (ns-publics 'gravity.optimization)]
     (let [contract (:gravity/namespace-contract (meta operation))]
