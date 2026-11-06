@@ -873,6 +873,78 @@
       (is (= before @(:state ctx)))
       (finally (delete-tree! (:root ctx))))))
 
+(deftest completed-planning-effect-resumes-partial-admission-without-model-replay
+  (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+        repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        file (io/file (:state-dir ctx) "plan-1.raw-input.edn")
+        raw {:tasks {} :open-prs [] :completion nil :inspections nil}
+        serialized (pr-str raw)
+        reference {:file (str file) :format "edn" :selector []
+                   :sha256 (rt/digest serialized) :chars (count serialized)
+                   :bytes (alength (.getBytes serialized "UTF-8"))}
+        admitted (assoc (slice "admitted") :status :ready :issue {:number 7 :id 7 :node_id "issue-7"})
+        result {:coverage ["module.clj"] :source-closure ["module.clj"] :target "fixture target"
+                :subset "required fixture closure" :summary "fixture audit" :blockers []
+                :slices [(slice "admitted")]}
+        planning {:base base :round 1 :worktree {:worktree repo :branch "codex/plan"}
+                  :effect "plan/1" :open-prs [] :raw-input-reference reference}
+        before-artifact (atom nil) model-calls (atom 0) provider-reads (atom 0) provider-writes (atom 0)]
+    (try
+      (rt/write-edn! file raw)
+      (rt/update! ctx assoc :campaign-issue {:number 100 :id 100 :node_id "campaign"}
+                  :tasks {"admitted" admitted}
+                  :planning planning
+                  :effects {"plan/1" {:status :done :result result}
+                            "comment/100/plan/1" {:status :done :result :commented}})
+      (reset! before-artifact (slurp file))
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/pages (fn [& _] (swap! provider-reads inc) [{:body (gh/marker "plan/1")}])
+                    gh/api (fn [& _] (swap! provider-writes inc) (throw (ex-info "provider mutation replay" {})))
+                    w/job! (fn [& _] (swap! model-calls inc) (throw (ex-info "model replay" {})))
+                    w/campaign-issue! (fn [& _] {:number 100 :id 100 :node_id "campaign"})]
+        (is (= result (w/plan! ctx)))
+        (is (zero? @model-calls))
+        (is (= 1 @provider-reads))
+        (is (zero? @provider-writes))
+        (is (nil? (:planning @(:state ctx))))
+        (is (= admitted (w/task ctx "admitted")))
+        (is (= @before-artifact (slurp file))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest legacy-completed-planning-effect-does-not-invent-raw-input
+  (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+        repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        raw-file (io/file (:state-dir ctx) "plan-1.raw-input.edn")
+        admitted (assoc (slice "admitted") :status :ready :issue {:number 7 :id 7 :node_id "issue-7"})
+        result {:coverage ["module.clj"] :source-closure ["module.clj"] :target "fixture target"
+                :subset "required fixture closure" :summary "fixture audit" :blockers []
+                :slices [(slice "admitted")]}
+        planning {:base base :round 1 :worktree {:worktree repo :branch "codex/plan"}
+                  :effect "plan/1" :open-prs []}
+        model-calls (atom 0) provider-reads (atom 0) provider-writes (atom 0)]
+    (try
+      (rt/update! ctx assoc :campaign-issue {:number 100 :id 100 :node_id "campaign"}
+                  :tasks {"admitted" admitted}
+                  :planning planning
+                  :effects {"plan/1" {:status :done :result result}
+                            "comment/100/plan/1" {:status :done :result :commented}})
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/pages (fn [& _] (swap! provider-reads inc) [{:body (gh/marker "plan/1")}])
+                    gh/api (fn [& _] (swap! provider-writes inc) (throw (ex-info "provider mutation replay" {})))
+                    w/job! (fn [& _] (swap! model-calls inc) (throw (ex-info "model replay" {})))
+                    w/campaign-issue! (fn [& _] {:number 100 :id 100 :node_id "campaign"})]
+        (is (= result (w/plan! ctx)))
+        (is (zero? @model-calls))
+        (is (= 1 @provider-reads))
+        (is (zero? @provider-writes))
+        (is (nil? (:planning @(:state ctx))))
+        (is (nil? (get-in @(:state ctx) [:last-plan :raw-input-reference])))
+        (is (not (.exists raw-file)))
+        (is (= admitted (w/task ctx "admitted"))))
+      (finally (delete-tree! (:root ctx))))))
+
 (deftest completion-needs-checks-independent-review-and-unchanged-main
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
         tree (rt/git ctx repo "rev-parse" "HEAD^{tree}") checks (atom [])

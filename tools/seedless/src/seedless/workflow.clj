@@ -851,18 +851,25 @@
                      :actual-type (type (:repo reference))})))))
   open-prs)
 
-(defn- verify-pending-planning-input! [pending reference snapshot raw-input]
+(defn- verify-pending-planning-input! [pending reference snapshot raw-input effect]
   (let [fields [:tasks :open-prs :completion :inspections]]
     (when-not (and (map? snapshot) (every? #(contains? snapshot %) fields))
       (invalid-planning-snapshot! reference :pending-input-shape
                                   {:fields fields :actual-type (type snapshot)}))
-    (let [mismatched (filterv #(not= (get snapshot %) (get raw-input %)) fields)]
-      (when (seq mismatched)
-        (invalid-planning-snapshot! reference :pending-input-mismatch
-                                    {:fields mismatched
-                                     :expected-digest (rt/digest (pr-str (select-keys snapshot fields)))
-                                     :actual-digest (rt/digest (pr-str (select-keys raw-input fields)))
-                                     :pending-effect (:effect pending)}))))
+    ;; A completed planning effect already has an immutable model result.  The
+    ;; controller may have admitted some of that result before a later
+    ;; tracking operation interrupted the turn, so ordinary recovery can
+    ;; legitimately change the live task state after the captured input.  The
+    ;; raw artifact remains strictly verified above; only a new model turn
+    ;; needs the captured-input equality guard.
+    (when-not (= :done (:status effect))
+      (let [mismatched (filterv #(not= (get snapshot %) (get raw-input %)) fields)]
+        (when (seq mismatched)
+          (invalid-planning-snapshot! reference :pending-input-mismatch
+                                      {:fields mismatched
+                                       :expected-digest (rt/digest (pr-str (select-keys snapshot fields)))
+                                       :actual-digest (rt/digest (pr-str (select-keys raw-input fields)))
+                                       :pending-effect (:effect pending)})))))
   snapshot)
 
 (defn- repository-identity [repository]
@@ -918,10 +925,18 @@
                    :open-prs open-prs
                    :completion (:completion @(:state ctx))
                    :inspections (:inspections @(:state ctx))}
-        raw-reference (or (:raw-input-reference pending)
-                          (planning-snapshot! ctx id raw-input))
-        verified-snapshot (verify-planning-snapshot! raw-reference)
-        _ (when pending (verify-pending-planning-input! pending raw-reference verified-snapshot raw-input))
+        effect (get-in @(:state ctx) [:effects id])
+        raw-reference (cond
+                        (:raw-input-reference pending) (:raw-input-reference pending)
+                        (and pending (= :done (:status effect))) nil
+                        (and pending (#{:pending :uncertain :restricted} (:status effect)))
+                        (rt/effect! ctx id (fn [] nil))
+                        pending (rt/fail! "Retained planning effect has no original input artifact"
+                                          {:effect id :effect-status (:status effect)})
+                        :else (planning-snapshot! ctx id raw-input))
+        verified-snapshot (when raw-reference (verify-planning-snapshot! raw-reference))
+        _ (when (and pending raw-reference)
+            (verify-pending-planning-input! pending raw-reference verified-snapshot raw-input effect))
         planning {:base base :round n :worktree wt :effect id :open-prs open-prs
                   :raw-input-reference raw-reference}
         feedback (latest-planning-feedback ctx)
