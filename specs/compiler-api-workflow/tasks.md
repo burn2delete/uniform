@@ -278,3 +278,31 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `compiler-api-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+## Detailed trust-report coverage consistency increment
+
+Scoped work under the existing Open `pass-evidence` task, finding
+`compiler.trust-report.detailed-coverage-consistency-v1`; this appendix adds no
+task identity, completion checkbox or change to the canonical task body/status.
+The [scoped contract](plan.md#detailed-trust-report-coverage-consistency) requires
+coverage from detailed identified records, agreement of any supplied summary,
+ordered report retention, deterministic safe diagnostics and constructor refusal
+before artifact return. Risk/evidence and earlier validator precedence remain.
+
+The worker authored the shared consistency predicate, validator/projection
+changes and public-boundary fixtures in the six user-owned paths. Required
+positive fixtures are `default-report-unchanged`,
+`complete-details-without-summary`, `reordered-details` and
+`additional-pass-record-retained`. Required negatives are
+`summary-only-coverage`, `omitted-critical-pass-with-complete-summary`,
+`contradictory-summary` and malformed detailed records. Additional controls cover
+empty details, shortened/nil/malformed summaries, first/last malformed records,
+payload non-disclosure and earlier evidence/contract failure precedence.
+
+These fixtures are authored, not executed. Controller verification and exact
+candidate independent acceptance remain pending; actual observations and
+proposed argument vectors are in
+[evidence](evidence.md#detailed-trust-report-coverage-consistency). Full
+`pass-evidence` acceptance still requires actual subject-bound checks and the
+remaining canonical criteria. No release, migration, self-hosting or
+seed-retirement authority follows from this increment.
