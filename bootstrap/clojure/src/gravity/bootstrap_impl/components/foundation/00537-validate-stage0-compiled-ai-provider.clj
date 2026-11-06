@@ -154,6 +154,10 @@
   [predicate arguments]
   (let [path (build-metadata-policy-source-path)
         text (build-metadata-policy-source! path)
+        source-module (parse-module path (mapv :form (read-source-form-records path text)))
+        source-abi {:module 'gravity.self-hosting.hermetic-package-build
+                    :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe
+                    :exports '[sh23-build-policy sh23-build sh23-verify-result]}
         emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! path :jvm))
         ;; This low-level constructor never calls stage0-compiled-core-plan.
         plan (p15-s23-stage2-compiler-artifact-plan emitter path text)
@@ -163,9 +167,10 @@
                    (= text (build-metadata-policy-source! path)))
       (build-metadata-policy-fail! path :stale-source-binding))
     (when-not (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
-                   (= {:module 'gravity.self-hosting.hermetic-package-build
-                       :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe}
-                      (dissoc (:module plan) :exports))
+                   (= source-abi (select-keys source-module (keys source-abi)))
+                   ;; The low-level macro artifact omits exports. Check source
+                   ;; visibility above and the emitted transport ABI below.
+                   (= (dissoc source-abi :exports) (:module plan))
                    (contains? abi predicate)
                    (= (count (get abi predicate)) (count arguments))
                    (every? (fn [[name params]]
@@ -175,7 +180,7 @@
                                     (= (count params) (:arity definition))
                                     (= {:name name :kind :function
                                         :namespace 'gravity.self-hosting.hermetic-package-build
-                                        :profile :meta :target :jvm :visibility :private
+                                        :profile :meta :target :jvm :visibility :stage2-local
                                         :effects #{} :capabilities #{}}
                                        (:binding definition))
                                     (vector? (:instructions definition))

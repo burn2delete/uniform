@@ -110,6 +110,11 @@
         plan (b/p15-s23-stage2-compiler-artifact-plan emitter path text)
         path-var (ns-resolve 'gravity.bootstrap 'build-metadata-policy-source-path)
         source-var (ns-resolve 'gravity.bootstrap 'build-metadata-policy-source!)]
+    ;; The raw constructor's macro projection omits exports, even though the
+    ;; source declares them. Its internal bindings use this exact transport ABI.
+    (is (not (contains? (:module plan) :exports)))
+    (doseq [predicate '[build-graph-effects-declared? offline-build-recipe?]]
+      (is (= :stage2-local (get-in plan [:functions predicate :binding :visibility]))))
     (doseq [gate [b/validate-stage0-compiled-build-graph!
                   b/validate-stage0-compiled-reproducible-build!]]
       (doseq [[candidate reason]
@@ -117,10 +122,13 @@
                [(assoc-in plan [:source :sha256] "sha256:stale") :stale-source-binding]
                [(assoc plan :kind :wrong) :predicate-abi]
                [(assoc-in plan [:module :effects] #{:build/network}) :predicate-abi]
+               [(assoc-in plan [:module :exports] '[offline-build-recipe?]) :predicate-abi]
                [(update plan :functions dissoc 'offline-build-recipe?) :predicate-abi]
                [(assoc-in plan [:functions 'build-graph-effects-declared? :params] ['nodes]) :predicate-abi]
                [(assoc-in plan [:functions 'offline-build-recipe? :arity] 2) :predicate-abi]
                [(assoc-in plan [:functions 'offline-build-recipe? :binding :namespace] 'other) :predicate-abi]
+               [(assoc-in plan [:functions 'offline-build-recipe? :binding :visibility] :private) :predicate-abi]
+               [(assoc-in plan [:functions 'offline-build-recipe? :binding :visibility] :public) :predicate-abi]
                [(assoc-in plan [:functions 'offline-build-recipe? :instructions] []) :predicate-abi]]]
         (let [executions (atom 0)
               observed (with-redefs [b/p15-s23-stage2-compiler-artifact-plan (fn [& _] candidate)
@@ -128,6 +136,17 @@
                          (failure #(gate {} {})))]
           (is (= "BUILD-METADATA-POLICY" (get-in observed [:data :id])))
           (is (= reason (get-in observed [:data :reason])))
+          (is (zero? @executions))))
+      (doseq [changed-text [(.replace text "sh23-verify-result])"
+                                      "sh23-verify-result offline-build-recipe?])")
+                           (.replace text "(:safety :safe)" "(:safety :audited-unsafe)")]]
+        (let [executions (atom 0)
+              observed (with-redefs-fn
+                         {source-var (constantly changed-text)
+                          #'b/p15-s23-stage2-runtime-execute-function
+                          (fn [& _] (swap! executions inc) true)}
+                         #(failure (fn [] (gate {} {}))))]
+          (is (= :predicate-abi (get-in observed [:data :reason])))
           (is (zero? @executions))))
       (let [missing (str path ".missing-" (java.util.UUID/randomUUID))]
         (is (= :source-unavailable
