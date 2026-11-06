@@ -93,9 +93,13 @@
         local (get-in @(:state ctx) [:restricted-actions key])
         shared (rt/shared-restriction ctx :api key)
         restriction (or local shared)]
-    (when (and (map? restriction)
-               (= "POST" (:method restriction))
-               (= "graphql" (:endpoint restriction)))
+    (when restriction
+      (when-not (and (map? restriction)
+                     (= "POST" (:method restriction))
+                     (= "graphql" (:endpoint restriction)))
+        (rt/fail! "Recorded Project API restriction has unknown identity"
+                  {:restricted true :project-tracking :restriction-unavailable
+                   :restriction (select-keys restriction [:method :endpoint :error :at])}))
       restriction)))
 
 (defn- recorded-project-identity? [ctx]
