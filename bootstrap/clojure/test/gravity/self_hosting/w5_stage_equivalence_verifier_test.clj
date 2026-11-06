@@ -267,7 +267,8 @@
           (is (= expected-reason (get (get diagnostic :facts) :reason)))
           (is (= :w5-stage-equivalence (:stage diagnostic)))
           (is (= :llvm-x86_64-linux (:candidate-target diagnostic)))
-          (is (= (get base :target) (:target diagnostic)))
+          (is (= (get invalid :target) (:target diagnostic))
+              "Diagnostic retains the rejected request target")
           (is (false? (:candidate-invokes-clojure?
                        (get diagnostic :facts))))
           (is (false? (:candidate-links-jvm?
