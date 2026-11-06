@@ -515,17 +515,17 @@
             "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"]
            [9 "effects-native-validation" "gravity.effects.pipeline-test"
             "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]]]
-   (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
-        source-vars (binding [*read-eval* false]
-                      (source-deftest-names path))]
-    (is (= expected-label label))
-    (is (= 180 timeout))
-    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
-    (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-    (is (empty? (macro-selected-vars
-                 (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
+    (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
+          source-vars (binding [*read-eval* false]
+                        (source-deftest-names path))]
+      (is (= expected-label label))
+      (is (= 180 timeout))
+      (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+      (is (seq source-vars))
+      (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+      (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+      (is (empty? (macro-selected-vars
+                   (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
 
 (deftest checked-core-cohort-includes-the-complete-native-mir-namespace
   (let [commands (ci/commands-for-selection "checked-core-runtime" {:kind :full})
