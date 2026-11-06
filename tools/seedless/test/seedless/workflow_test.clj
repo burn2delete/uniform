@@ -969,6 +969,23 @@
                                               (assoc-in evidence [:tuple :candidate]
                                                         "other"))))))
 
+(deftest changed-path-without-source-entry-is-rejected
+  (let [checks {:candidate "candidate" :tree "tree"
+                :commands [["clojure" "-M" "focused"]] :result :passed}
+        source "(ns fixture)\n"
+        t {:key "changed-path-evidence" :base "base" :candidate "candidate" :tree "tree"
+           :paths ["owned"] :checks checks}
+        evidence {:tuple {:base "base" :candidate "candidate" :tree "tree"}
+                  :scope "adoption" :paths ["owned"]
+                  :source-paths ["owned/kept.clj"]
+                  :changed-paths [{:status :added :path "owned/new.clj"}]
+                  :patch "patch" :patch-sha256 (rt/digest "patch")
+                  :source [{:path "owned/kept.clj" :status :present
+                            :sha256 (rt/digest source) :executable false :content source}]
+                  :checks checks :checks-sha256 (rt/digest (pr-str checks))}]
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"omits a changed path"
+                          (w/validate-review-evidence! t "adoption" evidence)))))
+
 (deftest restricted-candidate-refuses-before-review-snapshot
   (let [ctx (context)
         t {:key "restricted-review" :kind "adoption" :base "base" :candidate "candidate"

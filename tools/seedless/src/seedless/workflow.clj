@@ -341,7 +341,10 @@
           (shared/safe-path! path)
           (when-not (some #(shared/covers? % path) (:paths t))
             (rt/fail! "Review change evidence contains a foreign path"
-                      {:slice (:key t) :path path})))))
+                      {:slice (:key t) :path path})))
+        (when-not (some #(= (:path %) (:path record)) sources)
+          (rt/fail! "Review source evidence omits a changed path"
+                    {:slice (:key t) :path (:path record)}))))
     evidence))
 
 (defn- capture-review-evidence! [ctx t scope]
