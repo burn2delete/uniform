@@ -756,3 +756,60 @@ model binding and Main integration. They do not close global T002/T003/T005,
 admit a requirement denominator, renew implementation evidence, authorize held
 execution or establish full 240-spec verification. The separate eight proposed
 language/effect producer references are not assigned in this increment.
+
+## Nine current producer references and two fixture-kind summaries
+
+The normal successor to `68b82b46044d3967d2dc02676689ca91df9e3bad`
+assigns nine independently reviewed qualified producer references. Existing
+Build and Evolution tasks own L12 hermetic typed-core reproduction and L4
+macro-change review. Existing Runtime and Evolution tasks own async,
+generator, resumable-error, tool-call, workflow-replay and stable effect/handler
+registration interfaces. The existing Stdlib testing task owns the explicit
+typed fixture-interpreter interface. Each reference binds the actual current
+commit/tree/file, strict task record, observed Open/unchecked state and exact
+UTF8 criterion span. Complete earlier requirement records and gaps are retained
+in per-record history; older additional interfaces retain their original
+subjects and confer no second producer or additional acceptance authority.
+
+L12 follows declared/replayable input policy and preserves the separate pure
+constant restrictions. Macro-change review produces impact and adoption
+evidence without implementing the affected consumers. Runtime clauses retain
+typed handler identity, continuation/lifetime, profile, grant and cleanup
+requirements. Tool and workflow clauses preserve human review, recorded-output
+segments and the conditional R6/R7/R8 boundary; actual external account policy
+does not introduce project quotas. The fixture interpreter cannot make a
+forbidden profile legal or hide unexpected live effects. Its live-service
+opt-in/redaction, exact STD14005/STD14006 results, manifest products and actual
+execution/consumer coverage remain explicit residuals.
+
+Two existing Testing survivor summaries now expose their already preserved
+fixture-kind conditions. Language fixtures retain expected outcomes and
+accepted-language type/effect requirements; profile and backend fixtures retain
+their applicable identity fields. Language offline behavior remains distinct
+from the explicit runtime/grant condition for runtime-backed backend fixtures.
+Local source-review metadata preserves both complete original records. No
+proposed alias is newly accepted, and no fixture or handler is executed here.
+
+Scoped semantic receipts are retained separately: two-language review
+`6ee2899ad44aed8580f1c48a6ac0738098f64d7d797e37019a90a363d352f8ae`
+with model-identity supplement
+`eea6390573c0c326055cf210e16f512f811e6ae4e97ba000b5490f4e9dfaebf4`,
+six-L6 review
+`fe0d2a7b7603452979c1cbbfbdae3e308b5fb5957730744f7a95b35293fdfd22`,
+fixture-interpreter review
+`75fd8f8eac9e10f874111069188af6207925eb418ad3c95c16147e411abba642`
+and fixture-kind review
+`ba13476123309ad95c79651792aebc97f5f0049aa0f3b1012ea2eadc50ea0ca7`.
+The latter retains its original model-digest qualification; exact parent model
+review and explicit record comparisons bind the actual model subject separately.
+
+Exactly eleven surgical record replacements restore the entire prior model's
+values and bytes when reversed. All other records, IDs, aliases, source facets,
+dispositions, source/task bridges, review history, historical receipts,
+implementation states and global atomicity/nonoverlap states are unchanged.
+All 21 existing task-source bridge/reference checks pass on the prepared
+candidate. Final checks bind the committed tuple; independent review of this
+exact model assignment and Main integration remain pending. T002/T003/T005,
+the admitted denominator and full 240-spec verification remain open. No held
+provider, compiler, native, replay, migration, release or seed-retirement action
+is performed or accepted by these source changes.
