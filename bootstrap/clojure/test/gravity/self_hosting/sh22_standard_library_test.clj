@@ -479,6 +479,64 @@
       (is (= :checked-i64
              (get-in add-result [:facts :numeric-mode]))))))
 
+(deftest utf8-encoding-matches-jdk-and-composes-with-validation
+  (let [base (assoc (request accepted-gravity-plan 'sh22-utf8-request)
+                    :operation :utf8-encode)
+        export (first (filter #(= :utf8-encode (:name %))
+                              (:exports (invoke-engine 'sh22-module-manifest []))))]
+    (is (= #{:memory/allocate} (:effects export)))
+    (is (= #{} (:capabilities export)))
+    (is (= :bounded-by-input (:allocation export)))
+    (doseq [scalars [[] [0] [127] [128] [2047] [2048] [55295] [57344]
+                     [65535] [65536] [1114111]
+                     [65 8364 128512] [101 769]]]
+      (let [input (assoc base :arguments [scalars])
+            result (handle input)
+            expected (mapv #(bit-and 255 %)
+                           (.getBytes (String. (int-array scalars) 0 (count scalars))
+                                      java.nio.charset.StandardCharsets/UTF_8))
+            validation (handle (assoc input :operation :utf8-validate
+                                      :arguments [(:value result)]))]
+        (is (= :accepted (:status result)) scalars)
+        (is (= expected (:value result)) scalars)
+        (is (= :none (get-in result [:facts :normalization])))
+        (is (= [scalars] (get-in result [:identity-input :arguments])))
+        (is (= :accepted (:status validation)))
+        (is (= expected (get-in validation [:value :bytes])))
+        (is (= (count scalars) (get-in validation [:value :scalar-count])))
+        (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))))
+
+(deftest utf8-encoding-rejects-invalid-scalars-and-result-substitution
+  (let [base (assoc (request accepted-gravity-plan 'sh22-utf8-request)
+                    :operation :utf8-encode)]
+    (doseq [scalar [-1 55296 56319 56320 57343 1114112 1/2 65.0 nil false
+                    "A" '(throw "inert")]]
+      (let [input (assoc base :arguments [[65 8364 scalar]])
+            result (handle input)]
+        (is (= :rejected (:status result)))
+        (is (= ["STD4001" :invalid-unicode-scalar]
+               ((juxt :rule :reason) (first (:diagnostics result)))))
+        (is (not (contains? result :value)))
+        (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+    (doseq [[arguments rule reason]
+            [[[] "STD1001" :invalid-arity]
+             [[[] []] "STD1001" :invalid-arity]
+             [[nil] "STD4001" :expected-scalar-vector]
+             [['(65)] "STD4001" :expected-scalar-vector]
+             [[{:scalars [65]}] "STD4001" :expected-scalar-vector]]]
+      (let [result (handle (assoc base :arguments arguments))]
+        (is (= :rejected (:status result)))
+        (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))))
+    (let [input (assoc base :arguments [[65]])
+          result (handle input)]
+      (doseq [candidate [(assoc result :value [66])
+                         (assoc-in result [:facts :normalization] :nfc)
+                         (handle (assoc input :arguments [[66]]))]]
+        (let [verification (invoke-engine 'sh22-verify-result [input candidate])]
+          (is (= :rejected (:status verification)))
+          (is (= :library-result-substitution
+                 (get-in verification [:diagnostics 0 :reason]))))))))
+
 (deftest sh22-builds-errors-artifact-data-and-stable-meta-views
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [error-result (handle (request plan 'sh22-error-request))

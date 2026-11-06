@@ -36,6 +36,7 @@
      :ordered-set-equal-keyword
      :ordered-set-equal-integer
      :utf8-validate
+     :utf8-encode
      :checked-add-i64
      :checked-sub-i64
      :checked-mul-i64
@@ -144,6 +145,11 @@
     (sh22-export
      :utf8-validate :text
      "(Vector Byte) -> (Result ValidatedUtf8 TextError)"
+     #{:memory/allocate} #{}
+     :bounded-by-input ["STD4001"] #{:meta})
+    (sh22-export
+     :utf8-encode :text
+     "(Vector Scalar) -> (Result (Vector Byte) TextError)"
      #{:memory/allocate} #{}
      :bounded-by-input ["STD4001"] #{:meta})
     (sh22-export
@@ -995,6 +1001,67 @@
         (sh22-rejected request "STD4001" :expected-byte-vector))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
+; STD4: validate the complete scalar sequence before producing any octets.
+; These numeric limits are Unicode validity requirements, not input quotas.
+(defn sh22-unicode-scalar? [value]
+  (if (integer? value)
+    (if (<= 0 value)
+      (if (<= value 1114111)
+        (if (< value 55296) true (> value 57343))
+        false)
+      false)
+    false))
+
+(defn sh22-unicode-scalar-vector? [values]
+  (loop [index 0]
+    (if (= index (count values))
+      true
+      (if (sh22-unicode-scalar? (get values index))
+        (recur (+ index 1))
+        false))))
+
+(defn sh22-utf8-encode-scalars [scalars]
+  (loop [index 0 bytes []]
+    (if (= index (count scalars))
+      bytes
+      (let [scalar (get scalars index)
+            q64 (quot scalar 64)
+            q4096 (quot scalar 4096)
+            q262144 (quot scalar 262144)
+            last-byte (+ 128 (- scalar (* q64 64)))]
+        (recur
+         (+ index 1)
+         (if (<= scalar 127)
+           (conj bytes scalar)
+           (if (<= scalar 2047)
+             (conj (conj bytes (+ 192 q64)) last-byte)
+             (let [middle-byte (+ 128 (- q64 (* q4096 64)))]
+               (if (<= scalar 65535)
+                 (conj (conj (conj bytes (+ 224 q4096)) middle-byte) last-byte)
+                 (conj
+                  (conj
+                   (conj (conj bytes (+ 240 q262144))
+                         (+ 128 (- q4096 (* q262144 64))))
+                   middle-byte)
+                  last-byte))))))))))
+
+(defn sh22-utf8-encode [request]
+  (let [arguments (get request :arguments)
+        scalars (get arguments 0)]
+    (if (= 1 (count arguments))
+      (if (vector? scalars)
+        (if (sh22-unicode-scalar-vector? scalars)
+          (sh22-accepted
+           request (sh22-utf8-encode-scalars scalars)
+           {:text-kind :utf8-bytes
+            :encoding :utf-8
+            :boundary-policy :unicode-scalar
+            :normalization :none
+            :allocation :bounded-by-input})
+          (sh22-rejected request "STD4001" :invalid-unicode-scalar))
+        (sh22-rejected request "STD4001" :expected-scalar-vector))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
 (defn sh22-checked-add [request]
   (let [arguments (get request :arguments)
         left (get arguments 0)
@@ -1582,8 +1649,10 @@
               (if (= operation :ordered-set-conj)
                 (sh22-ordered-set-conj request)
                 (sh22-ordered-set-contains-keyword request))
-              (if (= operation :utf8-validate)
-                (sh22-utf8-validate request)
+              (if (sh22-member? #{:utf8-validate :utf8-encode} operation)
+                (if (= operation :utf8-encode)
+                  (sh22-utf8-encode request)
+                  (sh22-utf8-validate request))
                 (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
                   (if (= operation :checked-add-i64)
                     (sh22-checked-add request)
@@ -1612,6 +1681,7 @@
       :ordered-map-dissoc-keyword
       :ordered-set-conj
       :utf8-validate
+      :utf8-encode
       :error-context
       :artifact-data
       :meta-view
@@ -1651,7 +1721,7 @@
           :none
           (if (= operation :ordered-set-conj)
             :bounded-by-result
-            (if (= operation :utf8-validate)
+            (if (sh22-member? #{:utf8-validate :utf8-encode} operation)
               :bounded-by-input
               (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
                 :none
