@@ -97,6 +97,9 @@
                  (b/p15-s23-stage2-runtime-artifact-invoke ctx callee args))
         values (vec (concat
                      (range -9 10)
+                     ;; Keep these as Longs: the hosted object subtraction
+                     ;; path must not negate the minimum signed carrier.
+                     (map #(+ Long/MIN_VALUE %) (range 10))
                      (for [exponent (concat (range 1 20) [40 100])
                            delta [-1 0 1]
                            sign [-1 1]]

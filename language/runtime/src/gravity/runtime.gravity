@@ -43,14 +43,15 @@
 (defn p15-s23-runtime-integer-decimal-text [value]
   ; STD4 deterministic decimal text, STD5 exact integers. Keep the magnitude
   ; nonpositive so the minimum signed integer is never negated. With quotient
-  ; truncated toward zero, quotient*10 stays between remaining and zero;
-  ; quotient*10 - remaining is a digit index in [0,9]. No magnitude quota.
+  ; truncated toward zero, quotient*10 stays between remaining and zero.
+  ; Subtract that product first, then negate only the remainder in [-9,0];
+  ; hosted subtraction may negate its right operand. No magnitude quota.
   (if (integer? value)
     (let [negative? (< value 0)
           digits ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]]
       (loop [remaining (if (> value 0) (- 0 value) value) text ""]
         (let [quotient (quot remaining 10)
-              digit (- (* quotient 10) remaining)
+              digit (- 0 (- remaining (* quotient 10)))
               result (str (get digits digit) text)]
           (if (= quotient 0)
             (if negative? (str "-" result) result)
