@@ -16,6 +16,34 @@
         module (assoc (:module macro-artifact) :forms (:expanded-forms macro-artifact))]
     (b/stage0-compiled-core-plan path text module)))
 
+(deftest current-uniform-metadata-predicates-execute-without-entering-build-gates
+  ;; Development execution of current source; no migration pins are renewed.
+  (let [path (.getCanonicalPath
+              (io/file "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity"))
+        text (slurp path :encoding "UTF-8")
+        gate (fn [& _] (throw (ex-info "Recursive compiled build gate" {})))
+        plan (with-redefs [b/validate-stage0-compiled-build-graph! gate
+                           b/validate-stage0-compiled-reproducible-build! gate]
+               (let [emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
+                 (b/p15-s23-stage2-compiler-artifact-plan emitter path text)))
+        invoke (fn [callee arguments]
+                 (b/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-build-metadata-policy-development
+                   :compiler-artifact-plan? true}
+                  plan callee arguments))]
+    (is (= (str "sha256:" (b/sha256-hex text)) (get-in plan [:source :sha256])))
+    (doseq [[declared nodes expected]
+            [[#{} [] true]
+             [#{} [#{}] true]
+             [#{:build/read-file :build/write-artifact}
+              [#{:build/read-file} #{} #{:build/write-artifact}] true]
+             [#{:build/read-file}
+              [#{:build/read-file} #{} #{:build/network}] false]]]
+      (is (= expected (invoke 'sh23-compiled-graph-effects? [declared nodes]))))
+    (doseq [[network expected] [[:disabled true] [:enabled false] [nil false]
+                              [false false] ["disabled" false]]]
+      (is (= expected (invoke 'sh23-compiled-offline-recipe? [network]))))))
+
 (deftest native-contract-is-explicit-and-has-no-reverse-bootstrap-dependency
   (is (= #{'check-graph-effects! 'check-offline-recipe!}
          (set (keys (ns-publics 'gravity.build)))))
