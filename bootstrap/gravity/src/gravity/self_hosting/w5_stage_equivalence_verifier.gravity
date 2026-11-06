@@ -1,6 +1,6 @@
 ; W5 Wave3 stage-equivalence verifier.
 ;
-; This source is an executable, bounded, static-only verifier.  It compares
+; This source is an executable, static-only verifier.  It compares
 ; three declared stage records and their transition records, but it never runs
 ; a compiler, invokes a JVM/Clojure process, or infers native/LLVM evidence.
 ; The :jvm target below is only the stage2 seed harness target.  The candidate
@@ -110,9 +110,7 @@
 
 (defn w5-se-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 4096)
-      false)
+    (> (count value) 0)
     false))
 
 (defn w5-se-exact-keys? [value expected]
@@ -196,9 +194,7 @@
 
 (defn w5-se-source-spans-valid? [spans]
   (if (vector? spans)
-    (if (<= (count spans) 32)
-      (w5-se-source-spans-valid-from? spans 0)
-      false)
+    (w5-se-source-spans-valid-from? spans 0)
     false))
 
 (defn w5-se-target-valid? [target]
@@ -480,9 +476,7 @@
 
 (defn w5-se-diagnostics-valid? [entries]
   (if (vector? entries)
-    (if (<= (count entries) 64)
-      (w5-se-diagnostics-valid-from? entries 0)
-      false)
+    (w5-se-diagnostics-valid-from? entries 0)
     false))
 
 (defn w5-se-span-without-path [span]
@@ -681,10 +675,8 @@
     (if (= ordinal (get operation :ordinal))
       (if (w5-se-member? w5-se-ir-opcodes (get operation :opcode))
         (if (vector? (get operation :operands))
-          (if (<= (count (get operation :operands)) 32)
-            (w5-se-ir-operands-valid-from?
-             (get operation :operands) ordinal 0)
-            false)
+          (w5-se-ir-operands-valid-from?
+           (get operation :operands) ordinal 0)
           false)
         false)
       false)
@@ -755,24 +747,22 @@
        value #{:normalized-operations :id-renaming :target-independent})
     (if (vector? (get value :normalized-operations))
       (if (> (count (get value :normalized-operations)) 0)
-        (if (<= (count (get value :normalized-operations)) 256)
-          (if (w5-se-ir-operations-valid-from?
-               (get value :normalized-operations) 0)
-            (if (vector? (get value :id-renaming))
-              (if (= (count (get value :id-renaming))
-                     (count (get value :normalized-operations)))
-                (if (w5-se-ir-renamings-valid-from?
-                     (get value :id-renaming)
-                     (count (get value :normalized-operations)) 0)
-                    (if (w5-se-unique-values?
-                         (w5-se-ir-originals (get value :id-renaming)))
-                      (if (w5-se-unique-values?
-                           (w5-se-ir-ordinals (get value :id-renaming)))
-                      (if (w5-se-ir-renaming-coverage?
-                           (get value :id-renaming) 0
-                           (count (get value :normalized-operations)))
-                        (= true (get value :target-independent))
-                        false)
+        (if (w5-se-ir-operations-valid-from?
+             (get value :normalized-operations) 0)
+          (if (vector? (get value :id-renaming))
+            (if (= (count (get value :id-renaming))
+                   (count (get value :normalized-operations)))
+              (if (w5-se-ir-renamings-valid-from?
+                   (get value :id-renaming)
+                   (count (get value :normalized-operations)) 0)
+                (if (w5-se-unique-values?
+                     (w5-se-ir-originals (get value :id-renaming)))
+                  (if (w5-se-unique-values?
+                       (w5-se-ir-ordinals (get value :id-renaming)))
+                    (if (w5-se-ir-renaming-coverage?
+                         (get value :id-renaming) 0
+                         (count (get value :normalized-operations)))
+                      (= true (get value :target-independent))
                       false)
                     false)
                   false)
@@ -981,9 +971,7 @@
 
 (defn w5-se-deltas-valid? [deltas]
   (if (vector? deltas)
-    (if (<= (count deltas) 16)
-      (w5-se-deltas-valid-from? deltas 0)
-      false)
+    (w5-se-deltas-valid-from? deltas 0)
     false))
 
 (defn w5-se-delta-binds-product? [delta product]

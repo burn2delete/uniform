@@ -387,3 +387,30 @@
            (get (get (get substituted-verification :diagnostics) 0) :rule)))
     (is (= :non-authority (:authority substituted-verification)))
     (is (true? (:clojure-seed-boundary? substituted-verification)))))
+
+(deftest w5-stage-equivalence-traverses-spans-with-long-paths
+  (let [base (request accepted-gravity-plan 'w5-stage-equivalence-request)
+        span (assoc (get-in base [:products 0 :source-spans 0])
+                    :actual-source-path (apply str (repeat 4097 "a")))
+        expanded (assoc-in base [:products 0 :source-spans]
+                           (vec (repeat 33 span)))
+        relocated (-> expanded
+                      (assoc-in
+                       [:products 0 :source-spans 32 :actual-source-path]
+                       (apply str (repeat 4097 "b")))
+                      (assoc-in [:provenance :actual-request-path]
+                                (apply str (repeat 4097 "b"))))
+        malformed (assoc-in expanded
+                           [:products 0 :source-spans 32 :start-byte] -1)
+        result (compare-request expanded)
+        relocated-result (compare-request relocated)]
+    (is (= :accepted (:status result)))
+    (is (= 7 (count (:outcomes result))))
+    (is (= result (compare-request expanded)))
+    (is (= :passed
+           (:status (invoke engine-plan 'w5-stage-equivalence-verify-result
+                            [expanded result]))))
+    (is (= :accepted (:status relocated-result)))
+    (is (= (:identity-input result) (:identity-input relocated-result)))
+    (is (not= (:provenance result) (:provenance relocated-result)))
+    (is (= :rejected (:status (compare-request malformed))))))
