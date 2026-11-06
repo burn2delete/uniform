@@ -62,3 +62,53 @@ objects, publish diagnostics, or claim full C6/C10, release, migration,
 self-hosting or seed retirement. Existing native scalar/codec and host
 heap/stack/process restrictions remain explicit. Relative passed reports are
 not safety or artifact certificates.
+
+## Implemented extraction and local evidence
+
+The seven bodies now live in Checked Core with twelve explicit native operation
+ports and one private function/Var selector. Public APIs increase from 72 to
+79. Existing common source/runtime operations remain a separate operation map;
+native zipper ports are explicitly declared per API. Compatibility wrappers
+retain their original arities and select live recursive owner Vars per use.
+
+The immutable original seven functions from
+514d72672ca1cc9e531747c9b9dfaab20052f42e and extracted wrappers consume
+identical live inputs. All 77 complete outcomes match as raw serialized and
+parsed data: 67 returns and ten real refusals. Inputs remain unchanged. The
+capture includes the actual current Core source path/hash, compiled plan and
+function identities. Capture SHA256:
+70a8ef48881bcef3dc6b629ce3babc529c6c3cccfefc3608efbb9ba9ccd0c44f.
+No private source-artifact/authentication/replay factory is invoked.
+
+The original complete Core pipeline passes 45 tests / 3141 assertions under
+the existing canonical 2g/600-second child. Focused additions pin a known
+canonical digest, decimal scale, vector/list and set-member type distinctions,
+once-per-key deterministic ordering, original exception identity, source and
+unsafe/runtime-check/human-review metadata, actual map/set reconstruction
+collisions, malformed digest tables, returning owner failures and recursive
+callable selection before path-digest evaluation.
+
+The first 50-test run produced 23 failures because the new stage Vars were not
+in the existing dependency-root lists. Adding only construction roots fixed
+the before-owner guard but left receipt reuse stale; the expanded tests then
+reported 69 failures for 23 affected roots. Both actual NONPASS logs remain
+preserved. Before editing either guard, separate one-path claims were obtained.
+The final scope is the original five paths plus those two guard paths.
+
+Both existing lists now track the seven stage functions, private selector,
+seven compatibility wrappers and all direct canonical/resolution/failure
+dependencies: 23 entries each. Tests require every new root to invalidate
+receipt reuse and fail construction bookends before owner work. They use the
+existing inert unit verifier, not a fabricated admitted Core artifact. No
+authentication policy, pin, scope, envelope or public-admission behavior is
+weakened or moved. The complete pipeline now passes 50 tests / 3457 assertions.
+
+Independent reconstruction recovers every original native body, the entire
+prior Checked Core file and all other component bytes. The two guard files
+differ only by the 23 explicit dependency entries each. CI commands, workflow
+and selectors remain byte-identical. Affected C, Wasm and MIR namespaces pass
+77 tests / 1793 assertions; boundary/ownership passes 48 / 1202. Cold loading
+exposes exactly 79 declared public APIs and does not load Bootstrap. Direct
+stage/test lint and both document validators pass. Complete contextual lint,
+independent review, own hosted CI/provenance and exact current-Main coordinator
+integration remain separate requirements.
