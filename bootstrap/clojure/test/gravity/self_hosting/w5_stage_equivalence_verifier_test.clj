@@ -415,7 +415,13 @@
     (is (= :accepted (:status relocated-result)))
     (is (= (:identity-input result) (:identity-input relocated-result)))
     (is (not= (:provenance result) (:provenance relocated-result)))
-    (is (= :rejected (:status (compare-request malformed))))))
+    (doseq [invalid [malformed
+                     (assoc-in expanded [:products 0 :source-spans] {})
+                     (update-in expanded [:products 0] dissoc :source-spans)]]
+      (let [rejected (compare-request invalid)]
+        (is (= :rejected (:status rejected)))
+        (is (= "BOOT7002" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= :artifact (get-in rejected [:diagnostics 0 :facts :reason])))))))
 
 (defn- assert-recomputed-comparison [request-value]
   (let [result (compare-request request-value)

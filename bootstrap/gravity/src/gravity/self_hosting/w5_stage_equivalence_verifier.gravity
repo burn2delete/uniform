@@ -831,13 +831,13 @@
                                (get product :left))
                             (w5-se-reviewed-value-valid?
                              (get product :right))
-                            false))))))))
+                            false)))))))
               false)
             false)
           false)
         false)
       false)
-    false)
+    false))
 
 (defn w5-se-products-valid-from? [products index]
   (if (= index (count products))
@@ -1659,8 +1659,8 @@
           (let [failure (w5-se-first-failure-from? outcomes 0)]
             (w5-se-rejected
              request
-             (get (get failure :outcome) :reason))))
-      (w5-se-rejected request request-error)))))
+             (get (get failure :outcome) :reason)))))
+      (w5-se-rejected request request-error))))
 
 (defn w5-stage-equivalence-execute [request]
   (w5-stage-equivalence-compare request))
