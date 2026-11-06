@@ -713,3 +713,46 @@ The existing task-source bridge table now has 21 qualified current entries, pres
 Exactly six existing requirement records gain explicit current producer references: UI rendering, parameterized query execution, GOV2 compatibility assessment and the three native carrier/reference/Symbol ABI observations. Each reference authenticates its 66ca commit/tree/file, strict record, observed Open state and UTF8 criterion span. Their complete earlier requirement records and gaps are retained in the existing review history. Existing additional consumer interfaces, aliases, facets, receipt assessments and implementation dispositions remain unchanged. The current gaps preserve the independent source review's provider/profile/target, source-facet, fixture, GOV1/GOV4 and native host/seed/ABI limitations.
 
 The bounded independent semantic receipt 0cb6c943e235b53ba6d1655c3273d752eafa9bd2344fe7f93783c53ac66c2a97 is retained with reviewer-owned identity correction 268e88b561b18afc4c9b0d4cc7c74b32bc5c98ce8686e3d0e59527f4034a5b1e; it covers criterion entailment only. Clojure/Git source proofs authenticate the actual identities. Before writing, all task-source versions/references passed against the live working files, and reversing the six binding changes and one source-history/bridge transition recovered the entire original model. Final checks bind the committed tuple; independent review of the actual model binding remains pending. T002, T003 and T005 remain Open. No implementation acceptance, provider replay, seed retirement, Main integration or full 240-spec verification is inferred.
+
+## Five existing overlap questions: qualified source dispositions
+
+The five existing Stdlib context questions retain every original field and gain
+proposed current-source resolutions. Independent semantic classification is
+preserved in receipt `017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec`;
+the reviewer-owned vocabulary correction is
+`37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52`.
+Both receipts retain their immutable `1615d7a37b7c35d8ad4dabf7d719e906e75277c6`
+subject, whose canonical model is unchanged at the `0ed4bc7` authoring base.
+
+Syntax APIs share applicable C3 preservation facets while retaining callable
+API obligations. Library release-report assembly, GOV2 change classification
+and PKG12 signing remain distinct producer outcomes. Existing
+`stdlib/db/transaction-lifecycle` remains distinct from
+`domain/parameterized-query-execution`: typed query execution does not by
+itself establish commit, rollback, savepoint, isolation, retry, idempotency or
+failure/cancellation teardown. Physical CDC shares only identical clock-domain
+facets; device adapters retain their separate target and capability contracts.
+Web escaping and taint-to-sink facets do not establish native, binary, terminal
+or whole-UI rendering and lifecycle conformance.
+
+Three prior review labels were not canonical requirement IDs. The corrected
+related records are `compiler/c1/preserve-evidence` and `domain/hardware-cdc`;
+the historical DB review-law label remains a review record. Its question ID is
+preserved as historical context and is not introduced into requirements or
+aliases. The correction supplies qualified related-record pointers only; it
+does not adopt any new equivalence or alias.
+
+Only the five question records change, through their added source-resolution
+fields. Replacing that vector with its original bytes restores the entire
+original model exactly. All requirement IDs and records, aliases, facets,
+source dispositions, task references, bridges, evidence assessments, task
+states and earlier review history remain unchanged. Actual provider, target,
+callable API, execution and consumer-closure evidence remain explicit future
+implementation obligations; they are not extra prerequisites for classifying
+these source questions.
+
+The resolutions remain proposed pending independent review of this exact
+model binding and Main integration. They do not close global T002/T003/T005,
+admit a requirement denominator, renew implementation evidence, authorize held
+execution or establish full 240-spec verification. The separate eight proposed
+language/effect producer references are not assigned in this increment.

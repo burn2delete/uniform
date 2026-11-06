@@ -69410,14 +69410,193 @@
     :question
     "Root must settle overlap between the standard syntax API preservation outcome and existing compiler syntax-transform preservation; public availability remains the existing public-contract producer regardless.",
     :affected-facet-ids ["stdlib/facet/std15/1058-1164"],
-    :owner :root}
+    :owner :root,
+    :current-source-resolution
+    {:canonical-vocabulary-correction
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2-correction.edn",
+      :sha256
+      "37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52",
+      :qualified-related-record-pointers-only true,
+      :alias-or-equivalence-adoption :none},
+     :exact-entailment
+     {:shared-facets
+      [:source-span-preservation
+       :hygiene
+       :namespace-context
+       :metadata
+       :phase-facts
+       :origin-preservation
+       :fact-invalidation
+       :immutability],
+      :not-entailing
+      [:constructor-getter-update-signatures
+       :syntax-identity-law
+       :metadata-merge-replacement-rule
+       :public-helper-binding
+       :implementation-acceptance]},
+     :state :proposed-scoped-source-disposition,
+     :source
+     {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+      :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+      :canonical-model "contracts/requirement-reconciliation.edn",
+      :canonical-model-sha256
+      "a14a20f1271685c535e1652fed901a863d9c39c5801e600ff4e584d3eda08cf8",
+      :current-task-file "specs/stdlib-workflow/tasks.md",
+      :current-task-file-sha256
+      "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617"},
+     :historical-question :preserved-verbatim,
+     :disposition
+     :share-common-c3-facets-but-retain-library-callable-consumer-obligations,
+     :normative-evidence
+     [{:path
+       "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+       :lines "19-31, 140-157",
+       :facts
+       [:required-context-fields
+        :origin-preservation
+        :immutable-values
+        :stable-serialization
+        :fact-versioning-and-invalidation]}
+      {:path
+       "docs/phase-16-standard-library/212-std2-core-library-specification.md",
+       :lines "19-30",
+       :facts [:metadata-operations-preserve-spans-and-syntax-metadata]}
+      {:path
+       "docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md",
+       :lines "20-29, 96-105",
+       :facts
+       [:syntax-api-preservation :ordinary-rechecking :provenance],
+       :source-facets ["stdlib/facet/std15/1058-1164"]}],
+     :global-T002 :open,
+     :classification :qualified-shared-law-with-callable-api-residual,
+     :residual-gaps
+     [:exact-facet-by-facet-alias-lineage
+      :actual-meta-with-meta-vary-meta-merge-meta-call-path
+      :real-syntax-inspection-transformation-products-and-negatives
+      :current-source-interface-acceptance],
+     :independent-semantic-review
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2.edn",
+      :sha256
+      "017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec"},
+     :current-model-review :pending,
+     :canonical-records
+     ["stdlib/meta/syntax-context-preservation"
+      "compiler/c3/syntax-construction"
+      "compiler/c3/origin-preservation"
+      "compiler/c3/inspectable-hygiene"
+      "compiler/c3/syntax-roundtrip-gate"
+      "compiler/c1/preserve-evidence"],
+     :current-criteria
+     [{:marker "library-base-source-core-metadata",
+       :task
+       "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+       :line 522,
+       :status :open}
+      {:marker "library-testing-meta-source-meta-syntax-values",
+       :task
+       "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters",
+       :line 1290,
+       :status :open}],
+     :alias-or-new-requirement :none,
+     :implementation-acceptance :unassessed}}
    {:law-id "stdlib/stability/release-compatibility-artifacts",
     :category :nonoverlap,
     :question
     "Resolve exact report/signing producer overlap with package/governance evidence outcomes; a public module contract alone is not release compatibility evidence.",
     :affected-facet-ids
     ["stdlib/facet/std20/2046-2129" "stdlib/facet/std20/7654-7725"],
-    :owner :root}
+    :owner :root,
+    :current-source-resolution
+    {:canonical-vocabulary-correction
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2-correction.edn",
+      :sha256
+      "37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52",
+      :qualified-related-record-pointers-only true,
+      :alias-or-equivalence-adoption :none},
+     :exact-entailment
+     {:shared-facets
+      [:release-report-must-expose-impact
+       :profile-diagnostic-schema-conformance-scope
+       :exact-subject-lineage],
+      :not-entailing
+      [:GOV2-classification-decision
+       :GOV3-GOV8-admission
+       :PKG12-signature-or-provenance-production
+       :release-acceptance]},
+     :state :proposed-scoped-source-disposition,
+     :source
+     {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+      :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+      :canonical-model "contracts/requirement-reconciliation.edn",
+      :canonical-model-sha256
+      "a14a20f1271685c535e1652fed901a863d9c39c5801e600ff4e584d3eda08cf8",
+      :current-task-file "specs/stdlib-workflow/tasks.md",
+      :current-task-file-sha256
+      "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617"},
+     :historical-question :preserved-verbatim,
+     :disposition
+     :retain-distinct-report-governance-signing-and-release-consumer-boundaries,
+     :normative-evidence
+     [{:path
+       "docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md",
+       :lines "20-29, 40-49, 86-95, 108-117",
+       :facts
+       [:stability-dimensions
+        :compatibility-report
+        :signed-provenance
+        :release-conformance]}
+      {:path
+       "docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md",
+       :lines "19-42, 56-71, 95-104",
+       :facts
+       [:baseline
+        :profiles
+        :targets
+        :artifacts
+        :classification
+        :migration]}
+      {:path
+       "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+       :lines "20-40, 61-87, 139-159",
+       :facts
+       [:canonical-signature-payload
+        :subject-bound-provenance
+        :sbom
+        :fail-closed-verification]}],
+     :global-T002 :open,
+     :classification
+     :distinct-producers-with-qualified-shared-release-contract,
+     :residual-gaps
+     [:exact-producer-consumer-task-lineage
+      :actual-baseline-and-impact-report
+      :actual-signature-provenance-sbom-and-verification
+      :implementation-and-publication-acceptance],
+     :independent-semantic-review
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2.edn",
+      :sha256
+      "017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec"},
+     :current-model-review :pending,
+     :canonical-records
+     ["stdlib/stability/release-compatibility-artifacts"
+      "governance/compatibility-assessment"],
+     :current-criteria
+     [{:marker "library-base-source-release-assembly",
+       :line 1606,
+       :status :open}
+      {:marker
+       "library-crypto-ui-stability-source-eight-dimension-compatibility",
+       :line 1815,
+       :status :open}
+      {:marker
+       "library-crypto-ui-stability-source-change-classification-and-release",
+       :line 1826,
+       :status :open}],
+     :alias-or-new-requirement :none,
+     :implementation-acceptance :unassessed}}
    {:law-id "review-law/stdlib/db-transaction-policy",
     :category :nonoverlap,
     :question
@@ -69427,20 +69606,272 @@
      "stdlib/facet/std11/4675-4756"
      "stdlib/facet/std11/5288-5356"
      "stdlib/facet/std11/5893-5974"],
-    :owner :root}
+    :owner :root,
+    :current-source-resolution
+    {:canonical-vocabulary-correction
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2-correction.edn",
+      :sha256
+      "37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52",
+      :qualified-related-record-pointers-only true,
+      :alias-or-equivalence-adoption :none},
+     :exact-entailment
+     {:shared-facets
+      [:typed-query :parameter-taint :row-schema :provider-identity],
+      :not-entailing
+      [:commit
+       :rollback
+       :savepoint
+       :isolation
+       :retry
+       :idempotency
+       :cancellation-teardown
+       :typed-provider-failure]},
+     :state :proposed-scoped-source-disposition,
+     :source
+     {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+      :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+      :canonical-model "contracts/requirement-reconciliation.edn",
+      :canonical-model-sha256
+      "a14a20f1271685c535e1652fed901a863d9c39c5801e600ff4e584d3eda08cf8",
+      :current-task-file "specs/stdlib-workflow/tasks.md",
+      :current-task-file-sha256
+      "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617"},
+     :historical-question :preserved-verbatim,
+     :disposition
+     :retain-stdlib-transaction-lifecycle-until-full-query-equivalence-is-proved,
+     :normative-evidence
+     [{:path
+       "docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md",
+       :lines "20-29, 31-39, 82-90, 103-112",
+       :facts
+       [:declared-effects-and-capability
+        :isolation
+        :retry
+        :rollback
+        :idempotency
+        :transaction-fixtures]}
+      {:path
+       "docs/phase-07-backend-architecture/108-b11-query-relational-backend-design.md",
+       :lines "139-155, 171-173, 185-190, 209-222",
+       :facts
+       [:transaction-record
+        :workflow-replay-linkage
+        :result-validation
+        :transaction-diagnostics
+        :execution-or-plan-evidence]}],
+     :global-T002 :open,
+     :classification
+     :equivalence-not-established-retain-distinct-transaction-lifecycle,
+     :residual-gaps
+     [:general-query-source-incidence-and-acceptance
+      :actual-provider-commit-rollback-savepoint-retry-isolation-results
+      :failure-cancellation-and-teardown-observations
+      :no-simulated-commit-substitution],
+     :independent-semantic-review
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2.edn",
+      :sha256
+      "017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec"},
+     :current-model-review :pending,
+     :canonical-records
+     ["stdlib/db/transaction-lifecycle"
+      "domain/parameterized-query-execution"],
+     :current-criteria
+     [{:marker
+       "library-data-source-database-resources-and-typed-queries",
+       :line 1051,
+       :status :open}
+      {:marker "library-data-source-database-transaction-lifecycle",
+       :line 1064,
+       :status :open}],
+     :alias-or-new-requirement :none,
+     :implementation-acceptance :unassessed}}
    {:law-id "stdlib/hardware/clock-domain-admission",
     :category :nonoverlap,
     :question
     "Resolve only the HDL/physical-CDC overlap with existing hardware/backend outcomes; software/device checked adapters are not blanket aliases of clock/register spellings.",
     :affected-facet-ids ["stdlib/facet/std17/1708-1805"],
-    :owner :root}
+    :owner :root,
+    :current-source-resolution
+    {:canonical-vocabulary-correction
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2-correction.edn",
+      :sha256
+      "37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52",
+      :qualified-related-record-pointers-only true,
+      :alias-or-equivalence-adoption :none},
+     :exact-entailment
+     {:shared-facets
+      [:physical-clock-domain-crossing
+       :mediator-or-proof
+       :metastability-reset-latency-audit-boundary],
+      :not-entailing
+      [:native-device-api
+       :register-or-mmio-semantics
+       :clock-timer-power-policy
+       :target-board-isa
+       :live-device-or-simulator-acceptance]},
+     :state :proposed-scoped-source-disposition,
+     :source
+     {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+      :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+      :canonical-model "contracts/requirement-reconciliation.edn",
+      :canonical-model-sha256
+      "a14a20f1271685c535e1652fed901a863d9c39c5801e600ff4e584d3eda08cf8",
+      :current-task-file "specs/stdlib-workflow/tasks.md",
+      :current-task-file-sha256
+      "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617"},
+     :historical-question :preserved-verbatim,
+     :disposition
+     :share-only-identical-physical-cdc-facets-and-retain-device-adapter-obligations,
+     :normative-evidence
+     [{:path
+       "docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md",
+       :lines "20-29, 71-90, 103-112",
+       :facts
+       [:target-device-capability
+        :clock-domain-proof-or-adapter
+        :hardware-artifacts
+        :simulator-boundary]}
+      {:path
+       "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md",
+       :lines "184-194",
+       :facts
+       [:synchronizer
+        :async-fifo
+        :handshake
+        :gray-proof
+        :audited-waiver
+        :unmediated-cdc-rejected]}
+      {:path
+       "docs/phase-07-backend-architecture/106-b9-hdl-backend-design.md",
+       :lines "19-39, 152-157, 195-207",
+       :facts
+       [:hardware-ir
+        :declared-cdc-mediator
+        :physical-records
+        :accepted-and-rejected-cdc-fixtures]}],
+     :global-T002 :open,
+     :classification :qualified-context-shared-physical-cdc-law,
+     :residual-gaps
+     [:facet-level-lineage-and-context-binding
+      :native-device-capability-effect-and-profile-evidence
+      :selected-target-device-clock-reset-and-timing-products
+      :implementation-and-source-interface-acceptance],
+     :independent-semantic-review
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2.edn",
+      :sha256
+      "017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec"},
+     :current-model-review :pending,
+     :canonical-records
+     ["stdlib/hardware/clock-domain-admission"
+      "domain/hardware-cdc"
+      "backend/hdl/cdc-gate"],
+     :current-criteria
+     [{:marker
+       "library-platform-hardware-source-clock-domain-and-timers",
+       :line 1771,
+       :status :open}
+      {:marker
+       "library-platform-hardware-source-hardware-profile-and-capability-target",
+       :line 1793,
+       :status :open}],
+     :alias-or-new-requirement :none,
+     :implementation-acceptance :unassessed}}
    {:law-id "stdlib/ui/render-kind-and-trust",
     :category :nonoverlap,
     :question
     "Resolve exact escaping/trust overlap with selected rendering adapters; web/native/terminal target contexts are not blanket aliases.",
     :affected-facet-ids
     ["stdlib/facet/std19/1510-1610" "stdlib/facet/std19/5567-5640"],
-    :owner :root}],
+    :owner :root,
+    :current-source-resolution
+    {:canonical-vocabulary-correction
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2-correction.edn",
+      :sha256
+      "37736d8e4bfc35a098c06fc0dc49488f4bda09642975dc54782a173c25ebeb52",
+      :qualified-related-record-pointers-only true,
+      :alias-or-equivalence-adoption :none},
+     :exact-entailment
+     {:shared-facets
+      [:web-escaping
+       :trusted-markup-policy
+       :taint-to-web-sink
+       :web-adapter-capability-and-source-map],
+      :not-entailing
+      [:binary-media-semantics
+       :native-view-semantics
+       :mobile-terminal-adapters
+       :mount-hydrate-unmount-portal-lifecycle
+       :callable-renderer-implementation
+       :physical-app-execution]},
+     :state :proposed-scoped-source-disposition,
+     :source
+     {:commit "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+      :tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+      :canonical-model "contracts/requirement-reconciliation.edn",
+      :canonical-model-sha256
+      "a14a20f1271685c535e1652fed901a863d9c39c5801e600ff4e584d3eda08cf8",
+      :current-task-file "specs/stdlib-workflow/tasks.md",
+      :current-task-file-sha256
+      "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617"},
+     :historical-question :preserved-verbatim,
+     :disposition
+     :share-matching-web-sink-facets-and-preserve-target-kind-and-callable-adapter-contracts,
+     :normative-evidence
+     [{:path
+       "docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md",
+       :lines "20-29, 70-90, 103-112",
+       :facts
+       [:render-kind-distinction
+        :target-adapters
+        :effects-capabilities
+        :adapter-and-snapshot-fixtures]}
+      {:path
+       "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md",
+       :lines "20-31, 68-82, 112-134",
+       :facts
+       [:web-taint
+        :schema-and-capability-sinks
+        :host-boundary
+        :web-conformance]}
+      {:path
+       "docs/phase-07-backend-architecture/103-b6-javascript-typescript-backend-design.md",
+       :lines "177-188",
+       :facts
+       [:UI-artifact-taint-record :no-hidden-browser-capability]}],
+     :global-T002 :open,
+     :classification
+     :qualified-web-sink-sharing-with-target-kind-residual,
+     :residual-gaps
+     [:exact-web-sink-lineage-and-consumer-binding
+      :binary-media-and-native-view-contracts
+      :selected-adapter-lifecycle-and-cleanup
+      :actual-rendering-and-target-interface-acceptance],
+     :independent-semantic-review
+     {:path
+      "/tmp/uniform-library-overlap-current-semantic-review-v2.edn",
+      :sha256
+      "017d2511e662dff695ef4236ee4670b298172548f5895f99c33bdb9dca9644ec"},
+     :current-model-review :pending,
+     :canonical-records
+     ["stdlib/ui/render-kind-and-trust"
+      "domain/ui-rendering"
+      "backend/js/ui-artifacts"],
+     :current-criteria
+     [{:marker
+       "library-crypto-ui-stability-source-rendering-and-lifecycle",
+       :line 1521,
+       :status :open}
+      {:marker
+       "library-crypto-ui-stability-source-target-adapters-and-generated-ui",
+       :line 1554,
+       :status :open}],
+     :alias-or-new-requirement :none,
+     :implementation-acceptance :unassessed}}],
   :input-receipts
   [{:path
     "proposals/stdlib-canonical-fragment/inputs/original-proposals.edn",
