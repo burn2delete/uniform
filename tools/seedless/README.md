@@ -197,11 +197,14 @@ digests for every existing changed file, and an explicit deletion marker:
   :non-file-paths []}}
 ```
 
-The controller accepts only existing safe files that are still the complete
-observed unowned diff. Original directory paths cover their changed children;
-those children remain owned and cannot be reclassified. An owned deletion is
-retained in `:deleted-paths`, but an unowned deletion or non-file amendment
-path fails closed. The original Attention identity and known-ended,
+The controller accepts only existing safe regular files that are still the
+complete observed unowned diff. Regular files are classified without following
+symlinks and their canonical path must remain inside the retained worktree;
+symlinks, paths that resolve outside the worktree, and other non-file paths are
+recorded in `:non-file-paths` and fail closed. Original directory paths cover
+their changed children; those children remain owned and cannot be reclassified.
+An owned deletion is retained in `:deleted-paths`, but an unowned deletion or
+non-file amendment path fails closed. The original Attention identity and known-ended,
 unrestricted error unchanged. The scope extension is authorized only by the
 original owner's trusted `retry` CLI invocation while it holds the controller
 lock and verifies the native state identity and the actual worktree root,

@@ -7,6 +7,7 @@
             [simplify.workflow :as shared-workflow]
             [simplify.runtime :as rt])
   (:import [java.math BigInteger]
+           [java.nio.file Files LinkOption]
            [java.security MessageDigest]))
 
 (def completion-check ["clojure" "-M:gravity" "self-host" "verify"])
@@ -28,6 +29,17 @@
             (recur)))))
     (format "%064x" (BigInteger. 1 (.digest digest)))))
 
+(def ^:private nofollow-links
+  (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+
+(defn- regular-worktree-file? [worktree path]
+  (let [file (io/file worktree path)
+        root (.toPath (.getCanonicalFile (io/file worktree)))
+        resolved (.toPath (.getCanonicalFile file))]
+    (and (Files/isRegularFile (.toPath file) nofollow-links)
+         (not (Files/isSymbolicLink (.toPath file)))
+         (.startsWith resolved root))))
+
 (defn- current-dirty-snapshot [ctx task]
   (let [worktree (:worktree task)
         candidate (rt/git ctx worktree "rev-parse" "HEAD")
@@ -36,10 +48,10 @@
         diff (rt/git ctx worktree "diff" "--binary" "--no-ext-diff" "--no-renames" "HEAD")
         untracked (rt/git ctx worktree "ls-files" "--others" "--exclude-standard" "-z")
         content (str diff "\u0000" untracked)
-        files (filter #(.isFile (io/file worktree %)) changed)
+        files (filter #(regular-worktree-file? worktree %) changed)
         deleted-paths (vec (sort (filter #(not (.exists (io/file worktree %))) changed)))
         non-file-paths (vec (sort (filter #(and (.exists (io/file worktree %))
-                                              (not (.isFile (io/file worktree %)))) changed)))
+                                                (not (regular-worktree-file? worktree %))) changed)))
         file-sha256 (into (sorted-map)
                           (map (fn [path]
                                  [path (raw-file-sha256 (io/file worktree path))])
@@ -119,8 +131,8 @@
           current (current-dirty-snapshot ctx task)
           changed (set (:paths current))
           expected-unowned (set (remove (fn [path]
-                                         (some #(shared-workflow/covers? % path) original-paths))
-                                       changed))
+                                          (some #(shared-workflow/covers? % path) original-paths))
+                                        changed))
           extension-files (set paths)]
       (when-not (= key (:task extension))
         (scope-extension-error! "Scope amendment is bound to a different task"
@@ -147,6 +159,10 @@
                      (not (true? (:restricted details))))
         (scope-extension-error! "Scope amendment requires a known-ended unrestricted unowned-path Attention"
                                 {:status (:status task) :error original-error}))
+      (when (seq (:non-file-paths current))
+        (scope-extension-error! "Scope amendment observed non-file or out-of-root paths"
+                                {:paths (:non-file-paths current)
+                                 :worktree (:worktree task)}))
       (when (or (empty? paths) (not= (count paths) (count (set paths))))
         (scope-extension-error! "Scope amendment paths must be a nonempty unique file list"
                                 {:paths paths}))
@@ -160,8 +176,8 @@
         (when-not (contains? expected-unowned path)
           (scope-extension-error! "Scope amendment must name only observed unowned files"
                                   {:path path :observed (vec (:paths current)) :original-paths original-paths}))
-        (when-not (.isFile (io/file (:worktree task) path))
-          (scope-extension-error! "Scope amendment paths must be existing files"
+        (when-not (regular-worktree-file? (:worktree task) path)
+          (scope-extension-error! "Scope amendment paths must be existing regular files inside the worktree"
                                   {:path path :worktree (:worktree task)})))
       (when-not (= expected-unowned extension-files)
         (scope-extension-error! "Scope amendment must account for every observed unowned file"

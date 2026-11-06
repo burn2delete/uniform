@@ -6,6 +6,7 @@
             [simplify.runtime :as rt]
             [simplify.workflow :as shared])
   (:import [java.math BigInteger]
+           [java.nio.file Files LinkOption]
            [java.security MessageDigest]))
 
 (use-fixtures :each (fn [test] (with-redefs [rt/event! (fn [& _])] (test))))
@@ -25,6 +26,17 @@
   (with-open [out (io/output-stream file)]
     (.write out bytes)))
 
+(def ^:private nofollow-links
+  (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
+
+(defn- regular-worktree-file? [worktree path]
+  (let [file (io/file worktree path)
+        root (.toPath (.getCanonicalFile (io/file worktree)))
+        resolved (.toPath (.getCanonicalFile file))]
+    (and (Files/isRegularFile (.toPath file) nofollow-links)
+         (not (Files/isSymbolicLink (.toPath file)))
+         (.startsWith resolved root))))
+
 (defn- snapshot [ctx task]
   (let [worktree (:worktree task)
         paths (shared/changed-paths ctx worktree)
@@ -34,11 +46,11 @@
      :dirty-diff-sha256 (rt/digest (str diff "\u0000" untracked))
      :deleted-paths (vec (sort (filter #(not (.exists (io/file worktree %))) paths)))
      :non-file-paths (vec (sort (filter #(and (.exists (io/file worktree %))
-                                               (not (.isFile (io/file worktree %)))) paths)))
+                                              (not (regular-worktree-file? worktree %))) paths)))
      :file-sha256 (into (sorted-map)
                         (map (fn [path]
                                [path (raw-file-sha256 (io/file worktree path))])
-                             (filter #(.isFile (io/file worktree %)) paths)))}))
+                             (filter #(regular-worktree-file? worktree %) paths)))}))
 
 (defn- case-context
   ([] (case-context ["module.clj"]))
@@ -197,10 +209,35 @@
       (let [record (inspection ctx task key)
             before @(:state ctx)]
         (rt/write-edn! inspection-file record)
-        (is (thrown-with-msg? Exception #"existing files"
+        (is (thrown-with-msg? Exception #"existing (regular )?files"
                               (run-retry! case inspection-file)))
         (is (= before @(:state ctx)))
         (is (empty? (writers ctx))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest unowned-symlink-cannot-be-added-to-an-extension
+  (let [{:keys [ctx key task] :as case} (case-context)
+        link (io/file (:worktree task) "unowned-symlink.edn")
+        outside (io/file (:root ctx) "outside.edn")
+        inspection-file (io/file (:root ctx) "inspection.edn")]
+    (try
+      (spit outside "{:outside true}\n")
+      (try
+        (Files/createSymbolicLink (.toPath link) (.toPath outside)
+                                  (make-array java.nio.file.attribute.FileAttribute 0))
+        (let [record (inspection ctx task key)
+              before @(:state ctx)]
+          (is (= ["unowned-symlink.edn"] (get-in record [:scope-extension :paths])))
+          (is (= ["unowned-symlink.edn"] (get-in record [:scope-extension :non-file-paths])))
+          (is (not (contains? (get-in record [:scope-extension :file-sha256])
+                              "unowned-symlink.edn")))
+          (rt/write-edn! inspection-file record)
+          (is (thrown-with-msg? Exception #"non-file|regular files|worktree"
+                                (run-retry! case inspection-file)))
+          (is (= before @(:state ctx)))
+          (is (empty? (writers ctx))))
+        (catch UnsupportedOperationException _
+          (is true "fixture filesystem does not support symbolic links")))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest incomplete-dirty-byte-snapshot-is-rejected
