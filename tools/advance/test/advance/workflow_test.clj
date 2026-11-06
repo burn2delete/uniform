@@ -525,3 +525,77 @@
     (is (= 1 @scans))
     (is (= 2 @created))
     (is (= 2 (count (:source-tasks @(:state ctx)))))))
+
+(def authority-text
+  (str "# Tasks\n<!-- demo-implementation-tasks:start -->\n"
+       "- [ ] `demo/value` Complete value behavior\nDone when: the value is independently accepted.\n"
+       "- [ ] `demo/other` Complete other behavior\nDone when: other behavior is accepted.\n"
+       "<!-- demo-implementation-tasks:end -->\n"))
+
+(defn authority-fixture! []
+  (let [ctx (fixture/context) {:keys [repo]} (git-fixture/repository! ctx)
+        file (io/file repo source-path)
+        _ (io/make-parents file)
+        _ (spit file authority-text)
+        _ (rt/git ctx repo "add" source-path)
+        _ (rt/git ctx repo "commit" "-m" "Selected task authority")
+        _ (rt/git ctx repo "push" "origin" "main")
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        config (merge main/defaults {:repo-dir repo :repository "fixture/repo" :campaign "fixture"
+                                     :state-dir (:state-dir ctx) :worktree-root (str (io/file (:state-dir ctx) "workers"))})
+        ctx (merge (assoc ctx :config config) (rt/coordination (str (io/file repo ".git")) config))
+        task {:key "selected" :task source-key :task-path source-path :task-digest (rt/digest authority-text)
+              :source-base base :base base :paths [source-path "work.edn"] :dependencies [] :status :ready}]
+    {:ctx ctx :repo repo :task task :base base}))
+
+(defn publish-authority! [ctx repo text]
+  (spit (io/file repo source-path) text)
+  (rt/git ctx repo "add" source-path)
+  (rt/git ctx repo "commit" "-m" "Published task-file change")
+  (rt/git ctx repo "push" "origin" "main")
+  (rt/git ctx repo "rev-parse" "HEAD"))
+
+(deftest unrelated-task-edits-preserve-an-immutable-selection-across-base-updates
+  (let [{:keys [ctx repo task base]} (authority-fixture!)
+        wt (flow/worktree! ctx "selected" base)
+        task (merge (dissoc task :source-base) wt)
+        _ (rt/update! ctx assoc-in [:tasks "selected"] task)
+        current (publish-authority! ctx repo (str/replace authority-text "other behavior is accepted" "other behavior and its diagnostics are accepted"))]
+    (flow/prepare-base! ctx task)
+    (let [prepared (flow/task ctx "selected")]
+      (is (= base (:source-base prepared)) "Legacy task selection is captured before its merge base advances")
+      (is (= current (:base prepared)))
+      (is (= (:task-digest task) (:task-digest prepared)))
+      (is (nil? (workflow/validate-source! ctx prepared)))
+      (spit (io/file (:worktree wt) source-path) (str (slurp (io/file (:worktree wt) source-path)) "\nScoped author evidence outside the task region.\n"))
+      (is (nil? (workflow/validate-source! ctx prepared)) "Owned evidence does not replace published task authority")
+      (with-redefs [flow/fresh-main! (fn [_] current) flow/assert-clean! (fn [& _] nil)]
+        (flow/prepare-base! ctx prepared))
+      (is (= base (:source-base (flow/task ctx "selected"))) "Later preparation never rebinds the selected source"))))
+
+(deftest changed-or-unverifiable-selected-task-authority-remains-held
+  (doseq [case-id [:changed :checked :removed :wrong-digest :wrong-origin :missing-origin]]
+    (let [{:keys [ctx repo task]} (authority-fixture!)
+          text (case case-id
+                 :changed (str/replace authority-text "the value is independently accepted" "the value and new semantics are accepted")
+                 :checked (str/replace authority-text "- [ ] `demo/value`" "- [x] `demo/value`")
+                 :removed (str/replace authority-text #"- \[ \] `demo/value`[^\n]*\nDone when:[^\n]*\n" "")
+                 (str/replace authority-text "other behavior is accepted" "other behavior and its diagnostics are accepted"))
+          current (publish-authority! ctx repo text)
+          task (cond-> (assoc task :base current :worktree repo)
+                 (= :wrong-digest case-id) (assoc :task-digest (rt/digest "not the captured source"))
+                 (= :wrong-origin case-id) (assoc :source-base current)
+                 (= :missing-origin case-id) (dissoc :source-base))]
+      (rt/update! ctx assoc-in [:tasks (:key task)] task)
+      (is (thrown? Exception (workflow/validate-source! ctx task)) (name case-id))
+      (is (= task (flow/task ctx (:key task))) "Checking does not promote or rewrite the task"))))
+
+(deftest task-source-refusals-are-retained-even-with-a-zero-exit-status
+  (let [{:keys [ctx repo task]} (authority-fixture!)
+        task (assoc task :worktree repo)
+        argv ["git" "show" (str (:base task) ":" source-path)]
+        key (rt/digest (pr-str argv))]
+    (with-redefs [rt/command (fn [& _] {:exit 0 :out authority-text :err "git: error: cache: Operation not permitted"})]
+      (is (thrown-with-msg? Exception #"encountered a refusal" (workflow/validate-source! ctx task))))
+    (is (rt/shared-restriction ctx :commands key))
+    (is (thrown-with-msg? Exception #"restricted|cannot retry or transfer" (workflow/validate-source! ctx task)))))
