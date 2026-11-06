@@ -665,10 +665,10 @@
                     :html_url "https://example.invalid/repos/fixture/repo" :url "https://api.example.invalid/repos/fixture/repo"
                     :description large-repository}
         task (assoc (slice "a") :status :attention :base base :candidate "candidate-sha" :tree "candidate-tree"
-                          :issue {:number 7 :node_id "issue-7" :html_url "https://example.invalid/issues/7"
-                                  :body "preserved-task-history"}
-                          :error {:message "known planner blocker" :details {:history "preserved-error-history"}}
-                          :dependencies [] :stack-on "")
+                    :issue {:number 7 :node_id "issue-7" :html_url "https://example.invalid/issues/7"
+                            :body "preserved-task-history"}
+                    :error {:message "known planner blocker" :details {:history "preserved-error-history"}}
+                    :dependencies [] :stack-on "")
         pr (fn [number ref sha]
              {:number number :title (str "Large historical PR " number)
               :html_url (str "https://example.invalid/pulls/" number)
@@ -748,6 +748,61 @@
                (get-in @(:state ctx) [:last-plan :raw-input-reference :sha256])))
         (is (nil? (:planning @(:state ctx)))))
       (finally (delete-tree! (:root ctx))))))
+
+(deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
+  (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}
+                     "not-a-pull-request"]]
+    (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+          repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+          model-calls (atom 0)]
+      (try
+        (with-redefs [w/fresh-main! (constantly base)
+                      w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                      gh/pages (fn [& _] [malformed])
+                      w/job! (fn [& _] (swap! model-calls inc))]
+          (is (thrown-with-msg? Exception #"Open PR .*malformed" (w/plan! ctx))))
+        (is (zero? @model-calls))
+        (is (nil? (:planning @(:state ctx))))
+        (is (empty? (:effects @(:state ctx))))
+        (finally (delete-tree! (:root ctx)))))))
+
+(deftest retained-planner-snapshot-must-pass-file-digest-edn-and-selector-validation
+  (doseq [[scenario write-artifact reference-transform]
+          [[:tampered
+            (fn [file raw] (rt/write-edn! file (assoc raw :tampered true)))
+            identity]
+           [:invalid-edn
+            (fn [file _] (spit file "{not valid edn"))
+            identity]
+           [:missing-selector
+            (fn [file raw] (rt/write-edn! file raw))
+            #(assoc % :selector [:tasks "missing"])]]]
+    (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
+          repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+          file (io/file (:state-dir ctx) (str "plan-" (name scenario) ".raw-input.edn"))
+          raw {:tasks {} :open-prs [] :completion nil :inspections nil}
+          serialized (pr-str raw)
+          reference-source (if (= scenario :invalid-edn) "{not valid edn" serialized)
+          reference (reference-transform
+                     {:file (str file) :format "edn" :selector []
+                      :sha256 (rt/digest reference-source) :chars (count reference-source)
+                      :bytes (alength (.getBytes reference-source "UTF-8"))})
+          planning {:base base :round 1 :worktree {:worktree repo :branch "codex/plan"}
+                    :effect "plan/1" :open-prs [] :raw-input-reference reference}
+          before (assoc @(:state ctx) :planning planning)
+          model-calls (atom 0) provider-calls (atom 0)]
+      (try
+        (write-artifact file raw)
+        (with-redefs [w/fresh-main! (constantly base)
+                      w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                      gh/pages (fn [& _] (swap! provider-calls inc) [])
+                      w/job! (fn [& _] (swap! model-calls inc))]
+          (rt/update! ctx assoc :planning planning)
+          (is (thrown? Exception (w/plan! ctx))))
+        (is (zero? @model-calls))
+        (is (zero? @provider-calls))
+        (is (= before @(:state ctx)))
+        (finally (delete-tree! (:root ctx)))))))
 
 (deftest completion-needs-checks-independent-review-and-unchanged-main
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")

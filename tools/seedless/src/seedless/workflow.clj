@@ -765,6 +765,88 @@
       (rt/write-edn! file raw-input))
     reference))
 
+(defn- invalid-planning-snapshot! [reference reason details]
+  (rt/fail! "Planning raw snapshot is invalid"
+            (merge {:raw-snapshot-invalid true :reference reference :reason reason} details)))
+
+(defn- snapshot-selector [snapshot selector reference]
+  (loop [value snapshot remaining selector]
+    (if (seq remaining)
+      (let [key (first remaining)]
+        (cond
+          (map? value)
+          (if (contains? value key)
+            (recur (get value key) (next remaining))
+            (invalid-planning-snapshot! reference :selector-missing {:key key}))
+
+          (vector? value)
+          (if (and (integer? key) (<= 0 key) (< key (count value)))
+            (recur (nth value key) (next remaining))
+            (invalid-planning-snapshot! reference :selector-index-invalid {:key key}))
+
+          :else
+          (invalid-planning-snapshot! reference :selector-parent-invalid {:key key :value-type (type value)})))
+      value)))
+
+(defn- verify-planning-snapshot! [reference]
+  (when-not (and (map? reference) (= "edn" (:format reference))
+                 (string? (:file reference)) (vector? (:selector reference))
+                 (string? (:sha256 reference)) (nat-int? (:chars reference))
+                 (nat-int? (:bytes reference)))
+    (invalid-planning-snapshot! reference :reference-shape {}))
+  (let [file (io/file (:file reference))]
+    (when-not (.isFile file)
+      (invalid-planning-snapshot! reference :file-missing {:file (:file reference)}))
+    (let [text (try (slurp file)
+                    (catch Exception error
+                      (invalid-planning-snapshot! reference :file-unreadable
+                                                  {:file (:file reference) :message (.getMessage error)})))
+          actual-bytes (utf8-size text)]
+      (when (or (not= (:chars reference) (count text))
+                (not= (:bytes reference) actual-bytes))
+        (invalid-planning-snapshot! reference :file-size-mismatch
+                                    {:expected {:chars (:chars reference) :bytes (:bytes reference)}
+                                     :actual {:chars (count text) :bytes actual-bytes}}))
+      (when (and (empty? (:selector reference))
+                 (not= (:sha256 reference) (rt/digest text)))
+        (invalid-planning-snapshot! reference :file-digest-mismatch
+                                    {:expected (:sha256 reference) :actual (rt/digest text)}))
+      (let [snapshot (try (rt/read-edn (:file reference))
+                          (catch Exception error
+                            (invalid-planning-snapshot! reference :edn-invalid
+                                                        {:file (:file reference)
+                                                         :message (.getMessage error)})))
+            selected (snapshot-selector snapshot (:selector reference) reference)
+            serialized (pr-str selected)]
+        (when (or (not= (:sha256 reference) (rt/digest serialized))
+                  (not= (:chars reference) (count serialized))
+                  (not= (:bytes reference) (utf8-size serialized)))
+          (invalid-planning-snapshot! reference :selector-digest-mismatch
+                                      {:expected (select-keys reference [:sha256 :chars :bytes])
+                                       :actual {:sha256 (rt/digest serialized)
+                                                :chars (count serialized)
+                                                :bytes (utf8-size serialized)}}))
+        reference))))
+
+(defn- validate-open-pr-snapshot! [open-prs]
+  (doseq [[index pr] (map-indexed vector open-prs)]
+    (when-not (map? pr)
+      (rt/fail! "Open PR snapshot is malformed"
+                {:provider-shape :pull-request :index index :actual-type (type pr)}))
+    (doseq [location [:head :base]
+            :when (contains? pr location)]
+      (let [reference (get pr location)]
+        (when (and (some? reference) (not (map? reference)))
+          (rt/fail! "Open PR reference is malformed"
+                    {:provider-shape :pull-request-reference :index index :location location
+                     :actual-type (type reference)}))
+        (when (and (map? reference) (contains? reference :repo)
+                   (some? (:repo reference)) (not (map? (:repo reference))))
+          (rt/fail! "Open PR repository is malformed"
+                    {:provider-shape :repository :index index :location location
+                     :actual-type (type (:repo reference))})))))
+  open-prs)
+
 (defn- repository-identity [repository]
   (select-keys repository [:id :node_id :name :full_name :fullName :html_url :url]))
 
@@ -813,12 +895,14 @@
         discovery (discovery-key ctx base)
         open-prs (if pending (or (:open-prs pending) [])
                      (vec (gh/pages ctx (gh/repo-path ctx "pulls?state=open"))))
+        _ (validate-open-pr-snapshot! open-prs)
         raw-input {:tasks (into {} (map (juxt :key identity) (tasks ctx)))
                    :open-prs open-prs
                    :completion (:completion @(:state ctx))
                    :inspections (:inspections @(:state ctx))}
         raw-reference (or (:raw-input-reference pending)
                           (planning-snapshot! ctx id raw-input))
+        _ (verify-planning-snapshot! raw-reference)
         planning {:base base :round n :worktree wt :effect id :open-prs open-prs
                   :raw-input-reference raw-reference}
         feedback (latest-planning-feedback ctx)
