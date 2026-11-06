@@ -140,7 +140,8 @@
     (assert-identity! ctx t)
     (let [result {:candidate (:candidate t) :tree (:tree t) :commands commands :result :passed}]
       (task! ctx (:key t) :checks result)
-      (when (and (= :inspected-reported-implementation (get-in t [:inspected-authored :kind]))
+      (when (and (#{:inspected-reported-implementation :inspected-source-dependency-resolution}
+                   (get-in t [:inspected-authored :kind]))
                  (#{:continuing :checked} (get-in t [:inspected-authored :stage]))
                  (= (get-in t [:inspected-authored :original-error-sha256]) (recovery/error-digest t)))
         ;; Only a completed native check stage can carry the inspected report
@@ -209,22 +210,28 @@
              :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil))
     (assert-identity! ctx (task ctx (:key t)))))
 
-(defn recover-authored! [ctx key evidence-file]
+(defn- recover-inspected! [ctx key evidence-file dependency?]
   (let [t (task ctx key)]
     (when-not (= :attention (:status t)) (rt/fail! "Only a held authored report can be inspected" {:finding key}))
     (if-let [lease (rt/claim-paths! ctx key (:paths t) :checking)]
       (rt/with-claimed-paths ctx lease
         (fn []
           (assert-identity! ctx t)
-          (let [inspection (recovery/inspect! ctx t evidence-file)]
+          (let [inspection (if dependency? (recovery/inspect-dependency! ctx t evidence-file)
+                              (recovery/inspect! ctx t evidence-file))]
             ;; Keep the original output/error and actual denial records intact.
             ;; This queues native checking, never a pass or acceptance claim.
-            (rt/update! ctx update-in [:tasks key :reported-restriction-history] (fnil conj [])
-                        {:error (:error t) :inspection inspection})
+            (rt/update! ctx update-in [:tasks key (if dependency? :source-dependency-history :reported-restriction-history)] (fnil conj [])
+                        (cond-> {:error (:error t) :inspection inspection}
+                          dependency? (assoc :original-task t)))
             (task! ctx key :inspected-authored inspection :status :repair)
             (rt/event! ctx :authored-report-inspected {:finding key :job (:job inspection) :phase :queued})
             inspection)))
       (rt/fail! "Authored inspection is waiting for its actual writer scope" {:finding key :ownership-wait true}))))
+
+(defn recover-authored! [ctx key evidence-file] (recover-inspected! ctx key evidence-file false))
+
+(defn recover-dependency! [ctx key evidence-file] (recover-inspected! ctx key evidence-file true))
 
 (defn prepare!
   ([ctx key]

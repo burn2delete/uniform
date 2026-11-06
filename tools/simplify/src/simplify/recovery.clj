@@ -17,6 +17,17 @@
 
 (defn error-digest [task] (rt/digest (pr-str (:error task))))
 
+(defn- path-output! [ctx cwd argv]
+  (let [key (rt/digest (pr-str argv))]
+    (require! (not (get-in @(:state ctx) [:restricted-commands key])) "Source path inspection is locally refused")
+    (rt/assert-authorized! ctx :command key)
+    (let [result (rt/command ctx cwd argv)]
+      (when (rt/authorization-denied? (:err result))
+        (rt/remember-denial! ctx :command key {:argv argv :result result})
+        (rt/fail! "Authored inspection encountered a refusal" {:restricted true :writer-ended? true}))
+      (require! (zero? (:exit result)) "Cannot inspect the authored delta")
+      (:out result))))
+
 (defn changes [ctx cwd]
   (vec (distinct
         (remove str/blank?
@@ -24,14 +35,7 @@
                  (apply str
                         (for [argv [["git" "diff" "--name-only" "--no-renames" "-z" "HEAD" "--"]
                                     ["git" "ls-files" "--others" "--exclude-standard" "-z"]]]
-                          (do
-                            (rt/assert-authorized! ctx :command (rt/digest (pr-str argv)))
-                            (let [result (rt/command ctx cwd argv)]
-                              (when (rt/authorization-denied? (:err result))
-                                (rt/remember-denial! ctx :command (rt/digest (pr-str argv)) {:argv argv :result result})
-                                (rt/fail! "Authored inspection encountered a refusal" {:restricted true :writer-ended? true}))
-                              (require! (zero? (:exit result)) "Cannot inspect the authored delta")
-                              (:out result))))) #"\u0000")))))
+                          (path-output! ctx cwd argv))) #"\u0000")))))
 
 (defn owned-file! [task path]
   (rt/safe-path! path)
@@ -43,7 +47,9 @@
     (require! (.isFile file) "Authored evidence needs the preserved file bytes")
     file))
 
-(defn native-evidence! [ctx task job-id]
+(defn native-evidence!
+  ([ctx task job-id] (native-evidence! ctx task job-id nil))
+  ([ctx task job-id preserved-failures]
   (require! (and (:log-file ctx) (.isFile (io/file (:log-file ctx)))) "Original native action evidence is missing")
   (let [events (with-open [reader (io/reader (:log-file ctx))]
                  (mapv #(json/read-str % :key-fn keyword) (line-seq reader)))
@@ -90,10 +96,19 @@
                            :when (= "item/completed" (get-in event [:message :method]))
                            :let [item (get-in event [:message :params :item])]
                            :when (not (#{"agentMessage" "reasoning" "userMessage" "plan"} (:type item)))] item))]
+    (when (some? preserved-failures)
+      (let [failures (mapv (fn [action]
+                            {:id (:id action) :command (:command action) :exit (:exitCode action)
+                             :output-sha256 (when (string? (:aggregatedOutput action))
+                                              (rt/digest (:aggregatedOutput action)))})
+                          (filter #(and (= "commandExecution" (:type %)) (not= 0 (:exitCode %))) actions))]
+        (require! (= failures preserved-failures) "Failed semantic actions do not match the preserved nonpass evidence")))
     (doseq [action actions]
       (case (:type action)
         "commandExecution"
-        (do (require! (and (= 0 (:exitCode action)) (= "completed" (:status action))
+        (do (require! (and (or (= 0 (:exitCode action))
+                              (and (some? preserved-failures) (= 1 (:exitCode action))))
+                           (= "completed" (:status action))
                            (string? (:command action)) (string? (:aggregatedOutput action)))
                       "Original command has unknown or unfinished execution")
             (require! (not (rt/authorization-denied? (:aggregatedOutput action)))
@@ -108,11 +123,48 @@
                                                (.toPath (io/file (rt/canonical absolute)))))]
                 (owned-file! task relative))))
         (rt/fail! "Original job includes an unknown action" {:writer-ended? true :type (:type action)})))
-    {:clean-start (select-keys (nth events start) [:time :cwd :argv])
-     :clean-end (select-keys (nth events end) [:time :exit])
-     :completed-action-count (count actions) :job-evidence-sha256 (rt/digest (pr-str job-events))}))
+    (cond-> {:clean-start (select-keys (nth events start) [:time :cwd :argv])
+             :clean-end (select-keys (nth events end) [:time :exit])
+             :completed-action-count (count actions) :job-evidence-sha256 (rt/digest (pr-str job-events))}
+      (some? preserved-failures) (assoc :preserved-semantic-nonpasses preserved-failures)))))
 
-(defn inspect! [ctx task evidence-file]
+(defn verified-dependencies! [ctx task receipt]
+  (let [dependencies (:verified-source-dependencies receipt)
+        _ (require! (seq dependencies) "An actual verified external source merge is required")
+        shared (rt/coordinate! ctx (fn [state] [state (select-keys state [:history :main-effects])]))
+        _ (require! (not-any? #(= (:state-file ctx) (:state-file %)) (vals (:main-effects shared)))
+                    "The original controller has an unresolved Main operation")
+        history (:history shared)
+        main (rt/fresh-main! ctx)
+        repo (get-in ctx [:config :repo-dir])]
+    (doseq [{:keys [owner-state-file intent-id commit candidate tree history-sha256 source-paths]} dependencies]
+      (require! (and (string? owner-state-file) (string? intent-id)
+                     (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [commit candidate tree])
+                     (seq source-paths) (every? string? source-paths)) "Dependency merge identity is incomplete")
+      (let [entry (some #(when (and (= :main-verified (:kind %))
+                                    (= owner-state-file (get-in % [:intent :state-file]))
+                                    (= intent-id (get-in % [:intent :id]))
+                                    (= commit (get-in % [:actual :commit]))
+                                    (= candidate (get-in % [:intent :candidate]))
+                                    (= tree (get-in % [:intent :tree]) (get-in % [:actual :tree]))) %) history)]
+        (require! (and entry (= history-sha256 (rt/digest (pr-str entry)))) "Dependency has no matching verified Main history")
+        (require! (= tree (rt/git ctx repo "rev-parse" (str commit "^{tree}"))) "Dependency Git tree differs")
+        (rt/git ctx repo "merge-base" "--is-ancestor" commit main)
+        (require! (not= commit (:base task)) "Dependency does not advance the retained source base")
+        (rt/git ctx repo "merge-base" "--is-ancestor" (:base task) commit)
+        (let [changed (set (remove str/blank?
+                                   (str/split (path-output! ctx repo ["git" "diff" "--name-only" "--no-renames" "-z"
+                                                                     (get-in entry [:intent :base]) candidate "--"]) #"\u0000")))]
+          (doseq [path source-paths]
+            (rt/safe-path! path)
+            (require! (contains? changed path) "The recorded dependency did not change its claimed source"))
+          (require! (some (fn [path] (not-any? #(rt/covers? % path) (:paths task))) source-paths)
+                    "The claimed dependency is not outside the retained author scope"))))
+    ;; Bind the verified dependency, not a reservation on a moving Main.
+    ;; Native preparation independently imports and checks its fresh base.
+    {:merges dependencies}))
+
+(defn- inspect-report! [ctx task evidence-file dependency?]
   (let [file (io/file (rt/canonical evidence-file))
         directory (.toPath (io/file (rt/canonical (:state-dir ctx))))
         _ (require! (.startsWith (.toPath file) directory) "Inspection evidence must be retained by this controller")
@@ -121,13 +173,19 @@
         job (get-in @(:state ctx) [:jobs job-id])
         output (:output job)
         classification (:operator-classification receipt)
-        _ (require! (and (= :controller-owned-verification-unrun (:kind classification))
+        _ (require! (and (= (if dependency? :verified-external-source-dependency :controller-owned-verification-unrun)
+                            (:kind classification))
                          (= :controller-operator (:inspector classification))
                          (= (rt/digest (pr-str output)) (:original-output-sha256 classification))
                          (true? (:no-unresolved-authority classification))
                          (true? (:no-unresolved-semantics classification))
                          (string? (:basis classification)) (not (str/blank? (:basis classification))))
-                    "An exact-output operator classification of solely unrun controller checks is required")
+                    "An exact-output operator classification for this recovery phase is required")
+        _ (when dependency?
+            (require! (and (= :source-development-current (:phase classification))
+                           (vector? (:preserved-failed-actions receipt))
+                           (vector? (:preserved-nonclaims receipt)) (seq (:preserved-nonclaims receipt)))
+                      "Dependency recovery must retain semantic nonpasses and declare its development-only phase"))
         prompt-file (io/file (:state-dir ctx) (str job-id ".prompt.edn"))
         _ (require! (.isFile prompt-file) "Original author prompt is missing")
         prompt (rt/read-edn prompt-file)
@@ -141,19 +199,20 @@
         _ (require! (= (:prompt-sha256 job) (rt/digest text)) "Original prompt identity changed")
         _ (require! (and (= :completed (:status job)) (= :write (:mode job))
                          (true? (:turn-terminal? job)) (:turn job) (:thread job)
-                         (contains? job :active-items) (empty? (:active-items job))
+                         (or (contains? job :active-items) dependency?) (empty? (:active-items job))
                          (not (:restricted job)) (empty? (:tool-refusals job)))
                     "Original author has a refusal, unfinished action or unknown terminal state")
         _ (require! (= (rt/canonical (:cwd job)) (rt/canonical (:worktree task))) "Original author worktree differs")
         _ (require! (and (= "Implementation requires attention" (get-in task [:error :message]))
-                         (true? (get-in task [:error :details :restricted]))
-                         (= "restricted" (:outcome output))
+                         (= (not dependency?) (get-in task [:error :details :restricted]))
+                         (= (if dependency? "needs_input" "restricted") (:outcome output))
                          (= output (get-in task [:error :details :output])))
-                    "This is not solely the original implementation outcome report")
+                    "This is not the original report eligible for the requested recovery phase")
         _ (require! (= (select-keys task [:base :candidate :tree]) (select-keys receipt [:base :candidate :tree])) "Authored evidence has stale identities")
         _ (require! (= (:key task) (:task-key receipt)) "Authored evidence belongs to another task")
         _ (require! (= job (:original-job-state receipt)) "Original terminal job evidence changed")
         _ (require! (= (:error task) (:original-task-error receipt)) "Original task error changed")
+        native-proof (when dependency? (native-evidence! ctx task job-id (:preserved-failed-actions receipt)))
         delta (changes ctx (:worktree task))
         _ (require! (seq delta) "No owned authored change remains")
         _ (require! (= (set delta) (set (:observed-changed-paths receipt)) (set (keys (:authored-files receipt))))
@@ -166,6 +225,12 @@
                       (do (require! (= (:sha256 saved) (file-digest file)
                                        (.formatHex (java.util.HexFormat/of) (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes)))
                                     "Preserved authored bytes changed")
+                          (when dependency?
+                            (require! (= (:executable saved) (.canExecute file)) "Preserved authored file mode changed")
+                            (let [provenance (get-in receipt [:source-provenance path])]
+                              (require! (and (string? (:basis provenance)) (not (str/blank? (:basis provenance)))
+                                             (= (:sha256 saved) (:sha256 provenance)))
+                                        "Each retained source file needs its exact authored or supplemental provenance")))
                           [path {:sha256 (:sha256 saved) :executable (.canExecute file)}])))
         commands (vec (distinct (concat (get-in ctx [:config :checks]) (:checks output))))]
     (require! (= (or (:candidate task) (:base task)) (rt/git ctx (:worktree task) "rev-parse" "HEAD")) "Original authored HEAD changed")
@@ -184,16 +249,25 @@
                                        [state (some #(and (= (:state-file ctx) (:state-file %)) (= job-id (:job %)))
                                                     (mapcat vals (vals (:restrictions state))))])))
               "Original job has a shared retained refusal")
-    {:kind :inspected-reported-implementation :stage :queued :job job-id
+    (cond-> {:kind (if dependency? :inspected-source-dependency-resolution :inspected-reported-implementation)
+     :stage :queued :job job-id
      :thread (:thread job) :turn (:turn job) :original-error-sha256 (error-digest task)
      :output-sha256 (rt/digest (pr-str output)) :file-sha256 files :commands commands
      :operator-classification classification
      :evidence-file (str file) :evidence-sha256 (file-digest file)
-     :native-evidence (native-evidence! ctx task job-id)}))
+     :native-evidence (or native-proof (native-evidence! ctx task job-id))}
+      dependency? (assoc :verified-source-dependencies (verified-dependencies! ctx task receipt)
+                         :preserved-nonclaims (:preserved-nonclaims receipt)))))
+
+(defn inspect! [ctx task evidence-file] (inspect-report! ctx task evidence-file false))
+
+(defn inspect-dependency! [ctx task evidence-file] (inspect-report! ctx task evidence-file true))
 
 (defn validate-queued! [ctx task]
   (let [stored (:inspected-authored task)
-        observed (inspect! ctx task (:evidence-file stored))]
+        observed (if (= :inspected-source-dependency-resolution (:kind stored))
+                   (inspect-dependency! ctx task (:evidence-file stored))
+                   (inspect! ctx task (:evidence-file stored)))]
     (require! (= stored observed) "Inspected authored continuation is stale")
     observed))
 

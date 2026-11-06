@@ -165,6 +165,52 @@ merges finish tracking, existing CI candidates return to CI, and unfinished
 implementation returns to repair. Restricted actions and unresolved current
 external effects cannot use this route. Attention is not completion.
 
+An ordinary `needs_input` report may retain an owned dirty patch while waiting
+for an external source dependency. After that dependency has a verified merge
+on current main, the original operator can inspect the retained work without
+pretending it was a verification-only restriction:
+
+```text
+clojure -M:run recover-dependency config.edn FINDING-KEY inspected-source.edn
+```
+
+This command uses the original controller lock; it is not a second live
+controller or a reason to pause a running service. When deploying this recovery
+support, queue an eligible inspection at the necessary stopped deployment
+boundary and promptly return the same service. The command never starts it.
+
+The inspection file is retained under the original state directory. It binds
+the original job/error/prompt/base/candidate/tree, exact changed-file bytes and
+executable modes, and a nonblank `:source-provenance` basis and SHA for every
+file, including separately authored supplements. Its operator classification
+is `:verified-external-source-dependency`, `:inspector :controller-operator`,
+`:phase :source-development-current`, the exact original-output SHA and explicit
+no-unresolved-authority/no-unresolved-semantics findings. A model report alone
+does not provide this classification.
+
+Each `:verified-source-dependencies` entry contains `:owner-state-file`,
+`:intent-id`, `:commit`, `:candidate`, `:tree`, `:history-sha256` and changed
+`:source-paths`. It must match an actual shared `:main-verified` history entry;
+the merge must advance the retained base and be an ancestor of fresh main, with
+matching Git tree and at least one changed dependency path outside the author's
+scope. This records an observed dependency, not new ownership of its files.
+
+`:preserved-failed-actions` is the exact ordered vector of completed exit-one
+semantic checks, each with `:id`, `:command`, `:exit` and `:output-sha256`.
+`:preserved-nonclaims` explicitly retains historical nonpasses and evidence
+boundaries. Those old checks are never relabeled as passed. Native terminal
+events must prove an empty active-action set even when older job metadata lacks
+that field. Actual refusal text, privileged requests, unknown/unfinished actions,
+other failure exits, stale source or a retained restriction still reject this
+route. In particular, it cannot recover HTTP permission or process-inspection
+refusals, renew reader pins, or confer migration authority.
+
+An accepted inspection queues native checking only. The controller commits the
+retained owned patch, normally composes fresh main, runs the configured and
+originally proposed checks, and obtains independent exact review and new-head
+CI. The old job, output, error and nonpasses remain unchanged. A changed queued
+inspection or later refusal stops the continuation before authoring or checks.
+
 Known-ended, nonrestricted semantic check failures return to repair with the
 failed source tuple and check result retained. The repair must preserve meaningful
 checks, including authenticity and provenance. Restricted or uncertain effects

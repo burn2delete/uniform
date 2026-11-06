@@ -16,7 +16,7 @@
 (defn action! [ctx item]
   (rt/event! ctx :rpc-receive {:job "implement-1" :message {:method "item/completed" :params {:item item}}}))
 
-(defn held-fixture! []
+(defn held-fixture! [& [options]]
   (let [initial (fixture/context)
         ctx (assoc initial :log-file (str (io/file (:state-dir initial) "events.jsonl")))
         {:keys [repo]} (git-fixture/repository! ctx)
@@ -46,6 +46,10 @@
                                            :changes [{:path (str (io/file cwd "work.edn")) :kind {:type "update"} :diff "fixture authored change"}]})
                                (action! c {:type "commandExecution" :id "fixture-read" :command "cat work.edn"
                                            :status "completed" :exitCode 0 :aggregatedOutput "{:value 2}"})
+                               (when (:semantic-failure options)
+                                 (action! c {:type "commandExecution" :id "fixture-semantic-check"
+                                             :command "clojure -M fixture-semantic-check.clj" :status "completed"
+                                             :exitCode 1 :aggregatedOutput "C2-HASH pinned input is stale"}))
                                (rt/event! c :rpc-receive {:job job :message {:method "turn/completed"
                                                                            :params {:turn {:id "fixture-turn" :status "completed"}}}})
                                output)]
@@ -151,3 +155,122 @@
       (is (thrown? Exception (flow/recover-authored! ctx "authored" evidence)) (name mutation))
       (is (= :attention (:status (flow/task ctx "authored"))))
       (is (= (:error task) (:error (flow/task ctx "authored")))))))
+
+(defn dependency-fixture! [& [options]]
+  (let [{:keys [ctx repo evidence output]} (held-fixture! options)
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        dependency (str (io/file (:state-dir ctx) "dependency"))
+        dependency-path (or (:dependency-path options) "dependency.edn")
+        _ (rt/git ctx repo "worktree" "add" "--detach" dependency base)
+        _ (spit (io/file dependency dependency-path) "{:semantic-dependency :fixed}\n")
+        _ (rt/git ctx dependency "add" dependency-path)
+        _ (rt/git ctx dependency "commit" "-m" "Fix external semantic dependency")
+        candidate (rt/git ctx dependency "rev-parse" "HEAD")
+        tree (rt/git ctx dependency "rev-parse" "HEAD^{tree}")
+        merge (rt/git ctx dependency "commit-tree" tree "-p" base "-p" candidate "-m" "Verified dependency fixture merge")
+        _ (rt/git ctx dependency "push" "origin" (str merge ":main"))
+        entry {:kind :main-verified
+               :intent {:id "fixture-dependency" :state-file "fixture-original-owner/state.edn"
+                        :base base :candidate candidate :tree tree :method :merge}
+               :actual {:commit merge :main merge :tree tree :parents [base candidate]}}
+        _ (rt/coordinate! ctx (fn [state] [(update state :history conj entry) nil]))
+        output (assoc output :outcome "needs_input" :summary "External semantic source dependency is missing")
+        error {:message "Implementation requires attention" :details {:restricted false :output output :writer-ended? true}}
+        _ (rt/update! ctx assoc-in [:jobs "implement-1" :output] output)
+        ;; A legacy job can lack this metadata: original terminal native events
+        ;; still have to prove all started actions ended.
+        _ (rt/update! ctx update-in [:jobs "implement-1"] dissoc :active-items)
+        _ (flow/task! ctx "authored" :error error)
+        prior (rt/read-edn evidence)
+        receipt (-> prior
+                    (assoc :original-job-state (get-in @(:state ctx) [:jobs "implement-1"])
+                           :original-task-error error
+                           :preserved-failed-actions
+                           (if (:semantic-failure options)
+                             [{:id "fixture-semantic-check" :command "clojure -M fixture-semantic-check.clj" :exit 1
+                               :output-sha256 (rt/digest "C2-HASH pinned input is stale")}]
+                             [])
+                           :preserved-nonclaims [:historical-nonpass-is-not-a-pass :no-migration-authority]
+                           :source-provenance {"work.edn" {:sha256 (recovery/file-digest (io/file repo "work.edn"))
+                                                          :basis "Retained native file action; independently inspected source bytes."}}
+                           :verified-source-dependencies
+                           [{:owner-state-file "fixture-original-owner/state.edn" :intent-id "fixture-dependency"
+                             :commit merge :candidate candidate :tree tree :history-sha256 (rt/digest (pr-str entry))
+                             :source-paths [dependency-path]}])
+                    (assoc-in [:operator-classification :kind] :verified-external-source-dependency)
+                    (assoc-in [:operator-classification :phase] :source-development-current)
+                    (assoc-in [:operator-classification :original-output-sha256] (rt/digest (pr-str output)))
+                    (assoc-in [:operator-classification :basis] "Original operator inspected the now-merged external fix; old semantic nonpasses remain history.")
+                    (assoc-in [:authored-files "work.edn" :executable] false))]
+    (rt/write-edn! evidence receipt)
+    {:ctx ctx :repo repo :dependency-worktree dependency :dependency-path dependency-path :evidence evidence :merge merge
+     :error error :output output :receipt receipt}))
+
+(deftest resolved-dependency-commits-retained-work-and-composes-verified-main-without-reauthoring
+  (doseq [options [{} {:semantic-failure true :dependency-path " dependency\nsource.edn"}]]
+  (let [{:keys [ctx repo dependency-worktree dependency-path evidence merge error output]} (dependency-fixture! options)
+        stages (atom [])
+        job (get-in @(:state ctx) [:jobs "implement-1"])]
+    (flow/recover-dependency! ctx "authored" evidence)
+    (is (= :inspected-source-dependency-resolution (get-in (flow/task ctx "authored") [:inspected-authored :kind])))
+    (is (= error (:error (flow/task ctx "authored"))))
+    (is (= job (get-in @(:state ctx) [:jobs "implement-1"])))
+    ;; Main may advance while the retained work awaits native preparation.
+    (rt/git ctx dependency-worktree "checkout" "--detach" merge)
+    (spit (io/file dependency-worktree "later.edn") "{:unrelated-main :advanced}\n")
+    (rt/git ctx dependency-worktree "add" "later.edn")
+    (rt/git ctx dependency-worktree "commit" "-m" "Unrelated later Main")
+    (rt/git ctx dependency-worktree "push" "origin" "HEAD:main")
+    (with-redefs [gh/status! (fn [& _] nil)
+                  flow/publish! (fn [c t] (swap! stages conj (if (:review t) :ready :draft))
+                                  (flow/task! c (:key t) :status :ci))
+                  codex/command! (fn [_ _ _ argv] (swap! stages conj [:check argv]) {:exitCode 0})
+                  codex/job! (fn [c _ _ mode _ _ _]
+                               (is (= :read mode) "Retained work is checked and reviewed without another author turn")
+                               (swap! stages conj :review)
+                               (assoc (select-keys (flow/task c "authored") [:base :candidate :tree])
+                                      :verdict "approved" :summary "Exact dependency composition" :findings []))]
+      (flow/prepare! ctx "authored"))
+    (let [t (flow/task ctx "authored")]
+      (is (= [:draft [:check check-command] :review :ready] @stages))
+      (is (= (rt/git ctx dependency-worktree "rev-parse" "HEAD") (:base t)))
+      (is (= :passed (get-in t [:checks :result])))
+      (is (= :checked (get-in t [:inspected-authored :stage])))
+      (is (= error (:error t)))
+      (is (= output (get-in @(:state ctx) [:jobs "implement-1" :output])))
+      (is (= "{:value 2}\n" (slurp (io/file repo "work.edn"))))
+      (is (= "{:semantic-dependency :fixed}\n" (slurp (io/file repo dependency-path))))
+      (is (= "{:unrelated-main :advanced}\n" (slurp (io/file repo "later.edn"))))
+      (is (str/blank? (rt/git ctx repo "status" "--porcelain")))))))
+
+(deftest source-dependency-recovery-cannot-bypass-real-refusals-or-stale-evidence
+  (doseq [mutation [:real-restriction :unresolved-semantics :no-dependency :forged-history :false-source
+                    :stale-file :file-mode :unproven-source :unknown-failure :unfinished-action :refusal-action
+                    :own-main-pending :watchdog-failure]]
+    (let [{:keys [ctx repo evidence receipt]} (dependency-fixture!)]
+      (case mutation
+        :real-restriction (flow/task! ctx "authored" :error {:message "Actual denied action" :details {:restricted true}})
+        :unresolved-semantics (rt/write-edn! evidence (assoc-in receipt [:operator-classification :no-unresolved-semantics] false))
+        :no-dependency (rt/write-edn! evidence (assoc receipt :verified-source-dependencies []))
+        :forged-history (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :history-sha256] "forged"))
+        :false-source (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :source-paths] ["work.edn"]))
+        :stale-file (spit (io/file repo "work.edn") "{:stale true}\n")
+        :file-mode (.setExecutable (io/file repo "work.edn") true)
+        :unproven-source (rt/write-edn! evidence (assoc receipt :source-provenance {}))
+        :own-main-pending (rt/coordinate! ctx (fn [s] [(assoc s :main-effects {"pending" {:state-file (:state-file ctx)}}) nil]))
+        :watchdog-failure (do
+                            (action! ctx {:type "commandExecution" :id "watchdog" :command "fixture watchdog"
+                                          :status "completed" :exitCode 125 :aggregatedOutput "watchdog failure"})
+                            (rt/write-edn! evidence
+                              (assoc receipt :preserved-failed-actions
+                                     [{:id "watchdog" :command "fixture watchdog" :exit 125
+                                       :output-sha256 (rt/digest "watchdog failure")}])) )
+        :unknown-failure (action! ctx {:type "commandExecution" :id "unknown-failure" :command "unknown"
+                                      :status "completed" :exitCode 1 :aggregatedOutput "Unknown failure"})
+        :unfinished-action (rt/event! ctx :rpc-receive {:job "implement-1" :message {:method "item/started"
+                                                                                      :params {:item {:id "pending" :type "commandExecution"}}}})
+        :refusal-action (action! ctx {:type "commandExecution" :id "denied" :command "retained denied action"
+                                     :status "completed" :exitCode 0
+                                     :aggregatedOutput "git: error: couldn't create cache file '/tmp/fixture' (errno=Operation not permitted)"}))
+      (is (thrown? Exception (flow/recover-dependency! ctx "authored" evidence)) (name mutation))
+      (is (= :attention (:status (flow/task ctx "authored")))))))
