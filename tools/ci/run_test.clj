@@ -440,16 +440,115 @@
                       {:option option :argv argv})))
     (nth argv (inc index))))
 
-(defn- macro-selected-vars [argv source-vars]
-  (let [pairs (partition 2 1 argv)
-        exact (set (map second (filter #(= "--exact" (first %)) pairs)))
-        patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
-    (set (filter (fn [name]
-                   (let [qualified (str "gravity.macro.pipeline-test/" name)]
-                     (or (and (empty? exact) (empty? patterns))
-                         (contains? exact name) (contains? exact qualified)
-                         (some #(or (re-find % name) (re-find % qualified)) patterns))))
-                 source-vars))))
+(defn- option-values [argv option]
+  (mapv second (filter #(= option (first %)) (partition 2 1 argv))))
+
+(defn- macro-selected-vars
+  ([argv source-vars]
+   (macro-selected-vars argv source-vars "gravity.macro.pipeline-test"))
+  ([argv source-vars namespace]
+   (let [pairs (partition 2 1 argv)
+         exact (set (map second (filter #(= "--exact" (first %)) pairs)))
+         patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
+     (if (some #{namespace} (option-values argv "--namespace"))
+       (set (filter (fn [name]
+                      (let [qualified (str namespace "/" name)]
+                        (or (and (empty? exact) (empty? patterns))
+                            (contains? exact name) (contains? exact qualified)
+                            (some #(or (re-find % name) (re-find % qualified)) patterns))))
+                    source-vars))
+       #{}))))
+
+(deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
+  (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
+    (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
+            "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
+            "c-native-validation" "runtime-native-validation" "effects-native-validation"
+            "types-native-validation" "llvm-manifest-native-validation"] (mapv first commands)))
+    (doseq [[command [label namespace path]]
+            (map vector (drop 4 commands)
+                 [["tooling-native-validation" "gravity.tooling.pipeline-test"
+                   "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj"]
+                  ["ownership-native-validation" "gravity.ownership.pipeline-test"
+                   "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj"]])]
+      (let [[id timeout argv] command
+            source-vars (binding [*read-eval* false] (source-deftest-names path))]
+        (is (= label id))
+        (is (= 180 timeout))
+        (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+        (is (seq source-vars))
+        (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+        (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+        (is (empty? (macro-selected-vars
+                     (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))))
+
+(deftest contracts-include-the-complete-native-wasm-namespace
+  (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 6)
+        namespace "gravity.backend.wasm.pipeline-test"
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj"))]
+    (is (= "wasm-native-validation" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
+
+(deftest contracts-include-the-complete-native-c-namespace
+  (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 7)
+        namespace "gravity.backend.c.pipeline-test"
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj"))]
+    (is (= "c-native-validation" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
+
+(deftest contracts-include-the-complete-native-runtime-effects-and-types-namespaces
+  (doseq [[index expected-label namespace path]
+          [[8 "runtime-native-validation" "gravity.runtime.pipeline-test"
+            "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"]
+           [9 "effects-native-validation" "gravity.effects.pipeline-test"
+            "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]
+           [10 "types-native-validation" "gravity.types.pipeline-test"
+            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]
+           [11 "llvm-manifest-native-validation" "gravity.backend.llvm.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"]]]
+    (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
+          source-vars (binding [*read-eval* false]
+                        (source-deftest-names path))]
+      (is (= expected-label label))
+      (is (= 180 timeout))
+      (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+      (is (seq source-vars))
+      (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+      (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+      (is (empty? (macro-selected-vars
+                   (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
+
+(deftest checked-core-cohort-includes-the-complete-native-mir-namespace
+  (let [commands (ci/commands-for-selection "checked-core-runtime" {:kind :full})
+        [label timeout argv] (last commands)
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"))
+        namespace "gravity.mir.pipeline-test"]
+    (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
+            "checked-core-projection-kernel-regression" "mir-native-validation"]
+           (mapv first commands)))
+    (is (= "mir-native-validation" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.checked-core.pipeline-test") source-vars namespace)))))
 
 (deftest macro-children-preserve-complete-disjoint-source-selection
   (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
@@ -457,6 +556,10 @@
                       (source-deftest-names "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"))
         compatibility-vars (binding [*read-eval* false]
                              (source-deftest-names "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"))
+        native-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/macro/native_reports_test.clj"))
+        owner-vars (binding [*read-eval* false]
+                     (source-deftest-names "bootstrap/clojure/test/gravity/macro/owner_calls_test.clj"))
         cohort-argv (nth cohort 2) receipt-argv (nth receipt 2) compatibility-argv (nth compatibility 2)
         cohort-vars (macro-selected-vars cohort-argv source-vars)
         receipt-vars (macro-selected-vars receipt-argv source-vars)
@@ -466,10 +569,20 @@
     (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
            (mapv first commands)))
     (is (= [900 900 900] (mapv second commands)))
-    (is (= ["gravity.macro.pipeline-test" "gravity.macro.pipeline-test"
-            "gravity.bootstrap-compatibility.c4-test"]
-           (mapv #(option-value (nth % 2) "--namespace") commands)))
-    (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))
+    (is (= [["gravity.macro.pipeline-test" "gravity.macro.native-reports-test" "gravity.macro.owner-calls-test"]
+            ["gravity.macro.pipeline-test"]
+            ["gravity.bootstrap-compatibility.c4-test"]]
+           (mapv #(option-values (nth % 2) "--namespace") commands)))
+    (is (seq native-vars))
+    (is (= native-vars (macro-selected-vars cohort-argv native-vars "gravity.macro.native-reports-test")))
+    (let [index (.indexOf ^java.util.List cohort-argv "gravity.macro.native-reports-test")
+          omitted (vec (concat (take (dec index) cohort-argv) (drop (inc index) cohort-argv)))]
+      (is (empty? (macro-selected-vars omitted native-vars "gravity.macro.native-reports-test"))))
+    (is (seq owner-vars))
+    (is (= owner-vars (macro-selected-vars cohort-argv owner-vars "gravity.macro.owner-calls-test")))
+    (let [index (.indexOf ^java.util.List cohort-argv "gravity.macro.owner-calls-test")
+          omitted (vec (concat (take (dec index) cohort-argv) (drop (inc index) cohort-argv)))]
+      (is (empty? (macro-selected-vars omitted owner-vars "gravity.macro.owner-calls-test"))))
     (is (every? #(some #{"--progress"} (nth % 2)) commands))
     (is (not-any? #(some #{"--fail-fast"} (nth % 2)) commands))
     (is (= 3 (count (set ci/macro-receipt-test-vars))))
