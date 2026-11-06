@@ -432,9 +432,9 @@
          (do
            (assert-clean! ctx cwd)
            (let [paths (vec (remove str/blank?
-                                   (str/split (rt/git ctx cwd "diff" "--name-only" "--no-renames" "-z"
-                                                    base candidate)
-                                              #"\u0000")))]
+                                    (str/split (rt/git ctx cwd "diff" "--name-only" "--no-renames" "-z"
+                                                       base candidate)
+                                               #"\u0000")))]
              (and (seq paths)
                   (every? #(some (fn [owner] (shared/covers? owner %)) (:paths t)) paths)))))))
 
