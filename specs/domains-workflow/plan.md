@@ -582,6 +582,70 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Supply real source/schema/query/workflow/hardware/proof interfaces before consumers; later actual checked-Core/MIR/target or value anchors preserve decisions and validation. The existing future Formal authority checks exact property/source/kernel/assumptions after preliminary coverage and before proof-dependent use, without full Formal/ZK or cost-accounting adoption.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Distributed workflow/service boundaries use real schema/artifact contracts and AI/tool invocation uses actual schema validation plus authentic grants and effects. Formal dispatch needs real closedness/coverage proof; source preparation precedes held execution.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early authentic schema/tool/workflow/proof/checker contracts precede actual admitted dispatch/validation and later typed-Core/MIR/runtime anchors. Closed formal dispatch need not wait for full future Formal completion; required proof precedes dependent use.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Workflow owns durable step/input/error/retry/compensation/time/external-result/replay contracts and AI owns structured model/tool/schema/policy/defense/review failure artifacts. Runtime actual execution follows real source/schema/grant contracts. External billing errors remain explicit while removed project quotas stay removed; the original mixed policy facet remains pending independent acceptance.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Schema supplies actual validators; schema/checked-consumer-projection supplies the existing future API/source-generated consumer conjunction. Library applies those products to actual network bodies while preserving transport authentication, schema validation, taint and sink validation as separate facts. Existing future services owns wider typed routes/handlers/jobs/CRUD integration; Library's HTTP API is its consumer, not whole-service acceptance. Workflow/AI owners retain source graph, activity/replay, tool/model policy and required-review/eval-order production; project budget wording is explicitly superseded, actual external billing remains distinct.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Math's existing EFIR/elementary/provider/floating/conversion predicates retain their roles. The five existing deeper Math future tasks remain unchanged; actual independent certificate acceptance belongs to math/independent-proof-and-certificate-checking, not synthesis or a broad parent success flag. EML is symbolic search/verification, not execution.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Reuse current Schema/Math/Workflow/AI/UI/Query and explicit future Crypto/Formal producers for the ten-facet population. The existing exact SupportAgent clause remains unchanged. Actual schema User/decoder products, source-mapped payloads and declared private/reveal/checker boundaries remain their owners' behavior; this interface accepts no whole supporting domain or live model/crypto result.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Keep actual Schema/EFIR/Hardware/Workflow/Agent/Query fact producers and six family meanings. Their typed artifacts carry record/validator, numeric domain/range/differentiability/proof, width/clock/bus/reset, durable/replay/signal/retry, prompt/tool/model-shape/guardrail and row/cardinality/nullability/transaction facts across boundaries. This interface does not accept whole domain implementations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing Schema/Query/Workflow/AI and other domain owners supply actual source schemas, types/codecs/validators and claimed typed/service results behind declared L19 boundaries. Seven shim examples remain real conditional input/output contracts, not implementations inferred from names. Pure generation supplies no live model/tool/database/store or physical-device authority.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual EFIR/math/GPU/hardware/workflow/query/schema/UI/AI source semantics and verified domain anchor/schema/entry/verifier/exit products distinct from backend family implementation. Selected consumers need real typed/lifetime/order/numeric/policy facts, independent certificate results where required and current source/provenance. Core-only paths need no invented domain IR. Preserve every existing future declaration/source binding and C12/provider/device/migration/replay restriction.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration
