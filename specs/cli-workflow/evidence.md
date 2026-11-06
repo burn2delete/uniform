@@ -74,3 +74,93 @@ Language boundary passed 6 tests / 11 assertions; dependency tests passed
 full-language roadmap and whitespace passed. Passing commands exited naturally
 with 0. Exact committed-tree preflight and independent disposition belong to
 the public PR receipt; no command service or public compiler was executed.
+
+## Source command usage increment
+
+Date: 2026-11-04. Finding:
+`cli.source-command-usage.check-and-run-compiled-v1`. Existing owning task:
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`.
+Scope and source authority: [plan](plan.md#source-command-usage-increment).
+Candidate context supplied by the controller: current `increment-1216`
+worktree. This is an uncommitted source edit; no commit/tree identity was
+provided or inspected, and no independent acceptance is claimed.
+
+### Prepared implementation and fixtures
+
+Only the five requested paths are edited: the existing CLI entrypoint, new
+`bootstrap/clojure/test/gravity/cli/source_command_usage_test.clj` and appended
+sections in this plan/tasks/evidence package. Passive source review located
+the original unchecked command/path destructuring in dispatch and exit-1
+handling of non-Build ExceptionInfo in the entrypoint. The added entrypoint
+branch constructs a local T1006 diagnostic and exits 2 before dispatch for
+malformed selected commands; it does not inspect service diagnostic IDs.
+The valid branch retains the existing dispatch and exception handlers.
+
+Prepared fixtures use the actual entrypoint/dispatcher with injected recording
+operations and the existing diagnostic presenter:
+
+| Fixture | Asserted scope (not yet executed) |
+| --- | --- |
+| `check-forwards-source-path` | Both extensions, spaces/Unicode and explicit `./-` filenames; exact original source operand, one check call, one module-name call, unchanged output and no diagnostics/exits. |
+| `run-compiled-forwards-source-path` | Same source paths; one compiled-run call, exact output and no diagnostics/exits. |
+| `missing-source`, `blank-source`, `non-string-source` | Both commands reject with T1006/exit 2 and zero resolutions/calls. |
+| `extra-source`, `unsupported-option` | Both commands reject extra paths, leading short/long options, an unsupported terminator and trailing options before any service; secret-bearing argument markers never reach diagnostic data, message, cause or output. |
+| `service-failure-remains-exit-one`, `service-t1006-is-not-local-usage` | Both commands/extensions preserve the identical downstream ExceptionInfo and exit 1, including a service-supplied T1006. |
+
+These positives establish routing/presentation only. Injected output and
+artifacts are not genuine compiler/runtime success, Reader validation or
+installed execution evidence. The new test namespace/helper names are semantic;
+T1006 is a retained contract diagnostic identity. No input quota, authority
+grant, host fallback or language-semantic change is introduced.
+
+### Actual observations and restrictions
+
+Observed work consists of passive source/contract reads, owned-path patch
+application and manual source review. No executable test/build/check ran, so
+there are no test counts, exit results or passing check claims for this edit.
+Earlier passing results in this file remain historical evidence for their
+original documentation scope only.
+
+Verification is restricted in this worker by the controller instruction:
+"do not execute test/build/check commands or Git." Therefore no Git status,
+diff/whitespace check, cache inspection, candidate snapshot or Clojure check
+was attempted. Retained the907/select23/review50/review53 refusals, including
+the B709/C5f5 and C154 snapshots/focused tests, remain prohibited; build1173
+and environment-scope1176 remain restricted Attention findings. None was
+retried, transferred or replaced. The known installed-runtime zero-exit
+`git:error` diagnostic gap supplies no permission or verification credit.
+
+### Proposed controller checks (all unrun)
+
+The following are executable argument vectors for the controller's permitted
+verification context, not requests to retry any retained refused action:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.cli.source-command-usage-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.cli-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.cli.launcher-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.cli.packaged-launcher-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.build.invocation-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The first vector selects this increment. Existing CLI and Build invocation
+regressions cover unchanged dispatch, usage, service failures and Build error
+handling; launcher checks include their existing child-JVM boundaries.
+Acceptance dependency controls must preserve task identity, captured source
+regions and genuine dependency cycles. Language/document validators provide
+their respective structural checks only. If any selected operation is already
+refused, retain restricted/unrun status and do not execute or reroute it.
+
+### Remaining acceptance
+
+Implementation authority is present for this narrow behavior; no unresolved
+semantic ambiguity was identified in T1's local usage/exit contract. Execution
+authority is restricted here, and independent acceptance remains pending.
+The parent task stays Open for its remaining command/options matrix and
+independent acceptance. No PR767 readiness changes, release, self-hosting or
+seed-retirement authority are claimed. No commit, integration or remote action
+was performed.

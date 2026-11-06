@@ -147,3 +147,35 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `cli-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+## Source command usage increment
+
+Append-only scope for finding
+`cli.source-command-usage.check-and-run-compiled-v1` (2026-11-04), owned by
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`
+in [the existing authority](#implementation-tasks). No new task identity or
+completion denominator is introduced. The parent remains Open pending the
+remaining command matrix and independent acceptance. Canonical task bodies,
+statuses, captured regions and historical migration evidence above are retained;
+PR767 readiness changes are not adopted.
+
+The [scoped contract](plan.md#source-command-usage-increment) requires local
+T1006/exit-2 rejection before service resolution for malformed `check` and
+`run-compiled`, with fixed payload-safe diagnostics and unchanged valid routing.
+Implementation and fixtures are prepared in the owned entrypoint and
+`gravity.cli.source-command-usage-test`; execution and independent acceptance
+are pending, as separated in [evidence.md](evidence.md#source-command-usage-increment).
+
+Required fixture names are `check-forwards-source-path`,
+`run-compiled-forwards-source-path`, `missing-source`, `blank-source`,
+`extra-source`, `unsupported-option`, `service-failure-remains-exit-one` and
+`service-t1006-is-not-local-usage`; `non-string-source` covers the injected
+boundary's operand type. Positive recording operations establish routing only.
+Negative cases require exit 2, zero service resolutions/calls and no raw
+secret-marker leakage. Downstream failure controls require the identical
+service exception and existing exit 1 even when its ID is T1006.
+
+No tests/checks or Git may execute in this bounded worker. Controller-owned
+focused regressions, acceptance dependency controls, language boundary and
+document validators remain unrun here; retained refusals remain binding.
+Independent acceptance and integration are not supplied by this appendix.
