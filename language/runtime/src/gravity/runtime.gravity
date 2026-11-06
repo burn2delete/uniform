@@ -40,15 +40,37 @@
         (recur (rest remaining)
           (if (= key removed-key) result (assoc result key (get input key))))))))
 
+(defn p15-s23-runtime-integer-decimal-text [value]
+  ; STD4 deterministic decimal text, STD5 exact integers. Keep the magnitude
+  ; nonpositive so the minimum signed integer is never negated. With quotient
+  ; truncated toward zero, quotient*10 stays between remaining and zero;
+  ; quotient*10 - remaining is a digit index in [0,9]. No magnitude quota.
+  (if (integer? value)
+    (let [negative? (< value 0)
+          digits ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]]
+      (loop [remaining (if (> value 0) (- 0 value) value) text ""]
+        (let [quotient (quot remaining 10)
+              digit (- (* quotient 10) remaining)
+              result (str (get digits digit) text)]
+          (if (= quotient 0)
+            (if negative? (str "-" result) result)
+            (recur quotient result)))))
+    (throw {:diagnostic "P15S23X002" :reason :integer-decimal-value-required})))
+
+(defn p15-s23-runtime-value-text [value]
+  (if (integer? value)
+    (p15-s23-runtime-integer-decimal-text value)
+    (str value)))
+
 (defn p15-s23-runtime-println-output
   [values output]
   (if (= (count values) 0)
     (str output "\n")
     (if (= (count values) 1)
-      (str output (str (first values)) "\n")
+      (str output (p15-s23-runtime-value-text (first values)) "\n")
       (p15-s23-runtime-println-output
        (rest values)
-       (str output (str (first values)) " ")))))
+       (str output (p15-s23-runtime-value-text (first values)) " ")))))
 
 (defn p15-s23-runtime-evaluate-bindings
   [bindings environment output]
@@ -1836,8 +1858,9 @@
                      (recur (- index 1) (conj result (get values index)))))
                  (if (= function 'str)
                  (if (= (count values) 1)
-                   (str left)
-                   (str left right))
+                   (p15-s23-runtime-value-text left)
+                   (str (p15-s23-runtime-value-text left)
+                        (p15-s23-runtime-value-text right)))
                  (if (= function '=)
                    (= left right)
                    (if (= function '<)

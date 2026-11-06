@@ -90,6 +90,52 @@
              (:id (diagnostic #(b/p15-s23-stage2-runtime-artifact-invoke
                                  changed 'p15-s23-runtime-println-output []))))))))
 
+(deftest integer-decimal-current-source-computes-text-without-host-number-formatting
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [callee args]
+                 (b/p15-s23-stage2-runtime-artifact-invoke ctx callee args))
+        values [0 1 2 3 4 5 6 7 8 9 10 11 99 100 101
+                -1 -9 -10 -11 -99 -100 -101 Long/MIN_VALUE Long/MAX_VALUE
+                9223372036854775808N -9223372036854775809N]
+        expected (mapv str values)
+        host-str runtime/hosted-str
+        numeric-calls (atom 0)]
+    ;; Compile before interposition; exercise the current source plan. The
+    ;; seed formatting seam may still concatenate strings and render other
+    ;; families, but any numeric conversion fails rather than supplying text.
+    (with-redefs [runtime/hosted-str
+                  (fn [args]
+                    (when (some number? args)
+                      (swap! numeric-calls inc)
+                      (throw (ex-info "host numeric formatting disabled" {})))
+                    (host-str args))]
+      (is (= expected
+             (mapv #(invoke 'p15-s23-runtime-integer-decimal-text [%]) values)))
+      (is (= "prior: -9223372036854775808 tag 10\n"
+             (invoke 'p15-s23-runtime-println-output
+                     [[Long/MIN_VALUE "tag" 10] "prior: "])))
+      (is (= ["-9223372036854775808x" "prior: " :normal]
+             (invoke 'p15-s23-runtime-evaluate-closed-instruction
+                     [{:op :builtin-call :function 'str
+                       :args [{:op :literal :value Long/MIN_VALUE}
+                              {:op :literal :value "x"}]} {} "prior: "]))))
+    (is (zero? @numeric-calls))))
+
+(deftest integer-decimal-internal-formatter-rejects-nonintegers-and-wrong-arity
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [args]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-integer-decimal-text args))]
+    (doseq [value [nil false "10" :ten 1/2 1.0M]]
+      (is (= {:diagnostic "P15S23X002" :reason :integer-decimal-value-required}
+             (:payload (diagnostic #(invoke [value]))))))
+    (doseq [args [[] [1 2]]]
+      (let [error (diagnostic #(invoke args))]
+        (is (= "P15S23X002" (:id error)))
+        (is (= :runtime-artifact-function-arity (:missing-fact error)))))))
+
 (defn- scope-operations [events selected registered? module?]
   ;; Mocked control flow only. These functions are not native scope holders or
   ;; authority proofs, and their markers never enter a genuine admission path.
