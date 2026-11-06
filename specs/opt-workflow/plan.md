@@ -120,6 +120,76 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Transform only actual verified decisions under real semantic/purity/check-retention requirements. Regenerate invalidated pattern/domain/guard/binding/schema/resource/proof/origin facts and verify the changed subject; value equality does not prove metadata or once-only behavior.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Actually specialize dispatch under surviving source-bound proof; preserve diagnostics and fallback or prove fallback unreachable. Keep original legal dispatch when transformation is unsupported and regenerate/verify affected owner facts.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Use actual verified dispatch and real checker/preservation contracts, then surviving proof, preserved diagnostics/fallback and actual changed-subject regeneration/verification. Required complete-L8 specialization fixtures remain work even while unspecialized compilation proceeds.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve real error/handler/cleanup order, required checks, diagnostic/source/proof and panic/foreign/workflow/AI outcomes under governing preservation evidence. Regenerate changed-subject owner facts; equal normal values do not prove preserved failures or audit/replay behavior.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Preserve actual library numeric modes and safe API/check/error/cleanup/authority behavior with governing evidence and current regenerated facts. Library supplies callable numerics; the inherited Opt owner supplies transformation preservation.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Keep source atomic defaults and explicit supported weaker orders, synchronization, cleanup, cancellation, capability denials, redaction and replay/event order intact. A check may disappear only under current claim-specific proof and backend preservation; changing the provider/target/control/alias/lifetime/order facts invalidates affected proof. Optional passes do not gate initial module/signature/fixture development.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Optimization preserves actual collection value/evaluation/effect/transfer, equality/hash/order, allocation/lifetime and source/proof facts. Exact dominating evidence valid through transformations is required before removing checks; invalidation requires genuine repair/rechecking, restoring checks or rejection. Classification creates no implicit cardinality, presence, bounds or flow refinements.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual value, metadata, numeric-mode/error-bound, lifetime/alias/cleanup and source/effect semantics. Exact current proof and backend preservation justify required check erasure; invalidation needs repair/recheck, restored checks or refusal. Optional optimizations are no universal API start gate.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume only selected-provider, current profile/target, serialized proof/refinement facts stable under the actual transform. Erased checks retain their actual justifying proof reference and governing checked evidence; seven changed-input categories force real rechecking/invalidation. Valid unoptimized source gains no universal Formal gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual foreign effects, failures, pointer lifetime/threading, alias/allocator/release, safe-wrapper checks and target assumptions survive transformations under their governing preservation evidence. Changed source/schema/ABI/layout invalidates affected proofs/facts; valid unoptimized input remains possible.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Selected transformations preserve actual source/domain semantics, numeric modes, ownership/alias/order/effect/grant/profile facts, source/audit and certificate identities or perform required accepted invalidation/repair/regeneration. MLIR passes need actual before/after verifiers and downstream legality; strict GPU reductions, host/null boundaries and database predicate movement cannot inherit host/dialect defaults. Optional paths remain optional and actual required certificate/reference evidence is not a metadata flag.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

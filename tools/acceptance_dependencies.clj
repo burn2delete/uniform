@@ -176,7 +176,11 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+  #{"backend-interface"
+    "pass-evidence"
+    "backend-conformance"
+    "query"
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
     "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"
@@ -261,6 +265,9 @@
     "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
     "devices"
     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
@@ -632,15 +639,32 @@
                        (requirement-sources/git-blob-id historical))
                     "Stdlib historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        ;; The historical PR564 bridge remains immutable, but this path now
+        ;; has an authenticated current-source successor in the STD7-STD9
+        ;; frame. Use that successor for current row comparison while keeping
+        ;; the old current-source identity in the bridge as history.
+        current-source-successor
+        (first (filter #(= path (:path %))
+                       requirement-sources/current-source-transition-contracts))
+        _ (require! current-source-successor
+                    (str "Missing current Stdlib source successor: " path))
+        current-source-ref (or (:applying-ref current-source-successor)
+                               (:current-source-ref transition)
+                               (:applying-ref transition))
         current-source (read-ref current-source-ref path)
-        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+        _ (require! (= (or (:applying-tree current-source-successor)
+                           (:current-source-tree transition)
+                           (:applying-tree transition))
                        (requirement-sources/git-commit-tree "." current-source-ref require!))
                     "Stdlib current composition source commit/tree changed")
-        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+        _ (require! (= (or (:applying-blob current-source-successor)
+                           (:current-source-blob transition)
+                           (:applying-blob transition))
                        (requirement-sources/git-blob-id current-source))
                     "Stdlib current composition source blob changed")
-        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+        _ (require! (= (or (:live-sha256 current-source-successor)
+                           (:current-source-sha256 transition)
+                           (:live-sha256 transition))
                        (sha256 current-source))
                     "Stdlib current composition source bytes changed")
         current (read-text path)]
@@ -670,6 +694,36 @@
      :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
+
+(def current-source-transition-contracts
+  requirement-sources/current-source-transition-contracts)
+
+(defn current-source-transition-view
+  "Authenticate the bounded current-source proposal without changing any
+  historical/applying pin or granting implementation authority."
+  [transitions read-text]
+  (let [expected current-source-transition-contracts
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (require! (and (vector? transitions)
+                   (= (set (map :path transitions))
+                      (set (map :path expected)))
+                   (= (count transitions) (count expected)))
+              "Current source transition population changed")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (require! (= actual contract)
+                  (str "Current source transition contract changed: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (requirement-sources/git-source "." ref source-path require!))
+         read-text sha256 require!)))
+    {:kind requirement-sources/current-source-transition-kind
+     :paths (vec (sort (keys (by-path transitions))))
+     :review-state :pending-independent-source-version-review
+     :authority :current-source-interface-only
+     :implementation-acceptance :unassessed}))
 
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
@@ -1111,6 +1165,24 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        readiness-source-version (:implementation-readiness-source-version crosswalk)
+        current-source-transition-input-paths
+        (set (map :path (:current-source-transitions readiness-source-version)))
+        ;; Complete-file current-source contracts authenticate the checked-out
+        ;; source itself. Keep injected read functions for the surrounding
+        ;; read-only drift fixtures, but do not let a navigation-only fixture
+        ;; masquerade as a new current-source frame.
+        current-source-read
+        (fn [path]
+          (if (current-source-transition-input-paths path)
+            (slurp path)
+            (read-text path)))
+        current-source-transition
+        (when (contains? readiness-source-version :current-source-transitions)
+          (current-source-transition-view
+           (:current-source-transitions readiness-source-version)
+           current-source-read))
+        current-source-transition-paths (set (:paths current-source-transition))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1171,7 +1243,8 @@
         ;; report drift separately; current task/acceptance inputs stay exact.
         _ (doseq [[path digest] (:source-digests crosswalk)
                   :when (not (or (navigation-source-path? path)
-                                 (historical-sh-source-path? path)))]
+                                 (historical-sh-source-path? path)
+                                 (contains? current-source-transition-paths path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -1255,6 +1328,7 @@
      :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :current-source-transitions current-source-transition
      :platform-task-source-transition platform-transition
      :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability
