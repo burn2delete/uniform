@@ -668,7 +668,9 @@
         (w/complete! ctx)
         (is (= [main/completion-check] @checks))
         (is (= :complete (:status @(:state ctx))))
-        (is (= base (get-in @(:state ctx) [:completion :base]))))
+        (is (= base (get-in @(:state ctx) [:completion :base])))
+        (is (nil? (w/task ctx "completion")))
+        (is (map? (get-in @(:state ctx) [:completion :review-evidence]))))
       (finally (delete-tree! (:root ctx))))))
 
 (deftest a-failed-or-moving-completion-review-cannot-finish
@@ -883,6 +885,68 @@
           (is (.contains ^String prompt "Do not run Git, Clojure, tests, builds"))))
       (finally (delete-tree! (:root ctx))))))
 
+(deftest review-snapshot-supports-owned-directories-and-deletions
+  (let [ctx (repository! (context))
+        repo (get-in ctx [:config :repo-dir])
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        wt (w/worktree! ctx "review-directory-delete" base)]
+    (try
+      (let [worktree (:worktree wt)]
+        (.mkdirs (io/file worktree "owned"))
+        (spit (io/file worktree "owned" "new.clj") "(ns fixture.new)\n")
+        (rt/git ctx worktree "rm" "module.clj")
+        (rt/git ctx worktree "add" "owned/new.clj")
+        (rt/git ctx worktree "commit" "-m" "directory and deletion fixture")
+        (let [candidate (rt/git ctx worktree "rev-parse" "HEAD")
+              tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")
+              t (merge wt {:key "directory-delete" :kind "adoption"
+                           :paths ["owned" "module.clj"] :base base
+                           :candidate candidate :tree tree
+                           :checks {:candidate candidate :tree tree
+                                    :commands [["clojure" "-M" "focused"]]
+                                    :result :passed}})]
+          (rt/update! ctx assoc-in [:tasks "directory-delete"] t)
+          (with-redefs [w/job! (fn [& _] {:verdict "approved" :base base
+                                          :candidate candidate :tree tree
+                                          :evidence-scope "adoption" :summary "Fixture review"
+                                          :findings [] :residual-host-boundary "Fixture host remains"})]
+            (is (= "approved" (:verdict (w/review! ctx t "adoption")))))
+          (let [sources (get-in @(:state ctx) [:tasks "directory-delete" :review-evidence :source])]
+            (is (= #{"module.clj" "owned/new.clj"} (set (map :path sources))))
+            (is (= :deleted (:status (some #(when (= "module.clj" (:path %)) %) sources))))
+            (is (= :added (:status (some #(when (= "owned/new.clj" (:path %)) %) sources)))))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest review-snapshot-supports-owned-renames
+  (let [ctx (repository! (context))
+        repo (get-in ctx [:config :repo-dir])
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        wt (w/worktree! ctx "review-rename" base)]
+    (try
+      (let [worktree (:worktree wt)]
+        (.mkdirs (io/file worktree "owned"))
+        (rt/git ctx worktree "mv" "module.clj" "owned/renamed.clj")
+        (rt/git ctx worktree "commit" "-m" "rename fixture")
+        (let [candidate (rt/git ctx worktree "rev-parse" "HEAD")
+              tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")
+              t (merge wt {:key "rename" :kind "adoption"
+                           :paths ["module.clj" "owned"] :base base
+                           :candidate candidate :tree tree
+                           :checks {:candidate candidate :tree tree
+                                    :commands [["clojure" "-M" "focused"]]
+                                    :result :passed}})]
+          (rt/update! ctx assoc-in [:tasks "rename"] t)
+          (with-redefs [w/job! (fn [& _] {:verdict "approved" :base base
+                                          :candidate candidate :tree tree
+                                          :evidence-scope "adoption" :summary "Fixture review"
+                                          :findings [] :residual-host-boundary "Fixture host remains"})]
+            (is (= "approved" (:verdict (w/review! ctx t "adoption")))))
+          (let [source (first (get-in @(:state ctx) [:tasks "rename" :review-evidence :source]))]
+            (is (= :renamed (:status source)))
+            (is (= "owned/renamed.clj" (:path source)))
+            (is (= "module.clj" (:old-path source))))))
+      (finally (delete-tree! (:root ctx))))))
+
 (deftest tampered-review-evidence-is-rejected-before-a-review-turn
   (let [checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
                 :result :passed}
@@ -898,12 +962,12 @@
     (is (= evidence (w/validate-review-evidence! t "adoption" evidence)))
     (is (thrown? clojure.lang.ExceptionInfo
                  (w/validate-review-evidence! t "adoption"
-                                               (assoc-in evidence [:source 0 :content]
-                                                         "(ns tampered)\n"))))
+                                              (assoc-in evidence [:source 0 :content]
+                                                        "(ns tampered)\n"))))
     (is (thrown? clojure.lang.ExceptionInfo
                  (w/validate-review-evidence! t "adoption"
-                                               (assoc-in evidence [:tuple :candidate]
-                                                         "other"))))))
+                                              (assoc-in evidence [:tuple :candidate]
+                                                        "other"))))))
 
 (deftest restricted-candidate-refuses-before-review-snapshot
   (let [ctx (context)
