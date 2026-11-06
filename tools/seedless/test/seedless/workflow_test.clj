@@ -248,7 +248,7 @@
                  (w/prepare! ctx "a"))
                (let [t (w/task ctx "a")
                      parents (vec (rest (str/split (rt/git ctx (:worktree t)
-                                                       "rev-list" "--parents" "-n" "1" (:candidate t)) #"\s+")))]
+                                                           "rev-list" "--parents" "-n" "1" (:candidate t)) #"\s+")))]
                  (is (= :ci (:status t)))
                  (is (= 2 (get @phases "a")))
                  (is (not= @old-candidate (:candidate t)))
@@ -259,7 +259,7 @@
                  (is (= 1 (count (filter #(and (= :api (first %)) (= "POST" (second %))) @events))))
                  (is (= 2 (count (filter #(str/starts-with? % "push/")
                                          (keys (:effects @(:state ctx))))))
-                 (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers])))))))))
+                     (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers])))))))))
 
 (deftest initial-ready-without-retained-candidate-still-refuses
   (harness :empty-ready
