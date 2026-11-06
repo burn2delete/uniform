@@ -395,7 +395,10 @@
         failed-check? (and (= "Sandboxed check failed" (:message old-error))
                            (not (get-in old-error [:details :restricted]))
                            (not= false (get-in old-error [:details :writer-ended?]))
-                           (= 1 (get-in old-error [:details :result :exitCode])))
+                           (= 1 (get-in old-error [:details :result :exitCode]))
+                           (not (rt/authorization-denied?
+                                 (str (get-in old-error [:details :result :stdout]) "\n"
+                                      (get-in old-error [:details :result :stderr])))))
         commands (vec (distinct (concat (get-in ctx [:config :checks]) (:checks receipt))))
         repo (get-in ctx [:config :repo-dir])]
     (require! (and (= :fresh-source-validation (:kind receipt)) (= (:key task) (:task-key receipt))

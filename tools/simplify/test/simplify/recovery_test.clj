@@ -468,6 +468,21 @@
       (is (= original-bytes (slurp (io/file repo "work.edn")))))
     ))
 
+(deftest fresh-source-validation-rejects-unflagged-check-refusals
+  (doseq [stream [:stdout :stderr]]
+    (let [{:keys [ctx evidence receipt original]} (fresh-source-fixture! false)
+          denied (assoc-in original [:error :details :result stream]
+                           "Error building classpath. Permission denied")
+          updated (-> receipt
+                      (assoc :original-task-sha256 (rt/digest (pr-str denied)))
+                      (assoc-in [:operator-classification :original-error-sha256]
+                                (recovery/error-digest denied)))]
+      (rt/update! ctx assoc-in [:tasks "authored"] denied)
+      (rt/write-edn! evidence updated)
+      (is (thrown? Exception (flow/recover-fresh-source! ctx "authored" evidence)))
+      (is (= denied (flow/task ctx "authored")))
+      (is (nil? (:fresh-source-validation (flow/task ctx "authored")))))))
+
 (deftest fresh-source-validation-rejects-stale-or-unapproved-handoffs
   (doseq [mutation [:no-authority :wrong-scope :stale-task :stale-status :different-tree :foreign-scope :dirty :same-worktree :shared-api]]
     (let [{:keys [ctx repo fresh evidence receipt authorization proof status-proof original]} (fresh-source-fixture! true)]
