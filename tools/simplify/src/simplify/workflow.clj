@@ -6,6 +6,7 @@
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.github :as gh]
+            [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
             [simplify.schema :as schema])
   (:import [java.util.concurrent Callable Executors Future TimeUnit]))
@@ -82,8 +83,9 @@
     (str (name role) "-" n)))
 
 (defn review! [ctx t]
-  (when (or (get-in t [:error :details :restricted])
-            (get-in (task ctx (:key t)) [:error :details :restricted]))
+  (when (or (and (get-in t [:error :details :restricted]) (not (recovery/review-permitted? t)))
+            (let [current (task ctx (:key t))]
+              (and (get-in current [:error :details :restricted]) (not (recovery/review-permitted? current)))))
     (rt/fail! "Restricted findings cannot obtain a new review snapshot" {:finding (:key t) :restricted true}))
   (when-not (and (= :passed (get-in t [:checks :result]))
                  (= (select-keys t [:candidate :tree]) (select-keys (:checks t) [:candidate :tree]))
@@ -138,6 +140,14 @@
     (assert-identity! ctx t)
     (let [result {:candidate (:candidate t) :tree (:tree t) :commands commands :result :passed}]
       (task! ctx (:key t) :checks result)
+      (when (and (= :inspected-reported-implementation (get-in t [:inspected-authored :kind]))
+                 (#{:continuing :checked} (get-in t [:inspected-authored :stage]))
+                 (= (get-in t [:inspected-authored :original-error-sha256]) (recovery/error-digest t)))
+        ;; Only a completed native check stage can carry the inspected report
+        ;; across later ordinary composition/repair; actual new errors do not match.
+        (rt/update! ctx update-in [:tasks (:key t) :inspected-authored] assoc :stage :checked
+                    :checked-candidate (select-keys t [:base :candidate :tree])
+                    :checked-implementation-job (:implementation-job t)))
       result)))
 
 (defn changed-paths [ctx cwd]
@@ -202,6 +212,23 @@
              :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil))
     (assert-identity! ctx (task ctx (:key t)))))
 
+(defn recover-authored! [ctx key evidence-file]
+  (let [t (task ctx key)]
+    (when-not (= :attention (:status t)) (rt/fail! "Only a held authored report can be inspected" {:finding key}))
+    (if-let [lease (rt/claim-paths! ctx key (:paths t) :checking)]
+      (rt/with-claimed-paths ctx lease
+        (fn []
+          (assert-identity! ctx t)
+          (let [inspection (recovery/inspect! ctx t evidence-file)]
+            ;; Keep the original output/error and actual denial records intact.
+            ;; This queues native checking, never a pass or acceptance claim.
+            (rt/update! ctx update-in [:tasks key :reported-restriction-history] (fnil conj [])
+                        {:error (:error t) :inspection inspection})
+            (task! ctx key :inspected-authored inspection :status :repair)
+            (rt/event! ctx :authored-report-inspected {:finding key :job (:job inspection) :phase :queued})
+            inspection)))
+      (rt/fail! "Authored inspection is waiting for its actual writer scope" {:finding key :ownership-wait true}))))
+
 (defn prepare!
   ([ctx key]
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
@@ -210,28 +237,39 @@
    (rt/with-claimed-paths
     ctx lease
     (fn []
-      (prepare-base! ctx (task ctx key))
-      (when-let [validate (:before-implement ctx)]
-        (try (validate ctx (task ctx key))
-             (catch Exception e (throw (ex-info (.getMessage e) (assoc (or (ex-data e) {}) :writer-ended? true) e)))))
+      (let [inspected? (= :queued (get-in (task ctx key) [:inspected-authored :stage]))]
+        (if inspected?
+          (do (assert-identity! ctx (task ctx key))
+              (recovery/validate-queued! ctx (task ctx key)))
+          (do
+            (prepare-base! ctx (task ctx key))
+            (when-let [validate (:before-implement ctx)]
+              (try (validate ctx (task ctx key))
+                   (catch Exception e (throw (ex-info (.getMessage e) (assoc (or (ex-data e) {}) :writer-ended? true) e))))))))
       (let [t (task ctx key)
-            job (next-job! ctx :implement)
+            inspected? (= :queued (get-in t [:inspected-authored :stage]))
+            job (if inspected? (get-in t [:inspected-authored :job]) (next-job! ctx :implement))
             _ (transition! ctx key :implementing)
-            output (codex/job! ctx job (:worktree t) :write
+            output (if inspected? (get-in @(:state ctx) [:jobs job :output])
+                     (codex/job! ctx job (:worktree t) :write
                                (str (worker-instructions ctx)
                                     " Verification is controller-owned: do not execute test/build/check commands or Git. "
+                                    "Ready means authored and ready for controller checking, not that checks passed. "
+                                    "Unrun controller checks alone are not a restriction; identify the exact refused action when reporting restricted. "
                                     "Propose permitted Clojure argument vectors instead. Refusals quoted in repair feedback remain prohibited, "
                                     "even after code changes or in a different sandbox; report restricted instead of retrying them.")
                                (str "Implement this finding in the current worktree. Do not commit.\n"
                                     (pr-str (select-keys t [:key :task :task-path :title :evidence :proposal :preserve :paths :feedback]))
                                     "\nOnly edit owned paths. Add meaningful positive/negative fixtures where required. "
                                     "Return specific Clojure check argument vectors, and report missing authority or semantic ambiguity explicitly.")
-                               schema/implementation)
+                               schema/implementation))
             checking? (atom false)]
         (try
-          (when (or (= "restricted" (:outcome output))
-                    (and (not= "ready" (:outcome output)) (not (get-in ctx [:config :early-draft]))))
+          (when (and (not inspected?)
+                     (or (= "restricted" (:outcome output))
+                         (and (not= "ready" (:outcome output)) (not (get-in ctx [:config :early-draft])))))
             (rt/fail! "Implementation requires attention" {:output output :restricted (= "restricted" (:outcome output))}))
+          (when inspected? (rt/update! ctx assoc-in [:tasks key :inspected-authored :stage] :continuing))
           (assert-identity! ctx t)
           (let [paths (changed-paths ctx (:worktree t))]
             (when (empty? paths) (rt/fail! "Implementation made no progress" {:finding key}))
@@ -242,8 +280,13 @@
             (rt/git ctx (:worktree t) "commit" "-m" (:title t)))
           (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
                  :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation-job job)
+          (when inspected?
+            ;; Preserve the inspected authored patch before importing newer Main.
+            ;; Existing clean-base, dependency and source-task guards then apply.
+            (prepare-base! ctx (task ctx key))
+            (when-let [validate (:before-implement ctx)] (validate ctx (task ctx key))))
           (when (get-in ctx [:config :early-draft]) (publish! ctx (task ctx key)))
-          (when-not (= "ready" (:outcome output))
+          (when (and (not inspected?) (not= "ready" (:outcome output)))
             (rt/fail! "Implementation requires attention" {:output output :restricted (= "restricted" (:outcome output))}))
           (rt/lease-phase! ctx lease :checking)
           (reset! checking? true)
