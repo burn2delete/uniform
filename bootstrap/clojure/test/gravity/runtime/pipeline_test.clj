@@ -95,12 +95,23 @@
                           :runtime-artifact-source-path (:path @runtime-plan))
         invoke (fn [callee args]
                  (b/p15-s23-stage2-runtime-artifact-invoke ctx callee args))
-        values [0 1 2 3 4 5 6 7 8 9 10 11 99 100 101
-                -1 -9 -10 -11 -99 -100 -101 Long/MIN_VALUE Long/MAX_VALUE
-                9223372036854775808N -9223372036854775809N]
-        expected (mapv str values)
+        values (vec (concat
+                     (range -9 10)
+                     (for [exponent (concat (range 1 20) [40 100])
+                           delta [-1 0 1]
+                           sign [-1 1]]
+                       (*' sign (+' (reduce *' 1 (repeat exponent 10)) delta)))
+                     [Long/MIN_VALUE Long/MAX_VALUE
+                      9223372036854775808N -9223372036854775809N
+                      (biginteger "12003004005006007008009000123456789")
+                      (biginteger "-9876543210012345678900987654321")]))
+        ;; The oracle uses the JDK's decimal conversion, not the algorithm or
+        ;; digit table in the Uniform module. Both Long and big carriers occur.
+        expected (mapv #(.toString (biginteger %)) values)
         host-str runtime/hosted-str
         numeric-calls (atom 0)]
+    (is (= (str "sha256:" (b/sha256-hex (slurp (:path @runtime-plan) :encoding "UTF-8")))
+           (get-in @runtime-plan [:plan :source :sha256])))
     ;; Compile before interposition; exercise the current source plan. The
     ;; seed formatting seam may still concatenate strings and render other
     ;; families, but any numeric conversion fails rather than supplying text.
@@ -125,16 +136,103 @@
 (deftest integer-decimal-internal-formatter-rejects-nonintegers-and-wrong-arity
   (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
                           :runtime-artifact-source-path (:path @runtime-plan))
+        renderings (atom 0)
+        hostile (reify Object
+                  (toString [_]
+                    (swap! renderings inc)
+                    (throw (ex-info "payload rendering forbidden" {}))))
         invoke (fn [args]
                  (b/p15-s23-stage2-runtime-artifact-invoke
                   ctx 'p15-s23-runtime-integer-decimal-text args))]
-    (doseq [value [nil false "10" :ten 1/2 1.0M]]
-      (is (= {:diagnostic "P15S23X002" :reason :integer-decimal-value-required}
-             (:payload (diagnostic #(invoke [value]))))))
-    (doseq [args [[] [1 2]]]
-      (let [error (diagnostic #(invoke args))]
-        (is (= "P15S23X002" (:id error)))
-        (is (= :runtime-artifact-function-arity (:missing-fact error)))))))
+    (with-redefs [runtime/hosted-str
+                  (fn [_] (throw (ex-info "formatter must reject without conversion" {})))]
+      (doseq [value [nil false "10" :ten 'ten \1 [] {} 1/2 1.0M 1.0 hostile]]
+        (is (= {:diagnostic "P15S23X002" :reason :integer-decimal-value-required}
+               (:payload (diagnostic #(invoke [value]))))))
+      (doseq [args [[] [hostile hostile]]]
+        (let [error (diagnostic #(invoke args))]
+          (is (= "P15S23X002" (:id error)))
+          (is (= :runtime-artifact-function-arity (:missing-fact error))))))
+    (is (zero? @renderings))))
+
+(deftest integer-decimal-evaluator-callers-preserve-arguments-output-and-control
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        evaluate (fn [instruction]
+                   (b/p15-s23-stage2-runtime-artifact-invoke
+                    ctx 'p15-s23-runtime-evaluate-closed-instruction
+                    [instruction {} "prior: "]))
+        literal (fn [value] {:op :literal :value value})
+        string-call (fn [args] {:op :builtin-call :function 'str :args args})
+        line (fn [args] {:op :println :args args
+                        :effect :io/write :capability :io/stdout})
+        operand (fn [marker value]
+                  {:op :do :body [(line [(literal marker)]) (literal value)]})
+        host-str runtime/hosted-str
+        numeric-calls (atom 0)]
+    (with-redefs [runtime/hosted-str
+                  (fn [args]
+                    (when (some number? args)
+                      (swap! numeric-calls inc)
+                      (throw (ex-info "host numeric formatting disabled" {})))
+                    (host-str args))]
+      (doseq [[args text] [[[0] "0"] [[-7] "-7"] [[10 -20] "10-20"]
+                          [["x" Long/MAX_VALUE] "x9223372036854775807"]
+                          [[9223372036854775808N :tag] "9223372036854775808:tag"]]]
+        (is (= [text "prior: " :normal]
+               (evaluate (string-call (mapv literal args))))))
+      (doseq [[args text] [[[] "\n"] [[0] "0\n"]
+                          [[-10 100] "-10 100\n"]
+                          [[Long/MIN_VALUE "tag" nil false :ok 10]
+                           "-9223372036854775808 tag  false :ok 10\n"]]]
+        (is (= [nil (str "prior: " text) :normal]
+               (evaluate (line (mapv literal args))))))
+      ;; Markers expose left-to-right, once-only argument evaluation before
+      ;; either caller publishes its result or its final output line.
+      (is (= ["12-34" "prior: left\nright\n" :normal]
+             (evaluate (string-call [(operand "left" 12) (operand "right" -34)]))))
+      (is (= [nil "prior: left\nright\n12 -34\n" :normal]
+             (evaluate (line [(operand "left" 12) (operand "right" -34)]))))
+      (doseq [call [string-call line]
+              [failure value control]
+              [[{:op :throw :value (literal :stopped)} :stopped :thrown]
+               [{:op :local :name 'missing}
+                {:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction
+                 :operation :local} :rejected]]]
+        (is (= [value "prior: " control]
+               (evaluate (call [failure (operand "never" 99)]))))
+        (is (= [value "prior: first\n" control]
+               (evaluate (call [(operand "first" 12) failure]))))))
+    (is (zero? @numeric-calls))))
+
+(deftest integer-decimal-callers-retain-noninteger-formatting-and-invalid-instructions
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        evaluate (fn [instruction]
+                   (b/p15-s23-stage2-runtime-artifact-invoke
+                    ctx 'p15-s23-runtime-evaluate-closed-instruction
+                    [instruction {} "prior: "]))
+        literal (fn [value] {:op :literal :value value})
+        values [nil false true "" "x" :tag 'symbol \z 1/2 1.0M 2.5 [1 2] {:a 3}]
+        expected (mapv str values)]
+    (doseq [[value text] (map vector values expected)]
+      (is (= [text "prior: " :normal]
+             (evaluate {:op :builtin-call :function 'str :args [(literal value)]})))
+      (is (= [(str "prefix" text) "prior: " :normal]
+             (evaluate {:op :builtin-call :function 'str
+                        :args [(literal "prefix") (literal value)]}))))
+    (is (= [nil (str "prior: " (apply str (interpose " " expected)) "\n") :normal]
+           (evaluate {:op :println :args (mapv literal values)
+                      :effect :io/write :capability :io/stdout})))
+    (doseq [instruction [{:op :builtin-call :function 'str :args []}
+                         {:op :builtin-call :function 'str :args (mapv literal [1 2 3])}
+                         {:op :builtin-call :function 'str :args nil}
+                         {:op :println :args [] :effect :io/write}
+                         {:op :println :args [] :effect :io/write :capability :wrong}
+                         {:op :println :args nil :effect :io/write :capability :io/stdout}]]
+      (is (= [{:diagnostic "P15S23X002" :reason :invalid-local-runtime-instruction
+               :operation (:op instruction)} "prior: " :rejected]
+             (evaluate instruction))))))
 
 (defn- scope-operations [events selected registered? module?]
   ;; Mocked control flow only. These functions are not native scope holders or
