@@ -194,6 +194,18 @@ Each `:verified-source-dependencies` entry contains `:owner-state-file`,
 the merge must advance the retained base and be an ancestor of fresh main, with
 matching Git tree and at least one changed dependency path outside the author's
 scope. This records an observed dependency, not new ownership of its files.
+Actual Git parents must match the recorded merge or squash intent, and the
+candidate tree must match the value integrated on Main. Each entry also binds
+`:source-phase`: the original Source `:owner-state-file`, `:lease-id`,
+`:lease-token`, `:paths`, current accepted `:candidate` and `:tree`, explicit
+`:writer-ended?` and `:no-unresolved-authority` findings, and immutable
+`:release-evidence` and `:acceptance-evidence` references (`:path`, `:sha256`).
+The original release record must retain the same lease identity and paths.
+Current relevant writer rows and refusals for that exact Source owner still
+block recovery. A Main publisher is not substituted for the Source author;
+unrelated historical owner identities remain separate held evidence. A later
+unchanged published-Main import may use an authenticated evidence join without
+inventing a new lease or rewriting the original release or acceptance records.
 
 `:preserved-failed-actions` is the exact ordered vector of completed exit-one
 semantic checks, each with `:id`, `:command`, `:exit` and `:output-sha256`.

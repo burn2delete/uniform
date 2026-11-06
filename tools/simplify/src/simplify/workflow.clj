@@ -152,7 +152,7 @@
       result)))
 
 (defn changed-paths [ctx cwd]
-  (vec (distinct (remove str/blank?
+  (vec (distinct (remove empty?
                          (str/split (apply str (map (fn [argv]
                                                                   (let [result (rt/command ctx cwd argv)]
                                                                     (when-not (zero? (:exit result)) (rt/fail! "Cannot inspect candidate paths" result))

@@ -177,6 +177,18 @@
                         :base base :candidate candidate :tree tree :method :merge}
                :actual {:commit merge :main merge :tree tree :parents [base candidate]}}
         _ (rt/coordinate! ctx (fn [state] [(update state :history conj entry) nil]))
+        source-owner (rt/canonical (io/file (:state-dir ctx) "original-dependency-source.edn"))
+        source-lease {:id "fixture-source-phase" :token "fixture-original-token"
+                      :state-file source-owner :paths [dependency-path]}
+        release-file (str (io/file (:state-dir ctx) "dependency-source-release.edn"))
+        acceptance-file (str (io/file (:state-dir ctx) "dependency-source-acceptance.edn"))
+        _ (rt/write-edn! release-file {:lease source-lease :released true :checks-ended true})
+        _ (rt/write-edn! acceptance-file {:candidate candidate :tree tree :disposition :accepted-scoped-source})
+        source-phase {:owner-state-file source-owner :lease-id (:id source-lease) :lease-token (:token source-lease)
+                      :paths [dependency-path] :candidate candidate :tree tree
+                      :writer-ended? true :no-unresolved-authority true
+                      :release-evidence {:path release-file :sha256 (recovery/file-digest release-file)}
+                      :acceptance-evidence {:path acceptance-file :sha256 (recovery/file-digest acceptance-file)}}
         output (assoc output :outcome "needs_input" :summary "External semantic source dependency is missing")
         error {:message "Implementation requires attention" :details {:restricted false :output output :writer-ended? true}}
         _ (rt/update! ctx assoc-in [:jobs "implement-1" :output] output)
@@ -199,7 +211,7 @@
                            :verified-source-dependencies
                            [{:owner-state-file "fixture-original-owner/state.edn" :intent-id "fixture-dependency"
                              :commit merge :candidate candidate :tree tree :history-sha256 (rt/digest (pr-str entry))
-                             :source-paths [dependency-path]}])
+                             :source-paths [dependency-path] :source-phase source-phase}])
                     (assoc-in [:operator-classification :kind] :verified-external-source-dependency)
                     (assoc-in [:operator-classification :phase] :source-development-current)
                     (assoc-in [:operator-classification :original-output-sha256] (rt/digest (pr-str output)))
@@ -207,6 +219,7 @@
                     (assoc-in [:authored-files "work.edn" :executable] false))]
     (rt/write-edn! evidence receipt)
     {:ctx ctx :repo repo :dependency-worktree dependency :dependency-path dependency-path :evidence evidence :merge merge
+     :source-phase source-phase :source-lease source-lease
      :error error :output output :receipt receipt}))
 
 (deftest resolved-dependency-commits-retained-work-and-composes-verified-main-without-reauthoring
@@ -215,6 +228,8 @@
   (let [{:keys [ctx repo dependency-worktree dependency-path evidence merge error output]} (dependency-fixture! options)
         stages (atom [])
         job (get-in @(:state ctx) [:jobs "implement-1"])]
+    (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :commands "unrelated-historical-owner"]
+                                         {:state-file "another-original-source-owner.edn" :message "Historical refusal stays held"}) nil]))
     (flow/recover-dependency! ctx "authored" evidence)
     (is (= :inspected-source-dependency-resolution (get-in (flow/task ctx "authored") [:inspected-authored :kind])))
     (is (= error (:error (flow/task ctx "authored"))))
@@ -250,13 +265,34 @@
 (deftest source-dependency-recovery-cannot-bypass-real-refusals-or-stale-evidence
   (doseq [mutation [:real-restriction :unresolved-semantics :no-dependency :forged-history :false-source
                     :stale-file :file-mode :unproven-source :unknown-failure :unfinished-action :refusal-action
-                    :own-main-pending :watchdog-failure :xcrun-refusal :failed-refusal]]
-    (let [{:keys [ctx repo evidence receipt]} (dependency-fixture!)]
+                    :own-main-pending :watchdog-failure :xcrun-refusal :failed-refusal
+                    :forged-parentage :wrong-candidate :live-dependency-writer :dependency-refusal
+                    :stale-source-release :wrong-source-phase]]
+    (let [{:keys [ctx repo evidence receipt source-phase source-lease]} (dependency-fixture!)]
       (case mutation
         :real-restriction (flow/task! ctx "authored" :error {:message "Actual denied action" :details {:restricted true}})
         :unresolved-semantics (rt/write-edn! evidence (assoc-in receipt [:operator-classification :no-unresolved-semantics] false))
         :no-dependency (rt/write-edn! evidence (assoc receipt :verified-source-dependencies []))
         :forged-history (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :history-sha256] "forged"))
+        :live-dependency-writer (rt/coordinate! ctx (fn [s] [(assoc-in s [:writers (:id source-lease)]
+                                                                 (assoc source-lease :status :needs-inspection)) nil]))
+        :dependency-refusal (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :commands "source-refusal"]
+                                                              {:state-file (:owner-state-file source-phase)
+                                                               :message "Original source refusal remains"}) nil]))
+        :stale-source-release (spit (get-in source-phase [:release-evidence :path]) "{:changed true}\n")
+        :wrong-source-phase (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :source-phase :lease-token] "foreign-token"))
+        :forged-parentage (let [entry (last (:history (rt/coordinate! ctx (fn [s] [s s]))))
+                               changed (assoc-in entry [:actual :parents] [(:base (flow/task ctx "authored"))])]
+                           (rt/coordinate! ctx (fn [s] [(update s :history #(conj (vec (butlast %)) changed)) nil]))
+                           (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :history-sha256]
+                                                            (rt/digest (pr-str changed)))))
+        :wrong-candidate (let [entry (last (:history (rt/coordinate! ctx (fn [s] [s s]))))
+                              changed (assoc-in entry [:intent :candidate] (get-in entry [:actual :commit]))]
+                          (rt/coordinate! ctx (fn [s] [(update s :history #(conj (vec (butlast %)) changed)) nil]))
+                          (rt/write-edn! evidence (-> receipt
+                                                     (assoc-in [:verified-source-dependencies 0 :candidate] (get-in changed [:intent :candidate]))
+                                                     (assoc-in [:verified-source-dependencies 0 :source-phase :candidate] (get-in changed [:intent :candidate]))
+                                                     (assoc-in [:verified-source-dependencies 0 :history-sha256] (rt/digest (pr-str changed))))))
         :false-source (rt/write-edn! evidence (assoc-in receipt [:verified-source-dependencies 0 :source-paths] ["work.edn"]))
         :stale-file (spit (io/file repo "work.edn") "{:stale true}\n")
         :file-mode (.setExecutable (io/file repo "work.edn") true)
@@ -287,3 +323,12 @@
                                                           :output-sha256 (rt/digest output)}]))))
       (is (thrown? Exception (flow/recover-dependency! ctx "authored" evidence)) (name mutation))
       (is (= :attention (:status (flow/task ctx "authored")))))))
+
+(deftest raw-path-collectors-retain-disallowed-whitespace-only-paths-for-rejection
+  (let [{:keys [ctx repo evidence]} (dependency-fixture!)
+        path " \n "]
+    (spit (io/file repo path) "not an owned path\n")
+    (is (some #{path} (flow/changed-paths ctx repo)))
+    (is (some #{path} (recovery/changes ctx repo)))
+    (is (thrown? Exception (flow/recover-dependency! ctx "authored" evidence)))
+    (is (= :attention (:status (flow/task ctx "authored"))))))

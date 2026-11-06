@@ -30,7 +30,7 @@
 
 (defn changes [ctx cwd]
   (vec (distinct
-        (remove str/blank?
+        (remove empty?
                 (str/split
                  (apply str
                         (for [argv [["git" "diff" "--name-only" "--no-renames" "-z" "HEAD" "--"]
@@ -132,19 +132,53 @@
              :completed-action-count (count actions) :job-evidence-sha256 (rt/digest (pr-str job-events))}
       (some? preserved-failures) (assoc :preserved-semantic-nonpasses preserved-failures)))))
 
+(defn- referenced-evidence! [{:keys [path sha256]}]
+  (require! (and (string? path) (.isFile (io/file path))
+                 (= sha256 (file-digest path))) "Dependency source evidence is missing or changed")
+  (rt/read-edn path))
+
+(defn- ended-source-phase! [shared candidate tree source-paths phase]
+  (let [{:keys [owner-state-file lease-id lease-token paths]} phase
+        release (referenced-evidence! (:release-evidence phase))
+        lease (or (:lease release) release)]
+    (referenced-evidence! (:acceptance-evidence phase))
+    (require! (and (string? owner-state-file) (= owner-state-file (rt/canonical owner-state-file))
+                   (string? lease-id) (not (str/blank? lease-id))
+                   (string? lease-token) (not (str/blank? lease-token))
+                   (= candidate (:candidate phase)) (= tree (:tree phase))
+                   (true? (:writer-ended? phase)) (true? (:no-unresolved-authority phase))
+                   (seq paths) (every? string? paths)
+                   (every? (fn [p] (some #(rt/covers? % p) paths)) source-paths)
+                   (= owner-state-file (:state-file lease)) (= lease-token (:token lease))
+                   (= (set paths) (set (:paths lease)))
+                   (= lease-id (or (:id lease) (pr-str [(:state-dir lease) (:key lease)])))
+                   (or (true? (:released release)) (true? (:row-absent release))
+                       (true? (get-in release [:result :row-absent]))))
+              "Dependency is not bound to its genuine ended source phase")
+    ;; A Main publisher's identity is not the dependency's Source author.
+    ;; Scope these guards to that exact Source phase, preserving unrelated holds.
+    (require! (not-any? #(or (= lease-token (:token %))
+                             (and (= owner-state-file (:state-file %))
+                                  (rt/overlap? paths (:paths %)))) (vals (:writers shared)))
+              "The dependency source phase still has a writer requiring inspection")
+    (require! (not-any? #(= owner-state-file (:state-file %))
+                        (mapcat vals (vals (:restrictions shared))))
+              "The dependency source owner retains an unresolved refusal")))
+
 (defn verified-dependencies! [ctx task receipt]
   (let [dependencies (:verified-source-dependencies receipt)
         _ (require! (seq dependencies) "An actual verified external source merge is required")
-        shared (rt/coordinate! ctx (fn [state] [state (select-keys state [:history :main-effects])]))
+        shared (rt/coordinate! ctx (fn [state] [state (select-keys state [:history :main-effects :writers :restrictions])]))
         _ (require! (not-any? #(= (:state-file ctx) (:state-file %)) (vals (:main-effects shared)))
                     "The original controller has an unresolved Main operation")
         history (:history shared)
         main (rt/fresh-main! ctx)
         repo (get-in ctx [:config :repo-dir])]
-    (doseq [{:keys [owner-state-file intent-id commit candidate tree history-sha256 source-paths]} dependencies]
+    (doseq [{:keys [owner-state-file intent-id commit candidate tree history-sha256 source-paths source-phase]} dependencies]
       (require! (and (string? owner-state-file) (string? intent-id)
                      (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [commit candidate tree])
                      (seq source-paths) (every? string? source-paths)) "Dependency merge identity is incomplete")
+      (ended-source-phase! shared candidate tree source-paths source-phase)
       (let [entry (some #(when (and (= :main-verified (:kind %))
                                     (= owner-state-file (get-in % [:intent :state-file]))
                                     (= intent-id (get-in % [:intent :id]))
@@ -152,11 +186,24 @@
                                     (= candidate (get-in % [:intent :candidate]))
                                     (= tree (get-in % [:intent :tree]) (get-in % [:actual :tree]))) %) history)]
         (require! (and entry (= history-sha256 (rt/digest (pr-str entry)))) "Dependency has no matching verified Main history")
+        (let [intent (:intent entry) actual (:actual entry)
+              expected-parents (case (:method intent)
+                                 :merge [(:base intent) candidate]
+                                 :squash [(:base intent)]
+                                 nil)
+              parents (str/split (rt/git ctx repo "show" "-s" "--format=%P" commit) #" ")]
+          (require! (and expected-parents (= expected-parents (:parents actual) parents)
+                         (= tree (rt/git ctx repo "rev-parse" (str candidate "^{tree}"))))
+                    "Dependency commit does not integrate the exact source candidate")
+          (require! (and (string? (:main actual)) (re-matches #"[0-9a-f]{40}" (:main actual)))
+                    "Dependency Main identity is incomplete")
+          (rt/git ctx repo "merge-base" "--is-ancestor" commit (:main actual))
+          (rt/git ctx repo "merge-base" "--is-ancestor" (:main actual) main))
         (require! (= tree (rt/git ctx repo "rev-parse" (str commit "^{tree}"))) "Dependency Git tree differs")
         (rt/git ctx repo "merge-base" "--is-ancestor" commit main)
         (require! (not= commit (:base task)) "Dependency does not advance the retained source base")
         (rt/git ctx repo "merge-base" "--is-ancestor" (:base task) commit)
-        (let [changed (set (remove str/blank?
+        (let [changed (set (remove empty?
                                    (str/split (path-output! ctx repo ["git" "diff" "--name-only" "--no-renames" "-z"
                                                                      (get-in entry [:intent :base]) candidate "--"]) #"\u0000")))]
           (doseq [path source-paths]
