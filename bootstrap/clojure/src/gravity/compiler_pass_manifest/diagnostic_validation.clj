@@ -5,6 +5,10 @@
             [gravity.compiler-pass-manifest.failures :as failures]
             [gravity.compiler-pass-manifest.support :as support]))
 
+(def ^:private canonical-severities
+  (set (:supported-severities
+        diagnostic-data/compiler-pass-default-diagnostic-schema)))
+
 (defn compiler-pass-validate-diagnostics!
   [source-path manifest suite]
   (let [schema (:diagnostic-schema suite)
@@ -22,7 +26,19 @@
       (failures/compiler-pass-fail! "C15-ID" source-path manifest
                            {:stage :diagnostic-catalog}
                            {:remediation "Diagnostic ids must remain unique and stable across wording changes."})))
-  (doseq [diagnostic (:diagnostic-fixtures suite)]
+  (doseq [[fixture-index diagnostic] (map-indexed vector (:diagnostic-fixtures suite))]
+    (when-not (contains? canonical-severities (:severity diagnostic))
+      (failures/compiler-pass-fail! "C15-SCHEMA" source-path manifest diagnostic
+                           {:schema-field :severity
+                            :reason (if (contains? diagnostic :severity)
+                                      :invalid-severity
+                                      :missing-severity)
+                            :fixture-index fixture-index
+                            :offending-diagnostic-id (:diagnostic-id diagnostic)
+                            :artifact-id (or (:artifact-id diagnostic)
+                                             (:artifact diagnostic)
+                                             (get-in diagnostic [:primary :artifact]))
+                            :remediation "Diagnostic fixture severity must be one of the canonical C15 severities."}))
     (when-not (support/present? (get-in diagnostic [:primary :span]))
       (failures/compiler-pass-fail! "C15-SPAN" source-path manifest diagnostic
                            {:schema-field :primary
