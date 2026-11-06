@@ -188,7 +188,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "reader-dispatch"
+ [{:test-id "effects-native-checks"
+   :path "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"
+   :namespace gravity.effects.pipeline-test
+   :jvm-group "effects-native-checks"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "reader-dispatch"
    :path "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
    :namespace gravity.reader.dispatch-test
    :jvm-group "reader-dispatch"

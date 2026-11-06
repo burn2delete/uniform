@@ -52,6 +52,20 @@ only after its callers and evidence move to the stage API.
 
 ## Boundary and interface assignments
 
+The [native Effects checks](effects-native-checks-evidence.md) add five APIs:
+`native-handled-effect?`, `check-native-registry!`,
+`check-native-build-effects!`, `check-native-replay-effects!` and
+`check-native-effect-legality!`. They consume caller-owned checker/context
+cells, source nodes, inferred effects/options and live native operations, and
+return original predicates/owner values, checker records or L6 refusals.
+Bootstrap retains capabilities/providers, type/body inference, authentication,
+scoped authority, actual build/replay execution and diagnostic publication.
+`gravity.effects.pipeline-test` covers real typed artifact emission and L6
+refusals, paired source/C identity, rule ordering, metadata and late ports;
+`gravity.c8-effect-checker-test` preserves the separate cold data/report API.
+Native metadata checks do not attest the fixed-seed executable plan's missing
+IO inference or satisfy canonical L6/L12 hermetic/scoped authority premises.
+
 The [C runtime-plan extraction](c-runtime-validation-evidence.md) adds the
 internal `gravity.backend.c/validate-runtime-plan!` API over caller-owned native
 plans and explicit live recognizer/refusal/catalog operations. It owns the

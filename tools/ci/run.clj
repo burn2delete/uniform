@@ -577,7 +577,9 @@
    ["c-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.c.pipeline-test")]
    ["runtime-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.pipeline-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.pipeline-test")]
+   ["effects-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)

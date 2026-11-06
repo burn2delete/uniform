@@ -61,3 +61,60 @@ coverage does not itself prove typed requests/responses, continuations or
 capability authority. No private C6/C11, default frozen Reader, full H6,
 source proof, native toolchain, live provider, broker/controller, release,
 migration, self-hosting or seed-retirement authority is exercised or claimed.
+
+## Implemented extraction and evidence
+
+Five new native APIs now own the four original helper bodies and the effect
+prefix. Twelve explicit function/catalog ports preserve live per-use Var
+selection; one private selector imports no Bootstrap. Public APIs increase
+from 25 to 30. Existing data/report APIs retain their metadata. New check APIs
+are explicitly native premise checks, not data-only builders or canonical
+legality/proof/authority APIs. Bootstrap keeps both combined-checker arities,
+handled-capability? and every capability/provider decision byte-for-byte.
+
+Independent reconstruction recovers the four native bodies, complete effect
+prefix, entire prior stage bytes and all compatibility call/Var maps. The
+original nine CI commands/selectors remain byte-identical; one complete Effects
+namespace is appended at the existing 2g/180-second native-test policy.
+Coverage controls reject namespace omission/substitution. The workflow is
+unchanged. A fresh three-path claim preceded the explicit Bootstrap stage
+require and standalone test registration in both existing maps. The existing
+effects-graph-data production helper remains unique and cold; no project/cold
+scope gains a Bootstrap-backed test. Final scope is eleven paths, covered by
+the original eight-path claim plus that registration claim.
+
+The original cold C8 baseline passes 23 tests / 511 assertions. Expanded cold
+controls pass 23 / 551 and still assert Bootstrap is absent. Complete native
+Effects passes 10 / 124 under the unchanged child policy. It emits actual
+Stage0 typed-core, build/replay/handler and MIR-effect records from the accepted
+effect-system fixture, and rejects five real typed L6 fixtures. Paired actual
+Hello sources retain semantic plan ids and deterministic emitted C text.
+Controls also cover ordered logs, node/source metadata, handled-effect/profile/
+capability separation, exact owner returns/errors, late function/data Vars and
+diagnostic callable selection before options lookup. CI harness passes
+54 / 573; boundary/ownership passes 48 / 1202. Direct lint, both document
+validators and diff checks pass.
+
+The first native run had two failed assertions because the fixed-seed
+executable plan reports an empty inferred effect set for Hello. Its summary
+does not establish effect legality. The corrected test uses the actual typed
+core's :io/write facts and additionally rejects their use under an undeclared
+effect context. It preserves and records the seed plan summary without using
+it as an effect premise. No inference implementation or source pin is changed;
+the two-failure log remains NONPASS. Full seed-plan effect inference remains
+unsupported by this slice.
+
+All six immutable original component functions at
+bc6171b99326cff4a30275600624698b8880612b are rebound together for the
+old/new comparison. All 25 complete raw and parsed outcomes match: nineteen
+native cases and six actual typed-source artifact/refusal cases, eleven
+returns and fourteen refusals. Checker logs, source spans, unsafe/check/human-
+review metadata, context/node inputs and returning-diagnostic behavior remain
+intact. Capture SHA256:
+67950bbe66cb4be58cfcb2fe4b711d6498eb8f2f74a8daeb64bf299d68656ef3.
+No actual build/provider effect, private source factory or replay is executed.
+
+Complete current-Main contextual lint, independent semantic/adversarial review,
+own hosted CI/artifact audit and exact coordinator integration remain separate
+requirements. Local tests and legacy complete/granted/recorded labels confer
+no admission, release or self-hosting credit.
