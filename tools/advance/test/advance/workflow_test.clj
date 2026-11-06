@@ -23,6 +23,80 @@
 (def source-path "specs/demo/tasks.md")
 (def source-key (str source-path "#demo/value"))
 
+(deftest provider-context-is-lossless-without-repeating-navigation-metadata
+  (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
+        files [{:filename "renamed\nsource.clj" :previous_filename "old source.clj" :status "renamed"}]
+        ref {:ref "topic" :sha "candidate" :label "fixture:topic"
+             :repo {:id 17 :full_name "fixture/repo" :html_url "https://example.invalid/repo"
+                    :fork false :default_branch "main" :description "Provider navigation"}
+             :user {:id 8 :login "fixture" :html_url "https://example.invalid/user" :type "User" :avatar_url "unused"}}
+        pulls [{:number 42 :title "Independent candidate" :body "Complete body and acceptance details"
+                :draft true :html_url "https://example.invalid/pr/42" :head ref :base (assoc ref :ref "main")}
+               {:number 43 :title "Deleted fork" :body nil :draft false :head nil :base nil}]
+        requests (atom [])
+        presented (with-redefs [gh/pages (fn [_ endpoint] (swap! requests conj endpoint) files)]
+                    (project/candidate-files ctx pulls))
+        reference (:raw-provider-context (first presented))
+        raw (rt/read-edn (:path reference))]
+    (is (= 2 (count @requests) (count presented)))
+    (is (= (mapv #(assoc % :files files) pulls) raw))
+    (is (= (:sha256 reference) (rt/digest (slurp (:path reference)))))
+    (is (every? #(= reference (:raw-provider-context %)) presented))
+    (is (= (mapv #(select-keys % [:number :title :body :draft :html_url :files]) raw)
+           (mapv #(select-keys % [:number :title :body :draft :html_url :files]) presented)))
+    (doseq [side [:head :base]]
+      (is (= (select-keys (side (first raw)) [:ref :sha :label])
+             (select-keys (side (first presented)) [:ref :sha :label])))
+      (is (= (get-in raw [0 side :repo :id]) (get-in presented [0 side :repo :id])))
+      (is (= (get-in raw [0 side :repo :full_name]) (get-in presented [0 side :repo :full_name])))
+      (is (= (get-in raw [0 side :user :login]) (get-in presented [0 side :user :login]))))
+    (is (nil? (:head (second presented))))
+    (is (nil? (:base (second presented))))
+    (is (= "Provider navigation" (get-in raw [0 :head :repo :description])))
+    (is (nil? (get-in presented [0 :head :repo :description])))))
+
+(deftest selector-reaches-the-api-with-complete-scope-and-external-message-sized-input
+  (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
+        provider-limit 1048576 ; Actual observed app-server message boundary, not a task allowance.
+        large-navigation (apply str (repeat 600000 "n"))
+        ref {:ref "topic" :sha "candidate" :label "fixture:topic"
+             :repo {:id 1 :full_name "fixture/repo" :description large-navigation}}
+        pull {:number 42 :title "Independent work" :body "Full candidate body" :draft true
+              :head ref :base (assoc ref :ref "main")}
+        catalog {:tasks [{:key source-key :path source-path :title "First"}
+                         {:key "specs/other/tasks.md#other/task" :path "specs/other/tasks.md" :title "Second"}]}
+        output {:summary "Both tasks remain current; no increment admitted by this fixture"
+                :coverage [source-path "specs/other/tasks.md"] :increments [] :blockers []}
+        messages (atom [])]
+    (is (> (count (pr-str pull)) provider-limit))
+    ;; Exercise the real model-job request/parser/validator. Only transport is
+    ;; synthetic; no server, model, Git, tests or network action is launched.
+    (with-redefs [gh/pages (fn [& _] [{:filename "scope.clj" :status "modified"}])
+                  coordination/claims (fn [_] [])
+                  codex/open! (fn [c job _] {:ctx c :job job :active-items (atom {})})
+                  codex/close! (fn [& _] nil)
+                  codex/send! (fn [& _] nil)
+                  codex/request! (fn [_ method params]
+                                   (case method
+                                     "initialize" {}
+                                     "thread/start" {:thread {:id "fixture-thread"} :model "fixture-no-inference"}
+                                     "turn/start" (let [text (get-in params [:input 0 :text])]
+                                                    (swap! messages conj text)
+                                                    (when (> (count text) provider-limit)
+                                                      (throw (ex-info "Input exceeds the maximum length" {:input_error_code "input_too_large"})))
+                                                    {:turn {:id "fixture-turn"}})))
+                  codex/await-turn! (fn [& _] (json/write-str output))
+                  gh/comment! (fn [& _] nil)
+                  workflow/admit! (fn [_ _ all increments]
+                                    (is (= catalog all)) (is (empty? increments)))]
+      (is (= output (workflow/select! ctx {:base "base" :tree "tree" :worktree (:state-dir ctx) :catalog catalog} {} [pull]))))
+    (is (= 1 (count @messages)))
+    (is (str/includes? (first @messages) source-key))
+    (is (str/includes? (first @messages) "specs/other/tasks.md#other/task"))
+    (is (str/includes? (first @messages) "Full candidate body"))
+    (is (str/includes? (first @messages) "raw-provider-context"))
+    (is (= :completed (get-in @(:state ctx) [:jobs "select-1" :status])))))
+
 (deftest blocker-schema-uses-only-the-current-catalog
   (let [output {:summary "Environment notes stay here" :coverage [] :increments []
                 :blockers [{:task source-key :reason "Needs remaining implementation"}]}
