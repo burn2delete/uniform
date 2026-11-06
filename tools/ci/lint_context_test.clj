@@ -95,6 +95,19 @@
                                              [fragment]
                                              (context/sha256 (context/local-bytes! context/loader)))))))))
 
+(deftest companion-load-manifests-select-context-without-becoming-source-fragments
+  (let [loader-sha (context/sha256 (get bootstrap-current context/loader))
+        read-bytes (reader-for bootstrap-current)]
+    (doseq [manifest [context/semantic-mid-manifest context/semantic-late-manifest]]
+      (let [plan (context/selected-plan! read-bytes [manifest] loader-sha)]
+        (is (context/whole-context-path? manifest))
+        (is (= [context/bootstrap old-path new-path] (:paths plan)))
+        (is (not (contains? (:namespace-by-path plan) manifest)))))
+    (doseq [unlisted [(str context/source-root "gravity/bootstrap_impl/unlisted.clj")
+                      (str context/source-root "gravity/bootstrap_impl/unlisted.edn")]]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Changed fragment is absent"
+                            (context/selected-plan! read-bytes [unlisted] loader-sha))))))
+
 (deftest archived-loader-and-prefix-boundaries-fail-closed
   (let [changed-loader (assoc bootstrap-base context/loader (utf8 "(def changed-loader true)\n"))
         loader-error (atom nil)]

@@ -21,6 +21,12 @@
                   :equivalence :self-hosting :release :seed-retirement]
    :compatibility-only? true :override-driven-diagnostics? true
    :ownership-model-complete? false :canonical-c9-authority? false
+   :native-artifact-projection
+   {:namespace 'gravity.ownership :entrypoint 'native-artifact-projection
+    :output :gravity/native-c9-artifact-projection
+    :admission :none :authenticates-inputs? false
+    :source-and-file-entrypoints :unchanged
+    :raw-artifact-publication :existing-source-facade-only}
    :operation-interposition {:accepted-keys operation-keys
                              :unknown-keys-rejected? true :partial-overrides? true
                              :single-binding-per-top-level-call? true}
