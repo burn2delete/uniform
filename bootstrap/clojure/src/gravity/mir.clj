@@ -6,7 +6,11 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {diagnostic-context {:arglists ([safe-scalar checked-core context artifact]) :admission :none
+    {validate-constructed!
+     {:arglists ([owner-operations source-path checked-core mir]) :admission :none
+      :operation-inputs [:validate-carrier! :validate-module-envelope! :validate-fact-tables! :validate-operations! :validate-runtime-checks! :validate-cfg! :validate-effect-edge-placement! :validate-data-flow!]
+      :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     diagnostic-context {:arglists ([safe-scalar checked-core context artifact]) :admission :none
        :native-data-only? true :operation-inputs [:safe-scalar]}
      diagnostic-rule-contract {:arglists ([contracts rule]) :admission :none :native-data-only? true
        :value-inputs [:contracts]}
@@ -94,6 +98,15 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
+    :native-aggregation-contract
+    {:governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
+     :inputs [:native-checked-core :native-mir :source-path :explicit-owner-operations]
+     :outputs [:native-validation-report :owner-refusal]
+     :phase-order [:validate-carrier! :validate-module-envelope! :validate-fact-tables! :validate-operations! :validate-runtime-checks! :validate-cfg! :validate-effect-edge-placement! :validate-data-flow!]
+     :preserves [:callee-before-arguments :phase-order :first-refusal :returning-failures
+                 :borrowed-report-data :input-identity :source-provenance :exception-identity]
+     :test-owner gravity.mir.pipeline-test :source-owner gravity.bootstrap
+     :admission :none :authenticates-inputs? false :issues-verifier-certificates? false}
     :artifact-inputs [:native-diagnostic-context-inputs :explicit-scalar-redaction-operation
                       :native-diagnostic-rule-catalogs-and-records :explicit-diagnostic-message-operations
                       :native-opcode-and-source-operation-vocabularies
@@ -156,6 +169,49 @@
 
 
 
+
+(defn- owner-function
+  "Resolve a supplied Var in operator position; retain other callable values."
+  [operation]
+  (if (var? operation) (deref operation) operation))
+
+(defn validate-constructed!
+  "Sequence native MIR rules and report data; the caller retains admission."
+  [owner-operations source-path checked-core mir]
+  ((owner-function (:validate-carrier! owner-operations))
+   source-path :gravity-c11-builder-result mir)
+  (let [envelope
+        ((owner-function (:validate-module-envelope! owner-operations))
+         source-path checked-core mir)
+        _ ((owner-function (:validate-fact-tables! owner-operations))
+           source-path checked-core mir)
+        operation-products
+        ((owner-function (:validate-operations! owner-operations))
+         source-path checked-core mir)
+        runtime-checks
+        ((owner-function (:validate-runtime-checks! owner-operations))
+         source-path checked-core mir operation-products)
+        cfg ((owner-function (:validate-cfg! owner-operations))
+             source-path checked-core mir envelope operation-products)
+        _ ((owner-function (:validate-effect-edge-placement! owner-operations))
+           source-path mir operation-products)
+        data-flow
+        ((owner-function (:validate-data-flow! owner-operations))
+         source-path checked-core mir operation-products)]
+    {:status :passed
+     :module-shape-valid? true
+     :block-count (count (:blocks operation-products))
+     :operation-count (count (:operations operation-products))
+     :conditional-count (:conditional-count cfg)
+     :dominance-valid? true
+     :type-facts-valid? true
+     :direct-effects-valid? true
+     :safety-facts-valid? true
+     :origin-closure-valid? true
+     :runtime-checks-valid? true
+     :runtime-checks runtime-checks
+     :target-independent? true
+     :data-flow data-flow}))
 
 (defn diagnostic-context
   [safe-scalar checked-core context artifact]

@@ -2,49 +2,11 @@
 
 (defn validate-stage0-compiled-ai-tooling!
   [module ai-tooling-record]
-  (when-not (and (true? (get-in ai-tooling-record
-                                [:patch-artifact :validated]))
-                 (seq (:validation-report ai-tooling-record))
-                 (every? #(= :passed %)
-                         (vals (:validation-report ai-tooling-record))))
-    (compiled-tooling-fail!
-     "T13002" module ai-tooling-record
-     {:missing-fields [:checked-generated-source]})))
+  (gravity.tooling/native-validate-ai-tooling! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module ai-tooling-record))
 
 (defn validate-stage0-compiled-tooling!
   [module]
-  (when (stage0-compiled-tooling-suite-present? module)
-    (let [suite (stage0-compiled-tooling-suite module)]
-      (doseq [cli-command-set (:cli-command-sets suite)]
-        (validate-stage0-compiled-cli! module cli-command-set))
-      (doseq [repl-session (:repl-sessions suite)]
-        (validate-stage0-compiled-repl! module repl-session))
-      (doseq [formatter (:formatters suite)]
-        (validate-stage0-compiled-formatter! module formatter))
-      (doseq [linter (:linters suite)]
-        (validate-stage0-compiled-linter! module linter))
-      (doseq [lsp-session (:lsp-sessions suite)]
-        (validate-stage0-compiled-lsp! module lsp-session))
-      (doseq [debugger-trace (:debugger-traces suite)]
-        (validate-stage0-compiled-debugger! module debugger-trace))
-      (doseq [documentation-artifact (:documentation-artifacts suite)]
-        (validate-stage0-compiled-documentation!
-         module documentation-artifact))
-      (doseq [dev-server-session (:dev-server-sessions suite)]
-        (validate-stage0-compiled-dev-server! module dev-server-session))
-      (doseq [registry-record (:registry-ux-records suite)]
-        (validate-stage0-compiled-registry-ux! module registry-record))
-      (doseq [ir-inspector-bundle (:ir-inspector-bundles suite)]
-        (validate-stage0-compiled-ir-inspector!
-         module ir-inspector-bundle))
-      (doseq [profiler-report (:profiler-reports suite)]
-        (validate-stage0-compiled-profiler! module profiler-report))
-      (doseq [safety-audit-report (:safety-audit-reports suite)]
-        (validate-stage0-compiled-safety-audit!
-         module safety-audit-report))
-      (doseq [ai-tooling-record (:ai-tooling-records suite)]
-        (validate-stage0-compiled-ai-tooling!
-         module ai-tooling-record)))))
+  (gravity.tooling/native-validate-tooling! {:suite-present? (fn [] stage0-compiled-tooling-suite-present?) :suite (fn [] stage0-compiled-tooling-suite) :cli (fn [] validate-stage0-compiled-cli!) :repl (fn [] validate-stage0-compiled-repl!) :formatter (fn [] validate-stage0-compiled-formatter!) :linter (fn [] validate-stage0-compiled-linter!) :lsp (fn [] validate-stage0-compiled-lsp!) :debugger (fn [] validate-stage0-compiled-debugger!) :documentation (fn [] validate-stage0-compiled-documentation!) :dev-server (fn [] validate-stage0-compiled-dev-server!) :registry-ux (fn [] validate-stage0-compiled-registry-ux!) :ir-inspector (fn [] validate-stage0-compiled-ir-inspector!) :profiler (fn [] validate-stage0-compiled-profiler!) :safety-audit (fn [] validate-stage0-compiled-safety-audit!) :ai-tooling (fn [] validate-stage0-compiled-ai-tooling!)} module))
 
 (defn stage0-compiled-conformance-suite
   [module]

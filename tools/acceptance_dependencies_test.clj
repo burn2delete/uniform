@@ -33,6 +33,32 @@
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "none." "the next successor."))))
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "Dependencies:" "Prerequisite:"))))))
 
+(deftest strongly-connected-components-have-canonical-mutual-reachability
+  (let [ids ["a" "b" "c"]
+        possible-edges (vec (for [from ids to ids] [from to]))]
+    (doseq [mask (range 512)]
+      (let [graph (reduce (fn [graph [index [from to]]]
+                            (if (bit-test mask index) (update graph from conj to) graph))
+                          (zipmap ids (repeat #{})) (map-indexed vector possible-edges))
+            components (dependencies/strongly-connected graph)
+            membership (into {} (for [component components member component] [member component]))
+            closure (into {} (for [id ids] [id (dependencies/reachable graph id)]))]
+        (is (and (= ids (vec (sort (mapcat identity components))))
+                 (= components (vec (sort-by first components)))
+                 (every? #(= % (vec (sort %))) components)
+                 (every? (fn [[a b]]
+                           (= (and (contains? (closure a) b) (contains? (closure b) a))
+                              (= (membership a) (membership b))))
+                         possible-edges))
+            (str "SCC partition/order mismatch for graph " mask))))))
+
+(deftest strongly-connected-handles-deep-source-shaped-dependencies
+  (let [ids (mapv #(format "node-%04d" %) (range 5000))
+        graph (into {} (map-indexed (fn [index id]
+                                     [id (if (zero? index) #{} #{(ids (dec index))})]) ids))]
+    (is (= (mapv vector ids) (dependencies/strongly-connected graph)))
+    (is (= [ids] (dependencies/strongly-connected (assoc graph (first ids) #{(peek ids)}))))))
+
 (deftest missing-terminal-and-malformed-task-rows-reject
   (let [text (slurp dependencies/roadmap-path)
         without-leaf (str/replace text #"(?m)^- \[ \] `FL-P18-T01`[^\n]*\n" "")]
@@ -445,9 +471,21 @@
 
 (deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
-        view (dependencies/task-sh-view source slurp)
+        source-checks (atom 0)
+        cycle-inputs (atom [])
+        original-transition-view dependencies/current-source-transition-view
+        original-cycles dependencies/cycles
+        view (with-redefs [dependencies/current-source-transition-view
+                            (fn [& args]
+                              (swap! source-checks inc)
+                              (apply original-transition-view args))
+                           dependencies/cycles
+                           (fn [graph] (swap! cycle-inputs conj graph) (original-cycles graph))]
+               (dependencies/task-sh-view source slurp))
         ids (set (map :id (:requirements source)))
         sh (dependencies/milestone-graph (slurp dependencies/milestone-path))]
+    (is (= 1 @source-checks))
+    (is (= 1 (count (filter #(identical? (:adjacency view) %) @cycle-inputs))))
     (is (= 180 (count (:incidence view))))
     (is (= 18 (count (:sh07-sequence source))))
     (is (empty? (:cycles view)))
@@ -481,6 +519,77 @@
                    (fn [path] (if (= path "specs/core-workflow/tasks.md")
                                 (str/replace (slurp path) "core1-lower-core-forms" "unknown-task")
                                 (slurp path))))))))
+
+(deftest structural-refusals-precede-stale-or-missing-current-source
+  (let [read-text slurp
+        source (edn/read-string (read-text dependencies/sh-crosswalk-path))
+        path (first (sort (map :path requirement-sources/current-source-transition-contracts)))
+        foreign-paths #{"/untrusted-task-source" "../untrusted-task-source"}
+        original-transition-view dependencies/current-source-transition-view
+        observe
+        (fn [input fault]
+          (let [checks (atom 0) reads (atom 0) foreign-reads (atom 0)
+                input-reader (fn [requested]
+                               (if (contains? foreign-paths requested)
+                                 (do (swap! foreign-reads inc)
+                                     (throw (ex-info "Untrusted read reached" {:path requested})))
+                                 (read-text requested)))
+                outcome
+                (with-redefs [clojure.core/slurp
+                              (fn [requested & options]
+                                (if (= path requested)
+                                  (do (swap! reads inc)
+                                      (case fault
+                                        :stale (str (apply read-text requested options) "\nUnbound source change.\n")
+                                        :missing (throw (java.io.FileNotFoundException. path))))
+                                  (apply read-text requested options)))
+                              dependencies/current-source-transition-view
+                              (fn [& args]
+                                (swap! checks inc)
+                                (apply original-transition-view args))]
+                  (try (dependencies/task-sh-view input input-reader)
+                       (catch Exception error error)))]
+            {:outcome outcome :source-checks @checks :source-reads @reads :foreign-reads @foreign-reads}))]
+    (doseq [fault [:stale :missing]
+            [input expected]
+            [[(assoc-in source [:task-authorities "core" 0 :checked] true)
+              "Task status/ID differs from actual authority"]
+             [(assoc-in source [:requirements 0 :task-references 0 :id] "fabricated-task")
+              "Unknown SH task owner/reference"]
+             [(assoc-in source [:sh07-sequence 1 :dependency-declaration] "none")
+              "SH07 sequence metadata differs from original source"]
+             [(update source :sh07-sequence pop)
+              "Missing or unknown SH07 sequence identity"]]]
+      (let [{:keys [outcome source-checks source-reads]} (observe input fault)]
+        (is (instance? clojure.lang.ExceptionInfo outcome))
+        (is (= "ACCEPTANCE-DEPENDENCY" (:diagnostic (ex-data outcome))))
+        (is (= expected (ex-message outcome)))
+        (is (zero? source-checks))
+        (is (zero? source-reads))))
+    (doseq [[fault foreign-path source-path]
+            [[:stale "/untrusted-task-source" [:task-authorities "core" 0 :source :path]]
+             [:missing "../untrusted-task-source" [:task-authorities "core" 0 :source :path]]
+             [:stale "/untrusted-task-source"
+              [:future-task-authorities "domains-math-schema-proposals" 0 :source :path]]
+             [:missing "../untrusted-task-source" [:requirements 0 :acceptance-source :path]]]]
+      (let [_ (is (string? (get-in source source-path)))
+            input (assoc-in source source-path foreign-path)
+            {:keys [outcome source-checks source-reads foreign-reads]} (observe input fault)]
+        (is (= (if (= :stale fault)
+                 "Current source transition is not bound to the checked-out current source"
+                 path)
+               (ex-message outcome)))
+        (is (= 1 source-checks source-reads))
+        (is (zero? foreign-reads))))
+    (let [{:keys [outcome source-checks source-reads]} (observe source :stale)]
+      (is (instance? clojure.lang.ExceptionInfo outcome))
+      (is (= "ACCEPTANCE-DEPENDENCY" (:diagnostic (ex-data outcome))))
+      (is (= "Current source transition is not bound to the checked-out current source" (ex-message outcome)))
+      (is (= 1 source-checks source-reads)))
+    (let [{:keys [outcome source-checks source-reads]} (observe source :missing)]
+      (is (instance? java.io.FileNotFoundException outcome))
+      (is (= path (ex-message outcome)))
+      (is (= 1 source-checks source-reads)))))
 
 (deftest sh07-dependency-ranges-preserve-original-sequence
   (is (= ["SH07-C02" "SH07-C03" "SH07-C04"] (dependencies/sh07-prerequisites "C02-C04")))
