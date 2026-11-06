@@ -131,3 +131,13 @@ execution or final T1 conformance. Scoped acceptance requires the focused
 checks and independent review recorded in [evidence.md](evidence.md#source-command-usage-increment).
 The wider command matrix and real-service/release dependencies remain open;
 they neither block this local implementation nor receive completion credit.
+
+### Usage diagnostic stage repair
+
+Repair scope (2026-11-05), same finding and owning task: preserve the complete
+local T1006 data, including `:stage :command-line`, in the fixture's stderr
+comparison. C15 requires stage in structured diagnostics and golden fixtures;
+the existing diagnostic presenter already projects `:stage`. Compare the
+rendered EDN with the complete exception data rather than removing that field.
+Keep the explicit expected diagnostic map and all routing, exit, redaction and
+downstream-failure assertions. No entrypoint or presenter behavior changes.

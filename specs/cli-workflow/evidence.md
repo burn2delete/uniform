@@ -164,3 +164,39 @@ The parent task stays Open for its remaining command/options matrix and
 independent acceptance. No PR767 readiness changes, release, self-hosting or
 seed-retirement authority are claimed. No commit, integration or remote action
 was performed.
+
+### Usage diagnostic stage repair
+
+Date: 2026-11-05. Finding and task identity remain
+`cli.source-command-usage.check-and-run-compiled-v1` and
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`.
+The controller supplied feedback for
+`["clojure" "-M:dev-test" "--namespace" "gravity.cli.source-command-usage-test"]`:
+exit 1, 9 tests, 388 assertions, 26 failures, 0 errors, capture not truncated,
+and `:restricted false`. These are reported pre-repair results, not checks run
+by this worker or results for the repaired source. No exact commit/tree was
+supplied; the candidate context remains the current `increment-1216` worktree.
+
+Passive review of `gravity.cli.diagnostic-presentation/print-diagnostic!`
+confirmed that its public projection includes `:stage`. C15 requires stage
+in structured diagnostics and golden fixtures. The shared `assert-local-usage`
+fixture incorrectly removed that field from its expected rendered payload.
+It now compares the complete exception data with parsed stderr. The separate
+literal expected-data assertion still requires `:stage :command-line`, so
+dropping or changing the stage fails both checks. All positive routing,
+zero-resolution/call, exit-2, redaction and downstream exit-1 controls remain.
+No runtime change or weakening of authenticity/provenance checks was needed.
+
+This repair edits only the owned test and appends plan/task/evidence notes;
+entrypoint behavior, captured task regions and earlier evidence are preserved.
+The speckit-implement skill was applied within the existing feature authority.
+Actual worker actions were passive reads and owned-path patch application.
+No Git, test, build or check command was executed. The controller owns
+verification; checks listed above remain unrun for this repair and no passing
+result is claimed. No retained refused action was retried or transferred.
+Unrun controller checks alone do not make this authored repair restricted.
+The same argument vectors in the preceding controller-check list apply,
+subject to all retained refusals. No missing implementation authority or
+semantic ambiguity was identified. The parent remains Open for its wider
+command matrix and independent acceptance; no integration, release,
+self-hosting or seed-retirement result is claimed.

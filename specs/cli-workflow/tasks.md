@@ -179,3 +179,14 @@ No tests/checks or Git may execute in this bounded worker. Controller-owned
 focused regressions, acceptance dependency controls, language boundary and
 document validators remain unrun here; retained refusals remain binding.
 Independent acceptance and integration are not supplied by this appendix.
+
+### Usage diagnostic stage repair
+
+2026-11-05, same finding and parent task: the reported focused check found
+26 failures because the stderr expectation removed `:stage` although the
+presenter retains it. The shared negative-fixture assertion now requires the
+complete T1006 payload, including command-line stage. All existing positive,
+negative and service-failure controls remain. See the
+[repair evidence](evidence.md#usage-diagnostic-stage-repair) for the attributed
+failure and unrun controller checks. Parent status remains Open; no independent
+acceptance or integration is recorded.

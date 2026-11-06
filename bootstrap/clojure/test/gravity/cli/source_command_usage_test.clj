@@ -86,7 +86,7 @@
             :message message :source-span nil :profile nil :target nil
             :remediation "Provide exactly one nonblank source path and no options."}
            (ex-data diagnostic)))
-    (is (= (dissoc (ex-data diagnostic) :stage)
+    (is (= (ex-data diagnostic)
            (edn/read-string (:stderr result))))
     (is (nil? (some-> diagnostic .getCause)))
     (is (not (str/includes? (str (:stdout result) (:stderr result)
