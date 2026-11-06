@@ -260,6 +260,80 @@
             inspection)))
       (rt/fail! "Fresh source validation is waiting for its actual paths" {:finding key :ownership-wait true}))))
 
+(defn queue-recovery! [ctx operation key evidence-file]
+  (when-not (and (#{:recover-dependency :recover-fresh-source} operation)
+                 (string? key) (not (str/blank? key)) (string? evidence-file))
+    (rt/fail! "Queue only a typed dependency or fresh-source recovery" {}))
+  (let [state-dir (.toPath (io/file (rt/canonical (:state-dir ctx))))
+        evidence (rt/canonical evidence-file)
+        directory (io/file (:state-dir ctx) "operator-recovery-requests")]
+    (when-not (and (.isFile (io/file evidence)) (.startsWith (.toPath (io/file evidence)) state-dir)
+                   (.startsWith (.toPath (io/file (rt/canonical directory))) state-dir))
+      (rt/fail! "Recovery requests and evidence belong inside this controller's state directory" {}))
+    (.mkdirs directory)
+    (let [request {:operation operation :task-key key :evidence-file evidence
+                   :evidence-sha256 (recovery/file-digest evidence)}
+          id (rt/digest (pr-str request)) file (io/file directory (str id ".edn"))
+          pending (java.nio.file.Files/createTempFile (.toPath directory) "request-" ".pending"
+                                                     (make-array java.nio.file.attribute.FileAttribute 0))]
+      (try
+        (rt/write-edn! (str pending) request)
+        (java.nio.file.Files/createLink (.toPath file) pending)
+        (catch java.nio.file.FileAlreadyExistsException _
+          (when-not (= request (rt/read-edn file)) (rt/fail! "Existing recovery request differs" {:request id})))
+        (finally (java.nio.file.Files/deleteIfExists pending)))
+      {:request id :path (str file) :native-state-written false})))
+
+(defn- recovery-request-applied? [ctx request]
+  (let [inspection (get (task ctx (:task-key request))
+                        (if (= :recover-dependency (:operation request)) :inspected-authored :fresh-source-validation))]
+    (and (#{:recover-dependency :recover-fresh-source} (:operation request))
+         (= (if (= :recover-dependency (:operation request)) :inspected-source-dependency-resolution :fresh-source-validation)
+            (:kind inspection))
+         (= (:evidence-file request) (:evidence-file inspection))
+         (= (:evidence-sha256 request) (:evidence-sha256 inspection)))))
+
+(defn process-recovery-requests! [ctx occupied]
+  (let [directory (io/file (:state-dir ctx) "operator-recovery-requests")
+        root (.toPath (io/file (rt/canonical directory)))]
+    (doseq [file (sort-by #(.getName ^java.io.File %) (or (.listFiles directory) []))
+            :let [name (.getName ^java.io.File file)]
+            :when (and (.isFile ^java.io.File file) (re-matches #"[0-9a-f]{64}\.edn" name))
+            :let [id (subs name 0 64)]
+            :when (not (contains? (:operator-recovery-requests @(:state ctx)) id))]
+      (let [request (atom nil) validated? (atom false)
+            record! (fn [status extra]
+                      (rt/update! ctx assoc-in [:operator-recovery-requests id]
+                                  (merge {:status status :at (str (java.time.Instant/now)) :request-file (str file)
+                                          :operation (:operation @request) :task-key (:task-key @request)
+                                          :evidence-file (:evidence-file @request) :evidence-sha256 (:evidence-sha256 @request)} extra)))]
+        (try
+          (when-not (and (.startsWith root (.toPath (io/file (rt/canonical (:state-dir ctx)))))
+                         (= root (.getParent (.toPath (io/file (rt/canonical file))))))
+            (rt/fail! "Recovery request escapes its original state directory" {}))
+          (reset! request (rt/read-edn file))
+          (when-not (and (= id (rt/digest (pr-str @request)))
+                         (= #{:operation :task-key :evidence-file :evidence-sha256} (set (keys @request)))
+                         (#{:recover-dependency :recover-fresh-source} (:operation @request)))
+            (rt/fail! "Recovery request identity or operation differs" {}))
+          (reset! validated? true)
+          (when-not (or (contains? occupied (:task-key @request))
+                        (and (= :recover-fresh-source (:operation @request))
+                             (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"])))))
+            (if (recovery-request-applied? ctx @request)
+              (record! :applied {:observed-existing-native-queue true})
+              (do
+                (when-not (= (:evidence-sha256 @request) (recovery/file-digest (:evidence-file @request)))
+                  (rt/fail! "Queued recovery evidence changed" {}))
+                ((if (= :recover-dependency (:operation @request)) recover-dependency! recover-fresh-source!)
+                 ctx (:task-key @request) (:evidence-file @request))
+                (record! :applied {:observed-existing-native-queue false}))))
+          (catch Exception e
+            (when-not (:ownership-wait (ex-data e))
+              (record! (if (and @validated? (recovery-request-applied? ctx @request)) :applied :rejected)
+                       {:error {:message (.getMessage e) :restricted (boolean (:restricted (ex-data e)))}
+                        :inspection-required true}))))))))
+
 (defn- prepare-authored!
   ([ctx key]
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
@@ -658,6 +732,7 @@
           (if (empty? @running) (rt/update! ctx assoc :status :paused)
               (do (Thread/sleep 250) (recur)))
           (do
+            (process-recovery-requests! ctx (set (keys @running)))
             (doseq [t (tasks ctx) :when (= :finalizing (:status t))]
               (try (finalize-merge! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (tasks ctx) :when (and (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]

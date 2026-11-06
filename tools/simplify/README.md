@@ -285,6 +285,27 @@ error normally while the complete old records remain immutable in history.
 Old Macro/process-cleanup results stay nonpasses with their original unknown
 boundaries; only fresh exact-head CI can satisfy the new candidate's gates.
 
+For a running controller, submit the same inspected evidence without taking its
+state lock or stopping the service:
+
+```text
+clojure -M:run queue-recovery config.edn recover-fresh-source FINDING-KEY fresh-source.edn
+clojure -M:run queue-recovery config.edn recover-dependency FINDING-KEY inspected-source.edn
+```
+
+Submission publishes a complete immutable, content-addressed request inside
+`operator-recovery-requests/`; it does not write the native snapshot. The
+original controller consumes it at an unpaused scheduler boundary using the
+same guarded recovery function. Busy task scopes wait. Fresh-source requests
+also wait while the shared API guard is held; only an actual authorized guard
+resolution permits further inspection. All evidence hashes and recovery gates
+are rechecked by the controller. Applied or rejected outcomes are retained in
+`:operator-recovery-requests`, and request files remain for inspection. A
+rejected request does not change the held task or clear its restrictions.
+After a crash following an actual native queue, the exact recorded inspection
+is observed instead of replaying the queue. This interface requires its merged
+runtime implementation; it is not an unmerged launcher overlay.
+
 Known-ended, nonrestricted semantic check failures return to repair with the
 failed source tuple and check result retained. The repair must preserve meaningful
 checks, including authenticity and provenance. Restricted or uncertain effects

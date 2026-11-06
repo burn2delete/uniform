@@ -5,6 +5,7 @@
             [simplify.codex :as codex]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
+            [simplify.main :as main]
             [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
             [simplify.workflow :as flow]
@@ -498,3 +499,77 @@
         :shared-api (rt/shared-restrict! ctx :api (rt/digest (pr-str ["POST" "graphql"])) {:message "The separate API refusal stays held"}))
       (is (thrown? Exception (flow/recover-fresh-source! ctx "authored" evidence)) (name mutation))
       (is (= :attention (:status (flow/task ctx "authored")))))))
+
+(deftest recovery-requests-reach-the-original-live-controller-once
+  (let [{:keys [ctx evidence original]} (fresh-source-fixture! true)
+        before @(:state ctx) raw (slurp (:state-file ctx))]
+    (rt/with-lock ctx
+      (fn []
+        ;; A separate CLI context cannot acquire the held state lock. Submission
+        ;; only publishes a complete immutable input for its original owner.
+        (let [client (assoc ctx :state (atom {:stale-client true}))]
+          (main/dispatch! client "queue-recovery" ["recover-fresh-source" "authored" evidence])
+          (is (= {:stale-client true} @(:state client))))
+        (is (= raw (slurp (:state-file ctx))))
+        (is (= before @(:state ctx)))
+        (flow/process-recovery-requests! ctx #{"authored"})
+        (is (= before @(:state ctx)))
+        (flow/process-recovery-requests! ctx #{})
+        (is (= :repair (:status (flow/task ctx "authored"))))
+        (is (= original (get-in (flow/task ctx "authored") [:fresh-source-validation-history 0 :original-task])))
+        (is (= [:applied] (mapv :status (vals (:operator-recovery-requests @(:state ctx))))))
+        (let [after @(:state ctx)]
+          (flow/process-recovery-requests! ctx #{})
+          (is (= after @(:state ctx))))
+        (is (= (dissoc before :tasks) (dissoc @(:state ctx) :tasks :operator-recovery-requests)))))))
+
+(deftest recovery-requests-preserve-rejections-and-reconcile-a-completed-queue
+  (doseq [completed? [false true]]
+    (let [{:keys [ctx evidence original]} (fresh-source-fixture! true)
+          request (flow/queue-recovery! ctx :recover-fresh-source "authored" evidence)]
+      (is (= request (flow/queue-recovery! ctx :recover-fresh-source "authored" evidence)))
+      (if completed?
+        (flow/recover-fresh-source! ctx "authored" evidence)
+        (spit evidence "{:changed true}\n"))
+      (let [before @(:state ctx)]
+        (flow/process-recovery-requests! ctx #{})
+        (is (= (if completed? :applied :rejected)
+               (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
+        (is (= (:tasks before) (:tasks @(:state ctx))))
+        (when-not completed? (is (= original (flow/task ctx "authored")))))
+      (let [before @(:state ctx)]
+        (flow/process-recovery-requests! ctx #{})
+        (is (= before @(:state ctx)))))))
+
+(deftest dependency-recovery-requests-use-the-same-inspected-native-phase
+  (let [{:keys [ctx evidence]} (dependency-fixture! {:immutable-lineage true})]
+    (flow/queue-recovery! ctx :recover-dependency "authored" evidence)
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :repair (:status (flow/task ctx "authored")))))
+  (let [{:keys [ctx evidence]} (fresh-source-fixture! true)
+        request (flow/queue-recovery! ctx :recover-fresh-source "authored" evidence)
+        before @(:state ctx)]
+    (rt/shared-restrict! ctx :api (rt/digest (pr-str ["POST" "graphql"])) {:message "Actual held API episode"})
+    (flow/process-recovery-requests! ctx #{})
+    (is (= before @(:state ctx)))
+    (is (nil? (get-in @(:state ctx) [:operator-recovery-requests (:request request)])))
+    ;; Simulate the fixture's original owner completing its authorized
+    ;; settlement. No real API request or production guard is involved.
+    (rt/coordinate! ctx (fn [s] [(update-in s [:restrictions :api] dissoc (rt/digest (pr-str ["POST" "graphql"]))) nil]))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :repair (:status (flow/task ctx "authored"))))))
+
+(deftest recovery-request-files-cannot-dispatch-an-unapproved-operation
+  (doseq [[operation correct-id?] [[:retry true] [:recover-fresh-source false]]]
+    (let [{:keys [ctx evidence]} (fresh-source-fixture! true)
+        _ (flow/recover-fresh-source! ctx "authored" evidence)
+        queued (flow/task ctx "authored")
+        request {:operation operation :task-key "authored" :evidence-file evidence
+                 :evidence-sha256 (recovery/file-digest evidence)}
+        id (if correct-id? (rt/digest (pr-str request)) (apply str (repeat 64 "a")))
+        directory (io/file (:state-dir ctx) "operator-recovery-requests")]
+    (.mkdirs directory)
+    (rt/write-edn! (str (io/file directory (str id ".edn"))) request)
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :rejected (get-in @(:state ctx) [:operator-recovery-requests id :status])))
+    (is (= queued (flow/task ctx "authored"))))))

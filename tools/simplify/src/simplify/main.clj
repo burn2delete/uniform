@@ -163,11 +163,12 @@
     "recover-authored" (with-current-state ctx #(workflow/recover-authored! ctx (first args) (second args)))
     "recover-dependency" (with-current-state ctx #(workflow/recover-dependency! ctx (first args) (second args)))
     "recover-fresh-source" (with-current-state ctx #(workflow/recover-fresh-source! ctx (first args) (second args)))
+    "queue-recovery" (println (pr-str (workflow/queue-recovery! ctx (keyword (first args)) (second args) (nth args 2 nil))))
     "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-state ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
                                                                         (:evidence (rt/read-edn (second args)))))
-    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|resume|pause|status|retry|recover-authored|recover-dependency|recover-fresh-source|reconcile|reconcile-main|release-writer CONFIG.edn [KEY FILE]" {})))
+    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|resume|pause|status|retry|recover-authored|recover-dependency|recover-fresh-source|queue-recovery|reconcile|reconcile-main|release-writer CONFIG.edn [KEY FILE]" {})))
 
 (defn -main [& [command config-path & args]]
   (try
