@@ -990,13 +990,21 @@
          :predecessor-current-source-review source-composition-predecessor-mapping-review
          :qualification "Explicit current-source successor only. The complete earlier review remains preserved with its original subject. Current source/routing review, semantic scope, implementation, migration, release and full-240 verification remain pending."))
 
-(def mapping-review
+(def auth-crypto-predecessor-mapping-review
   (assoc source-consumer-predecessor-mapping-review
          :status :pending-source-version-review
          :input-fingerprint "8c458da0bf1453a8091a0ba1337dc6eae98d85f2f5c3f3e92466b863098b4f30"
          :predecessor-input-fingerprint (:input-fingerprint source-consumer-predecessor-mapping-review)
          :predecessor-current-source-review source-consumer-predecessor-mapping-review
          :qualification "Explicit Build-file source successor only. The complete previous current-source review, its original fingerprint and every older review remain preserved with their original subjects. New B1-B3 criteria and source/routing identity still require exact independent review; semantic scope, actual behavior, implementation, migration, release, Main integration and full240 verification are not accepted by this source projection."))
+
+(def mapping-review
+  (assoc auth-crypto-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884"
+         :predecessor-input-fingerprint (:input-fingerprint auth-crypto-predecessor-mapping-review)
+         :predecessor-current-source-review auth-crypto-predecessor-mapping-review
+         :qualification "Explicit Auth/Crypto document identity successor only. The selected row consumes unadmitted declarative operation/value requests and policy/contract shapes; Auth independently derives a scoped grant before Crypto checked admission and action. Admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. Every complete prior review retains its original subject, all49 old file transitions and578 raw payloads are preserved, and all task/requirement dispositions remain unchanged. Exact current source/routing review, implementation, semantic scope, migration, release, Main and full240 verification remain separate and unassessed."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")

@@ -893,5 +893,41 @@
                    (requirement-sources/validate-current-source-transition!
                     t t read-ref #(if (= path %) current (slurp %)) dependencies/sha256 dependencies/require!))))))
 
+(deftest auth-crypto-request-interface-does-not-become-a-start-gate
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        current (into {} (for [rows (vals (:task-authorities source)) row rows] [(:id row) row]))
+        future (:future-task-authorities source)
+        ids (set (concat (keys current) (map :id (mapcat val future))))
+        text (slurp dependencies/future-dependency-path)
+        consumer "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+        routes (dependencies/future-dependency-routes text ids ids)
+        selected (first (filter #(= consumer (:consumer %)) routes))
+        history requirement-sources/auth-crypto-source-document-history-contract
+        predecessor (:predecessor-frame history)
+        before-text (requirement-sources/git-source "." (:commit predecessor) dependencies/future-dependency-path dependencies/require!)
+        before (dependencies/future-dependency-routes before-text ids ids)
+        old-selected (first (filter #(= consumer (:consumer %)) before))
+        result (dependencies/future-task-view future current (:source-snapshots source) slurp)
+        edges (:typed-edges result)
+        selected-id (str "result:" consumer ":crypto")
+        triples (set (map (juxt :from :to :kind) edges))]
+    (is (= [] (:start-results selected)))
+    (is (= (conj (:composition-results old-selected) "crypto") (:composition-results selected)))
+    (is (= (mapv #(dissoc % :source) (remove #(= consumer (:consumer %)) before))
+           (mapv #(dissoc % :source) (remove #(= consumer (:consumer %)) routes))))
+    (is (contains? triples [(str "task:" consumer "/implementation") "task:crypto/interface" :declared-producer-interface]))
+    (is (contains? triples [(str "task:" consumer "/composition") selected-id :actual-selected-producer-result]))
+    (is (not (contains? triples [(str "task:" consumer "/implementation") selected-id :adopted-product-contract])))
+    (is (= :unassessed (get-in result [:nodes selected-id :state])))
+    (let [without-crypto (str/replace text (:declaration (:source selected)) (:declaration (:source old-selected)))
+          altered (dependencies/future-task-view future current (:source-snapshots source)
+                    #(if (= dependencies/future-dependency-path %) without-crypto (slurp %)))
+          remove-crypto (fn [rows] (set (map (juxt :from :to :kind)
+                                       (remove #(or (= selected-id (:from %)) (= selected-id (:to %))
+                                                    (and (= (str "task:" consumer "/implementation") (:from %))
+                                                         (= "task:crypto/interface" (:to %)))) rows))))]
+      (is (= (remove-crypto edges) (remove-crypto (:typed-edges altered))))
+      (is (nil? (get-in altered [:nodes selected-id]))))))
+
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

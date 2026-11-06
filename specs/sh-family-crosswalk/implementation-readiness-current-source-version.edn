@@ -95240,14 +95240,50 @@
     {:role :current-source-interface-proposal,
      :path "docs/acceptance-dependencies.md",
      :successor-of
-     {:kind :authenticated-current-source-transition-frame-v1,
-      :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
-      :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
-      :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+     {:role :current-source-interface-proposal,
+      :path "docs/acceptance-dependencies.md",
+      :successor-of
+      {:kind :authenticated-current-source-transition-frame-v1,
+       :applying-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+       :applying-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+       :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+       :live-sha256
+       "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+      :changed-spans
+      [{:id "SOURCE-SUCCESSOR/docs/acceptance-dependencies.md",
+        :kind :complete-file-transition,
+        :before
+        {:start-byte 0,
+         :end-byte 539166,
+         :start-line 1,
+         :end-line 706,
+         :sha256
+         "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+        :after
+        {:start-byte 0,
+         :end-byte 539166,
+         :start-line 1,
+         :end-line 706,
+         :sha256
+         "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
       :live-sha256
-      "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
+      "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+      :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+      :review-state :pending-independent-source-version-review,
+      :baseline-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+      :authority :current-source-interface-only,
+      :baseline-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
+      :applying-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+      :kind :authenticated-current-source-file-transition-v1,
+      :document-id "source-successor-docs-acceptance-dependencies-md",
+      :applying-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+      :qualification
+      "Only the complete authenticated current-source file docs/acceptance-dependencies.md advances from its prior current-source bytes to the composed cc8a79074fc8eeeb65d72333e5d64542b201f0d4 checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+      :baseline-sha256
+      "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
+      :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"},
      :changed-spans
-     [{:id "SOURCE-SUCCESSOR/docs/acceptance-dependencies.md",
+     [{:id "ORIGINAL-14-DEPENDENCY-ROWS",
        :kind :complete-file-transition,
        :before
        {:start-byte 0,
@@ -95258,93 +95294,93 @@
         "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
        :after
        {:start-byte 0,
-        :end-byte 539166,
+        :end-byte 583986,
         :start-line 1,
-        :end-line 706,
+        :end-line 720,
         :sha256
-        "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}}],
+        "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"}}],
      :live-sha256
-     "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
-     :applying-blob "bb078aba5c7663af33080584953ef3c238c4bb0b",
+     "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
+     :applying-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804",
      :review-state :pending-independent-source-version-review,
-     :baseline-ref "f79c62bcfc33f7aa645a455e0a98f32f0e008b6b",
+     :baseline-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
      :authority :current-source-interface-only,
-     :baseline-tree "98c688013460d4aeddf090fadd7ec0c01d6d45d1",
-     :applying-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+     :baseline-tree "72d15504280f60dd3056bf59cb58293ed734928f",
+     :applying-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
      :kind :authenticated-current-source-file-transition-v1,
-     :document-id "source-successor-docs-acceptance-dependencies-md",
-     :applying-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+     :document-id "original-14-dependency-row-successor",
+     :applying-ref "9ef3622060652f339fa75b73fefa4963db272a10",
      :qualification
-     "Only the complete authenticated current-source file docs/acceptance-dependencies.md advances from its prior current-source bytes to the composed cc8a79074fc8eeeb65d72333e5d64542b201f0d4 checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+     "This source/interface successor adds only the fourteen independently reviewed original 0f4 dependency rows to the f989 composition. Its complete prior cc8 transition, historical census, source pins, task owners, statuses and implementation/evidence dispositions remain unchanged. All fourteen start-result lists remain empty. Coarse selected-result feedback grants no executable cycle, provider execution, implementation, release or full-240 acceptance.",
      :baseline-sha256
      "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
      :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"},
     :changed-spans
-    [{:id "ORIGINAL-14-DEPENDENCY-ROWS",
+    [{:id "SOURCE-COMPOSITION/docs/acceptance-dependencies.md",
       :kind :complete-file-transition,
       :before
-      {:start-byte 0,
-       :end-byte 539166,
-       :start-line 1,
-       :end-line 706,
-       :sha256
-       "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"},
-      :after
       {:start-byte 0,
        :end-byte 583986,
        :start-line 1,
        :end-line 720,
        :sha256
-       "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"}}],
+       "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"},
+      :after
+      {:start-byte 0,
+       :end-byte 624580,
+       :start-line 1,
+       :end-line 759,
+       :sha256
+       "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"}}],
     :live-sha256
-    "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
-    :applying-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804",
+    "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
+    :applying-blob "3d6d1f9043943e3737206113c7348547b2ecf1f2",
     :review-state :pending-independent-source-version-review,
-    :baseline-ref "cc8a79074fc8eeeb65d72333e5d64542b201f0d4",
+    :baseline-ref "9ef3622060652f339fa75b73fefa4963db272a10",
     :authority :current-source-interface-only,
-    :baseline-tree "72d15504280f60dd3056bf59cb58293ed734928f",
-    :applying-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
+    :baseline-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
+    :applying-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
     :kind :authenticated-current-source-file-transition-v1,
-    :document-id "original-14-dependency-row-successor",
-    :applying-ref "9ef3622060652f339fa75b73fefa4963db272a10",
+    :document-id "source-composition-docs-acceptance-dependencies-md",
+    :applying-ref "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
     :qualification
-    "This source/interface successor adds only the fourteen independently reviewed original 0f4 dependency rows to the f989 composition. Its complete prior cc8 transition, historical census, source pins, task owners, statuses and implementation/evidence dispositions remain unchanged. All fourteen start-result lists remain empty. Coarse selected-result feedback grants no executable cycle, provider execution, implementation, release or full-240 acceptance.",
+    "This explicit successor authenticates current source bytes separately from the complete predecessor frame. Historical snapshots, receipts, evidence subjects, task states and implementation dispositions remain unchanged; this source binding grants no execution, implementation, migration, release or full-240 acceptance.",
     :baseline-sha256
-    "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e",
-    :baseline-blob "bb078aba5c7663af33080584953ef3c238c4bb0b"},
+    "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
+    :baseline-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804"},
    :changed-spans
    [{:id "SOURCE-COMPOSITION/docs/acceptance-dependencies.md",
      :kind :complete-file-transition,
      :before
      {:start-byte 0,
-      :end-byte 583986,
-      :start-line 1,
-      :end-line 720,
-      :sha256
-      "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"},
-     :after
-     {:start-byte 0,
       :end-byte 624580,
       :start-line 1,
       :end-line 759,
       :sha256
-      "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"}}],
+      "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"},
+     :after
+     {:start-byte 0,
+      :end-byte 625857,
+      :start-line 1,
+      :end-line 759,
+      :sha256
+      "31c32fbea4d4994ea6f066d6b68f76db947630df0953ee0c8e0ff847fece86bd"}}],
    :live-sha256
-   "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
-   :applying-blob "3d6d1f9043943e3737206113c7348547b2ecf1f2",
+   "31c32fbea4d4994ea6f066d6b68f76db947630df0953ee0c8e0ff847fece86bd",
+   :applying-blob "dd2d313ba8bc24e90f6a8e9597368a19a6d01fe8",
    :review-state :pending-independent-source-version-review,
-   :baseline-ref "9ef3622060652f339fa75b73fefa4963db272a10",
+   :baseline-ref "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
    :authority :current-source-interface-only,
-   :baseline-tree "86ee17912db869c670ecda2c8bcf7ef8ad4f7009",
-   :applying-tree "2fe775403b016510a7828389bcbb8c1bd710c1b9",
+   :baseline-tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+   :applying-tree "878c813060a7643b08138b8e1c9646fd922398a3",
    :kind :authenticated-current-source-file-transition-v1,
-   :document-id "source-composition-docs-acceptance-dependencies-md",
-   :applying-ref "1615d7a37b7c35d8ad4dabf7d719e906e75277c6",
+   :document-id "auth-crypto-declarative-pregrant-source",
+   :applying-ref "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
    :qualification
-   "This explicit successor authenticates current source bytes separately from the complete predecessor frame. Historical snapshots, receipts, evidence subjects, task states and implementation dispositions remain unchanged; this source binding grants no execution, implementation, migration, release or full-240 acceptance.",
+   "Only the selected Auth/Crypto declarative pregrant request/policy interface row changes. Auth independently derives a genuine scoped grant before checked Crypto admission and protected action; admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. The exact complete070a predecessor frame, all49 old transitions,31 library-IO joins,40 future observations, all578 raw subjects, IDs, task gaps, statuses and every prior review remain preserved at their original subjects. This document identity successor supplies no realized grant/provider/key/action, implementation, semantic scope, migration, Main, release or full240 acceptance.",
    :baseline-sha256
-   "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb",
-   :baseline-blob "7a036ee82a481d9f7c84a5935e4137f4b4931804"}
+   "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
+   :baseline-blob "3d6d1f9043943e3737206113c7348547b2ecf1f2"}
   {:role :current-source-interface-proposal,
    :path "specs/auth-workflow/evidence.md",
    :successor-of
@@ -242463,7 +242499,51 @@
   "4c8cb56ec1c4d7ef82a65b0d57e1dc167b216edfeb1132ca2c0790c1d216f5e3"
   "## Macro engine cache replacement boundary\n\n[L16 replacement machinery](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#replacement-boundary) includes incremental expansion caches and scheduling. Its [incremental and parallel rules](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#incremental-and-parallel-expansion) preserve dependency order, deterministic results, stable diagnostics, namespace initialization and side-effect visibility, with invalidation for source, macro, provider, profile, facet, target, grant and compiler changes. This permission qualifies the earlier L12/shared-cache ownership wording; it does not transfer language or policy authority.\n\nUse the existing Expand4 task for selected engine-specific expansion machinery, actual cache reuse/refusal and integration. Build's existing cache task owns shared/default construction, complete semantic-input and current-policy admission, and invalidation/revalidation integration. An engine may implement its own keys, storage and scheduling and expose actual complete semantic input/key/entry/trace/replay/policy results through the versioned shared boundary. Build need not duplicate the engine's storage or expansion implementation. Auth selects the compatible provider and enforces actual grants; Compiler API supplies stage/key-input facts and integrates actual results; the reproducibility task consumes these products and performs actual repeated-build comparisons. Keep the existing task authority for each outcome.\n\nAcceptance needs unchanged-input reuse, changed provider/version/source/macro/profile/facet/target/grant/compiler/replay invalidation, stricter-policy refusal even for a matching key, hidden creation-effect refusal after policy relaxation, secret-safe records, and clean-versus-reused artifact/diagnostic comparisons. Effectful entries include authentic trace and replay records. A hit must not repeat external work merely to authorize reuse. Physical keys and syntax representations may differ between engines; shared schemas, semantic-input completeness, provenance and policy checks remain required. Reference/alternative expansion comparison is structural up to permitted alpha-renaming under [L16 equivalence](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#required-equivalence); this does not relax L12's same-input hermetic typed-Core byte equality.\n\nLocal interface and fixture development can start under the existing contracts. Actual composition requires the selected provider and real producer/consumer products. Preserve all held provider/plugin/replay operations, source-policy decisions and independent review requirements. This correction does not confer whole-L16, whole-macro, implementation, migration or release acceptance. Complete L4/L16/C4/SAFE12 predicate and dependency reconciliation remains pending.\n\n"}
  :source-composition-transition-history
- {:predecessor-crosswalk
+ {:auth-crypto-source-document-successor
+  {:predecessor-crosswalk
+   {:commit "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
+    :tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+    :path "specs/sh-family-crosswalk/crosswalk.edn",
+    :blob "928a52caf58a4660e8a073f5a5541d3630c73ab5",
+    :sha256
+    "c2439005f9511024e729f9e028879e357204ddf373949b21e0ce64b93a8dec70"},
+   :current-criterion
+   {:path "docs/acceptance-dependencies.md",
+    :source-commit "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
+    :source-tree "878c813060a7643b08138b8e1c9646fd922398a3",
+    :source-span
+    {:start-byte 234973,
+     :end-byte 242781,
+     :sha256
+     "d230cb329b2ebd7ef45f47f8fe4eb8d40c601199de22112d30b5414092714e21"}},
+   :predecessor-frame
+   {:commit "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
+    :tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+    :blob "f57bebd3094df2208fe57594e887086e84d73ee1",
+    :sha256
+    "a703df5e57cfe97c533f8acd8615efd441ac07300fada15ff61633cc73c67c7d"},
+   :review-state :pending-independent-source-version-review,
+   :row-source-review
+   {:path
+    "/tmp/uniform-pr767-auth-crypto-qualified-row-independent-verdict.edn",
+    :sha256
+    "9bdb59a144fb15d373b0d8ea61f0e98f264d8621fbccdfa773354fe1ba94b389"},
+   :authority :current-source-interface-only,
+   :source-content-commit "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
+   :qualified-row
+   {:path
+    "/tmp/uniform-pr767-auth-crypto-qualified-row-preparation.edn",
+    :sha256
+    "c3536334d4a147e9f49c3f2e871e42b5cc9e851107f3ffb8bc6845e36d23e8a1"},
+   :kind :authenticated-auth-crypto-source-document-successor-v1,
+   :qualification
+   "Only the selected Auth/Crypto declarative pregrant request/policy interface row changes. Auth independently derives a genuine scoped grant before checked Crypto admission and protected action; admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. The exact complete070a predecessor frame, all49 old transitions,31 library-IO joins,40 future observations, all578 raw subjects, IDs, task gaps, statuses and every prior review remain preserved at their original subjects. This document identity successor supplies no realized grant/provider/key/action, implementation, semantic scope, migration, Main, release or full240 acceptance.",
+   :source-content-tree "878c813060a7643b08138b8e1c9646fd922398a3",
+   :changed-source-paths ["docs/acceptance-dependencies.md"],
+   :implementation-acceptance :unassessed},
+  :predecessor-crosswalk
   {:commit "5a8791e36dd7816b686bd9a1b07bc238ef2d0df4",
    :tree "7327dff1b1c1d6416ef8b22b6b937d93e3af4764",
    :path "specs/sh-family-crosswalk/crosswalk.edn",

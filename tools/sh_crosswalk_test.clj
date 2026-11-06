@@ -846,7 +846,9 @@
   (let [descriptor (:predecessor-crosswalk requirement-sources/source-consumer-file-history-contract)
         previous-text (sh-crosswalk/git-source (:commit descriptor) (:path descriptor))
         previous (edn/read-string previous-text)
-        view (sh-crosswalk/build)
+        ;; Bind this historical Build test to its own complete successor.
+        auth-parent (:predecessor-crosswalk requirement-sources/auth-crypto-source-document-history-contract)
+        view (edn/read-string (sh-crosswalk/git-source (:commit auth-parent) (:path auth-parent)))
         old-payloads (:source-snapshots previous) new-payloads (:source-snapshots view)
         added-keys (set/difference (set (keys new-payloads)) (set (keys old-payloads)))
         tasks (into {} (for [[_ rows] (:task-authorities view) row rows] [(:id row) row]))
@@ -879,6 +881,25 @@
     (is (= (:requirements previous)
            (mapv (fn [{:keys [before after]}]
                    (assoc after :evidence-source-locators (:evidence-source-locators before))) changes)))))
+
+(deftest auth-crypto-document-projection-keeps-previous-subjects-and-outcomes
+  (let [descriptor (:predecessor-crosswalk requirement-sources/auth-crypto-source-document-history-contract)
+        previous-text (sh-crosswalk/git-source (:commit descriptor) (:path descriptor))
+        previous (edn/read-string previous-text)
+        view (sh-crosswalk/build)
+        old-payloads (:source-snapshots previous) new-payloads (:source-snapshots view)]
+    (is (= (:sha256 descriptor) (sh-inventory/sha256 previous-text)))
+    (is (= (:mapping-review previous) sh-crosswalk/auth-crypto-predecessor-mapping-review))
+    (is (= (:mapping-review previous) (get-in view [:mapping-review :predecessor-current-source-review])))
+    (is (= 578 (count old-payloads)))
+    (is (= old-payloads (select-keys new-payloads (keys old-payloads))))
+    (is (= (:requirements previous) (:requirements view)))
+    (is (= (:sh07-sequence previous) (:sh07-sequence view)))
+    (is (= (:task-authorities previous) (:task-authorities view)))
+    (is (= (:future-task-authorities previous) (:future-task-authorities view)))
+    (is (= (:accepted-current-scoped-evidence previous) (:accepted-current-scoped-evidence view)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view)) (get-in view [:mapping-review :input-fingerprint])))))
 
 (deftest readiness-successor-conserves-task-bodies-routes-and-historical-subjects
   (let [bridge sh-crosswalk/readiness-source-version

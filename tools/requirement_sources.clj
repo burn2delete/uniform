@@ -3044,11 +3044,85 @@
            :qualification (:qualification source-consumer-file-history-contract))
       prior (assoc :successor-of prior))))
 
-(def current-source-transition-contracts
+(def build-consumer-current-source-transition-contracts
   (let [prior source-composition-current-source-transition-contracts
         path (:path source-consumer-file-data)]
     (cond-> (mapv #(if (= path (:path %)) source-consumer-file-transition %) prior)
       (not-any? #(= path (:path %)) prior) (conj source-consumer-file-transition))))
+
+(def auth-crypto-source-document-data
+ {:path "docs/acceptance-dependencies.md",
+ :before
+ {:commit "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
+  :tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+  :blob "3d6d1f9043943e3737206113c7348547b2ecf1f2",
+  :sha256
+  "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
+  :bytes 624580,
+  :span-end-line 759},
+ :after
+ {:commit "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
+  :tree "878c813060a7643b08138b8e1c9646fd922398a3",
+  :blob "dd2d313ba8bc24e90f6a8e9597368a19a6d01fe8",
+  :sha256
+  "31c32fbea4d4994ea6f066d6b68f76db947630df0953ee0c8e0ff847fece86bd",
+  :bytes 625857,
+  :span-end-line 759}})
+
+(def auth-crypto-source-document-history-contract
+ {:predecessor-crosswalk
+ {:commit "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
+  :tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+  :path "specs/sh-family-crosswalk/crosswalk.edn",
+  :blob "928a52caf58a4660e8a073f5a5541d3630c73ab5",
+  :sha256
+  "c2439005f9511024e729f9e028879e357204ddf373949b21e0ce64b93a8dec70"},
+ :current-criterion
+ {:path "docs/acceptance-dependencies.md",
+  :source-commit "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
+  :source-tree "878c813060a7643b08138b8e1c9646fd922398a3",
+  :source-span
+  {:start-byte 234973,
+   :end-byte 242781,
+   :sha256
+   "d230cb329b2ebd7ef45f47f8fe4eb8d40c601199de22112d30b5414092714e21"}},
+ :predecessor-frame
+ {:commit "070afe9e051c65efe456b01c7c223b6cfcf4c78f",
+  :tree "28187e995d9369f4dcddaf797dcc497b334552ef",
+  :path
+  "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+  :blob "f57bebd3094df2208fe57594e887086e84d73ee1",
+  :sha256
+  "a703df5e57cfe97c533f8acd8615efd441ac07300fada15ff61633cc73c67c7d"},
+ :review-state :pending-independent-source-version-review,
+ :row-source-review
+ {:path
+  "/tmp/uniform-pr767-auth-crypto-qualified-row-independent-verdict.edn",
+  :sha256
+  "9bdb59a144fb15d373b0d8ea61f0e98f264d8621fbccdfa773354fe1ba94b389"},
+ :authority :current-source-interface-only,
+ :source-content-commit "336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62",
+ :qualified-row
+ {:path "/tmp/uniform-pr767-auth-crypto-qualified-row-preparation.edn",
+  :sha256
+  "c3536334d4a147e9f49c3f2e871e42b5cc9e851107f3ffb8bc6845e36d23e8a1"},
+ :kind :authenticated-auth-crypto-source-document-successor-v1,
+ :qualification
+ "Only the selected Auth/Crypto declarative pregrant request/policy interface row changes. Auth independently derives a genuine scoped grant before checked Crypto admission and protected action; admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. The exact complete070a predecessor frame, all49 old transitions,31 library-IO joins,40 future observations, all578 raw subjects, IDs, task gaps, statuses and every prior review remain preserved at their original subjects. This document identity successor supplies no realized grant/provider/key/action, implementation, semantic scope, migration, Main, release or full240 acceptance.",
+ :source-content-tree "878c813060a7643b08138b8e1c9646fd922398a3",
+ :changed-source-paths ["docs/acceptance-dependencies.md"],
+ :implementation-acceptance :unassessed})
+
+(def auth-crypto-source-document-transition
+  (let [path (:path auth-crypto-source-document-data)
+        prior (first (filter #(= path (:path %)) build-consumer-current-source-transition-contracts))]
+    (assoc (composition-source-transition auth-crypto-source-document-data)
+           :successor-of prior :document-id "auth-crypto-declarative-pregrant-source"
+           :qualification (:qualification auth-crypto-source-document-history-contract))))
+
+(def current-source-transition-contracts
+  (mapv #(if (= (:path auth-crypto-source-document-data) (:path %)) auth-crypto-source-document-transition %)
+        build-consumer-current-source-transition-contracts))
 
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
@@ -4177,12 +4251,32 @@
   "Retain both earlier authenticated payload tables before adding current subjects."
   [read-ref sha256 require!]
   (let [original (authenticated-source-payloads (:predecessor-crosswalk source-composition-history-contract) read-ref sha256 require!)
-        previous (authenticated-source-payloads (:predecessor-crosswalk source-consumer-file-history-contract) read-ref sha256 require!)]
+        previous (authenticated-source-payloads (:predecessor-crosswalk source-consumer-file-history-contract) read-ref sha256 require!)
+        latest (authenticated-source-payloads (:predecessor-crosswalk auth-crypto-source-document-history-contract) read-ref sha256 require!)]
     (doseq [[digest raw] original]
       (require! (= raw (get previous digest)) "Consumer source successor loses an earlier payload subject"))
-    (merge original previous)))
+    (doseq [[digest raw] previous]
+      (require! (= raw (get latest digest)) "Auth Crypto source successor loses a prior raw payload subject"))
+    (merge original previous latest)))
 
-(defn validate-source-consumer-file-history!
+(defn validate-auth-crypto-source-document-history!
+  "Authenticate the complete previous49-transition frame before one qualified document successor."
+  [frame read-ref sha256 require!]
+  (let [history (get-in frame [:source-composition-transition-history :auth-crypto-source-document-successor])
+        {:keys [commit tree path blob] expected-sha :sha256} (:predecessor-frame auth-crypto-source-document-history-contract)
+        text (read-ref commit path) previous (read-composition-source-edn text)
+        inverse (-> frame (assoc :current-source-transitions (:current-source-transitions previous))
+                    (update :source-composition-transition-history dissoc :auth-crypto-source-document-successor))]
+    (require! (= auth-crypto-source-document-history-contract history) "Auth Crypto source history identity or qualification changed")
+    (require! (= tree (git-commit-tree "." commit require!)) "Auth Crypto predecessor is not the actual commit/tree")
+    (require! (= blob (git-blob-id text)) "Auth Crypto predecessor frame blob drift")
+    (require! (= expected-sha (sha256 text)) "Auth Crypto predecessor frame bytes drift")
+    (require! (= build-consumer-current-source-transition-contracts (:current-source-transitions previous)) "Auth Crypto source history loses a complete prior transition")
+    (require! (= current-source-transition-contracts (:current-source-transitions frame)) "Auth Crypto current transitions differ from exact source contracts")
+    (require! (= previous inverse) "Auth Crypto successor changes unlisted prior frame values")
+    previous))
+
+(defn validate-build-consumer-file-history!
   "Authenticate the exact previous frame while advancing only the Build file."
   [frame read-ref sha256 require!]
   (let [history (get-in frame [:source-composition-transition-history :source-consumer-file-successor])
@@ -4198,10 +4292,16 @@
     (require! (= expected-sha (sha256 text)) "Build consumer predecessor frame bytes drift")
     (require! (= source-composition-current-source-transition-contracts (:current-source-transitions previous))
               "Build consumer source successor loses its complete previous transition table")
-    (require! (= current-source-transition-contracts (:current-source-transitions frame))
+    (require! (= build-consumer-current-source-transition-contracts (:current-source-transitions frame))
               "Build consumer source successor current transitions differ from exact contracts")
     (require! (= previous inverse) "Build consumer source successor changes unlisted previous frame values")
     previous))
+
+(defn validate-source-consumer-file-history!
+  "Validate the current Auth-document and historical Build source successors in their own frames."
+  [frame read-ref sha256 require!]
+  (validate-build-consumer-file-history!
+    (validate-auth-crypto-source-document-history! frame read-ref sha256 require!) read-ref sha256 require!))
 
 (defn validate-source-composition-history!
   [frame read-ref sha256 require!]
