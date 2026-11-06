@@ -281792,9 +281792,419 @@
  [{:task-source-version-history [{:prior-reference {:path "specs/reader-workflow/tasks.md", :sha256 "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure"}, :prior-source-ref "8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa", :prior-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? false, :status "Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :applying-source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :applying-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? true, :status "Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :reason "Adopt integrated task source with exact unchanged literal identity and acceptance boundary; retain scoped status evidence separately from whole requirement acceptance.", :requirement-current-acceptance :unassessed}], :acceptance-facets ["Both canonical kinds remain accepted without alias-only or deprecation treatment." "Other extensions fail before form reading; historical parity is not evidence for this rejected-extension boundary."], :source-binding :exact-compound-paragraph, :obligation "Recognize .qst and .gravity as first-class source kinds and reject other source extensions before reading forms.", :source-facet-ids ["facet/language/246a39402c6ce49ddb628830" "facet/language/a327b3f7430d7226ee36a82b" "facet/language/66805051f447d8ad38609c1e"], :acceptance-authority :canonical-task-only, :atomicity :reviewed, :development-observation-ids ["source-kind-metadata-leaf-20261027"], :nonoverlap :proposed, :id "source/reading/canonical-source-kinds", :local-semantic-review {:kind :independent-local-semantic-and-evidence-guard-review, :head "c0dc5790197a1bbd3a8aa285e5458c272d877220", :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945", :receipt-sha256 "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc", :scope [:three-distinct-local-behaviors :exact-l1-compound-paragraph :two-narrow-historical-facets :evidence-guard-regressions], :excludes [:cross-family-nonoverlap :whole-project-denominator :current-implementation-acceptance :integration :dashboard]}, :historical-support [{:facet "co-canonical extension recognition and fixture parity", :receipt {:path "docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn", :sha256 "1e2393eb447f1cf55927b45c3a43a11d7562dd8ac3b999726d3ba68c3ea0c559"}, :selector [:capability-based-proof :co-canonical-source-extensions?], :expected true, :ledger {:path "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md", :sha256 "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57", :line-sha256 "164ca514f8fd84b9e6e13a555222294eaf327ca06028243ecd86984885224ea0", :date "2026-07-02", :task-id "P18-T00"}, :verification-date "2026-07-02", :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :qualification "Historical hosted/stage0 paired fixtures and wrapper parity only. Does not establish rejection of every unsupported extension or seedless release."}], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/246a39402c6ce49ddb628830" "facet/language/66805051f447d8ad38609c1e" "facet/language/a327b3f7430d7226ee36a82b"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :task-reference {:path "specs/reader-workflow/tasks.md", :sha256 "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure", :source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :acceptance-boundary-sha256 "ccec82d51d1a1d6784adaf954d4d91b58665e0330cd933011ebd4909f6c7dfb9"}}
   {:task-source-version-history [{:prior-reference {:path "specs/reader-workflow/tasks.md", :sha256 "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure"}, :prior-source-ref "8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa", :prior-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? false, :status "Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :applying-source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :applying-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? true, :status "Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :reason "Adopt integrated task source with exact unchanged literal identity and acceptance boundary; retain scoped status evidence separately from whole requirement acceptance.", :requirement-current-acceptance :unassessed}], :acceptance-facets ["Reader source maps and downstream source-unit/sidecar provenance retain supplied extension." "Do not substitute a normalized canonical extension for the supplied extension."], :source-binding :exact-compound-paragraph, :obligation "Preserve the actual supplied source-unit path and extension in provenance.", :source-facet-ids ["facet/language/246a39402c6ce49ddb628830"], :acceptance-authority :canonical-task-only, :atomicity :reviewed, :nonoverlap :proposed, :id "source/provenance/original-path", :local-semantic-review {:kind :independent-local-semantic-and-evidence-guard-review, :head "c0dc5790197a1bbd3a8aa285e5458c272d877220", :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945", :receipt-sha256 "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc", :scope [:three-distinct-local-behaviors :exact-l1-compound-paragraph :two-narrow-historical-facets :evidence-guard-regressions], :excludes [:cross-family-nonoverlap :whole-project-denominator :current-implementation-acceptance :integration :dashboard]}, :historical-support [{:facet "actual supplied extension in source-unit, reader and sidecar paths", :receipt {:path "docs/artifacts/phase-18/source-extensions/p18-t00-co-canonical-source-extensions-proof.edn", :sha256 "1e2393eb447f1cf55927b45c3a43a11d7562dd8ac3b999726d3ba68c3ea0c559"}, :selector [:capability-based-proof :provenance-preserves-actual-extension?], :expected true, :ledger {:path "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md", :sha256 "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57", :line-sha256 "164ca514f8fd84b9e6e13a555222294eaf327ca06028243ecd86984885224ea0", :date "2026-07-02", :task-id "P18-T00"}, :verification-date "2026-07-02", :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :qualification "Historical paired hello/core-app fixture paths only; complete provenance population and current consumed closure are unassessed."}], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/246a39402c6ce49ddb628830"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :task-reference {:path "specs/reader-workflow/tasks.md", :sha256 "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure", :source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :acceptance-boundary-sha256 "ccec82d51d1a1d6784adaf954d4d91b58665e0330cd933011ebd4909f6c7dfb9"}}
   {:task-source-version-history [{:prior-reference {:path "specs/reader-workflow/tasks.md", :sha256 "cf479cfbf7a6c766aca97cb4442ebd89281e0bc446ce596dffb74fe2c8f46dee", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure"}, :prior-source-ref "8cebb9336fa5546090d6b5ac6a4d8dc1930b70fa", :prior-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? false, :status "Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :applying-source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :applying-task-record {:id "reader/finite-remaining-work/decode-and-source-identity-closure", :checked? true, :status "Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.", :acceptance "Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."}, :reason "Adopt integrated task source with exact unchanged literal identity and acceptance boundary; retain scoped status evidence separately from whole requirement acceptance.", :requirement-current-acceptance :unassessed}], :acceptance-facets ["Ambient working-directory changes do not substitute a different root for the declared root." "Preserving a supplied path does not by itself establish stable root-relative identity."], :source-binding :exact-compound-paragraph, :obligation "Derive stable source identity from the declared project-root identifier and the source path relative to that root.", :source-facet-ids ["facet/language/246a39402c6ce49ddb628830"], :acceptance-authority :canonical-task-only, :atomicity :reviewed, :nonoverlap :proposed, :id "source/identity/declared-root-relative-path", :local-semantic-review {:kind :independent-local-semantic-and-evidence-guard-review, :head "c0dc5790197a1bbd3a8aa285e5458c272d877220", :tree "a12edffc848cf9af4643c465bdf8cc6234fe6945", :receipt-sha256 "e7630f9a4e2db3be361fffd5e5138598b3dc9d3d1c2fe04f973f844769238abc", :scope [:three-distinct-local-behaviors :exact-l1-compound-paragraph :two-narrow-historical-facets :evidence-guard-regressions], :excludes [:cross-family-nonoverlap :whole-project-denominator :current-implementation-acceptance :integration :dashboard]}, :historical-support [], :scope-reviews [{:candidate-ref "21c8587b7e0a05a0b591fed600450808dfed0caa", :current-expanded-context-review :not-needed, :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-source-predicate-atomicity, :artifact-sha256 "96e8c5d00ae8a406aad378b5757be21cb9fee80d287140f7c3fa51a3f326fdb8", :reviewed-source-facet-ids ["facet/language/246a39402c6ce49ddb628830"], :additional-current-context-facet-ids [], :implementation-acceptance :not-conferred, :global-nonoverlap :pending}], :task-reference {:path "specs/reader-workflow/tasks.md", :sha256 "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573", :marker "reader-implementation-tasks", :id "reader/finite-remaining-work/decode-and-source-identity-closure", :source-ref "4325a9f46292472a7f984c5adfef81209874bb5c", :acceptance-boundary-sha256 "ccec82d51d1a1d6784adaf954d4d91b58665e0330cd933011ebd4909f6c7dfb9"}}
-  {:observable-boundary "Read-only defaults and denied privileged actions are enforced before action with structured model/tool/review artifacts.", :obligation "Execute model/tool operations only under explicit provider/schema/effect/authority, side-effect and human-review policies.", :source-facet-ids ["facet/p10/2e8c0c3a58fd254221d1" "facet/p10/7fa2f9c3d101ab280bf6" "facet/p10/34a407a206a0d265593d" "facet/p10/dfa835d99b73d06d1f5a" "facet/p10/f1540d31b0a12285e4f2" "facet/p10/908ec6f6fec171a50ddd" "facet/p10/ad3480935552e8d97a07" "facet/p10/c3f947c7a78a2108e2ad" "facet/p10/aba573d2450df6a2da80" "facet/p10/9102a339ea356d44797a" "facet/p10/c43ae9a2c27285b1bec7" "facet/p10/dccc261422051fe3a3b4" "facet/p10/8f8b731ea4ab0a0fae2b" "facet/p10/0ccda363edee7b600eab" "facet/p10/0f7483fdc701985c47b4" "facet/p10/c25c3e10239125eaa935" "facet/p10/7d93dfc1fb29a3e5c228" "facet/p10/d36409cf787fd90670c1" "facet/p10/79c890098fefdab4c833" "facet/p10/f5a941e5ad5ee4a7c8a8" "facet/p10/efb965894d89c92d75a6" "facet/p10/d9d4091a16397aff03b1" "facet/p10/4e2d83a876c5ea85614f" "facet/p10/e6d685999d6b9c18e40b" "facet/p10/c9370e372188d0f72185" "facet/p10/86676e8e579f396c56e9" "facet/p10/ccdb0348cd6798796aa4" "facet/p10/b54802688abeeeea3102" "facet/p10/70f4e6b1d30c329fe0a3" "facet/p10/d4eed372936458516c4e" "facet/p10/d628ca04bd63e18648dc" "facet/p10/20b01fbcf66e6364452a" "facet/p10/681480357c94fcc57104" "facet/p10/b3527768a7c22f8070f8" "facet/p10/7c08f97e9bcc41013930" "facet/p10/83ee6c4468b9dd99a812" "facet/p10/3c7722fc4d6b5af7b3d6" "facet/p10/e5568a6bfc80a0191d81" "facet/p10/36aa80e3bb7badf11693" "facet/p10/c1af7129734f54d087b7" "facet/p10/3a9565f667ef16db306b" "facet/p10/61ef4f7200c57a3a5ed6" "facet/p10/0990d7c68448d1a95a64" "facet/p10/645f4cb547b3c5dabe0f" "facet/p10/5d936b7d3273297118c1" "facet/p10/2b7ebfcb12616c4f6b52" "facet/p10/06c8c7cd2ba303aa4ea5" "facet/p10/821b8d5cde95d2e99e89"], :acceptance-authority :canonical-task-only, :task-gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed, :id "ai/profile-tool-contract", :historical-support [], :source-contracts ["P10"], :proposal-batch "profiles-and-performance"}
-  {:observable-boundary "Untrusted content cannot change authority or cross dangerous sinks; stored/retrieved data obey declared memory policy.", :obligation "Preserve prompt roles, input taint, memory trust, retention/deletion, privacy and secret-sink rules across agent retrieval and tool inputs.", :source-facet-ids ["facet/p10/a45652e6e2453eba3f44" "facet/p10/59377449eba87b423d7f" "facet/p10/2e8c0c3a58fd254221d1" "facet/p10/7fa2f9c3d101ab280bf6" "facet/p10/22c0b78d869289811e58" "facet/p10/f9b3adbb88adff45e40c" "facet/p10/9e3453757a74aa0ecaad" "facet/p10/102645be95a3840cc058" "facet/p10/ee9106097ca8babe2cdb" "facet/p10/c43ae9a2c27285b1bec7" "facet/p10/95e4bd32238db48fc385" "facet/p10/bb2682d934877139a276" "facet/p10/13e412e0d52720ad1941" "facet/p10/20d44eea47ed14c6d9cd" "facet/p10/bd2d3044df9ced624ec6" "facet/p10/251a8e91f607c7689b73" "facet/p10/28be185dc42193c5125d" "facet/p10/d38d14880670fce1338f" "facet/p10/222e4be173103383dd6f" "facet/p10/1c279146b2b56e1c3c67" "facet/p10/c6bf61d5ae96c9406adc" "facet/p10/415ba978750d3f86141c" "facet/p10/86145ec817fc39b25801" "facet/p10/9e48a81dbcbd1da556f7" "facet/p10/1ac29cea362776c22b89" "facet/p10/fb8400d234221450e9f5" "facet/p10/8caacd7fcb5749620446" "facet/p10/df0008cdecf689900f33" "facet/p10/36b90ab284446169b53d" "facet/p10/6ef8c42b5d060595bfd4" "facet/p10/c1af7129734f54d087b7" "facet/p10/d869648852e587efac2c" "facet/p10/8b2e4e551c2bf0e94727" "facet/p10/645f4cb547b3c5dabe0f" "facet/p10/384d69806f783c76a40e" "facet/p10/c0ad742da7c2697da5eb"], :acceptance-authority :canonical-task-only, :task-gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed, :id "ai/prompt-memory-boundary", :historical-support [], :source-contracts ["P10"], :proposal-batch "profiles-and-performance"}
-  {:observable-boundary "Required replay/audit records support workflow execution; evaluation scores never substitute for grants or generated-code safety checks.", :obligation "Produce the declared model/tool/prompt/policy/review/replay identities and evaluation artifacts without treating evaluation as authority.", :source-facet-ids ["facet/p10/da31bc768644a6964569" "facet/p10/0668abfa55b404ae52a9" "facet/p10/c43ae9a2c27285b1bec7" "facet/p10/3296ade5f846be6c53c5" "facet/p10/a47d8b5ddd7b6a295ceb" "facet/p10/5a16c85ce857e0aeda0a" "facet/p10/27f416c92967e16c7661" "facet/p10/11bcb778046ea7670dea" "facet/p10/cbbc95c0865291dc646a" "facet/p10/3305bac6cbd3c2157921" "facet/p10/8943894534bc5decd0ff" "facet/p10/76611316a4c8072210e1" "facet/p10/3babbde4a49890631c66" "facet/p10/11a6f385058ee4e3fe96" "facet/p10/dcfb76184641d0b48b5a" "facet/p10/c1af7129734f54d087b7" "facet/p10/a118849a3d493e7e8cfe" "facet/p10/645f4cb547b3c5dabe0f" "facet/p10/48e465ae7b2f0b128873"], :acceptance-authority :canonical-task-only, :task-gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed, :id "ai/replay-evaluation-artifacts", :historical-support [], :source-contracts ["P10"], :proposal-batch "profiles-and-performance"}
+  {:task-source-version-history
+   [{:prior-requirement-record
+     {:observable-boundary
+      "Read-only defaults and denied privileged actions are enforced before action with structured model/tool/review artifacts.",
+      :obligation
+      "Execute model/tool operations only under explicit provider/schema/effect/authority, side-effect and human-review policies.",
+      :source-facet-ids
+      ["facet/p10/2e8c0c3a58fd254221d1"
+       "facet/p10/7fa2f9c3d101ab280bf6"
+       "facet/p10/34a407a206a0d265593d"
+       "facet/p10/dfa835d99b73d06d1f5a"
+       "facet/p10/f1540d31b0a12285e4f2"
+       "facet/p10/908ec6f6fec171a50ddd"
+       "facet/p10/ad3480935552e8d97a07"
+       "facet/p10/c3f947c7a78a2108e2ad"
+       "facet/p10/aba573d2450df6a2da80"
+       "facet/p10/9102a339ea356d44797a"
+       "facet/p10/c43ae9a2c27285b1bec7"
+       "facet/p10/dccc261422051fe3a3b4"
+       "facet/p10/8f8b731ea4ab0a0fae2b"
+       "facet/p10/0ccda363edee7b600eab"
+       "facet/p10/0f7483fdc701985c47b4"
+       "facet/p10/c25c3e10239125eaa935"
+       "facet/p10/7d93dfc1fb29a3e5c228"
+       "facet/p10/d36409cf787fd90670c1"
+       "facet/p10/79c890098fefdab4c833"
+       "facet/p10/f5a941e5ad5ee4a7c8a8"
+       "facet/p10/efb965894d89c92d75a6"
+       "facet/p10/d9d4091a16397aff03b1"
+       "facet/p10/4e2d83a876c5ea85614f"
+       "facet/p10/e6d685999d6b9c18e40b"
+       "facet/p10/c9370e372188d0f72185"
+       "facet/p10/86676e8e579f396c56e9"
+       "facet/p10/ccdb0348cd6798796aa4"
+       "facet/p10/b54802688abeeeea3102"
+       "facet/p10/70f4e6b1d30c329fe0a3"
+       "facet/p10/d4eed372936458516c4e"
+       "facet/p10/d628ca04bd63e18648dc"
+       "facet/p10/20b01fbcf66e6364452a"
+       "facet/p10/681480357c94fcc57104"
+       "facet/p10/b3527768a7c22f8070f8"
+       "facet/p10/7c08f97e9bcc41013930"
+       "facet/p10/83ee6c4468b9dd99a812"
+       "facet/p10/3c7722fc4d6b5af7b3d6"
+       "facet/p10/e5568a6bfc80a0191d81"
+       "facet/p10/36aa80e3bb7badf11693"
+       "facet/p10/c1af7129734f54d087b7"
+       "facet/p10/3a9565f667ef16db306b"
+       "facet/p10/61ef4f7200c57a3a5ed6"
+       "facet/p10/0990d7c68448d1a95a64"
+       "facet/p10/645f4cb547b3c5dabe0f"
+       "facet/p10/5d936b7d3273297118c1"
+       "facet/p10/2b7ebfcb12616c4f6b52"
+       "facet/p10/06c8c7cd2ba303aa4ea5"
+       "facet/p10/821b8d5cde95d2e99e89"],
+      :acceptance-authority :canonical-task-only,
+      :task-gap
+      "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+      :atomicity :proposed,
+      :nonoverlap :proposed,
+      :id "ai/profile-tool-contract",
+      :historical-support [],
+      :source-contracts ["P10"],
+      :proposal-batch "profiles-and-performance"},
+     :model-binding-review :pending,
+     :scope :current-ai-profile-interface,
+     :gap-qualification
+     "Current source criterion only. Preserve the exact existing P10 gap, complete source facets and mixed-accounting disposition, compound-boundary split/hold and proposed atomicity/nonoverlap. No implementation, whole-task closure, global semantic/denominator or release acceptance follows from this source reference.",
+     :source-model "1e293dffcc9ae8d97caa80700f0590ba09f70236",
+     :source-model-sha256
+     "27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355",
+     :independent-source-review
+     {:path
+      "/tmp/uniform-p10-independent-source-review-20261106-c5e5.edn",
+      :sha256
+      "4c4bef1a3fe64c9b29aa90cacc20f896ffa3532299db8e55a3fe81e3ef0b61d9"},
+     :kind :qualified-current-task-source-binding,
+     :proposal
+     {:path "/tmp/uniform-three-p10-source-references-proposal-v2.edn",
+      :sha256
+      "f4cce47ac41ad16f5a77cd9509118c47e31f00cfc4ed776746f74ddd7bc706c6"},
+     :implementation-acceptance :unassessed}],
+   :observable-boundary
+   "Read-only defaults and denied privileged actions are enforced before action with structured model/tool/review artifacts.",
+   :obligation
+   "Execute model/tool operations only under explicit provider/schema/effect/authority, side-effect and human-review policies.",
+   :source-facet-ids
+   ["facet/p10/2e8c0c3a58fd254221d1"
+    "facet/p10/7fa2f9c3d101ab280bf6"
+    "facet/p10/34a407a206a0d265593d"
+    "facet/p10/dfa835d99b73d06d1f5a"
+    "facet/p10/f1540d31b0a12285e4f2"
+    "facet/p10/908ec6f6fec171a50ddd"
+    "facet/p10/ad3480935552e8d97a07"
+    "facet/p10/c3f947c7a78a2108e2ad"
+    "facet/p10/aba573d2450df6a2da80"
+    "facet/p10/9102a339ea356d44797a"
+    "facet/p10/c43ae9a2c27285b1bec7"
+    "facet/p10/dccc261422051fe3a3b4"
+    "facet/p10/8f8b731ea4ab0a0fae2b"
+    "facet/p10/0ccda363edee7b600eab"
+    "facet/p10/0f7483fdc701985c47b4"
+    "facet/p10/c25c3e10239125eaa935"
+    "facet/p10/7d93dfc1fb29a3e5c228"
+    "facet/p10/d36409cf787fd90670c1"
+    "facet/p10/79c890098fefdab4c833"
+    "facet/p10/f5a941e5ad5ee4a7c8a8"
+    "facet/p10/efb965894d89c92d75a6"
+    "facet/p10/d9d4091a16397aff03b1"
+    "facet/p10/4e2d83a876c5ea85614f"
+    "facet/p10/e6d685999d6b9c18e40b"
+    "facet/p10/c9370e372188d0f72185"
+    "facet/p10/86676e8e579f396c56e9"
+    "facet/p10/ccdb0348cd6798796aa4"
+    "facet/p10/b54802688abeeeea3102"
+    "facet/p10/70f4e6b1d30c329fe0a3"
+    "facet/p10/d4eed372936458516c4e"
+    "facet/p10/d628ca04bd63e18648dc"
+    "facet/p10/20b01fbcf66e6364452a"
+    "facet/p10/681480357c94fcc57104"
+    "facet/p10/b3527768a7c22f8070f8"
+    "facet/p10/7c08f97e9bcc41013930"
+    "facet/p10/83ee6c4468b9dd99a812"
+    "facet/p10/3c7722fc4d6b5af7b3d6"
+    "facet/p10/e5568a6bfc80a0191d81"
+    "facet/p10/36aa80e3bb7badf11693"
+    "facet/p10/c1af7129734f54d087b7"
+    "facet/p10/3a9565f667ef16db306b"
+    "facet/p10/61ef4f7200c57a3a5ed6"
+    "facet/p10/0990d7c68448d1a95a64"
+    "facet/p10/645f4cb547b3c5dabe0f"
+    "facet/p10/5d936b7d3273297118c1"
+    "facet/p10/2b7ebfcb12616c4f6b52"
+    "facet/p10/06c8c7cd2ba303aa4ea5"
+    "facet/p10/821b8d5cde95d2e99e89"],
+   :acceptance-authority :canonical-task-only,
+   :task-gap
+   "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "ai/profile-tool-contract",
+   :historical-support [],
+   :source-contracts ["P10"],
+   :task-reference
+   {:path "specs/domains-workflow/tasks.md",
+    :detailed-acceptance :unassessed,
+    :criterion-source
+    {:start-byte 242453,
+     :end-byte 244072,
+     :sha256
+     "942b3d6691fe84f203f1bc12d91f9f198bc71fd03bbc0317d15e683f94113926"},
+    :marker "domains-implementation-tasks",
+    :observed-checked? false,
+    :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+    :observed-status "Open",
+    :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+    :source-record-sha256
+    "440de2ac04752ff2edf94e0cd24ffa429b1cab1ea264ba5479a78d411e4deae1",
+    :source-view :qualified-current-task-source-v1,
+    :id "ai",
+    :sha256
+    "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+    :qualification
+    "Current source identity only. The existing Open AI implementation task already contains this exact profile-gap criterion and its linked complete P10 contextual/negative predicates. The parent is not an AI/provider execution receipt or a substitute for Schema/Auth/Runtime/ordinary generated-code compiler/Workflow/Release Testing owners and their actual results. Preserve the complete prior requirement record, every facet, source correction, task gap, history, proposed atomicity/nonoverlap and all states. The mixed cost/token/call predicate remains subject to its existing source-specific accounting disposition; this reference invents no compiler/project quota and does not waive real external billing/account or held-execution restrictions. No semantic scope, denominator, implementation, migration, Main, release or full240 acceptance is supplied."},
+   :proposal-batch "profiles-and-performance"}
+  {:task-source-version-history
+   [{:prior-requirement-record
+     {:observable-boundary
+      "Untrusted content cannot change authority or cross dangerous sinks; stored/retrieved data obey declared memory policy.",
+      :obligation
+      "Preserve prompt roles, input taint, memory trust, retention/deletion, privacy and secret-sink rules across agent retrieval and tool inputs.",
+      :source-facet-ids
+      ["facet/p10/a45652e6e2453eba3f44"
+       "facet/p10/59377449eba87b423d7f"
+       "facet/p10/2e8c0c3a58fd254221d1"
+       "facet/p10/7fa2f9c3d101ab280bf6"
+       "facet/p10/22c0b78d869289811e58"
+       "facet/p10/f9b3adbb88adff45e40c"
+       "facet/p10/9e3453757a74aa0ecaad"
+       "facet/p10/102645be95a3840cc058"
+       "facet/p10/ee9106097ca8babe2cdb"
+       "facet/p10/c43ae9a2c27285b1bec7"
+       "facet/p10/95e4bd32238db48fc385"
+       "facet/p10/bb2682d934877139a276"
+       "facet/p10/13e412e0d52720ad1941"
+       "facet/p10/20d44eea47ed14c6d9cd"
+       "facet/p10/bd2d3044df9ced624ec6"
+       "facet/p10/251a8e91f607c7689b73"
+       "facet/p10/28be185dc42193c5125d"
+       "facet/p10/d38d14880670fce1338f"
+       "facet/p10/222e4be173103383dd6f"
+       "facet/p10/1c279146b2b56e1c3c67"
+       "facet/p10/c6bf61d5ae96c9406adc"
+       "facet/p10/415ba978750d3f86141c"
+       "facet/p10/86145ec817fc39b25801"
+       "facet/p10/9e48a81dbcbd1da556f7"
+       "facet/p10/1ac29cea362776c22b89"
+       "facet/p10/fb8400d234221450e9f5"
+       "facet/p10/8caacd7fcb5749620446"
+       "facet/p10/df0008cdecf689900f33"
+       "facet/p10/36b90ab284446169b53d"
+       "facet/p10/6ef8c42b5d060595bfd4"
+       "facet/p10/c1af7129734f54d087b7"
+       "facet/p10/d869648852e587efac2c"
+       "facet/p10/8b2e4e551c2bf0e94727"
+       "facet/p10/645f4cb547b3c5dabe0f"
+       "facet/p10/384d69806f783c76a40e"
+       "facet/p10/c0ad742da7c2697da5eb"],
+      :acceptance-authority :canonical-task-only,
+      :task-gap
+      "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+      :atomicity :proposed,
+      :nonoverlap :proposed,
+      :id "ai/prompt-memory-boundary",
+      :historical-support [],
+      :source-contracts ["P10"],
+      :proposal-batch "profiles-and-performance"},
+     :model-binding-review :pending,
+     :scope :current-ai-profile-interface,
+     :gap-qualification
+     "Current source criterion only. Preserve the exact existing P10 gap, complete source facets and mixed-accounting disposition, compound-boundary split/hold and proposed atomicity/nonoverlap. No implementation, whole-task closure, global semantic/denominator or release acceptance follows from this source reference.",
+     :source-model "1e293dffcc9ae8d97caa80700f0590ba09f70236",
+     :source-model-sha256
+     "27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355",
+     :independent-source-review
+     {:path
+      "/tmp/uniform-p10-independent-source-review-20261106-c5e5.edn",
+      :sha256
+      "4c4bef1a3fe64c9b29aa90cacc20f896ffa3532299db8e55a3fe81e3ef0b61d9"},
+     :kind :qualified-current-task-source-binding,
+     :proposal
+     {:path "/tmp/uniform-three-p10-source-references-proposal-v2.edn",
+      :sha256
+      "f4cce47ac41ad16f5a77cd9509118c47e31f00cfc4ed776746f74ddd7bc706c6"},
+     :implementation-acceptance :unassessed}],
+   :observable-boundary
+   "Untrusted content cannot change authority or cross dangerous sinks; stored/retrieved data obey declared memory policy.",
+   :obligation
+   "Preserve prompt roles, input taint, memory trust, retention/deletion, privacy and secret-sink rules across agent retrieval and tool inputs.",
+   :source-facet-ids
+   ["facet/p10/a45652e6e2453eba3f44"
+    "facet/p10/59377449eba87b423d7f"
+    "facet/p10/2e8c0c3a58fd254221d1"
+    "facet/p10/7fa2f9c3d101ab280bf6"
+    "facet/p10/22c0b78d869289811e58"
+    "facet/p10/f9b3adbb88adff45e40c"
+    "facet/p10/9e3453757a74aa0ecaad"
+    "facet/p10/102645be95a3840cc058"
+    "facet/p10/ee9106097ca8babe2cdb"
+    "facet/p10/c43ae9a2c27285b1bec7"
+    "facet/p10/95e4bd32238db48fc385"
+    "facet/p10/bb2682d934877139a276"
+    "facet/p10/13e412e0d52720ad1941"
+    "facet/p10/20d44eea47ed14c6d9cd"
+    "facet/p10/bd2d3044df9ced624ec6"
+    "facet/p10/251a8e91f607c7689b73"
+    "facet/p10/28be185dc42193c5125d"
+    "facet/p10/d38d14880670fce1338f"
+    "facet/p10/222e4be173103383dd6f"
+    "facet/p10/1c279146b2b56e1c3c67"
+    "facet/p10/c6bf61d5ae96c9406adc"
+    "facet/p10/415ba978750d3f86141c"
+    "facet/p10/86145ec817fc39b25801"
+    "facet/p10/9e48a81dbcbd1da556f7"
+    "facet/p10/1ac29cea362776c22b89"
+    "facet/p10/fb8400d234221450e9f5"
+    "facet/p10/8caacd7fcb5749620446"
+    "facet/p10/df0008cdecf689900f33"
+    "facet/p10/36b90ab284446169b53d"
+    "facet/p10/6ef8c42b5d060595bfd4"
+    "facet/p10/c1af7129734f54d087b7"
+    "facet/p10/d869648852e587efac2c"
+    "facet/p10/8b2e4e551c2bf0e94727"
+    "facet/p10/645f4cb547b3c5dabe0f"
+    "facet/p10/384d69806f783c76a40e"
+    "facet/p10/c0ad742da7c2697da5eb"],
+   :acceptance-authority :canonical-task-only,
+   :task-gap
+   "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "ai/prompt-memory-boundary",
+   :historical-support [],
+   :source-contracts ["P10"],
+   :task-reference
+   {:path "specs/domains-workflow/tasks.md",
+    :detailed-acceptance :unassessed,
+    :criterion-source
+    {:start-byte 244073,
+     :end-byte 245434,
+     :sha256
+     "3de5f39f0df62916b178c079a3631f40d6f1de396cb01640127e30268c1ba063"},
+    :marker "domains-implementation-tasks",
+    :observed-checked? false,
+    :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+    :observed-status "Open",
+    :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+    :source-record-sha256
+    "440de2ac04752ff2edf94e0cd24ffa429b1cab1ea264ba5479a78d411e4deae1",
+    :source-view :qualified-current-task-source-v1,
+    :id "ai",
+    :sha256
+    "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+    :qualification
+    "Current source identity only. The existing Open AI implementation task already contains this exact profile-gap criterion and its linked complete P10 contextual/negative predicates. The parent is not an AI/provider execution receipt or a substitute for Schema/Auth/Runtime/ordinary generated-code compiler/Workflow/Release Testing owners and their actual results. Preserve the complete prior requirement record, every facet, source correction, task gap, history, proposed atomicity/nonoverlap and all states. The mixed cost/token/call predicate remains subject to its existing source-specific accounting disposition; this reference invents no compiler/project quota and does not waive real external billing/account or held-execution restrictions. No semantic scope, denominator, implementation, migration, Main, release or full240 acceptance is supplied."},
+   :proposal-batch "profiles-and-performance"}
+  {:task-source-version-history
+   [{:prior-requirement-record
+     {:observable-boundary
+      "Required replay/audit records support workflow execution; evaluation scores never substitute for grants or generated-code safety checks.",
+      :obligation
+      "Produce the declared model/tool/prompt/policy/review/replay identities and evaluation artifacts without treating evaluation as authority.",
+      :source-facet-ids
+      ["facet/p10/da31bc768644a6964569"
+       "facet/p10/0668abfa55b404ae52a9"
+       "facet/p10/c43ae9a2c27285b1bec7"
+       "facet/p10/3296ade5f846be6c53c5"
+       "facet/p10/a47d8b5ddd7b6a295ceb"
+       "facet/p10/5a16c85ce857e0aeda0a"
+       "facet/p10/27f416c92967e16c7661"
+       "facet/p10/11bcb778046ea7670dea"
+       "facet/p10/cbbc95c0865291dc646a"
+       "facet/p10/3305bac6cbd3c2157921"
+       "facet/p10/8943894534bc5decd0ff"
+       "facet/p10/76611316a4c8072210e1"
+       "facet/p10/3babbde4a49890631c66"
+       "facet/p10/11a6f385058ee4e3fe96"
+       "facet/p10/dcfb76184641d0b48b5a"
+       "facet/p10/c1af7129734f54d087b7"
+       "facet/p10/a118849a3d493e7e8cfe"
+       "facet/p10/645f4cb547b3c5dabe0f"
+       "facet/p10/48e465ae7b2f0b128873"],
+      :acceptance-authority :canonical-task-only,
+      :task-gap
+      "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+      :atomicity :proposed,
+      :nonoverlap :proposed,
+      :id "ai/replay-evaluation-artifacts",
+      :historical-support [],
+      :source-contracts ["P10"],
+      :proposal-batch "profiles-and-performance"},
+     :model-binding-review :pending,
+     :scope :current-ai-profile-interface,
+     :gap-qualification
+     "Current source criterion only. Preserve the exact existing P10 gap, complete source facets and mixed-accounting disposition, compound-boundary split/hold and proposed atomicity/nonoverlap. No implementation, whole-task closure, global semantic/denominator or release acceptance follows from this source reference.",
+     :source-model "1e293dffcc9ae8d97caa80700f0590ba09f70236",
+     :source-model-sha256
+     "27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355",
+     :independent-source-review
+     {:path
+      "/tmp/uniform-p10-independent-source-review-20261106-c5e5.edn",
+      :sha256
+      "4c4bef1a3fe64c9b29aa90cacc20f896ffa3532299db8e55a3fe81e3ef0b61d9"},
+     :kind :qualified-current-task-source-binding,
+     :proposal
+     {:path "/tmp/uniform-three-p10-source-references-proposal-v2.edn",
+      :sha256
+      "f4cce47ac41ad16f5a77cd9509118c47e31f00cfc4ed776746f74ddd7bc706c6"},
+     :implementation-acceptance :unassessed}],
+   :observable-boundary
+   "Required replay/audit records support workflow execution; evaluation scores never substitute for grants or generated-code safety checks.",
+   :obligation
+   "Produce the declared model/tool/prompt/policy/review/replay identities and evaluation artifacts without treating evaluation as authority.",
+   :source-facet-ids
+   ["facet/p10/da31bc768644a6964569"
+    "facet/p10/0668abfa55b404ae52a9"
+    "facet/p10/c43ae9a2c27285b1bec7"
+    "facet/p10/3296ade5f846be6c53c5"
+    "facet/p10/a47d8b5ddd7b6a295ceb"
+    "facet/p10/5a16c85ce857e0aeda0a"
+    "facet/p10/27f416c92967e16c7661"
+    "facet/p10/11bcb778046ea7670dea"
+    "facet/p10/cbbc95c0865291dc646a"
+    "facet/p10/3305bac6cbd3c2157921"
+    "facet/p10/8943894534bc5decd0ff"
+    "facet/p10/76611316a4c8072210e1"
+    "facet/p10/3babbde4a49890631c66"
+    "facet/p10/11a6f385058ee4e3fe96"
+    "facet/p10/dcfb76184641d0b48b5a"
+    "facet/p10/c1af7129734f54d087b7"
+    "facet/p10/a118849a3d493e7e8cfe"
+    "facet/p10/645f4cb547b3c5dabe0f"
+    "facet/p10/48e465ae7b2f0b128873"],
+   :acceptance-authority :canonical-task-only,
+   :task-gap
+   "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.",
+   :atomicity :proposed,
+   :nonoverlap :proposed,
+   :id "ai/replay-evaluation-artifacts",
+   :historical-support [],
+   :source-contracts ["P10"],
+   :task-reference
+   {:path "specs/domains-workflow/tasks.md",
+    :detailed-acceptance :unassessed,
+    :criterion-source
+    {:start-byte 245435,
+     :end-byte 246690,
+     :sha256
+     "83d57e6d043317102dc948923cb1f73ab1761f79f49120224adf31d1871fd3a7"},
+    :marker "domains-implementation-tasks",
+    :observed-checked? false,
+    :source-tree "cb40daf86ae470b2581ec4be87b1b30cdf676e5b",
+    :observed-status "Open",
+    :source-commit "66ca91c531593157bfc01b6fb684cc37fa1eb42c",
+    :source-record-sha256
+    "440de2ac04752ff2edf94e0cd24ffa429b1cab1ea264ba5479a78d411e4deae1",
+    :source-view :qualified-current-task-source-v1,
+    :id "ai",
+    :sha256
+    "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e",
+    :qualification
+    "Current source identity only. The existing Open AI implementation task already contains this exact profile-gap criterion and its linked complete P10 contextual/negative predicates. The parent is not an AI/provider execution receipt or a substitute for Schema/Auth/Runtime/ordinary generated-code compiler/Workflow/Release Testing owners and their actual results. Preserve the complete prior requirement record, every facet, source correction, task gap, history, proposed atomicity/nonoverlap and all states. The mixed cost/token/call predicate remains subject to its existing source-specific accounting disposition; this reference invents no compiler/project quota and does not waive real external billing/account or held-execution restrictions. No semantic scope, denominator, implementation, migration, Main, release or full240 acceptance is supplied."},
+   :proposal-batch "profiles-and-performance"}
   {:additional-task-interfaces [], :observable-boundary "Pure portable constants/macros accept; host/build effects, IR mutation, unsafe code or an expansion outside core reject.", :obligation "Execute only pure expansion/constant evaluation for core source and preserve core legality and generated origins.", :source-facet-ids ["facet/p2/adf4862862f8cffaefd5" "facet/p2/edccb943c7757dcfedc8" "facet/p2/da46a571415f5e18210b" "facet/p2/74331866ec12432cbfeb" "facet/p2/233dded66eff174cfe69" "facet/p2/9b9133f311d1f772b8e3" "facet/p2/1314cd7c8cb76d95f702" "facet/p2/f387b1e6ce965d199ec6" "facet/p2/4298a6c5f1ff541cfa04" "facet/p2/e8602b3ce5064976b858"], :acceptance-authority :canonical-task-only, :atomicity :proposed, :nonoverlap :proposed, :id "core/pure-generation", :historical-support [], :source-contracts ["P2"], :task-reference {:path "specs/expand-workflow/tasks.md", :marker "expand-implementation-tasks", :id "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs", :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"}, :proposal-batch "profiles-and-performance"}
   {:additional-task-interfaces [], :observable-boundary "Portable typed-core/MIR artifacts have no runtime-provider requirement; source depending on a concrete memory regime rejects.", :obligation "Lower core computations over immutable semantic values without selecting a runtime provider or exposing concrete allocation identity, finalizers, raw addresses or managed-runtime assumptions.", :source-facet-ids ["facet/p2/1634ca56953dd8d4c3d6" "facet/p2/7e086093f1f1e873331e" "facet/p2/31070fa4276b9203c16f" "facet/p2/544090247854d4bc3603" "facet/p2/880a84dbc36b24bb04e8" "facet/p2/adf4862862f8cffaefd5" "facet/p2/8c130b89414179d28d73" "facet/p2/8a2e07198199451a9770" "facet/p2/e3bd710ea0f00554279c" "facet/p2/5a934851fea753644bf5" "facet/p2/05d5d4de2210056aad72" "facet/p2/496b5751abb1d1271291" "facet/p2/e40e38b322855a27299e" "facet/p2/7f93a62dcae298d40800" "facet/p2/f26067e3d221f419456d" "facet/p2/2dccb72ad25c167dbeb8" "facet/p2/4298a6c5f1ff541cfa04" "facet/p2/f24040c17edea96b7299" "facet/p2/97f7e942e0385e87aaaf"], :acceptance-authority :canonical-task-only, :atomicity :reviewed, :nonoverlap :proposed, :id "core/runtime-free-values", :historical-support [], :scope-reviews [{:artifact-sha256 "261d0b92b635f9b92c826434769892b7a3d7a00f9756ef5e0205b4e215e3904e", :candidate-ref "e53e516fbe2553495cea764014d4ed1a9f810551", :source-baseline "a1b991be499d50579a8b4366976c519ae8949224", :scope :bounded-family-atomicity, :implementation-acceptance :not-conferred, :reason "Runtime-independent value semantics is an observable portability guarantee: changing a compiler's internal allocation may not change core meaning or introduce a runtime dependency. Distinct from import admission and numerical eligibility.", :global-nonoverlap :pending-cross-family-completion}], :source-contracts ["P2"], :task-reference {:path "specs/legality-workflow/tasks.md", :marker "legality-implementation-tasks", :id "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks", :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}, :proposal-batch "profiles-and-performance"}
   {:observable-boundary "Step and service failures follow declared bounded retry/replay behavior with durable artifacts and no unrecorded side effects.", :obligation "Execute distributed steps under explicit typed effects/capabilities, retry/timeout/cancellation, idempotency and compensation contracts.", :source-facet-ids ["facet/p9/268824824b09f11b74d7" "facet/p9/fe54947feb7507903585" "facet/p9/49443c76f10943551380" "facet/p9/54842a5d8d6a9123acb1" "facet/p9/9952acfb086d78ad04db" "facet/p9/da914dcf8c1a2b14955c" "facet/p9/64f827070f525320b839" "facet/p9/5df1b4b91cf9be28b893" "facet/p9/26c2cfaa4fca58f1a46b" "facet/p9/8f869342f06abeac7162" "facet/p9/522c6b7dbef98b60cd5d" "facet/p9/3a81b183a15609f86780" "facet/p9/4b88dbef61833dab1c1f" "facet/p9/693401da3243884f6400" "facet/p9/0b9dcdfccad7e7769b2f" "facet/p9/01410a9763cc79437a84" "facet/p9/4a95e8412caf1a9782c3" "facet/p9/2a28cc1cd5c5332a1de1" "facet/p9/1eab337b8516262f2d57" "facet/p9/180522163e5963bf69fc" "facet/p9/00bca1a08550cc0937fe" "facet/p9/76cb27b7db2b11406e05" "facet/p9/8a30454a7918af2ed668" "facet/p9/dec51872fd29389b6a30" "facet/p9/43bffd300e662df78aaf" "facet/p9/287df0d7ed848917ce7d" "facet/p9/4e7a75b9e047b1c8c788" "facet/p9/0c75ba972064756ece29" "facet/p9/2e23b5862c8ca8e57561"], :acceptance-authority :canonical-task-only, :task-gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed, :id "distributed/durable-step-contract", :historical-support [], :source-contracts ["P9"], :proposal-batch "profiles-and-performance"}
