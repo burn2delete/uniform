@@ -111,7 +111,7 @@
   (let [raw (:raw-wasm artifact)
         bytes (:bytes raw)]
     (when-not (and (vector? bytes)
-                   (<= 8 (count bytes) p15-s23-b4-wasm-max-module-bytes)
+                   (<= 8 (count bytes))
                    (every? #(and (integer? %) (<= 0 % 255)) bytes))
       (p15-s23-b4-wasm-fail!
        "B4-MANIFEST" source-path artifact
