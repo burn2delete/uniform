@@ -463,7 +463,8 @@
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
     (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
             "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
-            "c-native-validation" "runtime-native-validation" "effects-native-validation"] (mapv first commands)))
+            "c-native-validation" "runtime-native-validation" "effects-native-validation"
+            "types-native-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -509,12 +510,14 @@
     (is (empty? (macro-selected-vars
                  (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
 
-(deftest contracts-include-the-complete-native-runtime-and-effects-namespaces
+(deftest contracts-include-the-complete-native-runtime-effects-and-types-namespaces
   (doseq [[index expected-label namespace path]
           [[8 "runtime-native-validation" "gravity.runtime.pipeline-test"
             "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"]
            [9 "effects-native-validation" "gravity.effects.pipeline-test"
-            "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]]]
+            "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]
+           [10 "types-native-validation" "gravity.types.pipeline-test"
+            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]

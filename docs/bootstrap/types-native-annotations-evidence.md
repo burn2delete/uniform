@@ -82,3 +82,48 @@ Actual typed-core construction uses the ordinary Stage0 source reader; actual
 paired executable-plan checks use the explicit current development route.
 No native toolchain, live provider, broker/controller or Main action is part
 of this slice.
+
+## Implemented extraction and development evidence
+
+Three native checks now live in gravity.types, raising its declared public API
+from 29 to 32. Five distinct function/catalog ports preserve per-use Var
+selection through one private selector. Bootstrap retains all three original
+two-argument adapters. Its type keyword and primitive compatibility catalogs,
+type-token/literal classifiers, call-site ordering, source loader and diagnostic
+publisher remain unchanged. No new type rule or admission route is added.
+
+Expanded cold C7 passes 17 tests / 494 assertions and remains Bootstrap-free.
+The complete native Types namespace passes 10 / 139 under the unchanged
+2g/180-second child. Actual source covers the existing typed-core fixture and
+all three native call sites in both source extensions; actual malformed or
+mismatched annotations retain L5 refusal ids, original source spans, expected/
+actual types and remediation. Actual paired Hello plans retain deterministic
+plan identity and emitted runtime C text. No native compiler is executed.
+
+All three immutable original functions are rebound together for differential
+comparison. All 45 complete raw and parsed outcomes match: 36 native cases and
+nine actual typed-source artifact/refusal cases, nineteen returns and twenty-six
+refusals. Returning diagnostics retain their original continuation behavior;
+native subject metadata, unsafe/check/human-review fields and source facts are
+unchanged. Capture SHA256:
+6fc45a3d7c6c3d70b90dd06843426369268715a1b67b64a75ceb6cbe2d7fbba9.
+
+Source reconstruction recovers all three original bodies and the entire
+prior stage bytes outside its declared contract additions. Nine named
+surrounding loader/caller/classifier/diagnostic/workflow paths remain exact.
+The prior ten CI commands, selectors and watchdogs are unchanged; one complete
+native Types child is appended. Coverage controls reject omission/substitution.
+The complete CI harness passes 54 / 580; boundary/ownership passes 48 / 1202.
+Lint, tools/ci formatting, diff and both document validators pass.
+
+An initial local ownership check used an incorrect nonexistent namespace name;
+the registered runner rejected selection before tests. That log is retained
+separately. The corrected command selects the existing owned sh01-ownership-test
+alongside the language-boundary test; no runner scope or selection policy was
+changed. Initial test syntax errors were caught and corrected by lint before
+execution. No semantic test failure was suppressed or converted to a pass.
+
+Complete contextual lint, independent source/adversarial reviews, own hosted
+CI/artifact audit and exact coordinator integration remain separate evidence.
+Existing legacy permissive nominal and numeric compatibility is recorded as a
+limitation, not promoted to canonical type, layout, conversion or safety proof.

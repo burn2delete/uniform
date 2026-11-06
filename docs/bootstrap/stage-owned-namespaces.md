@@ -52,6 +52,18 @@ only after its callers and evidence move to the stage API.
 
 ## Boundary and interface assignments
 
+The [native Types annotation checks](types-native-annotations-evidence.md) add
+`check-native-assert!`, `check-native-value!` and `check-native-return!` over
+caller-owned source nodes/argument facts and explicit live catalog, classifier,
+compatibility and diagnostic operations. They preserve the existing nil or
+expected-type results and L5 annotation/mismatch refusals. Bootstrap retains
+inference, keyword/compatibility policy, source authentication, profile/effect/
+ownership/safety decisions and diagnostic publication. The separate native
+`gravity.types.pipeline-test` exercises actual typed-core and paired plan/C
+emission, real refusals, metadata and live ports; the C7 data/report test remains
+Bootstrap-free. Native compatibility does not prove numeric width, nominal or
+composite legality, canonical C7 typing or admission.
+
 The [native Effects checks](effects-native-checks-evidence.md) add five APIs:
 `native-handled-effect?`, `check-native-registry!`,
 `check-native-build-effects!`, `check-native-replay-effects!` and
