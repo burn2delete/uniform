@@ -406,6 +406,8 @@
         relocated-result (compare-request relocated)]
     (is (= :accepted (:status result)))
     (is (= 7 (count (:outcomes result))))
+    (is (= 33 (count (get-in result
+                            [:identity-input :products 0 :source-spans]))))
     (is (= result (compare-request expanded)))
     (is (= :passed
            (:status (invoke engine-plan 'w5-stage-equivalence-verify-result
@@ -414,3 +416,192 @@
     (is (= (:identity-input result) (:identity-input relocated-result)))
     (is (not= (:provenance result) (:provenance relocated-result)))
     (is (= :rejected (:status (compare-request malformed))))))
+
+(defn- assert-recomputed-comparison [request-value]
+  (let [result (compare-request request-value)
+        verification
+        (invoke engine-plan 'w5-stage-equivalence-verify-result
+                [request-value result])]
+    (is (= :accepted (:status result)))
+    (is (= [:artifact :manifest :diagnostic :conformance :runtime-output
+            :ir-modulo-id :reviewed-delta]
+           (:modes result) (mapv :mode (:outcomes result))))
+    (is (all-equivalent-outcomes? (:outcomes result) 0))
+    (is (= result (compare-request request-value)))
+    (is (= :passed (:status verification)))
+    (is (true? (:recomputed verification)))
+    (is (= :non-authority (:authority verification)))
+    (is (= :blocked (:completion-status verification)))
+    result))
+
+(defn- assert-rejected-comparison [request-value rule reason]
+  (let [result (compare-request request-value)
+        diagnostic (first (:diagnostics result))]
+    (is (= :rejected (:status result)))
+    (is (= rule (:rule diagnostic) (:diagnostic-id diagnostic)))
+    (is (= reason (get-in diagnostic [:facts :reason])))))
+
+(deftest w5-stage-equivalence-traverses-large-diagnostic-records
+  (let [long-message (apply str (repeat 4097 "m"))
+        expand
+        (fn [base path-character]
+          (let [entry (get-in base [:products 2 :left 0])
+                diagnostics
+                (mapv (fn [index]
+                        (-> entry
+                            (assoc :message (str long-message index))
+                            (assoc-in [:source-span :start-byte] index)
+                            (assoc-in [:source-span :end-byte] (inc index))
+                            (assoc-in [:source-span :actual-source-path]
+                                      (apply str (repeat 4097 path-character)))))
+                      (range 65))
+                spans (mapv :source-span (take 33 diagnostics))]
+            (-> base
+                (assoc-in [:products 2 :left] diagnostics)
+                (assoc-in [:products 2 :right]
+                          (mapv #(update-in % [:source-span :actual-source-path]
+                                            str "/right")
+                                diagnostics))
+                (assoc-in [:transcripts :accepted :diagnostics] diagnostics)
+                (assoc-in [:transcripts :rejected :diagnostics] diagnostics)
+                (assoc-in [:transcripts :accepted :source-spans] spans)
+                (assoc-in [:transcripts :rejected :source-spans] spans))))
+        expanded (expand (request accepted-gravity-plan
+                                  'w5-stage-equivalence-request) "a")
+        relocated (expand (request accepted-gravity-plan
+                                   'w5-stage-equivalence-alternate-path-request)
+                          "b")
+        result (assert-recomputed-comparison expanded)
+        relocated-result (compare-request relocated)
+        identity-entries (get-in result [:identity-input :products 2 :left])]
+    (is (= 65 (count identity-entries)))
+    (is (= (str long-message 64) (:message (last identity-entries))))
+    (is (= 64 (get-in (last identity-entries) [:source-span :start-byte])))
+    (is (= identity-entries
+           (get-in result [:identity-input :products 2 :right])))
+    (is (= :accepted (:status relocated-result)))
+    (is (= (:identity-input result) (:identity-input relocated-result)))
+    (is (not= (:provenance result) (:provenance relocated-result)))
+    (is (= 33 (count (get-in result [:transcripts :accepted :source-spans]))))
+    (is (= (apply str (repeat 4097 "a"))
+           (get-in result [:transcripts :accepted :diagnostics 64
+                           :source-span :actual-source-path])))
+    (doseq [[label invalid rule reason]
+            [["malformed final diagnostic"
+              (assoc-in expanded [:products 2 :right 64 :severity] :unknown)
+              "BOOT7003" :diagnostic-evidence]
+             ["malformed final diagnostic span"
+              (assoc-in expanded
+                        [:products 2 :right 64 :source-span :start-byte] -1)
+              "BOOT7003" :diagnostic-evidence]
+             ["empty message after former limit"
+              (assoc-in expanded [:products 2 :left 64 :message] "")
+              "BOOT7003" :diagnostic-evidence]
+             ["drift after former limit"
+              (assoc-in expanded [:products 2 :right 64 :message]
+                        (str long-message "changed"))
+              "BOOT7003" :diagnostic-drift]
+             ["span drift after former limit"
+              (assoc-in expanded
+                        [:products 2 :right 64 :source-span :end-byte] 66)
+              "BOOT7003" :diagnostic-span-drift]
+             ["malformed final transcript diagnostic"
+              (assoc-in expanded
+                        [:transcripts :rejected :diagnostics 64 :code] "")
+              "BOOT7003" :diagnostic-evidence]
+             ["malformed final transcript span"
+              (assoc-in expanded
+                        [:transcripts :accepted :source-spans 32 :column] -1)
+              "BOOT7003" :diagnostic-evidence]]]
+      (testing label
+        (assert-rejected-comparison invalid rule reason)))))
+
+(deftest w5-stage-equivalence-traverses-large-ir-and-operand-vectors
+  (let [base (request accepted-gravity-plan 'w5-stage-equivalence-request)
+        operations
+        (conj (mapv (fn [ordinal]
+                      {:ordinal ordinal :opcode :argument :operands []})
+                    (range 256))
+              {:ordinal 256 :opcode :call :operands (vec (range 256))})
+        ir (fn [prefix]
+             {:normalized-operations operations
+              :id-renaming (mapv (fn [ordinal]
+                                   {:original (str prefix ordinal)
+                                    :ordinal ordinal})
+                                 (range 257))
+              :target-independent true})
+        expanded (-> base
+                     (assoc-in [:products 5 :left] (ir "left-"))
+                     (assoc-in [:products 5 :right] (ir "right-")))
+        result (assert-recomputed-comparison expanded)
+        substituted-request
+        (-> expanded
+            (assoc-in [:products 5 :left :normalized-operations 256 :opcode]
+                      :phi)
+            (assoc-in [:products 5 :right :normalized-operations 256 :opcode]
+                      :phi))
+        substituted-result (compare-request substituted-request)
+        verification
+        (invoke engine-plan 'w5-stage-equivalence-verify-result
+                [expanded substituted-result])]
+    (is (= operations
+           (get-in result [:identity-input :products 5 :left
+                           :normalized-operations])))
+    (is (= 257 (count (get-in result [:identity-input :products 5 :right
+                                     :id-renaming]))))
+    (is (= :accepted (:status substituted-result)))
+    (is (= :rejected (:status verification)))
+    (is (= "BOOT7001" (get-in verification [:diagnostics 0 :rule])))
+    (is (= :producer-authority
+           (get-in verification [:diagnostics 0 :facts :reason])))
+    (doseq [[label suffix value]
+            [["invalid final operation ordinal"
+              [:normalized-operations 256 :ordinal] 255]
+             ["invalid final opcode"
+              [:normalized-operations 256 :opcode] :unknown]
+             ["self reference beyond former operand limit"
+              [:normalized-operations 256 :operands 32] 256]
+             ["forward reference at final operand"
+              [:normalized-operations 256 :operands 255] 257]
+             ["negative final operand"
+              [:normalized-operations 256 :operands 255] -1]
+             ["noninteger final operand"
+              [:normalized-operations 256 :operands 255] "0"]
+             ["duplicate final renaming ordinal" [:id-renaming 256 :ordinal] 0]
+             ["duplicate final renaming name"
+              [:id-renaming 256 :original] "right-0"]
+             ["renaming outside actual population" [:id-renaming 256 :ordinal] 257]
+             ["incomplete renaming" [:id-renaming]
+              (pop (:id-renaming (ir "right-")))]]]
+      (testing label
+        (assert-rejected-comparison
+         (assoc-in expanded (into [:products 5 :right] suffix) value)
+         "BOOT7002" :artifact)))
+    (assert-rejected-comparison
+     (assoc-in expanded [:products 5 :right :normalized-operations 256 :opcode]
+               :phi)
+     "BOOT7002" :ir-normalization-drift)))
+
+(deftest w5-stage-equivalence-traverses-large-reviewed-delta-vectors
+  (let [base (request accepted-gravity-plan 'w5-stage-equivalence-request)
+        delta (first (:accepted-deltas base))
+        deltas (mapv (fn [index]
+                       (assoc delta :delta-id (keyword "delta" (str index))))
+                     (range 17))
+        expanded (assoc base :accepted-deltas deltas)
+        result (assert-recomputed-comparison expanded)]
+    (is (= deltas (:accepted-deltas result)
+           (get-in result [:identity-input :accepted-deltas])))
+    (doseq [[field value]
+            [[:status :pending]
+             [:reviewer ""]
+             [:policy-id ""]
+             [:reason ""]
+             [:mode :artifact]
+             [:product-id :product/missing]
+             [:left {:builder-note "unreviewed change"}]
+             [:right {:builder-note "unreviewed change"}]]]
+      (testing (str "invalid final delta " field)
+        (assert-rejected-comparison
+         (assoc-in expanded [:accepted-deltas 16 field] value)
+         "BOOT7004" :unreviewed-delta)))))
