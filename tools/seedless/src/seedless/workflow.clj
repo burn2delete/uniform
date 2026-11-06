@@ -413,6 +413,25 @@
 (defn- merge-in-progress? [ctx cwd]
   (zero? (:exit (rt/command ctx cwd ["git" "rev-parse" "-q" "--verify" "MERGE_HEAD"]))))
 
+(defn- commit-parents [ctx cwd commit]
+  (let [parts (str/split (rt/git ctx cwd "rev-list" "--parents" "-n" "1" commit) #"\s+")]
+    (vec (rest parts))))
+
+(defn- composed-retained-candidate? [ctx t]
+  (let [cwd (:worktree t)
+        base (:base t)
+        candidate (:candidate t)
+        published (:published-candidate t)
+        parents (when (and (complete-sha? candidate)
+                           (complete-sha? base)
+                           (complete-sha? published))
+                  (commit-parents ctx cwd candidate))]
+    (and (not= candidate published)
+         (contains? (set (:published-candidates t)) published)
+         (= 2 (count parents))
+         (every? (set parents) [base published])
+         (= "" (rt/git ctx cwd "merge-base" "--is-ancestor" published candidate)))))
+
 (defn- retained-clean-candidate? [ctx t]
   (let [cwd (:worktree t)
         base (:base t)
@@ -422,13 +441,14 @@
          (not (merge-in-progress? ctx cwd))
          (pos-int? (get-in t [:pr :number]))
          (= "checkpoint" (get-in t [:implementation :outcome]))
-         (= candidate (:published-candidate t))
          (every? complete-sha? [base candidate tree])
          (= candidate (rt/git ctx cwd "rev-parse" "HEAD"))
          (= tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}"))
          (= "" (rt/git ctx cwd "merge-base" "--is-ancestor" base candidate))
          (not= base candidate)
          (not= tree (rt/git ctx cwd "rev-parse" (str base "^{tree}")))
+         (or (= candidate (:published-candidate t))
+             (composed-retained-candidate? ctx t))
          (do
            (assert-clean! ctx cwd)
            (let [paths (vec (remove str/blank?
@@ -461,11 +481,13 @@
         (let [paths (working-paths ctx t)]
           (if (and (empty? paths) (= "ready" (:outcome output))
                    (retained-clean-candidate? ctx t))
-            (do
+            (let [composed? (not= (:candidate t) (:published-candidate t))]
               ;; A prior checkpoint may already be the published candidate. Run
               ;; the normal checks and acceptance path without recommitting or
-              ;; republishing the unchanged source.
+              ;; republishing the unchanged source. A disjoint current-main
+              ;; composition is a new candidate and must be published once.
               (task! ctx key :implementation output)
+              (when composed? (publish! ctx (task ctx key)))
               (reset! writer-ended? false)
               (check-candidate! ctx key (:checks output) lease)
               (reset! writer-ended? true)
