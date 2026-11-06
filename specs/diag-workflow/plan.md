@@ -317,3 +317,42 @@ required for this task-authority transfer.
 No compiler/runtime imports, schemas, diagnostic IDs, wire identities, manifest
 hashes, redaction rules or public APIs change. Planning IDs in canonical links
 remain traceability only.
+
+## Canonical fixture severity increment
+
+Finding: `diag.pass-fixtures.canonical-severity-validation-v1`.
+Owner task: `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+This is a current implementation supplement; the transfer plan above retains
+its historical scope.
+
+[C15 severity and lifecycle](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#severity-and-lifecycle)
+defines `:error`, `:warning`, `:info`, `:hint` and `:internal-error`.
+The existing pass-manifest validator must require fixture membership in that
+canonical set from `compiler-pass-default-diagnostic-schema`, independently of
+suite schema overrides. Keep required-schema and duplicate-catalog refusals
+first, then check severity before each record's existing field checks. Emit
+`C15-SCHEMA`, `:schema-field :severity`, `:reason :missing-severity` for an
+absent key or `:reason :invalid-severity` for any present unsupported value
+(including nil). Retain zero-based `:fixture-index`, offending diagnostic ID,
+stage, source/profile/target, available artifact ID and remediation. Preserve
+existing artifact-ID precedence, falling back to the primary artifact. Never
+include the malformed severity payload in the refusal.
+
+Own only `diagnostic_validation.clj`, the new `diagnostic_severity_test.clj`
+under `compiler_pass_manifest`, and appends to this plan, tasks and evidence.
+Use public validator and actual artifact-constructor calls through
+`[:metadata :compiler :passes]`; do not replace validation or proof operations
+in tests. Constructor rejection throws and produces no artifact. Retain entire
+accepted fixture records, including metadata, and existing field/order rules.
+These are manifest fixtures: their recorded error severity does not represent
+a newly encountered compilation error. Live emission policy and internal-error
+bug-report context remain separate parent obligations.
+
+The [focused fixtures and verification handoff](evidence.md#canonical-fixture-severity-increment)
+separate authored assertions from actual results. Local construction starts
+against the existing suite/schema interface; composition exercises that suite
+in the real constructor. Controller checks and independent acceptance remain
+pending; release has its separate evidence dependencies. Append this finding
+separately from PR767's planning work; the controller coordinates their shared
+artifact composition without adopting that candidate's implementation. The
+parent remains Open.

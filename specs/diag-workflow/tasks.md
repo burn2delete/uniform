@@ -162,3 +162,26 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `diag-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+## Canonical fixture severity increment
+
+Finding `diag.pass-fixtures.canonical-severity-validation-v1` refines only
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+The canonical task body, Open status and historical migration record above
+remain unchanged. This supplement is not a new completion ledger.
+
+The [narrow plan](plan.md#canonical-fixture-severity-increment) requires canonical
+five-value severity membership before per-record field validation, after
+existing schema/catalog refusals, with secret-safe contextual `C15-SCHEMA`
+failures and no artifact on constructor rejection. Public validation and real
+construction fixtures cover unchanged defaults, all five severities, retained
+metadata, absent/nil/unknown/string/private-marker severities, schema override
+bypass attempts, refusal precedence and existing remediation/field/order rules.
+
+Implementation and fixtures are authored in the owned Clojure paths; executable
+verification is unrun and controller-owned. See [attributed evidence and exact
+argument vectors](evidence.md#canonical-fixture-severity-increment). Independent
+acceptance remains pending. PR767 shared-file append composition belongs to the
+controller; none of its implementation or acceptance is adopted here. Broader
+producer normalization, severity emission policy, internal-error context,
+rendering, release and parent closure remain separate obligations.
