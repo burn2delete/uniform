@@ -841,8 +841,11 @@
                    :actual-type (type (get pr location))
                    :missing (not (contains? pr location))}))
       (let [reference (get pr location)]
-        (when (and (contains? reference :repo)
-                   (some? (:repo reference)) (not (map? (:repo reference))))
+        (when-not (contains? reference :repo)
+          (rt/fail! "Open PR repository reference is malformed"
+                    {:provider-shape :repository :index index :location location
+                     :missing true}))
+        (when (and (some? (:repo reference)) (not (map? (:repo reference))))
           (rt/fail! "Open PR repository is malformed"
                     {:provider-shape :repository :index index :location location
                      :actual-type (type (:repo reference))})))))

@@ -752,6 +752,7 @@
 (deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
   (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}
                      {:number 13 :head nil :base {:ref "main" :repo nil}}
+                     {:number 15 :head {:ref "codex/missing-repo"} :base {:ref "main" :repo nil}}
                      "not-a-pull-request"]]
     (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
           repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
