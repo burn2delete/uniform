@@ -360,6 +360,51 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Provide genuine branch/guard definitions, uses and duplicate/scope refusals before inference. Later enrich indexes with actual current narrowing/coverage references and validate preservation; future inferred summaries cannot be initial lexical inputs.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Supply actual protocol/type/method/implementation and dispatch-function/case identities from their declared positions. Preserve missing/ambiguous identities and source/generated provenance; Types selects implementation sets and Effects derives actual call effects.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Real protocol/type/method/implementation/case and call bindings precede tentative selection; early source indexes are enriched only with actual later typed facts.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Supply actual outcome constructor, error-type, catch-binding, handler/call and source/generated identities with correct lexical scopes. Types owns actual payload/result/coverage and Effects real error propagation/admission.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Consume early authentic namespace/export/profile/layer declarations, then validate actual library imports and upward/downward dependencies with source identity. Later actual built availability confirms shipped claims; a future full library release is not the first import interface.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Consume early authentic versioned facet manifests and explicit lexical activations. Namespace imports do not activate their facets in importers; macro-introduced nested activation requires provenance and aliases/explicit activation resolve ambiguity. Later built availability is separate from the first declaration.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Resolve binds actual foreign symbols/endpoints/schemas/imports and generated target namespaces to authentic versioned source/provider/profile/target facts. An import neither invokes a provider nor grants authority; unsupported host behavior cannot leak through a package name.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority
