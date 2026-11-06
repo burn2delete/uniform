@@ -25,6 +25,31 @@ Use the [resolution producer and consumer order](../resolve-workflow/plan.md#res
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Supply real early artifact writer/manifest/source-map contracts, then actual selected target bytes and readback/provenance for backend and compiler comparisons. Metadata presence or a declaration cannot establish branch behavior, and final conformance is not the first emitter input.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early real writer/manifest/map contracts precede actual selected interface/call bytes and metadata readback; final conformance is later consumer evidence.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Write/read back actual selected error/handler/trap/interface artifacts and current source/proof/effect/grant/profile/runtime dependencies. A target label or manifest does not demonstrate its failure semantics.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Expose actual kind/encoding/write/readback/map and common-manifest interfaces, then write real selected family artifacts and current required metadata. Full source-to-target graph, type/effect/grant/safety/proof/audit/source/helper/dependency/conformance/reproduction remain inspectable. Explicit development-only gaps stay non-release and cannot legalize invalid inputs; signing or future complete packs are not first writer inputs.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

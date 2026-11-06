@@ -206,6 +206,95 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Bind actual selected constructor/domain/guard/order/binding/type/effect/resource/schema/profile/target/source conditions before reuse. Source-only entries need no absent semantic facts; affected decision/diagnostic/proof products require genuine owner regeneration and current origins.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Track actual declaration/implementation/case/priority/type/effect/grant/profile/target/ABI/schema/provider/proof inputs and invalidate affected selection, specialization and consumers. Stable semantic identities retain accurate current provenance.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Bind actual declaration/implementation/case/priority/type/effect/grant/profile/ABI/schema/provider/proof/source inputs; invalidate and regenerate affected selections and diagnostics before reuse, preserving honest whole-file provenance.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Track actual error-type/handler/call/effect/profile/check/mapping/schema/service/retry/compensation/policy and current source inputs. Invalidate affected error/diagnostic/proof products before owner regeneration and reuse; stable semantic ids do not justify stale file provenance.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Consume authentic library manifests and later actual compiled export/profile/example/audit/compatibility evidence under current package policy. Early selected source/graph contracts support local development; full Build or whole-library release is not its own initial interface.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Bind actual module/export/profile/provider/delegation/path/TLS/schema/policy artifacts and compiled examples to exact source/compiler/target/locked recipe identities. Host defaults, ambient services and supplied complete flags cannot establish support. Consume actual applicable audit/conformance/performance artifacts for the claimed product; final signed/released acceptance remains downstream and held actions remain held.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Build binds actual module exports, representation/provider/profile/target/effect/allocation metadata, compiler/toolchain/lock/source and examples to genuine artifact identities. Changed collection source, caller/use proofs or representation facts invalidate affected products; an old receipt or compatibility binding proves no current callable module. Signing/publication remains separate.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Bind genuine module exports/manifests/docs, supported profiles/providers, canonical payloads, locked recipe/environment inputs and actual repeat-build/signature/provenance/SBOM results to the exact claimed grade. Signing occurs only within actual custody/permission; signatures alone prove no provenance or authorization.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Hermetic input policy
+
+Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) and the exact L12 declared-input,
+provider/replay, clock/random, target-manifest and generated-input premises.
+The existing typed-build-graph task owns actual allowed/refused execution;
+the reproducibility/target-matrix task owns real repeat-build typed-Core byte
+comparisons. An environment grant without its declared key/value policy, or a
+network/shell/model/tool grant without the required replayable provider or
+pinned result, is refused before action. Actual accepted and rejected input,
+provider, phase, redaction and replay records remain required. Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed; no held
+build or provider operation is enabled by this plan.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Resolve authentic facet identity/version/range/source/schema locks before compilation, integrating selected-engine/shared semantic cache boundaries and actual current-policy reuse. Syntax/IR/lowering/profile/schema/privacy/grant changes invalidate affected products before owner regeneration; version metadata alone is not compatibility acceptance.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Bind actual custom type-provider/version/fact/proof/solver identity in locks and artifact metadata. Reuse depends on authentic source/compiler/profile/target/macro/facet/grants and current effects/policy; changed provider facts/proofs require real owner regeneration. No whole Build/release gates initial declarations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Build binds real incumbent/schema/provider/runtime/ABI/compiler/generator/profile/target/lock and effect/grant inputs, versions generated artifacts and records compatibility/deprecation. Changed source/schema/ABI/CString layout invalidates affected wrappers, types, codecs and parity before actual regeneration; repeated locked generation needs actual comparison rather than flags.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Resolve actual declared family/runtime/toolchain/dialect/ABI/schema/module/feature/pass/helper/resource/provider inputs before compilation and invalidate affected products on changes. Actual content bytes/canonical representation, common provenance graph, hashes, output-affecting environment and nondeterminism/timestamp policy precede claimed package/reproduction results. Final signing/release is not first artifact schema or authority.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

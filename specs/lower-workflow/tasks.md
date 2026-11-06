@@ -46,6 +46,32 @@ Apply the [complete target-lowering source criteria](plan.md#complete-target-low
 C14/PERF4 layout criterion performance/layout-boundary (Open): Derive and preserve explicit target ABI/layout records for calling convention, exported symbols, data alignment, enum/union/closure representations, errors/panic, resource handles, FFI, stack/heap, GC/no-GC, device/address-space mapping and debug/unwind. ABI/FFI/hardware/kernel/firmware/GPU/serialization/persistence boundaries retain actual layout, alignment, packing and ownership facts. Consume actual typed-field and checked transformation/alias/ownership/address-identity/boundary evidence; every optimized layout has a manifest and layout changes cannot remain hidden in a backend. The layout manifest binds type, profile, target, selected strategy, field names/types/alignments, overall alignment, padding, ABI and proof references. Packed/unaligned access requires actual target support and access-safety facts, with trap/atomic/vector/fallback conditions and preserved initialization/padding-byte rules. Required outputs: layout/ABI manifest, alignment proof, padding/packing, alias/ownership and device-transfer records, source/debug mapping and conformance results available to actual backend/debugger/serializer/safety consumers. Positive fixtures retain boundary representations and validate host/device transfer layouts; reject missing/ambiguous manifests, unsupported alignment, packed access without safety facts, host/device mismatch, unauthorized boundary changes or layout-based check erasure without actual proof. Retain applicable C14-ABI and PERF4-LAYOUT/ALIGN/PACKED/DEVICE/PROOF with type/field/span/target/profile/boundary/transform/missing-proof context. Layout selection consumes upstream transformation correctness rather than independently implementing the layout optimizer or deriving mathematical equality from representation identity.
 <!-- lower-canonical-layout:end -->
 
+
+<!-- lower-protocol-source-interfaces:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 interface-lowering criterion (Open): Derive stable closed/target-oriented method layouts from actual source protocol/implementation/signature contracts and required ABI, type, effect, ownership and runtime facts. Produce actual direct-call, vtable, dictionary, host-interface, C-ABI-table, Wasm-component or profile-defined HDL-signal-bundle artifacts for the selected supported boundary, preserving source semantics and implementation/mode identities. Target interfaces are lowering artifacts, not new source contracts. Reject layout/type/effect/profile/host-contract mismatches or unsupported required representation before emission. Required evidence: actual interface artifacts/readback and representative accepted/refused source-to-target comparisons; early declared ABI/service interfaces precede later final checked artifacts and are not whole-backend completion.
+<!-- lower-protocol-source-interfaces:end -->
+
+
+<!-- lower-alternative-types-source-layout:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-type layout consumer criterion (Open): Consume genuine common typed-Core representation, ownership/lifetime/resource and selected provider/profile/target facts to derive and verify required concrete ABI/layout metadata. A provider cannot replace backend layout contracts without exporting the actual facts they require; alternative-theory internals, host defaults and missing type representations cannot stand in for layout evidence. Preserve checked/unsafe/foreign-handle boundaries and reject incompatible/missing/stale facts before affected lowering or calls. Required evidence: actual selected provider-to-layout accepted/refused products, source/fact/schema/target identities and retained boundary obligations, with early ABI rules and preliminary independent types distinguished from later final layouts and runtime execution.
+<!-- lower-alternative-types-source-layout:end -->
+
+
+
+<!-- lower-interop-source-abi:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual ABI and wire-representation lowering criterion (Open): Derive required concrete target ABI/protocol/type/representation/layout/calling-convention metadata from authentic declarations, preliminary type/ownership facts and actual provider/host/runtime contracts. Preserve null/init/allocator/alias/thread/blocking/error and safe-wrapper assumptions, directional conversions and explicitly ABI-safe native exports; host defaults cannot define Gravity safety. Early ABI rules precede concrete layout, actual required admitted layouts precede affected calls, and future runtime traces are not initial layout premises. Reject missing/incompatible ABI/layout/provider/source identities. Required evidence: real selected native/Wasm/host/schema accepted/refused representation products and source mappings; actual backend/target execution remains separately governed.
+<!-- lower-interop-source-abi:end -->
+
+
 - [ ] `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers` lower/3: Select explicit providers
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -99,6 +125,14 @@ Apply the [complete target-lowering source criteria](plan.md#complete-target-low
 
 C14 emission/unsupported criterion compiler/c14/unsupported-target (Open): Emit only accepted backend-ready inputs with the actual verified-input identity, backend/profile/target fingerprint, produced artifact kinds/content hashes, source/generated map, proof map, effect/capability/safety summaries, runtime/provider and dependency provenance, diagnostics and eligibility/ABI/layout decisions. Actual backend and package consumer fixtures validate the complete artifact manifest and preserved metadata. For an unrepresentable operation or domain artifact, produce a machine-readable unsupported record naming that subject, required feature, backend/profile, source span, alternatives, fallback status and diagnostic identity. Select fallback only under the same semantic/effect/capability/safety/profile contract and actual support; reject hidden services, authority expansion, undefined-behavior paths, unsupported features or incomplete manifests with the applicable C14 rules. Required outputs: actual target artifacts/manifests, unsupported-feature report and legal-fallback/refusal/consumer results. Preserve the existing staged Linux LLVM release slice as its declared claim, with other target coverage explicitly unimplemented until evidenced; this general C14 contract adopts no additional target and confers no execution or release acceptance.
 <!-- lower-canonical-emission:end -->
+
+
+<!-- lower-error-source-lower:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual selected error lowering criterion (Open): Produce actual target artifacts implementing the admitted profile's try/throw and panic/check-failure disposition, or an owning rejection, from verified current input and actual type/effect/grant/profile/resource/runtime facts. Preserve typed Result/Option data paths, handler/transfer/cleanup order, required traps or failure records, all relevant source/generated maps and available artifact provenance. No target stack exception, undefined behavior or runtime label may silently replace the declared source failure contract. Required evidence: actual selected target bytes/IR/graphs and readback, positive/refused lowering/missing-service/mapping cases and representative behavior comparisons, with Runtime's earlier error/panic contract distinct from later execution and all held target/device actions unchanged.
+<!-- lower-error-source-lower:end -->
 
 <!-- lower-implementation-tasks:end -->
 
