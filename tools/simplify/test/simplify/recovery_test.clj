@@ -45,10 +45,13 @@
                                (action! c {:type "fileChange" :id "fixture-write" :status "completed"
                                            :changes [{:path (str (io/file cwd "work.edn")) :kind {:type "update"} :diff "fixture authored change"}]})
                                (action! c {:type "commandExecution" :id "fixture-read" :command "cat work.edn"
-                                           :status "completed" :exitCode 0 :aggregatedOutput "{:value 2}"})
+                                           :status "completed" :exitCode 0
+                                           :aggregatedOutput (if (:quoted-refusal-data options)
+                                                               "{:prior-error \"HTTP 401: Bad credentials\"}"
+                                                               "{:value 2}")})
                                (when (:semantic-failure options)
                                  (action! c {:type "commandExecution" :id "fixture-semantic-check"
-                                             :command "clojure -M fixture-semantic-check.clj" :status "completed"
+                                             :command "clojure -M fixture-semantic-check.clj" :status "failed"
                                              :exitCode 1 :aggregatedOutput "C2-HASH pinned input is stale"}))
                                (rt/event! c :rpc-receive {:job job :message {:method "turn/completed"
                                                                            :params {:turn {:id "fixture-turn" :status "completed"}}}})
@@ -207,7 +210,8 @@
      :error error :output output :receipt receipt}))
 
 (deftest resolved-dependency-commits-retained-work-and-composes-verified-main-without-reauthoring
-  (doseq [options [{} {:semantic-failure true :dependency-path " dependency\nsource.edn"}]]
+  (doseq [options [{} {:semantic-failure true :quoted-refusal-data true
+                      :dependency-path " dependency\nsource.edn"}]]
   (let [{:keys [ctx repo dependency-worktree dependency-path evidence merge error output]} (dependency-fixture! options)
         stages (atom [])
         job (get-in @(:state ctx) [:jobs "implement-1"])]
@@ -246,7 +250,7 @@
 (deftest source-dependency-recovery-cannot-bypass-real-refusals-or-stale-evidence
   (doseq [mutation [:real-restriction :unresolved-semantics :no-dependency :forged-history :false-source
                     :stale-file :file-mode :unproven-source :unknown-failure :unfinished-action :refusal-action
-                    :own-main-pending :watchdog-failure]]
+                    :own-main-pending :watchdog-failure :xcrun-refusal :failed-refusal]]
     (let [{:keys [ctx repo evidence receipt]} (dependency-fixture!)]
       (case mutation
         :real-restriction (flow/task! ctx "authored" :error {:message "Actual denied action" :details {:restricted true}})
@@ -271,6 +275,15 @@
                                                                                       :params {:item {:id "pending" :type "commandExecution"}}}})
         :refusal-action (action! ctx {:type "commandExecution" :id "denied" :command "retained denied action"
                                      :status "completed" :exitCode 0
-                                     :aggregatedOutput "git: error: couldn't create cache file '/tmp/fixture' (errno=Operation not permitted)"}))
+                                     :aggregatedOutput "git: error: couldn't create cache file '/tmp/fixture' (errno=Operation not permitted)"})
+        :xcrun-refusal (action! ctx {:type "commandExecution" :id "denied-xcrun" :command "retained denied action"
+                                    :status "completed" :exitCode 0
+                                    :aggregatedOutput "xcrun: error: couldn't create cache file '/tmp/fixture' (errno=Operation not permitted)"})
+        :failed-refusal (let [output "Permission denied"]
+                          (action! ctx {:type "commandExecution" :id "denied-failed" :command "retained denied action"
+                                        :status "completed" :exitCode 1 :aggregatedOutput output})
+                          (rt/write-edn! evidence (assoc receipt :preserved-failed-actions
+                                                        [{:id "denied-failed" :command "retained denied action" :exit 1
+                                                          :output-sha256 (rt/digest output)}]))))
       (is (thrown? Exception (flow/recover-dependency! ctx "authored" evidence)) (name mutation))
       (is (= :attention (:status (flow/task ctx "authored")))))))

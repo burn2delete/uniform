@@ -108,10 +108,14 @@
         "commandExecution"
         (do (require! (and (or (= 0 (:exitCode action))
                               (and (some? preserved-failures) (= 1 (:exitCode action))))
-                           (= "completed" (:status action))
+                           (if (and (some? preserved-failures) (= 1 (:exitCode action)))
+                             (#{"completed" "failed"} (:status action))
+                             (= "completed" (:status action)))
                            (string? (:command action)) (string? (:aggregatedOutput action)))
                       "Original command has unknown or unfinished execution")
-            (require! (not (rt/authorization-denied? (:aggregatedOutput action)))
+            (require! (not (if (some? preserved-failures)
+                             (seq (codex/model-command-denial-lines action))
+                             (rt/authorization-denied? (:aggregatedOutput action))))
                       "Original command includes refusal text requiring inspection"))
         "fileChange"
         (do (require! (and (= "completed" (:status action)) (not (:error action)) (seq (:changes action)))

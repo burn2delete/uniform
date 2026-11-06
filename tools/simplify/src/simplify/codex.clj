@@ -135,7 +135,9 @@
         (throw e))
       (finally (close! client)))))
 
-(defn- model-command-denial-lines [item]
+(defn model-command-denial-lines
+  "Classify a completed model tool result without treating quoted source data as a refusal."
+  [item]
   (when (and (= "commandExecution" (:type item)) (number? (:exitCode item)))
     (let [lines (filter rt/authorization-denied? (str/split-lines (or (:aggregatedOutput item) "")))]
       ;; The model-tool protocol merges stdout/stderr. A successful source read
