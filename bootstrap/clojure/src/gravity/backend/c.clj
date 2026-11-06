@@ -5,7 +5,10 @@
   (quote
 {:authenticates-inputs? false,
  :public-api
- {run-compiler!
+ {assemble-native
+  {:arglists ([owner-operations source-path c11-artifact c-packet b1-record payload mir preflight]),
+   :admission :none},
+  run-compiler!
   {:arglists
    ([self! _staging! _process! _fail! _cleanup! c-source-path executable-path source-path target]
     [_self! staging! process! fail! cleanup! c-source-path executable-path source-path target execute?]),
@@ -69,6 +72,7 @@
  :supported
  [:existing-scalar-c17-data-emission
   :stable-source-and-proof-associations
+  :native-constructed-unverified-artifact-assembly
   :pending-toolchain-manifests
   :compatibility-var-interposition
   :existing-c11-compile-runtime-call-order
@@ -101,7 +105,8 @@
   :caller-owned-source-and-executable-paths
   :source-context-and-target
   :execution-flag
-  :late-self-staging-process-failure-cleanup-vars],
+  :late-self-staging-process-failure-cleanup-vars
+  :caller-supplied-preflight-data-and-live-assembly-ports],
  :namespace gravity.backend.c,
  :diagnostic-ownership
  {:stage ["B2-MANIFEST" "B2-DIALECT" :exact-data-mismatch
@@ -121,6 +126,7 @@
   :proof-assumption-map
   :discard-cast-records
   :exact-comparison-or-refusal
+  :constructed-unverified-c17-artifact
   :owner-supplied-compile-runtime-record
   :original-exception-interruption-or-cleanup-failure],
  :issues-certificates? false,
@@ -517,5 +523,125 @@
                 :runtime-out (:out @runtime-result)
                 :runtime-err (:err @runtime-result)
                 :runtime-exit (:exit @runtime-result)))))))
+
+(defn- owner-value [operations key]
+  (let [value (get operations key)] (if (var? value) @value value)))
+
+(defn assemble-native
+  "Construct relative C17 data after caller preflight; authenticates no supplied input."
+  [owner-operations source-path c11-artifact c-packet b1-record payload mir preflight]
+  (let [expected-mir (:mir preflight)
+        operations (:operations preflight)
+        block-order (:block-order preflight)
+        operation-order (mapv :op-id operations)
+        operation-index (zipmap operation-order (range))
+        operation-records
+        (mapv #((owner-value owner-operations :operation-record)
+                % operations operation-index)
+              operations)
+        function (:function preflight)
+        return-id ((owner-value owner-operations :return-id) function block-order)
+        return-value-name
+        ((owner-value owner-operations :value-name) operation-index return-id)
+        source-text
+        ((owner-value owner-operations :source-text)
+         operation-records return-value-name)
+        semantic-result
+        ((owner-value owner-operations :process-exit-code) (:semantic-result preflight))
+        source-debug-map
+        ((owner-value owner-operations :source-debug-map-record)
+         b1-record operations operation-records return-id
+         return-value-name)]
+    ((owner-value owner-operations :assert-exact!)
+     source-path expected-mir mir :fresh-c11-to-sealed-b1-mir-parity)
+    (when-not
+     (and (= operation-order (:operation-order payload))
+          (= (:artifact-id c11-artifact) (:c11-artifact-id payload))
+          (= (:artifact-id c11-artifact)
+             (get-in c-packet [:c11 :artifact-id]))
+          (= (:mir-id c11-artifact)
+             (get-in c-packet [:c11 :mir-id]))
+          (= (:artifact-id b1-record)
+             (get-in c-packet [:b1 :artifact-id]))
+          (= (:semantic-id b1-record)
+             (get-in c-packet [:b1 :semantic-id])))
+      ((owner-value owner-operations :fail!)
+       "B2-MANIFEST" source-path b1-record
+       {:missing-fact :fresh-context-bound-b1-to-b2-input-closure}))
+    {:artifact :gravity/b2-bounded-hosted-c17
+     :schema-version 1
+     :status :constructed-unverified
+     :policy (owner-value owner-operations :policy-record)
+     :input-bindings
+     {:b1-semantic-id (:semantic-id b1-record)
+      :b1-artifact-id (:artifact-id b1-record)
+      :b1-actual-path-binding-id (:actual-path-binding-id b1-record)
+      :c11-artifact-id (:c11-artifact-id payload)
+      :c13-artifact-id (:c13-artifact-id payload)
+      :c13-semantic-id (:c13-semantic-id payload)
+      :mir-module-id (:module-id mir)
+      :b1-source-rule (:source-rule b1-record)}
+     :backend-manifest (:backend-manifest b1-record)
+     :c-build-manifest
+     ((owner-value owner-operations :build-manifest-record)
+      (owner-value owner-operations :dialect-selection-record))
+     :source-debug-map source-debug-map
+     :dialect-selection (owner-value owner-operations :dialect-selection-record)
+     :abi-layout-manifest
+     ((owner-value owner-operations :abi-layout-record) b1-record)
+     :runtime-helper-manifest
+     ((owner-value owner-operations :runtime-helper-record) b1-record)
+     :proof-to-c-assumption-map
+     ((owner-value owner-operations :proof-to-c-assumption-record)
+      b1-record mir operations operation-records return-id
+      return-value-name semantic-result)
+     :block-order block-order
+     :operation-index operation-index
+     :operation-records operation-records
+     :header-file
+     {:artifact :gravity/b2-c-header-file
+      :path "program.h" :dialect :c17
+      :content (owner-value owner-operations :header-text)
+      :generated? true}
+     :source-file
+     {:artifact :gravity/b2-c-source-file
+      :path "program.c" :dialect :c17 :content source-text
+      :includes ["stdint.h" "program.h"]
+      :generated? true}
+     :semantic-result semantic-result
+     :expected-exit-code semantic-result
+     :verified-input-closure
+     {:status :structurally-closed-after-root-contextual-gate
+      :sealed-b1-record
+      :fresh-contextual-strict-equality-required-before-invocation
+      :raw-source-validator :not-a-standalone-seal-verifier
+      :invocation-authority :clojure-seed-root-capability-gate
+      :sealed-b1-semantic-id (:semantic-id b1-record)
+      :sealed-b1-artifact-id (:artifact-id b1-record)
+      :sealed-b1-actual-path-binding-id
+      (:actual-path-binding-id b1-record)
+      :actual-path-provenance (:actual-path-provenance b1-record)
+      :mir-source :bounded-lowering-payload-only
+      :source-core (:source-core mir)
+      :mir-module-id (:module-id mir)
+      :pass-execution-record-id
+      (get-in mir [:pass-execution-record :record-id])
+      :operation-count (count operations)
+      :conditional-count
+      (count (filter #(= :conditional-join (:opcode %)) operations))
+      :full-dfg-definition-count
+      (count (get-in mir [:data-flow-graph :definitions]))
+      :full-dfg-value-count
+      (count (get-in mir [:data-flow-graph :values]))
+      :runtime-check-count (count (:runtime-check-table mir))
+      :effect-count (count (:effect-table mir))
+      :capability-count (count (:capability-table mir))}
+     :diagnostics []
+     :clojure-seed-boundary? true
+     :whole-b2? false
+     :public? false
+     :release? false
+     :self-hosted? false}))
+
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

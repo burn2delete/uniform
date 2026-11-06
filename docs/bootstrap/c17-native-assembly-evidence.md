@@ -56,3 +56,46 @@ native C or broker/staging/Gate A/Gate B routes, issue proof certificates, or
 claim full B2 conformance, release, migration, self-hosting or seed retirement.
 The existing scalar C dialect and inherited fallback behavior remain explicit
 limitations; no new general MIR/domain lowering is introduced.
+
+## Implemented source and local evidence
+
+The existing pure suffix now lives in assemble-native with twelve explicit
+function Vars and three late catalog Vars. Bootstrap preserves every preceding
+byte through its original preflight call; only the final forwarding adapter
+and closing binding delimiter change. Exact reconstruction recovers the entire
+original component, the complete prior stage and every prior CI command and
+selector byte. No source/authority token, pin, guarded intake or execution
+implementation changes.
+
+An immutable original suffix from f0e07c51a845fbbb8d449d87457e2b0c9bd6efe5
+and the extracted function consume the same live native fixture data. Ten
+complete records match as raw serialized and parsed data: three constructed
+records and seven B2-MANIFEST refusals. Inputs remain unchanged. The record
+SHA256 is
+5646d962c8ebb4abd137641885a44db95b5b062d74b01e1df4c6db9618228c45.
+This executes neither the original guarded wrapper nor its preflight; copied
+closure labels remain unauthenticated native fixture data.
+
+The complete C namespace passes 18 tests / 265 assertions, including current
+Gravity B2 C/header emission and B1-INPUT refusal, relative assembly, MIR and
+association mismatches, complete provenance, late function/catalog Vars,
+callable selection before observable argument lookup, exact owner exception
+identity and inherited returning-failure behavior. Language/ownership tests
+pass 48 / 1202. The original baseline passes 13 / 222. The initial new
+diagnostic assertion used code instead of id and produced seven test failures;
+its log is retained and corrected without changing production semantics.
+The source generator's form-validation guard also caught an unclosed adapter
+before any repository mutation; its failure history remains preserved.
+
+The complete C namespace is appended to the existing contracts CI group with
+2g/180 seconds. All seven prior commands, matrix/workflow and selectors remain
+unchanged. Controls cover every current C deftest and reject omission or
+substitution. One local harness attempt reports 10 failures / 1 error in
+existing process-watchdog tests after a long execution gap; its 53-test /
+556-assertion NONPASS and generated receipts are preserved, not reclassified
+as success. Fresh execution of the unchanged harness passes 53 tests / 559
+assertions with all controls retained. Direct lint, CI format and both document
+validators pass. Cold loading exposes exactly the declared 20 public APIs,
+has no namespace aliases and does not load Bootstrap. Contextual lint,
+independent acceptance, own hosted CI/provenance review and exact current-Main
+integration remain unproven.

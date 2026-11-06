@@ -45,6 +45,37 @@
      :mir {:module-id "fixture-module"}
      :dialect {:target-triple "fixture-target" :flags ["-std=c17"]}}))
 
+(defn- assembly-fixture []
+  ;; Native data only. No B1 seal, accepted preflight credential or private
+  ;; guarded assembler is constructed or invoked by these fixtures.
+  (let [{:keys [operations function b1 mir]} (fixture)
+        c11 {:artifact-id "fixture-c11-data" :mir-id "fixture-mir-data"}
+        payload {:mir mir :operation-order (mapv :op-id operations)
+                 :c11-artifact-id (:artifact-id c11)
+                 :c13-artifact-id "fixture-c13-data" :c13-semantic-id "fixture-c13-semantic"}
+        b1 (assoc b1 :bounded-lowering-payload payload :semantic-id "fixture-b1-semantic"
+                  :actual-path-binding-id "fixture-path-data"
+                  :actual-path-provenance {:source "emission-data.gravity"})]
+    {:source-path "emission-data.gravity" :c11 c11 :b1 b1 :payload payload :mir mir
+     :packet {:b1 b1 :c11 c11}
+     :preflight-data {:mir mir :operations operations :block-order ["entry"]
+                      :function function :semantic-result 7}}))
+
+(defn- assembly-ports []
+  (assoc
+   (into {} (for [name ["operation-record" "return-id" "value-name" "source-text"
+                        "process-exit-code" "source-debug-map-record" "assert-exact!"
+                        "build-manifest-record" "abi-layout-record" "runtime-helper-record"
+                        "proof-to-c-assumption-record" "policy-record" "dialect-selection-record"
+                        "header-text"]]
+              [(keyword name) (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-b2-c17-" name)))]))
+   :fail! (ns-resolve 'gravity.bootstrap 'p15-s23-c-backend-fail!)))
+
+(defn- assemble
+  ([data] (assemble (assembly-ports) data))
+  ([ports {:keys [source-path c11 packet b1 payload mir preflight-data]}]
+   (c/assemble-native ports source-path c11 packet b1 payload mir preflight-data)))
+
 (defn- rejection [expected actual]
   (try (native "assert-exact!" "emission-data.gravity" expected actual :exact-emission-data)
        nil (catch clojure.lang.ExceptionInfo exception (ex-data exception))))
@@ -82,6 +113,97 @@
   (bootstrap/p15-s23-stage2-runtime-execute-function
    {:engine :gravity-c-emission-data-development :compiler-artifact-plan? true}
    @gravity-plan name arguments))
+
+(deftest assembles-relative-c17-artifacts-with-complete-source-associations
+  (let [data (assembly-fixture) before (pr-str data) artifact (assemble data)
+        native-output (capture-native)]
+    (is (= artifact (assemble data)))
+    (is (= before (pr-str data)))
+    (is (= :constructed-unverified (:status artifact)))
+    (is (every? false? ((juxt :public? :release? :self-hosted? :whole-b2?) artifact)))
+    (is (= (:source-text native-output) (get-in artifact [:source-file :content])))
+    (is (= (:header-text native-output) (get-in artifact [:header-file :content])))
+    (is (= (:debug-map native-output) (:source-debug-map artifact)))
+    (is (= (:assumptions native-output) (:proof-to-c-assumption-map artifact)))
+    (is (= (:operation-records native-output) (:operation-records artifact)))
+    (is (= (:artifact-id (:b1 data)) (get-in artifact [:input-bindings :b1-artifact-id])))
+    (is (= (:actual-path-provenance (:b1 data))
+           (get-in artifact [:verified-input-closure :actual-path-provenance])))
+    (is (= 22 (get-in artifact [:verified-input-closure :operation-count])))
+    (is (= 1 (get-in artifact [:verified-input-closure :conditional-count])))
+    (is (= 7 (:semantic-result artifact) (:expected-exit-code artifact)))))
+
+(deftest rejects-relative-c17-input-association-mismatches
+  (let [data (assembly-fixture)]
+    (doseq [changed [(assoc-in data [:preflight-data :mir :module-id] "other")
+                     (assoc-in data [:payload :operation-order] [])
+                     (assoc-in data [:payload :c11-artifact-id] "other")
+                     (assoc-in data [:packet :c11 :artifact-id] "other")
+                     (assoc-in data [:packet :c11 :mir-id] "other")
+                     (assoc-in data [:packet :b1 :artifact-id] "other")
+                     (assoc-in data [:packet :b1 :semantic-id] "other")]]
+      (let [result (try (assemble changed) nil
+                        (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= "B2-MANIFEST" (:id result)))
+        (is (= :rejected (:fallback-status result)))
+        (is (= (if (= (get-in changed [:preflight-data :mir]) (:mir changed))
+                 :fresh-context-bound-b1-to-b2-input-closure
+                 :fresh-c11-to-sealed-b1-mir-parity)
+               (:missing-fact result)))))))
+
+(deftest assembly-keeps-live-function-and-catalog-vars
+  (let [data (assembly-fixture) ports (assembly-ports)
+        source-var (:source-text ports) operation-var (:operation-record ports)
+        policy-var (:policy-record ports) assert-var (:assert-exact! ports)
+        original-operation @operation-var original-assert @assert-var
+        source-calls (atom 0)]
+    (with-redefs-fn
+      {source-var (fn [& _] (throw (ex-info "early source function" {})))
+       operation-var (fn [& arguments]
+                       (alter-var-root source-var
+                                       (constantly (fn [& _] (swap! source-calls inc) "late C source")))
+                       (apply original-operation arguments))
+       policy-var :early-policy
+       assert-var (fn [& arguments]
+                    (alter-var-root policy-var (constantly :late-policy))
+                    (apply original-assert arguments))}
+      (fn []
+        (let [artifact (assemble ports data)]
+          (is (= "late C source" (get-in artifact [:source-file :content])))
+          (is (= :late-policy (:policy artifact)))
+          (is (= 1 @source-calls)))))))
+
+(deftest assembly-selects-the-callable-before-argument-lookup
+  (let [data (assembly-fixture) ports (assembly-ports) code-var (:process-exit-code ports)
+        events (atom []) original (:preflight-data data)
+        lookup (fn [key default]
+                 (when (= :semantic-result key)
+                   (swap! events conj :argument)
+                   (alter-var-root code-var (constantly (fn [_] (swap! events conj :late) 99))))
+                 (get original key default))
+        observed (reify clojure.lang.ILookup
+                   (valAt [_ key] (lookup key nil))
+                   (valAt [_ key default] (lookup key default)))]
+    (with-redefs-fn
+      {code-var (fn [value] (swap! events conj :original) value)}
+      (fn []
+        (is (= 7 (:semantic-result (assemble ports (assoc data :preflight-data observed)))))
+        (is (= [:argument :original] @events))))))
+
+(deftest assembly-preserves-owner-exception-and-returning-failure-behavior
+  (let [data (assembly-fixture) error (ex-info "owner emission failure" {:identity :fixture})
+        ports (assembly-ports)]
+    (is (identical? error
+                    (try (assemble (assoc ports :source-text (fn [& _] (throw error))) data)
+                         (catch Throwable caught caught))))
+    (let [calls (atom [])
+          artifact (assemble (assoc ports :assert-exact! (fn [& _] false)
+                                          :fail! (fn [& arguments] (swap! calls conj arguments) false))
+                             (assoc-in data [:packet :b1 :semantic-id] "other"))]
+      (is (= :constructed-unverified (:status artifact)))
+      (is (= [["B2-MANIFEST" (:source-path data) (:b1 data)
+               {:missing-fact :fresh-context-bound-b1-to-b2-input-closure}]]
+             (mapv vec @calls))))))
 
 (deftest emits-c-source-and-preserves-provenance
   (let [{:keys [operations operation-records source-text header-text debug-map assumptions rejection]}
