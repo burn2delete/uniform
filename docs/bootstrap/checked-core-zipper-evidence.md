@@ -112,3 +112,33 @@ exposes exactly 79 declared public APIs and does not load Bootstrap. Direct
 stage/test lint and both document validators pass. Complete contextual lint,
 independent review, own hosted CI/provenance and exact current-Main coordinator
 integration remain separate requirements.
+
+## Standalone caller correction
+
+Independent review of fbbd57e24421349beb85068dcab53cbd794bcb57 found
+two additional actual callers: tools/c6_public_report_test.clj and
+tools/c11_artifact_data_test.clj evaluate selected component 00725 definitions
+in fresh isolated namespaces. Neither loaded gravity.checked-core. Both
+original commands failed with ClassNotFoundException before their respective
+test groups ran; their prerequisite controls passed. The separate
+gravity.checked-core.bool-branch-join namespace does not load its parent.
+The original failure logs remain preserved, and the earlier source review
+does not establish completeness for this caller set.
+
+After the original three leases ended normally, a fresh three-path claim
+covered these two tools and this evidence file. Each tool now explicitly
+requires gravity.checked-core. No test, assertion, oracle, isolated owner,
+production helper, CI command or unsupported boundary changes. The complete
+slice now changes nine paths, including the original two dependency guards.
+
+Both original 512m commands pass in separate fresh processes. C6 public-report
+controls pass 7 tests / 108 assertions, after prerequisite relative-policy
+4 / 54 and Reader-policy 6 / 42 controls. C11 artifact-data controls pass
+6 / 58, after prerequisite relative-policy 4 / 54 controls. Both commands
+assert Bootstrap remains unloaded. Header/carrier/canonical/digest/zipper
+mechanisms are actual; fixtures, fresh construction, Gravity invocation,
+diagnostic transport and low-level MIR verifier remain explicitly declared
+oracles. No private C6/C11 authentication, source replay or admitted artifact
+factory is invoked. These results provide relative mechanism evidence only.
+The previously recorded canonical docs describe their historical test counts;
+they are not relabelled with these current results.
