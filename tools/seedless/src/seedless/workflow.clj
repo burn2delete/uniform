@@ -85,12 +85,68 @@
         :review "Review" :ci "CI" :merge "Merge queue" :finalizing "Merge queue" :done "Done"
         :repair "Ready" :attention "Attention" :not-planned "Not planned"))
 
+(defn- project-api-restriction [ctx]
+  ;; A shared restriction is durable evidence, not a signal to try another
+  ;; endpoint or replay the blocked GraphQL request.  Keep this narrow to the
+  ;; exact Project API action recorded by the coordination protocol.
+  (let [key (rt/digest (pr-str ["POST" "graphql"]))
+        local (get-in @(:state ctx) [:restricted-actions key])
+        shared (rt/shared-restriction ctx :api key)
+        restriction (or local shared)]
+    (when (and (map? restriction)
+               (= "POST" (:method restriction))
+               (= "graphql" (:endpoint restriction)))
+      restriction)))
+
+(defn- recorded-project-identity? [ctx]
+  (let [project (:project @(:state ctx))
+        workflow (:workflow project)
+        issue (:campaign-issue @(:state ctx))]
+    ;; A title, Project number or configured repository is not enough to
+    ;; continue locally.  These are the identities written by a prior verified
+    ;; setup, retained without asking the restricted provider again.
+    (and (map? project) (string? (:id project))
+         (map? workflow) (string? (:id workflow))
+         (vector? (:options workflow)) (seq (:options workflow))
+         (map? issue) (integer? (:number issue)) (string? (:node_id issue)))))
+
+(defn- mark-project-tracking-held! [ctx restriction]
+  (let [held (merge {:mode :local-only :reason :shared-project-api-restriction}
+                    (select-keys restriction [:method :endpoint :error :at]))]
+    (when-not (= held (:project-tracking @(:state ctx)))
+      (rt/update! ctx assoc :project-tracking held))
+    (rt/event! ctx :project-tracking-held held)
+    held))
+
+(defn- project-tracking-mode! [ctx]
+  (if-let [restriction (project-api-restriction ctx)]
+    (if (recorded-project-identity? ctx)
+      (do (mark-project-tracking-held! ctx restriction) :local-only)
+      (rt/fail! "Recorded Project identity is required while Project tracking is restricted"
+                {:restricted true :project-tracking :identity-unavailable
+                 :restriction (select-keys restriction [:method :endpoint :error :at])}))
+    :remote))
+
 (defn transition! [ctx key status]
   ;; Complete the external tracking effect before recording the local status.
   ;; In particular, a failed Done update must leave a merged task finalizing.
-  (gh/status! ctx (:issue (task ctx key)) (project-status status))
-  (task! ctx key :status status)
-  (rt/event! ctx :transition {:slice key :status status}))
+  ;; A known shared Project restriction permits only nonterminal local progress
+  ;; for an already identified warm campaign.  It never clears/replays an
+  ;; effect and never turns a merge or completion into verified Done.
+  (if-let [restriction (project-api-restriction ctx)]
+    (do
+      (when-not (recorded-project-identity? ctx)
+        (rt/fail! "Recorded Project identity is required while Project tracking is restricted"
+                  {:restricted true :project-tracking :identity-unavailable}))
+      (when-not (#{:attention :repair :implementing :checking :review :ci :merge} status)
+        (rt/fail! "Project tracking restriction blocks terminal status" {:status status :restricted true}))
+      (mark-project-tracking-held! ctx restriction)
+      (task! ctx key :status status)
+      (rt/event! ctx :transition {:slice key :status status :tracking :local-only}))
+    (do
+      (gh/status! ctx (:issue (task ctx key)) (project-status status))
+      (task! ctx key :status status)
+      (rt/event! ctx :transition {:slice key :status status}))))
 
 (def fresh-main! rt/fresh-main!)
 
@@ -913,10 +969,15 @@
   (and (.exists (io/file (:control-file ctx))) (:paused (rt/read-edn (:control-file ctx)))))
 
 (defn- campaign-loop! [ctx]
-  (gh/setup! ctx) (campaign-issue! ctx)
-  (gh/status! ctx (campaign-issue! ctx) "Implementing")
-  (rt/update! ctx assoc :status :running)
-  (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
+  (let [tracking-mode (project-tracking-mode! ctx)]
+    ;; A warm campaign may continue local source/check/review work while a
+    ;; previously recorded Project GraphQL restriction is held. New setup,
+    ;; status writes and planning/admission remain provider-dependent.
+    (when (= :remote tracking-mode)
+      (gh/setup!) (campaign-issue! ctx)
+      (gh/status! ctx (campaign-issue! ctx) "Implementing"))
+    (rt/update! ctx assoc :status :running)
+    (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
     (try
       (loop []
         (doseq [[key job] @running :when (.isDone ^Future job)]
@@ -942,7 +1003,7 @@
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (let [base (fresh-main! ctx)
                     changed? (not= (discovery-key ctx base) (:last-discovery-key @(:state ctx)))
-                    plan (when changed? (plan! ctx))
+                    plan (when (and changed? (= :remote tracking-mode)) (plan! ctx))
                     active? (some #(#{:ready :repair :ci :merge} (:status %)) (tasks ctx))]
                 (cond
                   ;; Discover isolated successors while immutable candidates await CI.
@@ -954,16 +1015,27 @@
                       (seq (get-in @(:state ctx) [:last-plan :slices]))
                       (and (= base (get-in @(:state ctx) [:completion :base]))
                            (= :failed (get-in @(:state ctx) [:completion :result]))))
-                  (do (gh/status! ctx (campaign-issue! ctx) "Attention") (rt/update! ctx assoc :status :attention))
+                  (do
+                    (if (= :remote tracking-mode)
+                      (gh/status! ctx (campaign-issue! ctx) "Attention")
+                      (rt/event! ctx :project-tracking-held {:status "Attention"}))
+                    (rt/update! ctx assoc :status :attention))
                   :else
-                  (let [done? (try (complete! ctx) true
-                                   (catch Exception e
-                                     (when (:restricted (ex-data e)) (throw e))
-                                     (rt/event! ctx :completion-gap {:message (.getMessage e)}) false))]
-                    ;; A failed release gate becomes input for a fresh gap analysis,
-                    ;; not an automatic repeated rebuild on unchanged inputs.
-                    (when-not done? (recur)))))))))
-      (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS)))))
+                  (if (= :local-only tracking-mode)
+                    (do
+                      ;; Completion is a remote Project/release transition and
+                      ;; remains blocked until the original restriction is
+                      ;; inspected; do not infer Done from local work.
+                      (rt/event! ctx :project-tracking-held {:status "Done"})
+                      (rt/update! ctx assoc :status :attention))
+                    (let [done? (try (complete! ctx) true
+                                     (catch Exception e
+                                       (when (:restricted (ex-data e)) (throw e))
+                                       (rt/event! ctx :completion-gap {:message (.getMessage e)}) false))]
+                      ;; A failed release gate becomes input for a fresh gap analysis,
+                      ;; not an automatic repeated rebuild on unchanged inputs.
+                      (when-not done? (recur))))))))))
+      (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS))))))
 
 (defn campaign! [ctx]
   (with-registration! ctx #(campaign-loop! ctx)))
