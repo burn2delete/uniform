@@ -377,3 +377,50 @@ new composition artifact to commits that actually contain them. Generated
 reports remain pending independent affected-composition review. Inspect the
 exact clean main-based candidate; governed integration requires independent
 review and coordinator action, separately from this source-only preparation.
+
+## Compatibility pipeline reference consistency
+
+Finding: `compiler.pipeline-manifest.registry-reference-consistency-v1`.
+Owner: existing [pipeline](tasks.md#pipeline) outcome, which remains Open.
+This increment follows C1's [manifest](../../docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md#pipeline-manifest)
+and [inconsistent-manifest diagnostic](../../docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md#diagnostics)
+requirements at the existing compatibility-only Clojure carrier. Its stage and
+pass references name suite declarations; they are not C1's canonical
+content-addressed stage/contract artifacts or evidence of actual execution.
+
+After all existing pipeline checks, including manifest required-field presence:
+
+- `:stages` must be a vector equal to the selected suite's `:stage-order`.
+- `:pass-contracts` must be a vector of unique declared `:pass` identities
+  covering exactly the supplied `:contracts` registry, independent of either
+  registry order or reference order. Registry validation remains separately
+  owned; this increment does not change registry admission or pass contracts.
+- Refuse with `C1-MANIFEST` and deterministic `:field`/`:reason`. Check stages
+  first (`:expected-vector`, then `:stage-order-mismatch`), then contracts
+  (`:expected-vector`, `:duplicate-reference`, `:foreign-reference`, then
+  `:missing-reference`). Diagnostics retain source/profile/target context and
+  remediation without including supplied reference values or their differences.
+
+The public validator and real artifact constructor must exercise metadata
+overrides. Preserve default manifests, independently reordered contract
+references/registries and additional manifest metadata. Reject omitted,
+reordered or foreign stages; omitted, foreign or duplicate contract references;
+and malformed collections or members carrying secret markers. Constructor
+refusals return no artifact. Existing stage-order, missing-contract,
+evidence-drop, unchecked-backend and missing-manifest-field refusal precedence
+stays intact. Public arities, defaults, diagnostic IDs and provenance remain.
+
+The owned implementation is `pipeline_validation.clj`, with fixtures in
+`gravity.compiler-pass-manifest.pipeline-references-test`; both names describe
+their behavior. `proof.clj`, suite construction, registry enforcement and the
+canonical task bodies/statuses are unchanged. The retained registry work and
+PR1264/PR767 require controller coordination for the shared validator and these
+documentation paths before composition; no retained implementation is adopted
+or replayed here. No external coordination or independent acceptance is claimed.
+
+Start requires the existing declarations only. Affected composition needs the
+actual combined source and controller checks; independent acceptance needs its
+own exact candidate and verdict. Release remains separate. Preserve the open
+D1/C1 representation-order decision; declaration consistency does not resolve
+it. [Evidence](evidence.md#compatibility-pipeline-reference-consistency) records
+authored fixtures, actual observations, restrictions and unrun check vectors.
