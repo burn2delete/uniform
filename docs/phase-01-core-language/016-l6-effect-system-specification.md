@@ -243,17 +243,24 @@ Capability semantics are refined by `L15`.
 
 Compile-time work is not free of authority. Reader extensions, macros, compiler plugins, code generators, package resolution, and build scripts may request build effects.
 
+Hermetic builds apply the
+[L12 declared-input and replay policy](022-l12-compile-time-evaluation-specification.md#hermetic-builds).
 Hermetic builds deny:
 
-- environment reads,
+- environment reads unless the key is declared and its value policy is explicit,
 - undeclared file reads,
-- network access,
-- shell/process execution,
-- model calls,
-- tool calls,
+- network, shell/process, model or tool effects unless a replayable provider or pinned result is configured,
 - non-lockfile package fetching.
 
-Granted build effects are recorded in build artifacts.
+Declared or replayable inputs still require actual scoped build grants and legal
+phase, principal, provider and profile policy; an input declaration or grant alone
+does not satisfy the other premises. Clock and randomness effects require recorded
+values or deterministic seeds, target probes use declared target manifests, and
+generated forms include content hashes of their compile-time inputs. Pure constant
+evaluation retains L12's separate prohibition on external effects.
+
+Granted build effects and actual input/output/replay identities are recorded in
+build artifacts.
 
 ## Replay and Nondeterminism
 
@@ -339,7 +346,11 @@ L6 rejects:
 - Function fixtures preserve latent effects through calls.
 - Namespace fixtures reject inferred effects outside declarations.
 - Profile fixtures reject effects forbidden by constrained profiles.
-- Build fixtures reject environment/network/shell/model access in hermetic mode.
+- Build fixtures accept declared environment inputs only with explicit key/value
+  policy and actual scoped authority, and network/shell/model/tool inputs only
+  with the required replayable provider or pinned result and authority. They
+  reject undeclared inputs, missing grants or input policies, unreplayed effects,
+  ambient target probes and missing required clock/random or generated-input records.
 - Workflow/AI fixtures record replay-relevant nondeterminism.
 - MIR fixtures preserve effect annotations after lowering and optimization.
 - Handler fixtures distinguish effect labels from handled-effect records in source, MIR, and artifacts.
