@@ -59,6 +59,8 @@ The [complete Core source criteria](plan.md#complete-core-source-criteria) resto
 
 The [complete pattern-matching source criteria](plan.md#complete-pattern-matching-source-criteria) route full L7 selection, narrowing, coverage, guards, ownership, validation and artifacts through the existing Core/Resolve/Types/Effects/Legality tasks and unchanged conditional Evolution producer. Required families remain in scope; current source/interface entailment and implementation acceptance are pending.
 
+The [complete error-handling source criteria](plan.md#complete-error-handling-source-criteria) route full L9 distinct outcomes, typed error control, actual effects/admission, profile/host/check/durable workflow/AI failure behavior and all artifacts/diagnostics through existing owners. Five exact Runtime predicates are restored while earlier Types/Evolution predicates and review scopes remain; full current entailment and implementation acceptance stay pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Core implementation workflow
