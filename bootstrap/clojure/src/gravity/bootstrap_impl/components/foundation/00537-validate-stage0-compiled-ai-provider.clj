@@ -128,9 +128,68 @@
      "PKG1006" module project-manifest
      {:missing-fields [:lockfile-complete]})))
 
+(declare c-backend-resolve-p15-s23-compiler-source-path
+         c-backend-stage2-plan-emitter-source-rule!
+         p15-s23-stage2-compiler-artifact-plan
+         p15-s23-stage2-runtime-execute-function)
+
+(defn- build-metadata-policy-source-path []
+  (.getCanonicalPath
+   (io/file (.getParentFile
+             (.getParentFile (io/file (c-backend-resolve-p15-s23-compiler-source-path))))
+            "src/gravity/self_hosting/hermetic_package_build.gravity")))
+
+(defn- build-metadata-policy-fail! [path reason]
+  (throw (ex-info "Current Uniform build metadata policy is unavailable or invalid"
+                  {:id "BUILD-METADATA-POLICY" :reason reason
+                   :source-span {:source path} :stage :stage0-compiled-package-gate})))
+
+(defn- build-metadata-policy-source! [path]
+  (try (slurp path :encoding "UTF-8")
+       (catch java.io.IOException _
+         (build-metadata-policy-fail! path :source-unavailable))))
+
+(defn execute-build-metadata-policy!
+  "Execute current Uniform source without renewing migration authority or entering compiled-plan gates."
+  [predicate arguments]
+  (let [path (build-metadata-policy-source-path)
+        text (build-metadata-policy-source! path)
+        emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        ;; This low-level constructor never calls stage0-compiled-core-plan.
+        plan (p15-s23-stage2-compiler-artifact-plan emitter path text)
+        abi {'build-graph-effects-declared? ['declared-effects 'node-effects]
+             'offline-build-recipe? ['network]}]
+    (when-not (and (= (str "sha256:" (sha256-hex text)) (get-in plan [:source :sha256]))
+                   (= text (build-metadata-policy-source! path)))
+      (build-metadata-policy-fail! path :stale-source-binding))
+    (when-not (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+                   (= {:module 'gravity.self-hosting.hermetic-package-build
+                       :profile :meta :target :jvm :effects #{} :capabilities #{} :safety :safe}
+                      (dissoc (:module plan) :exports))
+                   (contains? abi predicate)
+                   (= (count (get abi predicate)) (count arguments))
+                   (every? (fn [[name params]]
+                             (let [definition (get-in plan [:functions name])]
+                               (and (= name (:name definition))
+                                    (= params (:params definition))
+                                    (= (count params) (:arity definition))
+                                    (= {:name name :kind :function
+                                        :namespace 'gravity.self-hosting.hermetic-package-build
+                                        :profile :meta :target :jvm :visibility :private
+                                        :effects #{} :capabilities #{}}
+                                       (:binding definition))
+                                    (vector? (:instructions definition))
+                                    (seq (:instructions definition)))))
+                           abi))
+      (build-metadata-policy-fail! path :predicate-abi))
+    (p15-s23-stage2-runtime-execute-function
+     {:engine :gravity-build-metadata-policy-development :compiler-artifact-plan? true}
+     plan predicate arguments)))
+
 (defn validate-stage0-compiled-build-graph!
   [module build-graph]
-  (gravity.build/check-graph-effects! #'compiled-package-fail! module build-graph))
+  (gravity.build/check-graph-effects!
+   execute-build-metadata-policy! #'compiled-package-fail! module build-graph))
 
 (defn validate-stage0-compiled-artifact-manifest!
   [module artifact-manifest]
@@ -164,4 +223,5 @@
 
 (defn validate-stage0-compiled-reproducible-build!
   [module reproducible-build-recipe]
-  (gravity.build/check-offline-recipe! #'compiled-package-fail! module reproducible-build-recipe))
+  (gravity.build/check-offline-recipe!
+   execute-build-metadata-policy! #'compiled-package-fail! module reproducible-build-recipe))

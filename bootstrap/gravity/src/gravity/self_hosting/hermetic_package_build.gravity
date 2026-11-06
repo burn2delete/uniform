@@ -155,18 +155,18 @@
 ; Internal PKG2/PKG7 compiled-metadata policy, separate from sh23-build's
 ; fixed bootstrap request validation. The caller transports trusted native
 ; node effect sets as a vector and retains the original diagnostic subject.
-(defn sh23-compiled-graph-effects-from? [declared-effects node-effects index]
+(defn build-graph-effects-from? [declared-effects node-effects index]
   (if (= index (count node-effects))
     true
     (if (sh23-set-subset? (get node-effects index) declared-effects)
-      (sh23-compiled-graph-effects-from?
+      (build-graph-effects-from?
        declared-effects node-effects (+ index 1))
       false)))
 
-(defn sh23-compiled-graph-effects? [declared-effects node-effects]
-  (sh23-compiled-graph-effects-from? declared-effects node-effects 0))
+(defn build-graph-effects-declared? [declared-effects node-effects]
+  (build-graph-effects-from? declared-effects node-effects 0))
 
-(defn sh23-compiled-offline-recipe? [network]
+(defn offline-build-recipe? [network]
   (= :disabled network))
 
 (defn sh23-required-capabilities [effects result]
