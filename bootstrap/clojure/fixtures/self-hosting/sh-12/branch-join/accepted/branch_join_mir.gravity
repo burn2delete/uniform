@@ -22,6 +22,8 @@
    :operation node-id
    :kind kind
    :outcome :proven-safe
+   :runtime-check :not-applicable
+   :failure-behavior :not-applicable
    :proof {:proof-id (str node-id ":safety-proof")
            :status :valid
            :rule :bounded-branch-join-fixture}

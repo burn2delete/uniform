@@ -68,103 +68,52 @@
 
 (defn stage0-compiled-tooling-suite
   [module]
-  (get-in module [:metadata :tooling :compiled-gate] {}))
+  (gravity.tooling/native-metadata-suite module))
 
 (defn stage0-compiled-tooling-suite-present?
   [module]
-  (contains? (get-in module [:metadata :tooling] {}) :compiled-gate))
+  (gravity.tooling/native-metadata-suite-present? module))
 
 (defn compiled-tooling-fail!
   [id module subject extra]
-  (p13-tooling-fail!
-   id
-   (:source-path module)
-   subject
-   (merge {:stage :stage0-compiled-tooling-gate
-           :diagnostic-family :phase13-compiled-tooling-experience
-           :compiled-gate :tooling-developer-experience
-           :remediation
-           "Compiled tooling/developer-experience metadata must preserve CLI authority prompts, REPL capability grants, formatter round trips, linter autofix safety, LSP compiler diagnostics, debugger redaction, generated documentation freshness, dev-server reload decisions, registry capability diffs, IR origins, profiler check-elision evidence, safety audit unsafe-island evidence, and AI-generated source validation before instruction-plan execution."}
-          extra)))
+  (gravity.tooling/native-metadata-fail! (fn [] p13-tooling-fail!) id module subject extra))
 
 (defn validate-stage0-compiled-cli!
   [module cli-command-set]
-  (when (or (not (contains? (set (get-in cli-command-set
-                                          [:capability-prompts
-                                           :shown-denials]))
-                            :shell/exec))
-            (false? (:authority-denial-visible? cli-command-set)))
-    (compiled-tooling-fail!
-     "T1003" module cli-command-set
-     {:missing-fields [:capability-denial]})))
+  (gravity.tooling/native-validate-cli! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module cli-command-set))
 
 (defn validate-stage0-compiled-repl!
   [module repl-session]
-  (when-not (seq (:capability-grants repl-session))
-    (compiled-tooling-fail!
-     "T2002" module repl-session
-     {:missing-fields [:capability-grants]})))
+  (gravity.tooling/native-validate-repl! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module repl-session))
 
 (defn validate-stage0-compiled-formatter!
   [module formatter-fixture]
-  (when-not (true? (:reader-round-trip formatter-fixture))
-    (compiled-tooling-fail!
-     "T3002" module formatter-fixture
-     {:missing-fields [:reader-round-trip]})))
+  (gravity.tooling/native-validate-formatter! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module formatter-fixture))
 
 (defn validate-stage0-compiled-linter!
   [module linter-report]
-  (when (or (false? (:autofix-safe? linter-report))
-            (false? (get-in linter-report
-                            [:autofix :semantics-preserved?])))
-    (compiled-tooling-fail!
-     "T4003" module linter-report
-     {:missing-fields [:safe-autofix]})))
+  (gravity.tooling/native-validate-linter! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module linter-report))
 
 (defn validate-stage0-compiled-lsp!
   [module lsp-session]
-  (when-not (true? (:diagnostics-match-cli lsp-session))
-    (compiled-tooling-fail!
-     "T5001" module lsp-session
-     {:missing-fields [:diagnostics-match-cli]})))
+  (gravity.tooling/native-validate-lsp! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module lsp-session))
 
 (defn validate-stage0-compiled-debugger!
   [module debugger-trace]
-  (when (or (true? (:redacted-value-access? debugger-trace))
-            (some #(and (true? (:redacted %))
-                        (true? (:accessed? %)))
-                  (:variable-reports debugger-trace)))
-    (compiled-tooling-fail!
-     "T6004" module debugger-trace
-     {:missing-fields [:redacted-value-policy]})))
+  (gravity.tooling/native-validate-debugger! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module debugger-trace))
 
 (defn validate-stage0-compiled-documentation!
   [module documentation-artifact]
-  (when (or (true? (:stale? documentation-artifact))
-            (false? (:fresh? documentation-artifact)))
-    (compiled-tooling-fail!
-     "T7001" module documentation-artifact
-     {:missing-fields [:source-freshness]})))
+  (gravity.tooling/native-validate-documentation! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module documentation-artifact))
 
 (defn validate-stage0-compiled-dev-server!
   [module dev-server-session]
-  (when-not (some #(= :restart (:decision %))
-                  (:hot-reload-decisions dev-server-session))
-    (compiled-tooling-fail!
-     "T8003" module dev-server-session
-     {:missing-fields [:safe-hot-reload-decision]})))
+  (gravity.tooling/native-validate-dev-server! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module dev-server-session))
 
 (defn validate-stage0-compiled-registry-ux!
   [module registry-record]
-  (when-not (true? (get-in registry-record
-                           [:update-diff :capability-diff-visible]))
-    (compiled-tooling-fail!
-     "T9001" module registry-record
-     {:missing-fields [:capability-diff-visible]})))
+  (gravity.tooling/native-validate-registry-ux! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module registry-record))
 
 (defn validate-stage0-compiled-ir-inspector!
   [module ir-inspector-bundle]
-  (when-not (p13-present? (:source-span-maps ir-inspector-bundle))
-    (compiled-tooling-fail!
-     "T10002" module ir-inspector-bundle
-     {:missing-fields [:source-span-maps]})))
+  (gravity.tooling/native-validate-ir-inspector! {:fail (fn [] compiled-tooling-fail!) :present (fn [] p13-present?)} module ir-inspector-bundle))

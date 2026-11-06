@@ -1,16 +1,29 @@
 (ns gravity.source-span
-  "Stage 0 source-position metadata primitives.
+  "Hosted source-position metadata primitives.
 
   This leaf preserves the bootstrap reader's source-position arithmetic:
   line starts and character positions are UTF-16 indices, while byte offsets
   are UTF-8 counts over the corresponding prefix. It does not read source,
-  decode input, validate spans, or construct diagnostics.")
+  decode input, validate spans, or construct diagnostics. Indexed reader locations
+  retain their separate scalar-column labels and explicit late owner Vars.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.source-span
-   :contract-boundary :stage0-source-position-metadata
+   :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C2 :C3 :C15 :BOOT8 :TEST2]
+   :contract-boundary :hosted-source-position-metadata
+   :owner-call-resolution :per-call-var-root-before-arguments
    :public-api
-   {'line-terminator-char?
+   {'indexed-source-location
+    {:arglists '([byte-count-var source-text line-starts idx])
+     :returns :indexed-reader-source-location :admission :none
+     :operation-inputs [:byte-count-var] :authenticates-inputs? false :opens-source? false
+     :callback-type-checks? false :test-owner 'gravity.source-span-test}
+    'indexed-source-span
+    {:arglists '([location-var source-path source-text line-starts start end])
+     :returns :indexed-reader-source-span :admission :none
+     :operation-inputs [:location-var] :authenticates-inputs? false :opens-source? false
+     :callback-type-checks? false :test-owner 'gravity.source-span-test}
+    'line-terminator-char?
     {:arglists '([ch])
      :returns :boolean}
     'line-start-indices
@@ -31,15 +44,16 @@
                   start-line start-column end-line end-column])
      :returns :source-span}}
    :artifact-inputs [:source-text :line-start-indices :line-column-coordinates
-                     :source-path :form-index]
-   :artifact-outputs [:line-start-indices :source-location :source-span]
+                     :source-path :form-index :indexed-reader-coordinates :byte-count-var :location-var]
+   :artifact-outputs [:line-start-indices :source-location :source-span
+                      :indexed-reader-source-location :indexed-reader-source-span]
    :ownership
    {:owns [:line-terminator-classification
            :utf16-line-start-indexing
            :utf16-character-index-lookup
            :utf8-prefix-byte-counting
            :source-location-metadata
-           :source-span-metadata]
+           :source-span-metadata :indexed-reader-location-metadata :indexed-reader-span-metadata]
     :does-not-own [:source-decoding
                    :source-unit-identity
                    :source-reading
@@ -155,3 +169,31 @@
       :end end
       :byte-start (:byte start)
       :byte-end (:byte end)})))
+
+(defn indexed-source-location
+  [byte-count-var source-text line-starts idx]
+  (let [idx (min idx (count source-text))
+        line-number (loop [line 0]
+                      (if (and (< (inc line) (count line-starts))
+                               (<= (line-starts (inc line)) idx))
+                        (recur (inc line))
+                        (inc line)))
+        line-start (line-starts (dec line-number))
+        line-prefix (subs source-text line-start idx)
+        column (inc (.codePointCount line-prefix 0 (.length line-prefix)))]
+    {:line line-number
+     :column column
+     :column-unit :unicode-scalar
+     :char idx
+     :byte ((deref byte-count-var) (subs source-text 0 idx))}))
+
+
+(defn indexed-source-span
+  [location-var source-path source-text line-starts start end]
+  (let [start-location ((deref location-var) source-text line-starts start)
+        end-location ((deref location-var) source-text line-starts end)]
+    {:source source-path
+     :start start-location
+     :end end-location
+     :byte-start (:byte start-location)
+     :byte-end (:byte end-location)}))
