@@ -128,7 +128,7 @@
            (:canonical-encoding policy)))
     (is (= #{:object :executable} (:artifact-kinds policy)))
     (is (= 128 (:maximum-source-map-entries policy)))
-    (is (= 16 (:maximum-origin-entries policy)))
+    (is (not (contains? policy :maximum-origin-entries)))
     (is (= 128 (:maximum-dependencies policy)))
     (is (= 256 (:maximum-dependency-edges policy)))
     (is (contains? (:diagnostics policy) "B13-GRAPH"))
@@ -273,6 +273,39 @@
   [bundle]
   (get-in bundle [:diagnostics 0 :rule]))
 
+(deftest sh20-preserves-long-origin-chains-and-validates-late-entries
+  (let [base-request
+        (request accepted-gravity-plan 'sh20-release-executable-request)
+        origins
+        (mapv (fn [index]
+                {:kind :generated
+                 :generator (keyword "generator" (str index))
+                 :source-id (keyword "source" (str index))})
+              (range 17))
+        candidate
+        (-> base-request
+            (assoc :origin-chain origins)
+            (assoc-in [:source-map 0 :generated-origin-chain] origins))
+        bundle (build candidate)]
+    (is (= :accepted (:status bundle)))
+    (is (= origins (get-in bundle [:provenance :origin-chain])))
+    (is (= origins
+           (get-in bundle [:source-map :entries 0 :generated-origin-chain])))
+    (is (= origins
+           (get-in bundle [:identity-input :source-map 0
+                           :generated-origin-chain])))
+    (is (= bundle (build candidate)))
+    (is (= :passed
+           (:status
+            (invoke-engine 'sh20-verify-bundle [candidate bundle]))))
+    (doseq [[path rule]
+            [[[:origin-chain 16 :kind] "B13-SCHEMA"]
+             [[:source-map 0 :generated-origin-chain 16 :kind]
+              "B13-SOURCEMAP"]]]
+      (let [rejected (build (assoc-in candidate path :ambient-file))]
+        (is (= :rejected (:status rejected)))
+        (is (= rule (diagnostic-rule rejected)))))))
+
 (deftest sh20-validates-a-closed-bounded-topological-graph
   (let [request
         (request accepted-gravity-plan 'sh20-release-executable-request)
@@ -382,7 +415,6 @@
   (let [request
         (request accepted-gravity-plan 'sh20-release-executable-request)
         source-entry (first (:source-map request))
-        origin (first (:generated-origin-chain source-entry))
         malformed
         [[(assoc request :artifact-id false)
           "B13-SCHEMA"]
@@ -401,10 +433,6 @@
          [(assoc-in request [:source-map 0 :source-span :start-byte] 9)
           "B13-SOURCEMAP"]
          [(assoc request :source-map [source-entry source-entry])
-          "B13-SOURCEMAP"]
-         [(assoc-in request
-                    [:source-map 0 :generated-origin-chain]
-                    (vec (repeat 17 origin)))
           "B13-SOURCEMAP"]
          [(assoc-in request
                     [:source-map 0 :generated-origin-chain 0 :kind]

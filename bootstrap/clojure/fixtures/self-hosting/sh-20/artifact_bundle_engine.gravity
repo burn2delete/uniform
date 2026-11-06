@@ -39,7 +39,6 @@
    :canonical-encoding :gravity/canonical-edn-v1
    :artifact-kinds #{:object :executable}
    :maximum-source-map-entries 128
-   :maximum-origin-entries 16
    :maximum-dependencies 128
    :maximum-dependency-edges 256
    :diagnostics #{"B13-SCHEMA"
@@ -122,9 +121,7 @@
 
 (defn sh20-origin-chain-valid? [entries]
   (if (vector? entries)
-    (if (<= (count entries) 16)
-      (sh20-origin-chain-valid-from? entries 0)
-      false)
+    (sh20-origin-chain-valid-from? entries 0)
     false))
 
 (defn sh20-source-span-valid? [span]
