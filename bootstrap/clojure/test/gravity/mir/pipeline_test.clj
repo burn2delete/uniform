@@ -33,9 +33,127 @@
 (defn- failure [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
 
+(deftest whole-native-validation-requires-explicit-pure-safety-facts
+  ;; These are normalized fixture data, not authenticated C10 products.
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [report (b/p15-s23-c11-mir-validate-constructed! source checked emitted)]
+      (is (= {:status :passed :block-count 4 :operation-count 5 :conditional-count 1}
+             (select-keys report [:status :block-count :operation-count :conditional-count])))
+      (is (= {:runtime-check-count 0 :runtime-check-ids []} (:runtime-checks report)))
+      (is (= {:edge-count 4 :terminator-use-count 4 :definition-count 5 :value-count 5}
+             (:data-flow report))))
+    (doseq [field [:runtime-check :failure-behavior]]
+      (let [changed (-> checked
+                        (update :core-nodes
+                                (fn [nodes] (mapv #(update % :safety dissoc field) nodes)))
+                        (update :safety-facts
+                                (fn [facts]
+                                  (into {} (map (fn [[id fact]] [id (dissoc fact field)])) facts))))
+            rebuilt ((fixture-helper 'build-mir) changed)
+            record (failure #(b/p15-s23-c11-mir-validate-constructed! source changed rebuilt))]
+        (is (= :gravity/mir-module (:artifact rebuilt)))
+        (is (= "C11-SAFETY" (:id record)))
+        (is (= :pure-operation-runtime-check-not-applicable (:missing-fact record)))))))
+
+(defn- aggregate-owner-operations []
+  {:validate-carrier! #'b/p15-s23-c11-mir-bounded-value!
+   :validate-module-envelope! #'b/p15-s23-c11-mir-validate-module-envelope!
+   :validate-fact-tables! #'b/p15-s23-c11-mir-validate-fact-tables!
+   :validate-operations! #'b/p15-s23-c11-mir-validate-operations!
+   :validate-runtime-checks! #'b/p15-s23-c11-mir-validate-runtime-checks!
+   :validate-cfg! #'b/p15-s23-c11-mir-validate-cfg!
+   :validate-effect-edge-placement! #'b/p15-s23-c11-mir-validate-effect-edge-placement!
+   :validate-data-flow! #'b/p15-s23-c11-mir-validate-data-flow!})
+
+(deftest native-aggregate-preserves-phase-arguments-report-identities-and-first-refusal
+  (let [source (Object.) checked (Object.) emitted (Object.) envelope (Object.)
+        runtime-checks (Object.) data-flow (Object.) conditional-count (Object.)
+        operation-products {:blocks [:one :two] :operations [:one :two :three]}
+        phases [:validate-carrier! :validate-module-envelope! :validate-fact-tables!
+                :validate-operations! :validate-runtime-checks! :validate-cfg!
+                :validate-effect-edge-placement! :validate-data-flow!]
+        arguments [[source :gravity-c11-builder-result emitted]
+                   [source checked emitted] [source checked emitted] [source checked emitted]
+                   [source checked emitted operation-products]
+                   [source checked emitted envelope operation-products]
+                   [source emitted operation-products] [source checked emitted operation-products]]
+        results [false envelope false operation-products runtime-checks
+                 {:conditional-count conditional-count} false data-flow]
+        events (atom [])
+        operations (into {} (map (fn [phase result]
+                                   [phase (fn [& args]
+                                            (swap! events conj [phase args]) result)])
+                                 phases results))
+        report (mir/validate-constructed! operations source checked emitted)]
+    (is (= phases (mapv first @events)))
+    (doseq [[expected [_ observed]] (map vector arguments @events)]
+      (is (= (count expected) (count observed)))
+      (is (every? true? (map identical? expected observed))))
+    (is (= {:status :passed :block-count 2 :operation-count 3}
+           (select-keys report [:status :block-count :operation-count])))
+    (is (identical? runtime-checks (:runtime-checks report)))
+    (is (identical? data-flow (:data-flow report)))
+    (is (identical? conditional-count (:conditional-count report)))
+    (doseq [[index phase] (map-indexed vector phases)]
+      (reset! events [])
+      (let [error (ex-info "owner phase refusal" {:phase phase})
+            caught (try (mir/validate-constructed!
+                         (assoc operations phase
+                                (fn [& args] (swap! events conj [phase args]) (throw error)))
+                         source checked emitted)
+                        nil (catch clojure.lang.ExceptionInfo failure failure))]
+        (is (identical? error caught))
+        (is (= (subvec phases 0 (inc index)) (mapv first @events)))))))
+
+(deftest native-aggregate-wrapper-retains-live-phase-vars-and-diagnostic-context
+  (let [owner (aggregate-owner-operations) observed (atom nil) marker (Object.)
+        inputs (vec (repeatedly 3 #(Object.)))]
+    (with-redefs [mir/validate-constructed! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (apply b/p15-s23-c11-mir-validate-constructed!* inputs))))
+    (is (= owner (first @observed)))
+    (is (every? true? (map identical? inputs (rest @observed))))
+    (let [events (atom [])
+          replacements (into {} (map (fn [[key operation]]
+                                       [operation (fn [& _]
+                                                    (swap! events conj key)
+                                                    (case key
+                                                      :validate-operations! {:blocks [] :operations []}
+                                                      :validate-cfg! {:conditional-count 0}
+                                                      nil))]) owner))
+          original-carrier (get replacements (:validate-carrier! owner))]
+      (with-redefs-fn
+        (assoc replacements (:validate-carrier! owner)
+               (fn [& args]
+                 (alter-var-root (:validate-data-flow! owner)
+                                 (constantly (fn [& _] (swap! events conj :live-data-flow) marker)))
+                 (apply original-carrier args)))
+        #(is (identical? marker (:data-flow (apply b/p15-s23-c11-mir-validate-constructed!* inputs)))))
+      (is (= [:validate-carrier! :validate-module-envelope! :validate-fact-tables!
+              :validate-operations! :validate-runtime-checks! :validate-cfg!
+              :validate-effect-edge-placement! :live-data-flow] @events))))
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [expected (b/p15-s23-c11-mir-diagnostic-context checked {} emitted)
+          observed (atom nil) marker (Object.)]
+      (with-redefs [mir/validate-constructed!
+                    (fn [& _] (reset! observed b/*p15-s23-c11-mir-diagnostic-context*) marker)]
+        (is (identical? marker (b/p15-s23-c11-mir-validate-constructed! source checked emitted))))
+      (is (= expected @observed)))))
+
+(deftest native-aggregate-composes-real-rules-and-preserves-tamper-refusals
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (is (= (b/p15-s23-c11-mir-validate-constructed!* source checked emitted)
+           (mir/validate-constructed! (aggregate-owner-operations) source checked emitted)))
+    (doseq [[key id] [[:source-core "C11-MODULE"] [:type-table "C11-TYPE"]
+                     [:effect-table "C11-EFFECT"] [:safety-table "C11-SAFETY"]]]
+      (let [changed (assoc emitted key :tampered)
+            direct #(mir/validate-constructed! (aggregate-owner-operations) source checked changed)
+            facade #(b/p15-s23-c11-mir-validate-constructed!* source checked changed)]
+        (is (= id (:id (failure direct))))
+        (is (= (failure facade) (failure direct)))))))
+
 (deftest contract-identifies-the-native-rule-boundary
   (is (empty? (ns-aliases 'gravity.mir)))
-  (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
+  (is (= #{'validate-constructed! 'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
            'runtime-check-fact-record 'add-runtime-check-facts 'reindex-fact-table
            'profile-target-table 'capability-proof-table 'safety-proof-table
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses

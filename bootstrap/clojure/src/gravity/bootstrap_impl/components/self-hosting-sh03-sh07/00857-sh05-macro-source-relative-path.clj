@@ -1,5 +1,3 @@
-(clojure.core/require 'gravity.macro)
-
 (declare
  sh05-defn-form?
  sh05-expanded-graph

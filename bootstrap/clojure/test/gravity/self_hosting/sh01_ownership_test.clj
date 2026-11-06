@@ -247,6 +247,8 @@
 (def ^:private macro-stage-path "bootstrap/clojure/src/gravity/macro.clj")
 (def ^:private macro-stage-consumer
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
+(def ^:private macro-native-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00028-compiler-c3-syntax-source-artifact.clj")
 (def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
 
 
@@ -579,9 +581,14 @@
   (let [record (ownership-record)
         contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
     (is (production-helper-registration-valid? record contract))
-    (doseq [relative [macro-stage-path macro-stage-consumer macro-stage-test]]
+    (doseq [relative [macro-stage-path macro-stage-consumer macro-native-consumer macro-stage-test]]
       (is (.isFile (path relative))))
-    (is (str/includes? (slurp (path macro-stage-consumer)) "(clojure.core/require 'gravity.macro)"))
+    (is (str/includes? (slurp (path macro-native-consumer)) "(clojure.core/require 'gravity.macro)"))
+    (is (str/includes? (slurp (path macro-native-consumer)) "gravity.macro/native-capability-proof"))
+    (is (not (str/includes? (slurp (path macro-stage-consumer)) "(clojure.core/require 'gravity.macro)")))
+    (let [resources (mapv :resource (edn/read-string (slurp (path "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"))))]
+      (is (< -1 (.indexOf ^java.util.List resources "gravity/bootstrap_impl/components/compiler/00028-compiler-c3-syntax-source-artifact.clj")
+                (.indexOf ^java.util.List resources "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj"))))
     (is (str/includes? (slurp (path macro-stage-consumer)) "gravity.macro/build-plan-binding!"))
     (doseq [bad [(assoc-in record [:module-owners macro-stage-path] :master-coordinator)
                  (assoc-in record [:production-helper-associations macro-stage-path :consumer-path] "forged.clj")

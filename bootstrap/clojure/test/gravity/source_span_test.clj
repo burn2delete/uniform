@@ -149,9 +149,9 @@
         contract (var-get contract-var)]
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.source-span (:namespace contract)))
-    (is (= :stage0-source-position-metadata
+    (is (= :hosted-source-position-metadata
            (:contract-boundary contract)))
-    (is (= #{'line-terminator-char?
+    (is (= #{'indexed-source-location 'indexed-source-span 'line-terminator-char?
              'line-start-indices
              'char-index-at
              'utf8-byte-count
@@ -159,9 +159,10 @@
              'source-span}
            (set (keys (:public-api contract)))))
     (is (= [:source-text :line-start-indices :line-column-coordinates
-            :source-path :form-index]
+            :source-path :form-index :indexed-reader-coordinates :byte-count-var :location-var]
            (:artifact-inputs contract)))
-    (is (= [:line-start-indices :source-location :source-span]
+    (is (= [:line-start-indices :source-location :source-span
+            :indexed-reader-source-location :indexed-reader-source-span]
            (:artifact-outputs contract)))
     (is (= ['clojure.core 'java.lang.String
             'java.nio.charset.StandardCharsets]
@@ -173,7 +174,7 @@
     (is (some #{:source-unit-identity}
               (get-in contract [:ownership :does-not-own])))
     (is (empty? (ns-aliases 'gravity.source-span)))
-    (is (= #{'line-terminator-char?
+    (is (= #{'indexed-source-location 'indexed-source-span 'line-terminator-char?
              'line-start-indices
              'char-index-at
              'utf8-byte-count
@@ -183,3 +184,71 @@
     (is (true? (:bootstrap-hosted? contract)))
     (is (true? (:clojure-seed-boundary? contract)))
     (is (false? (:self-hosted? contract)))))
+
+(deftest indexed-reader-locations-retain-separate-coordinate-conventions
+  (let [text (str "\u03b1" (String. (Character/toChars 128578)) "\r\n\u03b2")
+        starts (source-span/line-start-indices text)]
+    (doseq [[index line column byte] [[0 1 1 0] [1 1 2 2] [2 1 3 3] [3 1 3 6]
+                                     [4 1 4 7] [5 2 1 8] [6 2 2 10] [20 2 2 10]]]
+      (let [expected {:line line :column column :column-unit :unicode-scalar
+                      :char (min index (count text)) :byte byte}]
+        (is (= expected (source-span/indexed-source-location #'bootstrap/utf8-byte-count text starts index)))
+        (is (= expected (bootstrap/stage1-reader-location text starts index)))))
+    (is (thrown? IndexOutOfBoundsException
+                 (source-span/indexed-source-location #'bootstrap/utf8-byte-count text starts -1))))
+  (doseq [unit [0xd800 0xdc00]]
+    (let [text (String. (char-array [(char unit)]))]
+      (is (= {:line 1 :column 2 :column-unit :unicode-scalar :char 1 :byte 1}
+             (source-span/indexed-source-location #'bootstrap/utf8-byte-count text [0] 1)))))
+  (is (= '([source-text line-starts idx]) (:arglists (meta #'bootstrap/stage1-reader-location))))
+  (is (= '([source-path source-text line-starts start end]) (:arglists (meta #'bootstrap/stage1-reader-span)))))
+
+(deftest indexed-span-captures-each-late-location-owner-and-preserves-references
+  (let [path (String. "native.qst") first-location {:byte 2 :owner :first}
+        later-location {:byte 8 :owner :later} calls (atom [])
+        result
+        (with-redefs [bootstrap/stage1-reader-location
+                      (fn [_ _ index]
+                        (swap! calls conj [:first index])
+                        (alter-var-root #'bootstrap/stage1-reader-location
+                                        (constantly (fn [_ _ later] (swap! calls conj [:later later]) later-location)))
+                        first-location)]
+          (source-span/indexed-source-span #'bootstrap/stage1-reader-location path "ab" [0] 0 1))]
+    (is (identical? path (:source result)))
+    (is (identical? first-location (:start result)))
+    (is (identical? later-location (:end result)))
+    (is (= [2 8] [(:byte-start result) (:byte-end result)]))
+    (is (= [[:first 0] [:later 1]] @calls))))
+
+(deftest indexed-byte-owner-remains-late-and-owner-exceptions-remain-identical
+  (let [seen (atom [])]
+    (with-redefs [bootstrap/utf8-byte-count
+                  (fn [text]
+                    (swap! seen conj [:first text])
+                    (alter-var-root #'bootstrap/utf8-byte-count
+                                    (constantly (fn [later] (swap! seen conj [:later later]) 202)))
+                    101)]
+      (is (= [101 202]
+             (mapv :byte [(source-span/indexed-source-location #'bootstrap/utf8-byte-count "ab" [0] 1)
+                          (source-span/indexed-source-location #'bootstrap/utf8-byte-count "ab" [0] 2)])))
+      (is (= [[:first "a"] [:later "ab"]] @seen))))
+  (let [sentinel (ex-info "position owner" {})]
+    (doseq [[owner call] [[#'bootstrap/utf8-byte-count
+                           #(source-span/indexed-source-location #'bootstrap/utf8-byte-count "ab" [0] 1)]
+                          [#'bootstrap/stage1-reader-location
+                           #(source-span/indexed-source-span #'bootstrap/stage1-reader-location "path.qst" "ab" [0] 0 1)]]]
+      (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+        (fn []
+          (let [caught (try (call) nil (catch clojure.lang.ExceptionInfo ex ex))]
+            (is (identical? sentinel caught))))))))
+
+(deftest indexed-position-contracts-do-not-own-source-admission-or-diagnostics
+  (let [contract @(get (ns-interns 'gravity.source-span) 'namespace-contract)]
+    (doseq [name '[indexed-source-location indexed-source-span]]
+      (let [api (get-in contract [:public-api name])]
+        (is (= :none (:admission api)))
+        (is (false? (:authenticates-inputs? api)))
+        (is (false? (:opens-source? api)))
+        (is (false? (:callback-type-checks? api)))
+        (is (= 'gravity.source-span-test (:test-owner api)))))
+    (is (= :per-call-var-root-before-arguments (:owner-call-resolution contract)))))
