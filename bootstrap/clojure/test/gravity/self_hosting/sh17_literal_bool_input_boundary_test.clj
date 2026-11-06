@@ -42,7 +42,14 @@
           artifacts (mapv #(resolve-source % empty-inputs) files)
           inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts artifacts}
           caller (resolve-source source inputs)
-          plans (mapv #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter % (slurp %)) files)]
+          plans (mapv (fn [[file artifact]]
+                        (let [dependency-bundle
+                              (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                               emitter file (slurp file)
+                               {:caller-resolution-artifact artifact :dependency-plans []}
+                               current-reader-invocation)]
+                          (:plan (first (:modules dependency-bundle)))))
+                      (mapv vector files artifacts))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source (slurp source)
         {:caller-resolution-artifact caller :dependency-plans plans}
         current-reader-invocation))))
