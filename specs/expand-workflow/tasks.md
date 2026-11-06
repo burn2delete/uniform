@@ -67,6 +67,33 @@ Complete alternative engine criterion (Open): Execute the selected compatible en
 <!-- macro-source-engine:end -->
 
 
+
+<!-- expand-facet-source-manifest:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-manifest criterion (Open): Load and validate each explicitly selected versioned facet manifest before expanding its dependent namespace. Bind facet id/version, owned surface, supported profiles, required facets, distinct runtime and build effects, capabilities, declared Core/domain lowerings, emitted artifacts, stability and conformance fixtures to authentic source/package identity. The workflow manifest is an illustrative declaration, not a default grant or a requirement to use its sample version/effects. Reject absent/incompatible manifests, inactive or unsupported forms, conflicting surfaces, undeclared requirements and authority inferred from a facet/package label before dependent expansion. Required evidence: actual manifest loading/validation and source-bound accepted/refused activation products, with no held plugin/provider execution inferred.
+<!-- expand-facet-source-manifest:end -->
+
+
+
+<!-- expand-facet-source-dispatch:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-dispatch criterion (Open): Expose the actual nine read-syntax, resolve-activation, base-macro, owning-facet-dispatch, facet-local-type/domain-check, form-or-IR emission, normal generated-code validation, facet-IR verification and provenance-bound artifact boundaries. Permit declared checked Core, declared domain IR or both according to preserved semantics; structured external syntax keeps original-source diagnostics and cannot become an opaque independent language. Preserve equivalent observable products when phases interleave or fuse, and keep the existing D1/C1/C5/C6 ordering decision explicit. Reject ambiguous/wrong-owner dispatch, skipped checks, unregistered lowering and a successful expander whose actual generated result fails normal checks. Required evidence: real selected source-through-output products and negative dispatch/check/lowering cases; final whole compiler acceptance is not its first interface.
+<!-- expand-facet-source-dispatch:end -->
+
+
+
+<!-- expand-facet-source-finite-activate-declared-extension:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Decision criterion interface/language/facet/activate-declared-extension: Validate and load the explicitly selected versioned facet manifest before namespace expansion; activate its surface only in declared lexical scope and profile. Reject: Reject unsupported/ambiguous forms, undeclared/inactive facet use, incompatible manifest versions and authority inferred from a facet label. Required outputs: Facet activation/version/scope manifest, expanded syntax/provenance and accepted/rejected lexical/profile fixtures.
+<!-- expand-facet-source-finite-activate-declared-extension:end -->
+
+
 - [ ] `expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety` expand/2: Record hygiene and safety
 
 Status: Open; partial source evidence above is not closure
@@ -143,7 +170,7 @@ Apply the [complete source effect and handler criteria](../effects-workflow/plan
 
 Decision criterion interface/language/effects/authorize-and-record-build-effect: Authorize build/compile-time effects against hermetic package/provider/deployment policy and record each granted effect with input/output/replay identity. Reject: Reject undeclared filesystem/environment/network/shell/model/tool authority, runtime grants reused in meta context and missing required replay records. Required outputs: Build-effect grant/deny log and hermetic input/replay artifact with positive/negative phase-authority fixtures.
 
-L6 actual build-effect boundary criterion (Open): Enforce and record the requested effects of reader extensions, macros, compiler plugins, code generators, dependency/package resolution and build scripts under their actual phase and hermetic policy. Apply L6's hermetic denials for environment reads, undeclared files, network, shell/process, model/tool calls and non-lockfile fetching; a grant alone is not a hermetic exception or evidence of a performed effect. L12's separately stated declared-key/value-policy, replayable-provider/pinned-result, recorded-clock/seed and target-manifest alternatives retain their exact premises. Record the L6 environment-read denial versus L12 declared-key exception for existing Build/Expand source-policy resolution before claiming that live hermetic behavior; do not silently choose a broader allowance. Preserve macro build behavior separately from emitted runtime or compile-time behavior, including an effectful macro producing pure code and pure generation producing effectful code. Emit actual authorized/denied phase/input/output/provider records and replay/hermetic identities and reject ambient or hidden work. Auth supplies grants, Effects supplies real inferred summaries, Build packages the log; this task owns compile-time boundary enforcement rather than another grant issuer or package executor. No held compiler/plugin/probe/provider action is performed by this source proposal.
+L6 actual build-effect boundary criterion (Open): Enforce and record the requested effects of reader extensions, macros, compiler plugins, code generators, dependency/package resolution and build scripts under their actual phase and hermetic policy. Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs): reject undeclared filesystem input and environment reads without declared keys and explicit value policy; network, shell/process, model and tool use requires a configured replayable provider or pinned result as well as actual scoped build grants. Clock/random effects retain recorded-value/deterministic-seed premises and probes use declared target manifests; non-lockfile fetching gains no ambient authority. A grant alone is not a hermetic exception or evidence of a performed effect. Preserve L12 input hashes, exact phase/provider/policy and replay requirements. Canonical L6 clarification is authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; historical L6 source review is not renewed. Preserve macro build behavior separately from emitted runtime or compile-time behavior, including an effectful macro producing pure code and pure generation producing effectful code. Emit actual authorized/denied phase/input/output/provider records and replay/hermetic identities and reject ambient or hidden work. Auth supplies grants, Effects supplies real inferred summaries, Build packages the log; this task owns compile-time boundary enforcement rather than another grant issuer or package executor. No held compiler/plugin/probe/provider action is performed by this source proposal.
 <!-- source-effects-build:end -->
 
 
@@ -151,7 +178,7 @@ L6 actual build-effect boundary criterion (Open): Enforce and record the request
 
 Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
 
-Complete compile-time provider gate criterion (Open): Enforce actual selected provider contracts, build-phase grants, profile/hermetic policy and scoped action gates for reader extensions, macro program P, plugins and generated-code services before their relevant action. Runtime grants cannot authorize build work or vice versa; generated caller Q is checked afterward and cannot supply P's prior admission. Require compile-time providers to support replay or explicitly identify non-replayability; release/conformance/safety-critical builds reject non-replayable use unless the applicable replay-policy exception is recorded. That exception does not override grants, isolation or the exact L6/L12 hermetic premises and recorded environment-wording issue. Preserve actual input/output/provider/phase/replay and redaction/refusal records; no held plugin/probe/provider action runs here.
+Complete compile-time provider gate criterion (Open): Enforce actual selected provider contracts, build-phase grants, profile/hermetic policy and scoped action gates for reader extensions, macro program P, plugins and generated-code services before their relevant action. Runtime grants cannot authorize build work or vice versa; generated caller Q is checked afterward and cannot supply P's prior admission. Require compile-time providers to support replay or explicitly identify non-replayability; release/conformance/safety-critical builds reject non-replayable use unless the applicable replay-policy exception is recorded. That exception does not override grants, isolation or the exact hermetic premises under [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs). Preserve actual input/output/provider/phase/replay and redaction/refusal records; no held plugin/probe/provider action runs here.
 <!-- authority-source-expand:end -->
 
 
@@ -159,7 +186,7 @@ Complete compile-time provider gate criterion (Open): Enforce actual selected pr
 
 Apply the [complete compile-time evaluation source criteria](plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
 
-Complete L12 compile-time action criterion (Open): Authorize the actual compile-time program P before its action using ordinary semantic checks, declared effects, actual scope/principal/lifetime/profile grants, selected provider contracts and installed operation gates. Cover all thirteen source build/compiler effects, including read/write IR and package index as well as file/artifact/env/network/exec/time/random/model/tool/target-probe. Each action retains source-span or manifest request, package/namespace/provider identity, actual grant and ordered input/output/tool/result-digest/replay evidence. Source/workspace/invocation/signed-lock/local-profile/provider configuration are grant inputs, never ambient authority or permission to exceed effective policy. Build effects and generated Q runtime effects remain separate. Apply exact L12 hermetic premises conjunctively with L6's recorded source-policy issue; a grant or replay exception alone waives neither. Reject missing authority, pure effects, phase capture, hidden inputs and unreplayed nondeterminism before the actual sink; preserve all held actions.
+Complete L12 compile-time action criterion (Open): Authorize the actual compile-time program P before its action using ordinary semantic checks, declared effects, actual scope/principal/lifetime/profile grants, selected provider contracts and installed operation gates. Cover all thirteen source build/compiler effects, including read/write IR and package index as well as file/artifact/env/network/exec/time/random/model/tool/target-probe. Each action retains source-span or manifest request, package/namespace/provider identity, actual grant and ordered input/output/tool/result-digest/replay evidence. Source/workspace/invocation/signed-lock/local-profile/provider configuration are grant inputs, never ambient authority or permission to exceed effective policy. Build effects and generated Q runtime effects remain separate. Apply exact L12 hermetic premises under [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); a grant or replay exception alone waives none of them. Reject missing authority, pure effects, phase capture, hidden inputs and unreplayed nondeterminism before the actual sink; preserve all held actions.
 <!-- compile-time-source-authorize:end -->
 
 
@@ -179,8 +206,17 @@ Preserved finite predicate conjunctions:
 
 Allocation interface/safety/safe12/phase-authority (Open). Role: expand owning producer or consuming-boundary checker. Input: macro declaration/expansion or facet IR with hygiene, phase, origins, build grants and taint. Required positive predicate: Keep compile-time macro authority separate from runtime values/handles/secrets and enforce declared build effects, providers, hermeticity and replay. Positive output witness: Build/runtime phase separation, declared provider grants and hermetic/replay effect records. Concrete negative case: A macro captures runtime handles or deployment-only secrets, or performs an undeclared compile-time file/network/model/tool effect. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: types/current-evidence-and-remaining-work/types5-integrate-typed-core supplies Actual typed core, ownership/layout and source-origin facts; effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers supplies Actual propagated effects and required capability facts; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
 
-Complete macro phase and authority criterion (Open): Check compile-time macro program P under :meta before invocation and generated program Q under the caller's distinct profile afterward. Reject runtime-only values, open handles, runtime capabilities and deployment-only secret capture; never cast runtime authority into build authority. Perform each of the thirteen L12 build/compiler effects only with actual declarations, scoped provider/grant/gate and source/manifest/input/output/replay/redaction records. Enforce conjunctive hermetic policy for files, environment, time/random, network/shell/model/tool and target manifests; a grant alone waives no declared/pinned/replay premise. Preserve the existing L6/L12 environment-wording decision, secret policy and every held operation.
+Complete macro phase and authority criterion (Open): Check compile-time macro program P under :meta before invocation and generated program Q under the caller's distinct profile afterward. Reject runtime-only values, open handles, runtime capabilities and deployment-only secret capture; never cast runtime authority into build authority. Perform each of the thirteen L12 build/compiler effects only with actual declarations, scoped provider/grant/gate and source/manifest/input/output/replay/redaction records. Enforce conjunctive hermetic policy for files, environment, time/random, network/shell/model/tool and target manifests; a grant alone waives no declared/pinned/replay premise. Apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) while preserving secret policy, every held operation and ef88's historical canonical L6 follow-up (clarification authored and source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authentication, `main` integration and implementation remain separate; no historical L6 applying review is renewed).
 <!-- macro-source-phase:end -->
+
+
+
+<!-- expand-interop-source-compile-time:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual schema-import and binding-generation action criterion (Open): Before schema loading or generator execution, check actual source identity, declared compiler/build/read-file effects, authentic schema/file/tool/provider grants and phase/isolation/hermetic/replay contracts under L12/L15. The import-schema example grants no schema/read capability and does not make network or process actions pure. Actual available checked P precedes invocation and generated Q then receives normal checks; final Q acceptance cannot provide the first generator interface. Reject undeclared/ungranted/wrong-phase or unsupported actions and preserve source/generated origins and recorded actual inputs. Required evidence: genuine allowed/denied generation and no action after denial, without executing held provider/plugin/probe operations in this planning change.
+<!-- expand-interop-source-compile-time:end -->
 
 
 - [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination
@@ -268,6 +304,96 @@ Apply the [complete macro source criteria](plan.md#complete-macro-source-criteri
 Complete macro conformance criterion (Open): Join real user-defined simple/nested macros, quote/unquote/metadata, two-way hygiene and intentional capture, valid syntax adapters, declared/granted versus refused build actions, phase capture refusals, actual generated caller checks and audited unsafe/taint/facet cases. Compare deterministic repeated traces, unchanged/invalidated cache reuse, reference/alternative structural equivalence and seed/Gravity expansion trace results at their actual subjects. Cover all 34 active diagnostics across L4/L16/C4/SAFE12 with definition/call/generated/phase/profile/provider/effect/grant/missing-fact context; preserve the three retired limit diagnostics as superseded source history. Independently executed Release suites and whole-source/current implementation acceptance remain separate from owner fixtures and finite source reviews.
 <!-- macro-source-conformance:end -->
 
+
+
+
+<!-- expand-facet-source-composition:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-composition criterion (Open): Compose only through declared typed, effectful and capability-scoped boundaries, preserving normal memory/profile/safety checks and source provenance. Keep the six named workflow/schema, agent/query, UI/schema, hardware/schema, compiler/EFIR and zk/schema/security/formal interfaces visible with their actual owning producers. An agent tool using a query retains model, tool and query effects and separate authority rather than hiding them behind a generated wrapper. Demonstrate actual composition of at least two facets and the separately required zk/schema/security/formal privacy cases; no manifest, provider flag or fake/live label substitutes for their real products. Reject hidden effects, undeclared edges, privilege bypass and privacy erasure with the owning diagnostic. Required evidence: exact selected boundary products, accepted/refused fixtures and preserved source/fact/effect/grant/privacy identities; unavailable or held composition remains Open.
+<!-- expand-facet-source-composition:end -->
+
+
+
+<!-- expand-facet-source-artifacts:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-artifact criterion (Open): Assemble the actual facet manifest, lexical activation records, generated Gravity forms with provenance, versioned source-mapped domain IR, genuine facet diagnostics and compatibility/migration records. Bind each product to facet/version/source/package/profile/target and actual checker/consumer identities. Preserve source spans, hygiene, generated-origin chains, types/effects, grants, memory/safety obligations and build provenance or invalidate and regenerate changed facts before reuse. Consumers including optimizers, verifiers, generators, package tools, visualizers and runtimes retain original-source diagnostic mappings. Reject missing, stale, incompatible, forged or flag-only products and lost identity at Core/IR/artifact boundaries. Required evidence: authentic six-family products, round-trip and changed-subject/refusal cases; emitting a record does not accept a facet implementation.
+<!-- expand-facet-source-artifacts:end -->
+
+
+
+<!-- expand-facet-source-stability:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-stability criterion (Open): Preserve experimental, draft, stable, deprecated and removed behavior through actual activation and generated-program consumers. Deprecated accepted forms produce migration diagnostics; removed forms reject under new compilers. Treat source syntax, domain IR shape, lowering semantics, supported profiles and artifact-schema changes as compatibility events, with actual stable-contract migration diagnostics/records and feasible checked rewrites or explicit justified infeasibility. Consume authentic version/lock inputs and applicable existing Governance decisions; package/compiler labels do not approve a change. Reject silent stable drift, incompatible reuse and unchecked semantics-changing rewrites. Required evidence: old/new actual client/IR/profile/artifact results, stability/version refusals and migration products, without renewing historical review or introducing ordinary per-run permission.
+<!-- expand-facet-source-stability:end -->
+
+
+
+<!-- expand-facet-source-examples:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet example-and-conformance criterion (Open): Consume actual existing Schema owner products for the User descriptor, validation code, requested JSON codec metadata, tool schema artifact and field diagnostics; generated parse-user remains normally typed with allocation/decode effects. Consume actual Hardware/HDL counter products retaining clock/reset/enable/register/timing/width/overflow semantics and forbidden-host-service refusals, and the existing AI SupportAgent source-bound prompt/tool/model/evaluation/trace/guardrail bundle and declared bounded-memory configuration (the example's 32 stored items, not a compiler input/work quota) without treating it as permission for live calls. Demonstrate authentic manifest loading, lexical activation, ambiguity/profile/authority refusal, normal generated checking, versioned mapped IR, at-least-two-facet composition, separately required zk/schema/security/formal privacy cases, compatibility/migration and opaque/untracked/privilege negatives. Preserve specific producer and later independent harness ownership; whole final Release is not a first fixture. Required evidence: real named source/example/compiler/checker/diagnostic products and explicit missing/held/unavailable cases, never source inventory or assigned success flags as conformance.
+<!-- expand-facet-source-examples:end -->
+
+
+
+<!-- expand-facet-source-finite-migrate-stable-contract:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/facet/migrate-stable-contract`: Emit compatibility and migration diagnostics, and feasible automatic rewrites, when stable facet source/IR/lowering/profile/artifact contracts change. Accept: For a stable facet change to source syntax, domain IR, lowering, profile support or artifact schema, emit version compatibility and migration diagnostics and records, plus an automatic rewrite where feasible; record an explicit feasibility decision when a rewrite cannot preserve semantics. Reject: Reject silent stable contract drift, missing compatibility/migration evidence and an unchecked or semantics-changing proposed rewrite. Required outputs: Old/new facet/version/schema identities, migration diagnostics/records, checked rewrite or justified infeasibility and positive/negative fixtures. Dependencies consume versioned facts/receipts from build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-facet-source-finite-migrate-stable-contract:end -->
+
+
+
+<!-- expand-facet-source-finite-preserve-disclosure-boundary:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/facet/preserve-disclosure-boundary`: Preserve private witness/value/credential/proof disclosure labels and provenance across facet conversions unless a checked boundary explicitly declassifies them. Accept: Carry privacy labels, witness-generation provenance, reveal reason and public-output schema through conversions of private witnesses/encrypted values/credentials/proofs unless a checked boundary explicitly declassifies them. Facet IR exposes the relation, public/private split, custody, disclosure policy, provider trust and verification-artifact shape; test zk composition with schema/security/formal artifacts as source data. Reject: Reject an opaque proof/private-computation backend call or any erased custody/label/provenance/disclosure field; L14-PRIVACY-BOUNDARY includes witness/value ID, public schema, reveal reason when present and erasing edge. Required outputs: Typed facet privacy/declassification records, relation/custody/provider/verifier schema, preserved/erased-boundary fixtures and structured diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-facet-source-finite-preserve-disclosure-boundary:end -->
+
+
+
+<!-- expand-interop-source-generate:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete schema-binding and scoped-shim generation criterion (Open): Generate actual Gravity types, functions, codecs and initial wrapper declarations from authentic declared incumbent/schema sources, preserving schema digest/version, generated types/codecs, field nullability, error/status maps, runtime effects/grants, changed-schema compatibility and diagnostic provenance. Cover all nine schema-binding fields and normal L12 read/build authorization, ordinary generated-source checking and foreign origin rather than relabel output handwritten. Claimed C-header, selected Java classes, TypeScript declarations, Python-model tool boundaries, SQL schema/query migrations, GraphQL operations/validators and ABI-safe Rust examples retain their distinct actual inputs and outputs; support for a foreign language adds no bootstrap/tooling language. Keep shims temporary unless promoted and expose preserved/emulated/narrowed/rejected behavior, owner, stability and parity. Reject stale identity/drift, obscured loss, missing mappings or bypassed checks. Required evidence: actual reproducible source/codec/shim products and schema-drift/parity negatives, with original Expand ownership and all held executions preserved.
+<!-- expand-interop-source-generate:end -->
+
+
+
+<!-- expand-interop-source-parity:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete incumbent compatibility and migration evidence criterion (Open): Supply actual selected shim/binding/wrapper cases and incumbent oracles for golden behavior, directional type-map round trips, errors, ownership transfer, resource release, concurrency/blocking, performance envelopes where replacement is sensitive and unsupported-profile rejection. Preserve all eight evidence families and at least one real incumbent-language/schema parity report, with provider/schema versions, target manifests and lockfiles. Actual generators and runtime/type/resource owners produce their results; existing independent Release language/compiler/profile/runtime/safety/library harnesses execute applicable selected fixtures. A supplied passed report or equal demonstration value proves neither omitted behavior nor full interoperability. Required evidence: actual declared preserved/emulated/narrowed/rejected comparison and failures, exact identities and explicit held/unavailable cases; shims remain temporary unless promoted.
+<!-- expand-interop-source-parity:end -->
+
+
+
+<!-- expand-interop-source-finite-emit-scoped-migration-shim:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/interop/emit-scoped-migration-shim`: Emit a migration shim with an explicit incumbent/Gravity boundary contract recording preserved, narrowed or rejected behavior, ownership, generated files, effects/authority, stability/owner and scoped parity evidence. Accept: Generate a shim for a declared native/host/schema/process/service incumbent boundary, naming incumbent source, Gravity namespace, preserved/emulated/narrowed/rejected behavior, effects/grants, safety, generated files, parity tests, owner and stability. Keep it temporary unless promoted; bind evidence to provider/schema/target/lock versions. Compare golden behavior, directional type round trips, errors, ownership/release, concurrency/blocking, performance where sensitive and unsupported-profile rejection; supply at least one incumbent-language/schema parity report. Reject: Reject obscured behavior loss, stale source/provider/schema/target/lock evidence, missing ownership/release/error mapping or failed incumbent parity; report L19-MIGRATION-PARITY. Required outputs: Generated shim/provenance, compatibility/deprecation records, scoped parity/round-trip/error/lifetime/concurrency reports and negative diagnostics. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-interop-source-finite-emit-scoped-migration-shim:end -->
+
+
+
+<!-- expand-interop-source-finite-generate-schema-binding:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Decision criterion interface/language/interop/generate-schema-binding: Generate typed foreign/schema bindings and codecs reproducibly from named source digest/version; retain nullability, status/error/effect/grant maps and source/foreign provenance. Reject: Reject stale schema/provider/target/lock identities, missing required mapping and generated bindings bypassing ordinary compile-time policy. Required outputs: Binding/codec/schema and provenance manifests, reproducible/parity fixture outputs and schema-drift/missing-map rejection.
+<!-- expand-interop-source-finite-generate-schema-binding:end -->
 
 <!-- expand-implementation-tasks:end -->
 
