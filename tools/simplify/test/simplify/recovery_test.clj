@@ -573,3 +573,23 @@
     (flow/process-recovery-requests! ctx #{})
     (is (= :rejected (get-in @(:state ctx) [:operator-recovery-requests id :status])))
     (is (= queued (flow/task ctx "authored"))))))
+
+(deftest recovery-submission-cli-preserves-the-live-native-event-stream
+  (let [{:keys [ctx repo evidence]} (fresh-source-fixture! true)
+        cfg (assoc (:config ctx) :worktree-root (str (io/file (:state-dir ctx) "workers")))
+        ctx (merge ctx (rt/coordination (rt/common-git-directory repo) cfg))
+        _ (rt/update! ctx assoc :repository "fixture/repo" :campaign "fixture")
+        config-file (str (io/file (:state-dir ctx) "queue-config.edn"))
+        _ (rt/write-edn! config-file cfg)
+        source-root (str (.getParentFile (.getParentFile (io/file (.toURI (io/resource "simplify/main.clj"))))))
+        deps (pr-str {:paths [source-root] :deps {'org.clojure/clojure {:mvn/version "1.12.0"}
+                                                 'org.clojure/data.json {:mvn/version "2.5.2"}}})
+        before-state (slurp (:state-file ctx)) before-events (recovery/file-digest (:log-file ctx))]
+    (rt/with-lock ctx
+      (fn []
+        (let [result (rt/command {:log-lock (Object.)} repo
+                                ["clojure" "-Sdeps" deps "-M" "-m" "simplify.main" "queue-recovery" config-file
+                                 "recover-fresh-source" "authored" evidence])]
+          (is (zero? (:exit result)))
+          (is (= before-state (slurp (:state-file ctx))))
+          (is (= before-events (recovery/file-digest (:log-file ctx)))))))))
