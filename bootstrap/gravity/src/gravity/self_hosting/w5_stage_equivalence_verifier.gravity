@@ -1157,19 +1157,19 @@
              :independent-verifier :performance-bound :provenance}))
 
 (defn w5-se-request-error-after-target [request]
-  (if (not (w5-se-stage-output-present? (get request :stage-a)))
+  (if (= false (w5-se-stage-output-present? (get request :stage-a)))
     :missing-stage-output
-    (if (not (w5-se-stage-output-present? (get request :stage-b)))
+    (if (= false (w5-se-stage-output-present? (get request :stage-b)))
       :missing-stage-output
-      (if (not (w5-se-stage-output-present? (get request :stage-c)))
+      (if (= false (w5-se-stage-output-present? (get request :stage-c)))
         :missing-stage-output
-        (if (not (w5-se-stage-valid? (get request :stage-a) :stage-a 0))
+        (if (= false (w5-se-stage-valid? (get request :stage-a) :stage-a 0))
           :lineage
-          (if (not (w5-se-stage-valid? (get request :stage-b) :stage-b 1))
+          (if (= false (w5-se-stage-valid? (get request :stage-b) :stage-b 1))
             :lineage
-            (if (not (w5-se-stage-valid? (get request :stage-c) :stage-c 2))
+            (if (= false (w5-se-stage-valid? (get request :stage-c) :stage-c 2))
               :lineage
-              (if (not (w5-se-transition-valid?
+              (if (= false (w5-se-transition-valid?
                         (get request :transition-a-b)
                         (get request :stage-a)
                         (get request :stage-b)
@@ -1177,7 +1177,7 @@
                         (get (get request :lock) :lock-id)
                         (get (get request :toolchain-a) :toolchain-id)))
                 :lineage
-                (if (not (w5-se-transition-valid?
+                (if (= false (w5-se-transition-valid?
                           (get request :transition-b-c)
                           (get request :stage-b)
                           (get request :stage-c)
@@ -1185,42 +1185,42 @@
                           (get (get request :lock) :lock-id)
                           (get (get request :toolchain-b) :toolchain-id)))
                   :lineage
-                  (if (not (w5-se-recipe-valid? (get request :recipe)))
+                  (if (= false (w5-se-recipe-valid? (get request :recipe)))
                     :recipe
-                    (if (not (w5-se-lock-valid? (get request :lock)))
+                    (if (= false (w5-se-lock-valid? (get request :lock)))
                       :lock
-                      (if (not (w5-se-environment-valid?
+                      (if (= false (w5-se-environment-valid?
                                 (get request :environment-a)))
                         :environment
-                        (if (not (w5-se-environment-valid?
+                        (if (= false (w5-se-environment-valid?
                                   (get request :environment-b)))
                           :environment
-                          (if (not (w5-se-environment-valid?
+                          (if (= false (w5-se-environment-valid?
                                     (get request :environment-c)))
                             :environment
-                            (if (not (w5-se-toolchain-valid?
+                            (if (= false (w5-se-toolchain-valid?
                                       (get request :toolchain-a)))
                               :toolchain
-                              (if (not (w5-se-toolchain-valid?
+                              (if (= false (w5-se-toolchain-valid?
                                         (get request :toolchain-b)))
                                 :toolchain
-                                (if (not (w5-se-toolchain-valid?
+                                (if (= false (w5-se-toolchain-valid?
                                           (get request :toolchain-c)))
                                   :toolchain
-                                  (if (not (w5-se-environments-coherent?
+                                  (if (= false (w5-se-environments-coherent?
                                             request))
                                     :environment
-                                    (if (not (w5-se-lock-coherent? request))
+                                    (if (= false (w5-se-lock-coherent? request))
                                       :lock
-                                      (if (not (w5-se-toolchains-coherent?
+                                      (if (= false (w5-se-toolchains-coherent?
                                                 request))
                                         :toolchain
-                                        (if (not (= w5-se-required-modes
+                                        (if (= false (= w5-se-required-modes
                                                     (get request :modes)))
                                           :request-shape
-                                          (if (not (w5-se-products-valid?
+                                          (if (= false (w5-se-products-valid?
                                                     (get request :products)))
-                                            (if (not
+                                            (if (= false
                                                  (w5-se-diagnostic-product-shape-valid?
                                                   (get request :products)))
                                               :diagnostic-evidence
@@ -1229,46 +1229,46 @@
                                                   (w5-se-products-stage-binding-reason
                                                    (get request :products)
                                                    request)]
-                                              (if (not (= nil stage-binding-reason))
+                                              (if (= false (= nil stage-binding-reason))
                                                 stage-binding-reason
-                                                (if (not
+                                                (if (= false
                                                      (w5-se-products-bind-transcripts?
                                                       (get request :products)
                                                       (get request :transcripts)))
-                                                  (if (not
+                                                  (if (= false
                                                        (w5-se-transcripts-valid?
                                                         (get request :transcripts)))
                                                     :diagnostic-evidence
                                                     :conformance-drift)
-                                                  (if (not
+                                                  (if (= false
                                                        (w5-se-performance-bound-valid?
                                                         (get request :performance-bound)))
                                                     :performance-bound
-                                                    (if (not
+                                                    (if (= false
                                                          (w5-se-deltas-valid?
                                                           (get request
                                                               :accepted-deltas)))
                                                     :unreviewed-delta
-                                                    (if (not
+                                                    (if (= false
                                                          (w5-se-deltas-bind-products?
                                                           (get request
                                                               :accepted-deltas)
                                                           (get request :products)))
                                                       :unreviewed-delta
-                                                      (if (not
+                                                      (if (= false
                                                            (w5-se-transcripts-valid?
                                                             (get request :transcripts)))
                                                         :diagnostic-evidence
-                                                        (if (not
+                                                        (if (= false
                                                              (w5-se-execution-valid?
                                                               (get request :execution)))
                                                           :runtime-output
-                                                          (if (not
+                                                          (if (= false
                                                                (w5-se-verifier-valid?
                                                                 (get request
                                                                     :independent-verifier)))
                                                             :producer-authority
-                                                            (if (not
+                                                            (if (= false
                                                                  (w5-se-provenance-valid?
                                                                   (get request
                                                                       :provenance)))
