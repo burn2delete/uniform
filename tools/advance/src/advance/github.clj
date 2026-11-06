@@ -10,11 +10,24 @@
   (mapv #(select-keys % [:number :html_url :title :body :draft :head :base])
         (gh/pages ctx (gh/repo-path ctx "pulls?state=open"))))
 
+(defn candidate-reference [reference]
+  (cond-> reference
+    (:repo reference) (update :repo select-keys [:id :full_name :html_url :default_branch :fork])
+    (:user reference) (update :user select-keys [:id :login :html_url :type])))
+
 (defn candidate-files [ctx pulls]
-  (mapv (fn [pull]
-          (assoc pull :files (mapv #(select-keys % [:filename :previous_filename :status])
-                                  (gh/pages ctx (gh/repo-path ctx (str "pulls/" (:number pull) "/files"))))))
-        pulls))
+  (let [raw (mapv (fn [pull]
+                    (assoc pull :files (mapv #(select-keys % [:filename :previous_filename :status])
+                                            (gh/pages ctx (gh/repo-path ctx (str "pulls/" (:number pull) "/files"))))))
+                  pulls)
+        path (str (:state-dir ctx) "/provider-input-" (java.util.UUID/randomUUID) ".edn")
+        reference {:path path :sha256 (rt/digest (pr-str raw))}]
+    ;; Preserve the full provider context outside the bounded API message.
+    ;; Selection still receives every candidate, full body, ref and file scope.
+    (rt/write-edn! path raw)
+    (mapv #(cond-> (assoc % :raw-provider-context reference)
+             (contains? % :head) (update :head candidate-reference)
+             (contains? % :base) (update :base candidate-reference)) raw)))
 
 (defn setup! [ctx]
   (gh/setup! ctx)
