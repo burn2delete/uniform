@@ -205,3 +205,78 @@ at `/tmp/finite-domain-ci-current-main`. The 53-command source-only projection
 CI observation above retains its earlier subject; it is not relabelled as
 fresh exact-head GitHub CI. Current exact-head CI remains required after the
 independent affected-composition review and before coordinator integration.
+
+## Detailed trust-report coverage consistency
+
+Date: 2026-11-06. Finding:
+`compiler.trust-report.detailed-coverage-consistency-v1`.
+Task: `specs/compiler-api-workflow/tasks.md#pass-evidence` (Open).
+Author: bounded implementation worker in controller-supplied worktree
+`increment-1261`, applying the local `speckit-implement` skill. Exact candidate
+commit/tree identities were not supplied or inspected; the controller must bind
+its eventual checks/review to the resulting candidate. No commit was made.
+
+Observed by passive source reads: both validator and projection previously
+preferred `:covered-passes` over actual detailed records; suite metadata can
+override details while retaining the default complete summary; the real
+artifact constructor calls validation before returning the retained report.
+C18's Trust Report and the existing `pass-evidence` criteria require detailed
+pass/evidence mappings. Source inspection also confirmed the existing risk and
+minimum-evidence checks precede trust validation. These observations are source
+analysis, not executed compiler or test results.
+
+Authored changes: `verification_validation.clj` derives coverage from identified
+detail maps and checks supplied summary identity-set equality. Its shared
+`trust-report-failure` predicate also drives `proof.clj`, so invalid reports
+project false without throwing on malformed detail shapes. Missing passes follow
+contract order. `C18-TRUST-REPORT` carries `:missing-pass`, `:summary-mismatch`
+or `:malformed-record`, including a safe malformed-record index when available.
+No malformed record payload is copied into diagnostics. Accepted reports are
+retained without normalization, including additional records and their order.
+The source task body/status, defaults, public arities, risk rules, registry,
+plugin execution boundaries and historical evidence were not changed.
+
+Authored fixtures in `gravity.compiler-pass-manifest.trust-report-test` exercise
+the public validator, capability projection and actual artifact constructor
+through suite metadata. The four accepted cases preserve the default report,
+complete details without a summary, reordered details and an additional record
+with retained evidence/origin fields. Refused cases include summary-only and
+empty details, a missing critical pass hidden by the complete summary,
+contradictory/shortened/nil/malformed summaries, missing/nil pass identities,
+scalar/nil detailed records and a malformed details container. Fixtures assert
+false projections, structured diagnostics, no artifact return, deterministic
+missing fields, payload non-disclosure and original source/profile/target
+context. Precedence controls retain C18-RISK/C18-EVIDENCE before trust failures
+and C1-PASS-CONTRACT before constructor trust validation. These are assertions
+prepared for execution, not successful observations.
+
+No test, build, validation/check command or Git command was executed by this
+worker: verification is controller-owned. There are no new check pass/fail
+counts, check exits or independent acceptance receipts to report. All proposed
+checks below are unrun and require separate controller invocations (fresh JVMs
+keep bootstrap-free manifest checks separate from facade loading):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.compiler-pass-manifest.trust-report-test"]
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+These proposals do not authorize or replay retained denied jobs. No Git/cache
+inspection, process enumeration, held snapshot/focused test, Build1173 or
+environment-scope1176 operation was attempted. The user supplied ownership of
+only these six paths; retained candidate implementations/receipts are not
+adopted or promoted, and shared-path composition belongs to the controller.
+No missing implementation authority or new semantic ambiguity was identified
+for declared coverage consistency. Independent acceptance, exact revision/tree
+binding and current-check results remain unavailable. Existing compiler-order
+ambiguity and all wider evidence obligations remain open. This increment
+authenticates no evidence, runs no compiler pass/plugin and grants no release,
+migration, self-hosting or seed-retirement authority.

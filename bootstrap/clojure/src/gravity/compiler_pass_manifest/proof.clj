@@ -3,16 +3,14 @@
   (:require [clojure.set :as set]
             [gravity.compiler-pass-manifest.contracts :as contracts]
             [gravity.compiler-pass-manifest.failures :as failures]
-            [gravity.compiler-pass-manifest.support :as support]))
+            [gravity.compiler-pass-manifest.support :as support]
+            [gravity.compiler-pass-manifest.verification-validation :as verification-validation]))
 
 (defn compiler-pass-capability-proof
   [suite]
   (let [contracts (:contracts suite)
         contracts-by-pass (into {} (map (juxt :pass identity) contracts))
-        risk-records (:risk-classification suite)
-        trust-passes (set (or (:covered-passes (:compiler-trust-report suite))
-                              (map :pass (:passes (:compiler-trust-report
-                                                   suite)))))]
+        risk-records (:risk-classification suite)]
     {:canonical-order-exposed?
      (= contracts/compiler-pass-default-stage-order (:stage-order suite))
      :contracts-complete?
@@ -56,6 +54,7 @@
      (and (every? #(set/subset? (set (:minimum-evidence %))
                                 (set (:available-evidence %)))
                   risk-records)
-          (set/subset? (set (map :pass contracts)) trust-passes)
+          (nil? (verification-validation/trust-report-failure
+                 contracts (:compiler-trust-report suite)))
           (empty? (:evidence-gaps (:release-gate-report suite))))
      :status :complete}))
