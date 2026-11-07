@@ -1,5 +1,6 @@
 (ns seedless.main
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
@@ -7,6 +8,8 @@
             [simplify.workflow :as shared-workflow]
             [simplify.runtime :as rt])
   (:import [java.math BigInteger]
+           [java.nio ByteBuffer]
+           [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption]
            [java.security MessageDigest]))
 
@@ -278,6 +281,433 @@
         (rt/fail! "Configured check is outside the toolset" {:command argv})))
     (assoc config :client-info {:name "uniform_seedless" :title "Uniform Seedless" :version "0.1.0"})))
 
+(def ^:private status-identity-keys
+  [:repository :campaign :objective :contracts :completion-checks :repo-dir :remote
+   :base-branch :worktree-root :checks :project-title :codex-command])
+
+(def ^:private status-restriction-key?
+  (fn [key]
+    (let [name (when (or (keyword? key) (string? key)) (name key))]
+      (and name (or (= name "restrictions") (str/includes? name "restricted"))))))
+
+(defn- nonblank-string? [value]
+  (and (string? value) (not (str/blank? value))))
+
+(defn- content-identity [value]
+  (let [serialized (pr-str value)]
+    {:present true
+     :sha256 (rt/digest serialized)
+     :serialization :edn-pr-str-utf8}))
+
+(defn- status-identity [config state]
+  (let [recorded (:identity state)
+        keys (vec (filter #(contains? config %) status-identity-keys))
+        configured (select-keys config keys)
+        complete? (and (map? recorded) (every? #(contains? recorded %) keys))
+        matching? (and (seq keys) complete?
+                       (= configured (select-keys recorded keys)))]
+    {:status (cond
+               (nil? recorded) :missing
+               matching? :matching
+               :else :stale)
+     :configured (rt/redact configured)
+     :recorded (rt/redact recorded)
+     ;; Git common-directory identity is recorded by target!, but observing
+     ;; status must not probe Git to recompute it.
+     :git-common-dir :recorded-only}))
+
+(defn- status-record-map? [value]
+  (and (map? value)
+       (every? (fn [[_ record]]
+                 (and (map? record) (keyword? (:status record))))
+               value)))
+
+(defn- validate-status-state! [config state path]
+  (let [fields [:tasks :jobs :effects]
+        restrictions (if (map? state)
+                       (->> (keys state) (filter status-restriction-key?))
+                       [])
+        task-keys-match? (and (map? (:tasks state))
+                              (every? (fn [[key task]]
+                                        (or (nil? (:key task)) (= key (:key task))))
+                                      (:tasks state)))]
+    (when-not (and (map? state)
+                   (= :seedless/v1 (:schema state))
+                   (map? (:identity state))
+                   (contains? state :status)
+                   (keyword? (:status state))
+                   (status-record-map? (:tasks state))
+                   (status-record-map? (:jobs state))
+                   (status-record-map? (:effects state))
+                   task-keys-match?
+                   (every? #(or (nil? (get state %)) (map? (get state %))) restrictions))
+      (rt/fail! "Seedless status summary found malformed state shape"
+                {:path path
+                 :fields (if (map? state)
+                           (select-keys state (conj fields :schema :identity :status))
+                           {:value-type (type state)})}))
+    (let [identity (status-identity config state)]
+      (when-not (= :matching (:status identity))
+        (rt/fail! "Seedless status summary found state for another campaign/configuration"
+                  {:path path
+                   :expected (rt/redact (select-keys config status-identity-keys))
+                   :actual (rt/redact (:identity state))}))
+      state)))
+
+(defn- read-status-edn [raw path label]
+  (try
+    (let [eof (Object.)
+          reader (java.io.PushbackReader. (java.io.StringReader. raw))
+          options {:readers {}
+                   :default (fn [tag _]
+                              (rt/fail! (str "Unsupported EDN tag in Seedless " label)
+                                        {:tag tag :path path}))
+                   :eof eof}
+          value (edn/read options reader)
+          trailing (edn/read options reader)]
+      (when (identical? eof value)
+        (rt/fail! (str "Seedless " label " is empty") {:path path}))
+      (when-not (identical? eof trailing)
+        (rt/fail! (str "Seedless " label " contains multiple EDN forms") {:path path}))
+      value)
+    (catch Exception e
+      (rt/fail! (str "Seedless status summary found malformed " label)
+                {:path path :cause (.getMessage e)}))))
+
+(defn- sha256-bytes [bytes]
+  (format "%064x" (BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes))))
+
+(defn- read-status-file [file path label]
+  (try
+    (let [bytes (Files/readAllBytes (.toPath file))
+          decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                    (.onMalformedInput CodingErrorAction/REPORT)
+                    (.onUnmappableCharacter CodingErrorAction/REPORT))]
+      {:raw (.toString (.decode decoder (ByteBuffer/wrap bytes)))
+       :digest (sha256-bytes bytes)})
+    (catch Exception e
+      (rt/fail! (str "Seedless status summary cannot read " label " file")
+                {:path path :cause (.getMessage e)}))))
+
+(defn- read-status-state! [config]
+  (let [path (str (io/file (:state-dir config) "state.edn"))
+        file (io/file path)]
+    (when-not (.exists file)
+      (rt/fail! "Seedless status summary requires an existing state file"
+                {:path path :missing true}))
+    (when-not (.isFile file)
+      (rt/fail! "Seedless status summary cannot read state file"
+                {:path path :not-file true}))
+    (let [{:keys [raw digest]} (read-status-file file path "state")
+          state (read-status-edn raw path "state")]
+      (validate-status-state! config state path)
+      {:state state :digest digest :file path})))
+
+(defn- read-status-control [config]
+  (let [path (str (io/file (:state-dir config) "control.edn"))
+        file (io/file path)]
+    (if-not (.exists file)
+      {:file path :sha256 nil :available false :status :unavailable}
+      (do
+        (when-not (.isFile file)
+          (rt/fail! "Seedless status summary found malformed control file"
+                    {:path path :not-file true}))
+        (let [{:keys [raw digest]} (read-status-file file path "control")
+              value (read-status-edn raw path "control")]
+          (when-not (and (map? value) (contains? value :paused) (boolean? (:paused value)))
+            (rt/fail! "Seedless status summary found malformed control shape"
+                      {:path path :expected {:paused :boolean} :actual value}))
+          {:file path :sha256 digest :available true
+           :status (if (:paused value) :paused :active) :paused (:paused value)})))))
+
+(defn- task-error-summary [error]
+  (cond
+    (nil? error) nil
+    (map? error)
+    (let [details (:details error)]
+      (rt/redact
+       (select-keys (merge error (if (map? details) details {}))
+                    [:message :effect :effect-id :effect-status :restricted :uncertain
+                     :reason :remote-pr-refusal :main-effect :writer-ended? :outcome
+                     :job :refusal :path :slice])))
+    :else {:message (rt/redact (str error))}))
+
+(defn- effect-reference-values [value]
+  (cond
+    (map? value)
+    (mapcat (fn [[key nested]]
+              (let [key-name (when (or (keyword? key) (string? key)) (name key))
+                    effect-key? (and key-name
+                                     (str/includes? (str/lower-case key-name) "effect"))]
+                (concat (if effect-key?
+                          (cond
+                            (nonblank-string? nested) [nested]
+                            (sequential? nested) (filter nonblank-string? nested)
+                            :else [])
+                          [])
+                        (effect-reference-values nested))))
+            value)
+    (sequential? value) (mapcat effect-reference-values value)
+    :else []))
+
+(defn- task-effect-ids [task]
+  (->> (effect-reference-values task)
+       distinct
+       sort
+       vec))
+
+(defn- linked-effect-summary [effects id]
+  (let [record (get effects id)
+        status (if (map? record) (or (:status record) :unknown) :missing)]
+    {:id id :status status
+     :restricted (= :restricted status)
+     :uncertain (= :uncertain status)
+     :pending (= :pending status)}))
+
+(defn- effect-history? [record]
+  (and (map? record)
+       (some #(contains? record %) [:previous :prior :refusal :settlement
+                                    :reconciliation :history :refusal-history
+                                    :settlement-history])))
+
+(defn- history-facts [value]
+  (cond
+    (map? value)
+    (reduce-kv
+     (fn [result key nested]
+       (let [projected (history-facts nested)
+             key-name (when (or (keyword? key) (string? key)) (name key))
+             value (cond
+                     (#{:result :output :raw-response} key) (content-identity nested)
+                     (= :authorization key)
+                     (if (map? nested)
+                       {:present true :sha256 (rt/digest (pr-str nested))}
+                       (if (and (string? nested) (= projected nested))
+                         nested
+                         {:present true :sha256 (rt/digest (pr-str nested))}))
+                     key-name (if (= "[REDACTED]" (get (rt/redact {key nil}) key))
+                                "[REDACTED]"
+                                (if (or (map? projected) (sequential? projected))
+                                  projected
+                                  (rt/redact projected)))
+                     :else projected)
+             result (assoc result key value)]
+         (if (= :reconciliation key)
+           (assoc result :reconciliation-identity (content-identity nested))
+           result)))
+     {}
+     value)
+    (sequential? value) (mapv history-facts value)
+    :else (rt/redact value)))
+
+(defn- effect-history-summary [id record]
+  (let [prior (if (map? (:prior record)) (:prior record) {})
+        previous (if (map? (:previous record)) (:previous record) {})]
+    {:id id
+     :current-status (:status record)
+     :prior-status (get-in record [:prior :status])
+     :previous-status (get-in record [:previous :status])
+     :prior (history-facts prior)
+     :previous (history-facts previous)
+     :reconciliation (if (map? (:reconciliation record))
+                       (history-facts (:reconciliation record))
+                       (rt/redact (:reconciliation record)))
+     :reconciliation-identity (when (contains? record :reconciliation)
+                                (content-identity (:reconciliation record)))
+     :settlements (->> [(:settlement record)
+                        (get-in record [:prior :settlement])
+                        (get-in record [:previous :settlement])]
+                       (filter map?)
+                       (mapv history-facts))}))
+
+(defn- recovery-history-summary [state-file state-digest [id record]]
+  {:id id
+   :kind (:kind record)
+   :stage (:stage record)
+   :effect (:effect record)
+   :operation (:operation record)
+   :outcome (:outcome record)
+   :prior-effect-status (get-in record [:prior-effect :status])
+   :authorization (history-facts (:authorization record))
+   :authorization-present (contains? record :authorization)
+   :authorization-sha256 (when (contains? record :authorization)
+                           (rt/digest (pr-str (:authorization record))))
+   :previous-local-guard (history-facts (:previous-local-guard record))
+   :previous-shared-guard (history-facts (:previous-shared-guard record))
+   :shared-retirement (history-facts (:shared-retirement record))
+   :inspection (history-facts (:inspection record))
+   :review (history-facts (:review record))
+   :prior-effect (history-facts (:prior-effect record))
+   :comment-outcome (history-facts (:comment-outcome record))
+   :auth-diagnostic (history-facts (:auth-diagnostic record))
+   :receipt-digests (history-facts (:receipt-digests record))
+   :record {:state-file state-file :state-sha256 state-digest
+            :recovery-key id}})
+
+(defn- effects-summary [state state-file state-digest]
+  (let [effects (or (:effects state) {})
+        current (->> effects
+                     (sort-by (comp str key))
+                     (mapv (fn [[id record]]
+                             (cond-> {:id id :status (:status record)
+                                      :result-present (contains? record :result)
+                                      :reconciliation-present (contains? record :reconciliation)
+                                      :result-identity (when (contains? record :result)
+                                                         (content-identity (:result record)))
+                                      :reconciliation-identity
+                                      (when (contains? record :reconciliation)
+                                        (content-identity (:reconciliation record)))
+                                      :record {:state-file state-file :state-sha256 state-digest
+                                               :effect-id id}}
+                               (some? (:message record))
+                               (assoc :message (rt/redact (:message record)))))))
+        history (->> effects
+                     (filter (fn [[_ record]] (effect-history? record)))
+                     (sort-by (comp str key))
+                     (mapv (fn [[id record]]
+                             (assoc (effect-history-summary id record)
+                                    :record {:state-file state-file :state-sha256 state-digest
+                                             :effect-id id}))))
+        recoveries (->> (or (:operator-api-recoveries state) {})
+                        (sort-by (comp str key))
+                        (mapv #(recovery-history-summary state-file state-digest %)))
+        retained (select-keys state [:effect-history :refusal-history :settlement-history
+                                     :refusals :settlements])]
+    {:scope :recorded-effects-only
+     :current current
+     :history history
+     :operator-api-recoveries recoveries
+     :refusal-settlement-history {:effects history
+                                  :operator-api-recoveries recoveries
+                                  :recorded (history-facts retained)}}))
+
+(defn- task-status-summary [state effects-view state-file state-digest [map-key task]]
+  (let [key map-key
+        effects (or (:effects state) {})
+        ids (task-effect-ids task)
+        linked (mapv #(linked-effect-summary effects %) ids)
+        error (task-error-summary (:error task))
+        reporting-error (task-error-summary (:reporting-error task))
+        statuses (set (concat (keep :status linked)
+                              [(:effect-status error) (:effect-status reporting-error)]))]
+    {:key key
+     :status (:status task)
+     :resume-status (:resume-status task)
+     :history {:restricted (or (:restricted error) (:restricted reporting-error)
+                               (contains? statuses :restricted))
+               :uncertain (or (:uncertain error) (:uncertain reporting-error)
+                              (contains? statuses :uncertain))
+               :pending (contains? statuses :pending)}
+     :error error
+     :reporting-error reporting-error
+     :effects linked
+     :effect-history (->> (:history effects-view)
+                          (filter #(some #{(:id %)} ids))
+                          vec)
+     :record {:state-file state-file :state-sha256 state-digest :task-key key}}))
+
+(defn- task-record [state-file state-digest [map-key task]]
+  {:key map-key
+   :status (:status task)
+   :record {:state-file state-file :state-sha256 state-digest
+            :task-key map-key}})
+
+(defn- job-refusal-summary [refusal]
+  (if-not (map? refusal)
+    (rt/redact refusal)
+    (let [item (select-keys (:item refusal)
+                            [:command :cwd :exitCode :id :status :type])]
+      (cond-> (rt/redact (select-keys refusal [:id :status :job :output-sha256 :denial-lines]))
+        (seq item) (assoc :item (rt/redact item))))))
+
+(defn- job-status-summary [state-file state-digest [job record]]
+  (let [identity (select-keys record [:thread :turn :model :prompt-sha256
+                                      :input-sha256 :output-sha256 :turn-terminal?
+                                      :active-items :message :restricted :tool-refusals])]
+    {:job job
+     :status (:status record)
+     :mode (:mode record)
+     :thread (:thread record)
+     :turn (:turn record)
+     :model (:model record)
+     :turn-terminal? (:turn-terminal? record)
+     :active-items (rt/redact (:active-items record))
+     :message (some-> (:message record) rt/redact)
+     :restricted (:restricted record)
+     :tool-refusals (mapv job-refusal-summary (or (:tool-refusals record) []))
+     :identity (rt/redact identity)
+     :record {:state-file state-file :state-sha256 state-digest :job-key job}}))
+
+(defn- native-restrictions [state]
+  (rt/redact (into {}
+                   (for [[key value] state
+                         :when (status-restriction-key? key)]
+                     [key value]))))
+
+(defn- blocker-summary [state state-file state-digest key]
+  (let [value (get state key)]
+    (if-not (map? value)
+      {:present false
+       :record {:state-file state-file :state-sha256 state-digest :field key}}
+      {:present true
+       :status (:status value)
+       :result (when (or (keyword? (:result value)) (string? (:result value))
+                         (boolean? (:result value)) (number? (:result value)))
+                 (rt/redact (:result value)))
+       :result-present (contains? value :result)
+       :restricted (:restricted value)
+       :effect-refs (task-effect-ids value)
+       :error (or (task-error-summary (:error value))
+                  (task-error-summary (:validation-error value)))
+       :record {:state-file state-file :state-sha256 state-digest :field key}})))
+
+(defn status-summary
+  "Build a compact, observational projection from one native Seedless state.
+
+  This function reports recorded state only. It does not construct context,
+  probe Git or providers, inspect processes, acquire a lock, import shared
+  coordination state, or write local state/logs."
+  [config state state-digest control]
+  (let [state-file (str (io/file (:state-dir config) "state.edn"))
+        tasks (->> (:tasks state) (sort-by (comp str key)) vec)
+        task-records (mapv #(task-record state-file state-digest %) tasks)
+        effects (effects-summary state state-file state-digest)
+        attention (->> tasks
+                       (filter #(= :attention (:status (second %))))
+                       (mapv #(task-status-summary state effects state-file state-digest %)))
+        statuses (frequencies (map :status task-records))
+        jobs (->> (:jobs state)
+                  (sort-by (comp str key))
+                  (mapv #(job-status-summary state-file state-digest %)))
+        identity (status-identity config state)
+        restrictions (native-restrictions state)
+        blockers (into {}
+                       (map (fn [key] [key (blocker-summary state state-file state-digest key)])
+                            [:planning :completion :interruption]))]
+    {:schema :seedless/v1
+     :identity identity
+     :state {:file state-file :sha256 state-digest
+             :recorded-status (:status state)
+             :task-count (count task-records)
+             :counts statuses
+             :record {:state-file state-file :state-sha256 state-digest}}
+     :tasks task-records
+     :attention attention
+     :jobs {:scope :recorded-model-jobs-only :count (count jobs) :records jobs}
+     :effects effects
+     :recorded-blockers blockers
+     :operator-controls {:local-control control
+                         :native-restrictions restrictions
+                         :github {:status :unavailable
+                                  :reason :no-provider-read-in-read-only-summary}}
+     :liveness {:processes :unverified
+                :service :unverified
+                :basis :recorded-local-state-only}}))
+
+(defn status-summary! [config]
+  (let [{:keys [state digest]} (read-status-state! config)]
+    (status-summary config state digest (read-status-control config))))
+
 (defn context! [config]
   (let [directory (io/file (:state-dir config)) _ (.mkdirs directory)
         path (str (io/file directory "state.edn"))
@@ -419,21 +849,26 @@
     "reconcile-main" (with-current-lock ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-lock ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
                                                                         (:evidence (rt/read-edn (second args)))))
-    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|status|pause|resume|retry|reconcile|reconcile-main|release-writer CONFIG [KEY FILE]" {})))
+    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|status|status-summary|pause|resume|retry|reconcile|reconcile-main|release-writer CONFIG [KEY FILE]" {})))
 
 (defn -main [& [command path & args]]
   (try
     (when-not path (rt/fail! "Provide a command and configuration file" {}))
-    (let [ctx (assoc (context! (config! path)) :command command)]
-      (.addShutdownHook (Runtime/getRuntime)
-                        (Thread. ^Runnable
-                         (fn [] (owned-cleanup! ctx :jvm-shutdown))))
-      (try
-        (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model :models)})
-        (dispatch! ctx command args)
-        (catch Exception e
-          (rt/event! ctx :fatal {:message (.getMessage e) :details (ex-data e)})
-          (throw e))))
+    (let [config (config! path)]
+      (if (= command "status-summary")
+        (do
+          (when (seq args) (rt/fail! "status-summary takes no additional arguments" {:args args}))
+          (println (pr-str (status-summary! config))))
+        (let [ctx (context! config)]
+          (.addShutdownHook (Runtime/getRuntime)
+                            (Thread. ^Runnable
+                             (fn [] (owned-cleanup! ctx :jvm-shutdown))))
+          (try
+            (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model :models)})
+            (dispatch! ctx command args)
+            (catch Exception e
+              (rt/event! ctx :fatal {:message (.getMessage e) :details (ex-data e)})
+              (throw e))))))
     (catch Exception e
       (binding [*out* *err*] (println (.getMessage e)))
       (shutdown-agents)
