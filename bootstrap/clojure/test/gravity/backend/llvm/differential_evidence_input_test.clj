@@ -59,6 +59,29 @@
   (doseq [arguments [[] [{}] [{} {}] [{} {} {} {}]]]
     (is (thrown? clojure.lang.ExceptionInfo (invoke arguments)))))
 
+(deftest current-source-preserves-differential-entry-rejections
+  ;; The complete owner must compile, including the validator whose missing
+  ;; outer else previously blocked evidence-input execution.
+  (let [entry {:backend :llvm :target :llvm-x86_64-linux
+               :fixture-id "fixture" :reference-id "same" :observed-id "same"
+               :status :matched :execution :not-required-static-only}
+        valid? (fn [value]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-b14-linux-evidence-input-test
+                   :compiler-artifact-plan? true}
+                  @plan 'w5-b14-differential-entry-valid? [value]))]
+    (is (true? (valid? entry)))
+    (doseq [value [nil [] (dissoc entry :execution) (assoc entry :extra :field)
+                   (assoc entry :backend :c)
+                   (assoc entry :target :darwin)
+                   (assoc entry :fixture-id "")
+                   (assoc entry :reference-id "")
+                   (assoc entry :observed-id "")
+                   (assoc entry :observed-id "different")
+                   (assoc entry :status :mismatched)
+                   (assoc entry :execution :observed)]]
+      (is (false? (valid? value)) (pr-str value)))))
+
 (defn- native-var [name]
   (or (ns-resolve 'gravity.bootstrap (symbol name))
       (throw (ex-info "Missing production function" {:name name}))))

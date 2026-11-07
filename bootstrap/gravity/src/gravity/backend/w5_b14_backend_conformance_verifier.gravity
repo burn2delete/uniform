@@ -632,13 +632,14 @@
                      (get entry :observed-id))
                 (if (= :matched (get entry :status))
                   (= :not-required-static-only (get entry :execution))
+                  false)
                 false)
               false)
             false)
           false)
         false)
       false)
-    false)))
+    false))
 
 (defn w5-b14-differential-entries-valid?
   [entries index]
