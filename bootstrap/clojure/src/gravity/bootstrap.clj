@@ -6,6 +6,7 @@
   as diagnostics instead of pretending to be the final compiler."
   (:require [gravity.release]
             [gravity.build]
+            [gravity.package]
             [gravity.bootstrap.module-literals]
             [gravity.checked-core]
             [gravity.mir]

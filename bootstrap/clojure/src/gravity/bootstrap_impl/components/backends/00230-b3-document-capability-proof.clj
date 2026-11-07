@@ -2,66 +2,9 @@
 
 (defn b3-document-capability-proof
   [artifact]
-  (let [manifest (:llvm-backend-manifest artifact)
-        diagnostics (set (map :diagnostic
-                              (get-in artifact
-                                      [:b3-diagnostic-stream
-                                       :diagnostics])))
-        forbidden-ir-flags [" nsw" " nuw" " inbounds" " fast"
-                            "!tbaa"]]
-    {:backend-interface-input-verified?
-     (= :complete (get-in artifact
-                          [:native-lowering-artifact
-                           :capability-based-proof :status]))
-     :target-and-data-layout-pinned?
-     (= :pinned (get-in manifest [:target-record :status]))
-     :proof-gated-metadata-covered?
-     (= :gated (get-in manifest [:metadata-policy :status]))
-     :safe-llvm-undefined-behavior-rejected?
-     (and (contains? diagnostics "B3-UB")
-          (not-any? #(str/includes? b3-document-llvm-ir %)
-                    forbidden-ir-flags))
-     :pointer-ownership-memory-covered?
-     (= :complete (get-in manifest
-                          [:pointer-ownership-memory-map :status]))
-     :numeric-floating-lowering-covered?
-     (= :complete (get-in manifest
-                          [:numeric-floating-lowering :status]))
-     :atomic-volatile-ordering-covered?
-     (= :complete
-        (get-in manifest
-                [:atomic-volatile-concurrency-lowering :status]))
-     :runtime-helpers-profile-legal?
-     (and (= :complete (get-in manifest
-                               [:runtime-abi-helper-map :status]))
-          (empty? (get-in manifest
-                          [:runtime-abi-helper-map
-                           :hidden-runtime-services])))
-     :abi-record-covered?
-     (contains? (set (get-in manifest
-                             [:target-record :calling-conventions]))
-                :ccc)
-     :pass-pipeline-verification-covered?
-     (= :complete (get-in manifest
-                          [:pass-pipeline-record :status]))
-     :source-debug-proof-safety-capability-preserved?
-     (= :preserved
-        (get-in manifest
-                [:safety-capability-unsafe-audit-preservation-map
-                 :status]))
-     :manifest-complete?
-     (every? #(contains? manifest %)
-             [:target-record :llvm-ir-files
-              :proof-to-llvm-metadata-map :runtime-abi-helper-map
-              :pass-pipeline-record :source-debug-map
-              :safety-capability-unsafe-audit-preservation-map
-              :unsupported-feature-report])
-     :diagnostics-covered?
-     (= (set b3-document-diagnostic-ids) diagnostics)
-     :requires-external-llvm-verifier-proof?
-     (= :requires-proof-command
-        (get-in manifest [:llvm-verifier-record :status]))
-     :status :complete}))
+  (gravity.backend.llvm/native-coverage-report
+   {:llvm-ir #'b3-document-llvm-ir :diagnostic-ids #'b3-document-diagnostic-ids}
+   artifact))
 
 (defn b3-document-source-artifact
   [source-path source-text]
