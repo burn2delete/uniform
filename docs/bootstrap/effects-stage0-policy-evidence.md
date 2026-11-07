@@ -26,7 +26,7 @@ this manual Source no recovery, service, controller or Main role.
 
 ## Public API and artifact boundary
 
-The intended public APIs are:
+The public APIs are:
 
 ```clojure
 (stage0-uses-println? recur-check form)
@@ -98,17 +98,59 @@ proves both routes without replacing Reader, profile policy or module facts.
 Earlier failed attribution probes remain history; they are not candidate
 failures or acceptance evidence.
 
-Add focused callback/order/identity/refusal tests, preserve all earlier CI
-vectors and append one whole-namespace command. Run affected integration
-tests, source-language boundary checks, structural docs/roadmap validation,
-complete current-Main lint and the relevant imported Simplify regressions.
+The complete baseline and current observations cover fourteen real-source
+cases: eight plans emitted, six successful executions, two executor-arity
+refusals after emission, two assembler-entry refusals, a duplicate-header
+refusal, an evidence-policy refusal and two earlier P4 controls. Each case
+also checks the genuine module through the public effect guard; exactly the
+two missing-declaration cases supply direct L6/L3 refusal evidence. All
+fourteen complete observations compare equal, including module facts,
+callback traces, source hashes, plans, reports, deterministic identities,
+stdout and diagnostic payloads. No invalid plan is emitted for the P4 cases.
+
+The baseline receipt SHA256 is
+`4ee4f9ca875a1f0e0c7e21107d4deafd1c88b9e85ee48204e20ed5674bb14c7e`;
+the current observation receipt SHA256 is
+`92c5e62c82a75d0be4cc512f72d0a261e7665dbf18baa49b304964137cdac2ff`.
+The latter records the scope HEAD and actual dirty implementation hashes;
+it does not claim a later authored commit identity.
+
+Conservation receipt SHA256
+`75cd5d5a0a68a71b5256d479bff38231f4e6396d006ba4b5edc67d14da03911d`
+checks byte-identical prior twenty-three public function bodies, seven data
+Vars and the private helper; exact four-body substitution of only definition
+names; exact legacy adapters; and the unchanged outer module-analysis facade.
+All twenty-seven earlier CI command vectors remain identical. The new
+whole-namespace command is `effects-stage0-policy-validation`, index 27.
+
+Focused checks have passed:
+
+- New `gravity.effects.stage0-policy-test`: 13 tests, 137 assertions.
+- Nine unheld legacy Effects tests: 9 tests, 107 assertions. The separate
+  paired fixed-seed C-emission test is not invoked by this focused check.
+- Runtime Stage0, Lowering instruction and plan-assembly namespaces: 39 tests,
+  427 assertions.
+- Source-language boundary and ownership: 48 tests, 1,202 assertions.
+- CI command and lint-context harness: 54 tests, 699 assertions.
+- Build, compiled package metadata and unsafe-audit integration: 24 tests,
+  614 assertions.
+- Five unheld native Lowering pipeline tests: 5 tests, 140 assertions.
+- Two imported Simplify composition-conflict regressions: 2 tests,
+  82 assertions, using isolated fixture repositories and mocked GitHub APIs.
+- Cold Effects require: all 34 public API metadata entries match; Bootstrap,
+  module analysis and Diagnostics are not loaded.
+
+Structural docs/roadmap validation and complete current-Main lint are
+separate checks.
 Independent semantic/adversarial, composition/provider and CI reviews must
 bind the exact clean authored tuple before integration eligibility.
 
 ## Current status and unsupported boundaries
 
-This is the early draft scope; no new Effects API is implemented or accepted
-at this capture. The original eight-path lease governs authoring. The
+The four APIs and legacy adapters are implemented in the maintained draft.
+The checks above establish development evidence, not independent final
+acceptance or Main integration. The original eight-path lease governs
+authoring. The
 current published-Main SDK is recorded by manifest SHA256
 `33cf71a66f4482ed358362aca7438bdcc80a2544c1381cb7131ad1e0a256ca07`.
 Its nine exact published code files include the new recovery/workflow code;

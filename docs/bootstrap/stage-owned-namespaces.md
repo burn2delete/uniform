@@ -168,6 +168,25 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [native Stage0 effect-policy extraction](effects-stage0-policy-evidence.md)
+moves the complete classifier, inference, capability projection and module
+guard bodies into `gravity.effects`. Four explicit APIs consume existing
+native forms/modules/declarations, callback values and a callable catalog;
+they return the original observations, sets, guard returns or unchanged
+failures. Module-analysis adapters preserve names, argument lists and callback
+capture semantics. The Effect-stage guard owns its L6 undeclared-effect and
+L3 missing-capability decisions through the existing failure transport.
+Earlier P4 source/profile refusals remain first in full compilation; tests
+prove them separately from direct Effect-stage refusals on genuine unmodified
+public macro modules. Real accepted sources still emit and execute with the
+same provenance, IDs, reports and stdout. Tests in
+`gravity.effects.stage0-policy-test` also cover traversal, truthy and quoted
+forms, callback capture, nil/false catalog facts, identity and returning
+failure behavior. Dependency direction is module-analysis adapters to Effects,
+without a reverse import. This adds no canonical C8 legality, source admission,
+capability proof or provider grant, backend/runtime service, release or
+self-hosting authority; `network-listen` remains only an inference fact.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four
