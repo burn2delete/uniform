@@ -2,7 +2,8 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.self-hosting.a1-canonical-schema :as a1])
+            [gravity.self-hosting.a1-canonical-schema :as a1]
+            [gravity.self-hosting.a1-canonical-schema.config :as config])
   (:import (clojure.lang BigInt PersistentHashMap PersistentVector)
            (java.math BigInteger)
            (java.util ArrayList HashMap)))
@@ -13,6 +14,38 @@
 
 (defn- result [diagnostic path]
   {"status" "typed-rejected" "diagnostic" diagnostic "value" nil "path" path})
+
+(deftest diagnostic-path-materialization-preserves-segments-and-vector-shape
+  (let [segments ["" 2 "field/name" 0 "leaf"]]
+    (doseq [[path expected]
+            [[nil []] ['() []] [[] []]
+             [segments segments]
+             [(with-meta segments {:origin :host}) segments]
+             [(subvec (into [:unused] segments) 1) segments]
+             [(config/path-child (config/path-of "" 2 "field/name" 0) "leaf")
+              segments]]]
+      (let [actual (config/path-vector path)]
+        (is (= expected actual))
+        (is (= PersistentVector (class actual)))
+        (is (nil? (meta actual)))))))
+
+(deftest deep-mixed-path-rejection-retains-the-full-diagnostic
+  (let [path (vec (mapcat (fn [index] [(str "field-" index) (mod index 3)])
+                          (range 33)))
+        nested (fn [leaf]
+                 (reduce (fn [value segment]
+                           (if (string? segment)
+                             {segment value}
+                             (assoc (vec (repeat (inc segment) nil)) segment value)))
+                         leaf (rseq path)))
+        accepted-value (nested nil)
+        rejected (a1/canonical-copy (nested -1))]
+    (is (= {"status" "accepted" "diagnostic" "OK"
+            "value" accepted-value "path" []}
+           (a1/canonical-copy accepted-value)))
+    (is (= (result "E-TYPE" path) rejected))
+    (is (= PersistentVector (class (get rejected "path"))))
+    (is (nil? (meta (get rejected "path"))))))
 
 (defn- phm [entries]
   (reduce (fn [m [k v]] (assoc m k v)) PersistentHashMap/EMPTY entries))
