@@ -961,13 +961,21 @@
                                    reference)))
     (doseq [reference-key [:uniform/retained-repository-metadata
                            :uniform/retained-repository-metadata-v2]]
-      (is (thrown-with-msg? Exception #"already has a presentation reference"
-                            (project [{:head {:ref "head"
-                                              :repo {:id 7
-                                                     :description "untrusted"
-                                                     reference-key {:artifact "/tampered"}}}
-                                       :base {:ref "main" :repo nil}}]
-                                     reference))))))
+      (let [repository {:id 7 :node_id "repo-7" :name "repo-7" :full_name "fixture/repo-7"
+                        :html_url "https://example.invalid/repos/fixture/repo-7"
+                        :url "https://api.example.invalid/repos/fixture/repo-7"
+                        :fork false :default_branch "main" :disabled false :archived false
+                        :permissions {:pull true :push false :admin false}
+                        :owner {:id 70 :node_id "owner-70" :login "fixture"}
+                        :labels [{:id 71 :node_id "label-71" :url "https://example.invalid/labels/71"
+                                  :name "seedless-negative" :description "negative fixture"
+                                  :color "5319e7" :default true}]
+                        reference-key {:artifact "/tampered"}}]
+        (is (thrown-with-msg? Exception #"already has a presentation reference"
+                              (project [{:number 17 :labels (:labels repository)
+                                         :head {:ref "head" :repo repository}
+                                         :base {:ref "main" :repo nil}}]
+                                       reference)))))))
 
 (deftest planner-accepts-deleted-repository-in-valid-pr-boundaries
   (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
