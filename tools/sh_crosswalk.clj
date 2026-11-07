@@ -998,13 +998,22 @@
          :predecessor-current-source-review source-consumer-predecessor-mapping-review
          :qualification "Explicit Build-file source successor only. The complete previous current-source review, its original fingerprint and every older review remain preserved with their original subjects. New B1-B3 criteria and source/routing identity still require exact independent review; semantic scope, actual behavior, implementation, migration, release, Main integration and full240 verification are not accepted by this source projection."))
 
-(def mapping-review
+(def published-main-helper-predecessor-mapping-review
   (assoc auth-crypto-predecessor-mapping-review
          :status :pending-source-version-review
          :input-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884"
          :predecessor-input-fingerprint (:input-fingerprint auth-crypto-predecessor-mapping-review)
          :predecessor-current-source-review auth-crypto-predecessor-mapping-review
          :qualification "Explicit Auth/Crypto document identity successor only. The selected row consumes unadmitted declarative operation/value requests and policy/contract shapes; Auth independently derives a scoped grant before Crypto checked admission and action. Admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. Every complete prior review retains its original subject, all49 old file transitions and578 raw payloads are preserved, and all task/requirement dispositions remain unchanged. Exact current source/routing review, implementation, semantic scope, migration, release, Main and full240 verification remain separate and unassessed."))
+
+(def mapping-review
+  (assoc published-main-helper-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "23e2b4cc2145d1daa93f4f2be371a5cce80dd8504a1cf5b30976dcd32c8af257"
+         :predecessor-input-fingerprint (:input-fingerprint published-main-helper-predecessor-mapping-review)
+         :predecessor-current-source-review published-main-helper-predecessor-mapping-review
+         :dependency-helper-source-composition {:kind :published-main-dependency-helper-input-successor, :source-commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :published-main "7204d9b0b9c80011e637f8456deec558301127c1", :predecessor {:commit "e69bb936a350a052215a6bacbea5ae69f833254c", :path "tools/acceptance_dependencies.clj", :sha256 "9cc0e6e40807dd3d106e85ebe3fef7deaba152b71dd48df6d401f21d37d1bbe1"}, :current {:commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :path "tools/acceptance_dependencies.clj", :sha256 "7f83f33fcd777a8c7661d75ba25e0621b63875eab6a45fdeb242e3542773f8f4"}, :unchanged-source-view-replayed-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884", :scope :pending-input-identity-only, :implementation-acceptance :unassessed}
+         :qualification "Explicit published-Main dependency-helper input successor only. The source/routing view reproduces the complete prior Auth/Crypto fingerprint when supplied with the preserved predecessor helper bytes; the current helper is the clean source/Main hunk union at c0d6e098. The full c241 prior review remains nested with its original subject. Source records, all raw payloads, task bindings, source frames, scope holds and acceptance dispositions are unchanged. This pending identity successor neither accepts the 18 preserved stale-review errors nor confers semantic scope, implementation, migration, release, Main publication, self-hosting, seed retirement or full240 acceptance; the affected current checks and exact independent review remain required."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
