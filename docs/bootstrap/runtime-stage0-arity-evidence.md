@@ -16,13 +16,13 @@ diagnostic provenance without making the legacy failure payload a complete
 canonical diagnostic. Signature arity is semantic legality, not compiler cost
 accounting or an input quota.
 
-The frozen source parent is
+The initial frozen source parent was
 `10efdb1328db3b749e0376c2b45a121ecfe89f44`, tree
 `59370742f5ee36b9637a73aa33578b182065be89`. Published Main
 `b722e29a0096381fbf476ca04771fe6567657f69` is already an ancestor.
 The parent's own hosted CI remains under independent audit at scope capture.
-This successor imports no new Main paths and inherits no source or CI
-acceptance. Its separate seven-path claim follows the parent's normal writer
+At initial scope capture no new Main paths were required; no source or CI
+acceptance was inherited. Its separate seven-path claim follows the parent's normal writer
 release; an immutable predecessor awaiting CI does not reserve these paths.
 
 ## Public API and artifacts
@@ -53,7 +53,9 @@ refusals. No source map, origin, proof or runtime manifest is invented.
 ## Ownership, ordering and dependency direction
 
 Runtime owns these five arity predicates and local failure facts/decisions.
-Bootstrap retains adapter wiring and generic failure construction/transport.
+Bootstrap retains adapter wiring and the `fail!` throw transport. The existing
+`gravity.diagnostics/diagnostic` constructor keeps generic diagnostic
+construction through the unchanged Bootstrap `diagnostic` adapter.
 The adapter supplies `#'fail!` to the failure helper and
 `#'fail-call-arity!` to the four predicate helpers. Runtime imports no
 Bootstrap namespace and discovers no owner Var dynamically. Code dependencies
@@ -125,7 +127,7 @@ surrounding `00546` source. The 69 existing CI command definitions and 29
 contract commands remain unchanged. The derived changed-file lint command must
 include the newly changed `00546` path in its actual source inventory; its
 expanded argv is not claimed identical to the predecessor's inventory.
-Complete current-Main comparison lint remains required.
+Current-Main comparison results are recorded below.
 Independent semantic, adversarial, conservation,
 provider and own-CI review must bind the exact clean source and base before
 integration eligibility. Do not rerun the excluded broader local Runtime
@@ -136,6 +138,37 @@ Independent static boundary review SHA256
 identifies the five real helper bodies, current builtin/function-executor
 callers, inventory consumers and existing whole-namespace test commands. It
 is discovery evidence, not source acceptance.
+
+## Composition with published Main
+
+Main subsequently advanced to
+`37208958765decff246e58d62cd33fc1a7913ee2`, tree
+`0efb825cdf07e8790e6c377d978b5f75ad369e67`. The Source branch composed
+its 26 decimal-bridge records through merge commit
+`c5888fb6f109442900512752688f28f6d5a1705d`, canonical tree
+`38bd9bb53ae495fad8c47e95c9fc1f10f50b65d2`, with parents
+`afd67a44b96fc6433c650bd8967c9877fb8cffb2` and the new Main commit.
+Every imported mode/blob is exact, all seven owned records are conserved at
+that merge, and all other feature records are unchanged. Composition receipt
+SHA256: `a35bde4bffa5a434737220f262bb3e9d5152d83c5796c2bf2e0aaebe681bbce5`.
+The earlier comparison preparation stopped at its stale-base assertion before
+running lint and remains an unexecuted comparison, not a pass or code failure.
+
+Fresh checks on the composed source pass: Stage0 25 tests/387 assertions,
+combined inventory/Stage2 controls 5/436, language/ownership 48/1202, and the
+new pure C2 projection-integrity unit 1/6. No held Reader/private bridge or
+syntax source-factory tests were invoked by these checks. Fourteen complete
+source observations still match the baseline: fourteen plans, six executions,
+six arity refusals and two host-error controls. The composed receipt records
+the actual merge HEAD above, SHA256
+`be44fbc5c4a2db891aaecad55b7a04fd778e8eae67ec300c0783b870a50d7bea`.
+
+Complete Main comparison lint passes on that composed source across 128
+changed paths and 79 Clojure/EDN paths: 3453 unchanged baseline warnings and
+zero blocking findings. Report SHA256:
+`defb136c6512f2963cafeeb6c6cc8036830ace223e5a5b7ca6371634633db0e9`.
+These are exact-source development results, with no older CI/provider
+acceptance transferred to the new Main context.
 
 ## Current status and unsupported boundaries
 
