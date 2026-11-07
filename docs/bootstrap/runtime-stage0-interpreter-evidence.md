@@ -27,7 +27,7 @@ this complete interpreter extraction without CI/workflow/catalog edits.
 
 ## Public API and artifacts
 
-Planned Runtime APIs are:
+Implemented Runtime APIs are:
 
 ```clojure
 (eval-native-stage0-do eval-expr-var module env forms)
@@ -90,8 +90,43 @@ Runtime pipeline incident remains excluded and must not be rerun or credited.
 
 ## Status and unsupported boundaries
 
-This initial scope contains documentation only; the six bodies have not moved
-and no new test result is claimed. Scope publication precedes implementation.
+The scope was published as draft PR #1344 before implementation, at scope
+commit `b71f43075451d467c2fdea006d7ab17777fbdc5c`. All six complete bodies
+are now implemented with their six original adapters. Runtime exposes 54 APIs,
+up from 48. Every earlier Runtime body is byte-identical; the extraction
+receipt retains complete before/after component and Runtime bytes, moved
+bodies, adapters and declarations, SHA256
+`c2ee66c8268584d2b78f5d74cc51e5d3c95f69251f08ba4dac3391e34b680cbd`.
+The initial extraction checker stopped before writing source because separately
+read anonymous-function gensyms differed. The corrected checker compares prior
+definition inventory and exact complete function bytes; that initial failure
+is preserved as checker history, not a semantic failure or successful check.
+
+Ten complete public source observations are identical before and after the
+move, including genuine macro/module/plan/compiler-report artifacts, source
+paths/hashes, deterministic IDs, interpreted helper arguments/values/classes
+and exact failures. All six interpreted helper bodies execute. Both source
+extensions cover core-app examples/accepted fixtures, builtin/function arity
+refusals and collections/lexical/control/function-call composition. Ten real
+plans are emitted; six compiled and interpreted stdout executions agree and
+four genuine arity refusals retain their source facts. Baseline SHA256
+`bb6b3ffdf47fbeed06db3d9d0369439d9101184e7145c37c62a1b03c97b70c83`;
+implementation SHA256
+`0bcf890c2b5fda00a300bd010068e4fd271f92bc1c2493985fac7ae09b3b1a93`.
+Both observations record the actual scope HEAD above, with separate producer
+hashes; neither falsely claims a future clean commit was observed. Route-local
+authentication/Reader/private-factory nonclaims apply only to those captures.
+The focused Stage0 suite passes 33 tests and 519 assertions. Runtime and both
+changed test files pass clj-kondo with zero errors/warnings; diff checking
+passes. The exact public inventory and four selected native Stage2 controls
+pass 5 tests and 478 assertions. Language/ownership checks pass 48 tests and
+1202 assertions. Cold loading exposes all 54 public APIs with matching
+declarations/arglists, no aliases and no Bootstrap or Diagnostics namespace.
+Structural document validation passes 240 documents and 19 phase indexes;
+the roadmap structural validator passes without conferring roadmap completion.
+Current-Main lint remains pending. Final
+source publication/reviews and own hosted CI/provider audit remain pending.
+
 Held Reader, authenticated/private builders, source pins and release/migration
 routes remain outside the permitted source observation route.
 

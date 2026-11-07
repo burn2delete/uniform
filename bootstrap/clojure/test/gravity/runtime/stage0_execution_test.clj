@@ -33,7 +33,7 @@
   (let [names '[execute-native-stage0-instructions execute-native-stage0-instruction
                 execute-native-stage0-function execute-native-stage0-plan]
         contract (:gravity/namespace-contract (meta #'runtime/execute-native-stage0-plan))]
-    (is (= 48 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= 54 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
     (is (= (set (keys operations))
            (set (mapcat :operation-keys (vals (select-keys (:public-api contract) names))))))
     (is (every? var? (vals operations)))
@@ -445,3 +445,167 @@
       (is (identical? error
                      (observed-error #(runtime/fail-native-stage0-call-arity! failure "L2-FUNCTION-ARITY" {} 'native [] 1))))
       (is (= 5 @calls)))))
+
+(def ^:private interpreter-operations
+  {:fail! #'b/fail! :validate-module-effects! #'b/validate-module-effects!
+   :eval-expr #'b/eval-expr :eval-do #'b/eval-do :bind-let #'b/bind-let
+   :stage0-builtin-functions #'b/stage0-builtin-functions
+   :invoke-stage0-builtin #'b/invoke-stage0-builtin :invoke-stage0-function #'b/invoke-stage0-function
+   :eval-collection #'b/eval-collection :join #'str/join})
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-contract-is-explicit
+  (let [names '[eval-native-stage0-do bind-native-stage0-let invoke-native-stage0-function
+                eval-native-stage0-collection eval-native-stage0-expr run-native-stage0-main]
+        contract (:gravity/namespace-contract (meta #'runtime/eval-native-stage0-expr))]
+    (is (= 54 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= (set (keys interpreter-operations))
+           (set (get-in contract [:public-api 'eval-native-stage0-expr :operation-keys]))))
+    (is (= [:stage0-builtin-functions]
+           (get-in contract [:public-api 'eval-native-stage0-expr :data-operation-keys])))
+    (is (every? var? (vals interpreter-operations)))
+    (doseq [name names :let [operation (ns-resolve 'gravity.runtime name)
+                            api (get-in contract [:public-api name])]]
+      (is (= (:arglists (meta operation)) (:arglists api)))
+      (is (= :none (:admission api)))
+      (is (true? (:hosted-seed-only? api)))
+      (is (= :stage0-native-interpretation (:contract-boundary api))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-sequence-and-bindings-retain-late-roots-and-lexical-order
+  (is (nil? (runtime/eval-native-stage0-do nil {} {} [])))
+  (is (= {'x nil 'y false 'z 3}
+         (b/bind-let {} {} '[x nil y false z (if y 0 3)])))
+  (is (= {'x 4 'y 5} (b/bind-let {} {'x 1} '[x (+ x 3) y (+ x 1)])))
+  (let [events (atom []) token (Object.) module (Object.) env (Object.)
+        late (fn [m e form] (swap! events conj [:late m e form]) token)]
+    (with-redefs [b/eval-expr (fn [m e form]
+                              (swap! events conj [:first m e form])
+                              (alter-var-root #'b/eval-expr (constantly late)) nil)]
+      (is (identical? token (runtime/eval-native-stage0-do #'b/eval-expr module env [:a :b])))
+      (is (= [[:first module env :a] [:late module env :b]] @events))))
+  (doseq [bindings ['(x 1) '[x] '[1 2]]]
+    (let [error (observed-error #(b/bind-let {:source-path "let.gravity"} {} bindings))]
+      (is (= "L2-LET-BINDING" (:id (ex-data error))))
+      (is (= "let.gravity" (get-in (ex-data error) [:source-span :source]))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-collections-and-control-retain-native-results-and-order
+  (let [events (atom []) module (Object.) env (Object.)
+        evaluate (fn [m e value] (swap! events conj [m e value]) value)]
+    (with-redefs [b/eval-expr evaluate]
+      (is (= [:a :b] (b/eval-collection module env [:a :b])))
+      (is (= [:a :b] (mapv #(nth % 2) @events)))
+      (reset! events [])
+      (is (= {:a 1 :b 2} (b/eval-collection module env (array-map :a 1 :b 2))))
+      (is (= [:a 1 :b 2] (mapv #(nth % 2) @events)))
+      (is (every? #(and (identical? module (first %)) (identical? env (second %))) @events))
+      (is (= #{:a :b} (b/eval-collection module env #{:a :b}))))
+    (is (identical? module (runtime/eval-native-stage0-collection nil {} {} module))))
+  (is (nil? (b/eval-expr {} {'x nil} 'x)))
+  (is (false? (b/eval-expr {} {'x false} 'x)))
+  (is (= '(unresolved :data) (b/eval-expr {} {} '(quote (unresolved :data)))))
+  (is (= :chosen (b/eval-expr {} {} '(if false (host-reflect) :chosen))))
+  (is (= :chosen (b/eval-expr {} {} '(if true :chosen (/ 1 0)))))
+  (is (= 3 (b/eval-expr {} {} '(do :ignored (let [a 1 b (+ a 2)] b))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-call-catalog-and-println-ports-remain-late
+  (let [events (atom []) token (Object.) module {:function-table {'chosen {}}}
+        builtin (fn [m callee args] (swap! events conj [:builtin m callee args]) token)]
+    (with-redefs [b/stage0-builtin-functions #{}
+                  b/eval-expr (fn [_ _ value]
+                                (swap! events conj [:argument value])
+                                (alter-var-root #'b/stage0-builtin-functions (constantly #{'chosen}))
+                                (alter-var-root #'b/invoke-stage0-builtin (constantly builtin)) value)
+                  b/invoke-stage0-builtin (fn [& _] (throw (Exception. "early builtin")))
+                  b/invoke-stage0-function (fn [& _] (throw (Exception. "wrong precedence")))]
+      (is (identical? token (runtime/eval-native-stage0-expr interpreter-operations module {} '(chosen :a :b))))
+      (is (= [[:argument :a] [:argument :b] [:builtin module 'chosen [:a :b]]] @events))))
+  (let [events (atom []) module {:source-path "println.gravity"}]
+    (with-redefs [b/validate-module-effects! (fn [m] (swap! events conj [:effects m]))
+                  b/eval-expr (fn [_ _ value] (swap! events conj [:argument value]) value)]
+      (is (= "a b\n" (with-out-str (runtime/eval-native-stage0-expr interpreter-operations module {} '(println "a" "b")))))
+      (is (= [[:effects module] [:argument "a"] [:argument "b"]] @events)))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-entry-calls-and-failure-facts-preserve-identities
+  (let [path (Object.) token (Object.) facts (atom nil)
+        module {:source-path path :function-table {'f {:params '[x] :body [:body]}}}]
+    (with-redefs [b/fail! (fn [id message data] (reset! facts [id message data]) token)]
+      (doseq [[form id] [['missing "L2-UNKNOWN-SYMBOL"] ['(missing) "L2-UNKNOWN-CORE-FORM"]
+                        ['(host-reflect) "P4-HOST-REFLECTION"]]]
+        (is (identical? token (b/eval-expr module {} form)))
+        (is (= id (first @facts)))
+        (is (identical? path (get-in @facts [2 :source-span :source])))))
+    (with-redefs [b/fail-call-arity! (fn [& args] (reset! facts args) :returned)
+                  b/eval-do (fn [m env body]
+                              (is (identical? module m)) (is (= {} env))
+                              (is (= [:body] body)) token)]
+      (is (identical? token (b/invoke-stage0-function module 'f [])))
+      (is (= ["L2-FUNCTION-ARITY" module 'f [] 1] @facts))))
+  (let [module {:source-path "main.gravity"} events (atom [])]
+    (with-redefs [b/stage0-function-table (fn [m] (swap! events conj [:table m]) {'main {:params [] :body [:body]}})
+                  b/eval-do (fn [m env body]
+                              (swap! events conj [:body m env body]) (println "done"))]
+      (is (= "done\n" (b/run-main module)))
+      (is (= [[:table module] [:body (assoc module :function-table {'main {:params [] :body [:body]}}) {} [:body]]]
+             @events)))
+    (doseq [[table id] [[{} "L3-UNKNOWN-ALIAS"] [{'main {:params '[x] :body [1]}} "L2-MAIN-ARITY"]]]
+      (with-redefs [b/stage0-function-table (fn [_] table)]
+        (is (= id (:id (ex-data (observed-error #(b/run-main module))))))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-owner-exceptions-propagate-without-remapping
+  (doseq [error [(ex-info "info" {:id :owner}) (Exception. "host") (Error. "fatal")]
+          :let [failure (clojure.lang.Var/create (fn [& _] (throw error)))]]
+    (doseq [run [#(runtime/eval-native-stage0-do failure {} {} [1])
+                 #(runtime/bind-native-stage0-let failure nil {} {} '[x])
+                 #(runtime/invoke-native-stage0-function failure nil {:function-table {'f {:params '[x]}}} 'f [])
+                 #(runtime/eval-native-stage0-collection failure {} {} [1])
+                 #(runtime/eval-native-stage0-expr (assoc interpreter-operations :fail! failure) {} {} 'missing)
+                 #(runtime/run-native-stage0-main failure nil nil {})]]
+      (is (identical? error (observed-error run))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-bootstrap-signatures-remain-thin-adapters
+  (doseq [[legacy stage owners args]
+          [[#'b/eval-do #'runtime/eval-native-stage0-do [#'b/eval-expr] '[module env forms]]
+           [#'b/bind-let #'runtime/bind-native-stage0-let [#'b/fail! #'b/eval-expr] '[module env bindings]]
+           [#'b/invoke-stage0-function #'runtime/invoke-native-stage0-function [#'b/fail-call-arity! #'b/eval-do] '[module callee args]]
+           [#'b/eval-collection #'runtime/eval-native-stage0-collection [#'b/eval-expr] '[module env form]]
+           [#'b/eval-expr #'runtime/eval-native-stage0-expr [interpreter-operations] '[module env form]]
+           [#'b/run-main #'runtime/run-native-stage0-main [#'b/stage0-function-table #'b/fail! #'b/eval-do] '[module]]]
+          :let [values (mapv (fn [_] (Object.)) args) token (Object.) calls (atom [])]]
+    (is (= (list args) (:arglists (meta legacy))))
+    (with-redefs-fn {stage (fn [& actual] (swap! calls conj (vec actual)) token)}
+      #(is (identical? token (apply @legacy values))))
+    (is (= [(into owners values)] @calls))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-interpretation}
+  native-interpreter-real-source-compilation-and-refusal-retain-provenance
+  (doseq [extension [".gravity" ".qst"]
+          [body expected] [["(defn f [x] (+ x 2)) (defn main [] (println (let [a 1 b (f a)] (if false 0 b))))" "3\n"]
+                           ["(defn f [x] x) (defn main [] (println (f)))" "L2-FUNCTION-ARITY"]]]
+    (let [path (str "interpreter" extension)
+          source (str "(ns interpreter (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}))\n" body)
+          _ (is (nil? (var-get #'b/*authenticated-source-form-records*)))
+          artifact (b/macro-source-artifact path source)
+          module (assoc (:module artifact) :forms (:expanded-forms artifact))
+          plan (b/stage0-compiled-core-plan path source module)]
+      (is (= path (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex source)) (get-in plan [:source :sha256])))
+      (is (= (:plan-id plan) (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id))))))
+      (if (= "3\n" expected)
+        (is (= expected (b/run-main module) (b/execute-stage0-compiled-plan plan)))
+        (let [error (observed-error #(b/run-main module))]
+          (is (= expected (:id (ex-data error))))
+          (is (= path (get-in (ex-data error) [:source-span :source]))))))))

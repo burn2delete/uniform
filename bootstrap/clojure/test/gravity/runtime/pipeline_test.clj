@@ -26,6 +26,8 @@
            'fail-native-stage0-call-arity! 'assert-native-stage0-min-arity!
            'assert-native-stage0-exact-arity! 'assert-native-stage0-between-arity!
            'assert-native-stage0-even-arity!
+           'eval-native-stage0-do 'bind-native-stage0-let 'invoke-native-stage0-function
+           'eval-native-stage0-collection 'eval-native-stage0-expr 'run-native-stage0-main
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal

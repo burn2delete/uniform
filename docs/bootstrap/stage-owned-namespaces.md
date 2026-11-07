@@ -259,6 +259,24 @@ dependencies remain Bootstrap adapters to Runtime to core, without a reverse
 import. The native builtin/executor bodies and compile-time policy boundaries
 are unchanged.
 
+The [native Stage0 interpreter extraction](runtime-stage0-interpreter-evidence.md)
+moves all six legacy interpreted sequence/binding/function/collection/expression/
+main bodies into Runtime. `eval-native-stage0-do`, `bind-native-stage0-let`,
+`invoke-native-stage0-function`, `eval-native-stage0-collection`,
+`eval-native-stage0-expr` and `run-native-stage0-main` consume native modules,
+environments, expressions and explicit late owner Vars, returning existing
+native values, environments, captured stdout or unchanged failures. Runtime
+owns traversal/control/entry decisions and local refusal facts. Bootstrap
+retains adapters, function-header/table production, builtin catalog/dispatch,
+effect validation and failure throw transport; Diagnostics retains generic
+diagnostic construction. Existing Runtime test commands cover all six APIs,
+lexical/branch/argument order, late owner/catalog reads, source/opaque identity,
+unchanged exceptions and actual paired-source compiled/interpreted execution
+and refusals. No source admission, canonical runtime manifest or portable host
+semantics is established. Code dependencies remain Bootstrap to Runtime to
+core through explicit trusted ports; compiled instruction execution remains
+unchanged.
+
 The [native Stage0 plan assembly extraction](lowering-plan-assembly-evidence.md)
 adds `assemble-native-stage0-plan [operations source-path source-text module]`
 under `:stage0-native-plan-assembly`. Twenty live owner Vars supply function-table

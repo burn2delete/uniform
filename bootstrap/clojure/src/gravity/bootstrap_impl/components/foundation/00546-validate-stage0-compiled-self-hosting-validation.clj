@@ -55,28 +55,11 @@
 
 (defn eval-do
   [module env forms]
-  (reduce (fn [_ form] (eval-expr module env form)) nil forms))
+  (gravity.runtime/eval-native-stage0-do #'eval-expr module env forms))
 
 (defn bind-let
   [module env bindings]
-  (when-not (and (vector? bindings) (even? (count bindings)))
-    (fail! "L2-LET-BINDING"
-           "let requires an even binding vector"
-           {:source-span {:source (:source-path module)}
-            :bindings bindings
-            :remediation "Use pairs of local names and expressions in let."}))
-  (loop [env env
-         pairs (partition 2 bindings)]
-    (if-let [[name expr] (first pairs)]
-      (do
-        (when-not (symbol? name)
-          (fail! "L2-LET-BINDING"
-                 "let binding name must be a symbol"
-                 {:source-span {:source (:source-path module)}
-                  :binding name
-                  :remediation "Bind symbols in stage0 let forms."}))
-        (recur (assoc env name (eval-expr module env expr)) (rest pairs)))
-      env)))
+  (gravity.runtime/bind-native-stage0-let #'fail! #'eval-expr module env bindings))
 
 (defn function-definition-form
   [source-path form]

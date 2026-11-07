@@ -8,94 +8,19 @@
 
 (defn invoke-stage0-function
   [module callee args]
-  (let [definition (get (:function-table module) callee)
-        params (:params definition)]
-    (when-not (= (count params) (count args))
-      (fail-call-arity! "L2-FUNCTION-ARITY" module callee args
-                        (count params)))
-    (eval-do module (zipmap params args) (:body definition))))
+  (gravity.runtime/invoke-native-stage0-function #'fail-call-arity! #'eval-do module callee args))
 
 (defn eval-collection
   [module env form]
-  (cond
-    (vector? form) (mapv #(eval-expr module env %) form)
-    (map? form) (into {} (map (fn [[k v]]
-                                [(eval-expr module env k)
-                                 (eval-expr module env v)]))
-                      form)
-    (set? form) (set (map #(eval-expr module env %) form))
-    :else form))
+  (gravity.runtime/eval-native-stage0-collection #'eval-expr module env form))
 
 (defn eval-expr
   [module env form]
-  (cond
-    (symbol? form)
-    (if (contains? env form)
-      (get env form)
-      (fail! "L2-UNKNOWN-SYMBOL"
-             "stage0 cannot resolve symbol"
-             {:source-span {:source (:source-path module)}
-              :symbol form
-              :remediation "Define the symbol or stay within the stage0 subset."}))
-
-    (seq? form)
-    (case (first form)
-      println (do
-                (validate-module-effects! module)
-                (println (clojure.string/join " " (map #(str (eval-expr module env %)) (rest form)))))
-      do (eval-do module env (rest form))
-      if (let [[_ test then else] form]
-           (if (eval-expr module env test)
-             (eval-expr module env then)
-             (eval-expr module env else)))
-      let (let [[_ bindings & body] form]
-            (eval-do module (bind-let module env bindings) body))
-      quote (second form)
-      host-reflect (fail! "P4-HOST-REFLECTION"
-                          "host reflection is not implemented in stage0"
-                          {:source-span {:source (:source-path module)}
-                           :remediation "Remove host reflection from the stage0 executable subset."})
-      (let [callee (first form)
-            args (mapv #(eval-expr module env %) (rest form))]
-        (cond
-          (contains? stage0-builtin-functions callee)
-          (invoke-stage0-builtin module callee args)
-
-          (contains? (:function-table module) callee)
-          (invoke-stage0-function module callee args)
-
-          :else
-          (fail! "L2-UNKNOWN-CORE-FORM"
-                 "stage0 cannot execute this form"
-                 {:source-span {:source (:source-path module)}
-                  :operator callee
-                  :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage0 hosted subset."}))))
-
-    (or (vector? form) (map? form) (set? form))
-    (eval-collection module env form)
-
-    :else form))
+  (gravity.runtime/eval-native-stage0-expr {:fail! #'fail! :validate-module-effects! #'validate-module-effects! :eval-expr #'eval-expr :eval-do #'eval-do :bind-let #'bind-let :stage0-builtin-functions #'stage0-builtin-functions :invoke-stage0-builtin #'invoke-stage0-builtin :invoke-stage0-function #'invoke-stage0-function :eval-collection #'eval-collection :join #'clojure.string/join} module env form))
 
 (defn run-main
   [module]
-  (let [function-table (stage0-function-table module)
-        module (assoc module :function-table function-table)
-        main-function (get function-table 'main)]
-    (when-not main-function
-      (fail! "L3-UNKNOWN-ALIAS"
-             "stage0 executable requires a main function"
-             {:source-span {:source (:source-path module)}
-              :remediation "Add (defn main [] ...)."}))
-    (let [params (:params main-function)
-          body (:body main-function)]
-      (when-not (empty? params)
-        (fail! "L2-MAIN-ARITY"
-               "stage0 main must take no arguments"
-               {:source-span {:source (:source-path module)}
-                :params params
-                :remediation "Use (defn main [] ...)."}))
-      (with-out-str
-        (eval-do module {} body)))))
+  (gravity.runtime/run-native-stage0-main #'stage0-function-table #'fail! #'eval-do module))
 
 (defn compile-stage0-collection
   [module locals form]

@@ -6,7 +6,19 @@
     :contract-boundary :hosted-seed-stage0-stage2-invocation-instruction-evaluation-and-value-operations
     :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2 TEST3]
     :public-api
-    {fail-native-stage0-call-arity!
+    {eval-native-stage0-do
+     {:arglists ([eval-expr-var module env forms]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [eval-expr-var]}
+     bind-native-stage0-let
+     {:arglists ([fail-var eval-expr-var module env bindings]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [fail-var eval-expr-var]}
+     invoke-native-stage0-function
+     {:arglists ([fail-call-arity-var eval-do-var module callee args]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [fail-call-arity-var eval-do-var]}
+     eval-native-stage0-collection
+     {:arglists ([eval-expr-var module env form]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [eval-expr-var]}
+     eval-native-stage0-expr
+     {:admission :none, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :operation-keys [:fail! :validate-module-effects! :eval-expr :eval-do :bind-let :stage0-builtin-functions :invoke-stage0-builtin :invoke-stage0-function :eval-collection :join], :data-operation-keys [:stage0-builtin-functions], :arglists ([operations module env form]), :contract-boundary :stage0-native-interpretation}
+     run-native-stage0-main
+     {:arglists ([function-table-var fail-var eval-do-var module]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [function-table-var fail-var eval-do-var]}
+     fail-native-stage0-call-arity!
      {:admission :none, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-var], :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :failure-transport-owner :supplied-operation, :arglists ([fail-var id module callee args expected]), :contract-boundary :stage0-native-call-arity}
      assert-native-stage0-min-arity!
      {:arglists ([fail-call-arity-var module callee args n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
@@ -171,7 +183,7 @@
       :operation-keys [:fail! :execute-instructions]
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
-    :artifact-inputs [:trusted-native-stage0-builtin-module-and-evaluated-arguments :late-stage0-builtin-owner-vars :trusted-native-stage0-plan-instructions-environment-callee-and-arguments :late-stage0-execution-operation-vars :trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
+    :artifact-inputs [:trusted-native-stage0-module-expressions-environment-and-late-interpreter-owner-vars :trusted-native-stage0-builtin-module-and-evaluated-arguments :late-stage0-builtin-owner-vars :trusted-native-stage0-plan-instructions-environment-callee-and-arguments :late-stage0-execution-operation-vars :trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
                       :runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
                       :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
@@ -180,8 +192,9 @@
                       :trusted-late-instruction-and-recurrence-operation-vars
                       :trusted-instruction-function-and-data-operation-vars
                       :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :native-kernel-and-diagnostic-data :late-native-kernel-operation-and-catalog-vars :call-signature-and-arity-data :trusted-late-policy-operation-vars]
-    :artifact-outputs [:native-stage0-ordinary-builtin-result :native-stage0-instruction-result :native-stage0-captured-stdout :function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
-    :diagnostic-ownership {:native-stage0-instruction-traversal-and-lookup :stage
+    :artifact-outputs [:native-stage0-interpreted-value-and-environment :native-stage0-ordinary-builtin-result :native-stage0-instruction-result :native-stage0-captured-stdout :function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
+    :diagnostic-ownership {:native-stage0-interpreted-control-binding-traversal-entry-and-local-failure-facts :stage
+                           :native-stage0-instruction-traversal-and-lookup :stage
                            :native-stage0-entry-and-function-arity-placement :stage
                            :native-stage0-ordinary-builtin-dispatch-arity-placement-and-host-exception-remap :stage
                            :native-stage0-arity-predicates-message-selection-and-local-failure-facts :stage
@@ -194,7 +207,7 @@
                            :map-entry-recurrence-facts-and-call-sequencing :stage
                            :arity-guards-call-facts-unary-selection-and-rule-data :stage
                            :native-kernel-rule-and-diagnostic-record-construction :stage
-                           :stage [L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
+                           :stage [L2-LET-BINDING P4-HOST-REFLECTION L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [:recurrence-representation :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-primitives-and-call-authority
                                                  :generic-builtin-host-error-boundary-and-failure-transport]}
@@ -1414,6 +1427,122 @@
   (when (odd? (count args))
     ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
                       "an even number of arguments")))
+
+(defn eval-native-stage0-do
+  [eval-expr-var module env forms]
+  (reduce (fn [_ form] ((deref eval-expr-var) module env form)) nil forms))
+
+(defn bind-native-stage0-let
+  [fail-var eval-expr-var module env bindings]
+  (when-not (and (vector? bindings) (even? (count bindings)))
+    ((deref fail-var) "L2-LET-BINDING"
+           "let requires an even binding vector"
+           {:source-span {:source (:source-path module)}
+            :bindings bindings
+            :remediation "Use pairs of local names and expressions in let."}))
+  (loop [env env
+         pairs (partition 2 bindings)]
+    (if-let [[name expr] (first pairs)]
+      (do
+        (when-not (symbol? name)
+          ((deref fail-var) "L2-LET-BINDING"
+                 "let binding name must be a symbol"
+                 {:source-span {:source (:source-path module)}
+                  :binding name
+                  :remediation "Bind symbols in stage0 let forms."}))
+        (recur (assoc env name ((deref eval-expr-var) module env expr)) (rest pairs)))
+      env)))
+
+(defn invoke-native-stage0-function
+  [fail-call-arity-var eval-do-var module callee args]
+  (let [definition (get (:function-table module) callee)
+        params (:params definition)]
+    (when-not (= (count params) (count args))
+      ((deref fail-call-arity-var) "L2-FUNCTION-ARITY" module callee args
+                        (count params)))
+    ((deref eval-do-var) module (zipmap params args) (:body definition))))
+
+(defn eval-native-stage0-collection
+  [eval-expr-var module env form]
+  (cond
+    (vector? form) (mapv #((deref eval-expr-var) module env %) form)
+    (map? form) (into {} (map (fn [[k v]]
+                                [((deref eval-expr-var) module env k)
+                                 ((deref eval-expr-var) module env v)]))
+                      form)
+    (set? form) (set (map #((deref eval-expr-var) module env %) form))
+    :else form))
+
+(defn eval-native-stage0-expr
+  [operations module env form]
+  (cond
+    (symbol? form)
+    (if (contains? env form)
+      (get env form)
+      ((deref (:fail! operations)) "L2-UNKNOWN-SYMBOL"
+             "stage0 cannot resolve symbol"
+             {:source-span {:source (:source-path module)}
+              :symbol form
+              :remediation "Define the symbol or stay within the stage0 subset."}))
+
+    (seq? form)
+    (case (first form)
+      println (do
+                ((deref (:validate-module-effects! operations)) module)
+                (println ((deref (:join operations)) " " (map #(str ((deref (:eval-expr operations)) module env %)) (rest form)))))
+      do ((deref (:eval-do operations)) module env (rest form))
+      if (let [[_ test then else] form]
+           (if ((deref (:eval-expr operations)) module env test)
+             ((deref (:eval-expr operations)) module env then)
+             ((deref (:eval-expr operations)) module env else)))
+      let (let [[_ bindings & body] form]
+            ((deref (:eval-do operations)) module ((deref (:bind-let operations)) module env bindings) body))
+      quote (second form)
+      host-reflect ((deref (:fail! operations)) "P4-HOST-REFLECTION"
+                          "host reflection is not implemented in stage0"
+                          {:source-span {:source (:source-path module)}
+                           :remediation "Remove host reflection from the stage0 executable subset."})
+      (let [callee (first form)
+            args (mapv #((deref (:eval-expr operations)) module env %) (rest form))]
+        (cond
+          (contains? (deref (:stage0-builtin-functions operations)) callee)
+          ((deref (:invoke-stage0-builtin operations)) module callee args)
+
+          (contains? (:function-table module) callee)
+          ((deref (:invoke-stage0-function operations)) module callee args)
+
+          :else
+          ((deref (:fail! operations)) "L2-UNKNOWN-CORE-FORM"
+                 "stage0 cannot execute this form"
+                 {:source-span {:source (:source-path module)}
+                  :operator callee
+                  :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage0 hosted subset."}))))
+
+    (or (vector? form) (map? form) (set? form))
+    ((deref (:eval-collection operations)) module env form)
+
+    :else form))
+
+(defn run-native-stage0-main
+  [function-table-var fail-var eval-do-var module]
+  (let [function-table ((deref function-table-var) module)
+        module (assoc module :function-table function-table)
+        main-function (get function-table 'main)]
+    (when-not main-function
+      ((deref fail-var) "L3-UNKNOWN-ALIAS"
+             "stage0 executable requires a main function"
+             {:source-span {:source (:source-path module)}
+              :remediation "Add (defn main [] ...)."}))
+    (let [params (:params main-function)
+          body (:body main-function)]
+      (when-not (empty? params)
+        ((deref fail-var) "L2-MAIN-ARITY"
+               "stage0 main must take no arguments"
+               {:source-span {:source (:source-path module)}
+                :params params
+                :remediation "Use (defn main [] ...)."}))
+      (with-out-str
+        ((deref eval-do-var) module {} body)))))
 
 (doseq
  [name (keys (:public-api namespace-contract))
