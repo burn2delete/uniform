@@ -23,7 +23,13 @@
    [package/check-package-operation! b/validate-stage0-compiled-package-operation! "PKG4001" {}]
    [package/check-resolution-report! b/validate-stage0-compiled-resolution-report! "PKG5002" {}]
    [package/check-capability-manifest! b/validate-stage0-compiled-capability-manifest! "PKG6004"
-    {:capabilities {:denies #{:network} :requests #{:network}}}]])
+    {:capabilities {:denies #{:network} :requests #{:network}}}]
+   [(fn [fail-var module subject] (package/check-package-safety! #'b/p12-present? fail-var module subject))
+    b/validate-stage0-compiled-package-safety! "PKG8001" {}]
+   [package/check-registry-record! b/validate-stage0-compiled-registry-record! "PKG9001" {}]
+   [package/check-provenance-record! b/validate-stage0-compiled-provenance-record! "PKG10001" {}]
+   [package/check-target-matrix! b/validate-stage0-compiled-target-matrix! "PKG11002" {:implicit-host-target? true}]
+   [package/check-signing-sbom! b/validate-stage0-compiled-signing-sbom! "PKG12002" {}]])
 
 (deftest wrappers-preserve-complete-bootstrap-diagnostic-payloads
   (doseq [[direct wrapper expected rejected] checks]
@@ -67,11 +73,15 @@
                                       :resolution-reports [{}]
                                       :capability-manifests [{:capabilities {:denies #{:network}
                                                                             :requests #{:network}}}]
-                                      :reproducible-build-recipes [{:environment {:network :enabled}}]}}}}
+                                      :reproducible-build-recipes [{:environment {:network :enabled}}]
+                                      :package-safety-records [{}] :registry-records [{}]
+                                      :provenance-records [{}] :target-matrices [{:implicit-host-target? true}]
+                                      :signing-sbom-verifications [{}]}}}}
         calls (atom [])]
     (with-redefs [b/compiled-package-fail! (fn [id & _] (swap! calls conj id))]
       (is (nil? (b/validate-stage0-compiled-package! module))))
-    (is (= ["PKG1006" "PKG2001" "PKG3005" "PKG4001" "PKG5002" "PKG6004" "PKG7003"] @calls))
+    (is (= ["PKG1006" "PKG2001" "PKG3005" "PKG4001" "PKG5002" "PKG6004" "PKG7003"
+            "PKG8001" "PKG9001" "PKG10001" "PKG11002" "PKG12002"] @calls))
     (is (= "PKG1006" (get-in (failure #(b/validate-stage0-compiled-package! module)) [:data :id])))))
 
 (deftest accepted-source-emits-deterministic-provenance-bearing-plans-and-runs
@@ -94,7 +104,9 @@
   (doseq [extension [".gravity" ".qst"]
           [name expected] [["missing-lockfile" "PKG1006"] ["missing-safety-evidence" "PKG3005"]
                            ["unverified-download" "PKG4001"] ["incompatible-capability" "PKG5002"]
-                           ["denied-capability" "PKG6004"]]]
+                           ["denied-capability" "PKG6004"] ["missing-unsafe-audit" "PKG8001"]
+                           ["denied-registry" "PKG9001"] ["missing-provenance" "PKG10001"]
+                           ["implicit-host-target" "PKG11002"] ["noncanonical-signature" "PKG12002"]]]
     (let [relative (str "bootstrap/clojure/fixtures/package-metadata/rejected/" name extension)
           executions (atom 0)
           rejected (with-redefs [b/execute-stage0-compiled-plan (fn [_] (swap! executions inc))]
@@ -103,3 +115,21 @@
       (is (= :stage0-compiled-package-gate (get-in rejected [:data :stage])))
       (is (= relative (get-in rejected [:data :source-span :source])))
       (is (zero? @executions)))))
+
+(deftest original-p12-presence-port-remains-before-subject-observation
+  (doseq [operation [(fn [module subject]
+                      (package/check-package-safety! #'b/p12-present? #'b/compiled-package-fail! module subject))
+                    b/validate-stage0-compiled-package-safety!]]
+    (let [events (atom []) sentinel (Object.)
+          subject (reify clojure.lang.ILookup
+                    (valAt [this key] (.valAt ^clojure.lang.ILookup this key nil))
+                    (valAt [_ key _]
+                      (swap! events conj [:lookup key])
+                      (alter-var-root #'b/p12-present? (constantly (fn [_] (throw (ex-info "Late presence root" {})))))
+                      :unverified))]
+      (with-redefs [b/p12-present? (fn [value] (swap! events conj [:old-presence value]) false)
+                    b/compiled-package-fail! (fn [id & _] (swap! events conj [:failure id]) sentinel)]
+        (is (identical? sentinel (operation {} subject))))
+      (is (= [[:lookup :unsafe-audit-metadata] [:old-presence :unverified] [:failure "PKG8001"]] @events))))
+  (doseq [value [false "" 0 [:unverified] {:audit :unverified} #{:unverified}]]
+    (is (nil? (b/validate-stage0-compiled-package-safety! {} {:unsafe-audit-metadata value})))))

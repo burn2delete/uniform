@@ -4,6 +4,9 @@
 
 (defn- diagnostic [& arguments] arguments)
 
+(defn- presence [value]
+  (if (coll? value) (seq value) (some? value)))
+
 (def ^:private checks
   [[package/check-project-manifest! "PKG1006" :lockfile-complete
     {:lockfile-complete true} {}]
@@ -15,11 +18,19 @@
     {:capability-compatible true} {}]
    [package/check-capability-manifest! "PKG6004" :denied-authority
     {:capabilities {:denies #{:network} :requests #{:io/stdout}}}
-    {:capabilities {:denies #{:network} :requests #{:network :io/stdout}}}]])
+    {:capabilities {:denies #{:network} :requests #{:network :io/stdout}}}]
+   [(fn [fail-var module subject] (package/check-package-safety! #'presence fail-var module subject))
+    "PKG8001" :unsafe-audit-metadata {:unsafe-audit-metadata [:unverified]} {}]
+   [package/check-registry-record! "PKG9001" :access-grant {:access-grant true} {}]
+   [package/check-provenance-record! "PKG10001" :source-graph-hash {:source-graph-hash :unverified} {}]
+   [package/check-target-matrix! "PKG11002" :explicit-target {} {:implicit-host-target? true}]
+   [package/check-signing-sbom! "PKG12002" :canonical-payload {:signature {:canonical-payload true}} {}]])
 
 (deftest public-contract-separates-native-metadata-from-admission
   (is (= #{'decide-policy 'select-exact 'check-project-manifest! 'check-artifact-manifest!
-           'check-package-operation! 'check-resolution-report! 'check-capability-manifest!}
+           'check-package-operation! 'check-resolution-report! 'check-capability-manifest!
+           'check-package-safety! 'check-registry-record! 'check-provenance-record!
+           'check-target-matrix! 'check-signing-sbom!}
          (set (keys (ns-publics 'gravity.package)))))
   (is (= #{'clojure.set 'clojure.walk}
          (set (map ns-name (vals (ns-aliases 'gravity.package))))))
@@ -101,3 +112,51 @@
                      (try (check #'diagnostic {} rejected)
                           (catch Throwable error error)))]
       (is (identical? original observed)))))
+
+(deftest registry-and-signature-flags-require-literal-true
+  (doseq [[check path] [[package/check-registry-record! [:access-grant]]
+                        [package/check-signing-sbom! [:signature :canonical-payload]]]
+          value [nil false :true 1 "true" {} []]]
+    (let [calls (atom 0)]
+      (with-redefs [diagnostic (fn [& _] (swap! calls inc))]
+        (check #'diagnostic {} (assoc-in {} path value)))
+      (is (= 1 @calls)))))
+
+(deftest provenance-preserves-host-truthiness-and-target-refuses-only-literal-true
+  (doseq [value [0 "" [] {} :unverified true]]
+    (is (nil? (package/check-provenance-record! nil {} {:source-graph-hash value}))))
+  (doseq [value [nil false]]
+    (is (= "PKG10001" (first (package/check-provenance-record! #'diagnostic {} {:source-graph-hash value})))))
+  (doseq [value [nil false :true 1 "true" {} []]]
+    (is (nil? (package/check-target-matrix! nil {} {:implicit-host-target? value})))))
+
+(deftest supplied-presence-operation-retains-empty-collection-and-false-behavior
+  (doseq [value [false "" 0 [:unverified] {:audit :unverified} #{:unverified}]]
+    (is (nil? (package/check-package-safety! #'presence nil {} {:unsafe-audit-metadata value}))))
+  (doseq [value [nil [] {} #{} '()]]
+    (is (= "PKG8001"
+           (first (package/check-package-safety! #'presence #'diagnostic {} {:unsafe-audit-metadata value}))))))
+
+(deftest presence-is-resolved-before-subject-and-failure-after-presence
+  (let [events (atom []) sentinel (Object.)
+        final (fn [& arguments] (swap! events conj [:new-failure (first arguments)]) sentinel)
+        subject (reify clojure.lang.ILookup
+                  (valAt [this key] (.valAt ^clojure.lang.ILookup this key nil))
+                  (valAt [_ key _]
+                    (swap! events conj [:lookup key])
+                    (alter-var-root #'presence (constantly (fn [_] (throw (ex-info "Late presence root" {})))))
+                    (alter-var-root #'diagnostic (constantly final))
+                    :unverified))]
+    (with-redefs [presence (fn [value] (swap! events conj [:old-presence value]) false)
+                  diagnostic (fn [& _] (throw (ex-info "Premature failure root" {})))]
+      (is (identical? sentinel (package/check-package-safety! #'presence #'diagnostic {} subject))))
+    (is (= [[:lookup :unsafe-audit-metadata] [:old-presence :unverified] [:new-failure "PKG8001"]] @events))))
+
+(deftest presence-operation-exception-retains-identity-and-prevents-failure
+  (let [original (ex-info "original presence failure" {:origin :caller}) calls (atom 0)
+        observed (with-redefs [presence (fn [_] (throw original))
+                               diagnostic (fn [& _] (swap! calls inc))]
+                   (try (package/check-package-safety! #'presence #'diagnostic {} {})
+                        (catch Throwable error error)))]
+    (is (identical? original observed))
+    (is (zero? @calls))))

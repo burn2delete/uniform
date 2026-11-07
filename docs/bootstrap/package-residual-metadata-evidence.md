@@ -2,16 +2,17 @@
 
 ## Scope and governing contracts
 
-This scope precedes implementation and its early draft PR. D1, D2, D3, D8,
+This scope was committed before implementation and early draft PR #1279.
+D1, D2, D3, D8,
 D9, C1, C15, PKG8, PKG9, PKG10, PKG11, PKG12, BOOT8 and TEST2 govern the
 slice. Starting source is `7bc6450f69e42e233d2f46fcdacc0f21f1534135`, tree
 `c8e2ad5bd2eee4c3487f388515917b4cf97844e4`; published main
 `33811b2b5c1a1c57c2243da12719ca0c4edbfdce` is already an ancestor.
 Prior source, provider or CI acceptance does not transfer to this successor.
 
-## Proposed Package boundary
+## Package boundary
 
-Move the five remaining compiled package metadata predicates from 00538 and
+The five remaining compiled package metadata predicates move from 00538 and
 00539 into `gravity.package`:
 
 - `check-package-safety! [presence-var fail-var module subject]`: PKG8001
@@ -38,25 +39,53 @@ Package and Build APIs remain intact. No fixed fixture constructor, P12 final
 validator, registry operation, safety analysis, target legality or release
 assembly is included.
 
-## Evidence obligations
+## Executed evidence
 
-Extend the existing cold Package and compiled Package test namespaces and the
-dedicated paired `.gravity`/`.qst` fixtures. Keep their current CI commands and
-test registrations unchanged. Capture the extended accepted fixture and all
-ten metadata refusals before moving production bodies, then compare complete
-parsed/serialized records after extraction. Emit real deterministic Stage0
-plans with source paths/hashes, execute accepted programs, and demonstrate each
-refusal before execution. Use only the existing ordinary hosted Stage0 reader
-and instruction runner.
+The existing native Package namespace now passes 13 tests and 285 assertions.
+The compiled metadata namespace and existing Package pipeline together pass
+9 tests and 285 assertions. These extend the existing tests and registrations;
+no new test namespace or CI command is added. Cold loading finds all twelve
+public APIs with Bootstrap unloaded.
 
-Cover literal booleans, absent/empty/nonempty collections, empty strings and
-false under P12 presence, provenance truthiness, inverse target predicate,
-malformed host inputs, exact lookup and callback order, late presence/failure
-roots, callback returns and exact exceptions. Preserve all twelve Package/Build
-aggregate positions, earlier five stage checks and existing policy/selector
-bodies. Require focused regressions, boundary/ownership, conservation, current
-main context and independent semantic/adversarial/provider/CI review before
-integration. Report only executed evidence.
+The extended paired fixture set produces 22 complete before/after records:
+two instruction plans emit and execute, while twenty invalid cases refuse
+before execution with the ten original metadata diagnostics. Every complete
+parsed and serialized plan, source path/text/hash, output and diagnostic record
+matches the pre-extraction baseline. Baseline SHA256 is
+`e2825849994005491fd39acddb60d292013bc303c84aac089f6d97d3939dcd1e`;
+after-extraction SHA256 is
+`0d746af03c3f830bdbf9cd11f0196fd2999eef819acd16c9bd64e1caee5812fa`.
+Each plan identity is recomputed over complete plan content without `:plan-id`.
+Accepted programs print `package-metadata`. This is ordinary hosted Stage0
+evidence, with no authenticated C2 or package-admission artifact.
+
+The tests preserve literal registry/signature booleans, provenance truthiness,
+the inverse target predicate, empty/nonempty collection and false/string P12
+presence behavior, lookup/callback order, late presence and failure roots,
+callback returns and original exception identity. The existing Package/Build
+aggregate test now checks all twelve unchanged diagnostic positions.
+Language/ownership checks pass 48 tests and 1202 assertions. The unchanged CI
+harness passes 54 tests and 650 assertions. Existing Build package policy and
+selection regressions pass 16 tests and 243 assertions. Document and roadmap
+validators pass.
+
+Both unchanged complete Package CI commands pass at the existing 2g heap and
+180-second host watchdog. Conservation confirms exactly twenty owned source
+paths, twenty-eight protected paths, the previous seven API body texts, all
+nonmoved 00539 forms, the original P12 presence helper, aggregate/payload/source
+assembly and all twenty-one prior command vectors. The workflow and test
+registrations remain unchanged. Seventeen generated evidence files are
+archived with hashes outside the source tree. Conservation receipt SHA256 is
+`5a696a57660f7c0faa30feddf45cf320c3ee8c2abf1bc1b5f719b24420c7356f`.
+
+## Remaining acceptance
+
+Conservation, exact existing command execution, a clean source commit, complete
+current-main context, independent semantic/adversarial/provider acceptance, own
+CI audit and final integration remain separately recorded after execution.
+The draft and local tests confer no integration credit. The earlier Package
+slice and its evidence remain immutable history rather than acceptance for this
+successor.
 
 ## Unsupported boundaries
 

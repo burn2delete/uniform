@@ -5,25 +5,32 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.package
    :contract-boundary :supplied-package-policy-selection-and-compiled-metadata
-   :governing-contracts '[D1 D2 D3 D8 D9 C1 C15 PKG1 PKG3 PKG4 PKG5 PKG6 PKG8 PKG9 PKG10 PKG12 BOOT8 TEST2]
+   :governing-contracts '[D1 D2 D3 D8 D9 C1 C15 PKG1 PKG3 PKG4 PKG5 PKG6 PKG8 PKG9 PKG10 PKG11 PKG12 BOOT8 TEST2]
    :public-api {'decide-policy {:arglists '([request]) :admission :none}
                 'select-exact {:arglists '([request] [decide-policy-operation request]) :admission :none}
                 'check-project-manifest! {:arglists '([fail-var module subject]) :admission :none}
                 'check-artifact-manifest! {:arglists '([fail-var module subject]) :admission :none}
                 'check-package-operation! {:arglists '([fail-var module subject]) :admission :none}
                 'check-resolution-report! {:arglists '([fail-var module subject]) :admission :none}
-                'check-capability-manifest! {:arglists '([fail-var module subject]) :admission :none}}
+                'check-capability-manifest! {:arglists '([fail-var module subject]) :admission :none}
+                'check-package-safety! {:arglists '([presence-var fail-var module subject]) :admission :none}
+                'check-registry-record! {:arglists '([fail-var module subject]) :admission :none}
+                'check-provenance-record! {:arglists '([fail-var module subject]) :admission :none}
+                'check-target-matrix! {:arglists '([fail-var module subject]) :admission :none}
+                'check-signing-sbom! {:arglists '([fail-var module subject]) :admission :none}}
    :artifact-inputs [:supplied-package-records :complete-supplied-lock-history :direct-exact-constraints
                      :registry-scope-and-grants :profile-target :status-policy :allowed-effects
                      :allowed-capabilities :unsafe-policy :policy-operation
-                     :native-module :supplied-compiled-package-metadata :caller-owned-failure-var]
+                     :native-module :supplied-compiled-package-metadata
+                     :caller-owned-failure-var :caller-owned-presence-var]
    :artifact-outputs [:supplied-policy-decision :exact-selection-report :selected-variant-data
                       :constraint-conflict :stable-pkg-diagnostics :nil-or-original-failure-result]
    :diagnostic-ownership {:owns ["PKG5001" "PKG5002" "PKG5003" "PKG5004" "PKG5005" "PKG5006"
                                   "PKG5007" "PKG1007" "PACKAGE-POLICY-INPUT"]
                           :retained-from :native-package-policy-and-selection
                           :private-registry-denial :before-metadata-reporting
-                          :compiled-metadata-decisions ["PKG1006" "PKG3005" "PKG4001" "PKG5002" "PKG6004"]
+                          :compiled-metadata-decisions ["PKG1006" "PKG3005" "PKG4001" "PKG5002" "PKG6004"
+                                                        "PKG8001" "PKG9001" "PKG10001" "PKG11002" "PKG12002"]
                           :compiled-metadata-payload-and-transport 'gravity.bootstrap}
    :dependency-direction {:requires ['clojure.set 'clojure.walk]
                           :consumed-by ['gravity.build.package-policy 'gravity.build.package-selection 'gravity.bootstrap]
@@ -36,6 +43,7 @@
                  :publication :full-pkg-conformance :migration :release :self-hosting :seed-retirement]
    :compiled-metadata {:authority :non-admitting :inputs :unverified-native-data
                        :failure-var :dereferenced-at-original-failing-branch
+                       :presence-var :dereferenced-before-subject-argument-observation
                        :aggregate-order-owner 'gravity.bootstrap
                        :source-and-final-identity-owner 'gravity.bootstrap
                        :proves-downloads? false :grants-capabilities? false}
@@ -401,8 +409,49 @@
      "PKG6004" module subject
      {:missing-fields [:denied-authority]})))
 
+(defn check-package-safety!
+  "Check only supplied audit metadata through the caller's existing presence operation."
+  [presence-var fail-var module subject]
+  (when-not ((deref presence-var) (:unsafe-audit-metadata subject))
+    ((deref fail-var)
+     "PKG8001" module subject
+     {:missing-fields [:unsafe-audit-metadata]})))
+
+(defn check-registry-record!
+  "Check only a supplied registry flag; do not authorize or read a registry."
+  [fail-var module subject]
+  (when-not (true? (:access-grant subject))
+    ((deref fail-var)
+     "PKG9001" module subject
+     {:missing-fields [:access-grant]})))
+
+(defn check-provenance-record!
+  "Check only supplied source-graph hash truthiness; do not authenticate provenance."
+  [fail-var module subject]
+  (when-not (:source-graph-hash subject)
+    ((deref fail-var)
+     "PKG10001" module subject
+     {:missing-fields [:source-graph-hash]})))
+
+(defn check-target-matrix!
+  "Reject only the supplied implicit-host flag; do not validate target support."
+  [fail-var module subject]
+  (when (true? (:implicit-host-target? subject))
+    ((deref fail-var)
+     "PKG11002" module subject
+     {:missing-fields [:explicit-target]})))
+
+(defn check-signing-sbom!
+  "Check only a supplied canonical-payload flag; do not sign or verify an SBOM."
+  [fail-var module subject]
+  (when-not (true? (get-in subject [:signature :canonical-payload]))
+    ((deref fail-var)
+     "PKG12002" module subject
+     {:missing-fields [:canonical-payload]})))
+
 (doseq [operation [#'decide-policy #'select-exact
                    #'check-project-manifest! #'check-artifact-manifest!
                    #'check-package-operation! #'check-resolution-report!
-                   #'check-capability-manifest!]]
+                   #'check-capability-manifest! #'check-package-safety! #'check-registry-record!
+                   #'check-provenance-record! #'check-target-matrix! #'check-signing-sbom!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

@@ -21,7 +21,9 @@
     (is (= 1 (count (first (:arglists (meta #'policy/decide))))))
     (is (= 1 (count (first (:arglists (meta #'selection/select-exact))))))
     (is (= #{'decide-policy 'select-exact 'check-project-manifest! 'check-artifact-manifest!
-             'check-package-operation! 'check-resolution-report! 'check-capability-manifest!}
+             'check-package-operation! 'check-resolution-report! 'check-capability-manifest!
+             'check-package-safety! 'check-registry-record! 'check-provenance-record!
+             'check-target-matrix! 'check-signing-sbom!}
            (set (keys (ns-publics 'gravity.package)))))
     (is (= #{'clojure.set 'clojure.walk} (set (map ns-name (vals (ns-aliases 'gravity.package))))))
     (let [contract (:gravity/namespace-contract (meta #'package/select-exact))]
