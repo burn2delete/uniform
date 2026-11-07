@@ -1,21 +1,77 @@
 (ns gravity.lowering
-  "Native C14 reconstruction and artifact pipelines; authority remains with existing owners.")
+  "Native Stage0 instruction lowering, C14 reconstruction and backend document checks; authority remains with existing owners."
+  (:require [clojure.set :as set]))
 
 (def ^:private namespace-contract
-  (quote
-{:authenticates-inputs? false,
+  '{:regenerates
+ [:stage0-native-complete-instruction-plan :stage0-native-instructions :stage0-native-opcode-frequency-map :native-reconstruction-records :native-c14-artifact-and-projection],
+ :authenticates-inputs? false,
  :public-api
- {assert-c-reconstruction!
+ {assemble-native-stage0-plan
+  {:arglists ([operations source-path source-text module]), :admission :none,
+   :required-operations [:function-table :profile! :executable-profile! :effects! :safety! :performance! :math! :compiler! :backend! :runtime! :domain! :schema! :ai! :package! :tooling! :conformance! :compile-function :fail! :sha256-hex :instruction-summary],
+   :contract-boundary :stage0-native-plan-assembly},
+  compile-native-expression
+  {:arglists ([operations module locals form]), :admission :none,
+   :required-operations [:compile-expression :compile-collection :compile-let :builtin-functions :fail!],
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-collection
+  {:arglists ([expression-var module locals form]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-let
+  {:arglists ([failure-var expression-var module locals bindings body]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-function
+  {:arglists ([expression-var module {:keys [name params body] :as definition}]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  native-instruction-summary
+  {:arglists ([summary-var instruction]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  assert-wasm-reconstruction!
   {:arglists
-   ([require-strict-structure!
-     fail!
-     source-path
-     c11-artifact
-     c13-record
-     policy
-     expected
-     raw]),
+   ([require-strict-structure! fail! source-path expected raw]),
    :admission :none},
+  native-artifact-base
+  {:arglists
+   ([configuration
+     source-path
+     _source-text
+     module
+     source-overrides
+     optimization-artifact
+     diagnostics
+     operations]),
+   :admission :none},
+  wasm-record {:arglists ([optimized policy]), :admission :none},
+  native-capability-proof
+  {:arglists ([configuration artifact operations]), :admission :none},
+  native-source-overrides {:arglists ([module]), :admission :none},
+  validate-native-backends!
+  {:authenticates-inputs? false,
+   :required-operations
+   [:fail! :manifest-required-fields :diagnostic-ids],
+   :admission :none,
+   :diagnostic-publication :caller-owned,
+   :grants-authority? false,
+   :artifact-inputs [:unverified-native-backend-document-data],
+   :arglists ([operations source-path artifact]),
+   :artifact-outputs [:legacy-structural-completion-or-refusal],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-checks},
+  native-validate!
+  {:arglists ([configuration source-path artifact operations]),
+   :admission :none},
+  native-backend-artifact-manifest
+  {:authenticates-inputs? false,
+   :required-operations [:artifact-id],
+   :admission :none,
+   :grants-authority? false,
+   :artifact-inputs
+   [:unverified-backend-kind-content-input-and-evidence-data],
+   :arglists ([operations backend kind content input-id evidence-id]),
+   :artifact-outputs [:legacy-native-backend-artifact-manifest],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-manifest},
   assert-llvm-reconstruction!
   {:arglists
    ([require-strict-structure!
@@ -26,46 +82,70 @@
      expected
      raw]),
    :admission :none},
-  assert-wasm-reconstruction!
-  {:arglists
-   ([require-strict-structure! fail! source-path expected raw]),
-   :admission :none},
+  native-backends-coverage-report
+  {:authenticates-inputs? false,
+   :required-operations [:manifest-required-fields :diagnostic-ids],
+   :admission :none,
+   :grants-authority? false,
+   :artifact-inputs [:unverified-native-backend-document-data],
+   :arglists ([operations artifact]),
+   :artifact-outputs [:legacy-native-backend-coverage-record],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-coverage},
+  native-source-overrides-artifact
+  {:arglists ([overrides]), :admission :none},
   c-record {:arglists ([optimized policy]), :admission :none},
-  llvm-record {:arglists ([optimized policy]), :admission :none},
-  wasm-record {:arglists ([optimized policy]), :admission :none},
-  native-source-overrides {:arglists ([module]), :admission :none},
-  native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
-  native-diagnostic-catalog {:arglists ([configuration source-path input-id source-span]), :admission :none},
-  native-artifact-base
-  {:arglists ([configuration source-path _source-text module source-overrides optimization-artifact diagnostics operations]),
+  native-diagnostic-catalog
+  {:arglists ([configuration source-path input-id source-span]),
    :admission :none},
-  native-validate! {:arglists ([configuration source-path artifact operations]), :admission :none},
-  native-capability-proof {:arglists ([configuration artifact operations]), :admission :none},
-  native-source-artifact {:arglists ([configuration source-path source-text operations]), :admission :none},
-  native-file-artifact {:arglists ([configuration path operations]), :admission :none}},
+  llvm-record {:arglists ([optimized policy]), :admission :none},
+  native-source-artifact
+  {:arglists ([configuration source-path source-text operations]),
+   :admission :none},
+  native-file-artifact
+  {:arglists ([configuration path operations]), :admission :none},
+  assert-c-reconstruction!
+  {:arglists
+   ([require-strict-structure!
+     fail!
+     source-path
+     c11-artifact
+     c13-record
+     policy
+     expected
+     raw]),
+   :admission :none}},
  :supported
- [:existing-llvm-c-wasm-reconstruction-bodies
+ [:existing-stage0-whole-plan-assembly-and-fixed-policy-call-order
+  :late-native-function-table-policy-compilation-summary-failure-and-digest-vars
+  :existing-stage0-native-expression-collection-let-function-and-summary-bodies
+  :late-native-recursion-helper-catalog-and-failure-vars
+  :existing-llvm-c-wasm-reconstruction-bodies
   :existing-context-joins
   :unchanged-identity-and-provenance-fields
   :late-var-diagnostic-interposition
   :existing-native-c14-source-and-file-artifact-assembly
   :existing-native-overrides-catalog-projection-and-ordered-validation
-  :trusted-zero-argument-operation-suppliers],
+  :trusted-zero-argument-operation-suppliers
+  :native-backend-manifest-construction
+  :native-backend-ordered-document-checks
+  :native-backend-coverage-projection],
  :dependency-direction
- {:requires [],
-  :consumed-by [gravity.bootstrap gravity.c14-lowering.artifact
-                gravity.c14-lowering.projection gravity.c14-lowering.validation],
-  :forbids
+ {:requires [clojure.set],
+  :consumed-by
+  [gravity.bootstrap
+   gravity.c14-lowering.artifact
+   gravity.c14-lowering.projection
+   gravity.c14-lowering.validation],
+  :must-not-require
   [gravity.bootstrap
    gravity.cli
    gravity.release
    gravity.c14-lowering]},
- :legacy-status-labels-authoritative? false,
- :preserves [:caller-supplied-identities :source-proof-fact-associations :upstream-context :diagnostic-call-order],
  :invalidates [],
- :regenerates [:native-reconstruction-records :native-c14-artifact-and-projection],
+ :legacy-status-labels-authoritative? false,
  :governing-contracts
- [D1
+ [D0 L2 C6 BOOT1 D1
   D2
   D3
   D6
@@ -77,6 +157,7 @@
   C13
   C14
   C15
+  C18
   B1
   B2
   B3
@@ -87,6 +168,11 @@
   PERF10
   BOOT8
   TEST2],
+ :preserves
+ [:caller-supplied-identities
+  :source-proof-fact-associations
+  :upstream-context
+  :diagnostic-call-order],
  :unsupported
  [:untrusted-native-ingress
   :callback-authentication
@@ -101,35 +187,88 @@
   :migration
   :release
   :self-hosting
-  :seed-retirement],
+  :seed-retirement
+  :native-hash-content-authentication
+  :native-prefix-check-as-integrity
+  :native-proof-or-conformance-labels-as-authority],
  :artifact-inputs
- [:caller-owned-optimized-mir-and-policy-data
+ [:trusted-stage0-source-path-text-module-and-live-owner-operations
+  :trusted-stage0-native-module-local-scope-forms-and-function-data
+  :trusted-stage0-instruction-and-explicit-live-operation-vars
+  :caller-owned-optimized-mir-and-policy-data
   :expected-and-actual-c14-record-data
   :c11-c13-context-data
   :explicit-strict-comparison-and-diagnostic-operations
   :trusted-native-configuration-source-module-and-c13-parent-data
-  :trusted-late-operation-suppliers],
+  :trusted-late-operation-suppliers
+  :unverified-native-backend-document-data
+  :native-manifest-constructor-arguments
+  :late-native-backend-operations],
  :namespace gravity.lowering,
  :diagnostic-ownership
  {:stage
-  ["C14-MANIFEST" :exact-reconstruction-or-context-join-mismatch
+  ["L3-UNKNOWN-ALIAS" "L2-MAIN-ARITY"
+   :stage0-native-plan-shape-and-identity-preimage
+   "L2-UNKNOWN-SYMBOL" "L2-UNKNOWN-CORE-FORM" "L2-LET-BINDING" "P4-HOST-REFLECTION"
+   "C14-MANIFEST"
+   :exact-reconstruction-or-context-join-mismatch
    :existing-native-c14-ordered-structural-refusals
-   "C14-INPUT" "C14-PROFILE" "C14-TARGET" "C14-ABI" "C14-RUNTIME"
-   "C14-CAPABILITY" "C14-PROVIDER" "C14-PROOF-METADATA" "C14-UNSUPPORTED"],
+   "C14-INPUT"
+   "C14-PROFILE"
+   "C14-TARGET"
+   "C14-ABI"
+   "C14-RUNTIME"
+   "C14-CAPABILITY"
+   "C14-PROVIDER"
+   "C14-PROOF-METADATA"
+   "C14-UNSUPPORTED"
+   :native-backend-ordered-structural-decisions
+   "B13-EVIDENCE"
+   "B14-COVERAGE"
+   "B2-MANIFEST"
+   "B2-UB"
+   "B3-MANIFEST"
+   "B3-METADATA"
+   "B7-MANIFEST"
+   "B7-VERIFY"
+   "B13-SCHEMA"
+   "B13-HASH"
+   "B14-METADATA"
+   "B14-EVIDENCE"
+   "B14-NEGATIVE"],
   :propagated ["C11-VERIFY" :strict-structure-mismatch],
   :existing-owner
-  [:canonical-c11-c13-admission
+  [:stage0-source-function-header-and-policy-admission
+   :stage0-native-diagnostic-construction-and-publication
+   :stage0-digest-operation-and-plan-execution
+   :canonical-c11-c13-admission
    :target-legality
    :diagnostic-publication
    :source-verification
-   :sealing-and-authority]},
+   :sealing-and-authority
+   :native-backend-failure-payload-assembly
+   :native-backend-selected-failure-operation]},
  :artifact-outputs
- [:raw-llvm-c-wasm-c14-reconstruction-data
-  :exact-reconstruction-or-refusal :native-c14-artifact-or-refusal
-  :native-c14-diagnostics-and-capability-projection],
+ [:stage0-native-hosted-core-compiled-plan
+  :stage0-native-expression-instructions
+  :stage0-native-function-binding-and-instructions
+  :stage0-native-opcode-frequency-map
+  :raw-llvm-c-wasm-c14-reconstruction-data
+  :exact-reconstruction-or-refusal
+  :native-c14-artifact-or-refusal
+  :native-c14-diagnostics-and-capability-projection
+  :legacy-native-backend-artifact-manifest
+  :legacy-structural-completion-or-refusal
+  :legacy-native-backend-coverage-record],
+ :consumer-component-paths
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00554-invoke-stage0-builtin.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00555-compile-stage0-expr.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00209-native-lowering-source-overrides.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00210-native-lowering-source-artifact.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00211-native-lowering-file-artifact.clj"],
  :issues-certificates? false,
- :contract-boundary :native-c14-reconstruction-data}
-))
+ :contract-boundary :native-lowering-reconstruction-document-data-and-stage0-instructions}
+)
 
 (defn llvm-record
   [optimized policy]
@@ -668,6 +807,376 @@
   (((:invoke operations)) :compiler-c14-lowering-source-artifact
                      (fn [source-path source-text] (((:source-artifact operations)) configuration source-path source-text))
                      path (((:slurp operations)) path)))
+
+(defn- native-backend-port [operations key]
+  (let [operation (get operations key)]
+    (if (var? operation) @operation operation)))
+
+(defn native-backend-artifact-manifest
+  [operations backend kind content input-id evidence-id]
+  {:schema-version 1
+   :kind kind
+   :backend backend
+   :profile :native
+   :target :x86_64-stage0
+   :content-hash ((native-backend-port operations :artifact-id) content)
+   :inputs {:source input-id
+            :mir input-id
+            :backend-interface input-id}
+   :evidence {:safety "safety-bundle:stage0"
+              :proofs evidence-id
+              :capabilities "capability-summary:stage0"
+              :effects "effect-summary:stage0"
+              :conformance "backend-conformance-pack:p07-t02"}
+   :provenance {:compiler "gravity-stage0-clojure"
+                :passes ["C14" "B1" "B2/B3/B7" "B13" "B14"]
+                :dependencies "dependency-graph:stage0"}
+   :reproducibility {:timestamp-policy :none
+                     :nondeterminism []
+                     :status :recorded}})
+
+(defn validate-native-backends!
+  [operations source-path artifact]
+  (let [diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:native-diagnostic-stream
+                                       :diagnostics])))
+        manifests (:artifact-manifests artifact)]
+    (when-not (= :complete (get-in artifact
+                                   [:backend-interface-artifact
+                                    :capability-based-proof :status]))
+      ((native-backend-port operations :fail!) "B13-EVIDENCE" source-path
+                             (:backend-interface-artifact artifact)
+                             {:missing-fields [:backend-interface-proof]}))
+    (when-not (= #{:gravity.backend/c :gravity.backend/llvm
+                   :gravity.backend/mlir}
+                 (set (map :backend
+                           (:target-lowering-manifest artifact))))
+      ((native-backend-port operations :fail!) "B14-COVERAGE" source-path
+                             (:target-lowering-manifest artifact)
+                             {:missing-fields [:native-backends]}))
+    (when-not (= :complete (get-in artifact [:c-backend :status]))
+      ((native-backend-port operations :fail!) "B2-MANIFEST" source-path
+                             (:c-backend artifact)
+                             {:missing-fields [:c-backend]}))
+    (when-not (= :rejected (get-in artifact
+                                   [:c-backend :ub-rejection :status]))
+      ((native-backend-port operations :fail!) "B2-UB" source-path
+                             (get-in artifact [:c-backend :ub-rejection])
+                             {:missing-fields [:ub-rejection]}))
+    (when-not (= :complete (get-in artifact [:llvm-backend :status]))
+      ((native-backend-port operations :fail!) "B3-MANIFEST" source-path
+                             (:llvm-backend artifact)
+                             {:missing-fields [:llvm-backend]}))
+    (when-not (= :gated (get-in artifact
+                                [:llvm-backend :metadata-policy
+                                 :status]))
+      ((native-backend-port operations :fail!) "B3-METADATA" source-path
+                             (get-in artifact
+                                     [:llvm-backend :metadata-policy])
+                             {:missing-fields [:llvm-metadata-policy]}))
+    (when-not (= :complete (get-in artifact [:mlir-backend :status]))
+      ((native-backend-port operations :fail!) "B7-MANIFEST" source-path
+                             (:mlir-backend artifact)
+                             {:missing-fields [:mlir-backend]}))
+    (when-not (= :passed (get-in artifact
+                                 [:mlir-backend :verifier-report
+                                  :status]))
+      ((native-backend-port operations :fail!) "B7-VERIFY" source-path
+                             (get-in artifact
+                                     [:mlir-backend :verifier-report])
+                             {:missing-fields [:mlir-verifier]}))
+    (when-not (every? #(set/subset? (set (native-backend-port operations :manifest-required-fields))
+                                    (set (keys %)))
+                      manifests)
+      ((native-backend-port operations :fail!) "B13-SCHEMA" source-path
+                             (first manifests)
+                             {:missing-fields [:artifact-manifest-schema]}))
+    (when-not (every? #(re-find #"^sha256:" (:content-hash %)) manifests)
+      ((native-backend-port operations :fail!) "B13-HASH" source-path
+                             (first manifests)
+                             {:missing-fields [:content-hash]}))
+    (when-not (= :preserved (get-in artifact
+                                    [:metadata-preservation-report
+                                     :status]))
+      ((native-backend-port operations :fail!) "B14-METADATA" source-path
+                             (:metadata-preservation-report artifact)
+                             {:missing-fields [:metadata-preservation]}))
+    (when-not (= :passed (get-in artifact
+                                 [:backend-conformance-record :status]))
+      ((native-backend-port operations :fail!) "B14-EVIDENCE" source-path
+                             (:backend-conformance-record artifact)
+                             {:missing-fields [:conformance-evidence]}))
+    (when-not (= (set (native-backend-port operations :diagnostic-ids)) diagnostics)
+      ((native-backend-port operations :fail!) "B14-NEGATIVE" source-path
+                             (:native-diagnostic-stream artifact)
+                             {:missing-fields [:native-diagnostics]})))
+  :complete)
+
+(defn native-backends-coverage-report
+  [operations artifact]
+  (let [diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:native-diagnostic-stream
+                                       :diagnostics])))
+        manifests (:artifact-manifests artifact)]
+    {:backend-interface-input-verified?
+     (= :complete (get-in artifact
+                          [:backend-interface-artifact
+                           :capability-based-proof :status]))
+     :c-lowering-complete?
+     (= :complete (get-in artifact [:c-backend :status]))
+     :c-undefined-behavior-rejected?
+     (= :rejected (get-in artifact [:c-backend :ub-rejection :status]))
+     :llvm-lowering-complete?
+     (= :complete (get-in artifact [:llvm-backend :status]))
+     :llvm-proof-metadata-gated?
+     (= :gated (get-in artifact
+                       [:llvm-backend :metadata-policy :status]))
+     :mlir-lowering-complete?
+     (= :complete (get-in artifact [:mlir-backend :status]))
+     :mlir-conversion-verified?
+     (= :passed (get-in artifact
+                        [:mlir-backend :conversion-legality-report
+                         :status]))
+     :artifact-emission-complete?
+     (and (= 3 (count manifests))
+          (every? #(set/subset?
+                    (set (native-backend-port operations :manifest-required-fields))
+                    (set (keys %)))
+                  manifests)
+          (every? #(re-find #"^sha256:" (:content-hash %)) manifests))
+     :source-proof-capability-metadata-preserved?
+     (= :preserved (get-in artifact
+                           [:metadata-preservation-report :status]))
+     :conformance-record-passed?
+     (= :passed (get-in artifact
+                        [:backend-conformance-record :status]))
+     :diagnostics-covered?
+     (= (set (native-backend-port operations :diagnostic-ids)) diagnostics)
+     :status :complete}))
+(defn compile-native-collection
+  [expression-var module locals form]
+  (cond
+    (vector? form)
+    {:op :vector-literal
+     :items (mapv #((deref expression-var) module locals %) form)}
+
+    (map? form)
+    {:op :map-literal
+     :entries (mapv (fn [[k v]]
+                      {:key ((deref expression-var) module locals k)
+                       :value ((deref expression-var) module locals v)})
+                    (sort-by (fn [[k v]] (pr-str [k v])) form))}
+
+    (set? form)
+    {:op :set-literal
+     :items (mapv #((deref expression-var) module locals %)
+                  (sort-by pr-str form))}
+
+    :else
+    {:op :literal :value form}))
+
+(defn compile-native-let
+  [failure-var expression-var module locals bindings body]
+  (when-not (and (vector? bindings) (even? (count bindings)))
+    ((deref failure-var) "L2-LET-BINDING"
+           "let requires an even binding vector"
+           {:source-span {:source (:source-path module)}
+            :bindings bindings
+            :remediation "Use pairs of local names and expressions in let."}))
+  (loop [scope locals
+         compiled []
+         pairs (partition 2 bindings)]
+    (if-let [[name expr] (first pairs)]
+      (do
+        (when-not (symbol? name)
+          ((deref failure-var) "L2-LET-BINDING"
+                 "let binding name must be a symbol"
+                 {:source-span {:source (:source-path module)}
+                  :binding name
+                  :remediation "Bind symbols in stage0 let forms."}))
+        (recur (conj scope name)
+               (conj compiled {:name name
+                               :expr ((deref expression-var) module scope expr)})
+               (rest pairs)))
+      {:op :let
+       :bindings compiled
+       :body (mapv #((deref expression-var) module scope %) body)})))(defn compile-native-expression
+  [operations module locals form]
+  (cond
+    (symbol? form)
+    (if (contains? locals form)
+      {:op :local :name form}
+      ((deref (:fail! operations)) "L2-UNKNOWN-SYMBOL"
+             "stage0 cannot resolve symbol"
+             {:source-span {:source (:source-path module)}
+              :symbol form
+              :remediation "Define the symbol or stay within the stage0 subset."}))
+
+    (seq? form)
+    (case (first form)
+      println {:op :println
+               :effect :io/write
+               :capability :io/stdout
+               :args (mapv #((deref (:compile-expression operations)) module locals %) (rest form))}
+      do {:op :do
+          :body (mapv #((deref (:compile-expression operations)) module locals %) (rest form))}
+      if (let [[_ test then else] form]
+           {:op :if
+            :test ((deref (:compile-expression operations)) module locals test)
+            :then ((deref (:compile-expression operations)) module locals then)
+            :else ((deref (:compile-expression operations)) module locals else)})
+      let (let [[_ bindings & body] form]
+            ((deref (:compile-let operations)) module locals bindings body))
+      quote {:op :quote :value (second form)}
+      host-reflect ((deref (:fail! operations)) "P4-HOST-REFLECTION"
+                          "host reflection is not implemented in stage0"
+                          {:source-span {:source (:source-path module)}
+                           :remediation "Remove host reflection from the stage0 executable subset."})
+      (let [callee (first form)
+            args (mapv #((deref (:compile-expression operations)) module locals %) (rest form))]
+        (cond
+          (contains? (deref (:builtin-functions operations)) callee)
+          {:op :builtin-call :function callee :args args}
+
+          (contains? (:function-table module) callee)
+          {:op :function-call :function callee :args args}
+
+          :else
+          ((deref (:fail! operations)) "L2-UNKNOWN-CORE-FORM"
+                 "stage0 cannot execute this form"
+                 {:source-span {:source (:source-path module)}
+                  :operator callee
+                  :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage0 hosted subset."}))))
+
+    (or (vector? form) (map? form) (set? form))
+    ((deref (:compile-collection operations)) module locals form)
+
+    :else
+    {:op :literal :value form}))
+
+(defn compile-native-function
+  [expression-var module {:keys [name params body] :as definition}]
+  (assoc definition
+         :binding {:name name
+                   :kind :function
+                   :namespace (:module module)
+                   :profile (:profile module)
+                   :target (:target module)
+                   :visibility (if (seq (:exports module))
+                                 (if (contains? (set (:exports module)) name)
+                                   :public
+                                   :private)
+                                 :stage0-local)
+                   :effects (:effects module)
+                   :capabilities (:capabilities module)}
+         :instructions (mapv #((deref expression-var) module (set params) %) body)))
+
+(defn native-instruction-summary
+  [summary-var instruction]
+  (let [children
+        (case (:op instruction)
+          :println (:args instruction)
+          :do (:body instruction)
+          :if [(:test instruction) (:then instruction) (:else instruction)]
+          :let (concat (map :expr (:bindings instruction)) (:body instruction))
+          :loop (concat (map :expr (:bindings instruction))
+                        (:body instruction))
+          :recur (:args instruction)
+          :throw [(:value instruction)]
+          :builtin-call (:args instruction)
+          :function-call (:args instruction)
+          :compiler-module-call (:args instruction)
+          :vector-literal (:items instruction)
+          :set-literal (:items instruction)
+          :map-literal (mapcat (fn [{:keys [key value]}] [key value])
+                                (:entries instruction))
+          [])]
+    ;; A parent and child may share an opcode (for example nested builtin
+    ;; calls).  Add the parent fact instead of letting `merge` overwrite it;
+    ;; this makes the stage0 comparison describe every concrete instruction.
+    (merge-with +
+                {(:op instruction) 1}
+                (apply merge-with +
+                       (map (deref summary-var)
+                            (remove nil? children))))))
+
+
+(defn assemble-native-stage0-plan
+  [operations source-path source-text module]
+  (let [function-table ((deref (:function-table operations)) module)
+        module (assoc module :function-table function-table)
+        _ ((deref (:profile! operations)) module)
+        _ ((deref (:executable-profile! operations)) source-path module (:forms module))
+        _ ((deref (:effects! operations)) module)
+        _ ((deref (:safety! operations)) module)
+        _ ((deref (:performance! operations)) module)
+        _ ((deref (:math! operations)) module)
+        _ ((deref (:compiler! operations)) module)
+        _ ((deref (:backend! operations)) module)
+        _ ((deref (:runtime! operations)) module)
+        _ ((deref (:domain! operations)) module)
+        _ ((deref (:schema! operations)) module)
+        _ ((deref (:ai! operations)) module)
+        _ ((deref (:package! operations)) module)
+        _ ((deref (:tooling! operations)) module)
+        _ ((deref (:conformance! operations)) module)
+        functions (into (sorted-map)
+                        (map (fn [[name definition]]
+                               [name ((deref (:compile-function operations))
+                                      module
+                                      definition)]))
+                        function-table)
+        main-function (get functions 'main)
+        _ (when-not main-function
+            ((deref (:fail! operations)) "L3-UNKNOWN-ALIAS"
+                   "stage0 executable requires a main function"
+                   {:source-span {:source source-path}
+                    :remediation "Add (defn main [] ...)."}))
+        _ (when-not (empty? (:params main-function))
+            ((deref (:fail! operations)) "L2-MAIN-ARITY"
+                   "stage0 main must take no arguments"
+                   {:source-span {:source source-path}
+                    :params (:params main-function)
+                    :remediation "Use (defn main [] ...)."}))
+        instruction-summary (apply merge-with +
+                                   (mapcat (fn [[_ function]]
+                                             (map (deref (:instruction-summary operations))
+                                                  (:instructions function)))
+                                           functions))
+        plan-base {:kind :gravity/stage0-hosted-core-compiled-plan
+                   :entrypoint 'main
+                   :source {:path source-path
+                            :sha256 (str "sha256:" ((deref (:sha256-hex operations)) source-text))}
+                   :compiler {:owner :clojure-bootstrap
+                              :stage :stage0
+                              :input :macro-expanded-core
+                              :output :instruction-plan
+                              :retirement-objective
+                              :replace-with-gravity-self-hosted-compiler}
+                   :module (select-keys module
+                                        [:module :source-path :profile :target
+                                         :effects :capabilities :providers
+                                         :exports
+                                         :safety])
+                   :binding-table (mapv (fn [[_name function]]
+                                           (assoc (:binding function)
+                                                  :arity (:arity function)))
+                                         (sort-by key functions))
+                   :functions functions
+                   :instruction-summary instruction-summary
+                   :effect-summary {:declared (:effects module)
+                                    :inferred (if (pos? (get instruction-summary
+                                                             :println
+                                                             0))
+                                                #{:io/write}
+                                                #{})
+                                    :capabilities (:capabilities module)}
+                   :diagnostics []}]
+    (assoc plan-base
+           :plan-id (str "sha256:" ((deref (:sha256-hex operations)) (pr-str plan-base))))))
+
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

@@ -55,28 +55,11 @@
 
 (defn eval-do
   [module env forms]
-  (reduce (fn [_ form] (eval-expr module env form)) nil forms))
+  (gravity.runtime/eval-native-stage0-do #'eval-expr module env forms))
 
 (defn bind-let
   [module env bindings]
-  (when-not (and (vector? bindings) (even? (count bindings)))
-    (fail! "L2-LET-BINDING"
-           "let requires an even binding vector"
-           {:source-span {:source (:source-path module)}
-            :bindings bindings
-            :remediation "Use pairs of local names and expressions in let."}))
-  (loop [env env
-         pairs (partition 2 bindings)]
-    (if-let [[name expr] (first pairs)]
-      (do
-        (when-not (symbol? name)
-          (fail! "L2-LET-BINDING"
-                 "let binding name must be a symbol"
-                 {:source-span {:source (:source-path module)}
-                  :binding name
-                  :remediation "Bind symbols in stage0 let forms."}))
-        (recur (assoc env name (eval-expr module env expr)) (rest pairs)))
-      env)))
+  (gravity.runtime/bind-native-stage0-let #'fail! #'eval-expr module env bindings))
 
 (defn function-definition-form
   [source-path form]
@@ -197,36 +180,20 @@
 
 (defn fail-call-arity!
   [id module callee args expected]
-  (fail! id
-         (case id
-           "L2-FUNCTION-ARITY" "stage0 function call has the wrong arity"
-           "L2-BUILTIN-ARITY" "stage0 builtin call has the wrong arity"
-           "stage0 call has the wrong arity")
-         {:source-span {:source (:source-path module)}
-          :function callee
-          :expected-arity expected
-          :actual-arity (count args)
-          :remediation "Call the function with the arity supported by the stage0 hosted subset."}))
+  (gravity.runtime/fail-native-stage0-call-arity! #'fail! id module callee args expected))
 
 (defn assert-min-arity!
   [module callee args n]
-  (when (< (count args) n)
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      (str "at least " n))))
+  (gravity.runtime/assert-native-stage0-min-arity! #'fail-call-arity! module callee args n))
 
 (defn assert-exact-arity!
   [module callee args n]
-  (when-not (= n (count args))
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args n)))
+  (gravity.runtime/assert-native-stage0-exact-arity! #'fail-call-arity! module callee args n))
 
 (defn assert-between-arity!
   [module callee args min-n max-n]
-  (when-not (<= min-n (count args) max-n)
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      (str min-n " to " max-n))))
+  (gravity.runtime/assert-native-stage0-between-arity! #'fail-call-arity! module callee args min-n max-n))
 
 (defn assert-even-arity!
   [module callee args]
-  (when (odd? (count args))
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      "an even number of arguments")))
+  (gravity.runtime/assert-native-stage0-even-arity! #'fail-call-arity! module callee args))
