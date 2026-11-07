@@ -201,8 +201,40 @@ language/ownership 48/1202, CI selection controls 2/169 and cold declarations
 capture records the actual dirty producer context at HEAD `260d382...`, with
 separate updated producer hashes, SHA256
 `7894020469e8773145fb29bb43f20fff8098cadb45825b429c0a44f55cdb6e28`.
-It does not claim a future clean successor was observed. Fresh complete Main
-lint, clean successor reviews and own hosted CI/provider audit remain pending.
+It does not claim a future clean successor was observed. The clean corrective
+source is `7d5df1d01ee5a6b5432f0288904328cf7a32f311`, tree
+`3ac22e85c921c34c21d622419c9af0b389036d64`; independent corrective source
+reviews bind that exact tuple without transferring the predecessor's verdict.
+
+### Composition with current Main
+
+The next comparison preparation stopped at its stale-base assertion before
+running lint: Main had advanced to
+`31fd889199d60d56f6dd26ff4e078b5bcf09b571`. Its two changes are the retained-
+candidate seedless workflow and its tests. They are disjoint from the eight
+owned paths and do not change the compiler contracts or shared nine-file SDK.
+Root read the full diff and imported both exact mode/blob records through
+ordinary Source merge `a3176328f3ff1bb771cefb5393a69fa449365eb6`, canonical
+tree `46f6e160fe20959331c5feb99a99b5a0600a6c8c`, with parents
+`7d5df1d01ee5a6b5432f0288904328cf7a32f311` and the new Main commit.
+All eight owned records and all other feature records are conserved.
+Composition receipt SHA256:
+`e9004b061587f6efad3aac8b33e6dea45c6706f87cbef8fa0972838cc571edac`.
+This invokes no seedless/controller/service/recovery role and transfers no
+source, CI, integration or release acceptance.
+
+Fresh source observations on that actual merge HEAD still equal all 22
+baseline observations: 10 plans, 10 interpreted/compiled successes and 12
+genuine refusals, SHA256
+`879e6b1d70b9981433293c61098a4b5f126686a0dd1aa8927405186dc77c7226`.
+The combined new/Runtime/parser suites pass 54 tests and 937 assertions;
+language/ownership passes 48 tests and 1202 assertions. Complete current-Main
+lint passes all 132 changed paths and 81 Clojure/EDN paths, with 3452 unchanged
+baseline warnings and zero blockers, report SHA256
+`ac81e44a1a7182f81a03923661f1a0cbbb3c8c7991c7c4f2d99a8318c61a8f1e`.
+The original three warnings are fixed by using the captured fields in the
+correct transport, without weakening lint policy. Own source publication,
+hosted CI/provider audit and current-base integration acceptance remain pending.
 
 Exact current-base integration remains with the designated integrator. This
 manual Source has no Main/Ready/controller/service/recovery or GraphQL role.
