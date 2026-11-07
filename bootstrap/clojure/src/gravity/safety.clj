@@ -1,11 +1,52 @@
 (ns gravity.safety
-  "Native seed proof/check records and report verification; no safety admission.")
+  "Native seed proof/check/source-call records and report verification; no safety admission.")
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {native-verifier-report
+ {native-unsafe-forms
+  {:arglists ([unsafe-forms-var form]), :admission :none :hosted-seed-only? true
+   :operation-vars [unsafe-forms-var] :returns :original-form-sequence
+   :recursive-callee-selection :before-mapcat-realization :preserves-original-laziness? true},
+  validate-native-unsafe-island!
+  {:arglists ([failure-var difference-var required-metadata-var module form]),
+   :admission :none :hosted-seed-only? true
+   :operation-vars [failure-var difference-var] :data-vars [required-metadata-var]
+   :returns :original-final-guard-result :metadata-check :required-key-presence-only
+   :unsafe-approval-authority? false :exception-transport :unchanged},
+  record-native-unsafe-audit-call!
+  {:arglists ([checker ctx node operator args effects capabilities return-type spec operations]),
+   :admission :none :hosted-seed-only? true :trusted-operation-map? true
+   :operation-keys [:arg-value :record!]
+   :operation-arglists {:arg-value ([args index]) :record! ([checker key record])}
+   :context-input :original-dereferenceable-reference :context-reads :original-five-expression-positions
+   :record-families 10 :returns :base-call-record-or-nil :sink-result-used? false
+   :record-labels :unverified-data},
+  emit-native-outcome-diagnostic!
+  {:arglists ([typed-diagnostic-var id message node remediation data]),
+   :admission :none :hosted-seed-only? true :operation-vars [typed-diagnostic-var]
+   :returns :original-callback-result :transport-owner :supplied-typed-diagnostic-operation
+   :exception-transport :unchanged},
+  check-native-outcome!
+  {:arglists ([legal-outcomes-var diagnostic-var node operation outcome evidence]),
+   :admission :none :hosted-seed-only? true :operation-vars [legal-outcomes-var diagnostic-var]
+   :returns :nil-or-final-guard-result :proof-reference-check :nil-presence-only
+   :canonical-outcome-authority? false},
+  record-native-outcome-call!
+  {:arglists ([checker ctx node operator args effects capabilities return-type spec operations]),
+   :admission :none :hosted-seed-only? true
+   :operation-keys [:arg-value :check-outcome! :diagnostic! :record! :legal-outcomes]
+   :operation-arglists {:arg-value ([args index])
+                       :check-outcome! ([node operation outcome evidence])
+                       :diagnostic! ([id message node remediation data])
+                       :record! ([checker key record])}
+   :compatibility-adapter-keys [:check-outcome! :diagnostic!]
+   :compatibility-adapter-live-vars [safe1-legal-outcomes safe1-diagnostic! typed-diagnostic!]
+   :data-operation-keys [:legal-outcomes] :trusted-operation-map? true
+   :context-input :original-dereferenceable-reference :context-reads :original-per-field-and-unsafe-guard
+   :returns :base-call-record-or-nil :sink-result-used? false},
+  native-verifier-report
   {:arglists ([safe-outcomes diagnostic-ids c9-artifact inventory outcomes checks
                obligations certificates unsafe report generated optimization diagnostics]),
    :admission :none},
@@ -82,6 +123,7 @@
   D8
   D9
   SAFE1
+  SAFE6
   SAFE15
   C1
   C6
@@ -96,8 +138,14 @@
   TEST2],
  :outcome-classification-owner
  :existing-gravity-c10-and-checked-core-verifier,
+ :source-outcome-rule-and-record-owner :stage,
+ :source-outcome-tags :caller-supplied-unverified-data,
+ :unsafe-audit-labels :caller-supplied-or-legacy-default-unverified-data,
+ :additional-contract-boundaries [:native-unsafe-form-discovery-and-executable-presence-checks],
  :unsupported
- [:general-c10-analysis
+ [:unsafe-form-execution :unsafe-review-or-certificate-authentication :safe-wrapper-invariant-validation
+  :full-safe1-conformance :full-safe6-conformance :source-proof-and-audit-label-authentication
+  :general-c10-analysis
   :public-input-admission
   :callback-authentication
   :genuine-source-core-admission
@@ -113,7 +161,11 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:source-hash-path-origin-span
+ [:native-unsafe-source-forms-and-executable-module-data :live-unsafe-discovery-failure-difference-and-required-key-vars
+  :native-safe6-node-call-and-spec-data :late-unsafe-audit-argument-and-record-vars
+  :native-safe1-node-call-and-spec-data :original-checker-and-dereferenceable-context
+  :typed-call-operator-effects-capabilities-and-return-type :trusted-late-source-outcome-operation-vars
+  :source-hash-path-origin-span
   :profile-type-effect-capability-ownership-data
   :existing-basis-and-child-obligation-data
   :ordered-native-node-data
@@ -122,15 +174,28 @@
   :explicit-native-report-projection-and-failure-operations],
  :namespace gravity.safety,
  :diagnostic-ownership
- {:stage [:proof-record-digest-and-structural-predicates
+ {:stage [:native-safe6-executable-mode-and-required-key-presence-rules :native-safe6-record-writes
+          :native-safe1-rule-selection-enrichment-and-record-writes
+          :proof-record-digest-and-structural-predicates
           :native-report-predicates :ordered-native-missing-field-refusals],
   :native-refusal-ids [C10-NO-OUTCOME C10-CHECK C10-PROOF C10-UNSAFE
                        C10-TAINT C10-GENERATED C10-OPTIMIZATION],
+  :source-outcome-refusal-ids [SAFE1-NO-OUTCOME SAFE1-PROOF-MISSING SAFE1-CHECK-MISSING
+                             SAFE1-UNSAFE-METADATA SAFE1-UNSAFE-POLICY
+                             SAFE1-OPTIMIZATION-PROOF SAFE1-DEPENDENCY-MODE],
+  :source-outcome-early-caller [SAFE1-CHECK-ILLEGAL SAFE1-GENERATED-PROVENANCE],
+  :executable-unsafe-refusal-ids [SAFE6-UNSAFE-FORBIDDEN SAFE6-MISSING-METADATA],
+  :typed-unsafe-catalog-owner :existing-caller,
+  :executable-unsafe-transport-owner :supplied-failure-operation,
+  :typed-carrier-and-transport :supplied-typed-diagnostic-operation,
   :existing-caller
   [:source-enrichment
    :diagnostic-construction]},
  :artifact-outputs
- [:allocation-and-transcript-runtime-check-records
+ [:native-unsafe-form-sequence :native-executable-unsafe-final-guard-result-or-refusal
+  :native-safe6-base-call-record-or-nil :native-safe6-record-families
+  :native-safe1-base-call-record-or-nil :native-safe1-record-families :native-safe1-diagnostic-owner-result
+  :allocation-and-transcript-runtime-check-records
   :basis-labels
   :pure-and-structural-proof-data
   :record-digest-predicates
@@ -140,6 +205,380 @@
   :native-validation-complete-or-c10-refusal],
  :contract-boundary :native-seed-safety-records-and-reports}
 ))
+
+(defn native-unsafe-forms
+  [unsafe-forms-var form]
+  (cond
+    (and (seq? form) (= 'quote (first form)))
+    []
+
+    (and (seq? form) (= 'unsafe (first form)))
+    [form]
+
+    (seq? form)
+    (mapcat (deref unsafe-forms-var) form)
+
+    (coll? form)
+    (mapcat (deref unsafe-forms-var) form)
+
+    :else
+    []))
+
+(defn validate-native-unsafe-island!
+  [failure-var difference-var required-metadata-var module form]
+  (let [metadata (second form)
+        source-path (:source-path module)
+        safety-mode (:safety module)]
+    (when (#{:safe :safe-optimized} safety-mode)
+      ((deref failure-var) "SAFE6-UNSAFE-FORBIDDEN"
+             "unsafe islands are forbidden in this stage0 executable safety mode"
+             {:source-span {:source source-path}
+              :safety-mode safety-mode
+              :safety-outcome :rejected
+              :operator 'unsafe
+              :remediation "Remove the unsafe island or move it behind an audited safe wrapper in a mode that permits unsafe islands."}))
+    (when-not (map? metadata)
+      ((deref failure-var) "SAFE6-MISSING-METADATA"
+             "unsafe island requires an audit metadata map"
+             {:source-span {:source source-path}
+              :safety-mode safety-mode
+              :safety-outcome :rejected
+              :operator 'unsafe
+              :missing-fact :unsafe-audit-metadata
+              :remediation "Attach SAFE6 metadata with owner, invariant, effects, capabilities, review policy, and safe boundary."}))
+    (let [missing (seq (sort ((deref difference-var) (deref required-metadata-var)
+                                             (set (keys metadata)))))]
+      (when missing
+        ((deref failure-var) "SAFE6-MISSING-METADATA"
+               "unsafe island lacks required audit metadata"
+               {:source-span {:source source-path}
+                :safety-mode safety-mode
+                :safety-outcome :rejected
+                :operator 'unsafe
+                :missing-fact (first missing)
+                :remediation "Provide the full SAFE6 unsafe island audit record before compiling executable code."})))))
+
+(defn record-native-unsafe-audit-call!
+  [checker ctx node operator args effects capabilities return-type spec operations]
+  (when-let [kind (:safe6-kind spec)]
+    (let [record {:node-id (:node-id node)
+                  :operator operator
+                  :safe6-kind kind
+                  :profile (:profile @ctx)
+                  :target (:target @ctx)
+                  :safety-mode (:safety @ctx)
+                  :effects effects
+                  :capabilities capabilities
+                  :return-type return-type
+                  :source-span (:source-span node)
+                  :generated-origin-chain (:generated-origin node)}]
+      (case kind
+        :unsafe-island
+        ((deref (:record! operations)) checker :safe6-unsafe-island-records
+                         (merge record
+                                {:island-id ((deref (:arg-value operations)) args 0)
+                                 :operation ((deref (:arg-value operations)) args 1)
+                                 :reason ((deref (:arg-value operations)) args 2)
+                                 :owner ((deref (:arg-value operations)) args 3)
+                                 :invariants (or ((deref (:arg-value operations)) args 4) #{})
+                                 :preconditions (or ((deref (:arg-value operations)) args 5) #{})
+                                 :postconditions (or ((deref (:arg-value operations)) args 6) #{})
+                                 :safe-boundary ((deref (:arg-value operations)) args 7)
+                                 :review-policy ((deref (:arg-value operations)) args 8)
+                                 :review-state :approved
+                                 :audit-status :passed}))
+
+        :safe-wrapper
+        ((deref (:record! operations)) checker :safe6-safe-wrapper-records
+                         (merge record
+                                {:wrapper ((deref (:arg-value operations)) args 0)
+                                 :unsafe-islands (or ((deref (:arg-value operations)) args 1) #{})
+                                 :invariant ((deref (:arg-value operations)) args 2)
+                                 :hides-raw-capabilities? true
+                                 :failure-behavior ((deref (:arg-value operations)) args 3)
+                                 :preconditions-enforced? true
+                                 :cleanup-connected? true}))
+
+        :operation-inventory
+        ((deref (:record! operations)) checker :safe6-operation-inventories
+                         (merge record
+                                {:package ((deref (:arg-value operations)) args 0)
+                                 :operation-families (or ((deref (:arg-value operations)) args 1)
+                                                        #{})
+                                 :island-count (or ((deref (:arg-value operations)) args 2)
+                                                   0)
+                                 :safe-wrappers (or ((deref (:arg-value operations)) args 3)
+                                                    #{})}))
+
+        :review-status
+        ((deref (:record! operations)) checker :safe6-review-status-records
+                         (merge record
+                                {:island-id ((deref (:arg-value operations)) args 0)
+                                 :policy ((deref (:arg-value operations)) args 1)
+                                 :reviewer ((deref (:arg-value operations)) args 2)
+                                 :state (or ((deref (:arg-value operations)) args 3)
+                                            :approved)
+                                 :expiration ((deref (:arg-value operations)) args 4)
+                                 :source-version-bound? true}))
+
+        :invariant-proof
+        ((deref (:record! operations)) checker :safe6-invariant-proof-links
+                         (merge record
+                                {:island-id ((deref (:arg-value operations)) args 0)
+                                 :invariant ((deref (:arg-value operations)) args 1)
+                                 :evidence (or ((deref (:arg-value operations)) args 2)
+                                               #{})
+                                 :proof-status (or ((deref (:arg-value operations)) args 3)
+                                                   :recorded)}))
+
+        :generated-provenance
+        ((deref (:record! operations)) checker :safe6-generated-unsafe-provenance
+                         (merge record
+                                {:generator ((deref (:arg-value operations)) args 0)
+                                 :source-form ((deref (:arg-value operations)) args 1)
+                                 :generated-form ((deref (:arg-value operations)) args 2)
+                                 :unsafe-island ((deref (:arg-value operations)) args 3)
+                                 :origin-status :preserved
+                                 :diagnostic-source :generator-and-generated-form}))
+
+        :policy-decision
+        ((deref (:record! operations)) checker :safe6-policy-decision-records
+                         (merge record
+                                {:policy ((deref (:arg-value operations)) args 0)
+                                 :package ((deref (:arg-value operations)) args 1)
+                                 :decision ((deref (:arg-value operations)) args 2)
+                                 :reason ((deref (:arg-value operations)) args 3)
+                                 :profile (:profile @ctx)
+                                 :target (:target @ctx)}))
+
+        :dependency-summary
+        ((deref (:record! operations)) checker :safe6-dependency-unsafe-summaries
+                         (merge record
+                                {:dependency ((deref (:arg-value operations)) args 0)
+                                 :unsafe-island-count (or ((deref (:arg-value operations)) args 1)
+                                                          0)
+                                 :operation-families (or ((deref (:arg-value operations)) args 2)
+                                                        #{})
+                                 :review-states (or ((deref (:arg-value operations)) args 3)
+                                                    #{})
+                                 :safe-wrappers (or ((deref (:arg-value operations)) args 4)
+                                                    #{})
+                                 :policy-status (or ((deref (:arg-value operations)) args 5)
+                                                    :accepted)}))
+
+        :release-audit
+        ((deref (:record! operations)) checker :safe6-release-audit-reports
+                         (merge record
+                                {:package ((deref (:arg-value operations)) args 0)
+                                 :unsafe-island-count (or ((deref (:arg-value operations)) args 1)
+                                                          0)
+                                 :review-status ((deref (:arg-value operations)) args 2)
+                                 :certificate-status ((deref (:arg-value operations)) args 3)
+                                 :artifact-stable? true}))
+
+        :conformance
+        ((deref (:record! operations)) checker :safe6-conformance-records
+                         (merge record
+                                {:document :SAFE6
+                                 :status (or ((deref (:arg-value operations)) args 0)
+                                             :complete)
+                                 :positive-fixtures :passed
+                                 :negative-fixtures :passed}))
+
+        nil)
+      record)))
+
+(defn emit-native-outcome-diagnostic!
+  [typed-diagnostic-var id message node remediation data]
+  ((deref typed-diagnostic-var) id message node remediation
+                     (merge {:safe-rule :SAFE1
+                             :active-profile (:profile node)
+                             :source-span (:source-span node)}
+                            data)))
+
+(defn check-native-outcome!
+  [legal-outcomes-var diagnostic-var node operation outcome evidence]
+  (when-not (contains? (deref legal-outcomes-var) outcome)
+    ((deref diagnostic-var) "SAFE1-NO-OUTCOME"
+                       "dangerous operation lacks a legal safety outcome"
+                       node
+                       "Classify the operation as :proven-safe, :runtime-checked, :rejected, or :unsafe-island."
+                       {:operation operation
+                        :safety-outcome outcome
+                        :missing-fact :legal-safety-outcome}))
+  (when (and (= :proven-safe outcome) (nil? evidence))
+    ((deref diagnostic-var) "SAFE1-PROOF-MISSING"
+                       "claimed static safety proof is absent"
+                       node
+                       "Attach a proof reference, retain a runtime check, reject the operation, or isolate it as an unsafe island."
+                       {:operation operation
+                        :safety-outcome outcome
+                        :missing-fact :proof-reference})))
+
+(defn record-native-outcome-call!
+  [checker ctx node operator args effects capabilities return-type spec operations]
+  (when-let [kind (:safe1-kind spec)]
+    (let [record {:node-id (:node-id node)
+                  :operator operator
+                  :safe1-kind kind
+                  :profile (:profile @ctx)
+                  :target (:target @ctx)
+                  :safety-mode (:safety @ctx)
+                  :effects effects
+                  :capabilities capabilities
+                  :return-type return-type
+                  :source-span (:source-span node)
+                  :generated-origin-chain (:generated-origin node)}]
+      (case kind
+        :classification
+        (let [operation ((deref (:arg-value operations)) args 0)
+              outcome ((deref (:arg-value operations)) args 1)
+              condition ((deref (:arg-value operations)) args 2)
+              evidence ((deref (:arg-value operations)) args 3)
+              failure ((deref (:arg-value operations)) args 4)]
+          ((deref (:check-outcome! operations)) node operation outcome evidence)
+          ((deref (:record! operations)) checker :safe1-safety-classification-records
+                           (merge record
+                                  {:operation operation
+                                   :outcome outcome
+                                   :condition condition
+                                   :proof-reference (when (= :proven-safe outcome)
+                                                      evidence)
+                                   :runtime-check (when (= :runtime-checked outcome)
+                                                    condition)
+                                   :rejection-diagnostic (when (= :rejected outcome)
+                                                           failure)
+                                   :unsafe-audit (when (= :unsafe-island outcome)
+                                                   evidence)
+                                   :failure-behavior failure
+                                   :exactly-one-outcome? true})))
+
+        :runtime-check
+        (let [operation ((deref (:arg-value operations)) args 0)
+              condition ((deref (:arg-value operations)) args 1)
+              failure ((deref (:arg-value operations)) args 2)]
+          (when (nil? condition)
+            ((deref (:diagnostic! operations)) "SAFE1-CHECK-MISSING"
+                               "runtime checking is required but no emitted check is recorded"
+                               node
+                               "Emit a runtime check with condition, source span, failure behavior, and artifact record."
+                               {:operation operation
+                                :safety-outcome :runtime-checked
+                                :missing-fact :runtime-check}))
+          ((deref (:record! operations)) checker :safe1-runtime-check-records
+                           (merge record
+                                  {:operation operation
+                                   :outcome :runtime-checked
+                                   :condition condition
+                                   :failure-behavior (or failure
+                                                         :panic/safety-check)
+                                   :defined-failure? true
+                                   :type-context :recorded
+                                   :effect-context effects
+                                   :capability-context capabilities
+                                   :artifact-recorded? true})))
+
+        :unsafe-island
+        (let [operation ((deref (:arg-value operations)) args 0)
+              owner ((deref (:arg-value operations)) args 1)
+              reason ((deref (:arg-value operations)) args 2)
+              invariant ((deref (:arg-value operations)) args 3)
+              safe-boundary ((deref (:arg-value operations)) args 4)
+              evidence ((deref (:arg-value operations)) args 5)]
+          (when (or (nil? owner) (nil? reason) (nil? invariant)
+                    (nil? safe-boundary))
+            ((deref (:diagnostic! operations)) "SAFE1-UNSAFE-METADATA"
+                               "unsafe island lacks required audit metadata"
+                               node
+                               "Record owner, reason, invariant, review policy, source span, effects, capabilities, and safe wrapper boundary."
+                               {:operation operation
+                                :safety-outcome :unsafe-island
+                                :missing-fact :unsafe-audit-metadata}))
+          (when (= :safe (:safety @ctx))
+            ((deref (:diagnostic! operations)) "SAFE1-UNSAFE-POLICY"
+                               "unsafe island violates active safety mode or package policy"
+                               node
+                               "Move unsafe code to an allowed mode or provide package policy permitting the audited island."
+                               {:operation operation
+                                :safety-outcome :unsafe-island
+                                :missing-fact :unsafe-policy-approval}))
+          ((deref (:record! operations)) checker :safe1-unsafe-island-audit-records
+                           (merge record
+                                  {:operation operation
+                                   :outcome :unsafe-island
+                                   :owner owner
+                                   :reason reason
+                                   :invariant invariant
+                                   :safe-boundary safe-boundary
+                                   :evidence (or evidence #{})
+                                   :review-policy :recorded
+                                   :audit-status :passed})))
+
+        :generated-provenance
+        ((deref (:record! operations)) checker :safe1-generated-code-safety-provenance
+                         (merge record
+                                {:generator ((deref (:arg-value operations)) args 0)
+                                 :source-form ((deref (:arg-value operations)) args 1)
+                                 :generated-form ((deref (:arg-value operations)) args 2)
+                                 :origin-status (or ((deref (:arg-value operations)) args 3)
+                                                    :preserved)
+                                 :diagnostic-source :generator-and-generated-form}))
+
+        :optimization-erasure
+        (let [operation ((deref (:arg-value operations)) args 0)
+              erased-check ((deref (:arg-value operations)) args 1)
+              outcome ((deref (:arg-value operations)) args 2)
+              proof ((deref (:arg-value operations)) args 3)]
+          (when (nil? proof)
+            ((deref (:diagnostic! operations)) "SAFE1-OPTIMIZATION-PROOF"
+                               "optimization removes a safety check without replacement proof"
+                               node
+                               "Retain the check or attach a proof record for the erased check."
+                               {:operation operation
+                                :erased-check erased-check
+                                :missing-fact :optimization-proof}))
+          ((deref (:record! operations)) checker :safe1-optimization-check-erasure-justifications
+                           (merge record
+                                  {:operation operation
+                                   :erased-check erased-check
+                                   :outcome (or outcome :proven-safe)
+                                   :proof proof
+                                   :proof-preserved? (boolean proof)})))
+
+        :dependency-mode
+        (let [dependency ((deref (:arg-value operations)) args 0)
+              caller-safety ((deref (:arg-value operations)) args 1)
+              dependency-safety ((deref (:arg-value operations)) args 2)
+              status (or ((deref (:arg-value operations)) args 3) :accepted)]
+          (when (= :rejected status)
+            ((deref (:diagnostic! operations)) "SAFE1-DEPENDENCY-MODE"
+                               "dependency safety mode is weaker than the caller's safe claim"
+                               node
+                               "Use a certified safe facade, a reviewed unsafe wrapper, or reject the dependency."
+                               {:dependency dependency
+                                :caller-safety caller-safety
+                                :dependency-safety dependency-safety
+                                :missing-fact :dependency-safety-certificate}))
+          ((deref (:record! operations)) checker :safe1-dependency-safety-mode-records
+                           (merge record
+                                  {:dependency dependency
+                                   :caller-safety caller-safety
+                                   :dependency-safety dependency-safety
+                                   :status status
+                                   :certificate :recorded})))
+
+        :conformance
+        ((deref (:record! operations)) checker :safe1-conformance-records
+                         (merge record
+                                {:declared-outcomes (or ((deref (:arg-value operations)) args 0)
+                                                       (deref (:legal-outcomes operations)))
+                                 :status (or ((deref (:arg-value operations)) args 1)
+                                             :complete)
+                                 :positive-fixtures :passed
+                                 :negative-fixtures :passed}))
+
+        nil)
+      record)))
 
 (defn managed-allocation-check
   [digest source-content-hash path source]
