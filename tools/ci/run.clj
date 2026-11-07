@@ -319,6 +319,26 @@
            (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
                         "bb.edn" "shadow-cljs.edn"} path))))
 
+;; Advance's status surface is a deliberately exact exception to the generic
+;; tools/** rule.  It is eligible only for a nonempty set of regular modified
+;; records; every other status, mode, path, or mixed input remains full CI.
+(def advance-status-paths
+  #{"tools/advance/README.md"
+    "tools/advance/src/advance/main.clj"
+    "tools/advance/test/advance/main_test.clj"})
+
+(defn advance-status-only? [changes]
+  (let [changes (vec changes)
+        paths (mapv :path changes)]
+    (and (seq changes)
+         (= (count paths) (count (set paths)))
+         (every? (fn [{:keys [old-mode new-mode status path]}]
+                   (and (= "M" status)
+                        (= "100644" old-mode)
+                        (= "100644" new-mode)
+                        (contains? advance-status-paths path)))
+                 changes))))
+
 ;; These files are the reviewed static-lint implementation and its direct
 ;; configuration/control surface.  They do not own a compiler stage, but a
 ;; change here must still retain the static job so the affected controls and
@@ -450,6 +470,13 @@
 
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
+
+      (advance-status-only? changes)
+      {:kind :selected
+       :reason :advance-status-only
+       :paths paths
+       :stages []
+       :modes (conj always-pr-modes "bootstrap")}
 
       (lint-tooling-only? paths)
       {:kind :selected
