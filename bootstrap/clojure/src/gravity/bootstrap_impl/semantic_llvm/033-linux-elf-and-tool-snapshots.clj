@@ -8,23 +8,24 @@
          (boolean (re-find #"(?i)Type:\s*(Relocatable|REL)" header))
          (boolean (re-find #"(?i)Type:\s*(Executable|EXEC)" header)))))
 
+; Current-source execution only; this does not renew migration authority.
+(def ^:private p15-s23-b3-llvm-linux-elf-prefix-plan
+  (delay
+    (let [source (.getCanonicalPath
+                  (io/file "bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity"))
+          rule (c-backend-stage2-plan-emitter-source-rule! source :jvm)]
+      (p15-s23-stage2-compiler-artifact-plan
+       (:emitter rule) source (slurp source)))))
+
 (defn- p15-s23-b3-llvm-linux-elf-bytes-valid?
   [bytes kind]
-  (let [byte-at (fn [index]
-                  (bit-and (aget ^bytes bytes index) 0xff))
-        u16-le (fn [offset]
-                 (+ (byte-at offset)
-                    (bit-shift-left (byte-at (inc offset)) 8)))
-        expected-type (if (= :object kind) 1 2)]
-    (and (instance? (Class/forName "[B") bytes)
-         (>= (alength ^bytes bytes) 20)
-         (= [0x7f 0x45 0x4c 0x46]
-            (mapv byte-at (range 4)))
-         (= 2 (byte-at 4))
-         (= 1 (byte-at 5))
-         (= 1 (byte-at 6))
-         (= expected-type (u16-le 16))
-         (= 62 (u16-le 18)))))
+  (and (instance? (Class/forName "[B") bytes)
+       (true?
+        (p15-s23-stage2-runtime-execute-function
+         {:engine :gravity-elf-prefix-host-runner :compiler-artifact-plan? true}
+         @p15-s23-b3-llvm-linux-elf-prefix-plan
+         'w5-b13-linux-elf-header-prefix-valid?
+         [(mapv #(Byte/toUnsignedInt %) bytes) kind]))))
 
 (def ^:private p15-s23-b3-llvm-linux-required-tools
   #{"clang" "llc" "opt" "llvm-as" "llvm-dis" "llvm-readobj"
