@@ -1,7 +1,8 @@
 (ns acceptance-dependencies-test
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.edn :as edn]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [requirement-sources :as requirement-sources]))
 
 (binding [*command-line-args* nil] (load-file "tools/acceptance_dependencies.clj"))
 (require '[acceptance-dependencies :as dependencies])
@@ -30,6 +31,32 @@
     (is (thrown? Exception (dependencies/full-language-graph (str text (phase "19" "none." ["FL-P18-T01"])))))
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "none." "the next successor."))))
     (is (thrown? Exception (dependencies/full-language-graph (str/replace text "Dependencies:" "Prerequisite:"))))))
+
+(deftest strongly-connected-components-have-canonical-mutual-reachability
+  (let [ids ["a" "b" "c"]
+        possible-edges (vec (for [from ids to ids] [from to]))]
+    (doseq [mask (range 512)]
+      (let [graph (reduce (fn [graph [index [from to]]]
+                            (if (bit-test mask index) (update graph from conj to) graph))
+                          (zipmap ids (repeat #{})) (map-indexed vector possible-edges))
+            components (dependencies/strongly-connected graph)
+            membership (into {} (for [component components member component] [member component]))
+            closure (into {} (for [id ids] [id (dependencies/reachable graph id)]))]
+        (is (and (= ids (vec (sort (mapcat identity components))))
+                 (= components (vec (sort-by first components)))
+                 (every? #(= % (vec (sort %))) components)
+                 (every? (fn [[a b]]
+                           (= (and (contains? (closure a) b) (contains? (closure b) a))
+                              (= (membership a) (membership b))))
+                         possible-edges))
+            (str "SCC partition/order mismatch for graph " mask))))))
+
+(deftest strongly-connected-handles-deep-source-shaped-dependencies
+  (let [ids (mapv #(format "node-%04d" %) (range 5000))
+        graph (into {} (map-indexed (fn [index id]
+                                     [id (if (zero? index) #{} #{(ids (dec index))})]) ids))]
+    (is (= (mapv vector ids) (dependencies/strongly-connected graph)))
+    (is (= [ids] (dependencies/strongly-connected (assoc graph (first ids) #{(peek ids)}))))))
 
 (deftest missing-terminal-and-malformed-task-rows-reject
   (let [text (slurp dependencies/roadmap-path)
@@ -312,6 +339,56 @@
                        "specs/core-workflow/tasks.md")]]
       (is (thrown? Exception (dependencies/task-sh-view mutated slurp))))))
 
+(deftest current-source-transition-authenticates-file-and-span-identities
+  (doseq [contract requirement-sources/current-source-transition-contracts]
+    (let [read-ref (fn [ref path]
+                     (requirement-sources/git-source "." ref path dependencies/require!))
+          validate (fn [transition]
+                     (requirement-sources/validate-current-source-transition!
+                      transition contract read-ref slurp dependencies/sha256 dependencies/require!))]
+      (is (= :current-source-interface-only (:authority (validate contract))))
+      (doseq [mutated [(assoc contract :role :migration-authority)
+                       (assoc contract :path "specs/core-workflow/tasks.md")
+                       (assoc-in contract [:changed-spans 0 :after :sha256] "forged")
+                       (assoc-in contract [:changed-spans 0 :before :start-byte]
+                                 (inc (get-in contract [:changed-spans 0 :before :start-byte])))]]
+        (is (thrown? Exception (validate mutated)))))))
+
+(deftest acceptance-owner-rejects-current-transition-population-drift
+  (let [contracts requirement-sources/current-source-transition-contracts
+        view (dependencies/current-source-transition-view contracts slurp)]
+    (is (= requirement-sources/current-source-transition-kind (:kind view)))
+    (is (= (set (map :path contracts)) (set (:paths view))))
+    (doseq [mutated [(vec (butlast contracts))
+                     (assoc-in contracts [0 :role] :migration-authority)
+                     (assoc-in contracts [1 :path] "specs/core-workflow/tasks.md")
+                     (conj contracts (first contracts))]]
+      (is (thrown? Exception
+                   (dependencies/current-source-transition-view mutated slurp))))))
+
+(deftest current-source-transition-history-preserves-auth-predecessor
+  (let [history (:current-source-transition-history
+                 (edn/read-string
+                  (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn")))
+        read-ref (fn [ref path]
+                   (requirement-sources/git-source "." ref path dependencies/require!))
+        validate (fn [value]
+                   (requirement-sources/validate-current-source-transition-history!
+                    value read-ref dependencies/sha256 dependencies/require!))]
+    (is (= :authenticated-current-source-transition-history-v1
+           (:kind (validate history))))
+    (doseq [mutated [(assoc history :authority :migration-authority)
+                     (assoc history :record-count 22)
+                     (assoc-in history [:predecessor :tree]
+                               "0000000000000000000000000000000000000000")
+                     (assoc-in history [:predecessor :blob]
+                               "0000000000000000000000000000000000000000")
+                     (assoc-in history [:superseded-transitions 0 :path]
+                               "specs/core-workflow/tasks.md")
+                     (assoc-in history [:predecessor-input-fingerprints 0]
+                               "forged")]]
+      (is (thrown? Exception (validate mutated))))))
+
 (deftest stdlib-task-source-transition-authenticates-current-criteria
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         rows (vec (get-in source [:task-authorities "stdlib"]))
@@ -393,9 +470,21 @@
 
 (deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
-        view (dependencies/task-sh-view source slurp)
+        source-checks (atom 0)
+        cycle-inputs (atom [])
+        original-transition-view dependencies/current-source-transition-view
+        original-cycles dependencies/cycles
+        view (with-redefs [dependencies/current-source-transition-view
+                            (fn [& args]
+                              (swap! source-checks inc)
+                              (apply original-transition-view args))
+                           dependencies/cycles
+                           (fn [graph] (swap! cycle-inputs conj graph) (original-cycles graph))]
+               (dependencies/task-sh-view source slurp))
         ids (set (map :id (:requirements source)))
         sh (dependencies/milestone-graph (slurp dependencies/milestone-path))]
+    (is (= 1 @source-checks))
+    (is (= 1 (count (filter #(identical? (:adjacency view) %) @cycle-inputs))))
     (is (= 180 (count (:incidence view))))
     (is (= 18 (count (:sh07-sequence source))))
     (is (empty? (:cycles view)))
@@ -429,6 +518,77 @@
                    (fn [path] (if (= path "specs/core-workflow/tasks.md")
                                 (str/replace (slurp path) "core1-lower-core-forms" "unknown-task")
                                 (slurp path))))))))
+
+(deftest structural-refusals-precede-stale-or-missing-current-source
+  (let [read-text slurp
+        source (edn/read-string (read-text dependencies/sh-crosswalk-path))
+        path (first (sort (map :path requirement-sources/current-source-transition-contracts)))
+        foreign-paths #{"/untrusted-task-source" "../untrusted-task-source"}
+        original-transition-view dependencies/current-source-transition-view
+        observe
+        (fn [input fault]
+          (let [checks (atom 0) reads (atom 0) foreign-reads (atom 0)
+                input-reader (fn [requested]
+                               (if (contains? foreign-paths requested)
+                                 (do (swap! foreign-reads inc)
+                                     (throw (ex-info "Untrusted read reached" {:path requested})))
+                                 (read-text requested)))
+                outcome
+                (with-redefs [clojure.core/slurp
+                              (fn [requested & options]
+                                (if (= path requested)
+                                  (do (swap! reads inc)
+                                      (case fault
+                                        :stale (str (apply read-text requested options) "\nUnbound source change.\n")
+                                        :missing (throw (java.io.FileNotFoundException. path))))
+                                  (apply read-text requested options)))
+                              dependencies/current-source-transition-view
+                              (fn [& args]
+                                (swap! checks inc)
+                                (apply original-transition-view args))]
+                  (try (dependencies/task-sh-view input input-reader)
+                       (catch Exception error error)))]
+            {:outcome outcome :source-checks @checks :source-reads @reads :foreign-reads @foreign-reads}))]
+    (doseq [fault [:stale :missing]
+            [input expected]
+            [[(assoc-in source [:task-authorities "core" 0 :checked] true)
+              "Task status/ID differs from actual authority"]
+             [(assoc-in source [:requirements 0 :task-references 0 :id] "fabricated-task")
+              "Unknown SH task owner/reference"]
+             [(assoc-in source [:sh07-sequence 1 :dependency-declaration] "none")
+              "SH07 sequence metadata differs from original source"]
+             [(update source :sh07-sequence pop)
+              "Missing or unknown SH07 sequence identity"]]]
+      (let [{:keys [outcome source-checks source-reads]} (observe input fault)]
+        (is (instance? clojure.lang.ExceptionInfo outcome))
+        (is (= "ACCEPTANCE-DEPENDENCY" (:diagnostic (ex-data outcome))))
+        (is (= expected (ex-message outcome)))
+        (is (zero? source-checks))
+        (is (zero? source-reads))))
+    (doseq [[fault foreign-path source-path]
+            [[:stale "/untrusted-task-source" [:task-authorities "core" 0 :source :path]]
+             [:missing "../untrusted-task-source" [:task-authorities "core" 0 :source :path]]
+             [:stale "/untrusted-task-source"
+              [:future-task-authorities "domains-math-schema-proposals" 0 :source :path]]
+             [:missing "../untrusted-task-source" [:requirements 0 :acceptance-source :path]]]]
+      (let [_ (is (string? (get-in source source-path)))
+            input (assoc-in source source-path foreign-path)
+            {:keys [outcome source-checks source-reads foreign-reads]} (observe input fault)]
+        (is (= (if (= :stale fault)
+                 "Current source transition is not bound to the checked-out current source"
+                 path)
+               (ex-message outcome)))
+        (is (= 1 source-checks source-reads))
+        (is (zero? foreign-reads))))
+    (let [{:keys [outcome source-checks source-reads]} (observe source :stale)]
+      (is (instance? clojure.lang.ExceptionInfo outcome))
+      (is (= "ACCEPTANCE-DEPENDENCY" (:diagnostic (ex-data outcome))))
+      (is (= "Current source transition is not bound to the checked-out current source" (ex-message outcome)))
+      (is (= 1 source-checks source-reads)))
+    (let [{:keys [outcome source-checks source-reads]} (observe source :missing)]
+      (is (instance? java.io.FileNotFoundException outcome))
+      (is (= path (ex-message outcome)))
+      (is (= 1 source-checks source-reads)))))
 
 (deftest sh07-dependency-ranges-preserve-original-sequence
   (is (= ["SH07-C02" "SH07-C03" "SH07-C04"] (dependencies/sh07-prerequisites "C02-C04")))
@@ -481,8 +641,12 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 97 (count (:declared-parent-consumers review))))
+    (is (= 118 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
+    (is (every? dependencies/selected-parent-consumers
+                ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                 "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                 "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
           altered (dependencies/future-task-view future current snapshots
@@ -490,7 +654,7 @@
           route (first (filter #(= "domain-ir-boundaries" (:consumer %)) (:routes review)))]
       (is (= ["domain-ir-boundaries"] (get-in altered [:dependency-review :unresolved-consumers])))
       (is (empty? (:start-results route)))
-      (is (= 22 (count (:composition-results route))))
+      (is (= 27 (count (:composition-results route))))
       (doseq [producer (:composition-results route)]
         (is (some #(= ["task:domain-ir-boundaries/implementation" (str "task:" producer "/interface") :declared-producer-interface]
                       [(:from %) (:to %) (:kind %)]) edges))
@@ -506,7 +670,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [27 27 32 39 47] (sort (map (comp count :composition-results) routes))))
+      (is (= [29 31 32 43 50] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -535,7 +699,18 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [95 9] (mapv count (:declared-output-cycles review))))
+    (is (= [138] (mapv count (:declared-output-cycles review))))
+    ;; Fourteen original result routes join the two coarse feedback groups.
+    ;; Their older memberships survive; executable typed edges stay acyclic.
+    (let [text (requirement-sources/git-source "." "f989a01024d4ef0f595b7bf685e0fbf17648469b"
+                                               dependencies/future-dependency-path dependencies/require!)
+          prior (dependencies/future-task-view future current snapshots
+                  #(if (= dependencies/future-dependency-path %) text (slurp %)))
+          old-members (set (mapcat identity (get-in prior [:dependency-review :declared-output-cycles])))
+          added #{"release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures" "ui" "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution" "evolution/stabilization-decision" "backend-mlir" "backend-workflow" "backend-llvm" "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters" "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface" "backend-query" "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures" "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations" "backend-emission" "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures" "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures" "backend-jvm" "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions" "backend-ai" "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures" "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations" "release/remaining-tasks-and-evidence/execute-formal-evidence-checks" "backend-js" "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures" "evolution/library-admission" "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations" "backend-c" "backend-mobile" "backend-wasm"}]
+      (is (= [99 11] (mapv count (get-in prior [:dependency-review :declared-output-cycles]))))
+      (is (= (into old-members added) (set (first (:declared-output-cycles review))))))
+
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
@@ -543,14 +718,14 @@
                  "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
                  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
                  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
-                 "ai" "workflow"]))
+                 "ai" "workflow" "backend-conformance" "query" "backend-interface" "pass-evidence"]))
     (is (contains? (set (first (:declared-output-cycles review)))
                    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["evolution/security-review" "formal" "math/independent-proof-and-certificate-checking"
                  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"]))
-    (is (every? (set (second (:declared-output-cycles review)))
+    (is (every? (set (first (:declared-output-cycles review)))
                 ["schema/checked-consumer-projection" "schema/compatibility-and-migration"
                  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
                  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"]))
@@ -763,6 +938,64 @@
       (is (thrown? Exception (parse (str/replace text #"(?m)^\| `SH-29` \|[^\n]*\n" ""))))
       (is (thrown? Exception (parse (str/replace text "<!-- finish-line-dependencies:end -->"
                                  "| `SH-29` | `pipeline` | always | Duplicate. |\n<!-- finish-line-dependencies:end -->")))))))
+
+(deftest original-fourteen-dependency-rows-have-a-bounded-source-successor
+  (let [t requirement-sources/original-dependency-row-successor
+        prior (:successor-of t)
+        path (:path t)
+        read-ref #(requirement-sources/git-source "." %1 %2 dependencies/require!)
+        before (read-ref (:baseline-ref t) path)
+        after (read-ref (:applying-ref t) path)
+        source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        original (read-ref "0f4dbda97c69fc67dad7eb8824702ae44959607b" path)
+        original-before (read-ref "895dea1ddbce13b8deae461144e57b8245caefc8" path)
+        ids ["evolution/library-admission" "evolution/stabilization-decision" "ui"
+             "backend-emission" "backend-c" "backend-llvm" "backend-wasm" "backend-jvm"
+             "backend-js" "backend-mlir" "backend-mobile" "backend-query" "backend-workflow" "backend-ai"]
+        rows #(vec (for [line (str/split-lines %)
+                        :when (some (fn [id] (str/starts-with? line (str "| `" id "` |"))) ids)] line))
+        inserted (rows after)
+        task-ids (set (for [rs (concat (vals (:task-authorities source)) (vals (:future-task-authorities source))) r rs] (:id r)))
+        routes (dependencies/future-dependency-routes
+                (str "<!-- future-composition-dependencies:start -->\n| Consumer | Start results | Composition results | Selected output contract |\n| --- | --- | --- | --- |\n" (str/join "\n" inserted) "\n<!-- future-composition-dependencies:end -->")
+                task-ids (set ids))
+        inverse (fn [text rs] (reduce #(str/replace %1 (str %2 "\n") "") text rs))
+        validate #(requirement-sources/validate-current-source-transition!
+                   % t read-ref slurp dependencies/sha256 dependencies/require!)]
+    (is (= prior (first (filter #(= path (:path %)) requirement-sources/current-source-transition-successor-contracts))))
+    (is (= 14 (count inserted) (count (rows original))))
+    (is (= inserted (rows original)))
+    (is (= (set ids) (set (map :consumer routes))))
+    (is (= 361 (reduce + (map (comp count :composition-results) routes))))
+    (is (every? (comp empty? :start-results) routes))
+    (is (empty? (rows before)))
+    (is (= before (inverse after inserted)))
+    (is (= original-before (inverse original inserted)))
+    (is (= before (read-ref "f989a01024d4ef0f595b7bf685e0fbf17648469b" path)))
+    (is (= after (slurp path)))
+    (is (every? #(str/includes? % " | none | ") inserted))
+    (is (= :current-source-interface-only (:authority (validate t))))
+    (is (= :unassessed (:implementation-acceptance (validate t))))
+    (is (= t (first (filter #(= path (:path %)) (get-in source [:implementation-readiness-source-version :current-source-transitions])))))
+    ;; The old census continues to describe its exact prior Git checkpoint.
+    (let [binding (get-in source [:implementation-readiness-source-version :source-successor-binding])
+          old-source (edn/read-string (read-ref "f216b540663d7c23ba5af646abdcb153654ad9c9" dependencies/sh-crosswalk-path))]
+      (is (= binding (get-in old-source [:implementation-readiness-source-version :source-successor-binding])))
+      (is (= (:baseline-ref t) (get-in binding [:composition :commit])))
+      (is (not-any? #(= path (:path %)) (:source-census binding)))
+      (is (= (:baseline-sha256 t) (:live-sha256 prior))))
+    (doseq [forged [(assoc t :applying-ref (:baseline-ref t))
+                    (assoc t :applying-tree (:baseline-tree t))
+                    (assoc t :applying-blob (:baseline-blob t))
+                    (assoc t :live-sha256 (:baseline-sha256 t))
+                    (update-in t [:changed-spans 0 :after :end-byte] dec)
+                    (assoc t :successor-of (assoc prior :authority :implementation-accepted))
+                    (assoc t :authority :implementation-accepted)]]
+      (is (thrown? Exception (validate forged))))
+    (doseq [current [before (str after "\nUnbound change.\n") (str after (first inserted) "\n")]]
+      (is (thrown? Exception
+                   (requirement-sources/validate-current-source-transition!
+                    t t read-ref #(if (= path %) current (slurp %)) dependencies/sha256 dependencies/require!))))))
 
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

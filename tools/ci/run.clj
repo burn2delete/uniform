@@ -319,6 +319,26 @@
            (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
                         "bb.edn" "shadow-cljs.edn"} path))))
 
+;; Advance's status surface is a deliberately exact exception to the generic
+;; tools/** rule.  It is eligible only for a nonempty set of regular modified
+;; records; every other status, mode, path, or mixed input remains full CI.
+(def advance-status-paths
+  #{"tools/advance/README.md"
+    "tools/advance/src/advance/main.clj"
+    "tools/advance/test/advance/main_test.clj"})
+
+(defn advance-status-only? [changes]
+  (let [changes (vec changes)
+        paths (mapv :path changes)]
+    (and (seq changes)
+         (= (count paths) (count (set paths)))
+         (every? (fn [{:keys [old-mode new-mode status path]}]
+                   (and (= "M" status)
+                        (= "100644" old-mode)
+                        (= "100644" new-mode)
+                        (contains? advance-status-paths path)))
+                 changes))))
+
 ;; These files are the reviewed static-lint implementation and its direct
 ;; configuration/control surface.  They do not own a compiler stage, but a
 ;; change here must still retain the static job so the affected controls and
@@ -451,6 +471,13 @@
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
 
+      (advance-status-only? changes)
+      {:kind :selected
+       :reason :advance-status-only
+       :paths paths
+       :stages []
+       :modes (conj always-pr-modes "bootstrap")}
+
       (lint-tooling-only? paths)
       {:kind :selected
        :reason :lint-tooling-only
@@ -567,7 +594,21 @@
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
    (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
-   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")])
+   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")
+   ["tooling-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.tooling.pipeline-test")]
+   ["ownership-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]
+   ["wasm-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.wasm.pipeline-test")]
+   ["c-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.c.pipeline-test")]
+   ["runtime-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.pipeline-test")]
+   ["effects-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
+   ["types-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
@@ -927,6 +968,11 @@
              ["reader-regression" 120
               (command "1g" "-M:dev-test"
                        "--namespace" "gravity.reader.artifact-test"
+                       "--namespace" "gravity.reader.tokenizer-test"
+                       "--namespace" "gravity.reader.forms-test"
+                       "--namespace" "gravity.reader.literals-test"
+                       "--namespace" "gravity.reader.legacy-parser-test"
+                       "--namespace" "gravity.source-span-test"
                        "--namespace" "gravity.reader-primitives-test"
                        "--namespace" "gravity.c3-reader-expansions-test"
                        "--namespace" "gravity.cli.launcher-test"
@@ -934,6 +980,7 @@
              ["syntax-regression" 600
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.syntax.pipeline-test"
+                       "--namespace" "gravity.syntax.owner-calls-test"
                        "--namespace" "gravity.bootstrap-compatibility.c3-test"
                        "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
                        "--namespace" "gravity.self-hosting.sh04-form-index-test"
@@ -957,6 +1004,8 @@
               (command "2g" "-M:dev-test"
                        "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
+                       "--namespace" "gravity.macro.native-reports-test"
+                       "--namespace" "gravity.macro.owner-calls-test"
                        "--regex" macro-pipeline-cohort-regex)]
              ["macro-receipt-controls" 900
               (apply command "2g" "-M:dev-test"
@@ -1004,7 +1053,10 @@
                                       "--namespace" "gravity.self-hosting.sh07-mutation-test"
                                       "--exact" "sh07-character-source-occurrence-development-kernel"
                                       "--exact" "sh07-map-source-order-development-kernel"
-                                      "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]]
+                                      "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]
+                            ["mir-native-validation" 180
+                             (command "2g" "-M:dev-test"
+                                      "--progress" "--namespace" "gravity.mir.pipeline-test")]]
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable" selection)]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]

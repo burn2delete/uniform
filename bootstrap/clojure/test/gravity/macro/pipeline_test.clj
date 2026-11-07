@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.digest :as digest]
             [gravity.macro-run-storage :as macro-run-storage]
             [gravity.reader.identity-expectations :as expected]
             [gravity.macro :as macro]))
@@ -99,12 +100,53 @@
   (let [contract (:gravity/namespace-contract (meta #'macro/expand))
         ops (operations)]
     (is (= 'gravity.macro (:namespace contract)))
-    (is (= 50 (count (:public-api contract))))
+    (is (= 62 (count (:public-api contract))))
     (is (= (set (keys (:public-api contract))) (set (keys (ns-publics 'gravity.macro)))))
     (is (= (set (:operation-inputs contract)) (set (keys ops))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (ns-resolve 'gravity.macro name))))))
     (is (= 46 ((:input ops) :sh05-macro-expected-function-count)))))
+
+(deftest genuine-native-c4-construction-preserves-source-products-and-rejects-tampering
+  (doseq [extension [".gravity" ".qst"]]
+    (let [source (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/accepted/compiler-c4-macro-engine" extension)))
+          text (slurp source)
+          reader (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path))
+          syntax (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))
+          invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}
+                      :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1 :source-path syntax}}
+          c3 (bootstrap/compiler-c3-syntax-source-artifact
+              source text (bootstrap/reader-project-context-for-source source) nil nil reader invocation)
+          module (bootstrap/parse-module source (get-in c3 [:c2-reader-artifact :parsed-semantic-values]))
+          overrides (bootstrap/c4-macro-source-overrides module)
+          hosted (bootstrap/macro-source-artifact source text)
+          contract (:native-construction-contract (:gravity/namespace-contract (meta #'macro/assemble-native-artifact)))
+          projections (into {} (for [key (:projection-ports contract)]
+                                 [key (ns-resolve 'gravity.bootstrap (symbol (name key)))]))
+          assemble (fn [parent expanded]
+                     (macro/assemble-native-artifact
+                      source module overrides parent expanded projections
+                      #'bootstrap/c4-macro-governing-document #'bootstrap/c4-macro-diagnostic-ids
+                      #'bootstrap/c4-macro-rejected-designs #'bootstrap/c4-macro-validate!
+                      #'bootstrap/c4-macro-capability-proof #'bootstrap/c4-artifact-id))
+          artifact (assemble c3 hosted)]
+      ;; Actual development producers, with no legacy C4 constructor or guard substitution.
+      (is (= :gravity/stage0-c4-macro-expansion-artifact (:kind artifact)))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc artifact :artifact-id)))) (:artifact-id artifact)))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (:macro-expansion-trace artifact))))
+             (get-in artifact [:self-hosting-comparison-inputs :seed-trace-hash])))
+      (is (= (select-keys c3 [:kind :artifact-id :syntax-object-stream :syntax-verification-report])
+             (:c3-syntax-object-artifact artifact)))
+      (is (= (get-in c3 [:syntax-object-stream 0 :syntax/id]) (get-in artifact [:macro-expansion-input :syntax-root])))
+      (is (= 3 (count (:macro-expansion-trace artifact))))
+      (is (every? #(seq (:generated-origin %)) (:macro-expansion-trace artifact)))
+      (is (= :complete (get-in artifact [:capability-based-proof :status])))
+      (doseq [[id parent expanded] [["C4-RETURN" (assoc c3 :syntax-object-stream []) hosted]
+                                    ["C4-RETURN" c3 (assoc hosted :expanded-syntax-object-stream [])]
+                                    ["C4-TRACE" c3 (assoc-in hosted [:macro-expansion-trace 0 :generated-origin] [])]]]
+        (let [data (ex-data (caught #(assemble parent expanded)))]
+          (is (= id (:id data)))
+          (is (= source (get-in data [:source-span :source]))))))))
 
 (deftest real-paired-macro-expansion-retains-identities-provenance-and-output
   (let [artifacts

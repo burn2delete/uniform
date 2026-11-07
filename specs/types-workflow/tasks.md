@@ -63,6 +63,32 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 Boolean guard criterion (Open): Establish Bool for each normally returning guard from actual checked expression and branch-binding facts, or emit L7-GUARD-TYPE. True selects its body and false continues; nil, numeric, text, nil-or-Bool, unknown or Dynamic results are not silently Boolean. A throw or other non-returning guard retains its control transfer without manufacturing a Bool value. Preserve actual guard type, source and binding dependencies. Required evidence: accepted true/false/non-returning cases and rejected non-Boolean/unestablished results, distinct from L2 if truthiness and without authorizing illegal effects.
 <!-- types-pattern-source-guard:end -->
 
+
+<!-- types-error-source-typing:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual throw/handler typing criterion (Open): Check real thrown payload types, typed catch bindings and protected/handler normal results against resolved source declarations, preserving nonreturning evaluation and original transfer identities. Actual function/call artifacts expose thrown-error type/effect requirements; distinguish conservative source-error potential from admitted or executed effects. Result/Option pattern coverage uses actual declared constructor domains and L7 evidence, never a canonical-if-only join extension or host truthiness. Reject untyped/unknown/mismatched thrown values, invalid handler bindings/results and missing required handling/propagation. Required evidence: independent payload/result/handler/call constraints, typed/never and accepted/refused source/generated cases with current provenance. Source coverage alone does not discharge profile, handler, effect or capability legality.
+<!-- types-error-source-typing:end -->
+
+
+<!-- collections-source-private-domain:start -->
+
+Apply the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria) within this existing Open task. Preserve old predicates, statuses, receipts and actual restrictions; independent current source/interface acceptance remains pending.
+
+STD3 current private-domain criterion (Open): For the immutable bare-Map keys exception, reconstruct the complete closed private function/use/call census at each compiler consumer, with actual argument sources/types, bare-Map compatibility and complete normal-entry whole Keyword-key/value validation. Different entry shapes/value types and empty Map witnesses are allowed; the parameter remains bare Map and the result homogeneous Keyword List. At least one normal entry is required; any Never coordinate makes a call non-invoking. Refuse unknown/circular/unaccounted/all-non-invoking witnesses and omitted public entry/escape/mutation/re-entry. Retain function/parameter/use/caller dependencies and invalidations; selected-key presence is insufficient and no shape/presence/cardinality/flow fact is added. Evidence: actual positive and late-invalid caller/type products and exact refusals, with no removed 512-pair/depth/work allowances reintroduced.
+<!-- collections-source-private-domain:end -->
+
+
+
+<!-- types-alternative-types-source-solve:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual selected alternative-checker execution criterion (Open): Invoke the authentic selected checker on real resolved/expanded source and independently derive or check its declared inference (including dependent fragments and effect-polymorphic inference where claimed), constraints, refinements, gradual, ownership/borrow, region, linear, nullability, taint, schema-synthesis, hardware-width, workflow-state and agent-tool-schema features where claimed. Preserve all thirteen replacement families while retaining core evaluation, effect legality, capability checks, memory safety, profiles, unsafe rules, provenance and actual exported backend-layout contracts. A checker can strengthen facts or restrict acceptance under its declared claim, but cannot weaken the same profile or invent facts from expected results, host defaults or supplied success records. Required evidence: real selected source/constraints/solutions/refusals and common typed-Core products, with unknown or unsupported features explicit and no original C7 publication, provider callback or other held operation performed by this planning clause.
+<!-- types-alternative-types-source-solve:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -123,6 +149,81 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 trusted-shape boundary criterion (Open): Require actual schema-validation or typed-boundary-check evidence and authentic source identity before external/dynamic/host data is treated as a trusted closed pattern shape. Network/filesystem/database/AI/tool values must cross the real required boundary; AI variants and required keys are checked against their declared schema. Matching itself, a schema-shaped record, a narrowed annotation or a nonempty validation link does not validate a value. Preserve dataflow and surviving checks to selected runtime consumers; Schema/Runtime own actual validators/check execution. Required evidence: accepted validated values and rejected unvalidated, weakened, wrong-source, stale or coherently substituted shape/constructor/key assumptions.
 <!-- types-pattern-source-trusted:end -->
 
+
+<!-- types-protocol-source-methods:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 protocol method/extension criterion (Open): Produce actual typed protocol contracts retaining method name, receiver type position, parameter and return types, latent effects, relevant capability requirements, profile restrictions, permitted defaults and documentation/stability metadata. Check every concrete implementation against that signature without widening effects beyond callers' visible contract; additional capability requirements remain in method types and dispatch artifacts. Resolve actual protocol/type/method identities rather than accepting a protocol-shaped record. Required evidence: real protocol/implementation/signature tables, legal definition/extension/default cases and rejected incompatible receiver/parameter/return/effect/capability/profile cases with L8-PROTOCOL-METHOD and L8-METHOD-EFFECT. Defaults remain conditional on their governing allowance, not universally enabled.
+<!-- types-protocol-source-methods:end -->
+
+
+<!-- types-protocol-source-selection:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 implementation-set/dispatch criterion (Open): Derive actual applicable implementation candidates and selected mode from resolved declarations, independently established type facts, profile, target and governing optimization facts. Preserve selected implementation identity, receiver and method contracts and source references. Reject missing implementation and multiple matches lacking a declared priority rule with L8-DISPATCH-MISSING/AMBIGUOUS; do not invent a global overlap/priority/coherence policy. Typed selection is tentative until actual Effects and profile checks admit required runtime behavior, with separate Auth grants and actual provider facts. No safe implementation set means rejection or a checked runtime-provider route with explicit effects/capabilities, never implicit host dispatch.
+<!-- types-protocol-source-selection:end -->
+
+
+<!-- types-protocol-source-modes:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 dispatch-mode criterion (Open): Keep direct static, monomorphized generic, dictionary, vtable/interface, multimethod, hosted dynamic, explicitly profile-permitted reflective and schema/workflow/AI/tool artifact-boundary dispatch as distinct source-supported modes. Record the actual chosen mode and its implementation/type/effect/capability/profile/target dependencies; the sample direct close/FileHandle record supplies no implementation, grant or universal default. Cover actual legal and refused cases for every applicable mode; unsupported required modes remain visible implementation work and cannot be completed by a refusal or hosted example.
+<!-- types-protocol-source-modes:end -->
+
+
+<!-- types-protocol-source-multimethod:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 declared multimethod criterion (Open): Where multimethod-style dispatch is supported, use the actual declared dispatch function and case/implementation identities. Open multimethods are hosted/dynamic unless a profile-specific table is actually generated with known coverage; closed multimethods may lower to actual matching or jump tables preserving source behavior. Retain dispatch-function effects, actual table/case coverage and missing/ambiguous-selection diagnostics. The illustrated event kinds are examples, not the complete language registry, and optional support does not silently make open dispatch portable or mandate an invented priority rule.
+<!-- types-protocol-source-multimethod:end -->
+
+
+<!-- types-error-source-outcomes:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 distinct error-family criterion (Open): Represent actual declared absence Option, recoverable Result, typed thrown error, panic/unrecoverable failure, assertion/contract failure, safety-check failure, capability denial, FFI error, workflow retry/compensation failure, AI/model/tool/policy/evaluation failure and compiler diagnostic as distinct contracts. Preserve actual Some/None and Ok/Err payload types and source/audit identities across portable constrained profiles. Do not turn capability denial into nil/absence, workflow replay failure into an unrelated local exception or AI failure into unrecorded text. Source nil remains its own L2 value; it is not an implicit Option or host-null conversion. Required evidence: genuine error/outcome declarations, constructor/match type cases and positive/refused cross-family conversions without inventing new error syntax or a host exception hierarchy.
+<!-- types-error-source-outcomes:end -->
+
+
+<!-- types-library-source-typed:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual public library type-contract criterion (Open): Check actual public function/type/macro/protocol/constructor declarations and selected calls against independently derived argument/result/generic/schema facts and genuine resolved export identities. Preserve declared effect, capability, allocation, failure and profile contracts as inputs without treating them as completed effect/safety admission or callable implementation. Source schemas and intrinsic signatures are authentic; invalid/generated forms follow normal checks. Reject declaration/implementation/call mismatch, unsupported overloads, invented shape or host-default types, retaining actual source/export/version identity and typed accepted/refused cases. Library publishes contracts and implements APIs; Types supplies real type/compatibility facts, while other owners retain effects, grants, safety and target judgments.
+<!-- types-library-source-typed:end -->
+
+
+<!-- types-facet-source-typed:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet type-and-fact criterion (Open): Check real facet-local bindings, generated ordinary code and declared domain constraints using independent type/schema/shape premises and authentic owner verifier results. Facet rules may refine base typing but cannot replace its meaning without the existing alternative-system contract. Keep schema presence, signal width, workflow replay safety, query row shape, zk public-only disclosure, prompt-tool schema, UI handler effects and EFIR proof obligations as eight distinct source examples of facts requiring their actual producer evidence. Emit typed artifacts or proof records consumed by later passes, preserving checker/subject/profile/target identity and invalidation. Reject invented shape facts, manifest-only proof, incompatible generated types and an alternative checker that silently changes semantics. Required evidence: actual checked/refused generated/local cases and fact/proof consumption; Types does not implement a domain validator, grant authority or accept a proof label.
+<!-- types-facet-source-typed:end -->
+
+
+
+<!-- types-alternative-types-source-typed-facts:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider abstraction and fact-boundary criterion (Open): Check actual declared function/schema/facet/refinement contracts against independent selected-provider premises. Preserve function effect/capability/panic/allocation/resource behavior and explicit ownership/borrowing/region/linear/initialization/nullability/taint/schema facts when used. Structural record/validator, EFIR domain/range/differentiability/proof, hardware width/clock/bus/reset, workflow state/replay/signal/retry, agent prompt/tool/model-shape/guardrail and query row/cardinality/nullability/transaction facts cross boundaries as authentic typed artifacts from their actual owners. Reject hidden nullable references, invented schema/refinement facts, comments or backend assumptions replacing exports and incompatible fact/proof schemas. Required evidence: genuine typed local/public/facet accepted/refused products and source/provider/schema/fact identities; Types does not fabricate domain proofs, capability grants or layout behavior.
+<!-- types-alternative-types-source-typed-facts:end -->
+
+
+
+<!-- types-interop-source-declarations:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete foreign declaration and boundary-schema criterion (Open): Check the actual typed declaration for every claimed native ABI, managed host, JavaScript/TypeScript, WebAssembly, schema, process, network, hardware, AI and package boundary. Preserve all thirteen declaration fields: language/protocol; link/symbol/method/endpoint/schema/import identity; ABI/wire protocol; directional types; effects; capabilities; ownership transfer; nullability/init; error/exception translation; threading/blocking; safety; supported profiles/targets; version/compatibility policy. Reject incomplete declarations in safe namespaces, implicit FFI, missing required memory/provider facts and host conveniences substituted for Gravity semantics. Required evidence: genuine accepted/refused declarations and common typed artifacts for claimed families; the illustrative strlen declaration installs no library, grant or default profile.
+<!-- types-interop-source-declarations:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -145,6 +246,40 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 Decision criterion interface/language/interop/convert-declared-foreign-value: Perform the explicitly directional Gravity/foreign type conversion under declared ownership/nullability/encoding/layout semantics; loss is explicit and failure returns Result or the declared boundary error. Reject: Reject hidden lossy conversion, invalid null-to-non-null mapping and foreign values admitted without required type/lifetime facts; declared Option absence remains legal. Required outputs: Directional type map and conversion/round-trip results, declared loss/failure records and invalid-value/ownership refusals.
 <!-- types-source-foreign-value:end -->
 
+
+<!-- types-protocol-source-dynamic:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 explicit dynamic/foreign-boundary criterion (Open): Represent actual dynamic/reflective/host dispatch with method/receiver/type identity, selected runtime dependencies, source profile, nullability, exception/failure behavior, ownership, required runtime checks, effects and capabilities. Preserve a declared host boundary and actual normalization route before values/errors enter safe core semantics; a host null or exception cannot become an unmodeled core value/throw. Types records the concrete boundary; Runtime performs normalization and resource behavior, Effects checks actual effects and Auth grants separate authority. Reject missing type/null/exception/lifetime/runtime facts and forbidden dynamic/reflective behavior with L8-HOST-DISPATCH or L8-DYNAMIC-FORBIDDEN; metadata alone is not executed normalization.
+<!-- types-protocol-source-dynamic:end -->
+
+
+<!-- types-error-source-ffi:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 complete FFI error-boundary criterion (Open): Check and preserve actual declared error-return convention, errno/equivalent state, exception behavior, nullability, ownership transfer on failure, resource cleanup, panic/abort behavior and typed Gravity error mapping. Declared Option absence remains legal, while real errors and denials cannot become absence. Host nulls/exceptions cross into safe/non-null types only through the actual required checked/typed boundary. Types owns concrete mapping/type/dataflow facts; Runtime performs actual conversion/normalization and failure cleanup. Reject missing/incompatible/stale mappings or untranslated failures with L9-HOST-ERROR/FFI-ERROR and governing interop diagnostics. Required evidence: source-bound complete error-map/host contract and accepted/refused nullable/typed-error/failure-resource cases without enabling held native/provider/callback execution.
+<!-- types-error-source-ffi:end -->
+
+
+<!-- types-alternative-types-source-boundaries:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete gradual and dynamic-boundary criterion (Open): Emit actual explicit checked-cast/dynamic/error/unsafe boundaries in typed Core only where the active profile permits their runtime metadata, allocation and dynamic representation. Each gradual boundary retains actual source span, expected type, inserted runtime check, failure type and blame; preserve typed Result/DecodeError behavior in the accept-json example and genuine generated origins. Unchecked casts remain explicit unsafe operations and never safe optimization evidence. Reject unrecorded checks, illegal constrained-profile representations, erased nullability/blame/failure and unsafe casts relabeled checked or proved. Required evidence: real typed boundary/check records and positive/refused profile/cast/nullability cases; actual runtime check behavior follows its selected Runtime owner rather than a status field.
+<!-- types-alternative-types-source-boundaries:end -->
+
+
+
+<!-- types-interop-source-mappings:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete directional type-mapping criterion (Open): Derive and record the actual direction, representation, ownership/nullability/initialization/encoding/lifetime/layout and failure semantics for numeric, string, Option, Result, collection and linear-handle mappings. Preserve distinct UTF-8 owned buffer/borrowed slice/host strings, nullable/tagged/optional absence, error-code-plus-out/exception/rejected-promise/tagged/schema-union outcomes, owned array/slice/host-list/repeated/typed-buffer and named-release handles. Lossy mappings require explicit conversions; any possible failure returns Result or the declared L9 boundary error. Declared Option absence remains legal. Reject hidden loss, unsafe foreign pointers as ordinary safe references and missing/stale type/ownership/error facts. Required evidence: real directional conversion and applicable round-trip accepted/refused products, not default bidirectionality or an assigned round-trip status.
+<!-- types-interop-source-mappings:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -159,6 +294,40 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 C7/L5 current typed-artifact and invalidation criterion (Open): Serialize actual typed core, type environment, constraint ledger, function signature table, generic instantiations, protocol dispatch types, dynamic-boundary and cast/conversion records, layout/schema links, ownership/resource facts and type diagnostics/conformance fixtures. Bind the module to its actual core-input hash; nodes, locals and functions retain their real identities, type/mutability/ownership, latent/thrown effects, capabilities and current constraint/boundary/cast references. The sample artifact's filesystem effect, FileError, module/type/hash values illustrate fields and do not supply facts or grants. Preserve source node/syntax/span/generated-origin chains, resolved binding, profile/target, schema/version and all relevant declared/actual type, effect, ownership/resource and representation evidence. Constraints retain producer rule, dependencies, solution and invalidation; changed nodes, source, resolved declarations/bindings, callers/entries/uses/visibility/exports/argument or transfer premises, schema constraints, profile/target or downstream contracts invalidate affected solutions/boundaries/layout/dispatch and consuming artifacts, rather than silently reusing a solved flag. Required outputs: stable serialized schemas and provenance, current/invalidated fact maps naming actual consumers/rechecks, round-trip and changed-input refusal fixtures. New type forms require artifact-schema updates and fixtures before stable-document use; type changes identify affected Effects, memory safety, profiles, MIR, backends, schemas, AI, stdlib and conformance consumers. This is contract change control, not an extra ordinary-edit permission gate. Reject stale/mismatched/missing source or schema identities, erased actual argument/body types or compatibility premises, dropped origins/latent effects and unsupported type forms concealed by generic metadata.
 <!-- types-source-artifacts:end -->
 
+
+<!-- types-protocol-source-artifacts:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 complete dispatch-artifact criterion (Open): Serialize actual protocol and implementation tables, method signatures, selected dispatch-mode records, applicable multimethod tables, interface-lowering and host-interop records, diagnostics and conformance fixtures with current producer/source/generated/binding/type/effect/capability/profile/target/ABI/schema/provider identities. Preserve all seven L8 diagnostic meanings and actual source failure subjects rather than a requested diagnostic catalog. Later interface/runtime/conformance products retain their actual producing owners; typed serialization cannot fabricate them. Changed protocols, implementations, dispatch functions/cases/priority declarations, types, effects, grants, profiles, target layouts, host contracts or specialization proofs invalidate affected selection and consumers. Required evidence: real round-trip/current-identity checks and missing/stale/tampered/coherently substituted refusal fixtures; a complete flag or nonempty link is not acceptance.
+<!-- types-protocol-source-artifacts:end -->
+
+
+<!-- types-error-source-artifacts:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 complete error-artifact criterion (Open): Preserve actual error declarations, function thrown-error/effect records, panic lowering, safety-check failure, FFI mapping, workflow failure, AI/tool failure and diagnostic fixtures with current source/generated/binding/type/effect/grant/profile/target/runtime/provider/schema/check/replay/policy identities. Each later runtime/target/workflow/AI artifact retains its actual producer; typed serialization cannot fabricate it. Keep all seven L9 diagnostic meanings and real failure subjects, not a requested-code catalog. Changed payload/handler/call/control/type/effect/mapping/profile/service/schema/retry/compensation/policy/source inputs invalidate affected facts and consumers. Required evidence: actual stable round-trip/currentness checks and missing/stale/tampered/coherently substituted refusal fixtures, with no complete-container or nonempty-link acceptance.
+<!-- types-error-source-artifacts:end -->
+
+
+<!-- types-alternative-types-source-exports:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete common typed-Core and fact-export criterion (Open): Serialize authentic selected-provider expression/binding types, function effect sets, capability requirements, panic/error behavior, relevant ownership/lifetimes and allocation/resources, inserted casts/checks, check-erasure proof references, profile assumptions and source mapping. Preserve explicit facts actually used and all eight L17 artifact families: provider declaration, lowering rules, fact schema, proof/refinement artifacts, casts/runtime checks, diagnostic maps, reference compatibility and profile soundness. Bind source/provider/version/fact/proof/compiler/profile/target/macro/facet/grant identity and dependency/invalidation conditions. Reject missing/stale/forged/incompatible or flag-only artifacts, fact loss across namespaces/facets and proof references detached from the erased check. Required evidence: actual complete typed/export round-trips and changed-subject/source/fact substitution refusals; each consumer can use the common schema without implementing the alternative theory.
+<!-- types-alternative-types-source-exports:end -->
+
+
+
+<!-- types-interop-source-facts:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete interop artifact and fact-export criterion (Open): Serialize actual foreign declarations, ABI/protocol/schema metadata, generated binding source/provenance, wrapper audits, ownership/lifetime maps, error translations, effect/capability records, migration shims, incumbent parity reports and compatibility/deprecation records. Preserve all ten artifact families with authentic source/foreign/schema/provider/version/target/lock, type direction, safety/wrapper/unsafe/check/proof and generated-origin identities. Actual producer results remain distinct from metadata schema validity; stale or coherently substituted source/ABI/schema/runtime/layout/policy facts invalidate affected exports and consumers. Required evidence: genuine complete round-trips and missing/tampered/wrong-subject fact refusals without inventing executed calls or parity from a manifest.
+<!-- types-interop-source-facts:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -172,6 +341,41 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 
 C7/L5 typed-core verifier and consumer criterion (Open): Verify after actual expansion/name resolution/Core production and before Effects can claim legality that each node has exactly one current type or diagnostic, all constraints are solved or rejected, function latent effects are present, all nontrivial conversions have cast records, Dynamic boundaries are profile-marked, schema-derived types reference source schemas, required layout facts exist and source/generated origins survive. Malformed typed-core artifacts refuse with C7-VERIFY and prevent downstream legality claims. Typed core feeds actual Effects and ownership/safety/profile/capability validation; it is not target-lowering authority until those required checks pass. MIR/lowering fixtures must preserve the checked type facts and generic/dispatch/schema/boundary contracts; actual later checks consume current artifacts, not fabricated summaries or completed-component prerequisites. Required outputs: positive typed-core emission for literals, calls, functions, records, unions, matches, protocols, generics, dynamic/schema/ownership/linear surfaces; deterministic constraint/annotation diagnostics; accepted/rejected boundary, cast/unsafe, layout/schema, stale-artifact and verifier-tamper fixtures; actual producer/verifier/consumer records and source/generated-origin diagnostic goldens. Preserve all ten C7 meanings (TYPE-MISMATCH, ANNOTATION, DYNAMIC, CAST, NULLABILITY, GENERIC, PROTOCOL, LAYOUT, SCHEMA, VERIFY) and all eight L5 meanings (TYPE-MISMATCH, ANNOTATION-REQUIRED, DYNAMIC-FORBIDDEN, CAST-UNSAFE, UNINIT-READ, LINEAR-DUP, SCHEMA-WEAKEN, LATENT-EFFECT-MISSING). C7 diagnostics retain core node, syntax ID, source span, expected/actual types, active profile, target, relevant binding, generated-origin chain and remediation. These clauses require future real results and artifacts; source propositions, structural checks and existing partial Dynamic inference do not prove type-system/component, compiler-stage, migration, release or final-count completion. Earlier independent reviews retain exact subjects/scopes and do not accept these new appends; no compiler/helper/runtime/provider/broker/controller/probe execution is authorized or reported here.
 <!-- types-source-verification:end -->
+
+
+<!-- types-protocol-source-composition:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 actual checked-dispatch composition criterion (Open): Compose actual source protocol definitions/extensions, typed method/implementation selection, visible effects and separate grants, profile decisions, selected interface/runtime artifacts and verified downstream consumers. Owner fixtures cover definition/extension, direct/dictionary/vtable/hosted dynamic and rejected reflective dispatch, call-site implementation/upper-bound effects, kernel/firmware/hardware open-dispatch refusals, actual host null/exception normalization, proved specialization with preserved diagnostics/fallback and artifact mode/implementation identity. Keep all required mode/interface/profile surfaces visible; representative fixtures or table presence cannot accept complete L8. Required evidence: actual positive/refusal program/artifact/diagnostic/behavior comparisons and current source/generated provenance; owner fixture construction precedes independent final conformance and no universal optimizer or native runtime is a prerequisite for valid unspecialized portable dispatch.
+<!-- types-protocol-source-composition:end -->
+
+
+
+<!-- types-alternative-types-source-verify:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual common typed-Core verification and consumer criterion (Open): Verify authentic selected-provider lowered typed Core against the ordinary compiler schema and semantic obligations before downstream legality or optimization relies on it. Actual optimizers, safety checkers, backend lowerers, documentation tools, package auditors and language servers consume its required facts through the common interface without knowing the whole alternative theory. Preserve all ten L17 typed-Core field groups, actual selected provider identity and inserted-check/proof/source records. Reject schema-valid but semantically incompatible output, missing facts, hidden unsafe/nullability/effects/grants or an accepted-downstream flag in place of a real verifier/consumer result. Required evidence: genuine provider/reference positive/refused lowering and selected downstream consumption, with preliminary typed premises distinguished from later actual Effects/Auth/Legality admission and final release.
+<!-- types-alternative-types-source-verify:end -->
+
+
+
+<!-- types-alternative-types-source-corpus:start -->
+
+Apply the [complete alternative type system source criteria](plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual reference-corpus compatibility criterion (Open): Supply real selected-checker and L5 reference accepted/rejected fixtures, exact source/options/provider/profile/target identities and normalized diagnostic mappings for the declared soundness claim. Reference equivalence compares both acceptance and rejection up to allowed diagnostic precision; strict-extension subset, conservative-extension annotated additions, gradual checks and domain-scoped lowering keep their distinct declared populations. Execute actual common typed-Core verification/consumer cases and expose mismatches/counterexamples rather than count fixture names or mark supplied reports passed. The existing independent language/compiler harnesses execute their selected fixtures and Auth consumes actual compatibility/profile evidence; owner tests alone do not confer independent acceptance. Required evidence: executed corpus comparisons, valid/invalid generated cases, actual check-erasure proof records where claimed, and explicit unavailable/held cases rather than whole L5/alternative-provider completion from one demonstration.
+<!-- types-alternative-types-source-corpus:end -->
+
+
+
+<!-- types-interop-source-verify:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual common typed-boundary verification criterion (Open): Verify real resolved/generated foreign declarations, directional conversions, checked/unsafe wrappers and schema bindings against ordinary common typed-Core and active profile/effect/authority/memory contracts before admitted downstream use. Incomplete declarations in safe namespaces, hidden null/error/host behavior, lost ownership/release or unconsumable generated artifacts refuse with source-bound owning diagnostics. Preliminary independent types precede actual effect/resource admission; final checked export retains real owner verdicts. Required evidence: actual accepted/refused native/host/schema/process/network declarations and selected generated consumers, with unsupported/held families explicit and no compiler/provider completion inferred from record presence.
+<!-- types-interop-source-verify:end -->
 
 <!-- types-implementation-tasks:end -->
 

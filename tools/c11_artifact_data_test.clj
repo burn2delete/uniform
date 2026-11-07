@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.walk :as walk]
             [gravity.digest :as digest]
+            [gravity.checked-core]
             [gravity.checked-core.bool-branch-join :as family]))
 
 ;; Reuse the existing actual carrier/canonical/policy controls and their

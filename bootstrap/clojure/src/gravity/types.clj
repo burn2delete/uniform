@@ -4,7 +4,22 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {native-type-fail!
+   {check-native-assert!
+    {:api-kind :function, :arglists ([operations node args]), :admission :none,
+     :seed-compatibility-data-only? false, :seed-compatibility-checks-only? true,
+     :operation-inputs [:diagnostic! :type-keywords],
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    check-native-value!
+    {:api-kind :function, :arglists ([operations node args]), :admission :none,
+     :seed-compatibility-data-only? false, :seed-compatibility-checks-only? true,
+     :operation-inputs [:diagnostic! :type-token-name :literal-type :compatible-value-type?],
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    check-native-return!
+    {:api-kind :function, :arglists ([operations node args]), :admission :none,
+     :seed-compatibility-data-only? false, :seed-compatibility-checks-only? true,
+     :operation-inputs [:diagnostic! :type-token-name :compatible-value-type?],
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-type-fail!
     {:api-kind :function, :arglists ([fail! source-span type-message governing-document id source-path subject extra]),
      :admission :none, :seed-compatibility-data-only? true,
      :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
@@ -185,7 +200,9 @@
     :self-hosting
     :seed-retirement],
    :artifact-inputs
-   [:native-diagnostic-subject-extra-and-catalog-data
+   [:caller-owned-native-annotation-node-and-argument-facts
+    :live-native-type-keyword-classifier-compatibility-and-diagnostic-operations
+    :native-diagnostic-subject-extra-and-catalog-data
     :explicit-message-span-and-failure-operations
     :owner-supplied-native-hosted-core-node-views
     :explicit-type-classifier-callbacks
@@ -201,7 +218,8 @@
     :source-path-and-text-with-explicit-source-core-type-diagnostic-and-identity-operations],
    :namespace gravity.types,
    :diagnostic-ownership
-   {:stage [:native-catalog-defaults :native-message-text :native-payload-projection
+   {:stage [:native-annotation-shape-unknown-type-and-mismatch-decisions
+            :native-catalog-defaults :native-message-text :native-payload-projection
             :fixture-override-selection :hosted-report-construction :ordered-missing-field-decisions],
     :upstream [:core-node-source-and-origin-data],
     :existing-c7-owner
@@ -209,7 +227,8 @@
      :diagnostic-identity-binding :redaction-and-publication]
     :propagated [:compiler-and-runtime-diagnostics :gravity-c7-diagnostics]},
    :artifact-outputs
-   [:native-catalog-defaults-and-message-text
+   [:native-annotation-nil-or-expected-type-result
+    :native-catalog-defaults-and-message-text
     :native-type-diagnostic-payloads-and-fixture-registry
     :owner-failure-return-or-exception
     :seed-literal-and-node-classifications
@@ -225,7 +244,10 @@
     :ordered-c7-missing-field-refusal-or-complete-sentinel
     :hosted-dynamic-cast-generic-dispatch-schema-layout-data
     :hosted-seed-typed-core-artifact-and-borrowed-owner-identity],
-   :contract-boundary :seed-type-products-and-current-gravity-runtime
+   :contract-boundary :seed-type-products-current-gravity-runtime-and-native-annotation-checks
+   :native-annotation-consumer-paths
+   ["bootstrap/clojure/src/gravity/bootstrap_impl/components/language-and-analysis/00070-check-typed-assert.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/language-and-analysis/00072-check-typed-value.clj"]
    :additional-contract-boundaries [:hosted-seed-verification-data-and-missing-field-checks
     :hosted-dynamic-cast-generic-dispatch-schema-and-layout-data
     :hosted-source-artifact-orchestration :native-diagnostic-projection-and-catalog-defaults]})
@@ -878,9 +900,86 @@
                                 :capability-based-proof
                                 capability-proof)))))
 
+(defn- annotation-operation [operations key]
+  (let [operation (get operations key)]
+    (if (var? operation) @operation operation)))
+
+(defn check-native-assert!
+  [operations node args]
+  (when-not (and (= 2 (count args))
+                 (= "Keyword" (:type (first args))))
+    ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                       "typed/assert requires a type keyword and value"
+                       node
+                       "Use (typed/assert :Type value)."))
+  (let [expected (get (annotation-operation operations :type-keywords) (:value (first args)))
+        actual (:type (second args))]
+    (when-not expected
+      ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                         "typed/assert uses an unknown type keyword"
+                         node
+                         "Use a registered type keyword."))
+    (when (not= expected actual)
+      ((annotation-operation operations :diagnostic!) "L5-TYPE-MISMATCH"
+                         "expression type does not match declared assertion"
+                         node
+                         "Change the expression type or the declared assertion."
+                         {:expected-type expected
+                          :actual-type actual}))))
+
+(defn check-native-value!
+  [operations node args]
+  (when-not (and (= 2 (count args)) (= "Keyword" (:type (first args))))
+    ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                       "typed/value requires a type keyword and value"
+                       node
+                       "Use (typed/value :Type value)."))
+  (let [expected ((annotation-operation operations :type-token-name) (first args))
+        value-fact (second args)
+        actual (if (= "QuotedData" (:type value-fact))
+                 ((annotation-operation operations :literal-type) (:value value-fact))
+                 (:type value-fact))]
+    (when-not expected
+      ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                         "typed/value uses an unknown type keyword"
+                         node
+                         "Use a registered L5 type keyword."))
+    (when-not ((annotation-operation operations :compatible-value-type?) expected actual)
+      ((annotation-operation operations :diagnostic!) "L5-TYPE-MISMATCH"
+                         "typed/value expression does not satisfy the declared type"
+                         node
+                         "Change the fixture value or the declared type."
+                         {:expected-type expected
+                          :actual-type actual}))
+    expected))
+
+(defn check-native-return!
+  [operations node args]
+  (when-not (= 2 (count args))
+    ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                       "typed/return requires a return type and value"
+                       node
+                       "Use (typed/return (quote Type) value)."))
+  (let [expected ((annotation-operation operations :type-token-name) (first args))
+        actual (:type (second args))]
+    (when-not expected
+      ((annotation-operation operations :diagnostic!) "L5-ANNOTATION-REQUIRED"
+                         "typed/return uses an unknown return type"
+                         node
+                         "Use a registered return type."))
+    (when-not ((annotation-operation operations :compatible-value-type?) expected actual)
+      ((annotation-operation operations :diagnostic!) "L5-TYPE-MISMATCH"
+                         "function return expression does not match its declared type"
+                         node
+                         "Change the function body or declared return type."
+                         {:expected-type expected
+                          :actual-type actual}))
+    expected))
+
 (doseq
  [operation
-  [#'native-type-fail! #'validate-native-overrides! #'native-type-diagnostics #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-type-message
+  [#'check-native-assert! #'check-native-value! #'check-native-return!
+   #'native-type-fail! #'validate-native-overrides! #'native-type-diagnostics #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-type-message
    #'assemble-source-artifact
    #'dynamic-boundary-records
    #'cast-records

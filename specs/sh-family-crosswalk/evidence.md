@@ -696,3 +696,50 @@ This continuation claims no compiler/runtime/native/C7 execution, complete L7
 implementation, migration or release authority, public admission,
 self-hosting, or integration. Independent review and coordinator integration
 remain pending.
+
+## PR767 protocol and Effects current-source continuation
+
+This continuation accounts for the unique PR767 protocol slice after the
+accepted pattern/Core/Types work. The dependency/source-control commits are
+`bc8639e09c` and `fa1866623a`; the protocol owner/source proposal is
+`0aff3e592e`, and the later refinement is `b7499ce860`. Their useful value is
+preserved selectively: the dependency view retains 2,011 joins, 139 routes,
+99 current parent consumers and 40 future records; the protocol view retains
+the L8 method/effect/dispatch/profile/host/tool criteria, five explicit owner
+joins, sixteen source criteria, and the two selected hosted C7 source files.
+The generated maps from those historical commits are not treated as current
+source authority.
+
+The source composition is a normal merge of current main
+`2c5742ea00c0840ad4be842d971de9652ba8457f` (tree
+`11320981c4126366c518b39b07c7a35354202ae2`) with the accepted continuation
+history. The clean source/test checkpoint before generated readiness metadata
+is `e79416eb004ffd8107fe5c664c5b5f5e7fe54e9f` (tree
+`274ee7a1b9f713ebcd6586d6891caf3e4bc28810`); the current-source successor
+precedence and the compact protocol source/tamper controls are part of this
+checkpoint. The readiness map is regenerated only after this checkpoint and
+binds current files to their actual commit/tree/blob bytes; its 50 unchanged,
+89 changed and 10 added task-body comparison counts are conservation data,
+not implementation or migration authority.
+
+The bounded protocol control executes `source-view` against the current
+successor and checks predecessor bridge/projection hashes, current task/plan/
+specification and criterion byte spans, future-task row identity/body hashes,
+owner joins, selected source-file hashes, and fail-closed rejection of a
+removed or forged protocol successor. The pinned current-main comparison lint
+also passes with zero unchanged warnings and zero blocking diagnostics. It is
+source/data integrity evidence only. The historical PR767 source frames remain historical; all task rows,
+implementation, compiler, runtime, migration, release, self-hosting and
+public-admission states remain open, pending or unassessed. No native/C,
+compiler migration, held route or restricted operation was executed.
+
+
+## Original selected-result dependency rows: current source binding
+
+The normal composition `9ef3622060652f339fa75b73fefa4963db272a10` retains ordered parents `f989a01024d4ef0f595b7bf685e0fbf17648469b` and `0f4dbda97c69fc67dad7eb8824702ae44959607b`. It adds exactly the fourteen original independently reviewed dependency rows; removing them restores the entire prior document. Every start-result list remains empty. The separate document transition authenticates its current Git tree/blob, complete UTF-8 span and digest and preserves the complete previous transition. The earlier source census and all historical pins, statuses and evidence remain unchanged.
+
+The derived crosswalk changes only that current transition and its pending review metadata. All 535 normalized source payloads, 149 captured current task records, future records, SH requirement dispositions, finish-line sources and narrow accepted evidence remain identical. These are observed source populations, not implementation completion units. The fourteen rows add 361 selected-result joins; current parent routes increase from 104 to 118, and the coarse feedback groups join into one group of 138 members. Existing typed execution acyclicity, independent producer interfaces and later actual-result/acceptance boundaries remain mandatory.
+
+Final pure Source checks: dependency suite 28 tests/6958 assertions and crosswalk suite 80 tests/65048 assertions, both with zero failures/errors; both current-source checks pass. Pinned lint has zero errors/warnings and the identical pre-existing informational redundant-string finding at acceptance_dependencies_test.clj:197. Canonical documentation, roadmap structure, 185-workstream governance and six/eleven language-boundary checks pass at their unchanged input scope. Earlier failed observations remain preserved; they are not relabeled as passing checks.
+
+This is source/interface provenance awaiting independent current-tuple review and Main integration. No newer 240-spec source proposal is adopted here. No task status, implementation, provider execution, migration, release, seed retirement, T002/T003/T005 closure or full 240-spec verification is granted.

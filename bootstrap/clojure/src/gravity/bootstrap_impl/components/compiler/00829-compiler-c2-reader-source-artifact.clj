@@ -83,6 +83,18 @@
           top-level-form-ids (:root-form-ids products)
           _records (:parsed-records products)
           forms (:parsed-values products)
+          decimal-occurrence-projection
+          (sh03-reader-decimal-occurrence-projection-from-products!
+           source-path products)
+          _ (when-not (= decimal-occurrence-projection
+                         (:sh07-decimal-occurrence-projection products))
+              (c2-reader-fail!
+               "C2-HASH" source-path
+               {:stage :read-source
+                :source-span (source-span source-path 0)
+                :reader-options reader-options}
+               {:missing-fields
+                [:internal-sh03-c2-decimal-occurrence-projection]}))
           _ (validate-ns-syntax! source-path forms)
           module-context (reader-module-context forms)
           overrides (c2-reader-overrides-from-forms forms)
@@ -121,153 +133,41 @@
           incremental-hashes (c2-incremental-hashes
                               source-unit token-stream form-tree syntax-seeds
                               extension-invocations diagnostics)
-          integrity-record (c2-reader-product-integrity-record
+          integrity-record (c2-reader-product-integrity-record-v3
                             source-unit top-level-form-ids incremental-hashes
-                            literal-records deferred-literals)
-          artifact-base
-          {:kind :gravity/stage0-c2-reader-document-artifact
-           :task "P06-D081"
-           :document-set ["C2"]
-           :governing-document c2-reader-governing-document
-           :pass {:name :c2-reader-document-coverage
-                  :input :source-bytes
-                  :output :reader-document-proof
-                  :requires [:source-unit :reader-policy]
-                  :preserves [:source-spans :raw-literal-facts
-                              :reader-origin :trivia :diagnostics]
-                  :emits [:source-unit-record :token-stream :form-tree
-                          :syntax-seed-stream :reader-source-map
-                          :literal-decoding-records
-                          :reader-extension-invocation-records
-                          :reader-diagnostics :incremental-reader-hash]
-                  :rejects c2-reader-diagnostic-ids}
-           :source-overrides overrides
-           ;; Diagnostic observations only; never SH03 authentication authority.
-           :extension-dispatch-observations
-           (:extension-dispatch-observations products)
-           :module (assoc (dissoc module-context :namespace-clause-syntax)
-                          :source-path source-path)
-           :source-unit-record source-unit
-           :gravity-reader-boundary
-           {:slice :SH-03
-            :owner :gravity-source
-            :plan-binding (:sh03-reader-plan-binding products)
-            :resolved-reader-result
-            (select-keys (:sh03-reader-result products)
-                         [:artifact :schema-version :status
-                          :actual-path-provenance
-                          :incremental-reader-hashes
-                          :semantic-reader-template
-                          :execution-boundary])
-            :adapter-contract (:sh03-reader-adapter-contract products)
-            :uncredited-source-models
-            {:status :not-executed
-             :entrypoints sh03-reader-uncredited-source-model-entrypoints
-             :self-hosting-credit? false
-             :seed-retirement-credit? false
-             :release-credit? false}
-            :semantic-value-table-id
-            (:sh03-semantic-value-table-id products)
-            :authenticated-envelope-descriptor
-            (:sh02-reader-envelope-descriptor products)
-            :authenticated-envelope (:sh02-reader-envelope products)
-            :target-source-reread? false
-            :clojure-adapter-residual? true
-            :self-hosted? false}
-           :representation-boundary
-           {:token-stream :ordered-utf8-lexical-token-stream
-            :form-tree :recursive-delimiter-linked-form-tree
-            :lexical-token-stream? lexical-token-stream?
-            :nested-form-tree? nested-form-tree?
-            :remaining-reader-boundaries
-            [:full-language-literal-surface
-             :full-language-reader-abbreviation-surface
-             :full-language-reader-extension-registry
-             :host-and-seed-retirement]
-            :sh03-bootstrap-subset-status :complete
-            :status (if (and lexical-token-stream? nested-form-tree?)
-                      :complete-for-slice
-                      :failed)}
-           :token-stream token-stream
-           :form-tree form-tree
-           :top-level-form-ids top-level-form-ids
-           :parsed-semantic-values (:parsed-values products)
-           :lexical-product-validation lexical-validation
-           :syntax-seed-stream syntax-seeds
-           :reader-source-map (mapv #(select-keys % [:syntax-id :form-id :span])
-                                    syntax-seeds)
-           :gravity-reader-source-map (:gravity-reader-source-map products)
-           :literal-decoding-records literal-records
-           :trivia-retention-records (c2-trivia-records token-stream)
-           :reader-extension-policy
-           {:artifact :gravity/reader-extension-policy
-            :extensions
-            [{:tag 'inst
-              :handler 'gravity.reader.standard/read-inst
-              :build-effects #{}
-              :capabilities #{}
-              :profiles #{:kernel :core :hosted :meta}
-              :output :syntax-seed}
-             {:tag 'uuid
-              :handler 'gravity.reader.standard/read-uuid
-              :build-effects #{}
-              :capabilities #{}
-              :profiles #{:kernel :core :hosted :meta}
-              :output :syntax-seed}]
-            :status :registered}
-           :reader-extension-invocation-records extension-invocations
-           :semantic-error-deferment-record
-           {:artifact :gravity/semantic-error-deferment
-            :forms-retained [:unknown-symbol :profile-illegal-form
-                             :zero-denominator-ratio
-                             :host-independent-decimal-range]
-            :deferred-literal-records deferred-literals
-            :semantic-analysis-in-reader? false
-            :module-parser-invoked? false
-            :deferred? true
-            :owner-phases [:namespace-analysis :type-check :profile-validate
-                           :numeric-mode-validation]}
-           :reader-diagnostics diagnostics
-           :incremental-reader-hashes incremental-hashes
-           :reader-product-integrity integrity-record
-           :rejected-design-coverage c2-reader-rejected-designs
-           :diagnostics []}
-          _ (c2-reader-validate! source-path artifact-base)
-          capability-proof (c2-reader-capability-proof artifact-base)
-          conformance {:documents ["C2"]
-                       :task "P06-D081"
-                       :required-diagnostic-ids c2-reader-diagnostic-ids
-                       :source-unit-status :complete
-                       :token-stream-status :complete-for-slice
-                       :form-tree-status :complete-for-slice
-                       :span-status :exact-utf8-byte-and-line-column
-                       :abbreviation-status :complete-bootstrap-subset
-                       :literal-status :complete-bootstrap-subset
-                       :trivia-status :reader-option-sensitive
-                       :extension-status :complete-bootstrap-subset
-                       :incremental-hash-status :complete-for-slice
-                       :diagnostic-status :complete-bootstrap-subset
-                       :semantic-deferment-status :complete-for-slice
-                       :status :partial}
-          artifact (assoc artifact-base
-                          :capability-based-proof capability-proof
-                          :c2-reader-results conformance)
-          artifact
-            (if (reader-pure-text/options? reader-options)
-              (-> artifact
-                  (assoc-in [:reader-extension-policy :extensions]
-                            [{:tag 'text :handler 'sh03-reader-read-text
-                              :build-effects #{} :capabilities #{} :profiles #{:meta}
-                              :output :syntax-seed}])
-                  (assoc-in [:gravity-reader-boundary :pure-text-reconstruction-input]
-                            {:source-text source-text :project-context project-context}))
-              (if (reader-resource-options? reader-options)
-                (assoc-in artifact [:reader-extension-policy :extensions]
-                          [{:tag 'resource :handler 'gravity.reader/read-input
-                            :build-effects #{:build/read-file} :capabilities #{:fs/read}
-                            :profiles #{:meta} :output :syntax-seed}])
-                artifact))]
-      (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))
+                            literal-records deferred-literals
+                            (:projection-id decimal-occurrence-projection))
+          projection
+          (gravity.reader/native-document-projection
+           source-path source-text project-context reader-options
+           {:overrides overrides :products products :module-context module-context
+            :source-unit source-unit :lexical-token-stream? lexical-token-stream?
+            :nested-form-tree? nested-form-tree? :token-stream token-stream :form-tree form-tree
+            :top-level-form-ids top-level-form-ids :lexical-validation lexical-validation
+            :syntax-seeds syntax-seeds :literal-records literal-records
+            :extension-invocations extension-invocations :deferred-literals deferred-literals
+            :diagnostics diagnostics :incremental-hashes incremental-hashes
+            :integrity-record integrity-record}
+           {:governing-document-var #'c2-reader-governing-document
+            :diagnostic-ids-var #'c2-reader-diagnostic-ids
+            :uncredited-entrypoints-var #'sh03-reader-uncredited-source-model-entrypoints
+            :trivia-records-var #'c2-trivia-records :rejected-designs-var #'c2-reader-rejected-designs
+            :validate-var #'c2-reader-validate! :capability-proof-var #'c2-reader-capability-proof
+            :pure-text-options-var #'reader-pure-text/options?
+            :resource-options-var #'reader-resource-options? :artifact-id-var #'c2-reader-artifact-id})
+          artifact-with-bridge
+          (-> (:artifact projection)
+              (assoc :sh07-decimal-occurrence-projection
+                     decimal-occurrence-projection)
+              (assoc-in [:gravity-reader-boundary
+                         :decimal-occurrence-projection-id]
+                        (:projection-id decimal-occurrence-projection))
+              (update-in [:pass :emits]
+                         (fnil conj [])
+                         :sh07-decimal-occurrence-projection))
+          artifact (assoc artifact-with-bridge
+                          :artifact-id (c2-reader-artifact-id artifact-with-bridge))]
+      artifact)
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))
 

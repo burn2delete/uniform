@@ -22,7 +22,7 @@
       (failures/compiler-pass-fail! "C15-ID" source-path manifest
                            {:stage :diagnostic-catalog}
                            {:remediation "Diagnostic ids must remain unique and stable across wording changes."})))
-  (doseq [diagnostic (:diagnostic-fixtures suite)]
+  (doseq [[fixture-index diagnostic] (map-indexed vector (:diagnostic-fixtures suite))]
     (when-not (support/present? (get-in diagnostic [:primary :span]))
       (failures/compiler-pass-fail! "C15-SPAN" source-path manifest diagnostic
                            {:schema-field :primary
@@ -31,9 +31,18 @@
       (failures/compiler-pass-fail! "C15-ORIGIN" source-path manifest diagnostic
                            {:schema-field :origin-chain
                             :remediation "Generated and downstream diagnostics must preserve origin chains."}))
-    (when-not (support/present? (:facts diagnostic))
+    (when-not (and (map? (:facts diagnostic)) (seq (:facts diagnostic)))
       (failures/compiler-pass-fail! "C15-FACTS" source-path manifest diagnostic
                            {:schema-field :facts
+                            :reason (cond
+                                      (nil? (:facts diagnostic)) :missing
+                                      (map? (:facts diagnostic)) :empty
+                                      :else :invalid-shape)
+                            :fixture-index fixture-index
+                            :offending-diagnostic-id (:diagnostic-id diagnostic)
+                            :artifact-id (or (:artifact-id diagnostic)
+                                             (get-in diagnostic [:primary :artifact])
+                                             (:artifact diagnostic))
                             :remediation "Diagnostic facts must be structured fields, not prose-only text."}))
     (when (and (= :error (:severity diagnostic))
                (not (support/present? (:remediation diagnostic))))

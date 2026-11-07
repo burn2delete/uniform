@@ -69,7 +69,6 @@
 (def p15-s23-b4-wasm-node-content-hash
   "sha256:a54ba15c721a9f5b62f84e845e914be0bc48c7bb62cf62de86be6583865495a5")
 (def p15-s23-b4-wasm-node-timeout-ms 10000)
-(def p15-s23-b4-wasm-max-module-bytes 65536)
 (def p15-s23-b4-wasm-max-tool-output-bytes 4096)
 (def p15-s23-b4-wasm-bounded-feature-policy
   {:wasm-version :core-v1

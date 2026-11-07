@@ -65,6 +65,32 @@ Apply the [complete namespace and resolution source criteria](plan.md#complete-n
 Criterion behavior/pkg1/project-entrypoint-resolution: accept Resolve each artifact-kind entrypoint to its actual source var or artifact declaration after namespace analysis under the owning visibility rules. Reject An entrypoint is absent, ambiguous, violates its owning visibility rules or resolves to the wrong declaration kind. Emit Entrypoint-to-binding/artifact table consumed by the emission plan; PKG1003 names manifest key, package, profile and target. Dependencies: L3, PKG1, B13.
 <!-- resolve-source-entrypoint:end -->
 
+
+<!-- resolve-library-source-import:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 real library import-boundary criterion (Open): Resolve actual versioned library namespace/export/layer/profile declarations with the ordinary module and public/private graph rules. Consume authentic early declarations before checking the caller, reject actual lower-to-higher portability edges and imports outside the active profile, and preserve source/binding/package/target identity for downstream checking. Later actual built availability confirms shipped claims; a future completed library/release is not the first declaration interface. Emit L13-PROFILE and owning graph diagnostics for real offending imports rather than fabricating unsupported namespaces or inheriting host availability. Required evidence: real allowed downward and refused upward/unknown/excluded/stale imports and exact source/graph/profile records; the library owns declarations and callable exports, Resolve the actual import decision.
+<!-- resolve-library-source-import:end -->
+
+
+<!-- resolve-facet-source-namespace:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet lexical-scope criterion (Open): Resolve explicit facet activations in namespace metadata against authentic selected versioned manifests before facet expansion. Imports do not transitively activate the importer's facets; a macro-generated nested activation needs explicit provenance and preserves the declared lexical boundary. Resolve aliases or explicit activation to disambiguate shared surfaces and reject remaining ambiguous or inactive use, unsupported profiles and wrong namespace/version ownership before backend lowering. Preserve normal name/public-private/package graph and source identities. Required evidence: real local/importer/nested/alias activation and ambiguous/inactive/wrong-scope refusals, linked to Expand manifest/dispatch products; a final whole facet or package release is not the first declaration.
+<!-- resolve-facet-source-namespace:end -->
+
+
+
+<!-- resolve-interop-source-bindings:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign import and symbol boundary criterion (Open): Resolve real declared foreign link/symbol/method/endpoint/schema/import paths and generated target namespaces with authentic source/provider/version/profile/target identities. Keep imported host objects and package names behind explicit typed boundaries rather than ambient language meanings; generated bindings preserve source schemas and foreign provenance. Reject undeclared or ambiguous symbols, stale/mismatched imports and a hosted import in an unsupported profile, retaining source/generated diagnostics. Required evidence: actual accepted/refused foreign and generated binding indexes and version-bound namespace/consumer records; resolving a declaration does not invoke its provider or grant a capability.
+<!-- resolve-interop-source-bindings:end -->
+
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality
 
 Current evidence/status: Open; partial source evidence above is not closure

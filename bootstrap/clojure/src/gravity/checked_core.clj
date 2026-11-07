@@ -5,7 +5,21 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {module-assembly-manifest
+   {exact-digest-ref-present?
+    {:arglists ([value operations]), :operation-inputs [:digest-ref-shape?], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    structure-kind
+    {:arglists ([value]), :operation-inputs [], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    strict-map-index
+    {:arglists ([source-path value operations]), :operation-inputs [:canonical-identity], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    strict-first-mismatch
+    {:arglists ([source-path expected actual path operations]), :operation-inputs [:structure-kind :canonical-identity :strict-map-index :canonical-sort-key :strict-first-mismatch :canonical-digest], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    strict-structure!
+    {:arglists ([source-path expected actual missing-fact operations]), :operation-inputs [:strict-first-mismatch :canonical-digest :canonical-record :host-fail!], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    canonical-identical?
+    {:arglists ([source-path left right operations]), :operation-inputs [:canonical-identity], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false}
+    rehydrate-candidate-template!
+    {:arglists ([source-path expected-raw expected-sealed candidate-sealed resolved-digests operations]), :operation-inputs [:digest-ref-shape? :structure-kind :canonical-identity :strict-map-index :resolve-digest-references! :canonical-identical? :unique-resolved-values!], :operation-map :native-zipper, :admission :none, :input-boundary :owner-validated-native-canonical-data, :authenticates-premises? false, :grants-authority? false},
+    module-assembly-manifest
     {:arglists ([lineage fragment-manifest _operations]),
      :operation-inputs [],
      :admission :none},
@@ -617,7 +631,9 @@
     :host-operations],
    :self-hosted? false,
    :private-implementation
-   {source-occurrence-context
+   {zipper-operation
+    {:arglists ([operations key]), :operation-inputs [], :admission :none},
+    source-occurrence-context
     {:arglists [[resolution-artifact syntaxes operations]],
      :operation-inputs
      [:sh03-reader-host-character-value!
@@ -667,6 +683,7 @@
    [D1
     D2
     D3
+    D8
     D9
     L2
     C1
@@ -674,6 +691,7 @@
     C4
     C5
     C6
+    C10
     C15
     BOOT2
     BOOT8
@@ -684,6 +702,7 @@
     L9
     L7
     C18],
+   :native-zipper-operation-inputs [:digest-ref-shape? :structure-kind :canonical-identity :strict-map-index :canonical-sort-key :strict-first-mismatch :canonical-digest :canonical-record :host-fail! :resolve-digest-references! :canonical-identical? :unique-resolved-values!],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
@@ -830,7 +849,10 @@
     :core-check-catalog-map
     :legacy-capability-proof-data
     :private-verification-report-data
-    :unproved-core-artifact-base-data],
+    :unproved-core-artifact-base-data
+    :native-first-structural-mismatch
+    :relative-canonical-digest-comparison
+    :rehydrated-native-template],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -5326,6 +5348,237 @@
     :input :authenticated-sh06-resolution,
     :output :canonical-core,
     :owner :gravity.checked-core}}))
+
+(defn- zipper-operation [operations key]
+  (let [operation (get operations key)]
+    (if (var? operation) @operation operation)))
+
+(defn exact-digest-ref-present?
+  [value operations]
+  (letfn [(present? [item]
+            (cond
+              ((zipper-operation operations :digest-ref-shape?) item) true
+              (map? item)
+              (boolean
+               (some (fn [[key child]]
+                       (or (present? key) (present? child)))
+                     item))
+              (or (vector? item) (set? item) (list? item))
+              (boolean (some present? item))
+              :else false))]
+    (present? value)))
+
+(defn structure-kind
+  [value]
+  (cond
+    (map? value) :map
+    (vector? value) :vector
+    (list? value) :list
+    (set? value) :set
+    :else :scalar))
+
+(defn strict-map-index
+  [source-path value operations]
+  (into {}
+        (map (fn [[key child]]
+               [((zipper-operation operations :canonical-identity) source-path key)
+                [key child]]))
+        value))
+
+(defn strict-first-mismatch
+  [source-path expected actual path operations]
+  (let [expected-kind ((zipper-operation operations :structure-kind) expected)
+        actual-kind ((zipper-operation operations :structure-kind) actual)]
+    (cond
+      (not= expected-kind actual-kind)
+      {:path path :expected-kind expected-kind :actual-kind actual-kind}
+
+      (= :map expected-kind)
+      (let [expected-index
+            ((zipper-operation operations :strict-map-index) source-path expected)
+            actual-index
+            ((zipper-operation operations :strict-map-index) source-path actual)
+            expected-keys (set (keys expected-index))
+            actual-keys (set (keys actual-index))]
+        (if (not= expected-keys actual-keys)
+          {:path path
+           :expected-kind :map
+           :actual-kind :map
+           :missing-key-count (count (remove actual-keys expected-keys))
+           :unexpected-key-count (count (remove expected-keys actual-keys))}
+          (let [ordered-identities
+                (->> expected-keys
+                     (mapv (fn [identity]
+                             {:identity identity
+                              :sort-key
+                              ((zipper-operation operations :canonical-sort-key) identity)}))
+                     (sort-by :sort-key)
+                     (mapv :identity))]
+            (some
+             (fn [identity]
+               (let [[key expected-child] (get expected-index identity)
+                     [_ actual-child] (get actual-index identity)]
+                 ((zipper-operation operations :strict-first-mismatch)
+                  source-path expected-child actual-child
+                  (conj path
+                        [:map-key
+                         ((zipper-operation operations :canonical-digest)
+                          source-path key)]))))
+             ordered-identities))))
+
+      (contains? #{:vector :list} expected-kind)
+      (if (not= (count expected) (count actual))
+        {:path path
+         :expected-kind expected-kind
+         :actual-kind actual-kind
+         :expected-count (count expected)
+         :actual-count (count actual)}
+        (some identity
+              (map-indexed
+               (fn [index [expected-child actual-child]]
+                 ((zipper-operation operations :strict-first-mismatch)
+                  source-path expected-child actual-child
+                  (conj path index)))
+               (map vector expected actual))))
+
+      (= :set expected-kind)
+      (let [expected-items
+            (set (map #((zipper-operation operations :canonical-identity)
+                        source-path %) expected))
+            actual-items
+            (set (map #((zipper-operation operations :canonical-identity)
+                        source-path %) actual))]
+        (when (not= expected-items actual-items)
+          {:path path
+           :expected-kind :set
+           :actual-kind :set
+           :expected-count (count expected)
+           :actual-count (count actual)}))
+
+      :else
+      (when-not (= ((zipper-operation operations :canonical-identity)
+                    source-path expected)
+                   ((zipper-operation operations :canonical-identity)
+                    source-path actual))
+        {:path path :expected-kind :scalar :actual-kind :scalar}))))
+
+(defn strict-structure!
+  [source-path expected actual missing-fact operations]
+  (let [expected-record
+        ((zipper-operation operations :canonical-record) source-path expected)
+        actual-record
+        ((zipper-operation operations :canonical-record) source-path actual)
+        mismatch
+        ((zipper-operation operations :strict-first-mismatch)
+         source-path expected actual [])]
+    (when (or mismatch (not= (:form expected-record) (:form actual-record)))
+      ((zipper-operation operations :host-fail!)
+       "C6-VERIFY" source-path missing-fact
+       (or mismatch {:path [] :expected-kind :canonical
+                     :actual-kind :canonical})))
+    {:status :passed
+     :canonical-digest
+     ((zipper-operation operations :canonical-digest) source-path expected)}))
+
+(defn canonical-identical?
+  [source-path left right operations]
+  (= ((zipper-operation operations :canonical-identity) source-path left)
+     ((zipper-operation operations :canonical-identity) source-path right)))
+
+(defn rehydrate-candidate-template!
+  [source-path expected-raw expected-sealed candidate-sealed resolved-digests operations]
+  (let [request-count (count resolved-digests)
+        resolve-complete
+        (fn [value]
+          ((zipper-operation operations :resolve-digest-references!)
+           source-path value request-count nil resolved-digests))]
+    (letfn
+     [(rehydrate [raw sealed candidate]
+        (cond
+          ((zipper-operation operations :digest-ref-shape?) raw)
+          (if ((zipper-operation operations :canonical-identical?)
+               source-path sealed candidate)
+            raw
+            candidate)
+
+          (and (map? raw) (map? sealed) (map? candidate))
+          (let [raw-index
+                (into {}
+                      (map (fn [[raw-key raw-child]]
+                             [((zipper-operation operations :canonical-identity)
+                               source-path (resolve-complete raw-key))
+                              [raw-key raw-child]]))
+                      raw)
+                sealed-index
+                ((zipper-operation operations :strict-map-index) source-path sealed)
+                entries
+                (mapv
+                 (fn [[candidate-key candidate-child]]
+                   (let [identity
+                         ((zipper-operation operations :canonical-identity)
+                          source-path candidate-key)]
+                     (if (and (contains? raw-index identity)
+                              (contains? sealed-index identity))
+                       (let [[raw-key raw-child] (get raw-index identity)
+                             [sealed-key sealed-child]
+                             (get sealed-index identity)]
+                         [(rehydrate raw-key sealed-key candidate-key)
+                          (rehydrate raw-child sealed-child
+                                     candidate-child)])
+                       [candidate-key candidate-child])))
+                 candidate)
+                keys (mapv first entries)]
+            ((zipper-operation operations :unique-resolved-values!)
+             source-path :collision-free-rehydrated-map-keys keys)
+            (into {} entries))
+
+          (and (contains? #{:vector :list}
+                          ((zipper-operation operations :structure-kind) raw))
+               (contains? #{:vector :list}
+                          ((zipper-operation operations :structure-kind) sealed))
+               (contains? #{:vector :list}
+                          ((zipper-operation operations :structure-kind) candidate))
+               (= (count raw) (count sealed) (count candidate)))
+          (let [values
+                (mapv (fn [[raw-child sealed-child candidate-child]]
+                        (rehydrate raw-child sealed-child candidate-child))
+                      (map vector raw sealed candidate))]
+            (if (list? candidate) (apply list values) values))
+
+          (and (set? raw) (set? sealed) (set? candidate))
+          (let [raw-index
+                (into {}
+                      (map (fn [raw-item]
+                             [((zipper-operation operations :canonical-identity)
+                               source-path (resolve-complete raw-item))
+                              raw-item]))
+                      raw)
+                sealed-index
+                (into {}
+                      (map (fn [sealed-item]
+                             [((zipper-operation operations :canonical-identity)
+                               source-path sealed-item)
+                              sealed-item]))
+                      sealed)
+                items
+                (mapv
+                 (fn [candidate-item]
+                   (let [identity
+                         ((zipper-operation operations :canonical-identity)
+                          source-path candidate-item)]
+                     (if (and (contains? raw-index identity)
+                              (contains? sealed-index identity))
+                       (rehydrate (get raw-index identity)
+                                  (get sealed-index identity)
+                                  candidate-item)
+                       candidate-item)))
+                 candidate)]
+            ((zipper-operation operations :unique-resolved-values!)
+             source-path :collision-free-rehydrated-set-items items)
+            (into #{} items))
+
+          :else candidate))]
+      (rehydrate expected-raw expected-sealed candidate-sealed))))
 
 (let [private-implementation (:private-implementation namespace-contract)
       private-names (if (map? private-implementation)

@@ -1,0 +1,153 @@
+# Reader historical table-driven parser ownership
+
+## Governing contracts and scope
+
+D1/D2/D3/D8/D9, L1, C1/C2/C3/C15, BOOT8 and TEST2 govern this bounded
+ownership move. Parent9b702ccfdb1ba808ceec9b823906fa4da473de0c, tree
+8d2f66dcc234a9390ec168eb557f5b01e2b96d39, preserves the unmerged Reader
+literal slice from draft PR1180. Its source acceptance does not confer wired
+CI, integration, migration or release authority on this successor.
+
+Move only stage1-reader-table-driven-records from component00368 into
+gravity.reader/parse-compatibility-records. Keep the original three-argument
+Bootstrap facade and the execution-diagnostic-stream suffix. Preserve the
+historical P15 parser exactly; it is separate from the token/form pipeline
+and canonical SH03 authentication. No manifests or source pins change.
+
+## Public API and dependency direction
+
+parse-compatibility-records accepts explicit source path, source text, table
+and an operation map containing six late owner Vars: line-start-indices,
+line-terminator-char?, stage1-reader-fail!, stage1-reader-span,
+clojure.string/starts-with? and form-kind. Reader owns the scanning and
+recursive parsing body. Bootstrap supplies its existing owners and calls
+Reader. Reader depends only on clojure.core and supplied operations; it must
+not discover Bootstrap roots, source files, tables, callbacks or authority.
+
+## Artifact inputs, outputs, identity and diagnostics
+
+Inputs are caller-supplied text/path/table. Output is the original ordered
+vector of form records with native form, existing kind, full source span and
+form-index. The same line, scalar-column, UTF-16 and UTF-8 arithmetic remains
+owned by supplied span/location functions. No new identity preimage, envelope
+or cache is introduced; no surviving facts are invalidated by this move.
+
+The parser selects the same STAGE1READER001 through STAGE1READER005 refusal
+branches and arguments. The supplied failure owner constructs/publishes the
+diagnostic. Keep late lookup, source text/path, table behavior, index and call
+order, returned-failure behavior, original native exception boundaries and
+span/raw references. The existing execution-diagnostic-stream remains under
+its original Bootstrap/evidence owner.
+
+## Acceptance and tests
+
+Capture original and candidate outcomes from retained real paired .gravity
+and .qst paths, including nested lists/vectors/maps/sets, comments, mixed line
+endings, strings and non-ASCII spans. Include actual unexpected delimiters,
+unclosed forms/strings, unsupported dispatch and odd-map refusals, plus
+honest observations of host parser limits. Compare complete records and
+diagnostics byte-for-byte and parsed-equal with exact provenance.
+
+Prove the body transformation modulo explicit ports, original facade arity,
+unchanged diagnostic suffix/manifests and all fourteen preceding Reader API
+bodies. Test callback order and late mutations, native exception identity,
+source/table discovery absence and actual value/diagnostic behavior. Run
+proportionate Reader regression, language/source ownership gates, contextual
+lint, formatting/validators and independent semantic/adversarial review.
+Maintain an early draft PR, clean verified commits, own exact wired CI and
+immediate integration preflight before coordinator integration.
+
+## Actual ownership and deferred CI
+
+A genuine six-path implementing lease owns Reader, component00368, Reader
+artifact/new parser tests, the namespace map and this evidence document.
+The existing PR915 workstream still owns tools/ci/run.clj. Its CI path is
+explicitly deferred until original owner release/actual absence and a valid
+claim/handoff. The full intended slice includes one new namespace argument in
+the existing Reader CI command. Do not adopt/release the foreign lease or
+substitute another test route to evade ownership.
+
+## Unsupported boundaries
+
+Historical P15 behavior includes a restricted atom grammar, Long integer parsing, simple
+string escape handling and legacy set/map behavior. Preserve these honestly
+as seed limitations, never as normative Gravity semantics. This API does not
+authenticate source/table/operations, implement full literal/identifier/tag/
+abbreviation/metadata grammar, add trivia or canonical identities, normalize
+host errors, execute Gravity-authored parsing, establish complete Reader,
+or grant canonical SH03, migration, self-hosting, release or seed retirement.
+Held operations and existing authentic-source refusals remain unchanged.
+
+## Original observations and resumed ownership
+
+Original source3ada78bda9e3944db889538b866b0ebcf6451d3f produces forty
+captured records from forty retained actual paired source paths: twenty native
+outputs, eighteen original refusals and two native Long-overflow exceptions.
+Those host exceptions remain host failures, never successful syntax refusals.
+The initial raw printed capture hash is
+3a1f313222c9338f00dee6703fbdc86011d1733b1b748937220c761ca699bc9f.
+That observer representation is not EDN-roundtrippable: historical numeric-looking
+symbols such as 1/0 print like numbers. The retained roundtrip attempt raises
+Divide by zero in the observer. It does not establish a parser rejection.
+
+The corrected observer encodes each native Symbol explicitly with its exact
+spelling, preserving all forty cases and source bytes without rewriting fixtures
+or changing parser behavior. Its complete parsed/printed comparison baseline is
+05facbbf3623085382609ddc1f6ad3d44850027e7536d461e23bee34be35c7a4.
+This is an observer encoding, not a Gravity canonical identity or authentication.
+
+The initial six-path source phase ended normally at its scope-only commit;
+its actual lease was normally released with no implementation-completion credit.
+Normal composition9babefeb8e46f548c82d38b647ead3103618cbc1 preserves the
+independently reviewed owner-order repair0c5cfb683db5a3831c0e5c933e7758787d95a69e
+and current mainf66233177d9fc3eaf29af30c7bfc3286bf4f53bc. The parser body
+itself remains byte-identical to the original baseline before extraction.
+After the original CI owner release, a fresh actual seven-path lease now owns
+all six source paths plus tools/ci/run.clj. The legacy-parser test namespace
+is inserted once in the existing Reader command; no substitute route or
+foreign token/lease was used. Earlier deferred ownership is history.
+
+## Semantic implementation and focused checks
+
+The single recursive parser body moves through six per-call operator-dereferenced
+owner Vars. This preserves function capture before span/cause argument evaluation,
+as established by the predecessor's owner-order repair, while later calls retain
+late lookup. The three-argument Bootstrap facade and execution-diagnostic suffix
+are retained; both manifests and source pins are unchanged. Reader's fourteen
+earlier public functions remain outside this extraction.
+
+Reader artifact plus new historical-parser tests pass fifty tests and 681
+assertions. Tests read the real P15 accepted/rejected Gravity fixtures and
+actual temporary .qst copies, covering all five diagnostic IDs, nested values,
+byte spans, mixed lines, Unicode, table data, first/late owner calls, original
+exception identity, no source discovery and honest native parser limitations.
+New-test and Reader lint report zero warnings/errors. The initial new-test
+parenthesis nonpass is retained and corrected without altering production
+semantics or weakening assertions. Candidate/native comparisons, broad regression,
+independent acceptance, full wired CI and integration gates remain outstanding.
+
+## Committed comparison and review
+
+Source5aac34c0966570f279eb1eceaecd47952f4bcbff, tree
+134638e4c2d5eaec41cd5e147ebb4f043d9501f0, passes the exact wired Reader
+command: ninety-nine tests and 4,348 assertions under its original one GiB
+heap and 120-second process watchdog. Language/source ownership gates pass
+forty-eight tests and 1,198 assertions with no skipped namespace. All forty
+candidate native records match the typed original baseline byte-for-byte and
+parsed-equal at05facbbf3623085382609ddc1f6ad3d44850027e7536d461e23bee34be35c7a4,
+retaining twenty outputs, eighteen refusals and two original host failures.
+
+Static conservation proves the moved body modulo six per-call operator ports,
+all fourteen earlier public Reader bodies, exact facade/diagnostic suffix,
+both unchanged manifests and the single CI namespace insertion. Contextual
+lint covers forty-one present Clojure/EDN paths against mainf662, with 3,458
+unchanged baseline warnings and zero blockers. Docs, roadmap, governance and
+CI formatting pass. Cold Reader exposes fifteen functions without Bootstrap.
+
+Independent adversarial review accepts the exact source. Independent semantic
+review identifies no source defect and requests explicit late span/terminator
+replacement and owner exception-identity assertions in addition to existing
+order tests. The test-only successor adds these controls, with its own fresh
+Reader command run pending. The parser implementation and all prior preserved
+bodies remain unchanged. Own exact source/base CI, final review and immediate
+integration preflight remain separate gates; prior literal CI does not transfer.

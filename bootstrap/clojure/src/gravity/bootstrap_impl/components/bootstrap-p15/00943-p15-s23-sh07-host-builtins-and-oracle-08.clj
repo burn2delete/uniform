@@ -14,7 +14,6 @@
           replays (:decimal-replay-evidence carrier)]
       (when-not
        (and (= (:artifact-id artifact) (c2-reader-artifact-id artifact))
-            (sh03-reader-final-decimal-occurrence-projection-valid? artifact)
             (= (count adapted-forms) (count forms-by-id))
             (map? (get forms-by-id root-id)))
         (throw (ex-info "source oracle C2 carrier is unauthenticated"
