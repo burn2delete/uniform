@@ -2,7 +2,7 @@
 
 ## Scope and governing contracts
 
-This scope precedes implementation and its early draft PR. D1, D2, D3, D8,
+This scope was committed before implementation and early draft PR #1295. D1, D2, D3, D8,
 D9, SAFE1, SAFE6, SAFE15, C1, C7, C8, C10, C15, BOOT8 and TEST2 govern the
 slice. Starting source is `4277f6440102a138af73920e4463c6ca1304b011`, tree
 `ec7d0f31e73ed58cd6d2df444d125608b28ca22b`. Published main
@@ -45,6 +45,14 @@ It receives five trusted late Var ports: `:arg-value`, `:check-outcome!`,
 selected at its original expression position. Generated/conformance branches
 select their record sink before extracting payload arguments. The original
 base call record, rather than the sink's result, remains the recorder return.
+
+The operation map's call shapes are `:arg-value [args index]`,
+`:check-outcome! [node operation outcome evidence]`,
+`:diagnostic! [id message node remediation data]`, and
+`:record! [checker key record]`. `:legal-outcomes` is a live data Var, not a
+function. The check and diagnostic ports are Bootstrap compatibility adapters;
+they pass the live legal-outcome, SAFE1 diagnostic and typed-diagnostic Vars to
+the new stage APIs. No adapter captures an eager function or legal set.
 
 Bootstrap retains the existing compatibility names/arities, legal-outcome and
 required-family catalogs, typed traversal, argument representation, checker
@@ -90,6 +98,48 @@ language/ownership, cold loading, document/roadmap, CI harness and complete
 current-main lint checks. Bind exact source/base/tree, owned paths, immutable
 semantic/adversarial/provider/CI acceptance and final integration preflight.
 The designated integrator retains integration authority.
+
+## Current development evidence
+
+The complete three-function group and all seven branches are extracted; the
+original names and arities delegate through thin adapters. Safety now exposes
+15 APIs and cold-loads without Bootstrap or Diagnostics. All 12 earlier Safety
+bodies, the interop recorder, legal/family catalogs, conformance summary and
+safe-memory catalog are unchanged. The 17-path conservation check also binds
+the typed-call position, early SAFE1 diagnostics, call specs, source projector,
+Reader/compiler pins, source input, Types, Effects, Runtime and Diagnostics.
+All 22 earlier CI command forms remain identical; the new complete source test
+namespace is appended as command 23 at 2g/180 seconds.
+
+The new namespace passes 10 tests and 264 assertions. Existing native Safety
+controls pass 4/137; Types/Effects pass 20/263, language/ownership 48/1202 and
+the CI harness 54/664. Document and roadmap structural checks pass. Three real
+source Safety artifacts emit, including the accepted all-seven-branch fixture
+and both hello spellings. Nine physical source fixtures refuse: seven at moved
+SAFE1 rules, two at retained early owners. All 12 complete artifact/diagnostic
+observations equal the pre-extraction capture. The original typed-artifact
+hash is independently recomputed, with no new identity encoding.
+
+Independent scope review SHA256
+`fae8ee9ee282b5800e9245b87860a02a2dfa230f240218ce43976c52856efb16`
+requested explicit operation call shapes/live adapters, exact compatibility
+arities, the final namespace row and unrelated-form conservation. These are
+implemented and await final exact-source acceptance. The primary conservation
+receipt SHA256 is
+`046e7d7efe2fe6220a9ef0b07c0dd23a0acfea352af5ae1309defac48820d6be`.
+
+An initial native test assumed textual evaluation order within a Clojure map
+literal. Its nonpassing log is retained; the corrected test checks three
+distinct context reads and the later unsafe-policy read without making that
+host-order assumption. Early test syntax corrections and helper lint results
+remain development history. No production behavior changed to satisfy them.
+
+Published main subsequently advanced to
+`aa6af9bddd96776a3d59d8c920ab0e4a4d8839b0` with three separate diagnostic
+validation/workflow paths. Its nine shared client API blobs are unchanged.
+This source has not yet imported that base; earlier source/provider/CI
+acceptance does not transfer. Final source/adversarial review, current-main
+composition/context, provider/hosted CI audit and integration remain pending.
 
 ## Unsupported boundaries
 

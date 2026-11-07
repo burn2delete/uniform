@@ -603,7 +603,9 @@
    ["package-metadata-compiled-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.package.compiled-metadata-test")]
    ["diagnostics-carrier-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.diagnostics.carrier-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.diagnostics.carrier-test")]
+   ["safety-source-outcomes-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.source-outcomes-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
