@@ -1,5 +1,6 @@
 (ns gravity.backend.llvm.differential-evidence-input-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.string :as str]
+            [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]))
 
 (def ^:private source-path
@@ -185,6 +186,9 @@
     (is (= 'w5-b14-linux-differential-evidence-input function))
     (is (= (mapv observed-toolchain [:process-result :elf-object :elf-executable]) arguments))
     (is (= (get-in @plan [:source :sha256]) (get-in compiled [:source :sha256])))
+    ;; The raw compiler omits exports; the production binding authenticates
+    ;; the export declaration from the same source bytes instead.
+    (is (not (contains? (:module compiled) :exports)))
     (is (= #{:memory/allocate} (get-in compiled [:module :effects])))
     (is (= #{} (get-in compiled [:module :capabilities])))
     (is (= (expected-id observed-toolchain) (get-in artifact [:b14-record :evidence-id])))
@@ -296,6 +300,45 @@
       (is (= "B1-INPUT" (:id data)))
       (is (= :current-b14-evidence-source-binding (:missing-fact data)))
       (is (zero? @calls)))))
+
+(deftest unexported-current-source-fails-before-execution
+  (let [canonical-path (.getCanonicalPath (java.io.File. source-path))
+        snapshot (native-var "p15-s23-sh07-b51-compatibility-source-record")
+        read-source @snapshot
+        text (slurp source-path)
+        unexported (str/replace-first
+                    text "             w5-b14-linux-differential-evidence-input\n" "")
+        compile-plan bootstrap/p15-s23-stage2-compiler-artifact-plan
+        compiled (atom nil)
+        calls (atom 0)
+        data (with-observations observed-toolchain
+               #(with-redefs-fn
+                  {snapshot
+                   (fn [path]
+                     (let [record (read-source path)]
+                       (if (= canonical-path (:path record))
+                         (assoc record :text unexported
+                                :bytes (.getBytes unexported
+                                                  java.nio.charset.StandardCharsets/UTF_8))
+                         record)))
+                   #'bootstrap/p15-s23-stage2-compiler-artifact-plan
+                   (fn [& arguments]
+                     (reset! compiled (apply compile-plan arguments)))
+                   #'bootstrap/p15-s23-stage2-runtime-execute-function
+                   (fn [& _] (swap! calls inc))}
+                  (fn [] (diagnostic construct-artifact))))]
+    (is (not= text unexported))
+    ;; The function still compiles with the right ABI and source identity.
+    ;; Only its export declaration is missing.
+    (is (= (str "sha256:" (bootstrap/sha256-hex unexported))
+           (get-in @compiled [:source :sha256])))
+    (is (= {:arity 3 :params '[process-result elf-object elf-executable]}
+           (select-keys (get-in @compiled
+                                [:functions 'w5-b14-linux-differential-evidence-input])
+                        [:arity :params])))
+    (is (= "B1-INPUT" (:id data)))
+    (is (= :current-b14-evidence-source-binding (:missing-fact data)))
+    (is (zero? @calls))))
 
 (deftest malformed-rejected-and-substituted-results-have-no-host-fallback
   (let [correct (expected (:process-result observed-toolchain)

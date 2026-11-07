@@ -17,6 +17,10 @@
         _ (p15-s23-sh02-component-safe-source-path!
            request-source (.toPath root) path)
         before (p15-s23-sh07-b51-compatibility-source-record (str path))
+        source-module (parse-module
+                       (:path before)
+                       (mapv :form (read-source-form-records
+                                    (:path before) (:text before))))
         rule (c-backend-stage2-plan-emitter-source-rule! request-source :jvm)
         plan (p15-s23-stage2-compiler-artifact-plan
               (:emitter rule) (:path before) (:text before))
@@ -33,8 +37,13 @@
                        :profile :meta :target :jvm :effects #{:memory/allocate}
                        :capabilities #{} :safety :safe}
                       (select-keys (:module plan)
+                                   [:module :profile :target :effects :capabilities :safety])
+                      (select-keys source-module
                                    [:module :profile :target :effects :capabilities :safety]))
-                   (some #{function} (get-in plan [:module :exports]))
+                   ;; The raw compiler's macro projection omits exports.
+                   ;; Check the retained source header, not an invented plan field.
+                   (not (contains? (:module plan) :exports))
+                   (some #{function} (:exports source-module))
                    (= {:arity 3 :params '[process-result elf-object elf-executable]}
                       (select-keys (get-in plan [:functions function]) [:arity :params])))
       (p15-s23-b3-llvm-fail!
