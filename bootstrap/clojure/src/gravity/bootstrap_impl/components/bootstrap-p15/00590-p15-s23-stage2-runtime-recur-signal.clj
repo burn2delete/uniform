@@ -1,8 +1,7 @@
 (def ^:private p15-s23-stage2-runtime-source-throw-token (Object.))
 (defn- p15-s23-stage2-runtime-source-throw! [plan payload]
-  (throw (ex-info "Gravity single-source seed throw"
-                  {::source-throw p15-s23-stage2-runtime-source-throw-token
-                   :payload payload :source (:source plan) :module (get-in plan [:module :module])})))
+  (gravity.runtime/source-throw!
+   ::source-throw #'p15-s23-stage2-runtime-source-throw-token plan payload))
 
 (defn p15-s23-stage2-runtime-recur-signal
   [values]
