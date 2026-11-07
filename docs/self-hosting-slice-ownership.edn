@@ -502,6 +502,8 @@
   {:namespace gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
   {:namespace gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
+  "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"
+  {:namespace gravity.lowering.native-backend-test :slice "SH-17" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
   {:namespace gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
   "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"

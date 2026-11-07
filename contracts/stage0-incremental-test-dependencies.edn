@@ -188,7 +188,13 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "mobile-native-manifest"
+ [{:test-id "lowering-native-backend"
+   :path "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"
+   :namespace gravity.lowering.native-backend-test
+   :jvm-group "lowering-native-backend"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "mobile-native-manifest"
    :path "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"
    :namespace gravity.backend.mobile.native-manifest-test
    :jvm-group "mobile-native-manifest"
