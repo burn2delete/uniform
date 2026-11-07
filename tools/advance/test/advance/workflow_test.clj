@@ -14,6 +14,7 @@
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
+            [simplify.recovery :as simplify-recovery]
             [simplify.runtime :as rt]
             [simplify.schema :as schema]
             [simplify.workflow :as flow]
@@ -1002,3 +1003,54 @@
       (is (thrown-with-msg? Exception #"encountered a refusal" (workflow/validate-source! ctx task))))
     (is (rt/shared-restriction ctx :commands key))
     (is (thrown-with-msg? Exception #"restricted|cannot retry or transfer" (workflow/validate-source! ctx task)))))
+
+(deftest inspected-recoveries-retain-selection-before-changing-the-merge-base
+  (doseq [operation [:fresh-source :composition]
+          selection [:legacy :recorded :ordinary]]
+    (let [{:keys [ctx repo task base]} (authority-fixture!)
+          current (publish-authority! ctx repo (str/replace authority-text "other behavior is accepted"
+                                                           "other behavior and its diagnostics are accepted"))
+          original (cond-> (assoc task :status :attention :resume-status :ci :worktree repo
+                                      :branch "codex/retained" :candidate base :tree (rt/git ctx repo "rev-parse" (str base "^{tree}"))
+                                      :pr {:number 42} :error {:message "Original ordinary composition failure" :details {:restricted false}})
+                     (= selection :legacy) (dissoc :source-base)
+                     (= selection :recorded) (assoc :base current)
+                     (= selection :ordinary) (dissoc :task-digest :source-base))
+          validation {:base current :candidate current :tree (rt/git ctx repo "rev-parse" (str current "^{tree}"))
+                      :worktree repo :branch "codex/inspected"}
+          inspection {:kind (if (= operation :fresh-source) :fresh-source-validation :owned-composition-conflict)
+                      :stage :queued :validation validation}
+          history-key (if (= operation :fresh-source) :fresh-source-validation-history :composition-recovery-history)
+          seen (atom nil)
+          inspect (fn [_ inspected _] (reset! seen inspected) inspection)]
+      (rt/update! ctx assoc-in [:tasks (:key original)] original)
+      (let [protected (dissoc @(:state ctx) :tasks)]
+        (with-redefs [simplify-recovery/inspect-fresh-source! inspect
+                      simplify-recovery/inspect-composition! inspect
+                      rt/claim-paths! (fn [& _] {:id "fixture-owned-scope"})
+                      rt/with-claimed-paths (fn [_ _ f] (f))]
+          (if (= operation :fresh-source)
+            (flow/recover-fresh-source! ctx (:key original) "fixture-inspection.edn")
+            (flow/recover-composition! ctx (:key original) "fixture-inspection.edn")))
+        (let [queued (flow/task ctx (:key original))]
+          (is (= original @seen) "The inspector receives the complete original task")
+          (is (= original (:original-task (peek (get queued history-key)))) "Recovery history keeps the complete original task")
+          (is (= protected (dissoc @(:state ctx) :tasks)) "Recovery does not change other native records")
+          (is (= (:error original) (:error queued)))
+          (is (= current (:base queued)))
+          (is (= :repair (:status queued)))
+          (is (nil? (:checks queued)))
+          (is (nil? (:review queued)))
+          (if (= selection :ordinary)
+            (is (not (contains? queued :source-base)) "An ordinary Simplify task gains no selected-source authority")
+            (do
+              (is (= base (:source-base queued)) "The immutable selection survives a different validated merge base")
+              (is (= (:task-digest original) (:task-digest queued)))
+              (is (nil? (workflow/validate-source! ctx queued)) "Unrelated published task edits remain admissible")
+              (let [changed (publish-authority! ctx repo
+                              (str/replace authority-text "the value is independently accepted"
+                                                           "the value now requires different semantics"))
+                    before @(:state ctx)]
+                (is (thrown? Exception (workflow/validate-source! ctx (assoc queued :base changed)))
+                    "The captured origin cannot authorize a changed selected task")
+                (is (= before @(:state ctx)) "Authority checking neither promotes nor rewrites the task")))))))))
