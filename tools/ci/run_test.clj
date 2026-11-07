@@ -467,7 +467,7 @@
             "types-native-validation" "llvm-manifest-native-validation"
             "mlir-manifest-native-validation" "gpu-manifest-native-validation"
             "hdl-manifest-native-validation" "workflow-manifest-native-validation"
-            "query-manifest-native-validation"] (mapv first commands)))
+            "query-manifest-native-validation" "mobile-manifest-native-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -532,7 +532,9 @@
            [15 "workflow-manifest-native-validation" "gravity.backend.workflow.native-manifest-test"
             "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"]
            [16 "query-manifest-native-validation" "gravity.backend.query.native-manifest-test"
-            "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"]]]
+            "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"]
+           [17 "mobile-manifest-native-validation" "gravity.backend.mobile.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]

@@ -536,6 +536,8 @@
   {:namespace gravity.backend.query.native-manifest-test :slice "SH-18" :owner :sh-target-query}
   "bootstrap/clojure/test/gravity/backend/mobile/pipeline_test.clj"
   {:namespace gravity.backend.mobile.pipeline-test :slice "SH-18" :owner :sh-target-mobile}
+  "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"
+  {:namespace gravity.backend.mobile.native-manifest-test :slice "SH-18" :owner :sh-target-mobile}
   "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"

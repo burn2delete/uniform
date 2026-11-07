@@ -593,7 +593,9 @@
    ["workflow-manifest-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.workflow.native-manifest-test")]
    ["query-manifest-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.query.native-manifest-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.query.native-manifest-test")]
+   ["mobile-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mobile.native-manifest-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
