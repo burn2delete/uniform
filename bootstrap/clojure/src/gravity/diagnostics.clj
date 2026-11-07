@@ -16,9 +16,14 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.diagnostics
    :contract-boundary :stage0-diagnostic-carriers-and-record-data
-   :governing-contracts '[D1 D2 D3 D6 D8 D9 C1 C2 C3 C4 C14 C15 T1 T2 T3 BOOT8 TEST2]
+   :governing-contracts '[D1 D2 D3 D6 D8 D9 L5 L6 C1 C2 C3 C4 C7 C8 C14 C15 T1 T2 T3 BOOT8 TEST2]
    :public-api
-   {'native-context-valid? {:arglists '([diagnostic]) :admission :none}
+   {'fail-at-node! {:arglists '([fail-var analyzer-stage id message node remediation data])
+                   :admission :none :operation-vars '[fail-var] :hosted-seed-only? true
+                   :analyzer-stage-owner :caller :rule-selection-owner :producer
+                   :returns :original-callback-result :transport-owner :supplied-failure-operation
+                   :exception-transport :unchanged}
+    'native-context-valid? {:arglists '([diagnostic]) :admission :none}
     'native-primary-valid? {:arglists '([diagnostic]) :admission :none}
     'validate-native! {:arglists '([operations configuration source-path artifact]) :admission :none
                        :operation-inputs [:fail! :stable-id :context-valid? :primary-valid?]}
@@ -46,19 +51,21 @@
     'diagnostic-record
     {:arglists '([source-span stable-id rule severity stage message-key source-path form-index primary-artifact facts remediation & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id]}])
      :admission :none}}
-   :artifact-inputs [:native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
+   :artifact-inputs [:trusted-late-failure-var :producer-selected-analyzer-stage :node-span-remediation-and-caller-data
+                     :native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
                      :native-compiler-metadata :native-c15-rule-id-order :rule-id :human-message :structured-data :explicit-span-and-identity-operations
                      :native-seed-diagnostic-fields :source-invocation :canonical-request-digest
                      :original-eleven-c15-fields :private-candidate :complete-digest-request
                      :trusted-native-source-module-configuration-and-c14-parent
                      :trusted-zero-argument-operation-suppliers]
-   :artifact-outputs [:native-phase-and-primary-predicates :native-record-validation-result
+   :artifact-outputs [:stage0-node-carrier-callback-result :native-phase-and-primary-predicates :native-record-validation-result
                       :native-source-overrides :native-c15-catalog :stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
                       :resolved-request-data :private-c15-binding :source-owned-rejection
                       :native-c15-fixture-diagnostics-artifact-and-capability-data
                       :native-failure-payload-or-original-callback-result]
    :diagnostic-ownership
-   {:owns [:native-context-primary-and-record-stream-rules :legacy-redaction-and-golden-label-checks
+   {:owns [:stage0-node-carrier-enrichment-and-transport
+           :native-context-primary-and-record-stream-rules :legacy-redaction-and-golden-label-checks
            :native-source-override-projection :native-c15-catalog-projection :stage0-carrier-construction :stage0-carrier-throw :native-seed-record-construction
            :legacy-stable-id-preimage :request-binding-orchestration :fresh-source-verification-orchestration
            :native-c15-fixture-ordering-and-artifact-proof-assembly
@@ -72,7 +79,8 @@
                   'gravity.c15-diagnostics.artifact 'gravity.c15-diagnostics.projection
                   'gravity.c15-diagnostics.proof 'gravity.bootstrap]
     :forbids ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]}
-   :unsupported [:canonical-c15-conformance :untrusted-native-ingress :public-projection
+   :unsupported [:typed-source-admission :canonical-typed-core
+                 :canonical-c15-conformance :untrusted-native-ingress :public-projection
                  :redaction-policy :canonical-map-encoding :migration :release :seed-retirement]
    :record-context {:profile :caller-supplied-or-nil :target :caller-supplied-or-nil
                     :syntax-id :caller-supplied-or-nil}
@@ -86,6 +94,15 @@
    :bootstrap-hosted? true
    :clojure-seed-boundary? true
    :self-hosted? false})
+
+(defn fail-at-node!
+  "Enrich a trusted producer's Stage0 payload and invoke its selected failure Var."
+  [fail-var analyzer-stage id message node remediation data]
+  ((deref fail-var) id message
+   (merge {:source-span (:source-span node)
+           :analyzer-stage analyzer-stage
+           :remediation remediation}
+          data)))
 
 (defn native-context-valid? [diagnostic]
   (let [unavailable? (contains? #{:read-source :compiler-diagnostics} (:stage diagnostic))]
@@ -365,7 +382,7 @@
   (((:invoke operations)) :compiler-c15-diagnostics-source-artifact
                      (fn [source-path source-text] (((:source-artifact operations)) configuration source-path source-text)) path (((:slurp operations)) path)))
 
-(doseq [operation [#'native-context-valid? #'native-primary-valid? #'validate-native!
+(doseq [operation [#'fail-at-node! #'native-context-valid? #'native-primary-valid? #'validate-native!
                   #'source-overrides #'native-catalog #'diagnostic #'fail! #'stable-id #'diagnostic-record
                   #'resolve-request-id #'verify-private-record #'bind-private-record
                   #'native-fixture-diagnostics #'native-artifact-base #'native-capability-proof
