@@ -6,42 +6,16 @@
     source-path source-text reader-options
     (reader-project-context-for-source source-path)))
   ([source-path source-text reader-options project-context]
-   (let [source-unit (c2-source-unit-record source-path source-text
-                                            reader-options project-context)
-         table (stage1-reader-table)]
-     (try
-       (let [stage1-stream (stage1-reader-token-stream source-path source-text
-                                                       table reader-options)
-             token-stream (mapv #(c2-token-record % source-unit)
-                                (:tokens stage1-stream))
-             parser-stream (assoc stage1-stream :tokens token-stream)
-             parsed (stage1-reader-products-from-token-stream
-                     source-path source-text table parser-stream)
-             form-tree (mapv #(c2-form-record % source-unit)
-                             (:form-tree parsed))]
-         {:source-unit source-unit
-          :token-stream token-stream
-          :form-tree form-tree
-          :root-form-ids (:root-form-ids parsed)
-          :parsed-records (:records parsed)
-          :parsed-values (:parsed-values parsed)})
-       (catch StackOverflowError error
-         (c2-reader-fail!
-          "C2-HASH" source-path
-          {:stage :read-source
-           :source-id (:source-id source-unit)
-           :source-span (source-span source-path 0)
-           :reader-options reader-options}
-          {:missing-fields [:stack-safe-reader-form-construction]
-           :facts {:failure-kind :reader-host-stack-overflow
-                   :contained-host-error (.getName (class error))}}))
-       (catch clojure.lang.ExceptionInfo ex
-         (throw
-          (ex-info (.getMessage ex)
-                   (merge {:source-id (:source-id source-unit)
-                           :reader-options reader-options}
-                          (ex-data ex))
-                   ex)))))))
+   (gravity.reader/compatibility-reader-products
+    source-path source-text reader-options project-context
+    {:source-unit-record-var #'c2-source-unit-record
+     :reader-table-var #'stage1-reader-table
+     :token-stream-var #'stage1-reader-token-stream
+     :token-record-var #'c2-token-record
+     :parsed-products-var #'stage1-reader-products-from-token-stream
+     :form-record-var #'c2-form-record
+     :reader-fail-var #'c2-reader-fail!
+     :source-span-var #'source-span})))
 
 (defn c2-reader-products
   ([source-path source-text reader-options]
