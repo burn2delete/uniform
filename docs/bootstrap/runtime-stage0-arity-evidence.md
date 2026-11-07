@@ -121,8 +121,11 @@ Existing whole-namespace CI commands cover the additions; no workflow, command,
 ownership, catalog or load-order edit is required.
 
 The extraction retains every earlier Runtime function body, Stage2 helper and
-surrounding `00546` source. All existing 69 CI vectors/29 contract commands
-remain unchanged. Complete current-Main comparison lint remains required.
+surrounding `00546` source. The 69 existing CI command definitions and 29
+contract commands remain unchanged. The derived changed-file lint command must
+include the newly changed `00546` path in its actual source inventory; its
+expanded argv is not claimed identical to the predecessor's inventory.
+Complete current-Main comparison lint remains required.
 Independent semantic, adversarial, conservation,
 provider and own-CI review must bind the exact clean source and base before
 integration eligibility. Do not rerun the excluded broader local Runtime
