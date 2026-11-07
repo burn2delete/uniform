@@ -5,15 +5,18 @@
   (:import [java.nio ByteBuffer ByteOrder]))
 
 ; Current-source implementation feedback; no migration or release authority.
+(defn- compile-plan [relative-path]
+  (let [source (.getCanonicalPath (io/file relative-path))
+        emitter (:emitter
+                 (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                  source :jvm))]
+    (bootstrap/p15-s23-stage2-compiler-artifact-plan
+     emitter source (slurp source))))
+
 (def ^:private engine-plan
   (delay
-    (let [source (.getCanonicalPath
-                  (io/file "bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity"))
-          emitter (:emitter
-                   (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-                    source :jvm))]
-      (bootstrap/p15-s23-stage2-compiler-artifact-plan
-       emitter source (slurp source)))))
+    (compile-plan
+     "bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity")))
 
 (defn- invoke [function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
@@ -138,3 +141,23 @@
     (is (false? (:release-eligible? policy)))
     (is (false? (:self-hosted? policy)))
     (is (false? (:public-authority? policy)))))
+
+(deftest b13-module-rejection-branches-execute-with-explicit-else
+  ; The prefix route compiles the whole B13 module. Exercise the outer
+  ; provenance/evidence branches that previously lacked required else operands.
+  (let [fixture-plan
+        (compile-plan
+         "bootstrap/clojure/fixtures/self-hosting/w5-b13/accepted/artifact-emission.gravity")
+        request
+        (bootstrap/p15-s23-stage2-runtime-execute-function
+         {:engine :gravity-elf-prefix-development :compiler-artifact-plan? true}
+         fixture-plan 'w5-b13-artifact-emission-request [])]
+    (doseq [[function paths]
+            [['w5-b13-provenance-links-valid?
+              [[:compiler-provenance :source-id] [:source-debug-map :source-id]]]
+             ['w5-b13-evidence-valid?
+              [[:safety-proof-certificate-bundle :unexpected]
+               [:safety-proof-certificate-bundle :artifact]]]]]
+      (is (true? (invoke function [request])))
+      (doseq [path paths]
+        (is (false? (invoke function [(assoc-in request path :mismatch)])))))))

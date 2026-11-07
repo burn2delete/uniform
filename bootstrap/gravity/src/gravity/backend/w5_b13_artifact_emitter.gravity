@@ -707,7 +707,9 @@
             false)
           false)
         false)
-      false)))))
+        false)
+      false)
+    false)))
 
 (defn w5-b13-hash-valid? [request]
   (let [manifest (get request :manifest)
@@ -958,7 +960,9 @@
             false)
           false)
         false)
-      false)))))
+        false)
+      false)
+    false)))
 
 (defn w5-b13-conformance-valid? [request]
   (let [conformance (get request :conformance-evidence-reference)
