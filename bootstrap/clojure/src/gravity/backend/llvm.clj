@@ -1,12 +1,33 @@
 (ns gravity.backend.llvm
-  "Scalar LLVM lowering data; no authenticated backend admission."
+  "Scalar LLVM lowering and native document data; no authenticated backend admission."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {block-labels {:arglists ([block-order]), :admission :none},
+ {native-manifest
+  {:arglists ([operations input-id]), :admission :none,
+   :contract-boundary :native-llvm-document-data, :seed-compatibility-data-only? true,
+   :operation-inputs [:artifact-id :llvm-ir], :authenticates-inputs? false,
+   :artifact-inputs [:unverified-input-id :fixed-fixture-text],
+   :artifact-outputs [:legacy-llvm-document-manifest], :grants-authority? false},
+  validate-native-manifest!
+  {:arglists ([operations source-path artifact]), :admission :none,
+   :contract-boundary :native-llvm-document-checks, :seed-compatibility-checks-only? true,
+   :operation-inputs [:fail! :llvm-ir :diagnostic-ids], :authenticates-inputs? false,
+   :artifact-inputs [:unverified-document-artifact-data],
+   :artifact-outputs [:legacy-structural-completion-or-refusal],
+   :diagnostics ["B3-MANIFEST" "B3-TARGET" "B3-METADATA" "B3-UB" "B3-POINTER"
+                 "B3-NUMERIC" "B3-ATOMIC" "B3-RUNTIME" "B3-ABI" "B3-PASS"],
+   :diagnostic-publication :caller-owned, :grants-authority? false},
+  native-coverage-report
+  {:arglists ([operations artifact]), :admission :none,
+   :contract-boundary :native-llvm-document-data, :seed-compatibility-data-only? true,
+   :operation-inputs [:llvm-ir :diagnostic-ids], :authenticates-inputs? false,
+   :artifact-inputs [:unverified-document-artifact-data],
+   :artifact-outputs [:legacy-document-coverage-record], :grants-authority? false},
+  block-labels {:arglists ([block-order]), :admission :none},
   block-order {:arglists ([mir function]), :admission :none},
   comparison-opcodes {:kind :constant, :admission :none},
   constant-number {:arglists ([value]), :admission :none},
@@ -75,7 +96,8 @@
   value-reference
   {:arglists ([operation-index operation-id]), :admission :none}},
  :supported
- [:existing-scalar-operation-legality
+ [:native-document-manifest-data-and-structural-checks
+  :existing-scalar-operation-legality
   :single-or-diamond-shaped-data
   :conservative-llvm-text-without-proof-sensitive-flags
   :existing-scalar-evaluation
@@ -101,7 +123,9 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:explicit-mir-and-scalar-operation-data
+ [:explicit-unverified-native-document-data
+  :late-native-document-operations
+  :explicit-mir-and-scalar-operation-data
   :block-and-operation-order
   :source-and-fact-associations
   :explicit-policy-vars-and-compatibility-operations],
@@ -115,7 +139,10 @@
    :diagnostic-publication
    :input-admission]},
  :artifact-outputs
- [:legality-reason-or-nil
+ [:legacy-llvm-document-manifest
+  :legacy-structural-completion-or-refusal
+  :legacy-document-coverage-record
+  :legality-reason-or-nil
   :block-labels
   :llvm-instruction-text
   :scalar-values
@@ -562,6 +589,273 @@
               :public? false :release? false
               :self-hosted? false :whole-b3? false}}))
 
+
+(defn- native-manifest-port [operations key]
+  (let [operation (get operations key)]
+    (if (var? operation) @operation operation)))
+
+(defn native-manifest
+  [operations input-id]
+  (let [ir-hash ((native-manifest-port operations :artifact-id) (native-manifest-port operations :llvm-ir))]
+    {:artifact :gravity/llvm-backend-manifest
+     :backend :gravity.backend/llvm
+     :accepts #{:gravity/mir :gravity/domain-ir}
+     :emits #{:llvm-ir :bitcode :object :static-library :shared-library}
+     :requires #{:target-triple :data-layout :abi :runtime-providers
+                 :proof-table :source-map :safety-bundle}
+     :metadata-gated #{:nuw :nsw :exact :noalias :nonnull
+                       :dereferenceable :align :range :inbounds
+                       :fast-math :tbaa}
+     :rejects #{:proofless-llvm-metadata :implicit-llvm-ub
+                :unpinned-data-layout :unsupported-runtime-service}
+     :target-record {:triple "x86_64-unknown-linux-gnu"
+                     :cpu "generic"
+                     :feature-string ""
+                     :pointer-width 64
+                     :address-spaces {:generic 0}
+                     :endianness :little
+                     :integer-layout {:i64 {:abi 64 :preferred 64}}
+                     :floating-layout {:f64 {:abi 64 :preferred 64}}
+                     :aggregate-alignment 64
+                     :vector-legal-widths [128]
+                     :relocation-model :static
+                     :code-model :small
+                     :calling-conventions [:ccc]
+                     :unwind-strategy :trap
+                     :thread-local-storage :not-requested
+                     :sanitizer-mode :none
+                     :instrumentation-mode :none
+                     :object-format :elf
+                     :data-layout "e-m:e-p:64:64-i64:64-n8:16:32:64-S128"
+                     :status :pinned}
+     :llvm-ir-files [{:path "gravity_stage0_b3.ll"
+                      :content (native-manifest-port operations :llvm-ir)
+                      :hash ir-hash}]
+     :proof-to-llvm-metadata-map
+     [{:metadata :range
+       :operation :checked-add-overflow-guard
+       :proof :proof/c18-interval-check}
+      {:metadata :nonnull
+       :operation :managed-reference
+       :proof :proof/c18-check-dominance}
+      {:metadata :align
+       :operation :region-pointer
+       :proof :proof/c18-layout-alignment}]
+     :metadata-policy {:forbidden-without-proof
+                       [:nuw :nsw :exact :nonnull :dereferenceable
+                        :align :range :noalias :inbounds :fast-math
+                        :tbaa]
+                       :emitted-in-fixture []
+                       :status :gated}
+     :pointer-ownership-memory-map
+     {:preserved-facts [:object-identity :address-space :provenance
+                       :allocation-provider :lifetime-interval
+                       :valid-byte-range :alignment :initialized-state
+                       :mutability :aliasing-mode :nullability]
+      :gep-inbounds-policy :proof-only
+      :raw-pointer-casts :ffi-unsafe-island-or-intrinsic-only
+      :lifetime-intrinsics :diagnostic-safe-only
+      :status :complete}
+     :numeric-floating-lowering
+     {:integer-modes {:checked :branch-trap-or-helper
+                      :wrapping :no-overflow-assumptions
+                      :saturating :intrinsic-or-helper}
+      :bounded-range-metadata :interval-proof-only
+      :narrowing :checked-unless-proven
+      :floating-modes [:strict :reproducible :relaxed :approximate
+                       :target-native]
+      :fast-math-flags :certificate-only
+      :status :complete}
+     :atomic-volatile-concurrency-lowering
+     {:records [:operation :address-space :memory-order
+                :synchronization-scope :alignment :failure-ordering
+                :target-feature-requirement :fallback-helper]
+      :mmio-policy :volatile-and-ordered
+      :data-race-evidence :safe8-required
+      :status :complete}
+     :runtime-abi-helper-map
+     {:helpers [:allocation :deallocation :region :arena :panic :trap
+                :bounds-check :numeric-check :resource-cleanup
+                :atomics :synchronization :math-provider :ffi-adapter
+                :stack-probe :debug-hook]
+      :hidden-runtime-services []
+      :profile-selection :manifest-required
+      :status :complete}
+     :pass-pipeline-record
+     {:llvm-version :stage0-recorded
+      :target-backend :x86_64
+      :optimization-level :o0
+      :mandatory-verification-passes [:verify-after-emission
+                                      :verify-after-pipeline]
+      :instrumentation-and-sanitizer-passes []
+      :vectorization-passes []
+      :target-specific-passes []
+      :metadata-preservation [:source-map :safety :capability
+                              :proof :unsafe-audit :conformance]
+      :disabled-passes [{:pass :unsafe-fast-math
+                         :reason :missing-explicit-floating-certificate}
+                        {:pass :metadata-stripping
+                         :reason :would-erase-required-evidence}]
+      :post-pass-verifier-results :requires-proof-command
+      :status :complete}
+     :source-debug-map {:source input-id
+                        :generated-origin-chain [:mir
+                                                 :c14-target-lowering
+                                                 :b1-interface
+                                                 :b3-llvm-backend]
+                        :generated-files ["gravity_stage0_b3.ll"]
+                        :status :preserved}
+     :safety-capability-unsafe-audit-preservation-map
+     {:preserved [:source-spans :debug-locations :proofs :safety
+                  :capabilities :unsafe-audit-ids :conformance]
+      :stripped []
+      :status :preserved}
+     :unsupported-feature-report
+     {:unsupported []
+      :fallbacks [{:feature :proofless-noalias
+                   :fallback :omit-metadata}
+                  {:feature :invalid-inbounds
+                   :fallback :plain-gep-or-reject}
+                  {:feature :unsupported-atomic-ordering
+                   :fallback :runtime-helper-or-reject}]
+      :status :complete}
+     :llvm-verifier-record
+     {:declared-command "clang -target x86_64-unknown-linux-gnu -x ir -S -o /tmp/gravity-p07-b3.s /tmp/gravity-p07-b3.ll"
+      :proof-artifact "docs/artifacts/phase-07/reports/p07-d100-b3-llvm-backend-report.md"
+      :status :requires-proof-command}
+     :input-artifact input-id
+     :status :complete}))
+
+(defn validate-native-manifest!
+  [operations source-path artifact]
+  (let [native (:native-lowering-artifact artifact)
+        manifest (:llvm-backend-manifest artifact)
+        diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:b3-diagnostic-stream
+                                       :diagnostics])))
+        forbidden-ir-flags [" nsw" " nuw" " inbounds" " fast"
+                            "!tbaa"]]
+    (when-not (= :gravity/stage0-native-lowering-artifact (:kind native))
+      ((native-manifest-port operations :fail!) "B3-MANIFEST" source-path native
+                         {:missing-fields [:native-lowering-artifact]}))
+    (when-not (= :complete (get-in native
+                                   [:capability-based-proof :status]))
+      ((native-manifest-port operations :fail!) "B3-MANIFEST" source-path native
+                         {:missing-fields [:native-lowering-proof]}))
+    (when-not (= :pinned (get-in manifest [:target-record :status]))
+      ((native-manifest-port operations :fail!) "B3-TARGET" source-path manifest
+                         {:missing-fields [:target-record]}))
+    (when-not (= :gated (get-in manifest [:metadata-policy :status]))
+      ((native-manifest-port operations :fail!) "B3-METADATA" source-path manifest
+                         {:missing-fields [:metadata-policy]}))
+    (when (some #(str/includes? (native-manifest-port operations :llvm-ir) %) forbidden-ir-flags)
+      ((native-manifest-port operations :fail!) "B3-UB" source-path manifest
+                         {:missing-fields [:conservative-llvm-ir]}))
+    (when-not (= :complete (get-in manifest
+                                   [:pointer-ownership-memory-map
+                                    :status]))
+      ((native-manifest-port operations :fail!) "B3-POINTER" source-path manifest
+                         {:missing-fields [:pointer-ownership-memory-map]}))
+    (when-not (= :complete (get-in manifest
+                                   [:numeric-floating-lowering :status]))
+      ((native-manifest-port operations :fail!) "B3-NUMERIC" source-path manifest
+                         {:missing-fields [:numeric-floating-lowering]}))
+    (when-not (= :complete
+                 (get-in manifest
+                         [:atomic-volatile-concurrency-lowering :status]))
+      ((native-manifest-port operations :fail!) "B3-ATOMIC" source-path manifest
+                         {:missing-fields [:atomic-volatile-lowering]}))
+    (when-not (empty? (get-in manifest
+                              [:runtime-abi-helper-map
+                               :hidden-runtime-services]))
+      ((native-manifest-port operations :fail!) "B3-RUNTIME" source-path manifest
+                         {:missing-fields [:hidden-runtime-services]}))
+    (when-not (contains? (set (get-in manifest
+                                      [:target-record
+                                       :calling-conventions]))
+                         :ccc)
+      ((native-manifest-port operations :fail!) "B3-ABI" source-path manifest
+                         {:missing-fields [:calling-convention]}))
+    (when-not (= :complete (get-in manifest
+                                   [:pass-pipeline-record :status]))
+      ((native-manifest-port operations :fail!) "B3-PASS" source-path manifest
+                         {:missing-fields [:pass-pipeline-record]}))
+    (when-not (every? #(contains? manifest %)
+                      [:target-record :llvm-ir-files
+                       :proof-to-llvm-metadata-map :runtime-abi-helper-map
+                       :pass-pipeline-record :source-debug-map
+                       :safety-capability-unsafe-audit-preservation-map
+                       :unsupported-feature-report])
+      ((native-manifest-port operations :fail!) "B3-MANIFEST" source-path manifest
+                         {:missing-fields [:llvm-artifact-manifest]}))
+    (when-not (= (set (native-manifest-port operations :diagnostic-ids)) diagnostics)
+      ((native-manifest-port operations :fail!) "B3-MANIFEST" source-path
+                         (:b3-diagnostic-stream artifact)
+                         {:missing-fields [:b3-diagnostics]})))
+  :complete)
+(defn native-coverage-report
+  [operations artifact]
+  (let [manifest (:llvm-backend-manifest artifact)
+        diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:b3-diagnostic-stream
+                                       :diagnostics])))
+        forbidden-ir-flags [" nsw" " nuw" " inbounds" " fast"
+                            "!tbaa"]]
+    {:backend-interface-input-verified?
+     (= :complete (get-in artifact
+                          [:native-lowering-artifact
+                           :capability-based-proof :status]))
+     :target-and-data-layout-pinned?
+     (= :pinned (get-in manifest [:target-record :status]))
+     :proof-gated-metadata-covered?
+     (= :gated (get-in manifest [:metadata-policy :status]))
+     :safe-llvm-undefined-behavior-rejected?
+     (and (contains? diagnostics "B3-UB")
+          (not-any? #(str/includes? (native-manifest-port operations :llvm-ir) %)
+                    forbidden-ir-flags))
+     :pointer-ownership-memory-covered?
+     (= :complete (get-in manifest
+                          [:pointer-ownership-memory-map :status]))
+     :numeric-floating-lowering-covered?
+     (= :complete (get-in manifest
+                          [:numeric-floating-lowering :status]))
+     :atomic-volatile-ordering-covered?
+     (= :complete
+        (get-in manifest
+                [:atomic-volatile-concurrency-lowering :status]))
+     :runtime-helpers-profile-legal?
+     (and (= :complete (get-in manifest
+                               [:runtime-abi-helper-map :status]))
+          (empty? (get-in manifest
+                          [:runtime-abi-helper-map
+                           :hidden-runtime-services])))
+     :abi-record-covered?
+     (contains? (set (get-in manifest
+                             [:target-record :calling-conventions]))
+                :ccc)
+     :pass-pipeline-verification-covered?
+     (= :complete (get-in manifest
+                          [:pass-pipeline-record :status]))
+     :source-debug-proof-safety-capability-preserved?
+     (= :preserved
+        (get-in manifest
+                [:safety-capability-unsafe-audit-preservation-map
+                 :status]))
+     :manifest-complete?
+     (every? #(contains? manifest %)
+             [:target-record :llvm-ir-files
+              :proof-to-llvm-metadata-map :runtime-abi-helper-map
+              :pass-pipeline-record :source-debug-map
+              :safety-capability-unsafe-audit-preservation-map
+              :unsupported-feature-report])
+     :diagnostics-covered?
+     (= (set (native-manifest-port operations :diagnostic-ids)) diagnostics)
+     :requires-external-llvm-verifier-proof?
+     (= :requires-proof-command
+        (get-in manifest [:llvm-verifier-record :status]))
+     :status :complete}))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

@@ -464,7 +464,16 @@
     (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
             "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
             "c-native-validation" "runtime-native-validation" "effects-native-validation"
-            "types-native-validation"] (mapv first commands)))
+            "types-native-validation" "llvm-manifest-native-validation"
+            "mlir-manifest-native-validation" "gpu-manifest-native-validation"
+            "hdl-manifest-native-validation" "workflow-manifest-native-validation"
+            "query-manifest-native-validation" "mobile-manifest-native-validation"
+            "lowering-backends-native-validation"
+            "package-metadata-native-validation" "package-metadata-compiled-validation"
+            "diagnostics-carrier-validation" "safety-source-outcomes-validation"
+            "safety-unsafe-audit-validation" "lowering-instructions-validation"
+            "lowering-plan-assembly-validation" "runtime-stage0-execution-validation"
+            "effects-stage0-policy-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -517,7 +526,41 @@
            [9 "effects-native-validation" "gravity.effects.pipeline-test"
             "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"]
            [10 "types-native-validation" "gravity.types.pipeline-test"
-            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]]]
+            "bootstrap/clojure/test/gravity/types/pipeline_test.clj"]
+           [11 "llvm-manifest-native-validation" "gravity.backend.llvm.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"]
+           [12 "mlir-manifest-native-validation" "gravity.backend.mlir.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/mlir/native_manifest_test.clj"]
+           [13 "gpu-manifest-native-validation" "gravity.backend.gpu.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/gpu/native_manifest_test.clj"]
+           [14 "hdl-manifest-native-validation" "gravity.backend.hdl.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/hdl/native_manifest_test.clj"]
+           [15 "workflow-manifest-native-validation" "gravity.backend.workflow.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"]
+           [16 "query-manifest-native-validation" "gravity.backend.query.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"]
+           [17 "mobile-manifest-native-validation" "gravity.backend.mobile.native-manifest-test"
+            "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"]
+           [18 "lowering-backends-native-validation" "gravity.lowering.native-backend-test"
+            "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"]
+           [19 "package-metadata-native-validation" "gravity.package.native-metadata-test"
+            "bootstrap/clojure/test/gravity/package/native_metadata_test.clj"]
+           [20 "package-metadata-compiled-validation" "gravity.package.compiled-metadata-test"
+            "bootstrap/clojure/test/gravity/package/compiled_metadata_test.clj"]
+           [21 "diagnostics-carrier-validation" "gravity.diagnostics.carrier-test"
+            "bootstrap/clojure/test/gravity/diagnostics/carrier_test.clj"]
+           [22 "safety-source-outcomes-validation" "gravity.safety.source-outcomes-test"
+            "bootstrap/clojure/test/gravity/safety/source_outcomes_test.clj"]
+           [23 "safety-unsafe-audit-validation" "gravity.safety.unsafe-audit-test"
+            "bootstrap/clojure/test/gravity/safety/unsafe_audit_test.clj"]
+           [24 "lowering-instructions-validation" "gravity.lowering.instructions-test"
+            "bootstrap/clojure/test/gravity/lowering/instructions_test.clj"]
+           [25 "lowering-plan-assembly-validation" "gravity.lowering.plan-assembly-test"
+            "bootstrap/clojure/test/gravity/lowering/plan_assembly_test.clj"]
+           [26 "runtime-stage0-execution-validation" "gravity.runtime.stage0-execution-test"
+            "bootstrap/clojure/test/gravity/runtime/stage0_execution_test.clj"]
+           [27 "effects-stage0-policy-validation" "gravity.effects.stage0-policy-test"
+            "bootstrap/clojure/test/gravity/effects/stage0_policy_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]
