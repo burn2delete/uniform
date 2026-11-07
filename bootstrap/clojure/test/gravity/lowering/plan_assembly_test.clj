@@ -410,3 +410,78 @@
       (is (identical? #'b/stage0-compiled-check-elision-proof-present? (get-in @calls [1 1 1])))
       (is (identical? input (get-in @calls [1 1 2])))
       (is (identical? record (get-in @calls [1 1 3]))))))
+
+(def ^:private native-performance-claim
+  {:claim-id :perf/source-control :profile :hosted :target :clojure-stage0-jvm
+   :target-features #{:clojure-jvm} :input-shape {:entrypoint :main :arguments 0}
+   :layout {:instruction-plan :linear-vector} :safety-mode :safe
+   :benchmark {:harness :native/source-control :target-fingerprint :native/fingerprint}
+   :semantic-proof #{:source-semantics-preserved} :safety-proof #{:safe1-outcomes-preserved}
+   :artifacts #{:optimized-mir :proof-index :benchmark-report}})
+
+(deftest real-native-performance-claims-preserve-source-provenance-and-emitted-plan-identity
+  (doseq [performance
+          [{:claim native-performance-claim}
+           {:claim (-> native-performance-claim (dissoc :claim-id :input-shape)
+                       (assoc :claim :perf/alias :input-domain {:entrypoint :main})
+                       (assoc :benchmark {:harness :native/source-control :environment-fingerprint :native/environment}))}
+           {:claim (assoc native-performance-claim :benchmark {:harness :native/source-control :environment-fingerprint false})
+            :numeric-mode-change {:source-mode :strict :optimized-mode :fast :certificate ""}
+            :generated-variants [{:variant-id :native/variant :guard-predicate false}]}]
+          extension [".gravity" ".qst"]]
+    (let [path (str "performance-claim-control" extension) source (elision-source performance)
+          {:keys [module plan]} (compile-source path source)
+          report (b/stage0-compiled-plan-performance-report plan)]
+      (is (= performance (get-in module [:metadata :performance])))
+      (is (= (b/run-main module) (b/execute-stage0-compiled-plan plan)))
+      (is (= {:path path :sha256 (str "sha256:" (digest/sha256-hex source))} (:source plan)))
+      (is (= (:plan-id plan) (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id))))))
+      (is (= (:plan-id plan) (:compiled-plan-id report)))
+      (is (= (:report-id report) (str "sha256:" (digest/sha256-hex (pr-str (dissoc report :report-id))))))
+      ;; Metadata validation grants no proof or performance evidence to the plan.
+      (is (not (contains? (:module plan) :metadata)))
+      (is (= :none (get-in report [:performance-contract-manifest :optimization-mode])))
+      (is (= :no-checks-elided (get-in report [:check-elision-report :status]))))))
+
+(deftest real-native-performance-refusals-stop-before-function-compilation
+  (doseq [[id performance]
+          [["PERF1-CLAIM" {:claim {:claim-id :perf/incomplete}}]
+           ["PERF1-PROFILE" {:claim (assoc native-performance-claim :profile :native)}]
+           ["PERF1-TARGET" {:claim (assoc native-performance-claim :benchmark {:harness :native/test})}]
+           ["PERF1-EVIDENCE" {:claim (assoc native-performance-claim :semantic-proof #{})}]
+           ["PERF1-SAFETY" {:claim native-performance-claim :lost-safety-facts [:bounds]}]
+           ["PERF1-EFFECT" {:claim native-performance-claim :expanded-effects [:io/read]}]
+           ["PERF1-CAPABILITY" {:claim native-performance-claim :expanded-capabilities [:io/stdin]}]
+           ["PERF1-NUMERIC" {:claim native-performance-claim :numeric-mode-change {:source-mode :strict :optimized-mode :fast}}]
+           ["PERF1-VARIANT" {:claim native-performance-claim :generated-variants [{:variant-id :native/unguarded}]}]]
+          extension [".gravity" ".qst"]]
+    (let [path (str "performance-refusal/" id extension) calls (atom 0)
+          failure (with-redefs [b/compile-stage0-function (fn [& _] (swap! calls inc))]
+                    (error-data #(compile-source path (elision-source performance))))]
+      (is (= id (:id failure)))
+      (is (= path (get-in failure [:source-span :source])))
+      (is (zero? @calls)))))
+
+(deftest performance-bootstrap-adapters-retain-original-objects-and-live-policy-vars
+  (let [input (Object.) manifest (Object.) performance (Object.) extra (Object.) marker (Object.)
+        calls (atom []) capture (fn [name] (fn [& args] (swap! calls conj [name (vec args)]) marker))]
+    (with-redefs [optimization/native-performance-present? (capture :present)
+                  optimization/native-performance-normalize-claim (capture :normalize)
+                  optimization/native-performance-missing-claim-fields (capture :missing)
+                  optimization/native-performance-failure! (capture :failure)
+                  optimization/native-performance-target-fingerprint (capture :fingerprint)
+                  optimization/validate-native-performance-claim! (capture :validate)]
+      (is (identical? marker (b/perf-present? input)))
+      (is (identical? marker (b/perf1-normalize-claim input)))
+      (is (identical? marker (b/perf1-missing-claim-fields input)))
+      (is (identical? marker (b/perf1-fail! "PERF1-EFFECT" input manifest performance extra)))
+      (is (identical? marker (b/perf1-target-fingerprint input)))
+      (is (identical? marker (b/perf1-validate-claim! input manifest performance extra)))
+      (is (= [[:present [input]] [:normalize [input]] [:missing [#'b/perf-present? #'b/perf1-required-claim-fields input]]
+              [:failure [#'b/fail! "PERF1-EFFECT" input manifest performance extra]] [:fingerprint [input]]
+              [:validate [#'b/perf1-missing-claim-fields #'b/perf1-target-fingerprint #'b/perf-present? #'b/perf1-fail!
+                          input manifest performance extra]]] @calls)))
+    (with-redefs [b/perf1-required-claim-fields [:native/missing-only]]
+      (is (= [:native/missing-only] (b/perf1-missing-claim-fields {}))))
+    (with-redefs [b/perf-present? (constantly true)]
+      (is (= [] (b/perf1-missing-claim-fields {}))))))

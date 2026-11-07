@@ -249,7 +249,7 @@
 (deftest stage0-elision-owner-declares-metadata-without-facade-authority
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (empty? (ns-aliases 'gravity.optimization)))
-  (is (= 16 (count (ns-publics 'gravity.optimization))))
+  (is (= 23 (count (ns-publics 'gravity.optimization))))
   (doseq [operation [#'optimization/native-stage0-check-elision-proof-present?
                      #'optimization/validate-native-stage0-check-elision!]]
     (let [contract (:gravity/namespace-contract (meta operation))
@@ -385,3 +385,121 @@
                       (try (optimization/validate-native-stage0-check-elision!
                              #'elision-failure #'elision-proof elision-module {:erased? true})
                            (catch Throwable error error)))))))
+
+(def ^:private performance-fields optimization/native-performance-required-claim-fields)
+(defn- performance-present [value] (optimization/native-performance-present? value))
+(defn- performance-missing [claim]
+  (optimization/native-performance-missing-claim-fields #'performance-present #'performance-fields claim))
+(defn- performance-fingerprint [claim] (optimization/native-performance-target-fingerprint claim))
+(defn- performance-failure [id _ _ _ extra] (throw (ex-info id (assoc extra :id id))))
+(def ^:private performance-claim
+  {:claim-id :native/claim :profile :hosted :target :native/unverified-target
+   :target-features #{:native/feature} :input-shape {:entrypoint :main} :layout :native/layout
+   :safety-mode :safe :benchmark {:target-fingerprint :native/fingerprint}
+   :semantic-proof #{:native/semantic} :safety-proof #{:native/safety}
+   :artifacts #{:optimized-mir :proof-index :benchmark-report}})
+(def ^:private performance-manifest
+  {:profile :hosted :target :jvm :source-effects #{:io/write} :source-capabilities #{:io/stdout}})
+(defn- validate-performance [performance claim]
+  (optimization/validate-native-performance-claim!
+    #'performance-missing #'performance-fingerprint #'performance-present #'performance-failure
+    "native-performance.gravity" performance-manifest performance claim))
+
+(deftest performance-owner-declares-complete-native-family-without-authority
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (empty? (ns-aliases 'gravity.optimization)))
+  (let [publics (ns-publics 'gravity.optimization)
+        contract (:gravity/namespace-contract (meta #'optimization/validate-native-performance-claim!))]
+    (is (= 23 (count publics) (count (:public-api contract))))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name operation] publics]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])))
+      (is (= :none (get-in contract [:public-api name :admission]))))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:issues-verifier-certificates? contract)))
+    (is (some #{:performance-certification} (:unsupported contract)))
+    (is (some #{'PERF1} (:governing-contracts contract)))))
+
+(deftest performance-presence-aliases-and-fingerprint-preserve-native-semantics
+  (doseq [value [nil [] {} #{} '()]] (is (false? (performance-present value))))
+  (doseq [value [false "" 0 :native (Object.) [nil]]] (is (true? (performance-present value))))
+  (let [primary (Object.) fallback (Object.) input (Object.) extra (Object.)
+        normalized (optimization/native-performance-normalize-claim
+                     {:claim-id primary :claim fallback :input-domain input :extra extra})]
+    (is (identical? primary (:claim-id normalized)))
+    (is (identical? input (:input-shape normalized)))
+    (is (identical? extra (:extra normalized)))
+    (is (identical? fallback (optimization/native-performance-target-fingerprint
+                              {:benchmark {:target-fingerprint false :environment-fingerprint fallback}})))
+    (is (false? (optimization/native-performance-target-fingerprint
+                  {:benchmark {:environment-fingerprint false}})))
+    (is (= {:claim-id nil :input-shape nil} (optimization/native-performance-normalize-claim nil)))))
+
+(deftest performance-missing-fields-reload-presence-after-each-getter
+  (let [events (atom []) input (reify clojure.lang.ILookup
+                              (valAt [_ key]
+                                (swap! events conj [:get key])
+                                (alter-var-root #'performance-present
+                                                (constantly (fn [value] (swap! events conj [:late value]) true)))
+                                key)
+                              (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [performance-fields [:first :second]
+                  performance-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (= [:first] (performance-missing input)))
+      (is (= [[:get :first] [:selected :first] [:get :second] [:late :second]] @events)))))
+
+(deftest performance-validation-rejects-each-real-rule-and-preserves-first-refusal
+  (doseq [[id performance claim]
+          [["PERF1-CLAIM" {} {:claim-id :native/incomplete}]
+           ["PERF1-PROFILE" {} (assoc performance-claim :profile :native)]
+           ["PERF1-TARGET" {} (assoc performance-claim :benchmark {:harness :native/test})]
+           ["PERF1-EVIDENCE" {} (assoc performance-claim :semantic-proof #{})]
+           ["PERF1-SAFETY" {:lost-safety-facts [:bounds]} performance-claim]
+           ["PERF1-EFFECT" {:expanded-effects [:io/read]} performance-claim]
+           ["PERF1-CAPABILITY" {:expanded-capabilities [:io/stdin]} performance-claim]
+           ["PERF1-NUMERIC" {:numeric-mode-change {:source-mode :strict :optimized-mode :fast}} performance-claim]
+           ["PERF1-VARIANT" {:generated-variants [{:variant-id :native/unguarded}]} performance-claim]]]
+    (is (= id (try (validate-performance performance claim) nil
+                   (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))
+  (let [ids (atom []) marker (Object.)
+        invalid {:lost-safety-facts [:bounds] :expanded-effects [:io/read] :expanded-capabilities [:io/stdin]
+                 :numeric-mode-change {:source-mode :strict :optimized-mode :fast}
+                 :generated-variants [{:variant-id :bad}]}]
+    (with-redefs [performance-failure (fn [id & _] (swap! ids conj id) marker)]
+      ;; Returning failures never became an implicit early return in the seed.
+      (is (= :complete (validate-performance invalid {:profile :native})))
+      (is (= ["PERF1-CLAIM" "PERF1-PROFILE" "PERF1-TARGET" "PERF1-EVIDENCE" "PERF1-SAFETY"
+              "PERF1-EFFECT" "PERF1-CAPABILITY" "PERF1-NUMERIC" "PERF1-VARIANT"] @ids))))
+  (is (= :complete (validate-performance {} performance-claim))))
+
+(deftest performance-failure-selects-owner-before-payload-and-retains-extra-precedence
+  (let [marker (Object.) selected (atom nil) profile (Object.) source (Object.) extra (Object.)
+        manifest (reify clojure.lang.ILookup
+                   (valAt [_ key]
+                     (alter-var-root #'elision-failure (constantly (fn [& _] (throw (AssertionError. "late owner")))))
+                     (case key :profile profile :target :native/target))
+                   (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [elision-failure (fn [& args] (reset! selected args) marker)]
+      (is (identical? marker
+                      (optimization/native-performance-failure!
+                        #'elision-failure "PERF1-EFFECT" source manifest {:claim-id :native/claim}
+                        {:profile extra :source-span {:source source}})))
+      (is (= "optimization hides or expands effects" (second @selected)))
+      (is (identical? extra (:profile (nth @selected 2))))
+      (is (identical? source (get-in (nth @selected 2) [:source-span :source]))))))
+
+(deftest performance-validator-reloads-ports-and-retains-opaque-owner-errors
+  (let [events (atom [])]
+    (with-redefs [performance-missing
+                  (fn [_] (swap! events conj :missing)
+                    (alter-var-root #'performance-fingerprint
+                                    (constantly (fn [_] (swap! events conj :late-fingerprint) :native/fingerprint))) [])
+                  performance-fingerprint (fn [_] (throw (AssertionError. "early fingerprint")))]
+      (is (= :complete (validate-performance {} performance-claim)))
+      (is (= [:missing :late-fingerprint] @events))))
+  (doseq [owner [#'performance-missing #'performance-fingerprint #'performance-present #'performance-failure]
+          sentinel [(Exception. "opaque performance exception") (Error. "opaque performance error")]]
+    (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+      #(is (identical? sentinel
+                       (try (validate-performance {} (if (= owner #'performance-failure) {} performance-claim))
+                            (catch Throwable error error)))))))

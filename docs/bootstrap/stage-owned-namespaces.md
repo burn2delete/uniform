@@ -288,6 +288,18 @@ and `:no-checks-elided`; no report input is fabricated to claim more. Proof
 markers confer no certificate/dominance validation, actual check removal,
 performance certification, backend, release or self-hosting authority.
 
+The [native performance claim extraction](optimization-performance-claim-evidence.md)
+moves the full PERF1 required-field policy and six algorithms into the same
+`gravity.optimization` owner. Seven explicit policy/function APIs preserve
+native presence, aliases, ordered missing fields, target fingerprint fallback,
+PERF1 message/fact construction and all nine ordered refusals. Six Bootstrap
+function adapters and the policy alias retain historical live Var interposition;
+the manifest projection and PERF1-before-PERF10 loop remain Bootstrap wiring.
+Native C13 leaf and real paired source/plan controls exercise accepted metadata,
+all nine refusal classes, deterministic provenance and owner exception identity.
+Supplied labels remain unverified metadata; native `:complete` grants no proof,
+target execution, benchmark, certificate, optimization or release authority.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four
