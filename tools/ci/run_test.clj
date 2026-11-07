@@ -486,6 +486,34 @@
     (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
     (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
 
+(deftest public-release-workflow-is-manual-read-only-pinned-and-provenanced
+  (let [workflow (slurp ".github/workflows/public-release.yml")
+        toolchain (slurp ".github/actions/clojure/action.yml")]
+    (is (str/includes? workflow "workflow_dispatch:"))
+    (doseq [event ["pull_request:" "push:" "schedule:"]]
+      (is (not (str/includes? workflow event)) event))
+    (is (str/includes? workflow "permissions:\n  contents: read"))
+    (is (not (re-find #"(?im)^\s*(contents|packages):\s*write\b" workflow)))
+    (is (not (re-find #"(?im)^\s*continue-on-error:\s*true\b" workflow)))
+    (is (not (re-find #"(?i)\bpublish(?:ing|ed)?\b" workflow)))
+    (is (re-find #"actions/checkout@[0-9a-f]{40}" workflow))
+    (is (re-find #"actions/upload-artifact@[0-9a-f]{40}" workflow))
+    (is (str/includes? workflow "uses: ./.github/actions/clojure"))
+    (is (re-find #"actions/setup-java@[0-9a-f]{40}" toolchain))
+    (is (re-find #"DeLaGuardo/setup-clojure@[0-9a-f]{40}" toolchain))
+    (is (str/includes? workflow "fetch-depth: 0"))
+    (is (str/includes? workflow "persist-credentials: false"))
+    (is (str/includes? workflow "timeout-minutes: 20"))
+    (is (str/includes? workflow
+                       "clojure -Srepro -M tools/ci/run.clj public-release"))
+    (is (re-find #"(?s)Reject tracked source mutation\s+if: always\(\)\s+run: git diff --exit-code HEAD"
+                 workflow))
+    (is (str/includes? workflow "git rev-parse HEAD 'HEAD^{tree}'"))
+    (is (str/includes? workflow "target/ci/SHA256SUMS"))
+    (is (str/includes? workflow "actions/upload-artifact@"))
+    (is (str/includes? workflow "if: always()"))
+    (is (str/includes? workflow "path: target/ci/"))))
+
 (deftest leaf-runner-selection-is-fail-closed-in-leaves-job
   (let [workflow (slurp ".github/workflows/ci.yml")
         leaves (second (re-find #"(?s)\n  leaves:\n(.*?)(?=\n  snapshot:)" workflow))]
@@ -619,7 +647,7 @@
 
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
-    (is (= (conj expected-contract-command-ids "public-release-subset")
+    (is (= expected-contract-command-ids
            (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
@@ -638,35 +666,48 @@
         (is (empty? (macro-selected-vars
                      (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))))
 
-(deftest contracts-append-public-subset-for-full-and-stage-selections
+(deftest public-release-command-is-separate-from-ordinary-contracts
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
-        full-selections [nil
-                         {:kind :full :reason :non-pull-request :paths []}
-                         {:kind :full :reason :unknown-or-cross-stage-path
-                          :paths ["unknown/new-owner.clj"]}
-                         {:kind :full :reason :path-discovery-failed
-                          :paths [] :selection-error "discovery failed"}]
+        selections [nil
+                    {:kind :full :reason :non-pull-request :paths []}
+                    {:kind :full :reason :unknown-or-cross-stage-path
+                     :paths ["unknown/new-owner.clj"]}
+                    {:kind :full :reason :path-discovery-failed
+                     :paths [] :selection-error "discovery failed"}
+                    {:kind :docs-only :reason :known-documentation-only
+                     :paths ["README.md"]}
+                    (ci/stage-selection
+                     (mapv change ["tools/advance/README.md"
+                                   "tools/advance/src/advance/main.clj"
+                                   "tools/advance/test/advance/main_test.clj"]))
+                    (ci/stage-selection [(change "tools/ci/lint.clj")])]
         stage-paths ["bootstrap/clojure/src/gravity/reader.clj"
                      "language/compiler/src/gravity/macro.gravity"
                      "bootstrap/clojure/src/gravity/resolution.clj"
                      "language/compiler/src/gravity/checked_core.gravity"]
-        assert-public-command
-        (fn [commands]
-          (let [[id timeout argv] (last commands)]
-            (is (= (conj expected-contract-command-ids "public-release-subset")
-                   (mapv first commands)))
-            (is (= "public-release-subset" id))
-            (is (= 900 timeout))
-            (is (= (ci/command "2g" "-X:dev-test" "ci.public-release-subset/run!")
-                   argv))))]
-    (doseq [selection full-selections]
-      (assert-public-command (ci/commands-for-selection "contracts" selection)))
+        public-command (fn [selection]
+                         (let [commands (vec (ci/commands-for-selection "public-release" selection))]
+                           (is (= ["public-release-subset"] (mapv first commands)))
+                           (is (= [["public-release-subset" 900
+                                    (ci/command "2g" "-X:dev-test"
+                                                "ci.public-release-subset/run!")]]
+                                  commands))))]
+    (is (not (contains? ci/semantic-modes "public-release")))
+    (is (not-any? #(str/starts-with? % "public-release=")
+                  (ci/selection-output-lines nil)))
+    (is (not (str/includes? (slurp ".github/workflows/ci.yml") "public-release")))
+    (doseq [selection selections]
+      (is (= expected-contract-command-ids
+             (mapv first (ci/commands-for-selection "contracts" selection))))
+      (public-command selection))
     (doseq [path stage-paths]
       (let [selection (ci/stage-selection [(change path)])]
         (is (= :selected (:kind selection)) path)
         (is (= :affected-stage (:reason selection)) path)
-        (assert-public-command (ci/commands-for-selection "contracts" selection))))))
+        (is (= expected-contract-command-ids
+               (mapv first (ci/commands-for-selection "contracts" selection))) path)
+        (public-command selection)))))
 
 (deftest contracts-omit-public-subset-for-narrow-exclusions
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
