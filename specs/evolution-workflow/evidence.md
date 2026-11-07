@@ -329,3 +329,96 @@ historical rebuild execution and independent acceptance remain separate unrun
 composition/acceptance obligations. The parent remains Open. No integration,
 yank issuance, approval, grant, release, self-hosting or seed retirement is
 claimed, and every retained refused operation remains prohibited.
+
+## Owned GOV1 change sketch production
+
+Finding: `evolution.change-sketches.owner-scope-production-v1`.
+Owning task: `evolution/change-review`, still Open. Authored on 2026-11-06 in
+the supplied `increment-1309` worktree; no base/commit/tree identity was supplied
+or inferred. No Git command, including `git status --short`, was attempted.
+The controller owns verification and candidate identity binding for this
+uncommitted increment.
+
+Applied the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md) within
+the four explicitly owned paths. Read repository and Spec Kit instructions,
+the constitution and semantic naming, owning spec/plan/tasks/evidence,
+development verification, phase navigation, GOV1 and D0/D1/D2/D3/D6/D8/D9.
+This is a new semantic producer and public artifact carrier, not a private
+rename. `gravity.evolution.change-sketches/create-sketch` names its subsystem
+and behavior; the finding and GOV identities remain traceability metadata.
+
+Specified the [narrow carrier](tasks.md#owned-change-sketch-carrier) before
+authoring the producer and its fixtures. It constructs an individual change
+record from explicit identity/revision, title, owner, problem, scope, affected
+documents/surfaces and source/input/policy/tool references. The artifact always
+has `:state :sketch`, `:authority :non-admitting` and one initial authoring
+history event bound to the exact subject, owner and references. It neither
+reads the historical stage0 catalog nor copies its generic `:implemented`
+verdicts. Caller approval, later states, authority and decision history are
+ignored and cannot become a transition or grant. Maps/keyword sets are rebuilt
+in sorted order, document vectors retain order, and input metadata is omitted.
+
+Authored the required `complete-owned-sketch`, `changed-problem-changes-product`,
+`reordered-map-determinism`, `initial-history-and-provenance-retained`,
+`missing-owner`, `missing-problem`, `empty-affected-documents`,
+`malformed-scope`, `caller-approved-state-cannot-promote-sketch` and
+`mutable-host-input-rejected` fixtures. They compare complete expected products
+or payload-free GOV1001 diagnostics and input renderings before/after calls.
+Additional cases exercise changed declared surfaces/documents, missing/blank/
+malformed text and references, malformed collections/maps, stable multi-field
+diagnostic order, metadata non-disclosure and construction under truncated
+printer bindings. Mutable controls cover Java HashMap, HashSet, ArrayList,
+StringBuilder and AtomicLong before and after caller mutation; earlier
+diagnostics must remain unchanged and contain no secret-marker payload.
+
+Actual worker activity: passive source/document reads, four owned-path edits
+and textual review of the authored source and fixtures. Result: authored for
+native controller checking only. No Clojure execution, test, build, validator,
+Git/cache inspection, consumer execution or independent acceptance ran. There
+are no observed test counters, exit codes or successful-check receipts for this
+increment. Verification is controller-owned and was not attempted or transferred.
+No new refusal occurred; all retained refusals and restricted operations remain
+binding. Unrun controller checks alone do not restrict authored readiness.
+
+Proposed controller Clojure argument vectors (all unrun here):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.change-sketches-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The existing acceptance-dependency controls cover captured-span preservation,
+historical-source non-promotion, conditional edges and current-source identity,
+including `current-source-transition-authenticates-file-and-span-identities`
+and `acceptance-owner-rejects-current-transition-population-drift`. They retain
+their own scope and cannot establish operation implementation or independent
+acceptance. Record actual controller commands, identities, results and any
+unrun behavior against the resulting candidate; no historical receipt is renewed.
+
+Missing authority and semantic limits: the parent's accountable individual
+remains unassigned. Fixture owners and reference strings are public test data,
+not owner authentication, verified source identity or governance review.
+GOV1 does not define a closed scope vocabulary, revision grammar or identity
+allocation service for sketches. The narrow carrier explicitly chooses keyword
+sets and opaque exact labels; it makes no registry lookup, identity-uniqueness,
+content-hash or revision-progression claim. The caller supplies disclosure-safe
+inputs; this producer does not discover/redact secrets, verify signatures or
+retrieve references. No material ambiguity remains for this declared carrier;
+later consumer schemas and review/admission authority remain separate work.
+
+Start needs only explicit inputs, with no predecessor increment. Later
+composition requires authentic owner/subject/reference evidence and applicable
+GOV2/GOV4/GOV6-GOV10 plus affected-component artifacts. No restricted RFC or
+experiment producer was implemented, renamed, restarted or routed around.
+Independent acceptance, integration and release remain distinct and unrun.
+The parent task, captured task region, source criteria, historical receipts and
+authenticated Evolution plan.md were not edited. Only additive task/evidence
+appendices accompany the two new Clojure files. Controller integration must
+coordinate these appendices with PR1308 and retained documentation candidates;
+none of their edits, authority or acceptance was adopted here. No accounting
+or input quota was added. No commit, admission, release, self-hosting or
+seed-retirement claim is made.
