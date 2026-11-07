@@ -111,15 +111,18 @@ implementation capture SHA256 is
 Both bind actual scope HEAD; the implementation capture records dirty producer
 hashes, not a future clean commit. Text is caller supplied under paired paths,
 with no file-authentication or verified-IR/proof authority claim. Adjacent MIR
-diagnostics retain their original payload shape rather than inventing a C14
-top-level source-span field.
+diagnostics retain their original top-level source span. The existing rejected
+fixture supplies its own span label; it is preserved ahead of the paired
+module-path fallback.
 
 Initial baseline preparation used an unreadable numeric keyword suffix and
 failed before source execution; the source fixture now uses `input-N` names.
-A later baseline assertion incorrectly expected the C14 top-level source-span
-shape for the neighboring MIR diagnostic. Its log remains history; the
-corrected capture compares full unchanged payloads and genuine module paths,
-and still requires exact C14 diagnostic spans. An extraction helper spacing
+A later baseline assertion incorrectly required the neighboring MIR diagnostic's
+explicit fixture span label to equal the paired module path. Its log remains
+history; the corrected capture compares full unchanged payloads and genuine
+module paths, and still requires exact C14 diagnostic spans. The earlier prose
+describing a span-shape difference was incorrect; MIR already emitted that
+top-level field. An extraction helper spacing
 assertion stopped before source writes; its original log is preserved.
 
 Plan-assembly/native-backend regressions pass 25 tests/281 assertions. The
