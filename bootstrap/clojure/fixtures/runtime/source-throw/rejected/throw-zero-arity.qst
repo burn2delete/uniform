@@ -1,0 +1,4 @@
+(ns runtime.source-throw.throw-zero-arity
+  (:profile :meta) (:target :jvm) (:exports [choose])
+  (:effects #{:error/throw}) (:capabilities #{}) (:safety :safe))
+(defn choose [] (throw))
