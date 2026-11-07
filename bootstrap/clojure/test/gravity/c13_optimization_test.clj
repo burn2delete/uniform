@@ -249,7 +249,7 @@
 (deftest stage0-elision-owner-declares-metadata-without-facade-authority
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (empty? (ns-aliases 'gravity.optimization)))
-  (is (= 23 (count (ns-publics 'gravity.optimization))))
+  (is (= 37 (count (ns-publics 'gravity.optimization))))
   (doseq [operation [#'optimization/native-stage0-check-elision-proof-present?
                      #'optimization/validate-native-stage0-check-elision!]]
     (let [contract (:gravity/namespace-contract (meta operation))
@@ -410,7 +410,7 @@
   (is (empty? (ns-aliases 'gravity.optimization)))
   (let [publics (ns-publics 'gravity.optimization)
         contract (:gravity/namespace-contract (meta #'optimization/validate-native-performance-claim!))]
-    (is (= 23 (count publics) (count (:public-api contract))))
+    (is (= 37 (count publics) (count (:public-api contract))))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name operation] publics]
       (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])))
@@ -503,3 +503,163 @@
       #(is (identical? sentinel
                        (try (validate-performance {} (if (= owner #'performance-failure) {} performance-claim))
                             (catch Throwable error error)))))))
+
+(def ^:private zero-fields optimization/native-zero-cost-required-claim-fields)
+(def ^:private zero-nonempty optimization/native-zero-cost-required-nonempty-claim-fields)
+(def ^:private zero-artifacts optimization/native-zero-cost-required-artifacts)
+(def ^:private zero-families optimization/native-zero-cost-abstraction-families)
+(def ^:private zero-diagnostics optimization/native-zero-cost-cost-diagnostic)
+(defn- zero-missing [claim]
+  (optimization/native-zero-cost-missing-claim-fields #'performance-present #'zero-fields #'zero-nonempty claim))
+(defn- zero-ir-id [claim key] (optimization/native-zero-cost-ir-artifact-id claim key))
+(defn- zero-ir-costs [claim key] (optimization/native-zero-cost-costs-in-ir claim key))
+(defn- zero-hidden [claim] (optimization/native-zero-cost-hidden-costs #'zero-ir-costs claim))
+(defn- zero-evidence [claim]
+  (optimization/native-zero-cost-missing-evidence #'performance-present #'zero-ir-id #'zero-artifacts claim))
+(defn- zero-failure [id _ _ _ _ extra] (throw (ex-info id (assoc extra :id id))))
+(def ^:private zero-claim
+  {:claim-id :native/zero-cost :profile :hosted :target :native/unverified-target
+   :abstraction :protocol-dispatch :equivalent-form :direct-call
+   :expected-erased-costs #{:dynamic-dispatch} :erased-costs #{:dynamic-dispatch} :residual-costs #{}
+   :semantic-proof #{:native/semantic} :safety-proof #{:native/safety} :proof-ids #{:native/proof}
+   :artifacts #{:before-mir :after-mir :dispatch-report} :source-operation {:node-id :native/source}
+   :before-ir {:artifact-id :native/before :costs #{:dynamic-dispatch}}
+   :after-ir {:artifact-id :native/after :costs #{}}
+   :allocation-audit {} :boxing-audit {} :runtime-check-report {}
+   :dispatch-specialization-report {:residual-dispatch #{}}
+   :effect-proof {:source-effects #{} :optimized-effects #{}}
+   :capability-proof {:source-capabilities #{} :optimized-capabilities #{}}})
+(defn- validate-zero [claim]
+  (optimization/validate-native-zero-cost-claim!
+    #'zero-missing #'zero-hidden #'zero-evidence #'zero-failure #'zero-families #'zero-diagnostics
+    "native-zero-cost.gravity" performance-manifest performance-claim claim))
+
+(deftest zero-cost-owner-declares-policy-and-explicit-library-without-authority
+  (let [contract (:gravity/namespace-contract (meta #'optimization/validate-native-zero-cost-claim!))]
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (is (empty? (ns-aliases 'gravity.optimization)))
+    (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
+    (is (= 37 (count (:public-api contract))))
+    (is (some #{:general-zero-cost-erasure} (:unsupported contract)))
+    (is (some #{:unlisted-cost-vocabulary} (:unsupported contract)))
+    (is (some #{:cross-runtime-diagnostic-precedence} (:unsupported contract)))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:issues-verifier-certificates? contract))))
+  (is (= [:claim-id :profile :target :abstraction :equivalent-form :expected-erased-costs :erased-costs
+          :residual-costs :semantic-proof :safety-proof :proof-ids :artifacts :source-operation :before-ir :after-ir]
+         zero-fields))
+  (is (= #{:before-mir :after-mir} zero-artifacts)))
+
+(deftest zero-cost-normalization-and-lazy-fields-retain-original-presence
+  (let [marker (Object.)
+        normalized (optimization/native-zero-cost-normalize-claim
+                     {:claim :native/alias :erased-costs #{:boxing} :extra marker})]
+    (is (= :native/alias (:claim-id normalized)))
+    (is (= #{:boxing} (:expected-erased-costs normalized)))
+    (is (= #{} (:residual-costs normalized)))
+    (is (identical? marker (:extra normalized))))
+  ;; These two fields require presence of a key, not a nonempty value.
+  (is (= [] (zero-missing (assoc zero-claim :erased-costs nil :residual-costs nil))))
+  (let [events (atom []) input (reify clojure.lang.ILookup
+                               (valAt [_ key]
+                                 (swap! events conj [:get key])
+                                 (alter-var-root #'performance-present
+                                  (constantly (fn [value] (swap! events conj [:late value]) true))) key)
+                               (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [zero-fields [:first :second] zero-nonempty #{:first :second}
+                  performance-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (= [:first] (zero-missing input)))
+      (is (= [[:get :first] [:selected :first] [:get :second] [:late :second]] @events)))))
+
+(deftest zero-cost-ir-and-audit-unions-retain-all-existing-carriers
+  (let [marker (Object.)]
+    (is (identical? marker (zero-ir-id {:before-ir {:artifact-id false :id marker}} :before-ir))))
+  (is (= #{:boxing :reflection :allocation}
+         (zero-ir-costs {:after-ir {:costs [:boxing] :operations [{:costs [:reflection :boxing]} {:costs [:allocation]}]}} :after-ir)))
+  (is (= #{:allocation :boxing :reflection :dynamic-dispatch :runtime-bounds-check :native/residual :native/ir}
+         (zero-hidden {:residual-costs [:native/residual] :after-ir {:costs [:native/ir]}
+                       :allocation-audit {:hidden-allocations [:allocation]} :boxing-audit {:hidden-boxing [:boxing]}
+                       :reflection-audit {:hidden-reflection [:reflection]}
+                       :dispatch-specialization-report {:residual-dispatch [:dynamic-dispatch]}
+                       :runtime-check-report {:unaccounted-checks [:runtime-bounds-check]}})))
+  (with-redefs [zero-artifacts (conj zero-artifacts :native/required)]
+    (is (= #{:before-after-mir-artifacts} (zero-evidence zero-claim)))))
+
+(deftest zero-cost-validation-preserves-all-nine-refusal-categories
+  (doseq [[id claim]
+          [["PERF2-CLAIM" (dissoc zero-claim :source-operation)]
+           ["PERF2-PROFILE" (assoc zero-claim :profile :native)]
+           ["PERF2-EVIDENCE" (dissoc zero-claim :allocation-audit)]
+           ["PERF2-ALLOCATION" (assoc-in zero-claim [:after-ir :costs] #{:allocation})]
+           ["PERF2-BOXING" (assoc zero-claim :boxing-audit {:hidden-boxing [:boxing]})]
+           ["PERF2-DISPATCH" (assoc zero-claim :dispatch-specialization-report {:residual-dispatch [:dynamic-dispatch]})]
+           ["PERF2-REFLECTION" (assoc zero-claim :reflection-audit {:hidden-reflection [:host-reflection]})]
+           ["PERF2-CHECK" (assoc zero-claim :runtime-check-report {:unaccounted-checks [:runtime-bounds-check]})]
+           ["PERF2-RESIDUAL" (assoc zero-claim :residual-costs #{:native/residual})]]]
+    (is (= id (try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))
+  (is (= :complete (validate-zero zero-claim))))
+
+(deftest zero-cost-preserves-unordered-selection-and-late-diagnostic-policy
+  (let [claim (assoc-in zero-claim [:after-ir :costs] #{:allocation :boxing})
+        failure #(try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        first-result (failure)]
+    (is (= first-result (failure)))
+    (is (contains? #{"PERF2-ALLOCATION" "PERF2-BOXING"} (:id first-result)))
+    (is (= (:id first-result) (zero-diagnostics (:residual-cost first-result)))))
+  (let [visited (atom []) claim (assoc-in zero-claim [:after-ir :costs] #{:native/a :native/b})]
+    (with-redefs [zero-diagnostics
+                  (fn [cost]
+                    (swap! visited conj cost)
+                    (alter-var-root #'zero-diagnostics
+                     (constantly (fn [next-cost] (swap! visited conj next-cost) "PERF2-BOXING"))) nil)]
+      (is (= "PERF2-BOXING" (try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
+      (is (= #{:native/a :native/b} (set @visited)))
+      (is (= 2 (count @visited))))))
+
+(deftest zero-cost-returning-failures-and-proof-labels-remain-nonauthoritative
+  (let [ids (atom []) invalid {:profile :native :target :wrong :abstraction :unknown
+                              :expected-erased-costs #{:native/unknown} :after-ir {:costs #{:allocation}}}
+        marker (Object.)]
+    (with-redefs [zero-failure (fn [id & _] (swap! ids conj id) marker)]
+      (is (= :complete (validate-zero invalid)))
+      (is (= ["PERF2-CLAIM" "PERF2-PROFILE" "PERF2-EVIDENCE" "PERF2-ALLOCATION" "PERF2-RESIDUAL"] @ids)))
+    (let [proof (optimization/native-zero-cost-capability-proof
+                  #'performance-present #'zero-ir-id performance-manifest performance-claim [invalid])]
+      (is (= :complete (:status proof)))
+      (is (false? (:profile-legality-preserved? proof)))
+      (is (false? (:target-request-preserved? proof)))
+      (is (false? (:safety-evidence-preserved? proof)))
+      (is (false? (:before-after-ir-recorded? proof)))))
+  ;; The legacy catalog does not reject an unknown cost found only in post-IR.
+  (is (= :complete (validate-zero (assoc-in zero-claim [:after-ir :costs] #{:native/unknown}))))
+  (is (= :complete (:status (optimization/native-zero-cost-capability-proof
+                             #'performance-present #'zero-ir-id performance-manifest performance-claim [])))))
+
+(deftest zero-cost-failure-captures-owner-before-payload-and-preserves-extra-facts
+  (let [marker (Object.) extra (Object.) captured (atom nil)
+        claim (reify clojure.lang.ILookup
+                (valAt [_ key]
+                  (alter-var-root #'elision-failure (constantly (fn [& _] (throw (AssertionError. "late owner")))))
+                  (get zero-claim key))
+                (valAt [_ key fallback] (get zero-claim key fallback)))]
+    (with-redefs [elision-failure (fn [& args] (reset! captured args) marker)]
+      (is (identical? marker (optimization/native-zero-cost-failure!
+                              #'elision-failure "PERF2-BOXING" "native-zero.gravity"
+                              performance-manifest performance-claim claim {:profile extra})))
+      (is (= "zero-cost claim hides boxing or representation conversion" (second @captured)))
+      (is (identical? extra (:profile (nth @captured 2)))))))
+
+(deftest zero-cost-ports-retain-exact-exception-and-error-identity
+  (doseq [owner [#'zero-missing #'zero-hidden #'zero-evidence #'zero-failure]
+          sentinel [(Exception. "opaque zero-cost exception") (Error. "opaque zero-cost error")]]
+    (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+      #(is (identical? sentinel
+                       (try (validate-zero (if (= owner #'zero-failure) {} zero-claim))
+                            (catch Throwable error error))))))
+  (doseq [sentinel [(Exception. "opaque IR exception") (Error. "opaque IR error")]]
+    (with-redefs [zero-ir-id (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (zero-evidence zero-claim) (catch Throwable error error)))))
+    (with-redefs [zero-ir-costs (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (zero-hidden zero-claim) (catch Throwable error error)))))))

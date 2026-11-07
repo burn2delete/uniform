@@ -6,7 +6,8 @@ Move the complete existing PERF2 family in foundation/00140 into
 `gravity.optimization`: five policy values and nine functions. Preserve the
 original Bootstrap names as policy aliases and function adapters. Keep 00141
 artifact assembly, the file facade and CLI wiring in Bootstrap. This draft
-records the boundary before changing production code.
+opened at clean scope `e61eb7143666ca8e42605e94fb3e021e92d316f5` before
+changing production code.
 
 D0, D1, D2, D3, D6, D8, D9, C1, C11, C12, C13, C15, SAFE15,
 PERF1, PERF2, PERF10, BOOT8 and TEST2 govern this temporary seed extraction.
@@ -82,6 +83,57 @@ gates, document/roadmap validation and the changed-file comparison against Main.
 Freeze a clean reviewed commit, maintain the early draft PR and audit its own
 provider CI. Independent source/CI and current-base integration remain separate;
 no predecessor acceptance transfers.
+
+## Extraction evidence
+
+The nine complete function bodies and five policy definitions now live in the
+owner, increasing its public inventory from twenty-three to thirty-seven.
+Raw-body receipt
+`3d7e7d35564ab95526e8dda8e6857ddcfafe45dc022e00ff4e5931ecfdb450c4`
+retains original and moved text. Only names, explicit arguments, operation
+references and fully qualified `clojure.set` references change; map forms are
+not walked or reprinted. The Bootstrap component retains nine function adapters
+and five policy aliases. No outer artifact assembler or caller is moved.
+
+All twenty complete paired source observations match: two real five-claim
+PERF2 artifacts and eighteen genuine refusals, covering all nine diagnostic
+classes. Captures include the actual upstream macro/Core/typed/profile/module
+and performance products, output projections, helper arguments/results and
+complete failure payloads. Existing performance-artifact hash links are
+recomputed; repeat source controls preserve the output value under the same
+pinned Clojure 1.12.5 runtime. No artifact-id field is invented for an output
+which does not have one.
+
+Baseline receipt
+`91f28adccc5102a50fb49c4bcc0784a74660667ff68e302deb9f9cef3a5235e4`
+binds the actual clean scope commit. After receipt
+`fea48e5b8222ffc3cc3b143fd7c8d4fed1d682703a2ceb2e20bf87172caed66a`
+binds that same HEAD with two dirty producer hashes, not a later clean commit.
+The `.qst` cases use the existing Gravity fixture text with caller-supplied
+paired source paths; file authentication is not claimed.
+
+Bootstrap-free native controls pass twenty-nine tests / 424 assertions.
+Existing whole plan/instruction regressions pass 45 / 1004, and language/
+ownership gates pass 48 / 1202. Native controls cover every policy and refusal
+category, same-runtime hidden-cost selection, live diagnostic policy changes,
+lazy field reads, original owner/exception identity, returning failures and
+the unsupported unknown post-IR cost case. Native proof envelopes retain
+`:status :complete` even with false preservation fields or vacuous empty input;
+the tests explicitly do not promote those envelopes to admission authority.
+
+The first focused source test run passed the actual artifact/refusal controls
+but incorrectly expected an interposed IR-cost vector to be normalized into
+a set. Original `clojure.set/union` can retain that largest borrowed value
+as a vector when the other inputs are empty. A second incorrect expectation
+assumed object identity; the variadic union reduces `into`, which may copy the
+vector. The corrected regression checks original value, vector type and exact
+forwarded arguments. Both failed test logs are retained. No production
+semantic change was made for these expectations.
+
+Focused source tests, exact namespace-load guard results, final lint/doc checks,
+full Main comparison, independent reviews and own hosted CI are supplemented
+in the maintained PR as they complete. The private compiler-carrier pipeline
+suite is not a local execution route for this slice.
 
 ## Unsupported boundaries
 

@@ -28,7 +28,12 @@
            'native-performance-required-claim-fields 'native-performance-present?
            'native-performance-normalize-claim 'native-performance-missing-claim-fields
            'native-performance-failure! 'native-performance-target-fingerprint
-           'validate-native-performance-claim!}
+           'validate-native-performance-claim!
+           'native-zero-cost-required-claim-fields 'native-zero-cost-required-nonempty-claim-fields
+           'native-zero-cost-required-artifacts 'native-zero-cost-abstraction-families 'native-zero-cost-cost-diagnostic
+           'native-zero-cost-normalize-claim 'native-zero-cost-missing-claim-fields 'native-zero-cost-failure!
+           'native-zero-cost-ir-artifact-id 'native-zero-cost-costs-in-ir 'native-zero-cost-hidden-costs
+           'native-zero-cost-missing-evidence 'validate-native-zero-cost-claim! 'native-zero-cost-capability-proof}
          (set (keys (ns-publics 'gravity.optimization)))))
   (doseq [[name operation] (ns-publics 'gravity.optimization)]
     (let [contract (:gravity/namespace-contract (meta operation))]

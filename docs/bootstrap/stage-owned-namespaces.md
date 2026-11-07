@@ -300,6 +300,21 @@ all nine refusal classes, deterministic provenance and owner exception identity.
 Supplied labels remain unverified metadata; native `:complete` grants no proof,
 target execution, benchmark, certificate, optimization or release authority.
 
+The [native zero-cost claim extraction](optimization-zero-cost-evidence.md)
+moves all five PERF2 policy values and nine algorithms into the same owner,
+with fourteen explicit native APIs and all historical Bootstrap policy/helper
+Vars retained through aliases and late adapters. Optimization now explicitly
+requires unaliased `clojure.set`; dependency direction remains Bootstrap to
+Optimization to the Clojure core/library. Source controls emit the actual
+five-claim PERF2 artifact and preserve all nine refusal classes through the
+existing profile/typed/Core/macro/module route. The compiled-plan performance
+gate does not invoke PERF2 and receives no credit for this family. Physical
+allocation/boxing/dispatch/check facts are performance semantics, not project
+accounting. Unknown post-IR costs, undeclared multi-cost diagnostic precedence
+and native `:complete` proof envelopes remain explicit limitations; none confers
+proof, actual erasure, target execution, performance certification or release
+authority.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four
