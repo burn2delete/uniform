@@ -65,6 +65,7 @@
         root-form-ids
         parsed-records
         adapted-evidence
+        decimal-occurrence-projection
         descriptor
         envelope-descriptor
         envelope]}
@@ -81,7 +82,8 @@
       :literal-decoding-records (:literal-decoding-records adapted-evidence),
       :sh02-reader-envelope envelope,
       :gravity-reader-source-map (:reader-source-map adapted-evidence),
-      :sh03-reader-adapter-contract :gravity/sh03-to-c2-reader-products-v2,
+      :sh03-reader-adapter-contract :gravity/sh03-to-c2-reader-products-v3,
+      :sh07-decimal-occurrence-projection decimal-occurrence-projection,
       :parsed-records parsed-records,
       :reader-extension-invocation-records (:reader-extension-invocation-records adapted-evidence),
       :sh03-reader-adapter-descriptor descriptor,
