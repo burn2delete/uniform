@@ -2,11 +2,11 @@
 
 (def ^:private c2-pass-cache-compiler-contract
   {:implementation :gravity-stage0-clojure-bootstrap
-   :implementation-contract-version 1
-   :c2-artifact-schema-version 1
-   :c2-artifact-identity-version 1
+   :implementation-contract-version 2
+   :c2-artifact-schema-version 2
+   :c2-artifact-identity-version 2
    :canonical-reader :gravity-sh03-reader
-   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v3
    :clojure-adapter-residual? true
    :self-hosted? false
    :release-authority? false})
@@ -22,13 +22,14 @@
            :syntax-seed-stream :reader-source-map
            :literal-decoding-records
            :reader-extension-invocation-records
-           :reader-diagnostics :incremental-reader-hash]
+           :reader-diagnostics :incremental-reader-hash
+           :sh07-decimal-occurrence-projection]
    :rejects c2-reader-diagnostic-ids})
 
 (def ^:private c2-pass-cache-boundary-contract
   {:slice :SH-03
    :owner :gravity-source
-   :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+   :adapter-contract :gravity/sh03-to-c2-reader-products-v3
    :plan-binding-contract :exact-current-sh03-plan-binding
    :semantic-value-table-contract
    :authenticated-reader-product-identity-projection
@@ -72,11 +73,11 @@
                :sh03-binding sh03-semantic-binding)
         compiler-id
         (c2-pass-cache/canonical-content-id
-         {:domain :gravity/c2-pass-cache-compiler-binding-v1
+         {:domain :gravity/c2-pass-cache-compiler-binding-v2
           :compiler compiler-input})
         pass-contract-id
         (c2-pass-cache/canonical-content-id
-         {:domain :gravity/c2-pass-cache-pass-contract-v1
+         {:domain :gravity/c2-pass-cache-pass-contract-v2
           :pass c2-pass-cache-pass-contract})
         plan-binding-id
         (c2-pass-cache/canonical-content-id
@@ -103,7 +104,7 @@
         (assoc boundary-binding-base
                :identity
                (c2-pass-cache/canonical-content-id
-                {:domain :gravity/c2-pass-cache-boundary-binding-v1
+                {:domain :gravity/c2-pass-cache-boundary-binding-v2
                  :binding boundary-binding-base}))
         compiler-binding (assoc compiler-input :compiler-id compiler-id)
         pass-binding {:pass :c2-reader
@@ -111,13 +112,13 @@
                       :pass-contract-id pass-contract-id}
         entry-binding
         {:artifact :gravity/c2-pass-cache-producer-binding
-         :schema-version 1
+         :schema-version 2
          :compiler-id compiler-id
          :pass-contract-id pass-contract-id
          :sh03-binding-id sh03-binding-id
          :boundary-binding-id (:identity boundary-binding)
          :exact-sh03-plan-binding exact-sh03-binding
-         :adapter-contract :gravity/sh03-to-c2-reader-products-v2
+         :adapter-contract :gravity/sh03-to-c2-reader-products-v3
          :clojure-adapter-residual? true
          :self-hosted? false
          :release-authority? false}]
@@ -208,5 +209,5 @@
 (defn- c2-pass-cache-boundary-projection-id
   [artifact]
   (c2-pass-cache/canonical-content-id
-   {:domain :gravity/c2-pass-cache-artifact-boundary-projection-v1
+   {:domain :gravity/c2-pass-cache-artifact-boundary-projection-v2
     :gravity-reader-boundary (:gravity-reader-boundary artifact)}))
