@@ -79,6 +79,35 @@
             with-bodies
             (reverse metadata-paths))))
 
+(defn restore-planning-tasks [projected raw]
+  (let [reference-key (var-get (ns-resolve 'seedless.workflow 'planning-reference-key))
+        body-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-body-reference-key))
+        inline-user-keys (var-get (ns-resolve 'seedless.workflow 'planning-inline-user-keys))]
+    (mapv (fn [task]
+            (let [task-key (:key task)
+                  issue (:issue task)
+                  restore-map (fn [value path]
+                                (if (contains? value reference-key)
+                                  (let [raw-value (get-in raw path)
+                                        fields (remove inline-user-keys (keys raw-value))]
+                                    (merge (dissoc value reference-key)
+                                           (select-keys raw-value fields)))
+                                  value))]
+              (if-not (map? issue)
+                task
+                (cond-> task
+                  (get-in issue [:body body-reference-key])
+                  (assoc-in [:issue :body]
+                            (get-in raw (get-in issue [:body body-reference-key :path])))
+                  (contains? issue :user)
+                  (assoc-in [:issue :user]
+                            (restore-map (:user issue) [:tasks task-key :issue :user]))
+                  (get-in issue [:milestone :creator])
+                  (assoc-in [:issue :milestone :creator]
+                            (restore-map (get-in issue [:milestone :creator])
+                                         [:tasks task-key :issue :milestone :creator]))))))
+          projected)))
+
 (defn harness [scenario operation]
   (let [ctx (repository! (context)) original rt/command
         events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)
@@ -738,7 +767,12 @@
         (is (= "candidate-sha" (get-in raw [:tasks "a" :candidate])))
         (is (= open-prs (get-in raw [:open-prs])))
         (is (= "candidate-sha" (get-in (first existing-slices) [:candidate])))
-        (is (= "preserved-task-history" (get-in (first existing-slices) [:issue :body])))
+        (is (= :string
+               (get-in (first existing-slices)
+                       [:issue :body :uniform/retained-untrusted-pr-body :type])))
+        (is (= [:tasks "a" :issue :body]
+               (get-in (first existing-slices)
+                       [:issue :body :uniform/retained-untrusted-pr-body :path])))
         (is (= :string (get-in (first open-prs-prompt) [:body :uniform/retained-untrusted-pr-body :type])))
         (is (= [0 :body]
                (get-in (first open-prs-prompt) [:body :uniform/retained-untrusted-pr-body :path])))
@@ -759,6 +793,10 @@
                (get-in raw [:open-prs])))
         (is (= (get-in raw [:open-prs])
                (restore-planning-open-prs open-prs-prompt (get-in raw [:open-prs]))))
+        (is (= "preserved-task-history"
+               (get-in raw [:tasks "a" :issue :body])))
+        (is (= [task]
+               (restore-planning-tasks existing-slices raw)))
         (is (.isFile artifact))
         (is (= (:sha256 raw-reference-prompt)
                (rt/digest (slurp artifact))))
@@ -766,6 +804,48 @@
                (get-in @(:state ctx) [:last-plan :raw-input-reference :sha256])))
         (is (nil? (:planning @(:state ctx)))))
       (finally (delete-tree! (:root ctx))))))
+
+(deftest planner-projects-provider-issue-metadata-in-existing-slices
+  (let [project (var-get (ns-resolve 'seedless.workflow 'project-planning-tasks))
+        reference {:file "/tmp/seedless-planning.raw-input.edn" :sha256 "snapshot-sha"}
+        body (apply str (repeat 4096 "issue-body-"))
+        user {:id 17 :node_id "user-17" :login "seedless" :html_url "https://example.invalid/u"
+              :type "User" :site_admin false :user_view_type "public"
+              :avatar_url "https://example.invalid/avatar" :url "https://api.example.invalid/u"}
+        creator (assoc user :id 18 :node_id "user-18" :login "creator")
+        task (assoc (slice "issue-metadata") :status :attention
+                    :error {:message "preserved failure"}
+                    :issue {:number 42 :id 4200 :node_id "issue-42" :title "Issue title"
+                            :body body :user user
+                            :milestone {:number 7 :title "SH-07" :creator creator}})
+        projected (project [task] reference)
+        issue (:issue (first projected))]
+    (is (= :attention (:status (first projected))))
+    (is (= {:message "preserved failure"} (:error (first projected))))
+    (is (= 42 (:number issue)))
+    (is (= :string
+           (get-in issue [:body :uniform/retained-untrusted-pr-body :type])))
+    (is (= [:tasks "issue-metadata" :issue :body]
+           (get-in issue [:body :uniform/retained-untrusted-pr-body :path])))
+    (is (not= body (:body issue)))
+    (is (= 17 (get-in issue [:user :id])))
+    (is (= "seedless" (get-in issue [:user :login])))
+    (is (= [:tasks "issue-metadata" :issue :user]
+           (get-in issue [:user :uniform/retained-repository-metadata :path])))
+    (is (= [:tasks "issue-metadata" :issue :milestone :creator]
+           (get-in issue [:milestone :creator :uniform/retained-repository-metadata :path])))
+    (is (= [task]
+           (restore-planning-tasks projected {:tasks {"issue-metadata" task}})))
+    (is (thrown-with-msg? Exception #"Planning issue body is malformed"
+                          (project [(assoc task :issue (assoc (:issue task) :body 42))]
+                                   reference)))
+    (is (thrown-with-msg? Exception #"Planning provider metadata is malformed"
+                          (project [(assoc task :issue (assoc (:issue task) :user "not-a-map"))]
+                                   reference)))
+    (is (thrown-with-msg? Exception #"Planning provider metadata is malformed"
+                          (project [(assoc task :issue
+                                            (assoc-in (:issue task) [:milestone :creator] 42))]
+                                   reference)))))
 
 (deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
   (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}
