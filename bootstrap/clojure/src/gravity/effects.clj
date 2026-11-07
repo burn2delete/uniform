@@ -1,13 +1,37 @@
 (ns gravity.effects
-  "Existing hosted seed effect/graph builders; Gravity retains effect semantics."
+  "Hosted Stage0 effect-policy kernel and existing seed effect/graph builders; Gravity retains effect semantics."
   (:require [clojure.set :as set]))
 
 (def ^:private namespace-contract
   '{:namespace gravity.effects
     :contract-boundary :hosted-seed-effect-data-reports-and-native-checks
-    :governing-contracts [D1 D2 D3 D8 D9 L6 L12 L15 C1 C7 C8 C15 BOOT8 TEST2]
+    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L3 L6 L12 L15 P4 C1 C7 C8 C15 BOOT1 BOOT8 TEST2]
     :public-api
     {
+     stage0-uses-println?
+     {:arglists ([recur-check form]) :admission :none :contract-boundary :stage0-native-effect-policy-kernel
+      :seed-compatibility-data-only? true :seed-compatibility-checks-only? false
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-stage0-form-data :operation-inputs [:recur-check]
+      :callback-selection :existing-caller-selected-value}
+     infer-stage0-effects
+     {:arglists ([uses-println? forms]) :admission :none :contract-boundary :stage0-native-effect-policy-kernel
+      :seed-compatibility-data-only? true :seed-compatibility-checks-only? false
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-stage0-form-data :operation-inputs [:uses-println?]
+      :callback-selection :existing-caller-selected-value}
+     required-stage0-capabilities
+     {:arglists ([effect-capability effects]) :admission :none :contract-boundary :stage0-native-effect-policy-kernel
+      :seed-compatibility-data-only? true :seed-compatibility-checks-only? false
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-stage0-effect-and-catalog-data :operation-inputs [:effect-capability]
+      :callback-selection :existing-callable-lookup-value}
+     validate-stage0-module-effects!
+     {:arglists ([{:keys [uses-println? fail!]} module]) :admission :none :contract-boundary :stage0-native-effect-policy-kernel
+      :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false
+      :input-boundary :caller-owned-expanded-stage0-module :operation-inputs [:uses-println? :fail!]
+      :callback-selection :existing-entry-captured-values :failure-transport-owner :supplied-operation}
      native-handled-effect?
      {:arglists ([ctx effect]) :admission :none
       :seed-compatibility-data-only? false :seed-compatibility-checks-only? true
@@ -110,18 +134,22 @@
       :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}}
     :dependency-direction
-    {:requires [clojure.set] :consumed-by [gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
-     :forbids [gravity.bootstrap gravity.cli gravity.release gravity.c8-effect-checker]}
-    :artifact-inputs [:caller-owned-native-effect-premises :checker-context-cells-and-source-nodes :live-effect-check-operations-and-catalogs :native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
+    {:requires [clojure.set] :consumed-by [gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog gravity.module-analysis.effects]
+     :forbids [gravity.bootstrap gravity.cli gravity.release gravity.c8-effect-checker gravity.module-analysis gravity.module-analysis.effects]}
+    :artifact-inputs [:caller-selected-stage0-classifier-and-failure-values :native-stage0-forms-expanded-module-declarations-and-source-path :callable-stage0-effect-capability-catalog :caller-owned-native-effect-premises :checker-context-cells-and-source-nodes :live-effect-check-operations-and-catalogs :native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
                       :explicit-classifier-and-selection-callbacks :replay-sensitive-effect-catalog :native-effect-catalog-and-diagnostic-ids :native-legality-capability-build-replay-ordering-residual-and-diagnostic-records :trusted-projection-and-failure-callbacks]
-    :artifact-outputs [:legacy-native-effect-predicates-and-owner-returns :original-build-and-replay-checker-records-or-l6-refusals :native-catalog-defaults-and-message-text :native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
+    :artifact-outputs [:stage0-native-println-observation :stage0-native-effect-and-required-capability-sets :stage0-native-module-guard-return-or-refusal :legacy-native-effect-predicates-and-owner-returns :original-build-and-replay-checker-records-or-l6-refusals :native-catalog-defaults-and-message-text :native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
     :diagnostic-ownership
-    {:projection [:native-catalog-defaults :native-message-text :native-payload-fields :fixture-override-selection :fixture-registry-data]
+    {:stage0-policy-decisions [L6-EFFECT-UNDECLARED L3-CAPABILITY-MISSING]
+     :earlier-profile-owner [P4-HOST-EFFECT P4-HOST-CAPABILITY]
+     :existing-namespace-admission [L3-EFFECT-WIDEN :module-capability-variant]
+     :stage0-failure-construction-and-publication :supplied-operation
+     :projection [:native-catalog-defaults :native-message-text :native-payload-fields :fixture-override-selection :fixture-registry-data]
      :stage [L6-EFFECT-UNKNOWN L6-EFFECT-PROFILE L6-EFFECT-UNDECLARED L6-BUILD-EFFECT L6-REPLAY-EFFECT C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
      :existing-c8-owner [:effect-rules :legality :capabilities :replay :ordering :source-admission-and-diagnostic-publication]}
     :legacy-status-labels-authoritative? false
     :legacy-build-grants-prove-performed-effects? false
-    :unsupported [:canonical-scoped-grants :hermetic-input-authentication :live-build-effects :canonical-effect-registration :canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
+    :unsupported [:complete-stage0-effect-inference :stage0-runtime-network-services :canonical-scoped-grants :hermetic-input-authentication :live-build-effects :canonical-effect-registration :canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
                   :pure-native-graph-ordering-gap :canonical-diagnostic-coverage :untrusted-report-authentication :call-effect-fixed-point :latent-body-inference :handlers-and-continuations
                   :performed-build-effects :package-deployment-provider-authority :profile-and-safety-legality
                   :canonical-full-source-pipeline :authority-admission :migration :release :self-hosting :seed-retirement]})
@@ -703,5 +731,45 @@
   ((effect-operation operations :check-build-effects!) checker ctx node effects opts)
   ((effect-operation operations :check-replay-effects!) checker ctx node effects))
 
-(doseq [operation [#'native-handled-effect? #'check-native-registry! #'check-native-build-effects! #'check-native-replay-effects! #'check-native-effect-legality! #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-known-effects #'native-effect-capability #'native-replay-sensitive-effects #'native-effect-message #'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
+(defn stage0-uses-println?
+  [recur-check form]
+  (cond
+    (seq? form) (or (= 'println (first form)) (some recur-check form))
+    (coll? form) (some recur-check form)
+    :else false))
+
+(defn infer-stage0-effects
+  [uses-println? forms]
+  (set (mapcat (fn [form]
+                 (cond
+                   (uses-println? form) [:io/write]
+                   (and (seq? form) (= 'network-listen (first form)))
+                   [:network/listen]
+                   :else []))
+               forms)))
+
+(defn required-stage0-capabilities
+  [effect-capability effects]
+  (set (keep effect-capability effects)))
+
+(defn validate-stage0-module-effects!
+  [{:keys [uses-println? fail!]} module]
+  (let [forms (:forms module)
+        writes? (some uses-println? forms)]
+    (when (and writes? (not (contains? (:effects module) :io/write)))
+      (fail! "L6-EFFECT-UNDECLARED"
+             "println requires the :io/write effect"
+             {:source-span {:source (:source-path module)}
+              :required-effect :io/write
+              :declared-effects (:effects module)
+              :remediation "Add :io/write to the namespace effects."}))
+    (when (and writes? (not (contains? (:capabilities module) :io/stdout)))
+      (fail! "L3-CAPABILITY-MISSING"
+             "println requires the :io/stdout capability"
+             {:source-span {:source (:source-path module)}
+              :required-capability :io/stdout
+              :declared-capabilities (:capabilities module)
+              :remediation "Add :io/stdout to the namespace capabilities."}))))
+
+(doseq [operation [#'native-handled-effect? #'check-native-registry! #'check-native-build-effects! #'check-native-replay-effects! #'check-native-effect-legality! #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-known-effects #'native-effect-capability #'native-replay-sensitive-effects #'native-effect-message #'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph #'stage0-uses-println? #'infer-stage0-effects #'required-stage0-capabilities #'validate-stage0-module-effects!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

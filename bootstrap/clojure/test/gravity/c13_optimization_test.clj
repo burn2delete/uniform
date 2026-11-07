@@ -1,6 +1,7 @@
 (ns gravity.c13-optimization-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.c13-optimization :as c13]
+            [gravity.optimization :as optimization]
             [gravity.optimization-lowering :as shared]
             [gravity.c13-optimization.artifact :as artifact]
             [gravity.c13-optimization.operations :as c13-ops]
@@ -238,3 +239,427 @@
                        #(c13/c13-optimization-validate! "throwing-native.gravity" changed))
                      nil (catch clojure.lang.ExceptionInfo observed observed))]
       (is (identical? error observed)))))
+
+(def ^:private elision-fields [:proof-id :proof :certificate :certificate-id :dominating-proof])
+(defn- elision-present [_] false)
+(defn- elision-proof [_] false)
+(defn- elision-failure [id message data] (throw (ex-info message (assoc data :id id))))
+(def ^:private elision-module {:source-path "native-elision.gravity" :profile :hosted :target :jvm})
+
+(deftest stage0-elision-owner-declares-metadata-without-facade-authority
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (empty? (ns-aliases 'gravity.optimization)))
+  (is (= 37 (count (ns-publics 'gravity.optimization))))
+  (doseq [operation [#'optimization/native-stage0-check-elision-proof-present?
+                     #'optimization/validate-native-stage0-check-elision!]]
+    (let [contract (:gravity/namespace-contract (meta operation))
+          entry (get-in contract [:public-api (:name (meta operation))])]
+      (is (= (:arglists (meta operation)) (:arglists entry)))
+      (is (= :none (:admission entry)))
+      (is (true? (:native-data-only? entry)))
+      (is (= :stage0-check-elision-metadata-presence-and-refusal (:contract-boundary entry)))
+      (is (false? (:authenticates-inputs? contract)))
+      (is (false? (:issues-verifier-certificates? contract)))
+      (is (some #{:safety-check-elision} (:unsupported contract)))
+      (is (some #{:proof-provider-validation} (:unsupported contract)))
+      (is (not (contains? (ns-publics 'gravity.c13-optimization) (:name (meta operation))))))))
+
+(deftest stage0-elision-presence-retains-field-order-short-circuits-and-values
+  (doseq [hit (range 5)]
+    (let [values (vec (repeatedly 5 #(Object.))) marker (Object.) events (atom [])
+          lookup (zipmap elision-fields values)
+          input (reify clojure.lang.ILookup
+                  (valAt [_ key] (swap! events conj [:get key]) (get lookup key))
+                  (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted presence lookup"))))]
+      (with-redefs [elision-present (fn [value] (swap! events conj [:call value])
+                                     (when (identical? value (nth values hit)) marker))]
+        (is (identical? marker (optimization/native-stage0-check-elision-proof-present? #'elision-present input)))
+        (is (= (vec (mapcat (fn [field value] [[:get field] [:call value]])
+                           (take (inc hit) elision-fields) (take (inc hit) values))) @events)))))
+  (doseq [result [nil false]]
+    (let [calls (atom [])]
+      (with-redefs [elision-present (fn [value] (swap! calls conj value) result)]
+        (is (= result (optimization/native-stage0-check-elision-proof-present? #'elision-present {})))
+        (is (= [nil nil nil nil nil] @calls))))))
+
+(deftest stage0-elision-presence-selects-callee-before-getter-and-reloads-next-field
+  (let [events (atom []) first-value (Object.) second-value (Object.) marker (Object.)
+        late (fn [value] (swap! events conj [:late value]) marker)
+        input (reify clojure.lang.ILookup
+                (valAt [_ key]
+                  (swap! events conj [:get key])
+                  (case key :proof-id (do (alter-var-root #'elision-present (constantly late)) first-value)
+                    :proof second-value (throw (AssertionError. "presence failed to short circuit"))))
+                (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted lookup"))))]
+    (with-redefs [elision-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (identical? marker (optimization/native-stage0-check-elision-proof-present? #'elision-present input)))
+      (is (= [[:get :proof-id] [:selected first-value] [:get :proof] [:late second-value]] @events)))))
+
+(deftest stage0-elision-validation-keeps-strict-erasure-and-unconditional-presence
+  (doseq [[flag checks erased?] [[true nil true] [true (Object.) true]
+                                 [false nil false] [nil [] false] [:truthy nil false] [0 nil false]
+                                 [false [:bounds] true] [nil '(:bounds) true]]
+          present? [false true]]
+    (let [record {:erased? flag :erased-checks checks :check-class :bounds :operation :at :ir-node :node}
+          marker (Object.) proofs (atom []) failures (atom [])]
+      (with-redefs [elision-proof (fn [actual] (swap! proofs conj actual) present?)
+                    elision-failure (fn [& args] (swap! failures conj (vec args)) marker)]
+        (let [value (optimization/validate-native-stage0-check-elision!
+                      #'elision-failure #'elision-proof elision-module record)]
+          (is (= 1 (count @proofs)))
+          (is (identical? record (first @proofs)))
+          (if (and erased? (not present?))
+            (do (is (identical? marker value))
+                (is (= [["PERF10-PROOF-MISSING" "compiled performance metadata erases a check without proof"
+                         {:source-span {:source "native-elision.gravity"} :profile :hosted :target :jvm
+                          :check-class :bounds :operation :at :ir-node :node :missing-proof :dominating-proof
+                          :pass-id :stage0-compiled-performance-gate :diagnostic-family :compiled-performance-validation
+                          :remediation "Keep the runtime check or attach a dominating proof and certificate before claiming check elision."}]]
+                       @failures)))
+            (do (is (nil? value)) (is (empty? @failures)))))))))
+
+(deftest stage0-elision-accepted-records-do-not-touch-failure-or-payload-fields
+  (let [module (reify clojure.lang.ILookup
+                 (valAt [_ key] (if (= :source-path key) "native-elision.gravity"
+                                   (throw (AssertionError. "accepted record read failure payload"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted module lookup"))))
+        unused-failure (reify clojure.lang.IDeref
+                         (deref [_] (throw (AssertionError. "accepted record selected failure"))))
+        calls (atom [])]
+    (doseq [record [{:erased? false} {:erased? true}]]
+      (with-redefs [elision-proof (fn [actual] (swap! calls conj actual) true)]
+        (is (nil? (optimization/validate-native-stage0-check-elision!
+                    unused-failure #'elision-proof module record)))))
+    (is (= [{:erased? false} {:erased? true}] @calls))))
+
+(deftest stage0-elision-validation-selects-late-proof-and-captures-failure-before-payload
+  (let [events (atom []) marker (Object.) calls (atom []) path (Object.) profile (Object.) target (Object.)
+        check (Object.) operation (Object.) node (Object.)
+        late-failure (fn [& _] (throw (AssertionError. "failure changed while constructing payload")))
+        selected-failure (fn [& args] (swap! events conj :failure) (swap! calls conj (vec args)) marker)
+        late-proof (fn [record] (swap! events conj [:proof record])
+                     (alter-var-root #'elision-failure (constantly selected-failure)) false)
+        record (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:record key])
+                   (case key :erased? false
+                     :erased-checks (do (alter-var-root #'elision-proof (constantly late-proof)) [:bounds])
+                     :check-class check :operation operation :ir-node node
+                     (throw (AssertionError. "unexpected validator record field"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted record lookup"))))
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:module key])
+                   (case key :source-path path
+                     :profile (do (alter-var-root #'elision-failure (constantly late-failure)) profile)
+                     :target target (throw (AssertionError. "unexpected module field"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted module lookup"))))]
+    (with-redefs [elision-proof (fn [& _] (throw (AssertionError. "proof selected before erased fields")))
+                  elision-failure (fn [& _] (throw (AssertionError. "failure selected before proof helper")))]
+      (is (identical? marker (optimization/validate-native-stage0-check-elision!
+                              #'elision-failure #'elision-proof module record)))
+      (is (= [[:module :source-path] [:record :erased?] [:record :erased-checks] [:proof record]]
+             (subvec @events 0 4)))
+      ;; Do not infer payload map expression order from its source spelling.
+      (is (= :failure (last @events)))
+      (is (= 1 (count @calls)))
+      (let [facts (get-in @calls [0 2])]
+        (doseq [[expected actual] [[path (get-in facts [:source-span :source])] [profile (:profile facts)]
+                                   [target (:target facts)] [check (:check-class facts)]
+                                   [operation (:operation facts)] [node (:ir-node facts)]]]
+          (is (identical? expected actual)))))))
+
+(deftest stage0-elision-retains-original-owner-exceptions-and-errors
+  (doseq [sentinel [(Exception. "native elision exception") (Error. "native elision error")]]
+    (with-redefs [elision-present (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/native-stage0-check-elision-proof-present? #'elision-present {})
+                           (catch Throwable error error)))))
+    (with-redefs [elision-proof (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/validate-native-stage0-check-elision!
+                             #'elision-failure #'elision-proof elision-module {:erased? false})
+                           (catch Throwable error error)))))
+    (with-redefs [elision-proof (constantly false) elision-failure (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/validate-native-stage0-check-elision!
+                             #'elision-failure #'elision-proof elision-module {:erased? true})
+                           (catch Throwable error error)))))))
+
+(def ^:private performance-fields optimization/native-performance-required-claim-fields)
+(defn- performance-present [value] (optimization/native-performance-present? value))
+(defn- performance-missing [claim]
+  (optimization/native-performance-missing-claim-fields #'performance-present #'performance-fields claim))
+(defn- performance-fingerprint [claim] (optimization/native-performance-target-fingerprint claim))
+(defn- performance-failure [id _ _ _ extra] (throw (ex-info id (assoc extra :id id))))
+(def ^:private performance-claim
+  {:claim-id :native/claim :profile :hosted :target :native/unverified-target
+   :target-features #{:native/feature} :input-shape {:entrypoint :main} :layout :native/layout
+   :safety-mode :safe :benchmark {:target-fingerprint :native/fingerprint}
+   :semantic-proof #{:native/semantic} :safety-proof #{:native/safety}
+   :artifacts #{:optimized-mir :proof-index :benchmark-report}})
+(def ^:private performance-manifest
+  {:profile :hosted :target :jvm :source-effects #{:io/write} :source-capabilities #{:io/stdout}})
+(defn- validate-performance [performance claim]
+  (optimization/validate-native-performance-claim!
+    #'performance-missing #'performance-fingerprint #'performance-present #'performance-failure
+    "native-performance.gravity" performance-manifest performance claim))
+
+(deftest performance-owner-declares-complete-native-family-without-authority
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (empty? (ns-aliases 'gravity.optimization)))
+  (let [publics (ns-publics 'gravity.optimization)
+        contract (:gravity/namespace-contract (meta #'optimization/validate-native-performance-claim!))]
+    (is (= 37 (count publics) (count (:public-api contract))))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name operation] publics]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])))
+      (is (= :none (get-in contract [:public-api name :admission]))))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:issues-verifier-certificates? contract)))
+    (is (some #{:performance-certification} (:unsupported contract)))
+    (is (some #{'PERF1} (:governing-contracts contract)))))
+
+(deftest performance-presence-aliases-and-fingerprint-preserve-native-semantics
+  (doseq [value [nil [] {} #{} '()]] (is (false? (performance-present value))))
+  (doseq [value [false "" 0 :native (Object.) [nil]]] (is (true? (performance-present value))))
+  (let [primary (Object.) fallback (Object.) input (Object.) extra (Object.)
+        normalized (optimization/native-performance-normalize-claim
+                     {:claim-id primary :claim fallback :input-domain input :extra extra})]
+    (is (identical? primary (:claim-id normalized)))
+    (is (identical? input (:input-shape normalized)))
+    (is (identical? extra (:extra normalized)))
+    (is (identical? fallback (optimization/native-performance-target-fingerprint
+                              {:benchmark {:target-fingerprint false :environment-fingerprint fallback}})))
+    (is (false? (optimization/native-performance-target-fingerprint
+                  {:benchmark {:environment-fingerprint false}})))
+    (is (= {:claim-id nil :input-shape nil} (optimization/native-performance-normalize-claim nil)))))
+
+(deftest performance-missing-fields-reload-presence-after-each-getter
+  (let [events (atom []) input (reify clojure.lang.ILookup
+                              (valAt [_ key]
+                                (swap! events conj [:get key])
+                                (alter-var-root #'performance-present
+                                                (constantly (fn [value] (swap! events conj [:late value]) true)))
+                                key)
+                              (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [performance-fields [:first :second]
+                  performance-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (= [:first] (performance-missing input)))
+      (is (= [[:get :first] [:selected :first] [:get :second] [:late :second]] @events)))))
+
+(deftest performance-validation-rejects-each-real-rule-and-preserves-first-refusal
+  (doseq [[id performance claim]
+          [["PERF1-CLAIM" {} {:claim-id :native/incomplete}]
+           ["PERF1-PROFILE" {} (assoc performance-claim :profile :native)]
+           ["PERF1-TARGET" {} (assoc performance-claim :benchmark {:harness :native/test})]
+           ["PERF1-EVIDENCE" {} (assoc performance-claim :semantic-proof #{})]
+           ["PERF1-SAFETY" {:lost-safety-facts [:bounds]} performance-claim]
+           ["PERF1-EFFECT" {:expanded-effects [:io/read]} performance-claim]
+           ["PERF1-CAPABILITY" {:expanded-capabilities [:io/stdin]} performance-claim]
+           ["PERF1-NUMERIC" {:numeric-mode-change {:source-mode :strict :optimized-mode :fast}} performance-claim]
+           ["PERF1-VARIANT" {:generated-variants [{:variant-id :native/unguarded}]} performance-claim]]]
+    (is (= id (try (validate-performance performance claim) nil
+                   (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))
+  (let [ids (atom []) marker (Object.)
+        invalid {:lost-safety-facts [:bounds] :expanded-effects [:io/read] :expanded-capabilities [:io/stdin]
+                 :numeric-mode-change {:source-mode :strict :optimized-mode :fast}
+                 :generated-variants [{:variant-id :bad}]}]
+    (with-redefs [performance-failure (fn [id & _] (swap! ids conj id) marker)]
+      ;; Returning failures never became an implicit early return in the seed.
+      (is (= :complete (validate-performance invalid {:profile :native})))
+      (is (= ["PERF1-CLAIM" "PERF1-PROFILE" "PERF1-TARGET" "PERF1-EVIDENCE" "PERF1-SAFETY"
+              "PERF1-EFFECT" "PERF1-CAPABILITY" "PERF1-NUMERIC" "PERF1-VARIANT"] @ids))))
+  (is (= :complete (validate-performance {} performance-claim))))
+
+(deftest performance-failure-selects-owner-before-payload-and-retains-extra-precedence
+  (let [marker (Object.) selected (atom nil) profile (Object.) source (Object.) extra (Object.)
+        manifest (reify clojure.lang.ILookup
+                   (valAt [_ key]
+                     (alter-var-root #'elision-failure (constantly (fn [& _] (throw (AssertionError. "late owner")))))
+                     (case key :profile profile :target :native/target))
+                   (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [elision-failure (fn [& args] (reset! selected args) marker)]
+      (is (identical? marker
+                      (optimization/native-performance-failure!
+                        #'elision-failure "PERF1-EFFECT" source manifest {:claim-id :native/claim}
+                        {:profile extra :source-span {:source source}})))
+      (is (= "optimization hides or expands effects" (second @selected)))
+      (is (identical? extra (:profile (nth @selected 2))))
+      (is (identical? source (get-in (nth @selected 2) [:source-span :source]))))))
+
+(deftest performance-validator-reloads-ports-and-retains-opaque-owner-errors
+  (let [events (atom [])]
+    (with-redefs [performance-missing
+                  (fn [_] (swap! events conj :missing)
+                    (alter-var-root #'performance-fingerprint
+                                    (constantly (fn [_] (swap! events conj :late-fingerprint) :native/fingerprint))) [])
+                  performance-fingerprint (fn [_] (throw (AssertionError. "early fingerprint")))]
+      (is (= :complete (validate-performance {} performance-claim)))
+      (is (= [:missing :late-fingerprint] @events))))
+  (doseq [owner [#'performance-missing #'performance-fingerprint #'performance-present #'performance-failure]
+          sentinel [(Exception. "opaque performance exception") (Error. "opaque performance error")]]
+    (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+      #(is (identical? sentinel
+                       (try (validate-performance {} (if (= owner #'performance-failure) {} performance-claim))
+                            (catch Throwable error error)))))))
+
+(def ^:private zero-fields optimization/native-zero-cost-required-claim-fields)
+(def ^:private zero-nonempty optimization/native-zero-cost-required-nonempty-claim-fields)
+(def ^:private zero-artifacts optimization/native-zero-cost-required-artifacts)
+(def ^:private zero-families optimization/native-zero-cost-abstraction-families)
+(def ^:private zero-diagnostics optimization/native-zero-cost-cost-diagnostic)
+(defn- zero-missing [claim]
+  (optimization/native-zero-cost-missing-claim-fields #'performance-present #'zero-fields #'zero-nonempty claim))
+(defn- zero-ir-id [claim key] (optimization/native-zero-cost-ir-artifact-id claim key))
+(defn- zero-ir-costs [claim key] (optimization/native-zero-cost-costs-in-ir claim key))
+(defn- zero-hidden [claim] (optimization/native-zero-cost-hidden-costs #'zero-ir-costs claim))
+(defn- zero-evidence [claim]
+  (optimization/native-zero-cost-missing-evidence #'performance-present #'zero-ir-id #'zero-artifacts claim))
+(defn- zero-failure [id _ _ _ _ extra] (throw (ex-info id (assoc extra :id id))))
+(def ^:private zero-claim
+  {:claim-id :native/zero-cost :profile :hosted :target :native/unverified-target
+   :abstraction :protocol-dispatch :equivalent-form :direct-call
+   :expected-erased-costs #{:dynamic-dispatch} :erased-costs #{:dynamic-dispatch} :residual-costs #{}
+   :semantic-proof #{:native/semantic} :safety-proof #{:native/safety} :proof-ids #{:native/proof}
+   :artifacts #{:before-mir :after-mir :dispatch-report} :source-operation {:node-id :native/source}
+   :before-ir {:artifact-id :native/before :costs #{:dynamic-dispatch}}
+   :after-ir {:artifact-id :native/after :costs #{}}
+   :allocation-audit {} :boxing-audit {} :runtime-check-report {}
+   :dispatch-specialization-report {:residual-dispatch #{}}
+   :effect-proof {:source-effects #{} :optimized-effects #{}}
+   :capability-proof {:source-capabilities #{} :optimized-capabilities #{}}})
+(defn- validate-zero [claim]
+  (optimization/validate-native-zero-cost-claim!
+    #'zero-missing #'zero-hidden #'zero-evidence #'zero-failure #'zero-families #'zero-diagnostics
+    "native-zero-cost.gravity" performance-manifest performance-claim claim))
+
+(deftest zero-cost-owner-declares-policy-and-explicit-library-without-authority
+  (let [contract (:gravity/namespace-contract (meta #'optimization/validate-native-zero-cost-claim!))]
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (is (empty? (ns-aliases 'gravity.optimization)))
+    (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
+    (is (= 37 (count (:public-api contract))))
+    (is (some #{:general-zero-cost-erasure} (:unsupported contract)))
+    (is (some #{:unlisted-cost-vocabulary} (:unsupported contract)))
+    (is (some #{:cross-runtime-diagnostic-precedence} (:unsupported contract)))
+    (is (false? (:authenticates-inputs? contract)))
+    (is (false? (:issues-verifier-certificates? contract))))
+  (is (= [:claim-id :profile :target :abstraction :equivalent-form :expected-erased-costs :erased-costs
+          :residual-costs :semantic-proof :safety-proof :proof-ids :artifacts :source-operation :before-ir :after-ir]
+         zero-fields))
+  (is (= #{:before-mir :after-mir} zero-artifacts)))
+
+(deftest zero-cost-normalization-and-lazy-fields-retain-original-presence
+  (let [marker (Object.)
+        normalized (optimization/native-zero-cost-normalize-claim
+                     {:claim :native/alias :erased-costs #{:boxing} :extra marker})]
+    (is (= :native/alias (:claim-id normalized)))
+    (is (= #{:boxing} (:expected-erased-costs normalized)))
+    (is (= #{} (:residual-costs normalized)))
+    (is (identical? marker (:extra normalized))))
+  ;; These two fields require presence of a key, not a nonempty value.
+  (is (= [] (zero-missing (assoc zero-claim :erased-costs nil :residual-costs nil))))
+  (let [events (atom []) input (reify clojure.lang.ILookup
+                               (valAt [_ key]
+                                 (swap! events conj [:get key])
+                                 (alter-var-root #'performance-present
+                                  (constantly (fn [value] (swap! events conj [:late value]) true))) key)
+                               (valAt [_ _ _] (throw (AssertionError. "defaulted lookup"))))]
+    (with-redefs [zero-fields [:first :second] zero-nonempty #{:first :second}
+                  performance-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (= [:first] (zero-missing input)))
+      (is (= [[:get :first] [:selected :first] [:get :second] [:late :second]] @events)))))
+
+(deftest zero-cost-ir-and-audit-unions-retain-all-existing-carriers
+  (let [marker (Object.)]
+    (is (identical? marker (zero-ir-id {:before-ir {:artifact-id false :id marker}} :before-ir))))
+  (is (= #{:boxing :reflection :allocation}
+         (zero-ir-costs {:after-ir {:costs [:boxing] :operations [{:costs [:reflection :boxing]} {:costs [:allocation]}]}} :after-ir)))
+  (is (= #{:allocation :boxing :reflection :dynamic-dispatch :runtime-bounds-check :native/residual :native/ir}
+         (zero-hidden {:residual-costs [:native/residual] :after-ir {:costs [:native/ir]}
+                       :allocation-audit {:hidden-allocations [:allocation]} :boxing-audit {:hidden-boxing [:boxing]}
+                       :reflection-audit {:hidden-reflection [:reflection]}
+                       :dispatch-specialization-report {:residual-dispatch [:dynamic-dispatch]}
+                       :runtime-check-report {:unaccounted-checks [:runtime-bounds-check]}})))
+  (with-redefs [zero-artifacts (conj zero-artifacts :native/required)]
+    (is (= #{:before-after-mir-artifacts} (zero-evidence zero-claim)))))
+
+(deftest zero-cost-validation-preserves-all-nine-refusal-categories
+  (doseq [[id claim]
+          [["PERF2-CLAIM" (dissoc zero-claim :source-operation)]
+           ["PERF2-PROFILE" (assoc zero-claim :profile :native)]
+           ["PERF2-EVIDENCE" (dissoc zero-claim :allocation-audit)]
+           ["PERF2-ALLOCATION" (assoc-in zero-claim [:after-ir :costs] #{:allocation})]
+           ["PERF2-BOXING" (assoc zero-claim :boxing-audit {:hidden-boxing [:boxing]})]
+           ["PERF2-DISPATCH" (assoc zero-claim :dispatch-specialization-report {:residual-dispatch [:dynamic-dispatch]})]
+           ["PERF2-REFLECTION" (assoc zero-claim :reflection-audit {:hidden-reflection [:host-reflection]})]
+           ["PERF2-CHECK" (assoc zero-claim :runtime-check-report {:unaccounted-checks [:runtime-bounds-check]})]
+           ["PERF2-RESIDUAL" (assoc zero-claim :residual-costs #{:native/residual})]]]
+    (is (= id (try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error)))))))
+  (is (= :complete (validate-zero zero-claim))))
+
+(deftest zero-cost-preserves-unordered-selection-and-late-diagnostic-policy
+  (let [claim (assoc-in zero-claim [:after-ir :costs] #{:allocation :boxing})
+        failure #(try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        first-result (failure)]
+    (is (= first-result (failure)))
+    (is (contains? #{"PERF2-ALLOCATION" "PERF2-BOXING"} (:id first-result)))
+    (is (= (:id first-result) (zero-diagnostics (:residual-cost first-result)))))
+  (let [visited (atom []) claim (assoc-in zero-claim [:after-ir :costs] #{:native/a :native/b})]
+    (with-redefs [zero-diagnostics
+                  (fn [cost]
+                    (swap! visited conj cost)
+                    (alter-var-root #'zero-diagnostics
+                     (constantly (fn [next-cost] (swap! visited conj next-cost) "PERF2-BOXING"))) nil)]
+      (is (= "PERF2-BOXING" (try (validate-zero claim) nil (catch clojure.lang.ExceptionInfo error (:id (ex-data error))))))
+      (is (= #{:native/a :native/b} (set @visited)))
+      (is (= 2 (count @visited))))))
+
+(deftest zero-cost-returning-failures-and-proof-labels-remain-nonauthoritative
+  (let [ids (atom []) invalid {:profile :native :target :wrong :abstraction :unknown
+                              :expected-erased-costs #{:native/unknown} :after-ir {:costs #{:allocation}}}
+        marker (Object.)]
+    (with-redefs [zero-failure (fn [id & _] (swap! ids conj id) marker)]
+      (is (= :complete (validate-zero invalid)))
+      (is (= ["PERF2-CLAIM" "PERF2-PROFILE" "PERF2-EVIDENCE" "PERF2-ALLOCATION" "PERF2-RESIDUAL"] @ids)))
+    (let [proof (optimization/native-zero-cost-capability-proof
+                  #'performance-present #'zero-ir-id performance-manifest performance-claim [invalid])]
+      (is (= :complete (:status proof)))
+      (is (false? (:profile-legality-preserved? proof)))
+      (is (false? (:target-request-preserved? proof)))
+      (is (false? (:safety-evidence-preserved? proof)))
+      (is (false? (:before-after-ir-recorded? proof)))))
+  ;; The legacy catalog does not reject an unknown cost found only in post-IR.
+  (is (= :complete (validate-zero (assoc-in zero-claim [:after-ir :costs] #{:native/unknown}))))
+  (is (= :complete (:status (optimization/native-zero-cost-capability-proof
+                             #'performance-present #'zero-ir-id performance-manifest performance-claim [])))))
+
+(deftest zero-cost-failure-captures-owner-before-payload-and-preserves-extra-facts
+  (let [marker (Object.) extra (Object.) captured (atom nil)
+        claim (reify clojure.lang.ILookup
+                (valAt [_ key]
+                  (alter-var-root #'elision-failure (constantly (fn [& _] (throw (AssertionError. "late owner")))))
+                  (get zero-claim key))
+                (valAt [_ key fallback] (get zero-claim key fallback)))]
+    (with-redefs [elision-failure (fn [& args] (reset! captured args) marker)]
+      (is (identical? marker (optimization/native-zero-cost-failure!
+                              #'elision-failure "PERF2-BOXING" "native-zero.gravity"
+                              performance-manifest performance-claim claim {:profile extra})))
+      (is (= "zero-cost claim hides boxing or representation conversion" (second @captured)))
+      (is (identical? extra (:profile (nth @captured 2)))))))
+
+(deftest zero-cost-ports-retain-exact-exception-and-error-identity
+  (doseq [owner [#'zero-missing #'zero-hidden #'zero-evidence #'zero-failure]
+          sentinel [(Exception. "opaque zero-cost exception") (Error. "opaque zero-cost error")]]
+    (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+      #(is (identical? sentinel
+                       (try (validate-zero (if (= owner #'zero-failure) {} zero-claim))
+                            (catch Throwable error error))))))
+  (doseq [sentinel [(Exception. "opaque IR exception") (Error. "opaque IR error")]]
+    (with-redefs [zero-ir-id (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (zero-evidence zero-claim) (catch Throwable error error)))))
+    (with-redefs [zero-ir-costs (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (zero-hidden zero-claim) (catch Throwable error error)))))))
