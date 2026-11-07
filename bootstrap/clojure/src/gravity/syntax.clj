@@ -10,7 +10,12 @@
             [gravity.c3-syntax-verification :as verification]))
 
 (def ^:private namespace-contract
- '{:public-api
+ '{:owner-call-resolution
+ {:operations [boundary-fail! registered-literal-fail! accept-result! require-result-carrier! execute-plan!]
+  :evaluation :per-use-before-arguments :var-ports :current-callable-root
+  :other-callable-ports :unchanged :admission-check-added? false
+  :test-owner gravity.syntax.owner-calls-test}
+ :public-api
  {resolve-stream-request-preimage!
   {:arglists ([source-path request resolved-digests operations]),
    :operation-inputs [:sh04-syntax-boundary-fail!],
@@ -1248,6 +1253,12 @@
 
 ;; Pinned SH-04 plan runtime. Operations are trusted seed dependencies.
 
+(defn- owner-function
+  "Capture a supplied Var before call arguments; retain other callable values."
+  [operation]
+  (if (var? operation) (deref operation) operation))
+
+
 (defn
  boundary-fail!
  [rule
@@ -1256,10 +1267,10 @@
   observed
   facts
   {:keys [c3-syntax-fail! source-span]}]
- (c3-syntax-fail!
+ ((owner-function c3-syntax-fail!)
   rule
   source-path
-  {:source-span (source-span source-path 0),
+  {:source-span ((owner-function source-span) source-path 0),
    :producer :gravity.bootstrap.syntax,
    :form-kind :syntax-object}
   {:missing-fields [missing-field],
@@ -1670,9 +1681,9 @@
     sh04-syntax-strip-host-metadata]}]
  (try
   (let
-   [clean-arguments (sh04-syntax-strip-host-metadata arguments)]
-   (sh04-syntax-strip-host-metadata
-    (p15-s23-stage2-runtime-execute-function
+   [clean-arguments ((owner-function sh04-syntax-strip-host-metadata) arguments)]
+   ((owner-function sh04-syntax-strip-host-metadata)
+    ((owner-function p15-s23-stage2-runtime-execute-function)
      {:engine :gravity-sh04-pinned-syntax-runner,
       :compiler-artifact-plan? true}
      (:plan binding)
@@ -1686,7 +1697,7 @@
   (catch
    StackOverflowError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :bounded-syntax-host-stack
@@ -1695,7 +1706,7 @@
   (catch
    AssertionError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-assertion
@@ -1704,7 +1715,7 @@
   (catch
    LinkageError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-linkage
@@ -1713,7 +1724,7 @@
   (catch
    clojure.lang.ExceptionInfo
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-runtime-diagnostic
@@ -1722,7 +1733,7 @@
   (catch
    Exception
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-host-failure
@@ -1739,12 +1750,12 @@
    [p15-s23-trusted-carrier-validation sh04-syntax-boundary-fail!]}]
  (let
   [validation
-   (p15-s23-trusted-carrier-validation
+   ((owner-function p15-s23-trusted-carrier-validation)
     value
     :default-only)]
   (when-not
    (= :passed (:status validation))
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :bounded-syntax-result-carrier
@@ -1759,7 +1770,7 @@
  [source-path
   result
   {:keys [c3-syntax-fail! sh04-syntax-require-carrier! source-span]}]
- (sh04-syntax-require-carrier!
+ ((owner-function sh04-syntax-require-carrier!)
   source-path
   :gravity-syntax-result
   result)
@@ -1770,13 +1781,13 @@
     (first (:diagnostics result))
     rule
     (or (:rule diagnostic) "C3-SHAPE")]
-   (c3-syntax-fail!
+   ((owner-function c3-syntax-fail!)
     rule
     source-path
     {:source-span
      (or
       (get-in diagnostic [:primary :span])
-      (source-span source-path 0)),
+      ((owner-function source-span) source-path 0)),
      :syntax-id (get-in diagnostic [:primary :syntax-id]),
      :producer :gravity.bootstrap.syntax,
      :form-kind (get-in diagnostic [:facts :form-kind])}
@@ -2034,10 +2045,10 @@
   missing-fields
   facts
   {:keys [c3-syntax-fail! source-span]}]
- (c3-syntax-fail!
+ ((owner-function c3-syntax-fail!)
   "C3-FACT-STALE"
   source-path
-  {:source-span (or (:span form-record) (source-span source-path 0)),
+  {:source-span (or (:span form-record) ((owner-function source-span) source-path 0)),
    :producer :gravity.bootstrap.reader,
    :form-kind :tagged-literal}
   {:missing-fields missing-fields, :facts facts}))

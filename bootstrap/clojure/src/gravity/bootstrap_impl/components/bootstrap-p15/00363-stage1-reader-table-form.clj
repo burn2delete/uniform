@@ -36,30 +36,11 @@
 
 (defn stage1-reader-location
   [source-text line-starts idx]
-  (let [idx (min idx (count source-text))
-        line-number (loop [line 0]
-                      (if (and (< (inc line) (count line-starts))
-                               (<= (line-starts (inc line)) idx))
-                        (recur (inc line))
-                        (inc line)))
-        line-start (line-starts (dec line-number))
-        line-prefix (subs source-text line-start idx)
-        column (inc (.codePointCount line-prefix 0 (.length line-prefix)))]
-    {:line line-number
-     :column column
-     :column-unit :unicode-scalar
-     :char idx
-     :byte (utf8-byte-count (subs source-text 0 idx))}))
+  (gravity.source-span/indexed-source-location #'utf8-byte-count source-text line-starts idx))
 
 (defn stage1-reader-span
   [source-path source-text line-starts start end]
-  (let [start-location (stage1-reader-location source-text line-starts start)
-        end-location (stage1-reader-location source-text line-starts end)]
-    {:source source-path
-     :start start-location
-     :end end-location
-     :byte-start (:byte start-location)
-     :byte-end (:byte end-location)}))
+  (gravity.source-span/indexed-source-span #'stage1-reader-location source-path source-text line-starts start end))
 
 (defn stage1-reader-table
   []
@@ -69,103 +50,25 @@
 
 (defn stage1-reader-token-kind
   [token]
-  (cond
-    (= token "nil") :nil
-    (= token "true") :boolean
-    (= token "false") :boolean
-    (str/starts-with? token ":") :keyword
-    (re-matches #"[+-]?(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+)" token)
-    :integer
-    (re-matches #"[+-]?[0-9]+/[0-9]+" token) :ratio
-    (re-matches #"[+-]?(?:(?:(?:[0-9]+\.[0-9]*)|(?:[0-9]*\.[0-9]+))(?:[eE][+-]?[0-9]+)?|(?:[0-9]+[eE][+-]?[0-9]+))"
-                token)
-    :decimal
-    (re-find #"^[+-]?[0-9]" token) :malformed-number
-    :else :symbol))
+  (gravity.reader/classify-compatibility-token #'str/starts-with? token))
 
 (defn stage1-reader-malformed-numeric!
   [source-path raw span token-id cause]
-  (stage1-reader-fail!
-   "STAGE1READER007" source-path raw
-   {:source-span span
-    :token-id token-id
-    :raw raw
-    :cause-message cause
-    :facts {:literal-kind :numeric
-            :raw-spelling raw}}))
+  (gravity.reader/reject-compatibility-numeric! #'stage1-reader-fail! source-path raw span token-id cause))
 
 (defn stage1-reader-decode-atom
   [source-path kind raw span token-id]
-  (try
-    (case kind
-      :nil nil
-      :boolean (= "true" raw)
-      :keyword (keyword (subs raw 1))
-      :integer
-      (let [negative? (str/starts-with? raw "-")
-            positive? (str/starts-with? raw "+")
-            unsigned (if (or negative? positive?) (subs raw 1) raw)
-            [radix digits] (cond
-                             (re-find #"^0[xX]" unsigned)
-                             [16 (subs unsigned 2)]
-                             (re-find #"^0[bB]" unsigned)
-                             [2 (subs unsigned 2)]
-                             :else [10 unsigned])
-            value (bigint (java.math.BigInteger. digits radix))]
-        (if negative? (- value) value))
-      :ratio
-      (let [[numerator-spelling denominator-spelling] (str/split raw #"/" 2)
-            numerator (bigint numerator-spelling)
-            denominator (bigint denominator-spelling)]
-        (if (zero? denominator)
-          {:artifact :gravity/deferred-ratio-literal
-           :kind :ratio
-           :raw raw
-           :numerator-spelling numerator-spelling
-           :denominator-spelling denominator-spelling
-           :numerator numerator
-           :denominator denominator
-           :semantic-validation :deferred
-           :reason :zero-denominator}
-          (/ numerator denominator)))
-      :decimal (Double/parseDouble raw)
-      :malformed-number
-      (stage1-reader-malformed-numeric!
-       source-path raw span token-id
-       "numeric lexeme does not match a declared Gravity numeric shape")
-      :symbol (symbol raw)
-      raw)
-    (catch NumberFormatException ex
-      (stage1-reader-malformed-numeric! source-path raw span token-id
-                                        (.getMessage ex)))
-    (catch ArithmeticException ex
-      (stage1-reader-malformed-numeric! source-path raw span token-id
-                                        (.getMessage ex)))))
+  (gravity.reader/decode-compatibility-atom
+   {:starts-with-var #'str/starts-with? :split-var #'str/split
+    :malformed-numeric-var #'stage1-reader-malformed-numeric!}
+   source-path kind raw span token-id))
 
 (defn stage1-reader-decode-string
   [source-path raw span token-id]
-  (try
-    (binding [*read-eval* false]
-      (read-string raw))
-    (catch Exception ex
-      (stage1-reader-fail! "STAGE1READER003" source-path raw
-                           {:source-span span
-                            :token-id token-id
-                            :raw raw
-                            :cause-message (.getMessage ex)}))))
+  (gravity.reader/decode-compatibility-string
+   #'clojure.core/read-string #'stage1-reader-fail! source-path raw span token-id))
 
 (defn stage1-reader-decode-character
   [source-path raw span token-id]
-  (try
-    (let [value (binding [*read-eval* false]
-                  (read-string raw))]
-      (when-not (char? value)
-        (throw (ex-info "reader character token did not decode to a character"
-                        {:raw raw})))
-      value)
-    (catch Exception ex
-      (stage1-reader-fail! "STAGE1READER003" source-path raw
-                           {:source-span span
-                            :token-id token-id
-                            :raw raw
-                            :cause-message (.getMessage ex)}))))
+  (gravity.reader/decode-compatibility-character
+   #'clojure.core/read-string #'stage1-reader-fail! source-path raw span token-id))
