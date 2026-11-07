@@ -168,6 +168,24 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [hosted Stage0 namespace parser](resolution-stage0-namespace-evidence.md)
+moves eight complete clause, dependency and module parsing bodies into
+`gravity.resolution.stage0-namespace`. Its explicit callbacks, native forms,
+source path and profile/target catalog values produce the existing normalized
+declaration or original owner failure; the parser creates no artifact identity
+or source authority. Three module-analysis compatibility helpers preserve
+names, argument lists and entry-time callback capture. The child owns its
+existing L3 namespace/dependency and P1/B1 header decisions, while supplied
+failure/span operations retain construction and transport. The SH06
+`gravity.resolution` root and its 55 APIs are unchanged. The child depends only
+on `clojure.string` and never imports its callers, Reader, the SH06 root or
+Diagnostics. `gravity.resolution.stage0-namespace-test` covers real public
+macro artifacts, executable plans and parser refusals, full module returns,
+metadata/defaults, source order, opaque lookups and exception identity. This
+increment requires the exact corrective parent and its own current-base
+acceptance; it does not establish canonical C5 resolution, authentication, cross-file graph or
+lexical legality, module-artifact publication, release or self-hosting support.
+
 The [native Stage0 effect-policy extraction](effects-stage0-policy-evidence.md)
 moves the complete classifier, inference, capability projection and module
 guard bodies into `gravity.effects`. Four explicit APIs consume existing

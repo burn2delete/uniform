@@ -13,12 +13,29 @@ TEST2 govern this bounded increment. P1/B1 constrain the interpretation of
 profile/target data; the existing Stage0 header diagnostics do not implement
 their complete manifest or eligibility contracts.
 
-The source parent is frozen Effects commit
+The original scope started at frozen Effects commit
 `9a0e5f4cbbc63564abc43ca740c71e709822ee60`, tree
-`7635003a1d63d9384dacd032023f0ab93d86d62b`. Published Main
-`4d0ab35a4d085eea3de3c8a2af0372578b62fdec` is already an ancestor. This
-slice imports no additional Main paths and inherits no predecessor source,
-provider or CI acceptance. The original nine-path lease governs authoring.
+`7635003a1d63d9384dacd032023f0ab93d86d62b`. At that scope capture, published
+Main `4d0ab35a4d085eea3de3c8a2af0372578b62fdec` was already an ancestor,
+and no additional Main paths were imported. The original nine-path lease
+governs authoring. The final candidate must record its own exact corrective
+source/Main composition and fresh checks; no predecessor source, provider or
+CI acceptance transfers to it.
+
+That Effects candidate subsequently failed CI `42356394110/1`: three stale
+C8 contract assertions failed and a separate resolution job encountered
+Maven Central HTTP 429 before executing its test. The candidate remains
+rejected. Corrective draft PR #1332 retains its producer code and corrects
+the C8 contract tests; its frozen source is
+`55df8cd899d140ca3dae742ca7aa8eb8b8786d84`, tree
+`17b5b37ed9605b1bdbaa4abc647daa502f2bc98a`. Its own CI `42362158063/1`
+completed successfully on tested Main
+`b722e29a0096381fbf476ca04771fe6567657f69`. The independent audit records
+all 68 command receipts passing, 11 intact artifacts and 1014 tests with
+32416 assertions. Those exact corrective-source facts do not accept the
+rejected predecessor or grant this Parser candidate integration eligibility.
+Adopting the verified correction requires an explicit own-branch composition,
+fresh Parser checks and commit-bound independent review.
 
 ## Public API and artifact boundary
 
@@ -116,12 +133,59 @@ gates, docs/roadmap validation and complete current-Main lint. Independent
 semantic, adversarial, conservation, provider and hosted-CI evidence must bind
 the exact clean source and integration base before Main eligibility.
 
-## Current status and unsupported boundaries
+## Current local evidence and unsupported boundaries
 
-This is the early draft scope. No child API is implemented or accepted at
-this capture. The current published-Main SDK is bound by immutable nine-file
-manifest SHA256
-`33cf71a66f4482ed358362aca7438bdcc80a2544c1381cb7131ad1e0a256ca07`.
+The eight child operations and eight legacy adapters across three helper files
+are implemented. The early draft publication pinned the scope-only commit
+`9e016505ef402fa60005cf44fc5db6a5df3e8e45`, not an implementation commit.
+The local observations below retain that exact scope head and working-file
+hashes; they do not claim a later source commit or hosted run was observed.
+CI registration and the namespace boundary map are implemented. The candidate
+still requires clean-source reviews, exact-base checks and its own hosted CI.
+The early-scope nine-file SDK manifest SHA256
+`33cf71a66f4482ed358362aca7438bdcc80a2544c1381cb7131ad1e0a256ca07`
+is historical context, not a current-Main or later-base acceptance claim.
+
+The focused namespace passes 11 tests and 241 assertions, including an exact
+eight-name public API inventory and explicit operation/input/callback contract
+checks. Eight selected existing module-analysis tests pass 101 assertions;
+the separate synthetic module-artifact-construction test is outside this
+increment's verified route and was not selected. Language/ownership checks
+pass 48 tests and 1202 assertions. The focused namespace's initial two
+assertion failures incorrectly expected textual `:keys` declaration order;
+the corrected expectation records the identical native hash-map lookup order
+of the original body, child and adapter. No producer change was needed.
+
+The twenty-nine-command contract list appends only
+`resolution-stage0-namespace-validation` at index 28, running the entire
+`gravity.resolution.stage0-namespace-test` namespace with the existing 2g heap
+and 180-second host watchdog. All earlier twenty-eight command vectors remain
+unchanged. Local CI harness controls pass 54 tests and 706 assertions. The
+initial harness invocation had three launch errors because its shell omitted
+the installed linter from PATH; the corrected tool environment passes without
+changing tests or source. The initial error log remains history.
+
+Baseline receipt SHA256
+`193f1d41bd3d197f71b760bb811ef242a0b9393d55f32d63c1c07e261a67b3d5`
+and current receipt SHA256
+`c7c0c0820d69b418431c426a3f27b2fde74e5437d649f6e0f0e3581f984efd59`
+record eighteen equal downstream observations: seven macro artifacts, five
+plans, five executions and eleven refusals, including one earlier Reader L1
+control. They preserve observed source facts, identities, reports, stdout and
+parser call arguments. The macro artifact selects only part of the module
+map, so these observations alone do not compare every parser return field.
+
+Independent provisional adversarial review SHA256
+`73b06bf58dc12fcc88fcd2815ce9f0146fbd83a8493a14224cc45c8c60cb45b0`
+and probe receipt SHA256
+`14630306af4a3e7108189e8e8f3e038b3ac7bc61684231f417a06ed4fc5e769f`
+record nineteen original/current matches, including complete normalized module
+maps, rich dependency metadata, callbacks, opaque lookups, exceptions and
+legacy adapter behavior. Separate body-conservation receipt SHA256
+`50c0ae4cb2031635cb6e4df58a119f5d4f54bd8f59a23ae6dfa9e261f852a184`
+compares all eight definitions after normalizing only generated anonymous
+function symbols, with no differences. These are dirty-worktree observations;
+they do not accept a future commit, integration base or hosted run.
 
 This increment does not implement full L3 or canonical C5 resolution, binding
 identities, lexical scopes/shadowing, cross-file imports or cycles, package

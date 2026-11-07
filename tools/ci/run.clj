@@ -615,7 +615,9 @@
    ["runtime-stage0-execution-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.stage0-execution-test")]
    ["effects-stage0-policy-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.stage0-policy-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.stage0-policy-test")]
+   ["resolution-stage0-namespace-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.resolution.stage0-namespace-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
