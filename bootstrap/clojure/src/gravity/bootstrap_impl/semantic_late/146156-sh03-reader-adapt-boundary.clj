@@ -27,7 +27,8 @@
      forms-by-id
      root-form-ids
      parsed-records
-     adapted-evidence]}
+     adapted-evidence
+     decimal-occurrence-projection]}
    state
    descriptor
    (sh03-reader-adapter-summary
@@ -37,7 +38,8 @@
     form-tree
     (:reader-extension-invocation-records adapted-evidence)
     token-id-map
-    form-id-map)
+    form-id-map
+    decimal-occurrence-projection)
    envelope-descriptor
    (sh03-reader-sh02-descriptor source-path project-context resolved descriptor)
    envelope-options
