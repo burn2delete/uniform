@@ -1,12 +1,51 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, instruction/evaluation, builtin policy and rule data; trusted seed dependencies.")
+  "Temporary hosted native Stage0 execution and Stage2 invocation, instruction/evaluation, builtin policy and rule data; trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation-instruction-evaluation-and-value-operations
-    :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
+    :contract-boundary :hosted-seed-stage0-stage2-invocation-instruction-evaluation-and-value-operations
+    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2 TEST3]
     :public-api
-    {kernel-rule-record
+    {fail-native-stage0-call-arity!
+     {:admission :none, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-var], :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :failure-transport-owner :supplied-operation, :arglists ([fail-var id module callee args expected]), :contract-boundary :stage0-native-call-arity}
+     assert-native-stage0-min-arity!
+     {:arglists ([fail-call-arity-var module callee args n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-exact-arity!
+     {:arglists ([fail-call-arity-var module callee args n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-between-arity!
+     {:arglists ([fail-call-arity-var module callee args min-n max-n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-even-arity!
+     {:arglists ([fail-call-arity-var module callee args]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     invoke-native-stage0-builtin
+     {:arglists ([operations module callee args]) :admission :none :hosted-seed-only? true
+      :contract-boundary :stage0-native-ordinary-builtin-invocation
+      :input-boundary :trusted-native-stage0-module-and-evaluated-arguments
+      :operation-keys [:assert-min-arity! :assert-exact-arity! :assert-between-arity! :assert-even-arity!
+                       :fail-call-arity! :readable-pr-str :normalized-rest :fail!]
+      :operation-selection :late-owner-var-before-call-arguments
+      :argument-evaluation-owner :existing-caller :failure-transport-owner :supplied-operation}
+     execute-native-stage0-instructions
+     {:arglists ([operations plan env instructions]) :admission :none :hosted-seed-only? true
+      :contract-boundary :stage0-native-instruction-execution :operation-keys [:execute-instruction]}
+     execute-native-stage0-instruction
+     {:arglists ([operations plan env instruction]) :admission :none :hosted-seed-only? true
+      :contract-boundary :stage0-native-instruction-execution
+      :operation-keys [:execute-instruction :execute-instructions :execute-function :validate-effects! :invoke-builtin :fail! :join]}
+     execute-native-stage0-function
+     {:arglists ([operations plan callee args]) :admission :none :hosted-seed-only? true
+      :contract-boundary :stage0-native-instruction-execution
+      :operation-keys [:fail! :fail-call-arity! :execute-instructions]}
+     execute-native-stage0-plan
+     {:arglists ([operations plan]) :admission :none :hosted-seed-only? true
+      :contract-boundary :stage0-native-instruction-execution
+      :operation-keys [:fail! :execute-instructions] :stdout :existing-clojure-writer-capture}
+     source-throw!
+     {:arglists ([source-throw-key source-throw-token-var plan payload])
+      :admission :none :hosted-seed-only? true
+      :operation-vars [source-throw-token-var]
+      :token-key-and-recognition-owner :bootstrap
+      :token-read :map-value-before-plan-lookups}
+     kernel-rule-record
      {:arglists ([kernel operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:declared-builtin-exact-arities :declared-builtin-contracts :required-instructions :builtin-functions :reader-bridge-builtins :difference :sort-values]
       :completion-label-admits? false}
@@ -132,7 +171,8 @@
       :operation-keys [:fail! :execute-instructions]
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
-    :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
+    :artifact-inputs [:trusted-native-stage0-builtin-module-and-evaluated-arguments :late-stage0-builtin-owner-vars :trusted-native-stage0-plan-instructions-environment-callee-and-arguments :late-stage0-execution-operation-vars :trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
+                      :runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
                       :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
                       :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars
@@ -140,8 +180,15 @@
                       :trusted-late-instruction-and-recurrence-operation-vars
                       :trusted-instruction-function-and-data-operation-vars
                       :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :native-kernel-and-diagnostic-data :late-native-kernel-operation-and-catalog-vars :call-signature-and-arity-data :trusted-late-policy-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
-    :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
+    :artifact-outputs [:native-stage0-ordinary-builtin-result :native-stage0-instruction-result :native-stage0-captured-stdout :function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
+    :diagnostic-ownership {:native-stage0-instruction-traversal-and-lookup :stage
+                           :native-stage0-entry-and-function-arity-placement :stage
+                           :native-stage0-ordinary-builtin-dispatch-arity-placement-and-host-exception-remap :stage
+                           :native-stage0-arity-predicates-message-selection-and-local-failure-facts :stage
+                           :native-stage0-policy-implementations-and-generic-failure-transport :bootstrap
+                           :source-throw-envelope-construction :stage
+                           :source-throw-token-key-and-recognition :bootstrap
+                           :ordinary-builtin-dispatch-and-arity-placement :stage
                            :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :instruction-selection-core-control-and-fast-paths :stage
                            :map-entry-recurrence-facts-and-call-sequencing :stage
@@ -156,12 +203,20 @@
     :scope-and-authority-checks :existing-seed-operations
     :trusted-operation-map? true :authenticates-plans? false :grants-authority? false
     :canonical-runtime-manifest? false :stdout :existing-clojure-writer-capture
-    :unsupported [:untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
+    :unsupported [:stage0-build-read-declared-input :stage0-instruction-source-maps :stage0-typed-host-service-manifest :portable-source-throw-abi :serialized-source-throw-token
+                  :untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
                   :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :canonical-formatting-and-collection-semantics :full-safe9-conformance
                   :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
                   :canonical-instruction-admission :canonical-gravity-source-map-evaluation-order
                   :migration :release :self-hosting :seed-retirement]})
+
+(defn source-throw!
+  "Construct the trusted hosted-seed control envelope with its caller-owned token."
+  [source-throw-key source-throw-token-var plan payload]
+  (throw (ex-info "Gravity single-source seed throw"
+                  {source-throw-key (deref source-throw-token-var)
+                   :payload payload :source (:source plan) :module (get-in plan [:module :module])})))
 
 (defn execute-function-scoped
   [runtime plan callee args public-invocation-scope operations]
@@ -1171,6 +1226,194 @@
 	                                  missing-primitives)
 	     :rule-set-complete? complete?
 	     :status (if complete? :complete :failed)}))
+
+(defn execute-native-stage0-instructions
+  [operations plan env instructions]
+  (reduce (fn [_ instruction]
+            ((deref (:execute-instruction operations)) plan env instruction))
+          nil
+          instructions))
+
+(defn execute-native-stage0-instruction
+  [operations plan env instruction]
+  (case (:op instruction)
+    :literal (:value instruction)
+    :quote (:value instruction)
+    :local (if (contains? env (:name instruction))
+             (get env (:name instruction))
+             ((deref (:fail! operations)) "L2-UNKNOWN-SYMBOL"
+                    "stage0 compiled plan cannot resolve local"
+                    {:source-span {:source (get-in plan [:source :path])}
+                     :symbol (:name instruction)
+                     :remediation "Regenerate the compiled plan from a valid stage0 source module."}))
+    :vector-literal (mapv #((deref (:execute-instruction operations)) plan env %)
+                          (:items instruction))
+    :set-literal (set (map #((deref (:execute-instruction operations)) plan env %)
+                           (:items instruction)))
+    :map-literal (into {}
+                       (map (fn [{:keys [key value]}]
+                              [((deref (:execute-instruction operations)) plan env key)
+                               ((deref (:execute-instruction operations)) plan env value)]))
+                       (:entries instruction))
+    :println (let [module (:module plan)
+                   args (mapv #((deref (:execute-instruction operations)) plan env %)
+                              (:args instruction))]
+               ((deref (:validate-effects! operations)) module)
+               (println ((deref (:join operations)) " " (map str args))))
+    :do ((deref (:execute-instructions operations)) plan env (:body instruction))
+    :if (if ((deref (:execute-instruction operations)) plan env (:test instruction))
+          ((deref (:execute-instruction operations)) plan env (:then instruction))
+          ((deref (:execute-instruction operations)) plan env (:else instruction)))
+    :let (loop [env env
+                bindings (:bindings instruction)]
+           (if-let [{:keys [name expr]} (first bindings)]
+             (recur (assoc env name
+                           ((deref (:execute-instruction operations)) plan env expr))
+                    (rest bindings))
+             ((deref (:execute-instructions operations)) plan env (:body instruction))))
+    :builtin-call (let [module (:module plan)
+                        args (mapv #((deref (:execute-instruction operations)) plan env %)
+                                   (:args instruction))]
+                    ((deref (:invoke-builtin operations)) module (:function instruction) args))
+    :function-call (let [args (mapv #((deref (:execute-instruction operations)) plan env %)
+                                    (:args instruction))]
+                     ((deref (:execute-function operations))
+                      plan
+                      (:function instruction)
+                      args))
+    ((deref (:fail! operations)) "L2-UNKNOWN-CORE-FORM"
+           "stage0 compiled plan contains an unknown instruction"
+           {:source-span {:source (get-in plan [:source :path])}
+            :operator (:op instruction)
+            :remediation "Regenerate the compiled plan with a supported stage0 compiler."})))
+
+
+(defn execute-native-stage0-function
+  [operations plan callee args]
+  (let [definition (get-in plan [:functions callee])
+        params (:params definition)]
+    (when-not definition
+      ((deref (:fail! operations)) "L2-UNKNOWN-CORE-FORM"
+             "stage0 compiled plan references an unknown function"
+             {:source-span {:source (get-in plan [:source :path])}
+              :function callee
+              :remediation "Regenerate the compiled plan from source."}))
+    (when-not (= (count params) (count args))
+      ((deref (:fail-call-arity! operations)) "L2-FUNCTION-ARITY"
+                        (:module plan)
+                        callee
+                        args
+                        (count params)))
+    ((deref (:execute-instructions operations)) plan (zipmap params args)
+                                 (:instructions definition))))
+
+(defn execute-native-stage0-plan
+  [operations plan]
+  (let [main-function (get-in plan [:functions (:entrypoint plan)])
+        params (:params main-function)]
+    (when-not main-function
+      ((deref (:fail! operations)) "L3-UNKNOWN-ALIAS"
+             "stage0 compiled plan requires a main function"
+             {:source-span {:source (get-in plan [:source :path])}
+              :remediation "Regenerate the compiled plan from a module with main."}))
+    (when-not (empty? params)
+      ((deref (:fail! operations)) "L2-MAIN-ARITY"
+             "stage0 compiled main must take no arguments"
+             {:source-span {:source (get-in plan [:source :path])}
+              :params params
+              :remediation "Use (defn main [] ...)."}))
+    (with-out-str
+      ((deref (:execute-instructions operations)) plan {} (:instructions main-function)))))
+
+(defn invoke-native-stage0-builtin
+  [operations module callee args]
+  (try
+    (case callee
+      + (apply + args)
+      - (do ((deref (:assert-min-arity! operations)) module callee args 1)
+            (apply - args))
+      * (apply * args)
+      / (do ((deref (:assert-min-arity! operations)) module callee args 1)
+            (apply / args))
+      = (do ((deref (:assert-min-arity! operations)) module callee args 1)
+            (apply = args))
+      < (do ((deref (:assert-min-arity! operations)) module callee args 2)
+            (apply < args))
+      > (do ((deref (:assert-min-arity! operations)) module callee args 2)
+            (apply > args))
+      <= (do ((deref (:assert-min-arity! operations)) module callee args 2)
+             (apply <= args))
+      >= (do ((deref (:assert-min-arity! operations)) module callee args 2)
+             (apply >= args))
+      str (apply str args)
+      pr-str ((deref (:readable-pr-str operations)) (:source-path module) args)
+      hash-map (do ((deref (:assert-even-arity! operations)) module callee args)
+                   (apply hash-map args))
+      vector (vec args)
+      list (apply list args)
+      conj (do ((deref (:assert-min-arity! operations)) module callee args 1)
+               (apply conj args))
+      assoc (do
+              ((deref (:assert-min-arity! operations)) module callee args 3)
+              (when (even? (count args))
+                ((deref (:fail-call-arity! operations)) "L2-BUILTIN-ARITY" module callee args
+                                  "a collection followed by key/value pairs"))
+              (apply assoc args))
+      get (do ((deref (:assert-between-arity! operations)) module callee args 2 3)
+              (apply get args))
+      first (do ((deref (:assert-exact-arity! operations)) module callee args 1)
+                (first (first args)))
+      second (do ((deref (:assert-exact-arity! operations)) module callee args 1)
+                 (second (first args)))
+      rest (do ((deref (:assert-exact-arity! operations)) module callee args 1)
+               ((deref (:normalized-rest operations)) (first args)))
+      count (do ((deref (:assert-exact-arity! operations)) module callee args 1)
+                (count (first args))))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch Exception ex
+      ((deref (:fail! operations)) "L2-BUILTIN-ERROR"
+             "stage0 builtin call failed"
+             {:source-span {:source (:source-path module)}
+              :function callee
+              :cause-message (.getMessage ex)
+              :remediation "Keep builtin inputs inside the checked stage0 core subset."}))))
+
+(defn fail-native-stage0-call-arity!
+  [fail-var id module callee args expected]
+  ((deref fail-var) id
+         (case id
+           "L2-FUNCTION-ARITY" "stage0 function call has the wrong arity"
+           "L2-BUILTIN-ARITY" "stage0 builtin call has the wrong arity"
+           "stage0 call has the wrong arity")
+         {:source-span {:source (:source-path module)}
+          :function callee
+          :expected-arity expected
+          :actual-arity (count args)
+          :remediation "Call the function with the arity supported by the stage0 hosted subset."}))
+
+(defn assert-native-stage0-min-arity!
+  [fail-call-arity-var module callee args n]
+  (when (< (count args) n)
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      (str "at least " n))))
+
+(defn assert-native-stage0-exact-arity!
+  [fail-call-arity-var module callee args n]
+  (when-not (= n (count args))
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args n)))
+
+(defn assert-native-stage0-between-arity!
+  [fail-call-arity-var module callee args min-n max-n]
+  (when-not (<= min-n (count args) max-n)
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      (str min-n " to " max-n))))
+
+(defn assert-native-stage0-even-arity!
+  [fail-call-arity-var module callee args]
+  (when (odd? (count args))
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      "an even number of arguments")))
 
 (doseq
  [name (keys (:public-api namespace-contract))
