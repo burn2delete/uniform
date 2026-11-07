@@ -278,3 +278,18 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `compiler-api-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+## Pipeline increment: explicit proof-reuse freshness
+
+Attribution: user-supplied finding
+`compiler.proof-reuse.explicit-fresh-status-v1`, implemented by the bounded
+worker on 2026-11-06 in `increment-1276`, under the existing
+[`pipeline`](#implementation-tasks) task. This appended record leaves all canonical task
+bodies, statuses and historical evidence unchanged; Pipeline remains Open.
+
+The [narrow carrier contract](plan.md#explicit-freshness-in-the-proof-reuse-compatibility-carrier)
+and [scoped evidence](evidence.md#explicit-proof-reuse-freshness) cover authored
+validator and positive/negative fixtures only. Native verification is unrun
+and controller-owned; independent acceptance and actual proof/Build composition
+remain pending. Declared freshness does not authenticate a proof. The governing
+pipeline-order ambiguity and retained execution restrictions remain in force.
