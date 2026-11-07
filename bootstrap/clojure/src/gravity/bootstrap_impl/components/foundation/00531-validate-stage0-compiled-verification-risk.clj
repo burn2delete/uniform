@@ -1,24 +1,12 @@
 
 
-(defn validate-stage0-compiled-verification-risk!
-  [module risk-record]
-  (let [required (set (:minimum-evidence risk-record))
-        available (set (:available-evidence risk-record))]
-    (when (and (contains? #{:high :critical} (:risk risk-record))
-               (not (set/subset? required available)))
-      (c18-verification-fail!
-       "C18-EVIDENCE" (:source-path module)
-       {:stage :stage0-compiled-compiler-gate
-        :pass-id (:pass risk-record)
-        :version (or (:version risk-record) "stage0-p06-s1")
-        :risk-class (:risk risk-record)
-        :required-evidence required
-        :available-evidence available
-        :affected-profiles #{(:profile module)}
-        :affected-targets #{(:target module)}
-        :artifact-id (:artifact-id risk-record)}
-       {:missing-fields
-        (vec (sort-by name (set/difference required available)))}))))
+(defn validate-stage0-compiled-verification-risk! [module risk-record]
+  (gravity.compiler-pass-manifest/validate-native-stage0-verification-risk!
+    {:subset? #'set/subset?,
+     :difference #'set/difference,
+     :fail! #'c18-verification-fail!}
+    module
+    risk-record))
 
 (defn validate-stage0-compiled-compiler!
   [module]
