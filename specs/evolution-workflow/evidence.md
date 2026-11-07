@@ -69,7 +69,8 @@ Passive source reads confirm the historical `p17-artifact-values` catalog and
 the supplied-status policy consumer `gravity.package/decide-policy` remain
 separate from this producer. Neither existing implementation was edited.
 
-Appended the [carrier contract](plan.md#version-bound-yank-proposal-carrier)
+Initially appended the
+[carrier contract](tasks.md#version-bound-yank-proposal-carrier) to plan.md
 before authoring pure `gravity.evolution.yank-proposals/propose-yank` and
 `gravity.evolution.yank-proposals-test`. The output binds the supplied exact
 package/registry/version, content/provenance references, accountable owner,
@@ -79,10 +80,11 @@ artifact. The fixtures compare full expected products and diagnostics,
 map-order-independent rendering, changed inputs, unchanged input/history
 records, malformed secret-marker controls and caller approval non-promotion.
 The original task region, source criteria, Open states and historical receipts
-were preserved by append-only documentation edits. The historical whole-file
-task hash above describes its original subject, not the appended current file.
+were preserved; the carrier was later relocated as recorded below. The
+historical whole-file task hash above describes its original subject, not the
+appended current file.
 
-Actual result: source and fixture authoring plus passive textual review only.
+Initial worker result: source and fixture authoring plus passive textual review only.
 No Clojure execution, test, build, validator, Git command, registry operation or
 consumer composition ran. There are no observed test counters, exit codes or
 passing receipts for this increment. Worker verification and Git inspection
@@ -124,3 +126,39 @@ Coordinate any later documentation merge with PR767/1291 and retained Evolution
 work using this appended scope; none of their changes or review dispositions
 was adopted here. No parent completion, release, self-hosting, seed retirement,
 governance approval, yank issuance or new grant is claimed.
+
+## Acceptance-dependency repair
+
+The supplied controller feedback reports
+`["clojure" "-M" "tools/acceptance_dependencies_test.clj"]` exiting 1:
+31 tests, 7225 assertions, 0 failures and 7 errors. The shared error is
+`ACCEPTANCE-DEPENDENCY`: "Current source transition is not bound to the
+checked-out current source". This is a supplied pre-repair result, not a check
+executed by this worker.
+
+Passive reads of `tools/requirement_sources.clj` locate the Evolution plan in
+`current-source-successor-after-data`: the authenticated whole file is 21196
+bytes, 220 lines, SHA-256
+`9265abbc90bc30cb124487e1887d8fd79beae79bdb1036e863da6535ea3d054c`,
+at the recorded `cc8a79074fc8eeeb65d72333e5d64542b201f0d4` composition.
+`validate-current-source-transition!` requires complete current-file equality;
+preserving its prefix while appending the carrier cannot satisfy that check.
+
+Removed only this increment's appended carrier and its separator from plan.md
+and retained the carrier under the existing task's navigation appendix, after
+`evolution-implementation-tasks:end`. Updated local carrier links. This repairs
+the source drift without changing transition identities, validators, fixtures,
+canonical task bodies or source criteria. The requested initial plan append is
+retained as authoring history; keeping it in the final plan conflicts with the
+existing whole-file authenticity contract. No authority to rebind that contract
+is supplied or claimed. Producer code and its positive/negative fixtures are
+unchanged by this documentation repair.
+
+Post-repair result: edits authored and passively reviewed only; all controller
+argument vectors above remain unrun here. In particular, the existing
+`current-source-transition-authenticates-file-and-span-identities` and
+`acceptance-owner-rejects-current-transition-population-drift` controls retain
+their positive real-source and negative forged-identity cases. No check success
+is claimed. Owner authorization, consumer composition, independent acceptance
+and the Open parent disposition remain as recorded above. No Git command,
+commit or previously refused action was attempted.

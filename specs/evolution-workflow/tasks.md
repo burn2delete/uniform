@@ -178,9 +178,92 @@ Exact source criteria: facet/bootstrap-governance/4eceae9d88f01eb253bbe7a3, face
 The existing `evolution/registry-yank` task remains Open with its body and
 source criteria unchanged. Finding
 `evolution.yank-proposals.version-bound-production-v1` adds the
-[version-bound proposal carrier](plan.md#version-bound-yank-proposal-carrier)
+[version-bound proposal carrier](#version-bound-yank-proposal-carrier)
 and its [scoped authored evidence](evidence.md#version-bound-yank-proposal-production).
 The pure producer and positive/negative fixtures are authored for controller
 checking. Publication, owner authorization, emergency governance, package
 enforcement, historical rebuilds and independent acceptance remain outstanding;
 this note is outside the captured implementation region and closes no task.
+
+## Version-bound yank proposal carrier
+
+Finding `evolution.yank-proposals.version-bound-production-v1` is a narrow
+producer increment of the existing `evolution/registry-yank` task, which remains
+Open. This contract was authored in plan.md before implementation and relocated
+here during the acceptance-dependency repair to preserve that plan's captured
+whole-file identity. It follows GOV10 Registry Decisions, Requirements and
+Diagnostics, and PKG4/PKG9 history retention; it does not replace the task's
+publication, enforcement or acceptance criteria.
+
+Implement pure Clojure `gravity.evolution.yank-proposals/propose-yank` at
+`bootstrap/clojure/src/gravity/evolution/yank_proposals.clj`, with fixtures in
+`bootstrap/clojure/test/gravity/evolution/yank_proposals_test.clj`. The three
+arguments are explicit decoded public data, supplied by a trusted host caller:
+
+- `release`: nonblank string fields `:package`, `:registry`, `:namespace`,
+  `:version`, `:content-id`, `:provenance-ref`, plus `:history` containing explicit
+  `:locks` and `:contents` vectors. Each historical record retains nonblank
+  `:package`, `:registry`, `:version`, `:content-id` and `:provenance-ref`; lock
+  records additionally require `:lock-id`. Empty vectors explicitly represent
+  no supplied historical records. Preserve complete records and their order,
+  including extension metadata, without rewriting versions or content links.
+- `proposal`: nonblank `:owner`, `:reason`, `:replacement-guidance` and explicit
+  `:resolution-behavior` equal to `{:new-selection :forbidden,
+  :existing-locks :preserve}`. Guidance may state that no replacement exists
+  with rationale. This increment supports the ordinary GOV10 yank behavior;
+  it cannot express or authorize an emergency exception.
+- `provenance`: nonblank public `:source-id`, `:input-id`, `:policy-id` and
+  `:tool-id` references. These are supplied identities, not verified authority.
+
+The retained release/history carrier is inert EDN: nil, booleans, strings,
+keywords, symbols, numbers, vectors, lists, sets and maps; maps use keyword
+keys. Reject host objects and malformed field shapes. This is a type boundary,
+not an input-size allowance. The caller supplies only disclosure-safe data;
+this producer does not discover secrets or authenticate release/lock/content
+references. GOV10 does not specify registry version syntax here: `:version`
+is an opaque exact release label from the caller's decoded release record,
+never a range to resolve or normalize. Authentic registry lookup and any
+registry-specific version grammar remain composition obligations.
+
+Success is `{:status :proposed, :diagnostics [], :artifact ...}`. The artifact
+has `:schema :gravity.evolution/yank-proposal-v1`, `:kind :gravity/yank-proposal`,
+`:status :proposed`, `:authority :non-admitting`, the complete `:release`, the
+four selected proposal fields in `:proposal`, and the four selected provenance
+references in `:provenance`. Canonical map/set ordering makes complete products
+and their EDN rendering deterministic under input map insertion order changes;
+history vectors/lists keep order. Caller-supplied status, approval, action or
+grant fields cannot promote the product and are not projected from the proposal
+or provenance. No IO, approval verdict, registry mutation or package-policy
+change occurs.
+
+Failure is `{:status :rejected, :diagnostics [...]}` with no artifact. Each
+diagnostic carries constant `:id`, `:message`, a known field/index `:path` and
+`:reason`; never echo input values, unknown keys or provenance on failure.
+Use `:missing-field` for absent keys and `:invalid-field` for wrong/blank values.
+Order diagnostics by release identity, content/provenance, history (locks then
+contents, in record order), proposal fields, then public provenance fields:
+
+- `GOV10001`: malformed release/proposal map or incomplete release identity,
+  historical identity or accountable owner.
+- `GOV10002`: missing/malformed content or provenance references, including
+  the explicit public provenance map.
+- `GOV10006`: missing/blank reason or replacement guidance, missing/invalid
+  resolution behavior, malformed retained release data or history.
+
+Required accepted fixtures are `complete-proposal-preserves-release`,
+`changed-reason-changes-product`, `reordered-input-map-determinism` and
+`historical-lock-content-preserved`. Required rejected fixtures cover missing
+release identity/owner, missing or blank reason, absent replacement guidance,
+missing resolution behavior, malformed secret-marker payloads and attempted
+caller approval promotion. Compare whole expected products/diagnostics and
+unchanged inputs/history; a constant catalog or shape-only test is insufficient.
+
+Start requires only these explicit inputs. Composition requires actual owner
+authorization and authentic registry/content/provenance, GOV2/GOV4 emergency
+governance where applicable, publication, PKG4/5/9 selection/install enforcement
+and historical rebuild execution. Independent acceptance remains separate;
+the parent task stays Open. Append evidence and task navigation outside the
+captured task region; preserve historical receipts and coordinate later merges
+with PR767/1291 and retained Evolution work without adopting their changes.
+Controller-owned verification will run the focused namespace, applicable
+acceptance-dependency controls, language boundary and document validators.
