@@ -239,60 +239,6 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
-## Pass fixture facts carrier increment
-
-Finding: `diag.pass-fixtures.structured-fact-map-v1`, within
-`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
-[C15 Facts and Remediation](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#facts-and-remediation)
-requires structured fields; [C15 Diagnostics](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostics)
-assigns unstructured or missing payloads to `C15-FACTS`.
-
-At the existing pass-fixture validation boundary, accept exactly a nonempty
-map in `:facts`. Preserve its keys and complete values, including nested maps,
-collections, strings, numbers, false and nil. This is a carrier-shape check;
-fact-family typing and semantic validation remain producer obligations.
-Missing and nil facts refuse with `:reason :missing`, an empty map with
-`:reason :empty`, and every other shape with `:reason :invalid-shape`.
-Retain `C15-FACTS`, `:schema-field :facts`, zero-based `:fixture-index`,
-offending diagnostic identity, stage, primary artifact, source and remediation.
-Do not copy rejected facts into the failure data or message.
-
-Change only fixture indexing and the facts clause in
-[diagnostic_validation.clj](../../bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj).
-Preserve public arities, default records, provenance and surrounding validation
-order: schema, catalog, then each fixture's span, origin, facts, remediation and
-redaction, followed by stream order. The first failing fixture still wins.
-PR1269 owns the separate severity increment. Its implementation is not adopted
-or duplicated here; controller composition must reconcile that shared source
-path and these additive artifact sections with PR1269's exact candidate.
-No PR1269 state or independent acceptance has been inspected in this worker.
-
-[diagnostic_facts_test.clj](../../bootstrap/clojure/test/gravity/compiler_pass_manifest/diagnostic_facts_test.clj)
-exercises the public validator and actual artifact constructor using
-`:metadata :compiler :passes` suite inputs, including full fixture replacement
-and diagnostic-id overrides. Positive fixtures are `default-facts-unchanged`,
-`structured-facts-preserved` and `nested-fact-values-preserved`; compare complete
-emitted records. Negative fixtures are `missing-facts`, `nil-facts`,
-`empty-facts`, `prose-facts`, `scalar-facts`, `vector-facts` and
-`secret-marker-facts`. Check both fixture positions, deterministic refusal
-data, payload omission, no returned artifact, prior schema/catalog/span/origin
-refusals and first-failure controls.
-
-Start uses the existing suite, validator, failure carrier and constructor
-interfaces. Producer normalization, semantic fact validation and actual
-producer/consumer composition are separate remaining work; none requires
-waiting for whole upstream components before this local increment. Independent
-acceptance requires controller-run checks and an independently reviewed exact
-candidate. Release retains the broader task's completion dependencies. The
-parent remains Open. [Attributed evidence](evidence.md#pass-fixture-facts-carrier-increment)
-separates authored assertions, unrun checks and retained restrictions.
-
-Keep increment navigation in the task-ledger preamble, outside captured task
-bodies. The existing acceptance-dependency contract requires each captured body
-to remain one unique exact byte sequence; adding notes inside it breaks source
-authentication. Preserve that contract and its tamper controls. See the
-[CI repair evidence](evidence.md#pass-fixture-facts-ci-repair).
-
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

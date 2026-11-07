@@ -9,23 +9,6 @@ outcomes remain open. Evidence baselines are references, not acceptance. The
 linked component roadmap is navigation to this ledger. Historical migration
 checkboxes below are separate from implementation completion.
 
-<!-- diag-pass-fixtures-facts:start -->
-Scoped carrier increment `diag.pass-fixtures.structured-fact-map-v1` belongs to
-the existing schema-reconciliation task; Status remains Open. Follow the
-[narrow facts contract](plan.md#pass-fixture-facts-carrier-increment) and
-[attributed results](evidence.md#pass-fixture-facts-carrier-increment).
-The authored validator requires a nonempty fact map before manifest construction
-and retains payload-free `C15-FACTS` reasons and fixture attribution. Fixtures
-exercise the public validator and real constructor, complete-record
-preservation, malformed facts, prior refusals and deterministic first failure.
-Controller verification and independent acceptance are pending; assertions are
-not passing evidence. Producer normalization, semantic fact validation and
-consumer composition remain separate obligations. Coordinate shared source
-and additive artifact composition with PR1269; its severity work retains its
-own implementation and evidence. This navigation stays outside the captured
-task bodies; see the [CI repair evidence](evidence.md#pass-fixture-facts-ci-repair).
-<!-- diag-pass-fixtures-facts:end -->
-
 <!-- diag-implementation-tasks:start -->
 
 - [ ] `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` Reconcile stage carriers with canonical record schema
