@@ -100,10 +100,13 @@
 
 (deftest recovery-keeps-verified-merges-out-of-authoring
   (let [ctx (context)
+        verified {:base "base" :candidate "candidate" :tree "tree"
+                  :checks {:candidate "candidate" :tree "tree" :result :passed :commands [["clojure" "fixture-check.clj"]]}
+                  :review {:base "base" :candidate "candidate" :tree "tree" :verdict "approved"}}
         cases [[{:merge-verification {:actual {:commit "merged"}} :merged "merged"} :finalizing]
                [{:merged "merged"} :ci]
-               [{:resume-status :ci} :ci]
-               [{:resume-status :merge} :ci]
+               [(assoc verified :resume-status :ci) :ci]
+               [(assoc verified :resume-status :merge) :ci]
                [{:resume-status :implementing} :repair]]]
     (doseq [[extra phase] cases]
       (rt/update! ctx assoc-in [:tasks "recovery"] (merge {:key "recovery" :status :attention} extra))

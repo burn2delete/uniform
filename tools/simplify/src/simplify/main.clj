@@ -114,7 +114,10 @@
                   inspection-digest (assoc :main-inspection-digest inspection-digest)))
     (rt/event! ctx :effect-reconciled {:effect effect-id :evidence (:evidence result)})))
 
-(defn retry! [ctx key]
+(defn retry!
+  "Queue the inspected native phase without clearing an error or restriction.
+  Optional EDN guidance is retained as hashed repair data, never an authority grant."
+  [ctx key & [guidance-file]]
   (let [t (workflow/task ctx key)
         intent (workflow/main-intent t)
         effect (get-in @(:state ctx) [:effects (:id intent)])
@@ -129,7 +132,7 @@
               (#{:pending :uncertain :restricted}
                 (get-in @(:state ctx) [:effects (get-in t [:error :details :effect]) :status])))
       (rt/fail! "Current external effect needs inspected reconciliation before retry" {:finding key}))
-    (when not-applied?
+    (let [next-intent (when not-applied?
       (let [key (rt/digest (pr-str ["gh-pr-merge" (get-in ctx [:config :repository])]))]
         (when (or (get-in @(:state ctx) [:restricted-commands key]) (rt/shared-restriction ctx :commands key))
           (rt/fail! "Repository merge action remains restricted; no successor intent is permitted" {:restricted true})))
@@ -140,12 +143,22 @@
       (let [next-intent (assoc intent :id (str (:id intent) "/inspection/" digest))]
         (when (get-in @(:state ctx) [:effects (:id next-intent)])
           (rt/fail! "Inspected successor effect already exists; inspect its actual outcome" {:finding key}))
-        (workflow/task! ctx key :merge-intent next-intent)))
-    (workflow/task! ctx key :feedback (:error t)
+        next-intent))]
+    (let [guidance (when guidance-file
+                     (let [value (rt/read-edn guidance-file)]
+                       {:path (rt/canonical guidance-file) :value value :value-sha256 (rt/digest (pr-str value))}))
+          ci-ready? (and (every? some? ((juxt :base :candidate :tree) t))
+                         (= :passed (get-in t [:checks :result]))
+                         (seq (get-in t [:checks :commands]))
+                         (= (select-keys t [:candidate :tree]) (select-keys (:checks t) [:candidate :tree]))
+                         (= "approved" (get-in t [:review :verdict]))
+                         (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree])))]
+    (when next-intent (workflow/task! ctx key :merge-intent next-intent))
+    (workflow/task! ctx key :feedback (cond-> (:error t) guidance-file (assoc :operator-guidance guidance))
                     :status (cond (:merge-verification t) :finalizing
-                                  (or (:merged t) not-applied? (#{:ci :merge} (:resume-status t))) :ci
-                                  :else :repair))
-    (println "Finding queued at its inspected recovery phase. Use resume to continue.")))
+                                  (or (:merged t) not-applied? (and ci-ready? (#{:ci :merge} (:resume-status t)))) :ci
+                                  :else :repair)))
+    (println "Finding queued at its inspected recovery phase. Use resume to continue."))))
 
 (defn dispatch! [ctx command args]
   (case command
@@ -159,7 +172,7 @@
     "run" (controller! ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
     "resume" (controller! ctx #(when-not (= :complete (:status @(:state ctx)))
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
-    "retry" (with-current-state ctx #(retry! ctx (first args)))
+    "retry" (with-current-state ctx #(retry! ctx (first args) (second args)))
     "recover-authored" (with-current-state ctx #(workflow/recover-authored! ctx (first args) (second args)))
     "recover-dependency" (with-current-state ctx #(workflow/recover-dependency! ctx (first args) (second args)))
     "recover-fresh-source" (with-current-state ctx #(workflow/recover-fresh-source! ctx (first args) (second args)))
