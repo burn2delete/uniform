@@ -52,6 +52,7 @@
    :c3-deferred-ratio-descriptor-from-raw
    c3-deferred-ratio-descriptor-from-raw
    :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :c2-reader-product-integrity-record-v3 c2-reader-product-integrity-record-v3
    :reader-canonical-hash reader-canonical-hash
    :sha256-hex sha256-hex
    :c2-reader-artifact-id c2-reader-artifact-id

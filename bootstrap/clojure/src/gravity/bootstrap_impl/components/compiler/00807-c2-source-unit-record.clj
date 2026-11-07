@@ -89,6 +89,15 @@
    source-unit top-level-form-ids incremental-hashes literal-records
    deferred-literal-records))
 
+(defn c2-reader-product-integrity-record-v3
+  [source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records decimal-occurrence-projection-id]
+  (c2-artifact-identity-call
+   :c2-reader-product-integrity-record-v3
+   c2-artifact-identity/c2-reader-product-integrity-record-v3
+   source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records decimal-occurrence-projection-id))
+
 (defn c2-reader-artifact-id
   [artifact]
   (c2-artifact-identity-call
