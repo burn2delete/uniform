@@ -1,7 +1,8 @@
 # FACTORY-002: Read-only Advance status summary
 
-Status: implemented and locally validated; unfinished pending main integration
-and verified project adoption under the user's updated completion rule.
+Status: complete for the factory-observer CLI consumer: main integration and
+real project-state use are verified. Controller/planner adoption and service
+health are separate nonclaims.
 Observation: 2026-11-07T01:41:16Z.
 
 ## Observation and hypothesis
@@ -77,3 +78,21 @@ guarded. The final combined suite passed 141 tests and 1369 assertions; the
 language-boundary gate passed 6 tests and 11 assertions. validation.edn binds
 the exact source hashes and measurements. This is a local presentation
 improvement; interpretation quality and live health remain unmeasured.
+
+## Main integration and actual adoption
+
+PR 1282 landed as e24b2da4be8b79960462b8f61b7134b71b17f30a with the exact
+reviewed tree and parent, after all required CI and integration preflight.
+The observer then ran the main-backed CLI with the original Advance owner's
+absolute config. It exited zero with empty stderr and produced 27841 bytes
+from the actual registered state path, including all 18 Attention items,
+20 tasks, 47 recorded jobs and explicit unverified liveness.
+
+The source commit/tree, loaded source hashes, command/CWD, owner config hash,
+input snapshot digest and stdout digest are recorded in adoption.edn.
+Independent inspection corroborated both main landing and the real consumer
+output. A later native-state hash differed as its original owner continued
+work; the CLI output binds its own read snapshot rather than claiming the
+native state must remain unchanged. The recurring observer uses this CLI for
+subsequent status reads. No service, provider, native state or effect-349
+mutation was made for this adoption.
