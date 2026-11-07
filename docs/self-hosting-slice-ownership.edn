@@ -500,6 +500,10 @@
   {:namespace gravity.ownership.pipeline-test :slice "SH-10" :owner :sh-ownership}
   "bootstrap/clojure/test/gravity/package/pipeline_test.clj"
   {:namespace gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
+  "bootstrap/clojure/test/gravity/package/native_metadata_test.clj"
+  {:namespace gravity.package.native-metadata-test :slice "SH-23" :owner :sh-package-build}
+  "bootstrap/clojure/test/gravity/package/compiled_metadata_test.clj"
+  {:namespace gravity.package.compiled-metadata-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
   {:namespace gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"

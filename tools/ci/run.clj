@@ -597,7 +597,11 @@
    ["mobile-manifest-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mobile.native-manifest-test")]
    ["lowering-backends-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.native-backend-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.native-backend-test")]
+   ["package-metadata-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.package.native-metadata-test")]
+   ["package-metadata-compiled-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.package.compiled-metadata-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)

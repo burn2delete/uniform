@@ -188,7 +188,19 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "lowering-native-backend"
+ [{:test-id "package-native-metadata"
+   :path "bootstrap/clojure/test/gravity/package/native_metadata_test.clj"
+   :namespace gravity.package.native-metadata-test
+   :jvm-group "package-native-metadata"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "package-compiled-metadata"
+   :path "bootstrap/clojure/test/gravity/package/compiled_metadata_test.clj"
+   :namespace gravity.package.compiled-metadata-test
+   :jvm-group "package-compiled-metadata"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "lowering-native-backend"
    :path "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"
    :namespace gravity.lowering.native-backend-test
    :jvm-group "lowering-native-backend"

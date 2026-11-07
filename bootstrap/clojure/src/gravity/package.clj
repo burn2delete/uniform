@@ -1,24 +1,32 @@
 (ns gravity.package
-  "Supplied package status policy and deterministic direct exact selection."
+  "Supplied package policy, direct exact selection, and compiled metadata checks."
   (:require [clojure.set :as set] [clojure.walk :as walk]))
 
 (def ^:private namespace-contract
   {:namespace 'gravity.package
-   :contract-boundary :supplied-package-policy-and-direct-exact-selection
-   :governing-contracts '[D1 D2 D3 D8 D9 PKG1 PKG4 PKG5 PKG6 PKG8 PKG9 PKG10 PKG12 BOOT8 TEST2]
+   :contract-boundary :supplied-package-policy-selection-and-compiled-metadata
+   :governing-contracts '[D1 D2 D3 D8 D9 C1 C15 PKG1 PKG3 PKG4 PKG5 PKG6 PKG8 PKG9 PKG10 PKG12 BOOT8 TEST2]
    :public-api {'decide-policy {:arglists '([request]) :admission :none}
-                'select-exact {:arglists '([request] [decide-policy-operation request]) :admission :none}}
+                'select-exact {:arglists '([request] [decide-policy-operation request]) :admission :none}
+                'check-project-manifest! {:arglists '([fail-var module subject]) :admission :none}
+                'check-artifact-manifest! {:arglists '([fail-var module subject]) :admission :none}
+                'check-package-operation! {:arglists '([fail-var module subject]) :admission :none}
+                'check-resolution-report! {:arglists '([fail-var module subject]) :admission :none}
+                'check-capability-manifest! {:arglists '([fail-var module subject]) :admission :none}}
    :artifact-inputs [:supplied-package-records :complete-supplied-lock-history :direct-exact-constraints
                      :registry-scope-and-grants :profile-target :status-policy :allowed-effects
-                     :allowed-capabilities :unsafe-policy :policy-operation]
+                     :allowed-capabilities :unsafe-policy :policy-operation
+                     :native-module :supplied-compiled-package-metadata :caller-owned-failure-var]
    :artifact-outputs [:supplied-policy-decision :exact-selection-report :selected-variant-data
-                      :constraint-conflict :stable-pkg-diagnostics]
+                      :constraint-conflict :stable-pkg-diagnostics :nil-or-original-failure-result]
    :diagnostic-ownership {:owns ["PKG5001" "PKG5002" "PKG5003" "PKG5004" "PKG5005" "PKG5006"
                                   "PKG5007" "PKG1007" "PACKAGE-POLICY-INPUT"]
                           :retained-from :native-package-policy-and-selection
-                          :private-registry-denial :before-metadata-reporting}
+                          :private-registry-denial :before-metadata-reporting
+                          :compiled-metadata-decisions ["PKG1006" "PKG3005" "PKG4001" "PKG5002" "PKG6004"]
+                          :compiled-metadata-payload-and-transport 'gravity.bootstrap}
    :dependency-direction {:requires ['clojure.set 'clojure.walk]
-                          :consumed-by ['gravity.build.package-policy 'gravity.build.package-selection]
+                          :consumed-by ['gravity.build.package-policy 'gravity.build.package-selection 'gravity.bootstrap]
                           :forbids ['gravity.build.invocation 'gravity.bootstrap 'gravity.cli 'gravity.release]}
    :supported {'decide-policy {:profile-target :supplied-keywords :scope :status-policy-only}
                'select-exact {:constraints :direct-exact-numeric-three-component :registries :single
@@ -26,8 +34,16 @@
    :unsupported [:ranges :features :transitive-resolution :fetch :install :lock-writes :latent-spaces
                  :signature-verification :provenance-authentication :artifact-admission :sbom
                  :publication :full-pkg-conformance :migration :release :self-hosting :seed-retirement]
+   :compiled-metadata {:authority :non-admitting :inputs :unverified-native-data
+                       :failure-var :dereferenced-at-original-failing-branch
+                       :aggregate-order-owner 'gravity.bootstrap
+                       :source-and-final-identity-owner 'gravity.bootstrap
+                       :proves-downloads? false :grants-capabilities? false}
    :status-origin :supplied :authority :non-admitting :granted-capabilities #{}
-   :test-owner 'gravity.package.pipeline-test :bootstrap-hosted? true :clojure-seed-boundary? true :self-hosted? false})
+   :authenticates-inputs? false :performs-io? false
+   :test-owner 'gravity.package.pipeline-test
+   :compiled-metadata-test-owners '[gravity.package.native-metadata-test gravity.package.compiled-metadata-test]
+   :bootstrap-hosted? true :clojure-seed-boundary? true :self-hosted? false})
 
 
 
@@ -343,5 +359,50 @@
                                   (mapv #(select-keys % [:selected :variant :policy-decision]) results))
                   :diagnostics diagnostics))))))))
 
-(doseq [operation [#'decide-policy #'select-exact]]
+(defn check-project-manifest!
+  "Check only the supplied compiled lockfile flag; do not authenticate a lockfile."
+  [fail-var module subject]
+  (when-not (true? (:lockfile-complete subject))
+    ((deref fail-var)
+     "PKG1006" module subject
+     {:missing-fields [:lockfile-complete]})))
+
+(defn check-artifact-manifest!
+  "Check only supplied safety-evidence presence; do not verify safety evidence."
+  [fail-var module subject]
+  (when-not (get-in subject [:evidence :safety])
+    ((deref fail-var)
+     "PKG3005" module subject
+     {:missing-fields [:safety-evidence]})))
+
+(defn check-package-operation!
+  "Check only the supplied download flag; do not fetch or verify a download."
+  [fail-var module subject]
+  (when-not (true? (:download-verified subject))
+    ((deref fail-var)
+     "PKG4001" module subject
+     {:missing-fields [:download-verified]})))
+
+(defn check-resolution-report!
+  "Check only supplied capability compatibility; do not resolve dependencies."
+  [fail-var module subject]
+  (when-not (true? (:capability-compatible subject))
+    ((deref fail-var)
+     "PKG5002" module subject
+     {:missing-fields [:capability-compatible]})))
+
+(defn check-capability-manifest!
+  "Reject supplied deny/request overlap; do not grant deployment authority."
+  [fail-var module subject]
+  (when (seq (set/intersection
+              (get-in subject [:capabilities :denies])
+              (get-in subject [:capabilities :requests])))
+    ((deref fail-var)
+     "PKG6004" module subject
+     {:missing-fields [:denied-authority]})))
+
+(doseq [operation [#'decide-policy #'select-exact
+                   #'check-project-manifest! #'check-artifact-manifest!
+                   #'check-package-operation! #'check-resolution-report!
+                   #'check-capability-manifest!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
