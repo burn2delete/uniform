@@ -1,12 +1,17 @@
 (ns seedless.main-invariants-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is use-fixtures]]
             [seedless.github :as gh]
             [seedless.main :as main]
             [seedless.workflow :as workflow]
             [seedless.workflow-test :as fixture]
             [simplify.main :as shared]
-            [simplify.runtime :as rt]))
+            [simplify.runtime :as rt])
+  (:import [java.math BigInteger]
+           [java.nio.charset StandardCharsets]
+           [java.nio.file Files StandardOpenOption]
+           [java.security MessageDigest]))
 
 (use-fixtures :each (fn [test] (with-redefs [rt/event! (fn [& _])] (test))))
 
@@ -232,3 +237,385 @@
         (is (= :done (get-in @(:state ctx) [:effects id :status])))
         (is (= (:error t) (get-in @(:state ctx) [:tasks key :history 0 :error])))
         (finally (fixture/delete-tree! (:root ctx)))))))
+
+(def status-identity-keys
+  [:repository :campaign :objective :contracts :completion-checks :repo-dir :remote
+   :base-branch :worktree-root :checks :project-title :codex-command])
+
+(defn status-config [ctx]
+  (startup-config ctx))
+
+(defn status-identity [config]
+  (assoc (select-keys config status-identity-keys)
+         :git-common-dir "/fixture/git-common"))
+
+(defn status-state [config]
+  {:schema :seedless/v1
+   :identity (status-identity config)
+   :status :running
+   :tasks
+   {"attention/restricted"
+    {:status :attention :resume-status :ci
+     :error {:message "provider refused"
+             :details {:effect ["effect/restricted" "effect/missing"]
+                       :effect-status :restricted :restricted true
+                       :job "job/refused"
+                       :refusal {:denial-lines ["permission denied"]
+                                 :item {:command ["gh" "pr" "comment"]
+                                        :cwd "/fixture/repo" :exitCode 403
+                                        :id "refusal-item" :status :restricted
+                                        :type :github}
+                                 :job "job/refused"
+                                 :output-sha256 "refusal-output"}
+                       :path "src/refused.clj" :slice "slice/refused"
+                       :writer-ended? false}}
+     :reporting-error {:details {:effect-id "effect/uncertain"
+                                 :effect-status :uncertain :uncertain true}}}
+    "ready/map-key-only" {:status :ready}
+    "done/recorded" {:key "done/recorded" :status :done}}
+   :effects
+   {"effect/completed"
+    {:status :done :message "completed"
+     :result {:ordinary-result "must not be projected wholesale"}
+     :prior {:status :restricted :message "prior refusal" :restricted true}
+     :previous {:status :not-applied :outcome :not-applied
+                :settlement {:outcome :not-applied
+                             :receipt-digests {:authorization "recorded-authorization-digest"}
+                             :receipt-digest "nested-settlement-receipt"}
+                :previous {:status :restricted :message "nested prior restriction"}}
+     :reconciliation "reconciliation-receipt"
+     :settlement {:outcome :not-applied :receipt-digest "top-settlement-receipt"}}
+    "effect/restricted" {:status :restricted :message "still restricted"}
+    "effect/uncertain" {:status :uncertain :message "still uncertain"}}
+   :effect-history [{:id "effect/completed" :kind :native-effect-history}]
+   :refusal-history {"effect/completed" {:message "recorded refusal history"}}
+   :settlement-history {"effect/completed" {:outcome :not-applied}}
+   :refusals {"effect/completed" {:message "recorded refusal"}}
+   :settlements {"effect/completed" {:outcome :not-applied}}
+   :operator-api-recoveries
+   {"recovery/completed"
+    {:kind :operator-api :stage :audit :effect "effect/completed"
+     :operation :reconcile :outcome :observed
+     :auth-diagnostic {:status :authorized :identity "auth-diagnostic-record"}
+     :comment-outcome {:status :observed :identity "comment-outcome-record"}
+     :authorization {:status :authorized :identity "authorization-record"}
+     :previous-shared-guard {:status :restricted :digest "shared-guard"}
+     :previous-local-guard {:status :restricted :digest "local-guard"}
+     :shared-retirement {:status :retired :digest "shared-retirement"}
+     :inspection {:outcome :observed :digest "inspection-record"}
+     :review {:status :accepted :digest "review-record"}
+     :prior-effect {:status :restricted :message "prior effect"}
+     :receipt-digests {:authorization "authorization-receipt"
+                       :inspection "inspection-receipt"
+                       :shared-settlement "shared-settlement-receipt"}
+     :result {:must-not-be-projected "ordinary recovery result"}}}
+   :restrictions {:commands {"gh-pr-merge" {:status :restricted}}}
+   :restricted-commands
+   {"gh-pr-merge"
+    {:denial-lines ["permission denied"]
+     :item {:command ["gh" "pr" "merge"] :cwd "/fixture/repo"
+            :exitCode 403 :id "command-item" :status :restricted :type :command}
+     :job "job/refused" :output-sha256 "command-output"}}
+   :jobs
+   {"job/model"
+    {:status :attention :mode :write :thread "thread-1" :turn "turn-1"
+     :turn-terminal? true :active-items ["item-1"]
+     :message "recorded job attention" :restricted true
+     :tool-refusals [{:job "job/refused"
+                      :denial-lines ["permission denied"]
+                      :item {:command ["gh" "pr" "comment"]
+                             :cwd "/fixture/repo" :exitCode 403
+                             :id "refusal-item" :status :restricted
+                             :type :github}
+                      :output-sha256 "tool-refusal-output"}]
+     :model "fixture-model" :prompt-sha256 "prompt-digest"
+     :input-sha256 "input-digest" :output-sha256 "output-digest"}}})
+
+(defn status-context []
+  (let [ctx (fixture/context)
+        config (status-config ctx)]
+    {:ctx ctx
+     :config config
+     :state-file (io/file (:state-dir config) "state.edn")
+     :control-file (io/file (:state-dir config) "control.edn")}))
+
+(defn write-bytes! [file bytes]
+  (Files/write (.toPath (io/file file)) (byte-array bytes)
+               (into-array StandardOpenOption
+                           [StandardOpenOption/CREATE StandardOpenOption/TRUNCATE_EXISTING])))
+
+(defn utf8-bytes [value]
+  (.getBytes value StandardCharsets/UTF_8))
+
+(defn bytes-digest [bytes]
+  (format "%064x"
+          (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256") bytes))))
+
+(defn contains-recorded? [value needle]
+  (or (= value needle)
+      (cond
+        (map? value) (some #(contains-recorded? % needle) value)
+        (coll? value) (some #(contains-recorded? % needle) value)
+        :else false)))
+
+(defn invalid-utf8-at-marker [value marker]
+  (let [index (.indexOf value marker)
+        bytes (utf8-bytes value)]
+    (when (neg? index)
+      (throw (ex-info "fixture marker missing" {:marker marker})))
+    (byte-array (concat (take index bytes)
+                        [(unchecked-byte 0xC3)]
+                        (drop (inc index) bytes)))))
+
+(deftest status-summary-preserves-native-records-identities-and-history
+  (let [{:keys [ctx config]} (status-context)
+        state (status-state config)
+        raw (pr-str state)
+        digest (rt/digest raw)
+        state-file (str (io/file (:state-dir config) "state.edn"))
+        control {:file (str (io/file (:state-dir config) "control.edn"))
+                 :sha256 "control-digest" :available true :status :paused :paused true}
+        summary (main/status-summary config state digest control)
+        tasks (into {} (map (juxt :key identity) (:tasks summary)))
+        attention (first (:attention summary))
+        current-effects (into {} (map (juxt :id identity) (get-in summary [:effects :current])))
+        histories (into {} (map (juxt :id identity) (get-in summary [:effects :history])))
+        recorded-identity (status-identity config)]
+    (try
+      (is (= :seedless/v1 (:schema summary)))
+      (is (= :matching (get-in summary [:identity :status])))
+      (is (= recorded-identity (get-in summary [:identity :recorded])))
+      (is (= (select-keys config status-identity-keys)
+             (get-in summary [:identity :configured])))
+      (is (= :recorded-only (get-in summary [:identity :git-common-dir])))
+      (is (= {:file state-file :sha256 digest :recorded-status :running
+              :task-count 3 :counts {:attention 1 :ready 1 :done 1}
+              :record {:state-file state-file :state-sha256 digest}}
+             (:state summary)))
+      (is (= #{"attention/restricted" "ready/map-key-only" "done/recorded"}
+             (set (keys tasks))))
+      (is (= "ready/map-key-only" (:key (tasks "ready/map-key-only"))))
+      (is (= "ready/map-key-only"
+             (get-in tasks ["ready/map-key-only" :record :task-key])))
+      (is (= state-file (get-in tasks ["done/recorded" :record :state-file])))
+      (is (= digest (get-in tasks ["done/recorded" :record :state-sha256])))
+      (is (= "attention/restricted" (:key attention)))
+      (is (= :attention (:status attention)))
+      (is (= "provider refused" (get-in attention [:error :message])))
+      (is (= true (get-in attention [:error :restricted])))
+      (is (= "job/refused" (get-in attention [:error :job])))
+      (is (= "src/refused.clj" (get-in attention [:error :path])))
+      (is (= "slice/refused" (get-in attention [:error :slice])))
+      (is (= false (get-in attention [:error :writer-ended?])))
+      (is (= "refusal-output" (get-in attention [:error :refusal :output-sha256])))
+      (is (= "refusal-item" (get-in attention [:error :refusal :item :id])))
+      (is (= ["permission denied"]
+             (get-in attention [:error :refusal :denial-lines])))
+      (is (= ["effect/missing" "effect/restricted" "effect/uncertain"]
+             (mapv :id (:effects attention))))
+      (is (= true (get-in attention [:history :restricted])))
+      (is (= true (get-in attention [:history :uncertain])))
+      (is (= {:scope :recorded-model-jobs-only
+              :count 1
+              :records [{:job "job/model" :status :attention :mode :write
+                         :thread "thread-1" :turn "turn-1" :model "fixture-model"
+                         :identity {:thread "thread-1" :turn "turn-1" :model "fixture-model"
+                                    :prompt-sha256 "prompt-digest"
+                                    :input-sha256 "input-digest"
+                                    :output-sha256 "output-digest"
+                                    :turn-terminal? true
+                                    :active-items ["item-1"]
+                                    :message "recorded job attention"
+                                    :restricted true
+                                    :tool-refusals [{:job "job/refused"
+                                                     :denial-lines ["permission denied"]
+                                                     :item {:command ["gh" "pr" "comment"]
+                                                            :cwd "/fixture/repo" :exitCode 403
+                                                            :id "refusal-item" :status :restricted
+                                                            :type :github}
+                                                     :output-sha256 "tool-refusal-output"}]}
+                         :turn-terminal? true :active-items ["item-1"]
+                         :message "recorded job attention" :restricted true
+                         :tool-refusals [{:job "job/refused"
+                                          :denial-lines ["permission denied"]
+                                          :item {:command ["gh" "pr" "comment"]
+                                                 :cwd "/fixture/repo" :exitCode 403
+                                                 :id "refusal-item" :status :restricted
+                                                 :type :github}
+                                          :output-sha256 "tool-refusal-output"}]
+                         :record {:state-file state-file :state-sha256 digest
+                                  :job-key "job/model"}}]}
+             (:jobs summary)))
+      (is (= :recorded-effects-only (get-in summary [:effects :scope])))
+      (is (= #{"effect/completed" "effect/restricted" "effect/uncertain"}
+             (set (keys current-effects))))
+      (is (= :done (get-in current-effects ["effect/completed" :status])))
+      (is (= true (get-in current-effects ["effect/completed" :result-present])))
+      (is (= true (get-in current-effects ["effect/completed" :reconciliation-present])))
+      (is (not (contains? (current-effects "effect/completed") :result)))
+      (is (= :done (get-in histories ["effect/completed" :current-status])))
+      (is (= "recorded-authorization-digest"
+             (get-in histories ["effect/completed" :previous :settlement
+                                :receipt-digests :authorization])))
+      (is (= :restricted (get-in histories ["effect/completed" :prior-status])))
+      (is (= "prior refusal"
+             (get-in histories ["effect/completed" :prior :message])))
+      (is (= :not-applied (get-in histories ["effect/completed" :previous-status])))
+      (is (contains-recorded? (histories "effect/completed") "reconciliation-receipt"))
+      (is (contains-recorded? (histories "effect/completed") "nested-settlement-receipt"))
+      (is (contains-recorded? (histories "effect/completed") "top-settlement-receipt"))
+      (is (contains-recorded? (histories "effect/completed") "nested prior restriction"))
+      (is (= (:refusal-history state)
+             (get-in summary [:effects :refusal-settlement-history :recorded :refusal-history])))
+      (is (= (:settlement-history state)
+             (get-in summary [:effects :refusal-settlement-history :recorded :settlement-history])))
+      (is (= "recovery/completed"
+             (get-in summary [:effects :operator-api-recoveries 0 :id])))
+      (is (= {:status :authorized :identity "authorization-record"}
+             (get-in summary [:effects :operator-api-recoveries 0 :authorization])))
+      (is (= {:status :authorized :identity "auth-diagnostic-record"}
+             (get-in summary [:effects :operator-api-recoveries 0 :auth-diagnostic])))
+      (is (= {:status :observed :identity "comment-outcome-record"}
+             (get-in summary [:effects :operator-api-recoveries 0 :comment-outcome])))
+      (is (= {:status :restricted :digest "shared-guard"}
+             (get-in summary [:effects :operator-api-recoveries 0 :previous-shared-guard])))
+      (is (= {:status :restricted :digest "local-guard"}
+             (get-in summary [:effects :operator-api-recoveries 0 :previous-local-guard])))
+      (is (= {:status :retired :digest "shared-retirement"}
+             (get-in summary [:effects :operator-api-recoveries 0 :shared-retirement])))
+      (is (= {:outcome :observed :digest "inspection-record"}
+             (get-in summary [:effects :operator-api-recoveries 0 :inspection])))
+      (is (= {:status :accepted :digest "review-record"}
+             (get-in summary [:effects :operator-api-recoveries 0 :review])))
+      (is (= {:status :restricted :message "prior effect"}
+             (get-in summary [:effects :operator-api-recoveries 0 :prior-effect])))
+      (is (= {:authorization "authorization-receipt"
+              :inspection "inspection-receipt"
+              :shared-settlement "shared-settlement-receipt"}
+             (get-in summary [:effects :operator-api-recoveries 0 :receipt-digests])))
+      (is (not (contains? (first (get-in summary [:effects :operator-api-recoveries]))
+                          :result)))
+      (is (= state-file
+             (get-in summary [:effects :operator-api-recoveries 0 :record :state-file])))
+      (is (= (select-keys state [:restrictions :restricted-commands])
+             (get-in summary [:operator-controls :native-restrictions])))
+      (is (= control (get-in summary [:operator-controls :local-control])))
+      (is (= :unavailable (get-in summary [:operator-controls :github :status])))
+      (is (= :unverified (get-in summary [:liveness :processes])))
+      (is (= :unverified (get-in summary [:liveness :service])))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest status-summary-reader-fails-closed-and-binds-exact-bytes
+  (let [{:keys [ctx config state-file control-file]} (status-context)
+        state (status-state config)
+        state-raw (pr-str (assoc state :note "UTF8-\u00e9"))
+        state-bytes (utf8-bytes state-raw)]
+    (try
+      (write-bytes! state-file state-bytes)
+      (let [control-raw (pr-str {:paused true})
+            control-bytes (utf8-bytes control-raw)]
+        (write-bytes! control-file control-bytes)
+        (let [summary (main/status-summary! config)]
+          (is (= (bytes-digest state-bytes) (get-in summary [:state :sha256])))
+          (is (= (bytes-digest control-bytes)
+                 (get-in summary [:operator-controls :local-control :sha256])))
+          (is (= :paused
+                 (get-in summary [:operator-controls :local-control :status])))
+          (is (= (vec state-bytes)
+                 (vec (Files/readAllBytes (.toPath state-file)))))
+          (is (= (vec control-bytes)
+                 (vec (Files/readAllBytes (.toPath control-file)))))))
+      (doseq [bad-state [(assoc state :schema :wrong-schema)
+                         (assoc state :tasks [])
+                         (assoc state :jobs {"bad" []})
+                         (assoc state :effects {"bad" "not-a-record"})
+                         (assoc state :tasks {"bad/map-key" {:key "wrong-embedded-key"
+                                                             :status :ready}})
+                         (assoc state :identity (assoc (status-identity config)
+                                                       :campaign "other-campaign"))]]
+        (spit state-file (pr-str bad-state))
+        (is (thrown-with-msg? Exception
+                              (if (= :wrong-schema (:schema bad-state))
+                                #"malformed state shape"
+                                (if (= "other-campaign" (get-in bad-state [:identity :campaign]))
+                                  #"another campaign/configuration"
+                                  #"malformed state shape"))
+                              (main/status-summary! config))))
+      (spit state-file (str state-raw "\n" state-raw))
+      (is (thrown-with-msg? Exception #"malformed state"
+                            (main/status-summary! config)))
+      (write-bytes! state-file (invalid-utf8-at-marker
+                                (pr-str (assoc state :note "INVALID_UTF8_MARKER"))
+                                "INVALID_UTF8_MARKER"))
+      (is (thrown-with-msg? Exception #"cannot read state file"
+                            (main/status-summary! config)))
+      (write-bytes! state-file state-bytes)
+      (Files/deleteIfExists (.toPath control-file))
+      (is (= :unavailable
+             (get-in (main/status-summary! config)
+                     [:operator-controls :local-control :status])))
+      (doseq [bad-control ["{:paused \"true\"}"
+                           "{}"
+                           "{:paused false}\n{:paused true}"]]
+        (spit control-file bad-control)
+        (is (thrown-with-msg? Exception #"malformed control"
+                              (main/status-summary! config))))
+      (write-bytes! control-file
+                    (invalid-utf8-at-marker "{:paused false :note \"INVALID_UTF8_MARKER\"}"
+                                            "INVALID_UTF8_MARKER"))
+      (is (thrown-with-msg? Exception #"cannot read control file"
+                            (main/status-summary! config)))
+      (Files/deleteIfExists (.toPath control-file))
+      (Files/createDirectory (.toPath control-file)
+                             (make-array java.nio.file.attribute.FileAttribute 0))
+      (is (thrown-with-msg? Exception #"malformed control file"
+                            (main/status-summary! config)))
+      (Files/deleteIfExists (.toPath state-file))
+      (is (thrown-with-msg? Exception #"existing state file"
+                            (main/status-summary! config)))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest status-summary-cli-is-early-read-only-and-raw-status-is-unchanged
+  (let [{:keys [ctx config state-file]} (status-context)
+        state (status-state config)
+        raw (pr-str state)
+        config-file (io/file (:root ctx) "config.edn")
+        forbidden (fn [& _]
+                    (throw (AssertionError. "status-summary invoked a forbidden effect")))]
+    (try
+      (spit config-file "{}")
+      (spit state-file raw)
+      (with-redefs [main/config! (fn [_] config)
+                    main/context! forbidden
+                    main/target! forbidden
+                    main/probe! forbidden
+                    main/owned-cleanup! forbidden
+                    gh/api forbidden
+                    gh/graphql forbidden
+                    gh/pages forbidden
+                    gh/item! forbidden
+                    gh/status! forbidden
+                    gh/relation! forbidden
+                    gh/setup! forbidden
+                    gh/issue! forbidden
+                    gh/comment! forbidden
+                    gh/milestone! forbidden
+                    gh/open-review-threads? forbidden
+                    rt/command forbidden
+                    rt/run! forbidden
+                    rt/coordination forbidden
+                    rt/with-lock forbidden
+                    rt/import-state-coordination! forbidden
+                    rt/save! forbidden
+                    rt/update! forbidden
+                    rt/write-edn! forbidden
+                    rt/event! forbidden
+                    clojure.core/shutdown-agents (fn [] nil)]
+        (let [output (with-out-str (main/-main "status-summary" (str config-file)))
+              parsed (edn/read-string output)]
+          (is (= :seedless/v1 (:schema parsed)))
+          (is (= :running (get-in parsed [:state :recorded-status])))
+          (is (= (rt/digest raw) (get-in parsed [:state :sha256])))))
+      (let [output (with-out-str (main/dispatch! {:state (atom state)} "status" []))]
+        (is (= state (edn/read-string output))))
+      (finally (fixture/delete-tree! (:root ctx))))))
