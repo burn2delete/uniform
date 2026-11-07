@@ -140,7 +140,8 @@
     (assert-identity! ctx t)
     (let [result {:candidate (:candidate t) :tree (:tree t) :commands commands :result :passed}]
       (task! ctx (:key t) :checks result)
-      (when (and (= :inspected-reported-implementation (get-in t [:inspected-authored :kind]))
+      (when (and (#{:inspected-reported-implementation :inspected-source-dependency-resolution}
+                   (get-in t [:inspected-authored :kind]))
                  (#{:continuing :checked} (get-in t [:inspected-authored :stage]))
                  (= (get-in t [:inspected-authored :original-error-sha256]) (recovery/error-digest t)))
         ;; Only a completed native check stage can carry the inspected report
@@ -148,10 +149,15 @@
         (rt/update! ctx update-in [:tasks (:key t) :inspected-authored] assoc :stage :checked
                     :checked-candidate (select-keys t [:base :candidate :tree])
                     :checked-implementation-job (:implementation-job t)))
+      (when (and (= :fresh-source-validation (get-in t [:fresh-source-validation :kind]))
+                 (#{:continuing :checked} (get-in t [:fresh-source-validation :stage]))
+                 (= (get-in t [:fresh-source-validation :original-error-sha256]) (recovery/error-digest t)))
+        (rt/update! ctx update-in [:tasks (:key t) :fresh-source-validation] assoc
+                    :stage :checked :checked-candidate (select-keys t [:base :candidate :tree])))
       result)))
 
 (defn changed-paths [ctx cwd]
-  (vec (distinct (remove str/blank?
+  (vec (distinct (remove empty?
                          (str/split (apply str (map (fn [argv]
                                                                   (let [result (rt/command ctx cwd argv)]
                                                                     (when-not (zero? (:exit result)) (rt/fail! "Cannot inspect candidate paths" result))
@@ -173,7 +179,7 @@
         existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t)))))
         _ (when (and existing (not= "open" (:state existing))) (rt/fail! "Existing PR is terminal; preserving its history" {:pr (:html_url existing)}))
         pr (or existing
-               (rt/effect! ctx (str "pr/" (:key t))
+               (rt/effect! ctx (str "pr/" (or (:publication-effect-key t) (:key t)))
                            #(gh/api ctx "POST" (gh/repo-path ctx "pulls")
                                     {:title (:title t) :head (:branch t) :base base-branch
                                      :draft (boolean (get-in ctx [:config :early-draft]))
@@ -209,27 +215,129 @@
              :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil))
     (assert-identity! ctx (task ctx (:key t)))))
 
-(defn recover-authored! [ctx key evidence-file]
+(defn- recover-inspected! [ctx key evidence-file dependency?]
   (let [t (task ctx key)]
     (when-not (= :attention (:status t)) (rt/fail! "Only a held authored report can be inspected" {:finding key}))
     (if-let [lease (rt/claim-paths! ctx key (:paths t) :checking)]
       (rt/with-claimed-paths ctx lease
         (fn []
           (assert-identity! ctx t)
-          (let [inspection (recovery/inspect! ctx t evidence-file)]
+          (let [inspection (if dependency? (recovery/inspect-dependency! ctx t evidence-file)
+                              (recovery/inspect! ctx t evidence-file))]
             ;; Keep the original output/error and actual denial records intact.
             ;; This queues native checking, never a pass or acceptance claim.
-            (rt/update! ctx update-in [:tasks key :reported-restriction-history] (fnil conj [])
-                        {:error (:error t) :inspection inspection})
+            (rt/update! ctx update-in [:tasks key (if dependency? :source-dependency-history :reported-restriction-history)] (fnil conj [])
+                        (cond-> {:error (:error t) :inspection inspection}
+                          dependency? (assoc :original-task t)))
             (task! ctx key :inspected-authored inspection :status :repair)
             (rt/event! ctx :authored-report-inspected {:finding key :job (:job inspection) :phase :queued})
             inspection)))
       (rt/fail! "Authored inspection is waiting for its actual writer scope" {:finding key :ownership-wait true}))))
 
-(defn prepare!
+(defn recover-authored! [ctx key evidence-file] (recover-inspected! ctx key evidence-file false))
+
+(defn recover-dependency! [ctx key evidence-file] (recover-inspected! ctx key evidence-file true))
+
+(defn recover-fresh-source! [ctx key evidence-file]
+  (let [original (task ctx key)]
+    (when-not (= :attention (:status original)) (rt/fail! "Only an Attention source can enter fresh validation" {:finding key}))
+    (if-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
+      (rt/with-claimed-paths ctx lease
+        (fn []
+          (let [inspection (recovery/inspect-fresh-source! ctx original evidence-file)
+                validation (:validation inspection)]
+            ;; The old record, PR, failed checks and unknown old-worktree boundary
+            ;; stay immutable in history; only this explicit new phase is queued.
+            (rt/update! ctx update-in [:tasks key]
+              (fn [t] (-> t
+                          (update :fresh-source-validation-history (fnil conj []) {:original-task original :inspection inspection})
+                          (merge (select-keys validation [:base :candidate :tree :worktree :branch]))
+                          (assoc :fresh-source-validation inspection :status :repair :checks nil :review nil :feedback nil :ci nil
+                                 :publication-effect-key (str key "/fresh-source/" (rt/digest (pr-str inspection))))
+                          (dissoc :pr :inspected-authored :main-intent-id))))
+            (rt/event! ctx :fresh-source-validation-queued {:finding key :candidate (:candidate validation)
+                                                          :original-error-preserved true :old-worktree-untouched true})
+            inspection)))
+      (rt/fail! "Fresh source validation is waiting for its actual paths" {:finding key :ownership-wait true}))))
+
+(defn queue-recovery! [ctx operation key evidence-file]
+  (when-not (and (#{:recover-dependency :recover-fresh-source} operation)
+                 (string? key) (not (str/blank? key)) (string? evidence-file))
+    (rt/fail! "Queue only a typed dependency or fresh-source recovery" {}))
+  (let [state-dir (.toPath (io/file (rt/canonical (:state-dir ctx))))
+        evidence (rt/canonical evidence-file)
+        directory (io/file (:state-dir ctx) "operator-recovery-requests")]
+    (when-not (and (.isFile (io/file evidence)) (.startsWith (.toPath (io/file evidence)) state-dir)
+                   (.startsWith (.toPath (io/file (rt/canonical directory))) state-dir))
+      (rt/fail! "Recovery requests and evidence belong inside this controller's state directory" {}))
+    (.mkdirs directory)
+    (let [request {:operation operation :task-key key :evidence-file evidence
+                   :evidence-sha256 (recovery/file-digest evidence)}
+          id (rt/digest (pr-str request)) file (io/file directory (str id ".edn"))
+          pending (java.nio.file.Files/createTempFile (.toPath directory) "request-" ".pending"
+                                                     (make-array java.nio.file.attribute.FileAttribute 0))]
+      (try
+        (rt/write-edn! (str pending) request)
+        (java.nio.file.Files/createLink (.toPath file) pending)
+        (catch java.nio.file.FileAlreadyExistsException _
+          (when-not (= request (rt/read-edn file)) (rt/fail! "Existing recovery request differs" {:request id})))
+        (finally (java.nio.file.Files/deleteIfExists pending)))
+      {:request id :path (str file) :native-state-written false})))
+
+(defn- recovery-request-applied? [ctx request]
+  (let [inspection (get (task ctx (:task-key request))
+                        (if (= :recover-dependency (:operation request)) :inspected-authored :fresh-source-validation))]
+    (and (#{:recover-dependency :recover-fresh-source} (:operation request))
+         (= (if (= :recover-dependency (:operation request)) :inspected-source-dependency-resolution :fresh-source-validation)
+            (:kind inspection))
+         (= (:evidence-file request) (:evidence-file inspection))
+         (= (:evidence-sha256 request) (:evidence-sha256 inspection)))))
+
+(defn process-recovery-requests! [ctx occupied]
+  (let [directory (io/file (:state-dir ctx) "operator-recovery-requests")
+        root (.toPath (io/file (rt/canonical directory)))]
+    (doseq [file (sort-by #(.getName ^java.io.File %) (or (.listFiles directory) []))
+            :let [name (.getName ^java.io.File file)]
+            :when (and (.isFile ^java.io.File file) (re-matches #"[0-9a-f]{64}\.edn" name))
+            :let [id (subs name 0 64)]
+            :when (not (contains? (:operator-recovery-requests @(:state ctx)) id))]
+      (let [request (atom nil) validated? (atom false)
+            record! (fn [status extra]
+                      (rt/update! ctx assoc-in [:operator-recovery-requests id]
+                                  (merge {:status status :at (str (java.time.Instant/now)) :request-file (str file)
+                                          :operation (:operation @request) :task-key (:task-key @request)
+                                          :evidence-file (:evidence-file @request) :evidence-sha256 (:evidence-sha256 @request)} extra)))]
+        (try
+          (when-not (and (.startsWith root (.toPath (io/file (rt/canonical (:state-dir ctx)))))
+                         (= root (.getParent (.toPath (io/file (rt/canonical file))))))
+            (rt/fail! "Recovery request escapes its original state directory" {}))
+          (reset! request (rt/read-edn file))
+          (when-not (and (= id (rt/digest (pr-str @request)))
+                         (= #{:operation :task-key :evidence-file :evidence-sha256} (set (keys @request)))
+                         (#{:recover-dependency :recover-fresh-source} (:operation @request)))
+            (rt/fail! "Recovery request identity or operation differs" {}))
+          (reset! validated? true)
+          (when-not (or (contains? occupied (:task-key @request))
+                        (and (= :recover-fresh-source (:operation @request))
+                             (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"])))))
+            (if (recovery-request-applied? ctx @request)
+              (record! :applied {:observed-existing-native-queue true})
+              (do
+                (when-not (= (:evidence-sha256 @request) (recovery/file-digest (:evidence-file @request)))
+                  (rt/fail! "Queued recovery evidence changed" {}))
+                ((if (= :recover-dependency (:operation @request)) recover-dependency! recover-fresh-source!)
+                 ctx (:task-key @request) (:evidence-file @request))
+                (record! :applied {:observed-existing-native-queue false}))))
+          (catch Exception e
+            (when-not (:ownership-wait (ex-data e))
+              (record! (if (and @validated? (recovery-request-applied? ctx @request)) :applied :rejected)
+                       {:error {:message (.getMessage e) :restricted (boolean (:restricted (ex-data e)))}
+                        :inspection-required true}))))))))
+
+(defn- prepare-authored!
   ([ctx key]
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
-     (prepare! ctx key lease)))
+     (prepare-authored! ctx key lease)))
   ([ctx key lease]
    (rt/with-claimed-paths
     ctx lease
@@ -300,6 +408,31 @@
        "approved" (publish! ctx (task ctx key))
        "changes_requested" (do (task! ctx key :feedback result) (transition! ctx key :repair))
        (rt/fail! "Independent review requires input" {:review result})))))
+
+(defn prepare!
+  ([ctx key]
+   (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
+     (prepare! ctx key lease)))
+  ([ctx key lease]
+   (if (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
+     (do
+       (rt/with-claimed-paths ctx lease
+         (fn []
+           (let [t (task ctx key) inspection (recovery/validate-fresh-queued! ctx t)]
+             (prepare-base! ctx t)
+             (when-let [validate (:before-implement ctx)] (validate ctx (task ctx key)))
+             (rt/update! ctx assoc-in [:tasks key :fresh-source-validation :stage] :continuing)
+             (transition! ctx key :implementing)
+             (rt/lease-phase! ctx lease :checking)
+             (checks! ctx (task ctx key) (:commands inspection))
+             (assert-clean! ctx (:worktree (task ctx key))))))
+       (transition! ctx key :review)
+       (let [review (review! ctx (task ctx key))]
+         (case (:verdict review)
+           "approved" (publish! ctx (task ctx key))
+           "changes_requested" (do (task! ctx key :feedback review) (transition! ctx key :repair))
+           (rt/fail! "Independent fresh source review requires input" {:review review}))))
+     (prepare-authored! ctx key lease))))
 
 (defn attention! [ctx key e]
   (task! ctx key :resume-status (:status (task ctx key))
@@ -599,6 +732,7 @@
           (if (empty? @running) (rt/update! ctx assoc :status :paused)
               (do (Thread/sleep 250) (recur)))
           (do
+            (process-recovery-requests! ctx (set (keys @running)))
             (doseq [t (tasks ctx) :when (= :finalizing (:status t))]
               (try (finalize-merge! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (tasks ctx) :when (and (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
