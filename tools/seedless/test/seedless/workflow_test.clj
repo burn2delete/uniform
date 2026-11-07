@@ -185,19 +185,26 @@
                                file (io/file cwd "module.clj") text (slurp file)]
                            (ownership! :author)
                            (swap! events conj [:author key phase])
-                           (spit file (str (if (str/includes? text "<<<<<<<")
-                                             (str/join "\n" (remove #(or (str/starts-with? % "<<<<<<<") (= % "=======") (str/starts-with? % ">>>>>>>")) (str/split-lines text)))
-                                             text)
-                                           "\n(def " key "-" phase " true)\n"))
-                           {:outcome (if (= phase 1) "checkpoint" "ready") :summary "Fixture source change"
-                            :evidence "Actual fixture changes" :residual-host-boundary "Fixture host remains"
-                            :checks [["clojure" "-M" "focused.clj"]]})
+                           (if (or (= scenario :empty-ready)
+                                   (and (= scenario :retained) (= phase 2)))
+                             {:outcome "ready" :summary "Retained fixture candidate"
+                              :evidence "The existing candidate already contains the fixture change"
+                              :residual-host-boundary "Fixture host remains"
+                              :checks [["clojure" "-M" "focused.clj"]]}
+                             (do
+                               (spit file (str (if (str/includes? text "<<<<<<<")
+                                                 (str/join "\n" (remove #(or (str/starts-with? % "<<<<<<<") (= % "=======") (str/starts-with? % ">>>>>>>")) (str/split-lines text)))
+                                                 text)
+                                               "\n(def " key "-" phase " true)\n"))
+                               {:outcome (if (= phase 1) "checkpoint" "ready") :summary "Fixture source change"
+                                :evidence "Actual fixture changes" :residual-host-boundary "Fixture host remains"
+                                :checks [["clojure" "-M" "focused.clj"]]})))
                          :else
                          (let [t (or t {:base (rt/git ctx cwd "rev-parse" "HEAD")
                                         :candidate (rt/git ctx cwd "rev-parse" "HEAD")
                                         :tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}") :kind "completion"})]
                            (ownership! :review)
-                           (swap! events conj [:review key (:base t)])
+                           (swap! events conj [:review key (select-keys t [:base :candidate :tree])])
                            (merge (select-keys t [:base :candidate :tree])
                                   {:verdict "approved" :evidence-scope (:kind t) :summary "Independent fixture review"
                                    :findings [] :residual-host-boundary "Fixture host remains"})))))
@@ -251,6 +258,132 @@
              (is (= :done (:status (w/task ctx "a"))))
              (is (= (:tree (w/task ctx "a")) (rt/git ctx (get-in ctx [:config :repo-dir]) "rev-parse" "HEAD^{tree}")))
              (is (not-any? #(some #{"--squash" "--admin" "--force"} (second %)) (filter #(= :merge (first %)) @events))))))
+
+(deftest retained-clean-candidate-continues-without-recommit-or-republish
+  (harness :retained
+           (fn [ctx events phases _]
+             (add-task! ctx (slice "a"))
+             (let [effects (atom []) original rt/effect!]
+               (with-redefs [rt/effect! (fn [context id operation]
+                                          (swap! effects conj id)
+                                          (original context id operation))]
+                 (w/prepare! ctx "a"))
+               (let [t (w/task ctx "a") repo (get-in ctx [:config :repo-dir])]
+                 (is (= :ci (:status t)))
+                 (is (= "ready" (get-in t [:implementation :outcome])))
+                 (is (= 2 (get @phases "a")))
+                 (is (= "1" (rt/git ctx (:worktree t) "rev-list" "--count"
+                                    (str (:base t) ".." (:candidate t)))))
+                 (is (= (:candidate t) (get-in t [:checks :candidate])))
+                 (is (= (:tree t) (get-in t [:checks :tree])))
+                 (is (seq (filter #(= :check (first %)) @events)))
+                 (is (= 1 (count (filter #(and (= :api (first %)) (= "POST" (second %))) @events))))
+                 (is (= 1 (count (filter #(str/starts-with? % "push/") @effects))))
+                 (is (= 1 (count (filter #(str/starts-with? % "pr/") @effects))))
+                 (is (= (select-keys t [:base :candidate :tree])
+                        (nth (first (filter #(= :review (first %)) @events)) 2)))
+                 (is (= (:candidate t) (:published-candidate t)))
+                 (is (= "1" (rt/git ctx repo "rev-list" "--count"
+                                    (str (:base t) ".." (:candidate t)))))
+                 (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers]))))))))
+
+(deftest retained-clean-candidate-publishes-one-disjoint-main-composition
+  (harness :retained
+           (fn [ctx events phases _]
+             (add-task! ctx (slice "a"))
+             (let [repo (get-in ctx [:config :repo-dir])
+                   old-candidate (atom nil)
+                   original-transition w/transition!
+                   advanced? (atom false)]
+               (with-redefs [w/transition!
+                             (fn [context key status]
+                               (original-transition context key status)
+                               (when (and (= status :repair)
+                                          (compare-and-set! advanced? false true))
+                                 (reset! old-candidate (:candidate (w/task context key)))
+                                 (spit (io/file repo "main-only.txt") "main advance\n")
+                                 (rt/git ctx repo "add" "main-only.txt")
+                                 (rt/git ctx repo "commit" "-m" "disjoint main advance")
+                                 (rt/git ctx repo "push" "origin" "main")))]
+                 (w/prepare! ctx "a"))
+               (let [t (w/task ctx "a")
+                     parents (vec (rest (str/split (rt/git ctx (:worktree t)
+                                                           "rev-list" "--parents" "-n" "1" (:candidate t)) #"\s+")))]
+                 (is (= :ci (:status t)))
+                 (is (= 2 (get @phases "a")))
+                 (is (not= @old-candidate (:candidate t)))
+                 (is (= (:candidate t) (:published-candidate t)))
+                 (is (= 2 (count parents)))
+                 (is (every? (set parents) [(:base t) @old-candidate]))
+                 (is (seq (filter #(= :check (first %)) @events)))
+                 (is (= 1 (count (filter #(and (= :api (first %)) (= "POST" (second %))) @events))))
+                 (is (= 2 (count (filter #(str/starts-with? % "push/")
+                                         (keys (:effects @(:state ctx))))))
+                     (is (empty? (get-in (rt/read-edn (:coordination-file ctx)) [:writers])))))))))
+
+(deftest initial-ready-without-retained-candidate-still-refuses
+  (harness :empty-ready
+           (fn [ctx events _ prs]
+             (add-task! ctx (slice "a"))
+             (is (thrown-with-msg? Exception #"Implementation made no source change"
+                                   (w/prepare! ctx "a")))
+             (is (nil? (:candidate (w/task ctx "a"))))
+             (is (empty? @prs))
+             (is (not-any? #(= :check (first %)) @events)))))
+
+(deftest retained-candidate-guard-rejects-identity-and-cleanliness-drift
+  (harness :retained
+           (fn [ctx _ _ _]
+             (add-task! ctx (slice "a"))
+             (w/prepare! ctx "a")
+             (let [source-t (w/task ctx "a")
+                   t (assoc source-t :implementation (assoc (:implementation source-t) :outcome "checkpoint"))
+                   retained? (deref (ns-resolve 'seedless.workflow 'retained-clean-candidate?))
+                   repo (get-in ctx [:config :repo-dir])
+                   base-tree (rt/git ctx (:worktree t) "rev-parse" (str (:base t) "^{tree}"))]
+               (is (true? (retained? ctx t)))
+               (is (not (retained? ctx (assoc t :candidate (:base t)))))
+               (is (not (retained? ctx (assoc t :tree base-tree))))
+               (is (not (retained? ctx (assoc t :paths ["foreign.clj"]))))
+               (is (not (retained? ctx (assoc t :merge-in-progress true))))
+               (spit (io/file (:worktree t) "staged.txt") "staged")
+               (rt/git ctx (:worktree t) "add" "staged.txt")
+               (is (thrown-with-msg? Exception #"Candidate worktree is dirty"
+                                     (retained? ctx t)))
+               (rt/git ctx (:worktree t) "reset" "--hard" "HEAD")
+               (let [side (str/trim (:out (rt/command ctx repo
+                                                      ["git" "commit-tree" base-tree "-p" (:base t)]
+                                                      "retained-candidate merge marker")))]
+                 (rt/git ctx (:worktree t) "merge" "--no-ff" "--no-commit" side))
+               (is (not (retained? ctx t)))
+               (rt/git ctx (:worktree t) "merge" "--abort")
+               (is (= (:candidate t) (get-in (w/task ctx "a") [:checks :candidate])))
+               (is (= (:base t) (rt/git ctx repo "rev-parse" (:base t))))))))
+
+(deftest retained-ready-repair-without-new-delta-still-refuses
+  (harness :retained
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a"))
+             (w/prepare! ctx "a")
+             (w/task! ctx "a" :status :repair
+                      :implementation {:outcome "ready" :summary "Prior candidate was already ready"
+                                       :evidence "The existing published candidate was reviewed"
+                                       :residual-host-boundary "Fixture host remains"
+                                       :checks [["clojure" "-M" "focused.clj"]]}
+                      :feedback {:github-reviews [{:state "CHANGES_REQUESTED"}]})
+             (let [before-checks (count (filter #(= :check (first %)) @events))
+                   before-reviews (count (filter #(= :review (first %)) @events))]
+               (with-redefs [w/job! (fn [_ role _ _ _]
+                                      (if (= role :implement)
+                                        {:outcome "ready" :summary "No edit on repair"
+                                         :evidence "The candidate remains unchanged"
+                                         :residual-host-boundary "Fixture host remains"
+                                         :checks [["clojure" "-M" "focused.clj"]]}
+                                        (throw (ex-info "Review must not be reached" {}))))]
+                 (is (thrown-with-msg? Exception #"Implementation made no source change"
+                                       (w/prepare! ctx "a"))))
+               (is (= before-checks (count (filter #(= :check (first %)) @events))))
+               (is (= before-reviews (count (filter #(= :review (first %)) @events))))))))
 
 (deftest stacked-child-starts-before-parent-merge-and-retargets-after-it
   (harness :normal
