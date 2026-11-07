@@ -306,6 +306,34 @@ After a crash following an actual native queue, the exact recorded inspection
 is observed instead of replaying the queue. This interface requires its merged
 runtime implementation; it is not an unmerged launcher overlay.
 
+### Additional checks requested by a passive review
+
+When an exact checked candidate receives `needs_input` only because a focused
+check receipt is missing, the original operator can submit a typed continuation:
+
+```text
+clojure -M:run queue-recovery config.edn recover-review-checks FINDING-KEY review-checks.edn
+```
+
+The controller-retained evidence has kind `:review-check-evidence`, the task key,
+the entire `:original-task-sha256`, the terminal `:review-job-sha256`, and a vector
+of additional `:checks`. Its operator classification binds that exact
+`:review-sha256`, `:kind :review-check-evidence`, `:inspector :controller-operator`,
+`:no-unresolved-authority true`, `:no-unresolved-source-semantics true` and a
+nonblank inspected `:basis`.
+The operator must inspect the request; review text is not execution authority.
+
+This route requires the original clean candidate, matching passed native checks,
+and its completed passive review with no refused or unfinished action. Real
+semantic questions, changed tuples, failed checks, restricted commands, an
+unsettled Main effect or a shared API refusal remain blocked. Existing check
+commands are retained and additional commands must use the configured toolset.
+The original controller archives the entire old task and queues native checks
+and another passive exact review. It never dispatches an author, edits source,
+clears old errors or refusals, or promotes a candidate without the new review.
+Ordinary current-Main composition and new-head CI still apply. Use this only
+after its implementation is actually merged and deployed to that controller.
+
 ### An owned conflict while composing current Main
 
 An ordinary, nonrestricted `git merge --no-edit MAIN` conflict in an owned
