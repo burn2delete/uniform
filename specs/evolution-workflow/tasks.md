@@ -172,3 +172,114 @@ Dependencies: Profile/backend/runtime maintainers' actual conformance and unsupp
 
 Exact source criteria: facet/bootstrap-governance/4eceae9d88f01eb253bbe7a3, facet/bootstrap-governance/04a8868fd265bc5f56fa1cb3, facet/bootstrap-governance/62c0d501f1d64dbb6a10f31d, facet/bootstrap-governance/2e080329a6c2d62733c5c55f, facet/bootstrap-governance/06d4ca3f7dcb36a077cc5e66, facet/bootstrap-governance/47fb9cbd6f7eb5075c03dbf8, facet/bootstrap-governance/c80548adc87f4e13358c3f0c, facet/bootstrap-governance/e8cae63e624d06b4c34f3cd0, facet/bootstrap-governance/a7f917ff5e2890d043a586d4, facet/bootstrap-governance/5fb0bc41fb6661f61933e55e, facet/bootstrap-governance/cfc281b6d7d6ad9d93641733, facet/bootstrap-governance/de30927e135b42798c01b64a, facet/bootstrap-governance/9e9deae21ab496b379775120, facet/bootstrap-governance/a00f3bdd2c96f86865c1be26, facet/bootstrap-governance/f2799806eaaa04915859e863, facet/bootstrap-governance/35cea1f3aa759ffd2128ba52, facet/bootstrap-governance/0758015ed6f39b5a3ed494fa, facet/bootstrap-governance/226734711be61bd854004b05, facet/bootstrap-governance/dc60e40e3f4f16e63bdccde3, facet/bootstrap-governance/3b280db33c52a24ddd481fdd, facet/bootstrap-governance/9127517310165b8c9a7b4cab, facet/bootstrap-governance/535e857346984d08daaebf02, facet/bootstrap-governance/a4a603161a8e0f48c6ebc45a, facet/bootstrap-governance/f26bd2a7ea408f993b29fd28, facet/bootstrap-governance/1dd68adba80eea96b1934d8b, facet/bootstrap-governance/48465a961715d500cec0d34c, facet/bootstrap-governance/e011218231f653a745b26fd1, facet/bootstrap-governance/f03ff95376962887d3e4ff63, facet/bootstrap-governance/f0a9219c72d06a084372c907, facet/bootstrap-governance/d1307b3eac31e47b5cfa7186, facet/bootstrap-governance/5e5ff36d565c421949f6b4af, facet/bootstrap-governance/c28af2c65fc5ecd8ec3fb303, facet/bootstrap-governance/16202364711389084f8b3f7d, facet/bootstrap-governance/7faa830960f4a705466efda2, facet/bootstrap-governance/2039b4fcc3a95cb93766cfaf, facet/bootstrap-governance/793765cca448a987da1ba4da, facet/bootstrap-governance/cd56daa8157f97e7e36be6a8, facet/bootstrap-governance/ef8397157e174aa42fcd85db, facet/bootstrap-governance/b2010f9bab878db4580fe794, facet/bootstrap-governance/c73b2be0128064100c9dfb4a, facet/bootstrap-governance/067a88e7b883317c9d23d042, facet/bootstrap-governance/a5b0f4fac0e1900a2503f022, facet/bootstrap-governance/2796f764b3c8eba3d29245b3, facet/bootstrap-governance/e033da913e2889475a0d2c9b, facet/bootstrap-governance/cccaec2903edb5503d964cb0, facet/bootstrap-governance/f4a6f1dc930e524bbda4f294, facet/bootstrap-governance/c2beb2c898d4c0f0a5c8ff30, facet/bootstrap-governance/2fac1019117e5cd0c81bc273, facet/bootstrap-governance/51fe3359df60733a6df6f64e, facet/bootstrap-governance/2890e9f7bf9f1b181188f694, facet/bootstrap-governance/fbfd9adf3ec388a201e1eefc, facet/bootstrap-governance/1e80eb4047330bf96312caa8.
 <!-- evolution-implementation-tasks:end -->
+
+## Registry-yank proposal increment
+
+The existing `evolution/registry-yank` task remains Open with its body and
+source criteria unchanged. Finding
+`evolution.yank-proposals.version-bound-production-v1` adds the
+[version-bound proposal carrier](#version-bound-yank-proposal-carrier)
+and its [scoped authored evidence](evidence.md#version-bound-yank-proposal-production).
+The pure producer and positive/negative fixtures are authored for controller
+checking. Publication, owner authorization, emergency governance, package
+enforcement, historical rebuilds and independent acceptance remain outstanding;
+this note is outside the captured implementation region and closes no task.
+
+## Version-bound yank proposal carrier
+
+Finding `evolution.yank-proposals.version-bound-production-v1` is a narrow
+producer increment of the existing `evolution/registry-yank` task, which remains
+Open. This contract was authored in plan.md before implementation and relocated
+here during the acceptance-dependency repair to preserve that plan's captured
+whole-file identity. It follows GOV10 Registry Decisions, Requirements and
+Diagnostics, and PKG4/PKG9 history retention; it does not replace the task's
+publication, enforcement or acceptance criteria.
+
+Implement pure Clojure `gravity.evolution.yank-proposals/propose-yank` at
+`bootstrap/clojure/src/gravity/evolution/yank_proposals.clj`, with fixtures in
+`bootstrap/clojure/test/gravity/evolution/yank_proposals_test.clj`. The three
+arguments are explicit decoded public data, supplied by a trusted host caller:
+
+- `release`: nonblank string fields `:package`, `:registry`, `:namespace`,
+  `:version`, `:content-id`, `:provenance-ref`, plus `:history` containing explicit
+  `:locks` and `:contents` vectors. Each historical record retains nonblank
+  `:package`, `:registry`, `:version`, `:content-id` and `:provenance-ref`; lock
+  records additionally require `:lock-id`. Empty vectors explicitly represent
+  no supplied historical records. Preserve complete records and their order,
+  including extension metadata, without rewriting versions or content links.
+- `proposal`: nonblank `:owner`, `:reason`, `:replacement-guidance` and explicit
+  `:resolution-behavior` as an inert Clojure map (excluding records), equal to
+  `{:new-selection :forbidden, :existing-locks :preserve}`. Guidance may state that no replacement exists
+  with rationale. This increment supports the ordinary GOV10 yank behavior;
+  it cannot express or authorize an emergency exception.
+- `provenance`: nonblank public `:source-id`, `:input-id`, `:policy-id` and
+  `:tool-id` references. These are supplied identities, not verified authority.
+
+The retained release/history carrier is inert EDN: nil, booleans, strings,
+keywords, symbols, supported immutable numbers, vectors, lists, sets and maps;
+maps use keyword keys. Numeric leaves use exact classes Byte, Short, Integer,
+Long, Float, Double, java.math.BigInteger, java.math.BigDecimal,
+clojure.lang.BigInt and clojure.lang.Ratio. Reject other Number implementations
+(including AtomicLong), host subclasses and malformed field shapes. This is a
+type boundary, not an input-size allowance. The caller supplies only disclosure-safe data;
+this producer does not discover secrets or authenticate release/lock/content
+references. GOV10 does not specify registry version syntax here: `:version`
+is an opaque exact release label from the caller's decoded release record,
+never a range to resolve or normalize. Authentic registry lookup and any
+registry-specific version grammar remain composition obligations.
+
+Success is `{:status :proposed, :diagnostics [], :artifact ...}`. The artifact
+has `:schema :gravity.evolution/yank-proposal-v1`, `:kind :gravity/yank-proposal`,
+`:status :proposed`, `:authority :non-admitting`, the complete `:release`, the
+four selected proposal fields in `:proposal`, and the four selected provenance
+references in `:provenance`. Canonical map/set ordering makes complete products
+and their EDN rendering deterministic under input map insertion order changes;
+history vectors/lists keep order. Set membership uses value equality, never
+printer-key equality. Ordering keys use complete readable rendering with fixed
+printer settings; equal keys must retain distinct values, including under
+caller-bound `*print-length*` and `*print-level*`. Caller-supplied status,
+approval, action or grant fields cannot promote the product and are not projected from the proposal
+or provenance. No IO, approval verdict, registry mutation or package-policy
+change occurs.
+
+Failure is `{:status :rejected, :diagnostics [...]}` with no artifact. Each
+diagnostic carries constant `:id`, `:message`, a known field/index `:path` and
+`:reason`; never echo input values, unknown keys or provenance on failure.
+Use `:missing-field` for absent keys and `:invalid-field` for wrong/blank values.
+Order diagnostics by release identity, content/provenance, history (locks then
+contents, in record order), proposal fields, then public provenance fields:
+
+- `GOV10001`: malformed release/proposal map or incomplete release identity,
+  historical identity or accountable owner.
+- `GOV10002`: missing/malformed content or provenance references, including
+  the explicit public provenance map.
+- `GOV10006`: missing/blank reason or replacement guidance, missing/invalid
+  resolution behavior, malformed retained release data or history.
+
+Required accepted fixtures are `complete-proposal-preserves-release`,
+`changed-reason-changes-product`, `reordered-input-map-determinism` and
+`historical-lock-content-preserved`. Required rejected fixtures cover missing
+release identity/owner, missing or blank reason, absent replacement guidance,
+missing resolution behavior, malformed secret-marker payloads and attempted
+caller approval promotion. Compare whole expected products/diagnostics and
+unchanged inputs/history; a constant catalog or shape-only test is insufficient.
+Numeric fixtures preserve complete products for the supported immutable types
+and require payload-free GOV10006 rejection for nested AtomicLong values in
+release metadata and historical extensions, before and after host mutation.
+Printer fixtures compare complete products and unchanged release/history under
+truncated length/level bindings, retain unequal values with identical complete
+printing, and preserve malformed-value rejection under the same bindings.
+Resolution fixtures accept ordinary Clojure map representations and reject a
+Java HashMap even when its entries equal the required declaration. Require the
+complete payload-free GOV10006 field rejection to remain unchanged after caller
+mutation to allow new selection or erase existing locks.
+
+Start requires only these explicit inputs. Composition requires actual owner
+authorization and authentic registry/content/provenance, GOV2/GOV4 emergency
+governance where applicable, publication, PKG4/5/9 selection/install enforcement
+and historical rebuild execution. Independent acceptance remains separate;
+the parent task stays Open. Append evidence and task navigation outside the
+captured task region; preserve historical receipts and coordinate later merges
+with PR767/1291 and retained Evolution work without adopting their changes.
+Controller-owned verification will run the focused namespace, applicable
+acceptance-dependency controls, language boundary and document validators.
