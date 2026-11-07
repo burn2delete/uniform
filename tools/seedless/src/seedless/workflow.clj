@@ -679,6 +679,57 @@
                            (str/split (str (rt/git ctx (:worktree t) "diff" "--name-only" "--no-renames" "-z")
                                            "\u0000" (rt/git ctx (:worktree t) "ls-files" "--others" "--exclude-standard" "-z")) #"\u0000"))))))
 
+(defn- complete-sha? [value]
+  (and (string? value) (boolean (re-matches #"[0-9a-f]{40}" value))))
+
+(defn- merge-in-progress? [ctx cwd]
+  (zero? (:exit (rt/command ctx cwd ["git" "rev-parse" "-q" "--verify" "MERGE_HEAD"]))))
+
+(defn- commit-parents [ctx cwd commit]
+  (let [parts (str/split (rt/git ctx cwd "rev-list" "--parents" "-n" "1" commit) #"\s+")]
+    (vec (rest parts))))
+
+(defn- composed-retained-candidate? [ctx t]
+  (let [cwd (:worktree t)
+        base (:base t)
+        candidate (:candidate t)
+        published (:published-candidate t)
+        parents (when (and (complete-sha? candidate)
+                           (complete-sha? base)
+                           (complete-sha? published))
+                  (commit-parents ctx cwd candidate))]
+    (and (not= candidate published)
+         (contains? (set (:published-candidates t)) published)
+         (= 2 (count parents))
+         (every? (set parents) [base published])
+         (= "" (rt/git ctx cwd "merge-base" "--is-ancestor" published candidate)))))
+
+(defn- retained-clean-candidate? [ctx t]
+  (let [cwd (:worktree t)
+        base (:base t)
+        candidate (:candidate t)
+        tree (:tree t)]
+    (and (not (:merge-in-progress t))
+         (not (merge-in-progress? ctx cwd))
+         (pos-int? (get-in t [:pr :number]))
+         (= "checkpoint" (get-in t [:implementation :outcome]))
+         (every? complete-sha? [base candidate tree])
+         (= candidate (rt/git ctx cwd "rev-parse" "HEAD"))
+         (= tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}"))
+         (= "" (rt/git ctx cwd "merge-base" "--is-ancestor" base candidate))
+         (not= base candidate)
+         (not= tree (rt/git ctx cwd "rev-parse" (str base "^{tree}")))
+         (or (= candidate (:published-candidate t))
+             (composed-retained-candidate? ctx t))
+         (do
+           (assert-clean! ctx cwd)
+           (let [paths (vec (remove str/blank?
+                                    (str/split (rt/git ctx cwd "diff" "--name-only" "--no-renames" "-z"
+                                                       base candidate)
+                                               #"\u0000")))]
+             (and (seq paths)
+                  (every? #(some (fn [owner] (shared/covers? owner %)) (:paths t)) paths)))))))
+
 (defn prepare-candidate! [ctx key lease]
   (let [writer-ended? (atom true)]
     (try
@@ -700,24 +751,38 @@
         (when (and (:merge-in-progress t) (not= (:base t) (rt/git ctx (:worktree t) "rev-parse" "MERGE_HEAD")))
           (rt/fail! "Merge parent changed outside the controller" {}))
         (let [paths (working-paths ctx t)]
-          (when (empty? paths) (rt/fail! "Implementation made no source change" {:slice key}))
-          (doseq [path paths]
-            (when-not (some #(shared/covers? % path) (:paths t))
-              (rt/fail! "Worker changed an unowned path" {:path path :slice key})))
-          (apply rt/git ctx (:worktree t) "add" "--" paths)
-          (doseq [path (remove str/blank? (str/split (rt/git ctx (:worktree t) "diff" "--cached" "--name-only" "--no-renames" (:base t)) #"\n"))]
-            (when-not (some #(shared/covers? % path) (:paths t))
-              (rt/fail! "Candidate index changes an unowned path relative to its base" {:path path})))
-          (rt/git ctx (:worktree t) "commit" "-m" (:title t)))
-        (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
-               :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false
-               :merge-effect nil :merge-recovery nil)
-        (publish! ctx (task ctx key))
-        (when-not (= "checkpoint" (:outcome output))
-          (reset! writer-ended? false)
-          (check-candidate! ctx key (:checks output) lease)
-          (reset! writer-ended? true))
-        output)
+          (if (and (empty? paths) (= "ready" (:outcome output))
+                   (retained-clean-candidate? ctx t))
+            (let [composed? (not= (:candidate t) (:published-candidate t))]
+              ;; A prior checkpoint may already be the published candidate. Run
+              ;; the normal checks and acceptance path without recommitting or
+              ;; republishing the unchanged source. A disjoint current-main
+              ;; composition is a new candidate and must be published once.
+              (task! ctx key :implementation output)
+              (when composed? (publish! ctx (task ctx key)))
+              (reset! writer-ended? false)
+              (check-candidate! ctx key (:checks output) lease)
+              (reset! writer-ended? true)
+              output)
+            (do
+              (when (empty? paths) (rt/fail! "Implementation made no source change" {:slice key}))
+              (doseq [path paths]
+                (when-not (some #(shared/covers? % path) (:paths t))
+                  (rt/fail! "Worker changed an unowned path" {:path path :slice key})))
+              (apply rt/git ctx (:worktree t) "add" "--" paths)
+              (doseq [path (remove str/blank? (str/split (rt/git ctx (:worktree t) "diff" "--cached" "--name-only" "--no-renames" (:base t)) #"\n"))]
+                (when-not (some #(shared/covers? % path) (:paths t))
+                  (rt/fail! "Candidate index changes an unowned path relative to its base" {:path path})))
+              (rt/git ctx (:worktree t) "commit" "-m" (:title t))
+              (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
+                     :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false
+                     :merge-effect nil :merge-recovery nil)
+              (publish! ctx (task ctx key))
+              (when-not (= "checkpoint" (:outcome output))
+                (reset! writer-ended? false)
+                (check-candidate! ctx key (:checks output) lease)
+                (reset! writer-ended? true))
+              output))))
       (catch Exception e
         (throw (ex-info (.getMessage e)
                         (cond-> (or (ex-data e) {}) @writer-ended? (assoc :writer-ended? true)) e))))))
