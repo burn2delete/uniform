@@ -38,7 +38,7 @@
 
 (deftest native-contract-marks-checks-and-keeps-provider-authority-separate
   (let [contract (:gravity/namespace-contract (meta #'effects/check-native-effect-legality!))]
-    (is (= 30 (count (ns-publics 'gravity.effects)) (count (:public-api contract))))
+    (is (= 34 (count (ns-publics 'gravity.effects)) (count (:public-api contract))))
     (doseq [name '[native-handled-effect? check-native-registry! check-native-build-effects!
                   check-native-replay-effects! check-native-effect-legality!]]
       (let [operation (ns-resolve 'gravity.effects name) api (get-in contract [:public-api name])]

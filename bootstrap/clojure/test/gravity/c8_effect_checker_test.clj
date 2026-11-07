@@ -52,32 +52,58 @@
 
 (deftest effects-stage-contract-preserves-the-native-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'effects/effect-graph))
-        publics (ns-publics 'gravity.effects)]
+        publics (ns-publics 'gravity.effects)
+        legacy-public-api
+        #{'native-handled-effect? 'check-native-registry! 'check-native-build-effects!
+          'check-native-replay-effects! 'check-native-effect-legality!
+          'fact-direct-effects 'effectful-facts 'effect-graph
+          'native-verifier-report 'native-capability-proof 'validate-native-report!
+          'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
+          'native-override-diagnostics 'native-known-effects 'native-effect-capability
+          'native-replay-sensitive-effects 'native-effect-message
+          'native-source-overrides 'native-diagnostic-fail! 'validate-native-overrides! 'native-diagnostics
+          'assemble-source-artifact 'legality-records 'capability-proof-records 'build-effect-log
+          'replay-requirements 'ordering-constraints 'residual-effect-report}
+        stage0-public-api
+        '{stage0-uses-println?
+          {:arglists ([recur-check form]) :contract-boundary :stage0-native-effect-policy-kernel
+           :input-boundary :caller-owned-stage0-form-data :operation-inputs [:recur-check]
+           :callback-selection :existing-caller-selected-value
+           :seed-compatibility-data-only? true :seed-compatibility-checks-only? false}
+          infer-stage0-effects
+          {:arglists ([uses-println? forms]) :contract-boundary :stage0-native-effect-policy-kernel
+           :input-boundary :caller-owned-stage0-form-data :operation-inputs [:uses-println?]
+           :callback-selection :existing-caller-selected-value
+           :seed-compatibility-data-only? true :seed-compatibility-checks-only? false}
+          required-stage0-capabilities
+          {:arglists ([effect-capability effects]) :contract-boundary :stage0-native-effect-policy-kernel
+           :input-boundary :caller-owned-stage0-effect-and-catalog-data :operation-inputs [:effect-capability]
+           :callback-selection :existing-callable-lookup-value
+           :seed-compatibility-data-only? true :seed-compatibility-checks-only? false}
+          validate-stage0-module-effects!
+          {:arglists ([{:keys [uses-println? fail!]} module]) :contract-boundary :stage0-native-effect-policy-kernel
+           :input-boundary :caller-owned-expanded-stage0-module :operation-inputs [:uses-println? :fail!]
+           :callback-selection :existing-entry-captured-values :failure-transport-owner :supplied-operation
+           :seed-compatibility-data-only? false :seed-compatibility-checks-only? true}}]
     (is (= :hosted-seed-effect-data-reports-and-native-checks (:contract-boundary contract)))
-    (is (= #{'native-handled-effect? 'check-native-registry! 'check-native-build-effects!
-             'check-native-replay-effects! 'check-native-effect-legality!
-             'fact-direct-effects 'effectful-facts 'effect-graph
-             'native-verifier-report 'native-capability-proof 'validate-native-report!
-             'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
-             'native-override-diagnostics 'native-known-effects 'native-effect-capability
-             'native-replay-sensitive-effects 'native-effect-message
-             'native-source-overrides 'native-diagnostic-fail! 'validate-native-overrides! 'native-diagnostics
-             'assemble-source-artifact 'legality-records 'capability-proof-records 'build-effect-log
-             'replay-requirements 'ordering-constraints 'residual-effect-report} (set (keys publics))))
+    (is (= (into legacy-public-api (keys stage0-public-api)) (set (keys publics))))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= contract (:gravity/namespace-contract (meta (publics name)))))
       (is (= :none (:admission api)))
-      (if (:seed-compatibility-checks-only? api)
-        (do (is (false? (:seed-compatibility-data-only? api)))
-            (is (= :caller-owned-native-effect-premises (:input-boundary api))))
-        (is (true? (:seed-compatibility-data-only? api))))
+      (if (contains? legacy-public-api name)
+        (if (:seed-compatibility-checks-only? api)
+          (do (is (false? (:seed-compatibility-data-only? api)))
+              (is (= :caller-owned-native-effect-premises (:input-boundary api))))
+          (is (true? (:seed-compatibility-data-only? api))))
+        (let [expected (get stage0-public-api name)]
+          (is (= expected (select-keys api (keys expected))))))
       (is (false? (:authenticates-inputs? api)))
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
+    (is (= '[gravity.bootstrap gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog gravity.module-analysis.effects]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
