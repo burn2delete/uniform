@@ -202,6 +202,9 @@
 (defn prepare-base! [ctx t]
   (assert-clean! ctx (:worktree t))
   (assert-identity! ctx t)
+  (when (and (:task-digest t) (not (:source-base t)))
+    ;; Preserve the selected authority before advancing the mutable merge base.
+    (task! ctx (:key t) :source-base (:base t)))
   (let [base (fresh-main! ctx)]
     (doseq [key (:dependencies t)
             :let [dependency (task ctx key)]]

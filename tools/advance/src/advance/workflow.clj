@@ -2,6 +2,7 @@
   "Select real Spec Kit increments, implement, review and merge until proven complete."
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
+            [clojure.string :as str]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.github :as gh]
@@ -97,16 +98,45 @@
     (mirror! ctx snapshot base)
     {:base base :tree tree :worktree (:worktree wt) :catalog snapshot}))
 
+(defn source-text! [ctx t revision]
+  (when-not (and (string? revision) (re-matches #"[0-9a-f]{40}" revision))
+    (rt/fail! "Selected task source revision is missing" {:task (:task t)}))
+  (let [argv ["git" "show" (str revision ":" (:task-path t))]
+        key (rt/digest (pr-str argv))]
+    (when (get-in @(:state ctx) [:restricted-commands key])
+      (rt/fail! "Task source inspection remains restricted" {:restricted true :task (:task t)}))
+    (rt/assert-authorized! ctx :command key)
+    (let [result (rt/command ctx (:worktree t) argv)]
+      (when (rt/authorization-denied? (:err result))
+        (rt/remember-denial! ctx :command key {:argv argv :result result})
+        (rt/fail! "Task source inspection encountered a refusal" {:restricted true :task (:task t)}))
+      (when-not (zero? (:exit result)) (rt/fail! "Cannot inspect task source" {:task (:task t) :result result}))
+      (:out result))))
+
+(defn authority-context [path text]
+  (let [rows (catalog/parse path text)
+        task-lines (into #{} (mapcat (fn [row]
+                                      (let [start (dec (:line row))]
+                                        (range start (+ start (count (str/split (:body row) #"\n" -1)))))) rows))]
+    (str/join "\n" (keep-indexed (fn [index line] (when-not (contains? task-lines index) line))
+                                  (str/split-lines text)))))
+
 (defn validate-source! [ctx t]
-  (let [current (catalog/discover (:worktree t))
-        source (first (filter #(= (:task t) (:key %)) (:tasks current)))]
-    (when-not (and source (not (:checked source))
-                   (= (:task-digest t) (:source-digest source)))
-      ;; Repair authors may have updated their own source record. Only a change
-      ;; to upstream's task authority invalidates an already-authored increment.
-      (let [result (rt/command ctx (:worktree t) ["git" "show" (str (:base t) ":" (:task-path t))])]
-        (when-not (and (zero? (:exit result)) (= (:task-digest t) (rt/digest (:out result))))
-          (rt/fail! "Source task changed on main; reselect rather than implementing a stale plan" {:task (:task t)}))))))
+  (let [current-text (source-text! ctx t (:base t))
+        row (fn [text] (first (filter #(= (:task t) (:key %)) (catalog/parse (:task-path t) text))))
+        current (row current-text)]
+    (when-not
+     (and current (not (:checked current))
+          (or (= (:task-digest t) (rt/digest current-text))
+              (let [selected-text (source-text! ctx t (:source-base t))
+                    selected (row selected-text)]
+                (and (= (:task-digest t) (rt/digest selected-text))
+                     selected (not (:checked selected))
+                     (= (authority-context (:task-path t) selected-text)
+                        (authority-context (:task-path t) current-text))
+                     (= (select-keys selected [:key :path :body :authority])
+                        (select-keys current [:key :path :body :authority]))))))
+      (rt/fail! "Source task changed on main; reselect rather than implementing a stale plan" {:task (:task t)}))))
 
 (defn admit! [ctx base snapshot increments]
   (catalog/validate-selection! snapshot increments (:tasks @(:state ctx)))
@@ -122,7 +152,7 @@
           wt (flow/worktree! ctx (str "increment-" (:number issue)) base)]
       (rt/update! ctx assoc-in [:tasks (:key increment)]
                   (merge increment wt {:issue issue :base base :status :ready
-                                       :task-path (:path source) :task-digest (:source-digest source)}))
+                                       :source-base base :task-path (:path source) :task-digest (:source-digest source)}))
       (gh/relation! ctx (get-in @(:state ctx) [:source-tasks (:key source) :issue]) "sub_issues" (:id issue))
       (flow/transition! ctx (:key increment) :ready)))
   (doseq [increment increments dep (:dependencies increment)]
