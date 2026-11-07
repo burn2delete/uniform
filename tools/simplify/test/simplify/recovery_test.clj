@@ -13,6 +13,142 @@
 
 (use-fixtures :each fixture/no-github-network)
 
+(def review-extra-check ["clojure" "-M" "fixture-extra-check.clj"])
+
+(defn held-review-fixture! []
+  (let [ctx0 (fixture/context) {:keys [repo]} (git-fixture/repository! ctx0)
+        _ (rt/git ctx0 repo "checkout" "-b" "codex/review-check-fixture")
+        base (rt/git ctx0 repo "rev-parse" "HEAD")
+        _ (spit (io/file repo "work.edn") "{:value 1}\n")
+        _ (rt/git ctx0 repo "add" "work.edn")
+        _ (rt/git ctx0 repo "commit" "-m" "Remove duplicate fixture value")
+        candidate (rt/git ctx0 repo "rev-parse" "HEAD") tree (rt/git ctx0 repo "rev-parse" "HEAD^{tree}")
+        command ["clojure" "-M" "fixture-check.clj"]
+        ctx (assoc ctx0 :config {:repo-dir repo :state-dir (:state-dir ctx0) :repository "fixture/repo"
+                                 :remote "origin" :base-branch "main" :campaign "fixture"
+                                 :checks [command] :check-executables #{"clojure"}})
+        output {:verdict "needs_input" :base base :candidate candidate :tree tree
+                :summary "A focused check receipt is missing" :findings ["Supply the extra focused check receipt"]}
+        task {:key "reviewed" :title "Remove duplicate" :paths ["work.edn"] :dependencies []
+              :base base :candidate candidate :tree tree :branch "codex/review-check-fixture" :worktree repo
+              :status :attention :resume-status :review :issue {:number 1} :pr {:number 7}
+              :checks {:candidate candidate :tree tree :commands [command] :result :passed}
+              :review (assoc output :job "review-1")
+              :error {:message "Independent review requires input" :details {:review output}}}
+        job {:status :completed :mode :read :cwd repo :thread "review-thread" :turn "review-turn"
+             :turn-terminal? true :active-items {} :output output}
+        evidence (str (io/file (:state-dir ctx) "review-check-evidence.edn"))]
+    (rt/update! ctx assoc :tasks {"reviewed" task} :jobs {"review-1" job} :job-sequence 1)
+    {:ctx ctx :repo repo :task task :job job :evidence evidence}))
+
+(defn write-review-evidence! [{:keys [ctx evidence]}]
+  (let [t (flow/task ctx "reviewed") job (get-in @(:state ctx) [:jobs "review-1"])]
+    (rt/write-edn! evidence
+      {:kind :review-check-evidence :task-key "reviewed" :checks [review-extra-check]
+       :original-task-sha256 (rt/digest (pr-str t)) :review-job-sha256 (rt/digest (pr-str job))
+       :operator-classification {:kind :review-check-evidence :inspector :controller-operator
+                                :review-sha256 (rt/digest (pr-str (:review t)))
+                                :no-unresolved-authority true
+                                :no-unresolved-source-semantics true
+                                :basis "Operator inspected the exact review: only an additional check receipt is missing."}})))
+
+(deftest review-evidence-continuation-runs-native-checks-and-passive-review-without-reauthoring
+  (let [{:keys [ctx repo task job evidence] :as f} (held-review-fixture!)
+        _ (write-review-evidence! f) before @(:state ctx) calls (atom [])
+        request (flow/queue-recovery! ctx :recover-review-checks "reviewed" evidence)]
+    (is (= before @(:state ctx)) "The live producer does not edit native state")
+    (flow/process-recovery-requests! ctx #{"reviewed"})
+    (is (= :attention (:status (flow/task ctx "reviewed"))))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :applied (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
+    (is (= task (:original-task (last (:review-check-recovery-history (flow/task ctx "reviewed"))))))
+    (with-redefs [gh/status! (fn [& _])
+                  flow/publish! (fn [c t] (swap! calls conj :publish) (flow/task! c (:key t) :status :ci))
+                  codex/command! (fn [_ _ _ argv] (swap! calls conj argv) {:exitCode 0})
+                  codex/job! (fn [c _ _ mode _ _ _]
+                               (is (= :read mode) "No new author is dispatched")
+                               (swap! calls conj :review)
+                               (assoc (select-keys (flow/task c "reviewed") [:base :candidate :tree])
+                                      :verdict "approved" :summary "Required evidence supplied" :findings []))]
+      (flow/prepare! ctx "reviewed"))
+    (let [t (flow/task ctx "reviewed")]
+      (is (= [(first (get-in task [:checks :commands])) review-extra-check :review :publish] @calls))
+      (is (= :passed (get-in t [:checks :result])))
+      (is (= :ci (:status t)))
+      (is (= "approved" (get-in t [:review :verdict])))
+      (is (= (:pr task) (:pr t)))
+      (is (= (:error task) (:error t)))
+      (is (= (select-keys task [:base :candidate :tree]) (select-keys t [:base :candidate :tree])))
+      (is (= job (get-in @(:state ctx) [:jobs "review-1"])))
+      (is (= (:candidate task) (rt/git ctx repo "rev-parse" "HEAD"))))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= 1 (count (:review-check-recovery-history (flow/task ctx "reviewed")))))
+    (is (str/blank? (rt/git ctx repo "status" "--porcelain")))))
+
+(deftest review-evidence-continuation-rejects-stale-ambiguous-refused-and-unfinished-inputs
+  (doseq [mutation [:semantic-input :authority-input :wrong-phase :wrong-verdict :failed-checks :wrong-tuple
+                    :job-refused :job-unfinished :job-unknown :job-active :job-missing-active :wrong-job-cwd
+                    :check-refused :shared-refusal :outside-toolset :empty-extra :duplicate-extra :dirty :stale-task :stale-job]]
+    (let [{:keys [ctx repo evidence] :as f} (held-review-fixture!)]
+      (case mutation
+        :wrong-phase (flow/task! ctx "reviewed" :resume-status :implementing)
+        :wrong-verdict (rt/update! ctx assoc-in [:tasks "reviewed" :review :verdict] "changes_requested")
+        :failed-checks (rt/update! ctx assoc-in [:tasks "reviewed" :checks :result] :failed)
+        :wrong-tuple (rt/update! ctx assoc-in [:tasks "reviewed" :review :candidate] (apply str (repeat 40 "0")))
+        :job-refused (rt/update! ctx assoc-in [:jobs "review-1" :tool-refusals] [{:actual-os-denial true}])
+        :job-unfinished (rt/update! ctx assoc-in [:jobs "review-1" :status] :running)
+        :job-unknown (rt/update! ctx assoc-in [:jobs "review-1" :turn-terminal?] false)
+        :job-active (rt/update! ctx assoc-in [:jobs "review-1" :active-items] {"unfinished" "commandExecution"})
+        :job-missing-active (rt/update! ctx update-in [:jobs "review-1"] dissoc :active-items)
+        :wrong-job-cwd (rt/update! ctx assoc-in [:jobs "review-1" :cwd] (:state-dir ctx))
+        :check-refused (rt/update! ctx assoc-in [:restricted-commands (rt/digest (pr-str review-extra-check))] {:denied true})
+        :shared-refusal (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :commands "review-refusal"]
+                                                              {:state-file (:state-file ctx) :job "review-1"}) nil]))
+        :dirty (spit (io/file repo "work.edn") "{:foreign true}\n")
+        nil)
+      (write-review-evidence! f)
+      (case mutation
+        :semantic-input (rt/write-edn! evidence (assoc-in (rt/read-edn evidence) [:operator-classification :no-unresolved-source-semantics] false))
+        :authority-input (rt/write-edn! evidence (assoc-in (rt/read-edn evidence) [:operator-classification :no-unresolved-authority] false))
+        :outside-toolset (rt/write-edn! evidence (assoc (rt/read-edn evidence) :checks [["sh" "-c" "fixture"]]))
+        :empty-extra (rt/write-edn! evidence (assoc (rt/read-edn evidence) :checks []))
+        :duplicate-extra (rt/write-edn! evidence (assoc (rt/read-edn evidence) :checks (get-in (flow/task ctx "reviewed") [:checks :commands])))
+        :stale-task (flow/task! ctx "reviewed" :title "Changed after inspection")
+        :stale-job (rt/update! ctx assoc-in [:jobs "review-1" :turn] "different-turn")
+        nil)
+      (let [before @(:state ctx)]
+        (is (thrown? clojure.lang.ExceptionInfo (flow/recover-review-checks! ctx "reviewed" evidence)) (name mutation))
+        (is (= before @(:state ctx)) "Rejection changes no native task, job or refusal")))))
+
+(deftest queued-review-checks-revalidate-the-current-native-task-and-evidence
+  (doseq [mutation [:native-task :evidence]]
+    (let [{:keys [ctx evidence] :as f} (held-review-fixture!)]
+      (write-review-evidence! f)
+      (flow/recover-review-checks! ctx "reviewed" evidence)
+      (case mutation
+        :native-task (flow/task! ctx "reviewed" :pr {:number 99})
+        :evidence (rt/write-edn! evidence (assoc (rt/read-edn evidence) :checks [["clojure" "-M" "different-check.clj"]])))
+      (let [before @(:state ctx)]
+        (with-redefs [codex/command! (fn [& _] (throw (AssertionError. "A stale queue executed a check")))
+                      codex/job! (fn [& _] (throw (AssertionError. "A stale queue dispatched a model")))]
+          (is (thrown? clojure.lang.ExceptionInfo (flow/prepare! ctx "reviewed"))))
+        (is (= before @(:state ctx)))))))
+
+(deftest live-review-check-request-waits-for-a-shared-api-hold
+  (let [{:keys [ctx task evidence] :as f} (held-review-fixture!)
+        _ (write-review-evidence! f)
+        request (flow/queue-recovery! ctx :recover-review-checks "reviewed" evidence)
+        key (rt/digest (pr-str ["POST" "graphql"]))]
+    (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :api key] {:fixture-only true}) nil]))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= task (flow/task ctx "reviewed")))
+    (is (nil? (get-in @(:state ctx) [:operator-recovery-requests (:request request)])))
+    ;; This is a fixture state transition, never a production refusal clear.
+    (rt/coordinate! ctx (fn [s] [(update-in s [:restrictions :api] dissoc key) nil]))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :applied (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
+    (is (= :repair (:status (flow/task ctx "reviewed"))))))
+
 (def check-command ["clojure" "-M" "fixture-check.clj"])
 (defn action! [ctx item]
   (rt/event! ctx :rpc-receive {:job "implement-1" :message {:method "item/completed" :params {:item item}}}))
