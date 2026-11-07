@@ -243,7 +243,7 @@
 
 (defn recover-review-checks! [ctx key evidence-file]
   (let [original (task ctx key)]
-    (when-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
+    (if-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
       (rt/with-claimed-paths ctx lease
         (fn []
           (assert-identity! ctx original)
@@ -251,7 +251,8 @@
             (rt/update! ctx update-in [:tasks key :review-check-recovery-history] (fnil conj [])
                         {:original-task original :inspection inspection})
             (task! ctx key :review-check-recovery inspection :status :repair)
-            inspection))))))
+            inspection)))
+      (rt/fail! "Review check continuation is waiting for its actual writer scope" {:finding key :ownership-wait true}))))
 
 (defn recover-fresh-source! [ctx key evidence-file]
   (let [original (task ctx key)]

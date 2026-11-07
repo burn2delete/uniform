@@ -149,6 +149,30 @@
     (is (= :applied (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
     (is (= :repair (:status (flow/task ctx "reviewed"))))))
 
+(deftest live-review-check-request-survives-a-concurrent-writer-claim
+  (let [{:keys [ctx task evidence] :as f} (held-review-fixture!)
+        _ (write-review-evidence! f)
+        request (flow/queue-recovery! ctx :recover-review-checks "reviewed" evidence)
+        foreign (assoc ctx :state-file (str (io/file (:state-dir ctx) "other-controller.edn")))
+        lease (rt/claim-paths! foreign "other-active-writer" ["work.edn"] :implementing)
+        request-before (rt/read-edn (:path request))]
+    (is (some? lease))
+    ;; The scheduler's occupied set is empty; contention is discovered only
+    ;; when the real shared claim is attempted inside the recovery operation.
+    (flow/process-recovery-requests! ctx #{})
+    (is (= task (flow/task ctx "reviewed")))
+    (is (nil? (get-in @(:state ctx) [:operator-recovery-requests (:request request)])))
+    (is (= request-before (rt/read-edn (:path request))))
+    (is (= (:token lease) (get-in (rt/read-edn (:coordination-file ctx)) [:writers (:id lease) :token])))
+    ;; Only the simulated original owner ends its own known-ended fixture phase.
+    (rt/release-paths! foreign lease)
+    (flow/process-recovery-requests! ctx #{})
+    (is (= :applied (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
+    (is (= :repair (:status (flow/task ctx "reviewed"))))
+    (is (= task (:original-task (last (:review-check-recovery-history (flow/task ctx "reviewed"))))))
+    (flow/process-recovery-requests! ctx #{})
+    (is (= 1 (count (:review-check-recovery-history (flow/task ctx "reviewed")))))))
+
 (def check-command ["clojure" "-M" "fixture-check.clj"])
 (defn action! [ctx item]
   (rt/event! ctx :rpc-receive {:job "implement-1" :message {:method "item/completed" :params {:item item}}}))
