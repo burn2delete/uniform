@@ -137,9 +137,15 @@ remain development history. No production behavior changed to satisfy them.
 Published main subsequently advanced to
 `aa6af9bddd96776a3d59d8c920ab0e4a4d8839b0` with three separate diagnostic
 validation/workflow paths. Its nine shared client API blobs are unchanged.
-This source has not yet imported that base; earlier source/provider/CI
-acceptance does not transfer. Final source/adversarial review, current-main
-composition/context, provider/hosted CI audit and integration remain pending.
+The authored development capture predates importing that base; earlier
+source/provider/CI acceptance does not transfer. Normal own-branch merge
+`b58e124727b0ba3efb0c95f3edbfd27dbc3b9324`, tree
+`2cdb126c35659fb46db38bf42c354a55bff16f23`, subsequently imports exactly
+those three published paths with authored-first parents. All nine authored
+paths and all other modes/blobs are conserved. This is an own-branch import,
+not the GitHub provider merge. Independent source/adversarial/composition
+review, current-main lint context, provider/hosted CI audit and integration
+remain pending.
 
 ## Unsupported boundaries
 
