@@ -85,12 +85,200 @@
         :review "Review" :ci "CI" :merge "Merge queue" :finalizing "Merge queue" :done "Done"
         :repair "Ready" :attention "Attention" :not-planned "Not planned"))
 
+(defn- campaign-issue-marker [ctx]
+  (gh/marker
+   (str "issue/"
+        (rt/digest
+         (pr-str [(get-in ctx [:config :repository])
+                  (get-in ctx [:config :campaign])
+                  (get-in ctx [:config :objective])
+                  "campaign" "issue" "campaign"])))))
+
+(defn- project-api-restriction [ctx]
+  ;; A shared restriction is durable evidence, not a signal to try another
+  ;; endpoint or replay the blocked GraphQL request.  Keep this narrow to the
+  ;; exact Project API action recorded by the coordination protocol.
+  (let [key (rt/digest (pr-str ["POST" "graphql"]))
+        local (get-in @(:state ctx) [:restricted-actions key])
+        shared (rt/shared-restriction ctx :api key)
+        restriction (or local shared)]
+    (when restriction
+      (when-not (and (map? restriction)
+                     (= "POST" (:method restriction))
+                     (= "graphql" (:endpoint restriction)))
+        (rt/fail! "Recorded Project API restriction has unknown identity"
+                  {:restricted true :project-tracking :restriction-unavailable
+                   :restriction (select-keys restriction [:method :endpoint :error :at])}))
+      restriction)))
+
+(defn- expected-project-url [ctx]
+  (let [[owner _] (str/split (get-in ctx [:config :repository]) #"/" 2)]
+    (str "https://github.com/users/" owner "/projects/")))
+
+(defn- expected-repository-url [ctx]
+  (str "https://api.github.com/repos/" (get-in ctx [:config :repository])))
+
+(defn- project-workflow-valid? [workflow]
+  (and (map? workflow) (string? (:id workflow))
+       (= "Status" (:name workflow))
+       (vector? (:options workflow))
+       (= (set gh/states) (set (map :name (:options workflow))))
+       (every? #(and (string? (:id %)) (string? (:name %))) (:options workflow))))
+
+(defn- project-record-valid? [ctx project issue]
+  (let [labels (set (map :name (:labels issue)))
+        url (:url project)
+        project-number (:number project)]
+    (and (map? project) (string? (:id project))
+         (= (get-in ctx [:config :project-title]) (:title project))
+         (pos-int? project-number)
+         (string? url)
+         (str/starts-with? url (expected-project-url ctx))
+         (str/ends-with? url (str project-number))
+         (project-workflow-valid? (:workflow project))
+         (map? issue) (pos-int? (:number issue)) (string? (:node_id issue))
+         (= (expected-repository-url ctx) (:repository_url issue))
+         (contains? labels "seedless")
+         (contains? labels "seedless:campaign")
+         (str/includes? (or (:body issue) "") (campaign-issue-marker ctx)))))
+
+(defn- project-verification-valid? [ctx project issue]
+  (let [verification (:verification project)
+        expected (select-keys project [:id :number :title :url])
+        digest (rt/digest (pr-str [(:repository verification)
+                                   (:owner verification)
+                                   (:project verification)
+                                   (:campaign-issue verification)
+                                   (:project-marker verification)
+                                   (:campaign-issue-marker verification)]))]
+    (and (map? verification)
+         (= :verified-setup (:source verification))
+         (= (get-in ctx [:config :repository]) (:repository verification))
+         (= (first (str/split (get-in ctx [:config :repository]) #"/")) (:owner verification))
+         (= expected (:project verification))
+         (= {:number (:number issue) :node_id (:node_id issue)}
+            (:campaign-issue verification))
+         (= (gh/project-marker ctx) (:project-marker verification))
+         (= (campaign-issue-marker ctx) (:campaign-issue-marker verification))
+         (= digest (:digest verification)))))
+
+(defn- recorded-project-identity? [ctx]
+  (let [project (:project @(:state ctx))
+        issue (:campaign-issue @(:state ctx))]
+    ;; The warm path never asks GitHub to re-verify a restricted Project.  It
+    ;; accepts only the complete durable setup record: the Project owner/URL,
+    ;; exact Status field, repository-bound campaign issue and its Seedless
+    ;; marker.  Newer state also carries a digest tying those values to the
+    ;; successful setup turn; older state may use the same provider-originated
+    ;; fields as a compatibility handover.
+    (and (project-record-valid? ctx project issue)
+         (or (project-verification-valid? ctx project issue)
+             (nil? (:verification project))))))
+
+(defn- record-project-verification! [ctx]
+  (let [project (:project @(:state ctx))
+        issue (:campaign-issue @(:state ctx))
+        repository (get-in ctx [:config :repository])
+        owner (when (string? repository) (first (str/split repository #"/")))]
+    (when (and (map? project) (map? issue) (string? owner))
+      (let [verification {:source :verified-setup
+                          :repository repository
+                          :owner owner
+                          :project (select-keys project [:id :number :title :url])
+                          :campaign-issue (select-keys issue [:number :node_id])
+                          :project-marker (gh/project-marker ctx)
+                          :campaign-issue-marker (campaign-issue-marker ctx)}
+            verification (assoc verification :digest
+                                (rt/digest (pr-str [(:repository verification)
+                                                    (:owner verification)
+                                                    (:project verification)
+                                                    (:campaign-issue verification)
+                                                    (:project-marker verification)
+                                                    (:campaign-issue-marker verification)])))]
+        (rt/update! ctx update :project assoc :verification verification)))))
+
+(defn- mark-project-tracking-held! [ctx restriction]
+  (let [held (merge {:mode :holding :productive false
+                     :reason :shared-project-api-restriction}
+                    (select-keys restriction [:method :endpoint :error :at]))]
+    (when-not (= held (:project-tracking @(:state ctx)))
+      (rt/update! ctx assoc :project-tracking held))
+    (rt/event! ctx :project-tracking-held held)
+    held))
+
+(defn- project-tracking-mode! [ctx]
+  (if-let [restriction (project-api-restriction ctx)]
+    (if (recorded-project-identity? ctx)
+      (do (mark-project-tracking-held! ctx restriction) :holding)
+      (rt/fail! "Recorded Project identity is required while Project tracking is restricted"
+                {:restricted true :project-tracking :identity-unavailable
+                 :restriction (select-keys restriction [:method :endpoint :error :at])}))
+    :remote))
+
+(defn- assert-project-provider-allowed! [ctx operation]
+  (when (= :holding (project-tracking-mode! ctx))
+    (rt/fail! "Project tracking is in nonproductive holding mode"
+              {:restricted true :project-tracking :holding :operation operation})))
+
+(defn- effect-id-values [value]
+  (cond
+    (string? value) [value]
+    (sequential? value) (filterv string? value)
+    :else []))
+
+(defn- retained-task-effect-ids [ctx t]
+  (let [details (keep identity [(get-in t [:error :details])
+                                (get-in t [:reporting-error :details])])
+        explicit (mapcat (fn [source]
+                           (mapcat #(effect-id-values (get source %))
+                                   [:effect :effect-id :effect-ids :effects]))
+                         (concat details [t]))
+        project-id (get-in @(:state ctx) [:project :id])
+        issue-id (get-in t [:issue :node_id])
+        prefix (when (and (string? project-id) (string? issue-id))
+                 (str "project-status/" project-id "/" issue-id))
+        derived (when prefix
+                  (let [item-id (str "project-item/" project-id "/" issue-id)]
+                    (remove nil? [(when (contains? (:effects @(:state ctx)) item-id) item-id)
+                                  (get-in @(:state ctx) [:tracking-intents prefix])])))]
+    (vec (distinct (concat explicit derived)))))
+
+(defn- retained-task-hold [ctx key]
+  (let [t (task ctx key)
+        ids (retained-task-effect-ids ctx t)
+        held (keep (fn [id]
+                     (let [effect (get-in @(:state ctx) [:effects id])]
+                       (when (or (nil? effect)
+                                 (#{:pending :uncertain :restricted} (:status effect)))
+                         {:effect id :effect-status (or (:status effect) :unknown)})))
+                   ids)]
+    (when (seq held)
+      {:slice key :effect-ids (mapv :effect held)
+       :effects (mapv #(select-keys (get-in @(:state ctx) [:effects (:effect %)]) [:status :message]) held)})))
+
 (defn transition! [ctx key status]
   ;; Complete the external tracking effect before recording the local status.
   ;; In particular, a failed Done update must leave a merged task finalizing.
-  (gh/status! ctx (:issue (task ctx key)) (project-status status))
-  (task! ctx key :status status)
-  (rt/event! ctx :transition {:slice key :status status}))
+  ;; A known shared Project restriction permits only nonterminal local progress
+  ;; for an already identified warm campaign.  It never clears/replays an
+  ;; effect and never turns a merge or completion into verified Done.
+  (if-let [held (retained-task-hold ctx key)]
+    (rt/fail! "Retained task effect requires inspected recovery before progress"
+              (assoc held :restricted true :project-tracking :held-task))
+    (if-let [restriction (project-api-restriction ctx)]
+      (do
+        (when-not (recorded-project-identity? ctx)
+          (rt/fail! "Recorded Project identity is required while Project tracking is restricted"
+                    {:restricted true :project-tracking :identity-unavailable}))
+        (when-not (#{:attention :repair :implementing :checking :review :ci :merge} status)
+          (rt/fail! "Project tracking restriction blocks terminal status" {:status status :restricted true}))
+        (mark-project-tracking-held! ctx restriction)
+        (task! ctx key :status status)
+        (rt/event! ctx :transition {:slice key :status status :tracking :holding}))
+      (do
+        (gh/status! ctx (:issue (task ctx key)) (project-status status))
+        (task! ctx key :status status)
+        (rt/event! ctx :transition {:slice key :status status})))))
 
 (def fresh-main! rt/fresh-main!)
 
@@ -119,6 +307,7 @@
     plan))
 
 (defn campaign-issue! [ctx]
+  (assert-project-provider-allowed! ctx :campaign-issue)
   (or (:campaign-issue @(:state ctx))
       (let [issue (gh/issue! ctx "campaign" (get-in ctx [:config :campaign])
                              (str (get-in ctx [:config :objective])
@@ -127,6 +316,7 @@
         (rt/update! ctx assoc :campaign-issue issue) issue)))
 
 (defn admit! [ctx base slices]
+  (assert-project-provider-allowed! ctx :admission)
   (doseq [slice slices :when (nil? (task ctx (:key slice)))]
     (let [issue (gh/issue! ctx (:key slice) (:title slice)
                            (str "Stage: " (:stage slice) "; workstream: " (:workstream slice)
@@ -291,6 +481,7 @@
       (await-published-pr! ctx (task ctx (:key t))))))
 
 (defn publish! [ctx t]
+  (assert-project-provider-allowed! ctx :publish)
   (assert-clean! ctx (:worktree t)) (assert-identity! ctx t)
   (let [push-effect (str "push/" (:candidate t))
         existing (existing-pr! ctx t)
@@ -326,6 +517,7 @@
     merged?))
 
 (defn prepare-base! [ctx t]
+  (assert-project-provider-allowed! ctx :prepare-base)
   (let [main (fresh-main! ctx) parent (task ctx (:stack-on t))
         base (if (and parent (not= :done (:status parent))) (:candidate parent) main)]
     (if (:worktree t)
@@ -345,6 +537,7 @@
                                     {:base (pr-base ctx (task ctx (:key t)))})))))
 
 (defn accept! [ctx key proposed]
+  (assert-project-provider-allowed! ctx :accept)
   (let [t (task ctx key)]
     (assert-identity! ctx t)
     (when-not (and (= :passed (get-in t [:checks :result]))
@@ -408,6 +601,7 @@
                                            "\u0000" (rt/git ctx (:worktree t) "ls-files" "--others" "--exclude-standard" "-z")) #"\u0000"))))))
 
 (defn prepare-candidate! [ctx key lease]
+  (assert-project-provider-allowed! ctx :prepare-candidate)
   (let [writer-ended? (atom true)]
     (try
       (prepare-base! ctx (task ctx key))
@@ -612,26 +806,36 @@
 (declare attention!)
 
 (defn with-registration! [ctx operation]
-  (doseq [t (tasks ctx)] (assert-no-pending-main! ctx t))
-  (when (:interruption @(:state ctx))
-    (rt/fail! "Inspect retained controller interruption before provider writes" {}))
-  (let [retained (filter #(#{:implementing :checking :review :finalizing} (:status %)) (tasks ctx))]
-    (doseq [t retained]
-      (task! ctx (:key t) :history
-             (conj (vec (:history t))
-                   {:kind :startup-handover :status (:status t)
-                    :resume-status (:resume-status t) :error (:error t)}))
-      (attention! ctx (:key t)
-                  (ex-info "Interrupted work requires inspection before recovery"
-                           (cond-> {:local-only true :retained-handover true}
-                             (:finalization-effect t) (assoc :effect (:finalization-effect t))))))
-    (when (seq retained)
-      (rt/fail! "Inspect retained Seedless work before provider writes" {:retained-handover true})))
-  (coordination/register! ctx)
-  (try (operation)
-       (finally (coordination/unregister! ctx))))
+  (let [tracking-mode (project-tracking-mode! ctx)]
+    (doseq [t (tasks ctx)] (assert-no-pending-main! ctx t))
+    (when (:interruption @(:state ctx))
+      (rt/fail! "Inspect retained controller interruption before provider writes" {}))
+    (let [retained (filter #(#{:implementing :checking :review :finalizing} (:status %)) (tasks ctx))]
+      (doseq [t retained]
+        (task! ctx (:key t) :history
+               (conj (vec (:history t))
+                     {:kind :startup-handover :status (:status t)
+                      :resume-status (:resume-status t) :error (:error t)}))
+        (attention! ctx (:key t)
+                    (ex-info "Interrupted work requires inspection before recovery"
+                             (cond-> {:local-only true :retained-handover true}
+                               (:finalization-effect t) (assoc :effect (:finalization-effect t))))))
+      (when (seq retained)
+        (rt/fail! "Inspect retained Seedless work before provider writes" {:retained-handover true})))
+    (coordination/register! ctx)
+    (try
+      (if (= :holding tracking-mode)
+        (do
+          (rt/event! ctx :project-tracking-held
+                     (merge (:project-tracking @(:state ctx))
+                            {:dispatch :suppressed :status :attention}))
+          (rt/update! ctx assoc :status :attention)
+          :holding)
+        (operation))
+      (finally (coordination/unregister! ctx)))))
 
 (defn merge-current! [ctx t]
+  (assert-project-provider-allowed! ctx :merge)
   (rt/try-with-main-lock
    ctx
    (fn []
@@ -703,6 +907,7 @@
       (rt/event! ctx :waiting {:slice (:key t) :reason :github-review-reapproval :candidate (:candidate t)}))))
 
 (defn integrate! [ctx t]
+  (assert-project-provider-allowed! ctx :integrate)
   (assert-no-pending-main! ctx t)
   (assert-identity! ctx t)
   (when (dependencies-merged? ctx t)
@@ -761,6 +966,7 @@
    :details (select-keys (ex-data error) [:path :expected :actual :dependency :slice])})
 
 (defn plan! [ctx]
+  (assert-project-provider-allowed! ctx :planning)
   (let [pending (:planning @(:state ctx))
         base (or (:base pending) (fresh-main! ctx))
         n (or (:round pending) (inc (or (:round @(:state ctx)) 0)))
@@ -805,6 +1011,7 @@
     output))
 
 (defn complete! [ctx]
+  (assert-project-provider-allowed! ctx :complete)
   (let [base (get-in @(:state ctx) [:last-plan :base])
         prior (:completion @(:state ctx))]
     (when-not (= base (fresh-main! ctx)) (rt/fail! "Main changed before completion verification" {}))
@@ -853,7 +1060,8 @@
                                         (:merged (task ctx key)) (:candidate parent)) true
                                 (catch Exception e (when (:restricted (ex-data e)) (throw e)) false))))
                      (:dependencies t))))
-       (not-any? #(shared/overlap? (:paths t) (:paths %)) occupied)))
+       (not-any? #(shared/overlap? (:paths t) (:paths %)) occupied)
+       (nil? (retained-task-hold ctx (:key t)))))
 
 (defn- task-effect-ids [error]
   ;; Only inspect effects named by the current failure.  Historical task
@@ -913,57 +1121,76 @@
   (and (.exists (io/file (:control-file ctx))) (:paused (rt/read-edn (:control-file ctx)))))
 
 (defn- campaign-loop! [ctx]
-  (gh/setup! ctx) (campaign-issue! ctx)
-  (gh/status! ctx (campaign-issue! ctx) "Implementing")
-  (rt/update! ctx assoc :status :running)
-  (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
-    (try
-      (loop []
-        (doseq [[key job] @running :when (.isDone ^Future job)]
-          (try (.get ^Future job) (catch Exception e (attention! ctx key (or (.getCause e) e))))
-          (swap! running dissoc key))
-        (if (paused? ctx)
-          (if (empty? @running) (rt/update! ctx assoc :status :paused)
-              (do (Thread/sleep 250) (recur)))
-          (do
-            (doseq [t (tasks ctx) :when (#{:ci :merge} (:status t))]
-              (try (integrate! ctx t) (catch Exception e (attention! ctx (:key t) e))))
-            (doseq [t (sort-by (juxt #(if (= :repair (:status %)) 0 1) :key) (tasks ctx))]
-              (let [occupied (filter #(and (not= (:key t) (:key %)) (#{:implementing :checking} (:status %))) (tasks ctx))]
-                (when (and (< (count @running) (get-in ctx [:config :parallelism]))
-                           (not (contains? @running (:key t))) (eligible? ctx t occupied))
-                  (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :implementing)]
-                    (try
-                      (transition! ctx (:key t) :implementing)
-                      (swap! running assoc (:key t)
-                             (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
-                      (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
-            (if (seq @running)
-              (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
-              (let [base (fresh-main! ctx)
-                    changed? (not= (discovery-key ctx base) (:last-discovery-key @(:state ctx)))
-                    plan (when changed? (plan! ctx))
-                    active? (some #(#{:ready :repair :ci :merge} (:status %)) (tasks ctx))]
-                (cond
+  (let [tracking-mode (project-tracking-mode! ctx)]
+    (if (= :holding tracking-mode)
+      (do
+        ;; A blocked Project API cannot support productive local workers: they
+        ;; would eventually publish, accept, integrate or request another
+        ;; model turn.  Keep the durable campaign in an explicit nonproductive
+        ;; holding mode and leave tasks/effects/history untouched.
+        (rt/event! ctx :project-tracking-held
+                   (merge (:project-tracking @(:state ctx))
+                          {:dispatch :suppressed :status :attention}))
+        (rt/update! ctx assoc :status :attention)
+        :holding)
+      (do
+        (when (= :remote tracking-mode)
+          (gh/setup! ctx) (campaign-issue! ctx)
+          (record-project-verification! ctx)
+          (gh/status! ctx (campaign-issue! ctx) "Implementing"))
+        (rt/update! ctx assoc :status :running)
+        (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
+          (try
+            (loop []
+              (doseq [[key job] @running :when (.isDone ^Future job)]
+                (try (.get ^Future job) (catch Exception e (attention! ctx key (or (.getCause e) e))))
+                (swap! running dissoc key))
+              (if (paused? ctx)
+                (if (empty? @running) (rt/update! ctx assoc :status :paused)
+                    (do (Thread/sleep 250) (recur)))
+                (do
+                  (doseq [t (tasks ctx) :when (#{:ci :merge} (:status t))]
+                    (try (integrate! ctx t) (catch Exception e (attention! ctx (:key t) e))))
+                  (doseq [t (sort-by (juxt #(if (= :repair (:status %)) 0 1) :key) (tasks ctx))]
+                    (let [occupied (filter #(and (not= (:key t) (:key %)) (#{:implementing :checking} (:status %))) (tasks ctx))]
+                      (when (and (< (count @running) (get-in ctx [:config :parallelism]))
+                                 (not (contains? @running (:key t))) (eligible? ctx t occupied))
+                        (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :implementing)]
+                          (try
+                            (transition! ctx (:key t) :implementing)
+                            (swap! running assoc (:key t)
+                                   (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
+                            (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
+                  (if (seq @running)
+                    (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
+                    (let [base (fresh-main! ctx)
+                          changed? (not= (discovery-key ctx base) (:last-discovery-key @(:state ctx)))
+                          plan (when (and changed? (= :remote tracking-mode)) (plan! ctx))
+                          active? (some #(#{:ready :repair :ci :merge} (:status %)) (tasks ctx))]
+                      (cond
                   ;; Discover isolated successors while immutable candidates await CI.
-                  (and plan (some #(#{:ready :repair} (:status %)) (tasks ctx))) (recur)
-                  (some #(#{:ci :merge} (:status %)) (tasks ctx))
-                  (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
-                  (or active? (some #(not (terminal (:status %))) (tasks ctx))
-                      (seq (get-in @(:state ctx) [:last-plan :blockers]))
-                      (seq (get-in @(:state ctx) [:last-plan :slices]))
-                      (and (= base (get-in @(:state ctx) [:completion :base]))
-                           (= :failed (get-in @(:state ctx) [:completion :result]))))
-                  (do (gh/status! ctx (campaign-issue! ctx) "Attention") (rt/update! ctx assoc :status :attention))
-                  :else
-                  (let [done? (try (complete! ctx) true
-                                   (catch Exception e
-                                     (when (:restricted (ex-data e)) (throw e))
-                                     (rt/event! ctx :completion-gap {:message (.getMessage e)}) false))]
-                    ;; A failed release gate becomes input for a fresh gap analysis,
-                    ;; not an automatic repeated rebuild on unchanged inputs.
-                    (when-not done? (recur)))))))))
-      (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS)))))
+                        (and plan (some #(#{:ready :repair} (:status %)) (tasks ctx))) (recur)
+                        (some #(#{:ci :merge} (:status %)) (tasks ctx))
+                        (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
+                        (or active? (some #(not (terminal (:status %))) (tasks ctx))
+                            (seq (get-in @(:state ctx) [:last-plan :blockers]))
+                            (seq (get-in @(:state ctx) [:last-plan :slices]))
+                            (and (= base (get-in @(:state ctx) [:completion :base]))
+                                 (= :failed (get-in @(:state ctx) [:completion :result]))))
+                        (do
+                          (if (= :remote tracking-mode)
+                            (gh/status! ctx (campaign-issue! ctx) "Attention")
+                            (rt/event! ctx :project-tracking-held {:status "Attention"}))
+                          (rt/update! ctx assoc :status :attention))
+                        :else
+                        (let [done? (try (complete! ctx) true
+                                         (catch Exception e
+                                           (when (:restricted (ex-data e)) (throw e))
+                                           (rt/event! ctx :completion-gap {:message (.getMessage e)}) false))]
+                      ;; A failed release gate becomes input for a fresh gap analysis,
+                      ;; not an automatic repeated rebuild on unchanged inputs.
+                          (when-not done? (recur)))))))))
+            (finally (.shutdown pool) (.awaitTermination pool Long/MAX_VALUE TimeUnit/MILLISECONDS))))))))
 
 (defn campaign! [ctx]
   (with-registration! ctx #(campaign-loop! ctx)))
