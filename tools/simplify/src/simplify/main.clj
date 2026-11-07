@@ -161,16 +161,20 @@
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
     "retry" (with-current-state ctx #(retry! ctx (first args)))
     "recover-authored" (with-current-state ctx #(workflow/recover-authored! ctx (first args) (second args)))
+    "recover-dependency" (with-current-state ctx #(workflow/recover-dependency! ctx (first args) (second args)))
+    "recover-fresh-source" (with-current-state ctx #(workflow/recover-fresh-source! ctx (first args) (second args)))
+    "queue-recovery" (println (pr-str (workflow/queue-recovery! ctx (keyword (first args)) (second args) (nth args 2 nil))))
     "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-state ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
                                                                         (:evidence (rt/read-edn (second args)))))
-    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|resume|pause|status|retry|recover-authored|reconcile|reconcile-main|release-writer CONFIG.edn [KEY FILE]" {})))
+    (rt/fail! "Usage: clojure -M:run doctor|setup|coordinate|run|resume|pause|status|retry|recover-authored|recover-dependency|recover-fresh-source|queue-recovery|reconcile|reconcile-main|release-writer CONFIG.edn [KEY FILE]" {})))
 
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Provide a command and a configuration path; see README.md" {}))
-    (let [ctx (assoc (context! (config! config-path)) :command command)]
+    (let [ctx (cond-> (assoc (context! (config! config-path)) :command command)
+                (= "queue-recovery" command) (dissoc :log-file))]
       (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
       (try (dispatch! ctx command args)
            (catch Exception e
