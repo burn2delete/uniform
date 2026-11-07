@@ -494,6 +494,7 @@
     (require! (seq conflicts) "The original worktree has no unresolved merge conflict")
     (doseq [path conflicts] (owned-file! task path))
     {:head (rt/git ctx cwd "rev-parse" "HEAD")
+     :branch (rt/git ctx cwd "symbolic-ref" "--short" "HEAD")
      :merge-head (rt/git ctx cwd "rev-parse" "MERGE_HEAD")
      :conflict-paths conflicts
      :index-sha256 (rt/digest (path-output! ctx cwd ["git" "ls-files" "--stage" "-z"]))
@@ -513,7 +514,7 @@
         snapshot (composition-conflict-snapshot! ctx task)
         repo (get-in ctx [:config :repo-dir])
         commands (vec (distinct (concat (get-in ctx [:config :checks]) (:checks receipt))))]
-    (require! (and (= :attention (:status task)) (= :ci (:resume-status task)) (:pr task)
+    (require! (and (= :attention (:status task)) (= :ci (:resume-status task)) (pos-int? (get-in task [:pr :number]))
                    (= :owned-composition-conflict (:kind receipt)) (= (:key task) (:task-key receipt))
                    (= (:pr task) (:original-pr receipt))
                    (= (rt/digest (pr-str task)) (:original-task-sha256 receipt))
@@ -521,6 +522,7 @@
                    (false? (:restricted details)) (= ["git" "merge" "--no-edit" base] (:argv details))
                    (not (rt/authorization-denied? (str (:out details) "\n" (:err details))))
                    (= snapshot (:original-conflict receipt))
+                   (= (:branch task) (:branch snapshot))
                    (= [(:candidate task) base] [(:head snapshot) (:merge-head snapshot)]))
               "This is not the exact ordinary owned composition conflict")
     (require! (not-any? #(#{:pending :uncertain :restricted} (:status %)) (vals (:effects @(:state ctx))))
@@ -570,7 +572,7 @@
 
 (defn validate-composition-queued! [ctx task]
   (let [inspection (:composition-recovery task)
-        original (:original-task (peek (:composition-recovery-history task))) ]
+        original (:original-task (peek (:composition-recovery-history task)))]
     (require! (= inspection (inspect-composition! ctx original (:evidence-file inspection)))
               "The composition resolution changed before native checking")
     inspection))

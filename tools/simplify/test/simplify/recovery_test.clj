@@ -539,7 +539,7 @@
 
 (deftest owned-composition-recovery-rejects-stale-refused-or-unaccepted-inputs
   (doseq [mutation [:stale-task :conflict-bytes :refusal :uncertain :foreign-resolution :wrong-proof :stale-proof :dirty-resolution :shared-api]]
-    (let [{:keys [ctx repo original fresh evidence receipt proof]} (composition-conflict-fixture!)
+    (let [{:keys [ctx repo fresh evidence receipt proof]} (composition-conflict-fixture!)
           changed (case mutation
                     :stale-task (assoc receipt :original-task-sha256 "stale")
                     :wrong-proof (do (rt/write-edn! proof (assoc (rt/read-edn proof) :findings ["unresolved"]))
@@ -556,7 +556,14 @@
                                 (rt/git ctx fresh "commit" "--amend" "--no-edit"))
         :shared-api (rt/shared-restrict! ctx :api (rt/digest (pr-str ["POST" "graphql"])) {:message "held"})
         nil)
-      (rt/write-edn! evidence changed)
+      (let [changed (if (= :foreign-resolution mutation)
+                      (let [resolution (assoc (:validation receipt) :candidate (rt/git ctx fresh "rev-parse" "HEAD")
+                                              :tree (rt/git ctx fresh "rev-parse" "HEAD^{tree}"))]
+                        (rt/write-edn! proof (assoc (rt/read-edn proof) :resolution (select-keys resolution [:base :candidate :tree])))
+                        (-> changed (assoc :validation resolution)
+                            (assoc-in [:resolution-acceptance :sha256] (recovery/file-digest proof))))
+                      changed)]
+        (rt/write-edn! evidence changed))
       (let [before (flow/task ctx "authored")]
         (is (thrown? Exception (flow/recover-composition! ctx "authored" evidence)) (name mutation))
         (is (= before (flow/task ctx "authored")))
