@@ -4,9 +4,15 @@
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
     :contract-boundary :hosted-seed-stage2-invocation-instruction-evaluation-and-value-operations
-    :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
+    :governing-contracts [D1 D2 D3 D8 D9 L2 L9 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
-    {kernel-rule-record
+    {source-throw!
+     {:arglists ([source-throw-key source-throw-token-var plan payload])
+      :admission :none :hosted-seed-only? true
+      :operation-vars [source-throw-token-var]
+      :token-key-and-recognition-owner :bootstrap
+      :token-read :map-value-before-plan-lookups}
+     kernel-rule-record
      {:arglists ([kernel operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:declared-builtin-exact-arities :declared-builtin-contracts :required-instructions :builtin-functions :reader-bridge-builtins :difference :sort-values]
       :completion-label-admits? false}
@@ -132,7 +138,8 @@
       :operation-keys [:fail! :execute-instructions]
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
-    :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
+    :artifact-inputs [:trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
+                      :runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
                       :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
                       :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars
@@ -141,7 +148,9 @@
                       :trusted-instruction-function-and-data-operation-vars
                       :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :native-kernel-and-diagnostic-data :late-native-kernel-operation-and-catalog-vars :call-signature-and-arity-data :trusted-late-policy-operation-vars]
     :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
-    :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
+    :diagnostic-ownership {:source-throw-envelope-construction :stage
+                           :source-throw-token-key-and-recognition :bootstrap
+                           :ordinary-builtin-dispatch-and-arity-placement :stage
                            :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :instruction-selection-core-control-and-fast-paths :stage
                            :map-entry-recurrence-facts-and-call-sequencing :stage
@@ -156,12 +165,20 @@
     :scope-and-authority-checks :existing-seed-operations
     :trusted-operation-map? true :authenticates-plans? false :grants-authority? false
     :canonical-runtime-manifest? false :stdout :existing-clojure-writer-capture
-    :unsupported [:untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
+    :unsupported [:portable-source-throw-abi :serialized-source-throw-token
+                  :untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
                   :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :canonical-formatting-and-collection-semantics :full-safe9-conformance
                   :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
                   :canonical-instruction-admission :canonical-gravity-source-map-evaluation-order
                   :migration :release :self-hosting :seed-retirement]})
+
+(defn source-throw!
+  "Construct the trusted hosted-seed control envelope with its caller-owned token."
+  [source-throw-key source-throw-token-var plan payload]
+  (throw (ex-info "Gravity single-source seed throw"
+                  {source-throw-key (deref source-throw-token-var)
+                   :payload payload :source (:source plan) :module (get-in plan [:module :module])})))
 
 (defn execute-function-scoped
   [runtime plan callee args public-invocation-scope operations]
