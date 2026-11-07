@@ -208,27 +208,10 @@
 
 (defn safe1-diagnostic!
   [id message node remediation data]
-  (typed-diagnostic! id message node remediation
-                     (merge {:safe-rule :SAFE1
-                             :active-profile (:profile node)
-                             :source-span (:source-span node)}
-                            data)))
+  (gravity.safety/emit-native-outcome-diagnostic!
+   #'typed-diagnostic! id message node remediation data))
 
 (defn check-safe1-outcome!
   [node operation outcome evidence]
-  (when-not (contains? safe1-legal-outcomes outcome)
-    (safe1-diagnostic! "SAFE1-NO-OUTCOME"
-                       "dangerous operation lacks a legal safety outcome"
-                       node
-                       "Classify the operation as :proven-safe, :runtime-checked, :rejected, or :unsafe-island."
-                       {:operation operation
-                        :safety-outcome outcome
-                        :missing-fact :legal-safety-outcome}))
-  (when (and (= :proven-safe outcome) (nil? evidence))
-    (safe1-diagnostic! "SAFE1-PROOF-MISSING"
-                       "claimed static safety proof is absent"
-                       node
-                       "Attach a proof reference, retain a runtime check, reject the operation, or isolate it as an unsafe island."
-                       {:operation operation
-                        :safety-outcome outcome
-                        :missing-fact :proof-reference})))
+  (gravity.safety/check-native-outcome!
+   #'safe1-legal-outcomes #'safe1-diagnostic! node operation outcome evidence))

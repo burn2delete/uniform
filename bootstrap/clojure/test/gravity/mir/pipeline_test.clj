@@ -3,6 +3,7 @@
             [clojure.set :as set]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
+            [gravity.digest :as digest]
             [gravity.mir :as mir]
             [gravity.self-hosting.sh12-branch-join-mir-test]))
 
@@ -32,6 +33,188 @@
 
 (defn- failure [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
+
+(defn- stage0-target-refusal [id path artifact operation extra]
+  (b/mir-fail! id path artifact operation extra))
+
+(deftest stage0-target-independence-contract-and-no-touch-accepted-branch
+  (let [contract (:gravity/namespace-contract (meta #'mir/validate-native-stage0-mir-operation!))
+        entry (get-in contract [:public-api 'validate-native-stage0-mir-operation!])
+        unused (reify clojure.lang.ILookup
+                 (valAt [_ _] (throw (AssertionError. "unused module or manifest read")))
+                 (valAt [_ _ _] (throw (AssertionError. "unused module or manifest read"))))
+        unused-var (reify clojure.lang.IDeref
+                     (deref [_] (throw (AssertionError. "unused failure operation resolved"))))]
+    (is (= (:arglists (meta #'mir/validate-native-stage0-mir-operation!)) (:arglists entry)))
+    (is (= :stage0-native-mir-target-independence (:contract-boundary entry)))
+    (is (= :none (:admission entry)))
+    (is (false? (:authenticates-inputs? entry)))
+    (is (false? (:issues-verifier-certificates? entry)))
+    (is (every? (set (:governing-contracts contract)) '[D0 D1 D6 D9 C11 C15 C18]))
+    (doseq [operation [nil {} {:family :numeric} {:family "target-specific"}
+                       {:family :numeric :opcode :jvm/invokevirtual}]]
+      ;; The retained predicate inspects the family label, not the MIR schema.
+      (is (nil? (mir/validate-native-stage0-mir-operation! unused-var unused unused operation))))))
+
+(deftest stage0-target-independence-keeps-five-arguments-and-opaque-identities
+  (let [source (Object.) profile (Object.) target (Object.) marker (Object.)
+        module {:source-path source :profile profile :target target}
+        manifest (Object.) operation (with-meta {:family :target-specific :op-id :native/leak}
+                                      {:origin (Object.)})
+        calls (atom [])]
+    (with-redefs [stage0-target-refusal (fn [& args] (swap! calls conj (vec args)) marker)]
+      (is (identical? marker (mir/validate-native-stage0-mir-operation!
+                              #'stage0-target-refusal module manifest operation)))
+      (is (= [["C11-TARGET-LEAK" source
+               {:mir-module {:profile profile :target-request target :module :stage0-compiled-core-app}}
+               operation
+               {:missing-fields [:target-independent-opcode]
+                :remediation "Keep generic MIR target-independent; move target opcodes behind verified target lowering."}]]
+             @calls))
+      (is (identical? source (get-in @calls [0 1])))
+      (is (identical? profile (get-in @calls [0 2 :mir-module :profile])))
+      (is (identical? target (get-in @calls [0 2 :mir-module :target-request])))
+      (is (identical? operation (get-in @calls [0 3]))))
+    (doseq [value [nil false :returned]]
+      (with-redefs [stage0-target-refusal (fn [& _] value)]
+        (is (= value (mir/validate-native-stage0-mir-operation!
+                       #'stage0-target-refusal module manifest operation)))))))
+
+(deftest stage0-target-independence-selects-failure-before-module-lookups
+  (let [events (atom []) marker (Object.)
+        late (fn [& _] (throw (AssertionError. "late callee replaced selected failure")))
+        original (fn [& _] (swap! events conj :selected) marker)
+        module-data {:source-path "callee.gravity" :profile :hosted :target :jvm}
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:module key])
+                   (alter-var-root #'stage0-target-refusal (constantly late))
+                   (get module-data key))
+                 (valAt [_ key default] (get module-data key default)))
+        operation (reify clojure.lang.ILookup
+                    (valAt [_ key] (swap! events conj [:operation key]) :target-specific)
+                    (valAt [_ _ default] default))]
+    (with-redefs [stage0-target-refusal original]
+      (is (identical? marker (mir/validate-native-stage0-mir-operation!
+                              #'stage0-target-refusal module (Object.) operation)))
+      (is (= [[:operation :family] [:module :source-path] [:module :profile]
+              [:module :target] :selected] @events))
+      (is (identical? late (var-get #'stage0-target-refusal)))))
+  (let [events (atom [])
+        later (fn [& _] (swap! events conj :later) :later)
+        first-call (fn [& _]
+                     (swap! events conj :first)
+                     (alter-var-root #'stage0-target-refusal (constantly later)) :first)]
+    (with-redefs [stage0-target-refusal first-call]
+      (is (= [:first :later]
+             (mapv (fn [_] (mir/validate-native-stage0-mir-operation!
+                             #'stage0-target-refusal {} nil {:family :target-specific})) [1 2])))
+      (is (= [:first :later] @events)))))
+
+(deftest stage0-target-independence-keeps-owner-and-lookup-exception-identity
+  (doseq [sentinel [(Exception. "original MIR exception") (Error. "original MIR error")]]
+    (with-redefs [stage0-target-refusal (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (mir/validate-native-stage0-mir-operation!
+                             #'stage0-target-refusal {} (Object.) {:family :target-specific})
+                           (catch Throwable error error)))))
+    (let [module (reify clojure.lang.ILookup
+                   (valAt [_ _] (throw sentinel))
+                   (valAt [_ _ _] (throw sentinel)))]
+      (is (identical? sentinel
+                      (try (mir/validate-native-stage0-mir-operation!
+                             #'stage0-target-refusal module (Object.) {:family :target-specific})
+                           (catch Throwable error error)))))))
+
+(deftest stage0-target-independence-adapter-keeps-legacy-signature-and-live-port
+  (is (= '([module manifest mir-operation]) (:arglists (meta #'b/validate-stage0-compiled-mir!))))
+  (let [module (Object.) manifest (Object.) operation (Object.) marker (Object.) calls (atom [])]
+    (with-redefs [mir/validate-native-stage0-mir-operation!
+                  (fn [& args] (swap! calls conj (vec args)) marker)]
+      (is (identical? marker (b/validate-stage0-compiled-mir! module manifest operation)))
+      (is (= [[#'b/mir-fail! module manifest operation]] @calls))
+      (doseq [[index expected] [[1 module] [2 manifest] [3 operation]]]
+        (is (identical? expected (get-in @calls [0 index])))))))
+
+(deftest stage0-target-independence-retains-explicit-nested-and-fallback-spans
+  (let [path "fallback-mir.gravity" module {:source-path path :profile :hosted :target :jvm}
+        explicit {:source "explicit-mir-label.gravity" :form-index 3 :origin (Object.)}
+        nested {:source "nested-mir-label.gravity" :form-index 7 :origin (Object.)}
+        base {:family :target-specific :op-id :native/leak :opcode :jvm/invokevirtual}]
+    (doseq [[operation span]
+            [[(assoc base :source-span explicit :source {:span nested}) explicit]
+             [(assoc base :source-span false :source {:span nested}) nested]
+             [base (b/source-span path 0)]]]
+      (let [record (failure #(b/validate-stage0-compiled-mir! module (Object.) operation))]
+        (is (= "C11-TARGET-LEAK" (:id record)))
+        (is (= :mir-verifier (:diagnostic-family record)))
+        (is (= :build-mir (:stage record)))
+        (is (= [:hosted :jvm :stage0-compiled-core-app :native/leak]
+               ((juxt :profile :target :artifact-id :operation) record)))
+        (is (= [:target-independent-opcode] (:missing-fields record)))
+        (is (= span (:source-span record)))
+        (when (:origin span) (is (identical? (:origin span) (get-in record [:source-span :origin]))))))))
+
+(def ^:private stage0-generic-mir-metadata
+  {:compiler {:compiled-gate {:mir-operations
+                             [{:op-id :native/constant :family :constant :opcode :mir/constant}
+                              {:op-id :native/add :family :numeric :opcode :mir/add}]}}})
+(defn- stage0-target-source-text [metadata]
+  (str "(ns mir.stage0 (:profile :hosted) (:target :jvm) (:effects #{:io/write})"
+       " (:capabilities #{:io/stdout}) (:safety :safe) (:metadata " (pr-str metadata)
+       "))\n(defn main [] (println (+ 2 3)))\n"))
+(defn- stage0-target-source-products [path text]
+  (is (nil? (var-get #'b/*authenticated-source-form-records*)))
+  (let [expanded (b/macro-source-artifact path text)
+        module (assoc (:module expanded) :forms (:expanded-forms expanded))
+        plan (b/stage0-compiled-core-plan path text module)]
+    {:module module :plan plan :report (b/stage0-compiled-plan-compiler-report plan module)}))
+
+(deftest stage0-target-independence-genuine-source-emits-and-refuses-before-lowering
+  (doseq [extension ["gravity" "qst"]]
+    (let [path (str "mir-stage0-positive." extension)
+          text (stage0-target-source-text stage0-generic-mir-metadata)
+          calls (atom []) original b/validate-stage0-compiled-mir!
+          {:keys [module plan report] :as products}
+          (with-redefs [b/validate-stage0-compiled-mir!
+                         (fn [input manifest operation]
+                           (swap! calls conj operation) (original input manifest operation))]
+            (stage0-target-source-products path text))]
+      (is (= (get-in stage0-generic-mir-metadata [:compiler :compiled-gate :mir-operations]) @calls))
+      (is (= products (stage0-target-source-products path text)))
+      (is (= path (:source-path module) (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex text)) (get-in plan [:source :sha256])))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id)))) (:plan-id plan)))
+      (is (= (:plan-id plan) (:compiled-plan-id report)))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc report :report-id)))) (:report-id report)))
+      (is (= {:emitted? false :reason :stage0-instruction-plan-path
+              :target-specific-opcode-policy :rejected :required-next :build-verified-mir}
+             (:mir-status report)))
+      (is (= "5\n" (b/run-main module) (b/execute-stage0-compiled-plan plan))))
+    (doseq [[suffix id] [["pass-contract" "C1-PASS-CONTRACT"] ["evidence-drop" "C1-EVIDENCE-DROP"]
+                         ["mir-target-leak" "C11-TARGET-LEAK"] ["lowering-input" "C14-INPUT"]
+                         ["proof-metadata" "C14-PROOF-METADATA"] ["verification-evidence" "C18-EVIDENCE"]]]
+      (let [path (str "mir-stage0-refusal/" suffix "." extension)
+            text (slurp (str "bootstrap/clojure/fixtures/rejected/core-app-compiler-" suffix ".gravity"))
+            calls (atom 0) original b/compile-stage0-function
+            record (with-redefs [b/compile-stage0-function (fn [& args] (swap! calls inc) (apply original args))]
+                     (failure #(stage0-target-source-products path text)))]
+        (is (= id (:id record)))
+        (is (zero? @calls))
+        (when (= "C11-TARGET-LEAK" id)
+          (is (= "core-app-compiler-mir-target-leak.gravity" (get-in record [:source-span :source])))
+          (is (= [:hosted :jvm :bad-target-op] ((juxt :profile :target :operation) record))))))
+    (doseq [[operation expected-span]
+            [[{:family :target-specific :op-id :native/fallback} nil]
+             [{:family :target-specific :op-id :native/nested
+               :source {:span {:source "native-nested-label.gravity" :form-index 7}}}
+              {:source "native-nested-label.gravity" :form-index 7}]]]
+      (let [path (str "mir-stage0-span." extension)
+            text (stage0-target-source-text {:compiler {:compiled-gate {:mir-operations [operation]}}})
+            record (failure #(stage0-target-source-products path text))]
+        (is (= "C11-TARGET-LEAK" (:id record)))
+        (is (= (or expected-span (b/source-span path 0)) (:source-span record)))
+        (is (= (:op-id operation) (:operation record)))))))
 
 (deftest whole-native-validation-requires-explicit-pure-safety-facts
   ;; These are normalized fixture data, not authenticated C10 products.
@@ -153,7 +336,7 @@
 
 (deftest contract-identifies-the-native-rule-boundary
   (is (empty? (ns-aliases 'gravity.mir)))
-  (is (= #{'validate-constructed! 'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
+  (is (= #{'validate-native-stage0-mir-operation! 'validate-constructed! 'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
            'runtime-check-fact-record 'add-runtime-check-facts 'reindex-fact-table
            'profile-target-table 'capability-proof-table 'safety-proof-table
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses

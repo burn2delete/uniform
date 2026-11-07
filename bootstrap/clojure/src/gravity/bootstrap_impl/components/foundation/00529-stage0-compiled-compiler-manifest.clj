@@ -42,24 +42,14 @@
             :remediation
             "Regenerate durable facts, emit replacement proof, keep runtime checks, or reject the transformation."}))))))
 
-(defn validate-stage0-compiled-mir!
-  [module manifest mir-operation]
-  (when (= :target-specific (:family mir-operation))
-    (mir-fail!
-     "C11-TARGET-LEAK"
-     (:source-path module)
-     {:mir-module {:profile (:profile module)
-                   :target-request (:target module)
-                   :module :stage0-compiled-core-app}}
-     mir-operation
-     {:missing-fields [:target-independent-opcode]
-      :remediation
-      "Keep generic MIR target-independent; move target opcodes behind verified target lowering."})))
+(defn validate-stage0-compiled-mir! [module manifest mir-operation]
+  (gravity.mir/validate-native-stage0-mir-operation!
+    #'mir-fail!
+    module
+    manifest
+    mir-operation))
 
-(defn stage0-compiled-target-proof-present?
-  [record]
-  (or (perf-present? (:proof-id record))
-      (perf-present? (:proof record))
-      (perf-present? (:certificate record))
-      (perf-present? (:certificate-id record))
-      (perf-present? (:translation-validation record))))
+(defn stage0-compiled-target-proof-present? [record]
+  (gravity.lowering/native-stage0-target-proof-present?
+    #'perf-present?
+    record))

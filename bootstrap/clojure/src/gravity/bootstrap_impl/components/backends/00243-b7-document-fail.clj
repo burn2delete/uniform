@@ -42,27 +42,11 @@
        {:missing-fields [fail-kind]}))))
 
 (def b7-document-mlir-module
-  (str "module attributes {gravity.profile = \"native\", gravity.target = \"x86_64-stage0\"} {\n"
-       "  func.func @gravity_entry(%x: i64 loc(\"backend-native-lowering.gravity:entry\")) -> i64\n"
-       "      attributes {gravity.effect = \"pure\", gravity.capability = \"none\", gravity.profile = \"native\"} {\n"
-       "    %c1 = arith.constant 1 : i64 loc(\"proof/c18-bounds-check-dominance\")\n"
-       "    %y = arith.addi %x, %c1 : i64\n"
-       "      {gravity.numeric_mode = \"checked-i64\", gravity.proof = \"proof/c18-bounds-check-dominance\", gravity.source_span = \"backend-native-lowering.gravity:entry\"}\n"
-       "      loc(\"backend-native-lowering.gravity:checked-add\")\n"
-       "    return %y : i64 loc(\"backend-native-lowering.gravity:return\")\n"
-       "  } loc(\"backend-native-lowering.gravity:function\")\n"
-       "} loc(\"backend-native-lowering.gravity:module\")\n"))
+  (gravity.backend.mlir/native-module-text))
 
 (defn b7-document-mlir-structurally-valid?
   [source]
-  (and (str/includes? source "module attributes")
-       (str/includes? source "func.func @gravity_entry")
-       (str/includes? source "arith.constant")
-       (str/includes? source "arith.addi")
-       (str/includes? source "gravity.numeric_mode")
-       (str/includes? source "gravity.proof")
-       (str/includes? source "gravity.source_span")
-       (str/includes? source "loc(")))
+  (gravity.backend.mlir/native-module-structurally-valid? source))
 
 (defn b7-document-diagnostic-stream
   [source-path input-id]
