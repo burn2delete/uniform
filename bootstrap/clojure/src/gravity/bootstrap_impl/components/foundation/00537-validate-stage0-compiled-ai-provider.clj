@@ -123,10 +123,7 @@
 
 (defn validate-stage0-compiled-project-manifest!
   [module project-manifest]
-  (when-not (true? (:lockfile-complete project-manifest))
-    (compiled-package-fail!
-     "PKG1006" module project-manifest
-     {:missing-fields [:lockfile-complete]})))
+  (gravity.package/check-project-manifest! #'compiled-package-fail! module project-manifest))
 
 (defn validate-stage0-compiled-build-graph!
   [module build-graph]
@@ -134,33 +131,19 @@
 
 (defn validate-stage0-compiled-artifact-manifest!
   [module artifact-manifest]
-  (when-not (get-in artifact-manifest [:evidence :safety])
-    (compiled-package-fail!
-     "PKG3005" module artifact-manifest
-     {:missing-fields [:safety-evidence]})))
+  (gravity.package/check-artifact-manifest! #'compiled-package-fail! module artifact-manifest))
 
 (defn validate-stage0-compiled-package-operation!
   [module package-operation]
-  (when-not (true? (:download-verified package-operation))
-    (compiled-package-fail!
-     "PKG4001" module package-operation
-     {:missing-fields [:download-verified]})))
+  (gravity.package/check-package-operation! #'compiled-package-fail! module package-operation))
 
 (defn validate-stage0-compiled-resolution-report!
   [module resolution-report]
-  (when-not (true? (:capability-compatible resolution-report))
-    (compiled-package-fail!
-     "PKG5002" module resolution-report
-     {:missing-fields [:capability-compatible]})))
+  (gravity.package/check-resolution-report! #'compiled-package-fail! module resolution-report))
 
 (defn validate-stage0-compiled-capability-manifest!
   [module capability-manifest]
-  (when (seq (set/intersection
-              (get-in capability-manifest [:capabilities :denies])
-              (get-in capability-manifest [:capabilities :requests])))
-    (compiled-package-fail!
-     "PKG6004" module capability-manifest
-     {:missing-fields [:denied-authority]})))
+  (gravity.package/check-capability-manifest! #'compiled-package-fail! module capability-manifest))
 
 (defn validate-stage0-compiled-reproducible-build!
   [module reproducible-build-recipe]
