@@ -20,11 +20,13 @@
       (is (= (policy/decide input) (package/decide-policy input))))
     (is (= 1 (count (first (:arglists (meta #'policy/decide))))))
     (is (= 1 (count (first (:arglists (meta #'selection/select-exact))))))
-    (is (= #{'decide-policy 'select-exact} (set (keys (ns-publics 'gravity.package)))))
+    (is (= #{'decide-policy 'select-exact 'check-project-manifest! 'check-artifact-manifest!
+             'check-package-operation! 'check-resolution-report! 'check-capability-manifest!}
+           (set (keys (ns-publics 'gravity.package)))))
     (is (= #{'clojure.set 'clojure.walk} (set (map ns-name (vals (ns-aliases 'gravity.package))))))
     (let [contract (:gravity/namespace-contract (meta #'package/select-exact))]
       (is (= contract (:gravity/namespace-contract (meta #'package/decide-policy))))
-      (is (= :supplied-package-policy-and-direct-exact-selection (:contract-boundary contract)))
+      (is (= :supplied-package-policy-selection-and-compiled-metadata (:contract-boundary contract)))
       (is (= :non-admitting (:authority contract)))
       (is (some #{:signature-verification} (:unsupported contract)))
       (is (some #{:transitive-resolution} (:unsupported contract)))

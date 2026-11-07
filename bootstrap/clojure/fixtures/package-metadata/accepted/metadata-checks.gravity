@@ -1,0 +1,3 @@
+(ns package.metadata-checks (:profile :hosted) (:target :jvm) (:exports [main]) (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe) (:metadata {:package {:compiled-gate {:project-manifests [{:artifact-id "project:unverified-fixture", :lockfile-complete true}], :artifact-manifests [{:artifact-id "artifact:unverified-fixture", :evidence {:safety "evidence:unverified-fixture"}}], :package-operations [{:artifact-id "operation:unverified-fixture", :download-verified true}], :resolution-reports [{:artifact-id "resolution:unverified-fixture", :capability-compatible true}], :capability-manifests [{:artifact-id "capability:unverified-fixture", :capabilities {:denies #{:network}, :requests #{:io/stdout}}}]}}}))
+
+(defn main [] (println "package-metadata"))

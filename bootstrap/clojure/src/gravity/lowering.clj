@@ -1,21 +1,57 @@
 (ns gravity.lowering
-  "Native C14 reconstruction and artifact pipelines; authority remains with existing owners.")
+  "Native C14 reconstruction, artifact pipelines and backend document checks; authority remains with existing owners."
+  (:require [clojure.set :as set]))
 
 (def ^:private namespace-contract
-  (quote
-{:authenticates-inputs? false,
+  '{:regenerates
+ [:native-reconstruction-records :native-c14-artifact-and-projection],
+ :authenticates-inputs? false,
  :public-api
- {assert-c-reconstruction!
+ {assert-wasm-reconstruction!
   {:arglists
-   ([require-strict-structure!
-     fail!
-     source-path
-     c11-artifact
-     c13-record
-     policy
-     expected
-     raw]),
+   ([require-strict-structure! fail! source-path expected raw]),
    :admission :none},
+  native-artifact-base
+  {:arglists
+   ([configuration
+     source-path
+     _source-text
+     module
+     source-overrides
+     optimization-artifact
+     diagnostics
+     operations]),
+   :admission :none},
+  wasm-record {:arglists ([optimized policy]), :admission :none},
+  native-capability-proof
+  {:arglists ([configuration artifact operations]), :admission :none},
+  native-source-overrides {:arglists ([module]), :admission :none},
+  validate-native-backends!
+  {:authenticates-inputs? false,
+   :required-operations
+   [:fail! :manifest-required-fields :diagnostic-ids],
+   :admission :none,
+   :diagnostic-publication :caller-owned,
+   :grants-authority? false,
+   :artifact-inputs [:unverified-native-backend-document-data],
+   :arglists ([operations source-path artifact]),
+   :artifact-outputs [:legacy-structural-completion-or-refusal],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-checks},
+  native-validate!
+  {:arglists ([configuration source-path artifact operations]),
+   :admission :none},
+  native-backend-artifact-manifest
+  {:authenticates-inputs? false,
+   :required-operations [:artifact-id],
+   :admission :none,
+   :grants-authority? false,
+   :artifact-inputs
+   [:unverified-backend-kind-content-input-and-evidence-data],
+   :arglists ([operations backend kind content input-id evidence-id]),
+   :artifact-outputs [:legacy-native-backend-artifact-manifest],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-manifest},
   assert-llvm-reconstruction!
   {:arglists
    ([require-strict-structure!
@@ -26,23 +62,39 @@
      expected
      raw]),
    :admission :none},
-  assert-wasm-reconstruction!
-  {:arglists
-   ([require-strict-structure! fail! source-path expected raw]),
-   :admission :none},
+  native-backends-coverage-report
+  {:authenticates-inputs? false,
+   :required-operations [:manifest-required-fields :diagnostic-ids],
+   :admission :none,
+   :grants-authority? false,
+   :artifact-inputs [:unverified-native-backend-document-data],
+   :arglists ([operations artifact]),
+   :artifact-outputs [:legacy-native-backend-coverage-record],
+   :issues-certificates? false,
+   :contract-boundary :native-backend-document-coverage},
+  native-source-overrides-artifact
+  {:arglists ([overrides]), :admission :none},
   c-record {:arglists ([optimized policy]), :admission :none},
-  llvm-record {:arglists ([optimized policy]), :admission :none},
-  wasm-record {:arglists ([optimized policy]), :admission :none},
-  native-source-overrides {:arglists ([module]), :admission :none},
-  native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
-  native-diagnostic-catalog {:arglists ([configuration source-path input-id source-span]), :admission :none},
-  native-artifact-base
-  {:arglists ([configuration source-path _source-text module source-overrides optimization-artifact diagnostics operations]),
+  native-diagnostic-catalog
+  {:arglists ([configuration source-path input-id source-span]),
    :admission :none},
-  native-validate! {:arglists ([configuration source-path artifact operations]), :admission :none},
-  native-capability-proof {:arglists ([configuration artifact operations]), :admission :none},
-  native-source-artifact {:arglists ([configuration source-path source-text operations]), :admission :none},
-  native-file-artifact {:arglists ([configuration path operations]), :admission :none}},
+  llvm-record {:arglists ([optimized policy]), :admission :none},
+  native-source-artifact
+  {:arglists ([configuration source-path source-text operations]),
+   :admission :none},
+  native-file-artifact
+  {:arglists ([configuration path operations]), :admission :none},
+  assert-c-reconstruction!
+  {:arglists
+   ([require-strict-structure!
+     fail!
+     source-path
+     c11-artifact
+     c13-record
+     policy
+     expected
+     raw]),
+   :admission :none}},
  :supported
  [:existing-llvm-c-wasm-reconstruction-bodies
   :existing-context-joins
@@ -50,20 +102,24 @@
   :late-var-diagnostic-interposition
   :existing-native-c14-source-and-file-artifact-assembly
   :existing-native-overrides-catalog-projection-and-ordered-validation
-  :trusted-zero-argument-operation-suppliers],
+  :trusted-zero-argument-operation-suppliers
+  :native-backend-manifest-construction
+  :native-backend-ordered-document-checks
+  :native-backend-coverage-projection],
  :dependency-direction
- {:requires [],
-  :consumed-by [gravity.bootstrap gravity.c14-lowering.artifact
-                gravity.c14-lowering.projection gravity.c14-lowering.validation],
-  :forbids
+ {:requires [clojure.set],
+  :consumed-by
+  [gravity.bootstrap
+   gravity.c14-lowering.artifact
+   gravity.c14-lowering.projection
+   gravity.c14-lowering.validation],
+  :must-not-require
   [gravity.bootstrap
    gravity.cli
    gravity.release
    gravity.c14-lowering]},
- :legacy-status-labels-authoritative? false,
- :preserves [:caller-supplied-identities :source-proof-fact-associations :upstream-context :diagnostic-call-order],
  :invalidates [],
- :regenerates [:native-reconstruction-records :native-c14-artifact-and-projection],
+ :legacy-status-labels-authoritative? false,
  :governing-contracts
  [D1
   D2
@@ -87,6 +143,11 @@
   PERF10
   BOOT8
   TEST2],
+ :preserves
+ [:caller-supplied-identities
+  :source-proof-fact-associations
+  :upstream-context
+  :diagnostic-call-order],
  :unsupported
  [:untrusted-native-ingress
   :callback-authentication
@@ -101,35 +162,73 @@
   :migration
   :release
   :self-hosting
-  :seed-retirement],
+  :seed-retirement
+  :native-hash-content-authentication
+  :native-prefix-check-as-integrity
+  :native-proof-or-conformance-labels-as-authority],
  :artifact-inputs
  [:caller-owned-optimized-mir-and-policy-data
   :expected-and-actual-c14-record-data
   :c11-c13-context-data
   :explicit-strict-comparison-and-diagnostic-operations
   :trusted-native-configuration-source-module-and-c13-parent-data
-  :trusted-late-operation-suppliers],
+  :trusted-late-operation-suppliers
+  :unverified-native-backend-document-data
+  :native-manifest-constructor-arguments
+  :late-native-backend-operations],
  :namespace gravity.lowering,
  :diagnostic-ownership
  {:stage
-  ["C14-MANIFEST" :exact-reconstruction-or-context-join-mismatch
+  ["C14-MANIFEST"
+   :exact-reconstruction-or-context-join-mismatch
    :existing-native-c14-ordered-structural-refusals
-   "C14-INPUT" "C14-PROFILE" "C14-TARGET" "C14-ABI" "C14-RUNTIME"
-   "C14-CAPABILITY" "C14-PROVIDER" "C14-PROOF-METADATA" "C14-UNSUPPORTED"],
+   "C14-INPUT"
+   "C14-PROFILE"
+   "C14-TARGET"
+   "C14-ABI"
+   "C14-RUNTIME"
+   "C14-CAPABILITY"
+   "C14-PROVIDER"
+   "C14-PROOF-METADATA"
+   "C14-UNSUPPORTED"
+   :native-backend-ordered-structural-decisions
+   "B13-EVIDENCE"
+   "B14-COVERAGE"
+   "B2-MANIFEST"
+   "B2-UB"
+   "B3-MANIFEST"
+   "B3-METADATA"
+   "B7-MANIFEST"
+   "B7-VERIFY"
+   "B13-SCHEMA"
+   "B13-HASH"
+   "B14-METADATA"
+   "B14-EVIDENCE"
+   "B14-NEGATIVE"],
   :propagated ["C11-VERIFY" :strict-structure-mismatch],
   :existing-owner
   [:canonical-c11-c13-admission
    :target-legality
    :diagnostic-publication
    :source-verification
-   :sealing-and-authority]},
+   :sealing-and-authority
+   :native-backend-failure-payload-assembly
+   :native-backend-selected-failure-operation]},
  :artifact-outputs
  [:raw-llvm-c-wasm-c14-reconstruction-data
-  :exact-reconstruction-or-refusal :native-c14-artifact-or-refusal
-  :native-c14-diagnostics-and-capability-projection],
+  :exact-reconstruction-or-refusal
+  :native-c14-artifact-or-refusal
+  :native-c14-diagnostics-and-capability-projection
+  :legacy-native-backend-artifact-manifest
+  :legacy-structural-completion-or-refusal
+  :legacy-native-backend-coverage-record],
+ :consumer-component-paths
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00209-native-lowering-source-overrides.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00210-native-lowering-source-artifact.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00211-native-lowering-file-artifact.clj"],
  :issues-certificates? false,
- :contract-boundary :native-c14-reconstruction-data}
-))
+ :contract-boundary :native-lowering-reconstruction-and-document-data}
+)
 
 (defn llvm-record
   [optimized policy]
@@ -669,5 +768,152 @@
                      (fn [source-path source-text] (((:source-artifact operations)) configuration source-path source-text))
                      path (((:slurp operations)) path)))
 
+(defn- native-backend-port [operations key]
+  (let [operation (get operations key)]
+    (if (var? operation) @operation operation)))
+
+(defn native-backend-artifact-manifest
+  [operations backend kind content input-id evidence-id]
+  {:schema-version 1
+   :kind kind
+   :backend backend
+   :profile :native
+   :target :x86_64-stage0
+   :content-hash ((native-backend-port operations :artifact-id) content)
+   :inputs {:source input-id
+            :mir input-id
+            :backend-interface input-id}
+   :evidence {:safety "safety-bundle:stage0"
+              :proofs evidence-id
+              :capabilities "capability-summary:stage0"
+              :effects "effect-summary:stage0"
+              :conformance "backend-conformance-pack:p07-t02"}
+   :provenance {:compiler "gravity-stage0-clojure"
+                :passes ["C14" "B1" "B2/B3/B7" "B13" "B14"]
+                :dependencies "dependency-graph:stage0"}
+   :reproducibility {:timestamp-policy :none
+                     :nondeterminism []
+                     :status :recorded}})
+
+(defn validate-native-backends!
+  [operations source-path artifact]
+  (let [diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:native-diagnostic-stream
+                                       :diagnostics])))
+        manifests (:artifact-manifests artifact)]
+    (when-not (= :complete (get-in artifact
+                                   [:backend-interface-artifact
+                                    :capability-based-proof :status]))
+      ((native-backend-port operations :fail!) "B13-EVIDENCE" source-path
+                             (:backend-interface-artifact artifact)
+                             {:missing-fields [:backend-interface-proof]}))
+    (when-not (= #{:gravity.backend/c :gravity.backend/llvm
+                   :gravity.backend/mlir}
+                 (set (map :backend
+                           (:target-lowering-manifest artifact))))
+      ((native-backend-port operations :fail!) "B14-COVERAGE" source-path
+                             (:target-lowering-manifest artifact)
+                             {:missing-fields [:native-backends]}))
+    (when-not (= :complete (get-in artifact [:c-backend :status]))
+      ((native-backend-port operations :fail!) "B2-MANIFEST" source-path
+                             (:c-backend artifact)
+                             {:missing-fields [:c-backend]}))
+    (when-not (= :rejected (get-in artifact
+                                   [:c-backend :ub-rejection :status]))
+      ((native-backend-port operations :fail!) "B2-UB" source-path
+                             (get-in artifact [:c-backend :ub-rejection])
+                             {:missing-fields [:ub-rejection]}))
+    (when-not (= :complete (get-in artifact [:llvm-backend :status]))
+      ((native-backend-port operations :fail!) "B3-MANIFEST" source-path
+                             (:llvm-backend artifact)
+                             {:missing-fields [:llvm-backend]}))
+    (when-not (= :gated (get-in artifact
+                                [:llvm-backend :metadata-policy
+                                 :status]))
+      ((native-backend-port operations :fail!) "B3-METADATA" source-path
+                             (get-in artifact
+                                     [:llvm-backend :metadata-policy])
+                             {:missing-fields [:llvm-metadata-policy]}))
+    (when-not (= :complete (get-in artifact [:mlir-backend :status]))
+      ((native-backend-port operations :fail!) "B7-MANIFEST" source-path
+                             (:mlir-backend artifact)
+                             {:missing-fields [:mlir-backend]}))
+    (when-not (= :passed (get-in artifact
+                                 [:mlir-backend :verifier-report
+                                  :status]))
+      ((native-backend-port operations :fail!) "B7-VERIFY" source-path
+                             (get-in artifact
+                                     [:mlir-backend :verifier-report])
+                             {:missing-fields [:mlir-verifier]}))
+    (when-not (every? #(set/subset? (set (native-backend-port operations :manifest-required-fields))
+                                    (set (keys %)))
+                      manifests)
+      ((native-backend-port operations :fail!) "B13-SCHEMA" source-path
+                             (first manifests)
+                             {:missing-fields [:artifact-manifest-schema]}))
+    (when-not (every? #(re-find #"^sha256:" (:content-hash %)) manifests)
+      ((native-backend-port operations :fail!) "B13-HASH" source-path
+                             (first manifests)
+                             {:missing-fields [:content-hash]}))
+    (when-not (= :preserved (get-in artifact
+                                    [:metadata-preservation-report
+                                     :status]))
+      ((native-backend-port operations :fail!) "B14-METADATA" source-path
+                             (:metadata-preservation-report artifact)
+                             {:missing-fields [:metadata-preservation]}))
+    (when-not (= :passed (get-in artifact
+                                 [:backend-conformance-record :status]))
+      ((native-backend-port operations :fail!) "B14-EVIDENCE" source-path
+                             (:backend-conformance-record artifact)
+                             {:missing-fields [:conformance-evidence]}))
+    (when-not (= (set (native-backend-port operations :diagnostic-ids)) diagnostics)
+      ((native-backend-port operations :fail!) "B14-NEGATIVE" source-path
+                             (:native-diagnostic-stream artifact)
+                             {:missing-fields [:native-diagnostics]})))
+  :complete)
+
+(defn native-backends-coverage-report
+  [operations artifact]
+  (let [diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:native-diagnostic-stream
+                                       :diagnostics])))
+        manifests (:artifact-manifests artifact)]
+    {:backend-interface-input-verified?
+     (= :complete (get-in artifact
+                          [:backend-interface-artifact
+                           :capability-based-proof :status]))
+     :c-lowering-complete?
+     (= :complete (get-in artifact [:c-backend :status]))
+     :c-undefined-behavior-rejected?
+     (= :rejected (get-in artifact [:c-backend :ub-rejection :status]))
+     :llvm-lowering-complete?
+     (= :complete (get-in artifact [:llvm-backend :status]))
+     :llvm-proof-metadata-gated?
+     (= :gated (get-in artifact
+                       [:llvm-backend :metadata-policy :status]))
+     :mlir-lowering-complete?
+     (= :complete (get-in artifact [:mlir-backend :status]))
+     :mlir-conversion-verified?
+     (= :passed (get-in artifact
+                        [:mlir-backend :conversion-legality-report
+                         :status]))
+     :artifact-emission-complete?
+     (and (= 3 (count manifests))
+          (every? #(set/subset?
+                    (set (native-backend-port operations :manifest-required-fields))
+                    (set (keys %)))
+                  manifests)
+          (every? #(re-find #"^sha256:" (:content-hash %)) manifests))
+     :source-proof-capability-metadata-preserved?
+     (= :preserved (get-in artifact
+                           [:metadata-preservation-report :status]))
+     :conformance-record-passed?
+     (= :passed (get-in artifact
+                        [:backend-conformance-record :status]))
+     :diagnostics-covered?
+     (= (set (native-backend-port operations :diagnostic-ids)) diagnostics)
+     :status :complete}))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
