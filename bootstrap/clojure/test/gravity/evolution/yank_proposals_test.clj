@@ -115,6 +115,59 @@
       (is (= (assoc-in expected-product [:artifact :release] with-numbers) product))
       (is (= before (pr-str with-numbers))))))
 
+(deftest truncated-printers-preserve-complete-product
+  (let [members (conj #{[:a] [:b] '(:c) '(:d) {:tag :a} {:tag :b}
+                        #{:a} #{:b} ["Aa"] ["BB"] :a}
+                      (symbol ":a"))
+        with-sets (-> release
+                      (assoc-in [:metadata :extension] members)
+                      (assoc-in [:history :locks 0 :extension] members)
+                      (assoc-in [:history :contents 0 :extension] members)
+                      (assoc-in [:history :events 0 :extension] members))
+        inputs [with-sets proposal provenance]
+        before (pr-str inputs)
+        reordered (walk/postwalk
+                   #(cond
+                      (map? %) (into (sorted-map-by (fn [a b] (compare b a))) %)
+                      (set? %) (into #{} (reverse (sort-by pr-str %)))
+                      :else %)
+                   inputs)
+        expected (assoc-in expected-product [:artifact :release] with-sets)
+        baseline (apply yanks/propose-yank inputs)]
+    ;; Full printing can collide too; these values must remain distinct.
+    (is (= (pr-str :a) (pr-str (symbol ":a"))))
+    (is (not= :a (symbol ":a")))
+    (is (= expected baseline))
+    (doseq [[length level] [[nil nil] [0 nil] [1 nil] [nil 0] [nil 1] [0 0] [1 1]]
+            readable? [true false]]
+      (let [[product reordered-product]
+            (binding [*print-length* length *print-level* level
+                      *print-readably* readable? *print-meta* true
+                      *print-namespace-maps* true]
+              [(apply yanks/propose-yank inputs)
+               (apply yanks/propose-yank reordered)])]
+        (is (= expected product reordered-product))
+        (is (= (pr-str baseline) (pr-str product) (pr-str reordered-product)))
+        (doseq [path [[:metadata :extension]
+                      [:history :locks 0 :extension]
+                      [:history :contents 0 :extension]
+                      [:history :events 0 :extension]]]
+          (is (= members (get-in product (into [:artifact :release] path)))))
+        (is (= inputs reordered))
+        (is (= before (pr-str inputs)))))))
+
+(deftest truncated-printers-preserve-malformed-set-rejection
+  (doseq [path [[:metadata :extension]
+                [:history :locks 0 :extension]
+                [:history :contents 0 :extension]
+                [:history :events 0 :extension]]]
+    (let [with-mutable (assoc-in release path #{[:a] [:b] (atom "SECRET_MARKER")})
+          before (pr-str with-mutable)
+          product (binding [*print-length* 0 *print-level* 0]
+                    (yanks/propose-yank with-mutable proposal provenance))]
+      (is (= (rejection "GOV10006" [:release] :invalid-field) product))
+      (is (= before (pr-str with-mutable))))))
+
 (deftest nested-mutable-number-is-rejected-without-payload
   (doseq [path [[:metadata :extension]
                 [:history :locks 0 :extension]

@@ -22,13 +22,19 @@
     (or (vector? x) (list? x) (set? x)) (every? public-data? x)
     :else false))
 
+(defn- ordering-key [x]
+  (binding [*print-length* nil *print-level* nil *print-readably* true
+            *print-meta* false *print-dup* false *print-namespace-maps* false]
+    (pr-str x)))
+
 (defn- canonical [x]
   (cond
     (map? x) (into (sorted-map) (map (fn [[k v]] [k (canonical v)])) x)
     (vector? x) (mapv canonical x)
     (list? x) (apply list (map canonical x))
-    (set? x) (into (sorted-set-by #(compare (pr-str %1) (pr-str %2)))
-                  (map canonical) x)
+    ;; Sort insertion order for hash collisions, but let value equality alone
+    ;; determine membership. Unequal supported values can print identically.
+    (set? x) (into #{} (sort-by ordering-key (map canonical x)))
     :else x))
 
 (defn- diagnostic [id path reason]

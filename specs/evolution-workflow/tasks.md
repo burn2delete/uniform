@@ -234,8 +234,11 @@ has `:schema :gravity.evolution/yank-proposal-v1`, `:kind :gravity/yank-proposal
 four selected proposal fields in `:proposal`, and the four selected provenance
 references in `:provenance`. Canonical map/set ordering makes complete products
 and their EDN rendering deterministic under input map insertion order changes;
-history vectors/lists keep order. Caller-supplied status, approval, action or
-grant fields cannot promote the product and are not projected from the proposal
+history vectors/lists keep order. Set membership uses value equality, never
+printer-key equality. Ordering keys use complete readable rendering with fixed
+printer settings; equal keys must retain distinct values, including under
+caller-bound `*print-length*` and `*print-level*`. Caller-supplied status,
+approval, action or grant fields cannot promote the product and are not projected from the proposal
 or provenance. No IO, approval verdict, registry mutation or package-policy
 change occurs.
 
@@ -263,6 +266,9 @@ unchanged inputs/history; a constant catalog or shape-only test is insufficient.
 Numeric fixtures preserve complete products for the supported immutable types
 and require payload-free GOV10006 rejection for nested AtomicLong values in
 release metadata and historical extensions, before and after host mutation.
+Printer fixtures compare complete products and unchanged release/history under
+truncated length/level bindings, retain unequal values with identical complete
+printing, and preserve malformed-value rejection under the same bindings.
 
 Start requires only these explicit inputs. Composition requires actual owner
 authorization and authentic registry/content/provenance, GOV2/GOV4 emergency

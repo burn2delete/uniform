@@ -210,3 +210,65 @@ historical rebuild execution and independent acceptance remain separate,
 unrun composition/acceptance obligations. The parent remains Open. No commit,
 integration, release, self-hosting, seed retirement, yank or grant is claimed;
 all retained refused operations remain prohibited and were not retried.
+
+## Printer collision preservation repair
+
+Finding `evolution.yank-proposals.version-bound-production-v1`, P2 printer
+follow-up, authored in `increment-1296` on 2026-11-06 using the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md).
+Supplied review identities: base
+`aa6af9bddd96776a3d59d8c920ab0e4a4d8839b0`, candidate
+`7ea6ea98857a8e8705e65a194da73012afcef2ca`, tree
+`42d72950df0c6ecd9be1eb15d2af61301747f3ed`.
+The feedback reports native checks passed on that candidate and requests changes
+because printer equality silently drops unequal supported set values under
+truncated printing. These are supplied pre-repair results and identities, not
+checks or Git inspections performed here, and do not validate this repair.
+
+Replaced printer-comparator sorted sets with value-based hash sets. Sort their
+insertion sequence using complete readable keys with fixed length, level,
+readability, metadata, duplication and namespace-map printer settings. Printing
+is an ordering aid only; equal rendering never determines membership. This
+retains distinct supported values even when complete rendering collides and
+removes ambient printer settings from canonical construction. Recursive map,
+vector and list behavior and the public-data/type validation are unchanged.
+
+Authored `truncated-printers-preserve-complete-product`: compare whole products,
+unchanged inputs/history and rendering outside the caller bindings across
+truncated length/level and readability settings, reordered maps and set
+insertion. Retained extensions cover release metadata, historical locks,
+contents and events, with vector/list/map/nested-set members, hash-colliding
+string vectors and the unequal keyword/symbol pair that prints identically
+even without truncation. Authored
+`truncated-printers-preserve-malformed-set-rejection`: nested mutable host
+values at those same locations still produce the complete payload-free
+GOV10006 rejection under truncated printing and leave inputs unchanged.
+
+Updated the existing carrier appendix outside the captured task region before
+implementation. The authenticated plan.md remains untouched, as required by
+the earlier acceptance-dependency repair above. Canonical task bodies, source
+criteria, Open statuses and historical receipts are preserved. No PR767/1291
+or other retained Evolution changes are adopted by this scoped edit.
+
+Actual worker activity: passive source/document reads, four owned-file edits
+and textual review only. No test, build, validator, Git command or consumer
+composition ran. Worker Git inspection (including `git status --short`) and
+check execution are prohibited by the controller-owned verification boundary;
+none was attempted, retried or transferred. Unrun controller checks are not a
+restriction on authored readiness. Proposed controller argument vectors below
+remain unrun here; no exit code or passing check is claimed:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.yank-proposals-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+No new semantic ambiguity was found for this preservation repair. Existing
+opaque exact-version semantics and missing actual owner/registry authorization
+remain explicit. Owner authentication, emergency governance, publication,
+package enforcement, historical rebuild execution, independent acceptance and
+integration remain separate unrun obligations. The parent stays Open. No
+commit, yank, grant, release, self-hosting or seed-retirement claim is made.
