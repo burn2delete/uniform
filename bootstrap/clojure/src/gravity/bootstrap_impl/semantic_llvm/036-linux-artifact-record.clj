@@ -1,3 +1,5 @@
+(declare ^:private p15-s23-sh02-component-safe-source-path!)
+
 (defn- p15-s23-b3-llvm-linux-differential-binding!
   [request-source]
   ;; BOOT4/BOOT8: observe current source without refreshing migration pins.
