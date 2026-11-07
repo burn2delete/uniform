@@ -48,11 +48,12 @@ Plan bytes, source path/hash, plan IDs and report identities are preserved.
 The existing thirty public Effects Vars comprise twenty-three functions and
 seven data Vars; preserve all of them, adding only four public functions.
 
-Dependency direction is module-analysis compatibility adapters to Effects,
-then Bootstrap callers. Effects retains only its existing `clojure.set`
-dependency and must not import Bootstrap, module analysis, CLI, release or a
-backend. Bootstrap/module analysis retain interposition, source/namespace
-admission, policy catalogs and diagnostic construction/publication.
+Dependency direction is Bootstrap to module analysis, then the
+`gravity.module-analysis.effects` compatibility adapters to `gravity.effects`,
+then `clojure.set`. Effects must not import Bootstrap, module analysis, CLI,
+release or a backend. Bootstrap/module analysis retain interposition,
+source/namespace admission, policy catalogs and diagnostic
+construction/publication.
 
 ## Diagnostic ownership and two evidence routes
 
