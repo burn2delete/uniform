@@ -95,6 +95,56 @@
           product))
       products))))
 
+(defn- expanded-request [base]
+  (let [text (apply str (repeat 4097 "C"))
+        keywords (mapv #(keyword (str "module-" %)) (range 33))
+        spans (mapv (fn [index]
+                      {:source-id :compiler
+                       :start-byte index :end-byte (inc index)})
+                    (range 257))
+        diagnostics (mapv #(hash-map :code text :source-span %
+                                    :severity :error)
+                          spans)
+        operations (mapv (fn [ordinal]
+                           {:ordinal ordinal
+                            :opcode (if (zero? ordinal) :literal :call)
+                            :operands (if (zero? ordinal)
+                                        [] (vec (repeat (if (= ordinal 256)
+                                                          1025 65)
+                                                        0)))})
+                         (range 257))
+        ir (fn [prefix]
+             {:normalized-operations operations
+              :id-renaming (mapv (fn [ordinal]
+                                   {:original (str prefix ordinal
+                                                   (if (= ordinal 256) text ""))
+                                    :ordinal ordinal})
+                                 (range 257))
+              :target-independent true})
+        left {:builder-note (str "left-" text)}
+        right {:builder-note (str "right-" text)}]
+    (-> base
+        (assoc :recipe-id text :lock-id text)
+        (assoc-in [:environment-a :allowed-environment] keywords)
+        (assoc-in [:environment-b :allowed-environment] keywords)
+        (replace-mode-product :manifest
+                              #(assoc % :left {:modules keywords}
+                                        :right {:modules keywords}))
+        (replace-mode-product :diagnostic
+                              #(assoc % :left diagnostics :right diagnostics
+                                        :source-spans spans))
+        (replace-mode-product :runtime-output
+                              #(assoc % :left {:stdout text :stderr text :exit 255}
+                                        :right {:stdout text :stderr text :exit 255}))
+        (replace-mode-product :ir-modulo-id
+                              #(assoc % :left (ir "stage-n:")
+                                        :right (ir "stage-n-plus-one:")))
+        (replace-mode-product :reviewed-delta
+                              #(assoc % :left left :right right))
+        (update-in [:accepted-deltas 0]
+                   #(assoc % :left left :right right
+                             :reviewer text :policy-id text :reason text)))))
+
 (deftest sh27-engine-and-fixtures-compile
   (doseq [plan
           [engine-plan accepted-gravity-plan accepted-qst-plan
@@ -470,6 +520,117 @@
     (is (= :invalid-request
            (get-in rejected [:diagnostics 0 :facts :reason])))))
 
+(deftest sh27-populations-do-not-limit-seven-mode-comparison
+  (let [expanded (expanded-request
+                  (request accepted-gravity-plan 'sh27-equivalent-stage-request))
+        companion (expanded-request
+                   (request accepted-qst-plan 'sh27-equivalent-stage-request))
+        result (compare-request expanded)
+        diagnostics (get-in expanded [:products 2 :left])
+        operations (get-in expanded [:products 5 :left :normalized-operations])]
+    (is (= expanded companion))
+    (is (= :accepted (:status result)))
+    (is (= (:modes expanded) (mapv :mode (:outcomes result))))
+    (is (= 7 (count (:products expanded)) (count (:outcomes result))))
+    (is (= 1 (count (:accepted-deltas expanded))))
+    ;; Repeated backward operands are legal; the two IRs alone cross the
+    ;; former aggregate node threshold without adding products or deltas.
+    (is (> (* 2 (reduce + (map #(count (:operands %)) operations))) 32768))
+    (is (> (count (:operands (last operations))) 1024))
+    (is (> (* 2 (count diagnostics) (count (:code (first diagnostics))))
+           1048576))
+    (is (= (:products expanded) (get-in result [:identity-input :products])))
+    (is (= (:environment-a expanded)
+           (get-in result [:identity-input :environment-a])))
+    (is (= (:accepted-deltas expanded) (:accepted-deltas result)))
+    (is (= result (compare-request expanded) (compare-request companion)))
+    (is (= :passed
+           (:status (invoke engine-plan 'sh27-verify-comparison
+                            [expanded result]))))))
+
+(deftest sh27-late-invalid-population-entries-fail-closed
+  (let [expanded (expanded-request
+                  (request accepted-gravity-plan 'sh27-equivalent-stage-request))]
+    (doseq [[label altered rule reason]
+            [[:late-module-type
+              (assoc-in expanded [:products 1 :right :modules 32] "module")
+              "BOOT7001" :invalid-request]
+             [:late-module-duplicate
+              (assoc-in expanded [:products 1 :right :modules 32] :module-0)
+              "BOOT7001" :invalid-request]
+             [:late-environment-type
+              (assoc-in expanded [:environment-b :allowed-environment 32] "env")
+              "BOOT7001" :invalid-request]
+             [:late-environment-duplicate
+              (assoc-in expanded [:environment-b :allowed-environment 32] :module-0)
+              "BOOT7001" :invalid-request]
+             [:late-product-span
+              (assoc-in expanded [:products 2 :source-spans 256 :end-byte] 0)
+              "BOOT7001" :invalid-request]
+             [:late-diagnostic-span
+              (assoc-in expanded [:products 2 :right 256 :source-span :end-byte] 0)
+              "BOOT7005" :diagnostic-shape]
+             [:late-diagnostic-code
+              (assoc-in expanded [:products 2 :right 256 :code] "")
+              "BOOT7005" :diagnostic-shape]
+             [:late-opcode
+              (assoc-in expanded [:products 5 :right :normalized-operations 256 :opcode]
+                        :wasm/i32-add)
+              "BOOT7005" :ir-shape]
+             [:late-operation-ordinal
+              (assoc-in expanded [:products 5 :right :normalized-operations 256 :ordinal]
+                        257)
+              "BOOT7005" :ir-shape]
+             [:late-forward-operand
+              (assoc-in expanded [:products 5 :right :normalized-operations 256
+                                 :operands 1024] 256)
+              "BOOT7005" :ir-shape]
+             [:late-negative-operand
+              (assoc-in expanded [:products 5 :right :normalized-operations 256
+                                 :operands 1024] -1)
+              "BOOT7005" :ir-shape]
+             [:late-renaming-range
+              (assoc-in expanded [:products 5 :right :id-renaming 256 :ordinal] 257)
+              "BOOT7005" :ir-shape]
+             [:late-renaming-duplicate-ordinal
+              (assoc-in expanded [:products 5 :right :id-renaming 256 :ordinal] 0)
+              "BOOT7005" :ir-shape]
+             [:late-renaming-duplicate-original
+              (assoc-in expanded [:products 5 :right :id-renaming 256 :original]
+                        (get-in expanded [:products 5 :right :id-renaming 0 :original]))
+              "BOOT7005" :ir-shape]
+             [:late-renaming-missing
+              (update-in expanded [:products 5 :right :id-renaming] pop)
+              "BOOT7005" :ir-shape]
+             [:unreviewed-long-delta
+              (assoc expanded :accepted-deltas [])
+              "BOOT7004" :unreviewed-delta]
+             [:unbound-long-delta
+              (assoc-in expanded [:accepted-deltas 0 :right :builder-note] "other")
+              "BOOT7001" :invalid-request]
+             [:long-output-exit-range
+              (assoc-in expanded [:products 4 :right :exit] 256)
+              "BOOT7001" :invalid-request]]]
+      (testing (name label)
+        (let [result (compare-request altered)]
+          (is (= :rejected (:status result)))
+          (is (= rule (get-in result [:diagnostics 0 :rule])))
+          (is (= reason (get-in result [:diagnostics 0 :facts :reason]))))))))
+
+(deftest sh27-expanded-results-remain-bound-to-exact-request
+  (let [expanded (expanded-request
+                  (request accepted-gravity-plan 'sh27-equivalent-stage-request))
+        substituted (replace-mode-product
+                     expanded :manifest
+                     #(-> %
+                          (assoc-in [:left :modules 32] :substituted)
+                          (assoc-in [:right :modules 32] :substituted)))
+        candidate (compare-request substituted)]
+    (is (= :accepted (:status candidate)))
+    (is (= :rejected
+           (:status (invoke engine-plan 'sh27-verify-comparison
+                            [expanded candidate]))))))
+
 (deftest sh27-aggregate-text-does-not-limit-seven-mode-comparison
   (let [base (request accepted-gravity-plan
                       'sh27-equivalent-stage-request)
@@ -528,6 +689,18 @@
       (is (= :rejected (:status result)))
       (is (= :diagnostic-shape
              (get-in result [:diagnostics 0 :facts :reason]))))
+    (let [expanded (expanded-request base)]
+      (doseq [payload [overdeep opaque]
+              [entry-path reason]
+              [[[:products 2 :right 256 :code] :diagnostic-shape]
+               [[:products 2 :right 256 :source-span] :diagnostic-shape]
+               [[:products 5 :right :normalized-operations 256 :operands 1024]
+                :ir-shape]
+               [[:products 5 :right :id-renaming 256 :original] :ir-shape]]]
+        (let [result (compare-request (assoc-in expanded entry-path payload))]
+          (is (= :rejected (:status result)))
+          (is (= "BOOT7005" (get-in result [:diagnostics 0 :rule])))
+          (is (= reason (get-in result [:diagnostics 0 :facts :reason]))))))
     (doseq [candidate [overdeep opaque]]
       (is (= :rejected
              (:status (invoke engine-plan 'sh27-verify-comparison
