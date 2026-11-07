@@ -674,7 +674,7 @@
         opaque (proxy [Object] []
                  (toString []
                    (throw (ex-info "Opaque payload was rendered" {}))))]
-    (doseq [malformed [overdeep opaque
+    (doseq [malformed [nil false 0 "" :request [] overdeep opaque
                       (assoc base :recipe-id overdeep)
                       (assoc base :recipe-id opaque)]]
       (let [result (compare-request malformed)]

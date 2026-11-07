@@ -819,7 +819,8 @@
           false)
         false)
       false)
-    false)))
+      false)
+    false))
 
 (defn sh27-identity-stage [stage]
   {:stage-id (get stage :stage-id)
