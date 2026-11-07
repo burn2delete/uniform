@@ -21,6 +21,8 @@
 (deftest namespace-contract-is-explicit-and-does-not-admit-plans
   (is (empty? (ns-aliases 'gravity.runtime)))
   (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
+           'execute-native-stage0-instructions 'execute-native-stage0-instruction
+           'execute-native-stage0-function 'execute-native-stage0-plan
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal
@@ -31,7 +33,7 @@
            'assert-between-arity! 'assert-even-arity! 'hosted-unary-builtin
            'map-entry 'fail-recur! 'nontail-value!
            'execute-generic-builtin-call-scoped 'execute-call-scoped
-           'kernel-rule-record 'kernel-diagnostic-record}
+           'kernel-rule-record 'kernel-diagnostic-record 'source-throw!}
          (set (keys (ns-publics 'gravity.runtime)))))
   (let [contract (:gravity/namespace-contract (meta #'runtime/execute-plan))]
     (is (= (set (keys (:public-api contract)))
@@ -841,6 +843,109 @@
                        {:op :throw :value {:op :literal :value 7}} nil
                        {:source-throw! throw-operation :execute-value-scoped evaluate})))
     (is (= [[:original '(:plan :payload)]] @events))))
+
+(deftest source-throw-constructor-and-compatibility-wrapper-preserve-envelope-identity
+  ;; Trusted host control only. These values never enter plan admission.
+  (let [token-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw-token)
+        compatibility (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw!)
+        original (fn [plan payload]
+                   (throw (ex-info "Gravity single-source seed throw"
+                                   {:gravity.bootstrap/source-throw (var-get token-var)
+                                    :payload payload :source (:source plan)
+                                    :module (get-in plan [:module :module])})))
+        source (Object.) module (Object.) payload (Object.)
+        plan {:source source :module {:module module}}
+        errors (mapv #(observed-error (fn [] (% plan payload)))
+                     [original compatibility
+                      (partial runtime/source-throw! :gravity.bootstrap/source-throw token-var)])]
+    (is (apply = (map ex-data errors)))
+    (doseq [error errors]
+      (is (instance? clojure.lang.ExceptionInfo error))
+      (is (= "Gravity single-source seed throw" (.getMessage ^Throwable error)))
+      (is (= #{:gravity.bootstrap/source-throw :payload :source :module} (set (keys (ex-data error)))))
+      (is (identical? (var-get token-var) (:gravity.bootstrap/source-throw (ex-data error))))
+      (is (identical? payload (:payload (ex-data error))))
+      (is (identical? source (:source (ex-data error))))
+      (is (identical? module (:module (ex-data error)))))))
+
+(deftest source-throw-selects-constructor-then-token-before-ordered-plan-lookups
+  (let [initial (Object.) selected (Object.) too-late (Object.) source (Object.) module (Object.)
+        token-var (clojure.lang.Var/create initial) events (atom [])
+        nested (reify clojure.lang.ILookup
+                 (valAt [_ key] (swap! events conj [:nested key]) module))
+        plan (reify clojure.lang.ILookup
+               (valAt [_ key]
+                 (swap! events conj [:plan key])
+                 (case key
+                   :source (do (alter-var-root token-var (constantly too-late))
+                               (alter-var-root #'clojure.core/ex-info
+                                               (constantly (fn [& _] (throw (AssertionError. "late constructor selected")))))
+                               source)
+                   :module nested)))
+        error (with-redefs-fn {#'clojure.core/ex-info ex-info}
+                #(do (alter-var-root token-var (constantly selected))
+                     (observed-error (fn [] (runtime/source-throw! ::token token-var plan :payload)))))]
+    (is (instance? clojure.lang.ExceptionInfo error))
+    (is (identical? selected (::token (ex-data error))))
+    (is (identical? too-late (var-get token-var)))
+    (is (identical? source (:source (ex-data error))))
+    (is (identical? module (:module (ex-data error))))
+    (is (= [[:plan :source] [:plan :module] [:nested :module]] @events))))
+
+(deftest source-throw-propagates-original-host-errors-and-evaluates-payload-once
+  (let [failure (Exception. "lookup failed") token-var (clojure.lang.Var/create (Object.))
+        plan (reify clojure.lang.ILookup (valAt [_ _] (throw failure)))]
+    (is (identical? failure (observed-error #(runtime/source-throw! ::token token-var plan :payload))))
+    (is (identical? failure
+                    (with-redefs [clojure.core/ex-info (fn [& _] (throw failure))]
+                      (observed-error #(runtime/source-throw! ::token token-var {} :payload))))))
+  (let [calls (atom 0) payload (Object.)
+        operations (assoc (instruction-operations)
+                          :execute-value-scoped (clojure.lang.Var/create
+                                                 (fn [& _] (swap! calls inc) payload)))
+        error (observed-error #(runtime/execute-instruction-scoped nil {} {}
+                                                                   {:op :throw :value {:op :literal :value :unused}} nil operations))]
+    (is (= 1 @calls))
+    (is (identical? payload (:payload (ex-data error))))))
+
+(deftest paired-source-throw-programs-emit-deterministic-seed-plans-and-execute
+  (let [compiled (mapv #(compile-source (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/direct-typed-throw" %))
+                       [".gravity" ".qst"])
+        token-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw-token)]
+    (is (apply = (map #(get-in % [:plan :plan-id]) compiled)))
+    (doseq [{:keys [path plan]} compiled]
+      (let [payload (String. "source problem")
+            result (b/p15-s23-stage2-runtime-execute-function context plan 'choose [false payload])
+            error (observed-error #(b/p15-s23-stage2-runtime-execute-function context plan 'choose [true payload]))
+            data (ex-data error)
+            output (io/file "target/runtime-source-throw" (str (.getName (io/file path)) ".plan.edn"))]
+        (is (= (:plan-id plan)
+               (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+        (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+        (is (= :clojure-stage0-seed (get-in plan [:compiler :owner])))
+        (is (= :temporary-single-source-seed-throw (get-in plan [:compiler :lowering-boundary])))
+        (is (identical? payload result))
+        (is (identical? payload (:payload data)))
+        (is (identical? (var-get token-var) (:gravity.bootstrap/source-throw data)))
+        (is (= "Gravity single-source seed throw" (.getMessage ^Throwable error)))
+        (is (= (:source plan) (:source data)))
+        (is (= (get-in plan [:module :module]) (:module data)))
+        ;; The opaque identity was checked above; it is never serialized.
+        (io/make-parents output)
+        (spit output (pr-str {:source-path path :source-sha256 (get-in plan [:source :sha256])
+                              :plan plan :normal-result result
+                              :throw-data-without-token (dissoc data :gravity.bootstrap/source-throw)
+                              :opaque-token-serialization :excluded-process-local-only}))))))
+
+(deftest malformed-source-throw-arity-rejects-before-control-transport
+  (let [transport (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw!)]
+    (doseq [fixture ["throw-zero-arity" "throw-many-arity"] extension [".gravity" ".qst"]]
+      (let [calls (atom 0)
+            error (with-redefs-fn {transport (fn [& _] (swap! calls inc) (throw (AssertionError. "unexpected transport")))}
+                    #(diagnostic (fn [] (compile-source (str "bootstrap/clojure/fixtures/runtime/source-throw/rejected/" fixture extension)))))]
+        (is (= "L2-THROW-ILLEGAL" (:id error)))
+        (is (zero? @calls))))))
+
 
 (deftest if-and-let-forward-scopes-and-evaluate-only-ordered-required-instructions
   (doseq [condition [true false nil 0]]
