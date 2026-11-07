@@ -1,45 +1,18 @@
 
 
 (def b8-document-kernel-module
-  (str "spirv.module @gravity_stage0_gpu attributes {gravity.profile = \"gpu\", gravity.target = \"spir-v\"} {\n"
-       "  gpu.module @kernels {\n"
-       "    gpu.func @gravity_stage0_kernel(%input: memref<1024xi32, 1>, %output: memref<1024xi32, 1>) kernel\n"
-       "        attributes {gravity.effect = \"device\", gravity.capability = \"gpu/launch\", gravity.proof = \"proof/gpu-stage0-memory-sync\"} {\n"
-       "      %lane = gpu.thread_id x\n"
-       "      %value = memref.load %input[%lane] : memref<1024xi32, 1>\n"
-       "      gpu.barrier\n"
-       "      memref.store %value, %output[%lane] : memref<1024xi32, 1>\n"
-       "      gpu.return\n"
-       "    }\n"
-       "  }\n"
-       "}\n"))
+  (gravity.backend.gpu/native-kernel-text))
 
 (def b8-document-host-stub
-  (str "void gravity_stage0_launch(GravityGpuQueue queue, GravityGpuBuffer input, GravityGpuBuffer output) {\n"
-       "  gravity_gpu_copy_host_to_device(queue, input);\n"
-       "  gravity_gpu_launch(queue, \"gravity_stage0_kernel\", 1, 1, 1, 32, 1, 1);\n"
-       "  gravity_gpu_copy_device_to_host(queue, output);\n"
-       "}\n"))
+  (gravity.backend.gpu/native-host-stub-text))
 
 (defn b8-document-kernel-structurally-valid?
   [source]
-  (and (str/includes? source "spirv.module")
-       (str/includes? source "gpu.func @gravity_stage0_kernel")
-       (str/includes? source "gravity.profile = \"gpu\"")
-       (str/includes? source "gravity.proof")
-       (str/includes? source "memref.load")
-       (str/includes? source "gpu.barrier")
-       (str/includes? source "memref.store")
-       (not (str/includes? source "host_alloc"))
-       (not (str/includes? source "throw"))
-       (not (str/includes? source "eval"))))
+  (gravity.backend.gpu/native-kernel-structurally-valid? source))
 
 (defn b8-document-host-stub-structurally-valid?
   [source]
-  (and (str/includes? source "gravity_gpu_copy_host_to_device")
-       (str/includes? source "gravity_gpu_launch")
-       (str/includes? source "gravity_gpu_copy_device_to_host")
-       (not (str/includes? source "malloc"))))
+  (gravity.backend.gpu/native-host-stub-structurally-valid? source))
 
 (defn b8-document-diagnostic-stream
   [source-path input-id]
