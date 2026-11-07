@@ -6,7 +6,8 @@
     :c2-path-neutral-span :c2-token-hash-input :c2-form-hash-input
     :c2-syntax-seed-hash-input :c2-extension-hash-input
     :c2-diagnostic-hash-input :c2-incremental-hashes
-    :c2-reader-product-integrity-record :c2-reader-artifact-id})
+    :c2-reader-product-integrity-record :c2-reader-product-integrity-record-v3
+    :c2-reader-artifact-id})
 
 (def operation-keys function-operation-keys)
 
