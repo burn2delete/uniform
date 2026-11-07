@@ -13544,12 +13544,20 @@
                   (String. (char-array [(char 0xdc00)]))]]
       (is (= :rejected (:status (decorate-form {0 {:kind :string :value text}} 0)))))))
 
-;; This composition fixture requires authentic pinned SH03 evidence. A stale
-;; reader pin must still fail closed; these edits do not renew that authority.
+;; Exercise current source with explicit authenticated development provenance.
+;; The default pinned reader and its historical C2-HASH nonpass are unchanged;
+;; this semantic fixture confers no migration or seed-retirement authority.
 (deftest sh07-b51-v18-canonical-decoration-authenticated-c2-composition
   (let [wide (vec (range 513))
+        source-path "target/decoration-wide.gravity"
+        reader-path (str (.resolve @root
+                          "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}}
         artifact (bootstrap/compiler-c2-reader-source-artifact
-                    "target/decoration-wide.gravity" (pr-str wide))
+                  source-path (pr-str wide)
+                  (bootstrap/reader-project-context-for-source source-path)
+                  nil nil reader-path invocation)
           carrier {:artifact :gravity/sh07-oracle-c2-carrier-v1
                    :c2-reader-artifact artifact
                    :root-adapted-form-id (first (:top-level-form-ids artifact))

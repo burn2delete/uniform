@@ -4033,7 +4033,7 @@
        (if (vector? value) "]" ")") result depth)
       (let [record
             (sh07-b51-r6-canonical-decoration-evidenced
-             (first remaining) (+ depth 1) 1 active decimal-records)]
+             (first remaining) (+ depth 1) active decimal-records)]
         (if (= (get record :status) :decorated)
           (recur (rest remaining) (conj result record)) record)))))
 
@@ -4045,7 +4045,7 @@
             (let [source (first remaining)
                   record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   source (+ depth 1) 1 active decimal-records)]
+                   source (+ depth 1) active decimal-records)]
               (recur (rest remaining)
                      (conj result {:source source :decoration record})
                      (if (= (get record :status) :decorated)
@@ -4094,10 +4094,10 @@
             (let [entry (first remaining)
                   key-record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   (first entry) (+ depth 1) 1 active decimal-records)
+                   (first entry) (+ depth 1) active decimal-records)
                   value-record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   (second entry) (+ depth 1) 1 active decimal-records)]
+                   (second entry) (+ depth 1) active decimal-records)]
               (recur
                (rest remaining)
                (conj result {:source-key (first entry)
@@ -4276,7 +4276,7 @@
                      :reason :unsupported-value-carrier})))))))))))
 
 (defn sh07-b51-r6-canonical-decoration-evidenced
-  [value depth nodes ancestry decimal-records]
+  [value depth ancestry decimal-records]
   ;; Authenticated Stage2 values are immutable reader value graphs.  Syntax
   ;; cycles are rejected earlier by their governed form/token ids; host object
   ;; identity is neither present nor semantic authority here.  Ancestry carries
@@ -4317,9 +4317,11 @@
              {:status :failed :reason (get scalar :reason)})))))
 
 (defn sh07-b51-r6-canonical-decoration
-  [value depth nodes ancestry]
+  [value depth _nodes ancestry]
+  ;; Retain the legacy call shape for split-module callers; node allowances
+  ;; are no longer consumed or propagated by decoration.
   (sh07-b51-r6-canonical-decoration-evidenced
-   value depth nodes ancestry []))
+   value depth ancestry []))
 
 (defn sh07-b51-r6-order-set-children
   [decimal-records values supplied-child-ids revision-id root-syntax-id path]
@@ -4330,7 +4332,7 @@
               {:records records :failed? failed?}
               (let [record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (first remaining) 1 1 #{} decimal-records)]
+                     (first remaining) 1 #{} decimal-records)]
                 (recur (rest remaining)
                        (conj records {:value (first remaining)
                                       :decoration record})
@@ -4373,10 +4375,10 @@
               (let [entry (first remaining)
                     key-record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (first entry) 1 1 #{} decimal-records)
+                     (first entry) 1 #{} decimal-records)
                     value-record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (second entry) 1 1 #{} decimal-records)]
+                     (second entry) 1 #{} decimal-records)]
                 (recur
                  (rest remaining)
                  (conj records {:source-key (first entry)
