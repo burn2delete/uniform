@@ -56,6 +56,29 @@
   (rt/update! ctx assoc-in [:tasks (:key s)]
               (assoc s :description s :status :ready :issue {:number 1 :id 1 :node_id "issue1"})))
 
+(defn restore-planning-open-prs [projected raw]
+  (let [reference-key (var-get (ns-resolve 'seedless.workflow 'planning-reference-key))
+        body-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-body-reference-key))
+        metadata-paths ((var-get (ns-resolve 'seedless.workflow 'planning-metadata-paths)) raw)
+        with-bodies (mapv (fn [index pr]
+                            (if (contains? pr :body)
+                              (if-let [reference (get-in pr [:body body-reference-key])]
+                                (assoc pr :body (get-in raw (get reference :path)))
+                                pr)
+                              pr))
+                          (range) projected)]
+    (reduce (fn [current [path inline]]
+              (if-let [reference (get-in current (conj path reference-key))]
+                (let [projected-value (get-in current path)
+                      raw-value (get-in raw path)
+                      fields (remove inline (keys raw-value))]
+                  (assoc-in current path
+                            (merge (dissoc projected-value reference-key)
+                                   (select-keys raw-value fields))))
+                current))
+            with-bodies
+            (reverse metadata-paths))))
+
 (defn harness [scenario operation]
   (let [ctx (repository! (context)) original rt/command
         events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)
@@ -710,37 +733,32 @@
         (is (= 1 (count @prompts)))
         (is (> raw-bytes 1048576))
         (is (< prompt-bytes 1048576))
-        (is (str/includes? prompt body-marker))
-        (is (= 1 (count (re-seq (re-pattern repository-marker) prompt))))
+        (is (not (str/includes? prompt body-marker)))
+        (is (zero? (count (re-seq (re-pattern repository-marker) prompt))))
         (is (= "candidate-sha" (get-in raw [:tasks "a" :candidate])))
         (is (= open-prs (get-in raw [:open-prs])))
         (is (= "candidate-sha" (get-in (first existing-slices) [:candidate])))
         (is (= "preserved-task-history" (get-in (first existing-slices) [:issue :body])))
-        (is (= large-body (:body (first open-prs-prompt))))
+        (is (= :string (get-in (first open-prs-prompt) [:body :uniform/retained-untrusted-pr-body :type])))
+        (is (= [0 :body]
+               (get-in (first open-prs-prompt) [:body :uniform/retained-untrusted-pr-body :path])))
         (is (= "head-sha-12" (get-in (first open-prs-prompt) [:head :sha])))
         (is (= "head-sha-13" (get-in (second open-prs-prompt) [:head :sha])))
-        (is (= repository (get-in (first open-prs-prompt) [:head :repo])))
-        (is (= :repository-reference (get-in (first open-prs-prompt) [:base :repo :kind])))
-        (is (= :repository-reference (get-in (second open-prs-prompt) [:head :repo :kind])))
-        (is (= {:full_name "fixture/repo" :html_url "https://example.invalid/repos/fixture/repo"
-                :url "https://api.example.invalid/repos/fixture/repo" :id 99 :node_id "repo-99" :name "repo"}
-               (get-in (first open-prs-prompt) [:base :repo :identity])))
-        (is (= (rt/digest (pr-str repository))
-               (get-in (first open-prs-prompt) [:base :repo :raw-reference :sha256])))
-        (is (= [:open-prs 0 :head :repo]
-               (get-in (first open-prs-prompt) [:base :repo :raw-reference :selector])))
-        (is (= [:open-prs 0 :head :repo]
-               (get-in (second open-prs-prompt) [:head :repo :raw-reference :selector])))
+        (is (= "fixture/repo" (get-in (first open-prs-prompt) [:head :repo :full_name])))
+        (is (= :uniform/retained-repository-metadata-v1
+               (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :policy])))
+        (is (= (str artifact)
+               (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :artifact])))
+        (is (= [0 :base :repo]
+               (get-in (first open-prs-prompt) [:base :repo :uniform/retained-repository-metadata :path])))
+        (is (= [1 :head :repo]
+               (get-in (second open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :path])))
+        (is (= large-body
+               (get-in raw [:open-prs 0 :body])))
+        (is (= open-prs
+               (get-in raw [:open-prs])))
         (is (= (get-in raw [:open-prs])
-               (mapv (fn [pr]
-                       (-> pr
-                           (update-in [:head :repo]
-                                      #(if (= :repository-reference (:kind %))
-                                         (get-in raw (get-in % [:raw-reference :selector])) %))
-                           (update-in [:base :repo]
-                                      #(if (= :repository-reference (:kind %))
-                                         (get-in raw (get-in % [:raw-reference :selector])) %))))
-                     open-prs-prompt)))
+               (restore-planning-open-prs open-prs-prompt (get-in raw [:open-prs]))))
         (is (.isFile artifact))
         (is (= (:sha256 raw-reference-prompt)
                (rt/digest (slurp artifact))))
@@ -767,6 +785,26 @@
         (is (nil? (:planning @(:state ctx))))
         (is (empty? (:effects @(:state ctx))))
         (finally (delete-tree! (:root ctx)))))))
+
+(deftest planner-input-projection-rejects-malformed-metadata-and-body
+  (let [project (var-get (ns-resolve 'seedless.workflow 'project-planning-open-prs))
+        reference {:file "/tmp/seedless-planning.raw-input.edn" :sha256 "snapshot-sha"}]
+    (is (thrown-with-msg? Exception #"Planning provider metadata is malformed"
+                          (project [{:head {:ref "head" :repo {:owner "not-a-map"}}
+                                     :base {:ref "main" :repo nil}}]
+                                   reference)))
+    (is (thrown-with-msg? Exception #"Planning PR body is malformed"
+                          (project [{:body 42 :head {:ref "head" :repo nil}
+                                     :base {:ref "main" :repo nil}}]
+                                   reference)))
+    (is (thrown-with-msg? Exception #"already has a presentation reference"
+                          (project [{:head {:ref "head"
+                                            :repo {:id 7
+                                                   :description "untrusted"
+                                                   :uniform/retained-repository-metadata
+                                                   {:artifact "/tampered"}}}
+                                     :base {:ref "main" :repo nil}}]
+                                   reference)))))
 
 (deftest planner-accepts-deleted-repository-in-valid-pr-boundaries
   (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))

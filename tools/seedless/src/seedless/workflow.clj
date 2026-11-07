@@ -872,25 +872,72 @@
                                        :pending-effect (:effect pending)})))))
   snapshot)
 
-(defn- repository-identity [repository]
-  (select-keys repository [:id :node_id :name :full_name :fullName :html_url :url]))
+(def ^:private planning-reference-key :uniform/retained-repository-metadata)
+(def ^:private planning-body-reference-key :uniform/retained-untrusted-pr-body)
+(def ^:private planning-reference-policy :uniform/retained-repository-metadata-v1)
+(def ^:private planning-inline-repository-keys
+  #{:id :node_id :name :full_name :fullName :private :html_url :fork :default_branch
+    :owner :visibility :disabled :archived :permissions})
+(def ^:private planning-inline-user-keys
+  #{:id :node_id :login :html_url :type :site_admin :user_view_type})
 
-(defn- deduplicate-open-pr-repositories [open-prs file]
-  (let [seen (atom {})]
-    (mapv (fn [[index pr]]
-            (reduce (fn [pr location]
-                      (let [path [location :repo] repository (get-in pr path)]
-                        (if-not (map? repository)
-                          pr
-                          (let [selector (or (get @seen repository)
-                                             [:open-prs index location :repo])]
-                            (if (contains? @seen repository)
-                              (assoc-in pr path {:kind :repository-reference
-                                                 :identity (repository-identity repository)
-                                                 :raw-reference (raw-reference file selector repository)})
-                              (do (swap! seen assoc repository selector) pr))))))
-                    pr [:head :base]))
-          (map-indexed vector open-prs))))
+(defn- planning-reference [artifact artifact-sha path]
+  {:artifact artifact :sha256 artifact-sha :path path :policy planning-reference-policy})
+
+(defn- planning-metadata-paths [open-prs]
+  (vec (concat
+        (for [index (range (count open-prs))
+              path-spec [[[:head :repo :owner] planning-inline-user-keys]
+                         [[:head :user] planning-inline-user-keys]
+                         [[:head :repo] planning-inline-repository-keys]
+                         [[:base :repo :owner] planning-inline-user-keys]
+                         [[:base :user] planning-inline-user-keys]
+                         [[:base :repo] planning-inline-repository-keys]]]
+          [(into [index] (first path-spec)) (second path-spec)])
+        (for [index (range (count open-prs))]
+          [[index :user] planning-inline-user-keys]))))
+
+(defn- project-planning-open-prs [open-prs raw-reference]
+  (if-not (and (map? raw-reference)
+               (string? (:file raw-reference))
+               (string? (:sha256 raw-reference)))
+    open-prs
+    (let [artifact (:file raw-reference)
+          artifact-sha (:sha256 raw-reference)
+          projected (reduce
+                     (fn [current [path inline]]
+                       (let [value (get-in current path ::absent)]
+                         (cond
+                           (or (= ::absent value) (nil? value)) current
+                           (not (map? value))
+                           (rt/fail! "Planning provider metadata is malformed"
+                                     {:path path :actual-type (type value)})
+                           (contains? value planning-reference-key)
+                           (rt/fail! "Planning provider metadata already has a presentation reference"
+                                     {:path path})
+                           :else
+                           (let [fields (vec (sort (remove inline (keys value))))]
+                             (if (seq fields)
+                               (assoc-in current path
+                                         (assoc (select-keys value inline)
+                                                planning-reference-key
+                                                (planning-reference artifact artifact-sha path)))
+                               current)))))
+                     open-prs
+                     (planning-metadata-paths open-prs))]
+      (mapv (fn [index pr]
+              (if (contains? pr :body)
+                (let [body (:body pr)]
+                  (when-not (or (nil? body) (string? body))
+                    (rt/fail! "Planning PR body is malformed"
+                              {:path [index :body] :actual-type (type body)}))
+                  (if (string? body)
+                    (assoc pr :body {planning-body-reference-key
+                                     {:artifact artifact :sha256 artifact-sha :path [index :body]
+                                      :value-sha256 (rt/digest (pr-str body)) :type :string}})
+                    pr))
+                pr))
+            (range) projected))))
 
 (defn- latest-planning-feedback [ctx]
   (some->> (:inspections @(:state ctx))
@@ -940,7 +987,7 @@
         planning {:base base :round n :worktree wt :effect id :open-prs open-prs
                   :raw-input-reference raw-reference}
         feedback (latest-planning-feedback ctx)
-        projected-open-prs (deduplicate-open-pr-repositories open-prs (:file raw-reference))
+        projected-open-prs (project-planning-open-prs open-prs raw-reference)
         _ (rt/update! ctx assoc :planning planning)
         output (rt/effect! ctx id
                            #(job! ctx :plan (:worktree wt)
