@@ -581,7 +581,37 @@
    ["effects-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
    ["types-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]
+   ["llvm-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.llvm.native-manifest-test")]
+   ["mlir-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mlir.native-manifest-test")]
+   ["gpu-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.gpu.native-manifest-test")]
+   ["hdl-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.hdl.native-manifest-test")]
+   ["workflow-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.workflow.native-manifest-test")]
+   ["query-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.query.native-manifest-test")]
+   ["mobile-manifest-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.mobile.native-manifest-test")]
+   ["lowering-backends-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.native-backend-test")]
+   ["package-metadata-native-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.package.native-metadata-test")]
+   ["package-metadata-compiled-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.package.compiled-metadata-test")]
+   ["diagnostics-carrier-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.diagnostics.carrier-test")]
+   ["safety-source-outcomes-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.source-outcomes-test")]
+   ["safety-unsafe-audit-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.unsafe-audit-test")]
+   ["lowering-instructions-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.instructions-test")]
+   ["lowering-plan-assembly-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.plan-assembly-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
