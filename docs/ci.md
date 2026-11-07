@@ -6,6 +6,28 @@ GitHub-hosted checks replace routine laptop verification for pull
 requests and the exact clean integrated main commit. They do not confer
 compiler migration or release acceptance.
 
+### Focused CI control tests
+
+From the repository root, the CI control script accepts an explicit selection
+of fully qualified test Vars:
+
+```bash
+clojure -M tools/ci/run_test.clj --exact \
+  ci.run-test/stage-selection-follows-owned-downstream-closure
+```
+
+Multiple names follow the single `--exact` flag. The complete selection is
+validated before any test runs; malformed arguments, duplicate names, unknown
+Vars and non-test Vars fail. Selection resolves already loaded namespaces and
+does not load a namespace named by an argument. Selected tests retain their
+fixtures, reports and failure exit status. With no arguments, the existing
+complete CI control and lint-context suites run unchanged.
+
+Review the selected test bodies against the current operating restrictions.
+Selection grants no authority to execute a restricted operation. Loading this
+script without controlling its entrypoint still invokes its default suite;
+use the explicit CLI route for focused execution.
+
 ## Workflow matrix
 
 | Check | PR | Main/manual/weekly | Evidence and limits |
