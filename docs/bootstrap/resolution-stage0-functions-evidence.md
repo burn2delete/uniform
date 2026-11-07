@@ -47,7 +47,7 @@ explicit internal bridge signatures are:
 
 ```clojure
 (seed-declared-header? definition)
-(normalize-seed-function-header fail-var declared-header?-var source-path definition)
+(normalize-seed-function-header fail-var declared-header?-var source-path fields definition)
 (validate-seed-function-names! fail-var source-path definitions)
 (validate-seed-source-headers! operations source-path forms)
 ```
@@ -168,6 +168,41 @@ negative controls. Child, test and changed CI files lint with zero errors/
 warnings; diff checking passes. Documentation/roadmap validation, complete
 current-Main lint, final source publication/reviews and own CI/provider audit
 remain pending. No parent acceptance transfers.
+
+### Normalizer transport correction
+
+Initial implementation commit `260d3824028cd9531438be2678558f25afa54d79`
+received bounded static reviews, then failed the first complete Main comparison
+with three unused-field warnings in its Bootstrap normalizer adapter. An
+additional adversarial lookup control also exposed a compatibility defect:
+the adapter and child both destructured the same caller-owned definition.
+The control observed six field reads before the header callback where the
+original algorithm performs three. The failing 1-test/3-assertion capture and
+initial review/comparison artifacts remain history and confer no successor
+acceptance. That implementation was not published beyond the scope draft.
+
+The private normalizer bridge now takes the already-destructured field map
+and original definition separately. This preserves the original Bootstrap
+signature, reads caller fields once, passes the original carrier to the header
+callback, and keeps it for normalization/metadata retention. The normalization
+algorithm is unchanged; the private child bridge changes from four arguments
+to five. Transport correction receipt SHA256:
+`3001049d144b1e59e630dd43cee303c93ffd756cb645fa79e5250c5166a48e08`.
+Its initial arity-label typo is corrected by a separate verification of actual
+before/after contract arglists, SHA256
+`8ebfccb4a9c1ad5c715ad1c9f4af98febd2ac54ff46d3e59d4bc3779f42b9e11`;
+the original receipt is preserved.
+
+The updated focused suite passes 10 tests and 177 assertions, including the
+lookup-order regression. Fresh Runtime/parser regressions pass 44/760,
+language/ownership 48/1202, CI selection controls 2/169 and cold declarations
+3 public/4 private. All 22 complete source observations still equal baseline:
+10 plans, 10 interpreted/compiled successes and 12 genuine refusals. The new
+capture records the actual dirty producer context at HEAD `260d382...`, with
+separate updated producer hashes, SHA256
+`7894020469e8773145fb29bb43f20fff8098cadb45825b429c0a44f55cdb6e28`.
+It does not claim a future clean successor was observed. Fresh complete Main
+lint, clean successor reviews and own hosted CI/provider audit remain pending.
 
 Exact current-base integration remains with the designated integrator. This
 manual Source has no Main/Ready/controller/service/recovery or GraphQL role.

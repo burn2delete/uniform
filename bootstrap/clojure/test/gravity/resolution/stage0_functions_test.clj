@@ -13,7 +13,7 @@
   (assoc table-operations :seed-declared-header? #'b/seed-declared-header?))
 (defn- observed-error [f] (try (f) nil (catch Throwable error error)))
 (defn- normalize-header [path definition]
-  (@#'stage/normalize-seed-function-header #'b/fail! #'b/seed-declared-header? path definition))
+  (@#'stage/normalize-seed-function-header #'b/fail! #'b/seed-declared-header? path definition definition))
 
 (deftest child-contract-has-three-public-apis-and-four-private-bridges
   (let [publics (ns-publics 'gravity.resolution.stage0-functions)
@@ -82,6 +82,17 @@
       (is (= reason (:reason (ex-data error))))
       (is (= "bad.gravity" (get-in (ex-data error) [:source-span :source]))))))
 
+(deftest legacy-normalizer-reads-definition-fields-once-before-header-callback
+  (let [events (atom []) values {:name 'f :params [] :body [1]}
+        definition (reify clojure.lang.ILookup
+                     (valAt [_ key] (swap! events conj key) (get values key))
+                     (valAt [_ key fallback] (swap! events conj key) (get values key fallback)))]
+    (with-redefs [b/seed-declared-header? (fn [actual]
+                                           (is (identical? definition actual))
+                                           (swap! events conj :header) false)]
+      (is (identical? definition (@#'b/normalize-seed-function-header "native.gravity" definition))))
+    (is (= [:name :params :body :header] @events))))
+
 (deftest record-and-duplicate-validation-retain-facts-and-returning-failures
   (doseq [[definition reason]
           [[{:name 'f :params '[x x] :body [1]} :duplicate-parameter-names]
@@ -142,7 +153,8 @@
           :let [failure (clojure.lang.Var/create (fn [& _] (throw error)))]]
     (doseq [run [#(stage/function-definition-form failure nil nil '(defn f [] 1))
                  #(stage/validate-function-definition! failure nil {:name 1})
-                 #(@#'stage/normalize-seed-function-header failure #'b/seed-declared-header? nil {:name 'f :params '[x :-] :body [1]})
+                 #(@#'stage/normalize-seed-function-header failure #'b/seed-declared-header? nil
+                    {:name 'f :params '[x :-] :body [1]} {:name 'f :params '[x :-] :body [1]})
                  #(@#'stage/validate-seed-function-names! failure nil [{:name 'f} {:name 'f}])
                  #(stage/stage0-function-table (assoc table-operations :validate-seed-function-names! failure) {:forms []})
                  #(@#'stage/validate-seed-source-headers! (assoc header-operations :seed-declared-header? failure) nil ['(defn f [] 1)])]]
@@ -155,7 +167,7 @@
                 [path '(defn f [x] x)] [#'b/defn-form? #'b/def-function-form? path '(defn f [x] x)]]
                [#'b/seed-declared-header? #'stage/seed-declared-header? true [raw] [{:params params :body body}]]
                [#'b/normalize-seed-function-header #'stage/normalize-seed-function-header true [path raw]
-                [#'b/fail! #'b/seed-declared-header? path raw]]
+                [#'b/fail! #'b/seed-declared-header? path {:name 'f :params params :body body} raw]]
                [#'b/validate-function-definition! #'stage/validate-function-definition! false [path raw]
                 [#'b/fail! path {:name 'f :params params :body body}]]
                [#'b/validate-seed-function-names! #'stage/validate-seed-function-names! true [path [raw]] [#'b/fail! path [raw]]]

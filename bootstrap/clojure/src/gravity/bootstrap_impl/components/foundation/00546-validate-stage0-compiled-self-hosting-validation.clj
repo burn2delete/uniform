@@ -70,7 +70,7 @@
 
 (defn- normalize-seed-function-header
   [source-path {:keys [name params body] :as definition}]
-  ((deref #'gravity.resolution.stage0-functions/normalize-seed-function-header) #'fail! #'seed-declared-header? source-path definition))
+  ((deref #'gravity.resolution.stage0-functions/normalize-seed-function-header) #'fail! #'seed-declared-header? source-path {:name name :params params :body body} definition))
 
 (defn validate-function-definition!
   [source-path {:keys [name params body]}]
