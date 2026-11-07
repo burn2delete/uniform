@@ -26,6 +26,7 @@ From `tools/advance`:
 clojure -M:test
 clojure -M:run doctor config.edn
 clojure -M:run catalog config.edn
+clojure -M:run status-summary config.edn
 clojure -M:run setup config.edn
 clojure -M:run run config.edn
 ```
@@ -38,6 +39,15 @@ including issue/PR writes and normal squash merges. It does not take over
 desktop chats or install a service, schedule or global agent configuration.
 Credentials are never changed or escalated by the harness. Denied operations
 are recorded and never retried or transferred.
+
+`status-summary` reads one existing local state snapshot and reports its digest,
+recorded catalog identity, task counts, every Attention item, linked effect
+states and recorded jobs. Local pause control is separate from execution
+status; unavailable GitHub controls and unverified process/service liveness are
+explicit. Missing or malformed state fails; missing and malformed local
+controls remain visible. This command starts no workers and performs no
+provider calls, coordination imports, native state writes or startup logging.
+The existing `status` command still prints the complete retained state.
 
 Paths resolve relative to config.edn. Local state, schema outputs, prompt
 artifacts and timestamped event logs live under `target/validation/advance`.
@@ -79,6 +89,18 @@ closed or removed selected task criteria invalidate stale selection. Changes
 to other tasks in the file preserve selection only when the selected task body,
 authority, region markers and file context outside task bodies match exactly at
 both published revisions.
+
+Before each selector job, the controller writes the complete retained increment
+records to an ignored, digest-addressed EDN snapshot under
+`target/validation/advance/selection-history/` in the selector worktree. The
+prompt carries a compact index containing identity, paths, dependencies, status,
+base/candidate/tree/merge facts, operator-control fields, explicit restricted,
+uncertain, pending and attention markers, referenced effect IDs and a pointer to the full record plus its
+digest. The selector can read the exact snapshot through its existing
+read-only worktree sandbox. The controller verifies the snapshot path, content
+digest and EDN contents before dispatch; missing, corrupt or changed snapshots
+fail closed. Existing records are never replaced, truncated, or treated as new
+dispatch authority.
 
 Authors own only declared paths, including their source task file for scoped
 evidence. The controller commits the first meaningful change and opens a draft
