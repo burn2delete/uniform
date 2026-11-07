@@ -8,9 +8,11 @@ name and three-argument API as an adapter. This slice also qualifies the
 existing native compiler report's source-span preservation claim; it adds no
 provenance fields to the instruction plan and does not change plan identity.
 
-D0, D1, D2, D3, D6, D8, D9, L2, C1, C6, C14, C15, BOOT1, BOOT8 and TEST2
+D0, D1, D2, D3, D6, D8, D9, L2, C1, C6, C14, C15, C18, BOOT1, BOOT8 and TEST2
 govern the boundary and its explicit limitations. Canonical C1/C6/C14 facts are
 obligations, not authority supplied by a native record or callback result.
+C18 specifically governs the report-correction traceability and evidence
+limits; this slice adds no canonical verification or release-gate authority.
 
 The frozen predecessor is `52d6138967b7392acd9a9c1613f13f5cb9140e8a`, tree
 `3bf7816b4673fadad46f5308632b88f907b6a506`. The isolated branch begins at
@@ -22,7 +24,7 @@ modes/blobs are conserved. No predecessor acceptance transfers to this slice.
 
 ## Public API, artifacts and dependency direction
 
-The proposed API is:
+The public API is:
 
 ```clojure
 (assemble-native-stage0-plan operations source-path source-text module)
@@ -62,9 +64,9 @@ values, callback return behavior, selected-callable timing and exact exceptions.
 The two SHA calls remain late; hash selection precedes plan serialization.
 The existing twenty-two Lowering implementations remain unchanged.
 
-The native report in component `00562` currently claims that instruction-plan
-emission preserves source spans, which the plan does not carry. Qualify that
-emit-pass record and compiler report to name the actual path/text-hash/module
+The predecessor native report in component `00562` claimed that instruction-plan
+emission preserves source spans, which the plan does not carry. The corrected
+emit-pass record and compiler report name the actual path/text-hash/module
 boundary and the unsupported instruction-span/origin/hygiene facts. Report IDs
 change with the truthful metadata. Plan bytes, plan IDs, validator semantics,
 diagnostic identities and execution remain unchanged. The report constructor
@@ -96,7 +98,41 @@ composition/provider/CI review before integration eligibility.
 
 ## Current status and unsupported boundaries
 
-This is the early draft scope. No new API is implemented or accepted yet.
+The complete assembler is implemented, with twenty explicit live Var ports.
+All twenty-two earlier Lowering function bodies and all twenty-five earlier
+CI command vectors remain byte-identical or structurally identical,
+respectively. The only local spelling adjustment in the moved assembler is
+the ignored binding name `name` to `_name`. Conservation receipt SHA256:
+`e3928d4d0fa7775aa9b0bec20743eac9111f30c0a32bad17622b3a27986db2f9`.
+
+The genuine source baseline and final receipts have SHA256
+`bced11e93012c488a35d835655e1cfeb307908a0347863bf7df5cee22ad4e733` and
+`88c93735347347844e7ae80492007cc61941cd0537e3df2e7c0f29e1d610fcb9`.
+Twelve complete observations match after the exact report qualification:
+eight plans emitted, six executed, two assembler entry refusals, two executor
+arity refusals after emission, and two retained header/policy refusals.
+Only the two entry refusals are newly stage-owned diagnostic decisions.
+Both `.gravity` and `.qst` sources execute through the genuine public macro
+and native-plan route. Plan identities are unchanged; report identities change
+only with the explicit provenance qualification.
+
+Focused assembly tests pass: 13 tests, 176 assertions. The actual appended
+whole-namespace CI command passes. Native instruction/backend regressions pass
+25 tests and 248 assertions; the five unheld native pipeline tests pass 140
+assertions. Affected package/build/Safety tests pass 24 tests and 614 assertions;
+the CI harness passes 54 tests and 685 assertions; language-boundary and
+ownership checks pass 48 tests and 1202 assertions. Cold loading exposes all
+23 declared APIs without loading Bootstrap or Diagnostics. Structural document
+and full-language roadmap validators pass; these do not prove language or
+release completion.
+
+Independent semantic and adversarial development reviews found no substantive
+implementation defect. Their scope findings were addressed by documenting
+this API in the namespace map and citing C18 for the report correction.
+These provisional reviews do not accept a mutable worktree. Final acceptance,
+exact composition/provider review and full CI remain pending for the clean
+authored commit. No Main integration is claimed by this evidence capture.
+
 The original eleven-path lease governs authoring. This manually authored
 external candidate has no Main, Ready, controller, service or recovery role;
 the designated integrator retains current-base preflight and Main integration.

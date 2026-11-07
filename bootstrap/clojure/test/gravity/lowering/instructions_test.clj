@@ -32,7 +32,7 @@
     (b/stage0-compiled-core-plan path source input)))
 
 (deftest complete-group-has-explicit-contracts
-  (is (= 22 (count (ns-publics 'gravity.lowering))))
+  (is (= 23 (count (ns-publics 'gravity.lowering))))
   (is (some #{'D0} (:governing-contracts (:gravity/namespace-contract (meta #'lowering/compile-native-expression)))))
   (doseq [operation [#'lowering/compile-native-expression #'lowering/compile-native-collection
                      #'lowering/compile-native-let #'lowering/compile-native-function

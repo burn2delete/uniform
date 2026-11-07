@@ -4,10 +4,14 @@
 
 (def ^:private namespace-contract
   '{:regenerates
- [:stage0-native-instructions :stage0-native-opcode-frequency-map :native-reconstruction-records :native-c14-artifact-and-projection],
+ [:stage0-native-complete-instruction-plan :stage0-native-instructions :stage0-native-opcode-frequency-map :native-reconstruction-records :native-c14-artifact-and-projection],
  :authenticates-inputs? false,
  :public-api
- {compile-native-expression
+ {assemble-native-stage0-plan
+  {:arglists ([operations source-path source-text module]), :admission :none,
+   :required-operations [:function-table :profile! :executable-profile! :effects! :safety! :performance! :math! :compiler! :backend! :runtime! :domain! :schema! :ai! :package! :tooling! :conformance! :compile-function :fail! :sha256-hex :instruction-summary],
+   :contract-boundary :stage0-native-plan-assembly},
+  compile-native-expression
   {:arglists ([operations module locals form]), :admission :none,
    :required-operations [:compile-expression :compile-collection :compile-let :builtin-functions :fail!],
    :contract-boundary :stage0-native-instruction-lowering},
@@ -112,7 +116,9 @@
      raw]),
    :admission :none}},
  :supported
- [:existing-stage0-native-expression-collection-let-function-and-summary-bodies
+ [:existing-stage0-whole-plan-assembly-and-fixed-policy-call-order
+  :late-native-function-table-policy-compilation-summary-failure-and-digest-vars
+  :existing-stage0-native-expression-collection-let-function-and-summary-bodies
   :late-native-recursion-helper-catalog-and-failure-vars
   :existing-llvm-c-wasm-reconstruction-bodies
   :existing-context-joins
@@ -151,6 +157,7 @@
   C13
   C14
   C15
+  C18
   B1
   B2
   B3
@@ -185,7 +192,8 @@
   :native-prefix-check-as-integrity
   :native-proof-or-conformance-labels-as-authority],
  :artifact-inputs
- [:trusted-stage0-native-module-local-scope-forms-and-function-data
+ [:trusted-stage0-source-path-text-module-and-live-owner-operations
+  :trusted-stage0-native-module-local-scope-forms-and-function-data
   :trusted-stage0-instruction-and-explicit-live-operation-vars
   :caller-owned-optimized-mir-and-policy-data
   :expected-and-actual-c14-record-data
@@ -199,7 +207,9 @@
  :namespace gravity.lowering,
  :diagnostic-ownership
  {:stage
-  ["L2-UNKNOWN-SYMBOL" "L2-UNKNOWN-CORE-FORM" "L2-LET-BINDING" "P4-HOST-REFLECTION"
+  ["L3-UNKNOWN-ALIAS" "L2-MAIN-ARITY"
+   :stage0-native-plan-shape-and-identity-preimage
+   "L2-UNKNOWN-SYMBOL" "L2-UNKNOWN-CORE-FORM" "L2-LET-BINDING" "P4-HOST-REFLECTION"
    "C14-MANIFEST"
    :exact-reconstruction-or-context-join-mismatch
    :existing-native-c14-ordered-structural-refusals
@@ -228,9 +238,9 @@
    "B14-NEGATIVE"],
   :propagated ["C11-VERIFY" :strict-structure-mismatch],
   :existing-owner
-  [:stage0-source-function-header-and-whole-plan-admission
+  [:stage0-source-function-header-and-policy-admission
    :stage0-native-diagnostic-construction-and-publication
-   :stage0-plan-identity-and-execution
+   :stage0-digest-operation-and-plan-execution
    :canonical-c11-c13-admission
    :target-legality
    :diagnostic-publication
@@ -239,7 +249,8 @@
    :native-backend-failure-payload-assembly
    :native-backend-selected-failure-operation]},
  :artifact-outputs
- [:stage0-native-expression-instructions
+ [:stage0-native-hosted-core-compiled-plan
+  :stage0-native-expression-instructions
   :stage0-native-function-binding-and-instructions
   :stage0-native-opcode-frequency-map
   :raw-llvm-c-wasm-c14-reconstruction-data
@@ -1090,6 +1101,81 @@
                 (apply merge-with +
                        (map (deref summary-var)
                             (remove nil? children))))))
+
+
+(defn assemble-native-stage0-plan
+  [operations source-path source-text module]
+  (let [function-table ((deref (:function-table operations)) module)
+        module (assoc module :function-table function-table)
+        _ ((deref (:profile! operations)) module)
+        _ ((deref (:executable-profile! operations)) source-path module (:forms module))
+        _ ((deref (:effects! operations)) module)
+        _ ((deref (:safety! operations)) module)
+        _ ((deref (:performance! operations)) module)
+        _ ((deref (:math! operations)) module)
+        _ ((deref (:compiler! operations)) module)
+        _ ((deref (:backend! operations)) module)
+        _ ((deref (:runtime! operations)) module)
+        _ ((deref (:domain! operations)) module)
+        _ ((deref (:schema! operations)) module)
+        _ ((deref (:ai! operations)) module)
+        _ ((deref (:package! operations)) module)
+        _ ((deref (:tooling! operations)) module)
+        _ ((deref (:conformance! operations)) module)
+        functions (into (sorted-map)
+                        (map (fn [[name definition]]
+                               [name ((deref (:compile-function operations))
+                                      module
+                                      definition)]))
+                        function-table)
+        main-function (get functions 'main)
+        _ (when-not main-function
+            ((deref (:fail! operations)) "L3-UNKNOWN-ALIAS"
+                   "stage0 executable requires a main function"
+                   {:source-span {:source source-path}
+                    :remediation "Add (defn main [] ...)."}))
+        _ (when-not (empty? (:params main-function))
+            ((deref (:fail! operations)) "L2-MAIN-ARITY"
+                   "stage0 main must take no arguments"
+                   {:source-span {:source source-path}
+                    :params (:params main-function)
+                    :remediation "Use (defn main [] ...)."}))
+        instruction-summary (apply merge-with +
+                                   (mapcat (fn [[_ function]]
+                                             (map (deref (:instruction-summary operations))
+                                                  (:instructions function)))
+                                           functions))
+        plan-base {:kind :gravity/stage0-hosted-core-compiled-plan
+                   :entrypoint 'main
+                   :source {:path source-path
+                            :sha256 (str "sha256:" ((deref (:sha256-hex operations)) source-text))}
+                   :compiler {:owner :clojure-bootstrap
+                              :stage :stage0
+                              :input :macro-expanded-core
+                              :output :instruction-plan
+                              :retirement-objective
+                              :replace-with-gravity-self-hosted-compiler}
+                   :module (select-keys module
+                                        [:module :source-path :profile :target
+                                         :effects :capabilities :providers
+                                         :exports
+                                         :safety])
+                   :binding-table (mapv (fn [[_name function]]
+                                           (assoc (:binding function)
+                                                  :arity (:arity function)))
+                                         (sort-by key functions))
+                   :functions functions
+                   :instruction-summary instruction-summary
+                   :effect-summary {:declared (:effects module)
+                                    :inferred (if (pos? (get instruction-summary
+                                                             :println
+                                                             0))
+                                                #{:io/write}
+                                                #{})
+                                    :capabilities (:capabilities module)}
+                   :diagnostics []}]
+    (assoc plan-base
+           :plan-id (str "sha256:" ((deref (:sha256-hex operations)) (pr-str plan-base))))))
 
 
 (doseq [[_ operation] (ns-publics *ns*)]

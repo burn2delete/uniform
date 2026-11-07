@@ -168,6 +168,23 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [native Stage0 plan assembly extraction](lowering-plan-assembly-evidence.md)
+adds `assemble-native-stage0-plan [operations source-path source-text module]`
+under `:stage0-native-plan-assembly`. Twenty live owner Vars supply function-table
+admission, fifteen policy calls, function compilation, summary, failure transport
+and hashing. The stage emits the existing complete hosted instruction plan and
+owns missing-main/main-arity decisions plus the unchanged identity preimage.
+Bootstrap retains source/header and policy implementations, diagnostic transport,
+report projection and execution. Tests in `gravity.lowering.plan-assembly-test`
+cover real plans and entry refusals, downstream failures, late ports, ordering,
+identity and exact exceptions. C18 joins the governing contracts for the native
+report correction: its emit contract preserves path/hash rather than nonexistent
+instruction spans, and its report names unsupported provenance. Report IDs change;
+plan bytes and IDs do not. This adds no canonical Core/MIR/C14 verification,
+source authentication, backend execution, release or self-hosting authority.
+Dependency direction remains Bootstrap adapters to Lowering, without a reverse
+import or Runtime dependency.
+
 The [Stage0 instruction extraction](lowering-instructions-evidence.md) moves
 the complete native expression, collection, let, function and opcode-summary
 bodies into `gravity.lowering`. Five explicit APIs consume trusted native

@@ -55,7 +55,7 @@
     (is (false? (:issues-certificates? contract)))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= 22 (count (:public-api contract))))
+    (is (= 23 (count (:public-api contract))))
     (is (some #{'gravity.c14-lowering.artifact}
               (get-in contract [:dependency-direction :consumed-by])))
     (is (some #{:existing-native-c14-source-and-file-artifact-assembly} (:supported contract)))

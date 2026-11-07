@@ -19,79 +19,31 @@
   [instruction]
   (gravity.lowering/native-instruction-summary #'stage0-instruction-summary instruction))
 
+(def ^:private stage0-plan-assembly-operations
+  {:function-table #'stage0-function-table
+   :profile! #'validate-stage0-compiled-profile!
+   :executable-profile! #'executable-profile!
+   :effects! #'validate-module-effects!
+   :safety! #'validate-stage0-executable-safety!
+   :performance! #'validate-stage0-compiled-performance!
+   :math! #'validate-stage0-compiled-math!
+   :compiler! #'validate-stage0-compiled-compiler!
+   :backend! #'validate-stage0-compiled-backend!
+   :runtime! #'validate-stage0-compiled-runtime!
+   :domain! #'validate-stage0-compiled-domain!
+   :schema! #'validate-stage0-compiled-schema!
+   :ai! #'validate-stage0-compiled-ai!
+   :package! #'validate-stage0-compiled-package!
+   :tooling! #'validate-stage0-compiled-tooling!
+   :conformance! #'validate-stage0-compiled-conformance!
+   :compile-function #'compile-stage0-function
+   :fail! #'fail!
+   :sha256-hex #'sha256-hex
+   :instruction-summary #'stage0-instruction-summary})
+
 (defn stage0-compiled-core-plan
   [source-path source-text module]
-  (let [function-table (stage0-function-table module)
-        module (assoc module :function-table function-table)
-        _ (validate-stage0-compiled-profile! module)
-        _ (executable-profile! source-path module (:forms module))
-        _ (validate-module-effects! module)
-        _ (validate-stage0-executable-safety! module)
-        _ (validate-stage0-compiled-performance! module)
-        _ (validate-stage0-compiled-math! module)
-        _ (validate-stage0-compiled-compiler! module)
-        _ (validate-stage0-compiled-backend! module)
-        _ (validate-stage0-compiled-runtime! module)
-        _ (validate-stage0-compiled-domain! module)
-        _ (validate-stage0-compiled-schema! module)
-        _ (validate-stage0-compiled-ai! module)
-        _ (validate-stage0-compiled-package! module)
-        _ (validate-stage0-compiled-tooling! module)
-        _ (validate-stage0-compiled-conformance! module)
-        functions (into (sorted-map)
-                        (map (fn [[name definition]]
-                               [name (compile-stage0-function
-                                      module
-                                      definition)]))
-                        function-table)
-        main-function (get functions 'main)
-        _ (when-not main-function
-            (fail! "L3-UNKNOWN-ALIAS"
-                   "stage0 executable requires a main function"
-                   {:source-span {:source source-path}
-                    :remediation "Add (defn main [] ...)."}))
-        _ (when-not (empty? (:params main-function))
-            (fail! "L2-MAIN-ARITY"
-                   "stage0 main must take no arguments"
-                   {:source-span {:source source-path}
-                    :params (:params main-function)
-                    :remediation "Use (defn main [] ...)."}))
-        instruction-summary (apply merge-with +
-                                   (mapcat (fn [[_ function]]
-                                             (map stage0-instruction-summary
-                                                  (:instructions function)))
-                                           functions))
-        plan-base {:kind :gravity/stage0-hosted-core-compiled-plan
-                   :entrypoint 'main
-                   :source {:path source-path
-                            :sha256 (str "sha256:" (sha256-hex source-text))}
-                   :compiler {:owner :clojure-bootstrap
-                              :stage :stage0
-                              :input :macro-expanded-core
-                              :output :instruction-plan
-                              :retirement-objective
-                              :replace-with-gravity-self-hosted-compiler}
-                   :module (select-keys module
-                                        [:module :source-path :profile :target
-                                         :effects :capabilities :providers
-                                         :exports
-                                         :safety])
-                   :binding-table (mapv (fn [[name function]]
-                                           (assoc (:binding function)
-                                                  :arity (:arity function)))
-                                         (sort-by key functions))
-                   :functions functions
-                   :instruction-summary instruction-summary
-                   :effect-summary {:declared (:effects module)
-                                    :inferred (if (pos? (get instruction-summary
-                                                             :println
-                                                             0))
-                                                #{:io/write}
-                                                #{})
-                                    :capabilities (:capabilities module)}
-                   :diagnostics []}]
-    (assoc plan-base
-           :plan-id (str "sha256:" (sha256-hex (pr-str plan-base))))))
+  (gravity.lowering/assemble-native-stage0-plan stage0-plan-assembly-operations source-path source-text module))
 
 (defn execute-stage0-instructions
   [plan env instructions]

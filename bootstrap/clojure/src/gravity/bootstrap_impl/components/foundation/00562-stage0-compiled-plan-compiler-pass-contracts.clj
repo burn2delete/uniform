@@ -41,8 +41,9 @@
     :input :checked-stage0-core
     :output :stage0-instruction-plan
     :requires #{:function-table :entrypoint :checked-core}
-    :preserves #{:source-spans :profile :effects :capabilities
+    :preserves #{:source-path :source-content-hash :profile :effects :capabilities
                  :diagnostics}
+    :unsupported-preservation #{:instruction-source-spans :generated-origin-chains :hygiene-context :canonical-node-identities :type-proofs :effect-proofs :ownership-proofs :safety-proofs}
     :invalidates #{}
     :regenerates #{:instruction-summary :binding-table}
     :capabilities #{}
@@ -113,6 +114,10 @@
                      :status :complete}
         report-base
         {:kind :gravity/stage0-hosted-core-compiled-compiler-report
+         :provenance-boundary
+         {:preserved #{:source-path :source-content-hash :selected-module-context}
+          :unsupported #{:instruction-source-spans :generated-origin-chains :hygiene-context :canonical-node-identities :type-proofs :effect-proofs :ownership-proofs :safety-proofs}
+          :authenticates-source? false}
          :document-set ["D1" "C1" "C11" "C13" "C14" "C15" "C18"]
          :compiled-plan-id (:plan-id plan)
          :compiler-pipeline-manifest manifest
