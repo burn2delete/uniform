@@ -1293,7 +1293,7 @@
    :non-authority w5-b13-non-authority
    :static-only? true
    :target :llvm-x86_64-linux
-   :residual-boundaries (:residual-boundaries (w5-b13-policy))})
+   :residual-boundaries (get (w5-b13-policy) :residual-boundaries)})
 
 (defn w5-b13-emit [request]
   (if (w5-b13-request-shape-valid? request)
@@ -1402,7 +1402,7 @@
                          :blocked? true
                          :non-authority w5-b13-non-authority
                          :residual-boundaries
-                         (:residual-boundaries (w5-b13-policy))}
+                         (get (w5-b13-policy) :residual-boundaries)}
                         (w5-b13-rejected
                          request
                          (w5-b13-diagnostic
