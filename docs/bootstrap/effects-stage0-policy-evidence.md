@@ -148,14 +148,26 @@ bind the exact clean authored tuple before integration eligibility.
 
 ## Current status and unsupported boundaries
 
-The four APIs and legacy adapters are implemented in the maintained draft.
-The checks above establish development evidence, not independent final
-acceptance or Main integration. The original eight-path lease governs
-authoring. The
-current published-Main SDK is recorded by manifest SHA256
+The original four-API extraction was frozen at source
+`9a0e5f4cbbc63564abc43ca740c71e709822ee60`; its eight-path lease ended
+normally. Hosted CI `42356394110/1` failed three older C8 contract assertions
+and encountered a separate Maven HTTP 429 before the resolution-invocation
+test. That candidate remains rejected for integration. The checks above are
+development evidence, not a claim that the complete hosted suite passed.
+
+The [C8 contract correction](effects-stage0-policy-c8-contract-evidence.md)
+records a new three-path source claim that preserves all thirty legacy API
+checks and pins the four additional Stage0 APIs explicitly. Its separate
+local C8 and real-source Effects checks pass; exact-commit independent review,
+fresh hosted CI and Main integration remain separate gates. No producer
+implementation changes or failed-run retries are part of that correction.
+
+The original extraction's published-Main SDK is recorded by manifest SHA256
 `33cf71a66f4482ed358362aca7438bdcc80a2544c1381cb7131ad1e0a256ca07`.
 Its nine exact published code files include the new recovery/workflow code;
 older source/CI acceptance remains bound to its recorded older tuple.
+The corrective source's later Main/API context is recorded separately and
+does not transfer acceptance to the failed candidate.
 
 This kernel does not provide canonical typed-core/C8 checking, latent or
 transitive function effects, branch/handler/continuation facts, complete

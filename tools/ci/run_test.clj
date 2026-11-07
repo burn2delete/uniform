@@ -743,6 +743,96 @@
     (is (not (str/includes? workflow
                             "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
 
+(deftest advance-status-selection-covers-every-eligible-subset-and-retains-controls
+  (let [paths ["tools/advance/README.md"
+               "tools/advance/src/advance/main.clj"
+               "tools/advance/test/advance/main_test.clj"]
+        change (fn [path]
+                 {:old-mode "100644" :new-mode "100644" :status "M" :path path})
+        subsets (mapv (fn [mask]
+                        (vec (keep-indexed (fn [index path]
+                                             (when (bit-test mask index) path)) paths)))
+                      (range 1 8))
+        leaf-catalog (ci/load-leaf-catalog)
+        output-map (fn [selection]
+                     (into {}
+                           (map (fn [line]
+                                  (let [[mode value] (str/split line #"=" 2)]
+                                    [mode (= "true" value)]))
+                                (ci/selection-output-lines selection))))]
+    (is (= 7 (count subsets)))
+    (doseq [subset subsets]
+      (let [changes (mapv change subset)
+            selection (ci/stage-selection changes)
+            output (output-map selection)
+            bootstrap-commands (set (map first (ci/commands-for-selection "bootstrap" selection)))]
+        (is (ci/advance-status-only? changes) (pr-str subset))
+        (is (= :selected (:kind selection)) (pr-str subset))
+        (is (= :advance-status-only (:reason selection)) (pr-str subset))
+        (is (= subset (:paths selection)) (pr-str subset))
+        (is (= [] (:stages selection)) (pr-str subset))
+        (is (= #{"static" "contracts" "bootstrap"} (:modes selection)) (pr-str subset))
+        (doseq [mode ["static" "contracts" "bootstrap" "leaves-portable"
+                      "leaves-darwin" "darwin-unsupported"]]
+          (is (true? (get output mode)) (str mode " retained for " subset)))
+        (doseq [mode ["macro" "resolution" "checked-core-runtime"]]
+          (is (false? (get output mode)) (str mode " skipped for " subset))
+          (is (ci/skip-for-stage-selection? mode selection) (str mode " skipped for " subset)))
+        (doseq [mode ["resolution-pipeline" "resolution-unmetered"
+                      "resolution-invocation-selection"]]
+          (is (ci/skip-for-stage-selection? mode selection) (str mode " skipped for " subset)))
+        (doseq [mode ["static" "contracts" "bootstrap"]]
+          (is (not (ci/skip-for-stage-selection? mode selection))
+              (str mode " retained for " subset)))
+        (is (true? (get output "static-tools-required")))
+        (is (true? (get output "selection-valid")))
+        (doseq [command ["language-boundary" "catalog-controls" "ownership-inventory"
+                         "bootstrap-input-controls"]]
+          (is (contains? bootstrap-commands command)
+              (str command " retained for " subset)))
+        (doseq [platform ["portable" "darwin"]
+                :let [leaf (ci/leaf-selection-for-changes platform leaf-catalog changes)
+                      full-entries (ci/platform-leaf-catalog platform leaf-catalog)]]
+          (is (= :full (:kind leaf)) (str platform " leaf selection for " subset))
+          (is (= (mapv :id full-entries) (mapv :id (:entries leaf)))
+              (str platform " keeps the full platform catalog for " subset)))))))
+
+(deftest advance-status-selection-falls-back-for-all-other-records-and-inputs
+  (let [status-path "tools/advance/src/advance/main.clj"
+        regular {:old-mode "100644" :new-mode "100644" :status "M" :path status-path}
+        full-selection (fn [changes] (ci/stage-selection changes))]
+    (doseq [change [{:old-mode "000000" :new-mode "100644" :status "A" :path status-path}
+                    {:old-mode "100644" :new-mode "000000" :status "D" :path status-path}
+                    {:old-mode "100644" :new-mode "100644" :status "R" :path status-path}
+                    {:old-mode "100644" :new-mode "100644" :status "C" :path status-path}
+                    {:old-mode "100755" :new-mode "100644" :status "M" :path status-path}
+                    {:old-mode "100644" :new-mode "100755" :status "M" :path status-path}
+                    {:old-mode "100644" :new-mode "120000" :status "M" :path status-path}
+                    {:old-mode "100644" :new-mode "100644" :status "T" :path status-path}]]
+      (is (= :full (:kind (full-selection [change]))) (pr-str change)))
+    (doseq [outside ["README.md" "docs/status.md" "language/compiler/src/gravity/new.gravity"
+                     "tools/ci/run.clj" ".github/workflows/ci.yml" "contracts/ci-policy.edn"
+                     "specs/compiler.md" "unknown/new-owner.clj"]]
+      (is (= :full (:kind (full-selection [regular (assoc regular :path outside)])))
+          (str "mixed input must remain full: " outside)))
+    (doseq [changes [[]
+                     [nil]
+                     [(dissoc regular :status)]
+                     [(assoc regular :path nil)]
+                     [regular regular]]]
+      (is (= :full (:kind (full-selection changes))) (pr-str changes)))
+    (is (= :no-changes (:reason (full-selection []))))
+    (let [selection {:kind :full :reason :non-pull-request :paths []}]
+      (is (= #{"static=true" "contracts=true" "bootstrap=true" "macro=true"
+               "resolution=true" "checked-core-runtime=true" "leaves-portable=true"
+               "leaves-darwin=true" "darwin-unsupported=true" "static-tools-required=true"
+               "selection-valid=true"}
+             (set (ci/selection-output-lines selection)))))
+    (let [discovery-fallback {:kind :full :reason :path-discovery-failed
+                              :paths [] :selection-error "stale or malformed discovery"}]
+      (is (= :failed (:status (ci/selection-error-result "static" discovery-fallback))))
+      (is (nil? (ci/selection-error-result "bootstrap" discovery-fallback))))))
+
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
