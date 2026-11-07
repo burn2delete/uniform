@@ -469,6 +469,99 @@
       (is (= original-bytes (slurp (io/file repo "work.edn")))))
     ))
 
+(defn composition-conflict-fixture! []
+  (let [{:keys [ctx repo original main-worktree]} (fresh-source-fixture!)
+        _ (spit (io/file main-worktree "work.edn") "{:value :main}\n")
+        _ (rt/git ctx main-worktree "add" "work.edn")
+        _ (rt/git ctx main-worktree "commit" "-m" "Main changes the same owned file")
+        base (rt/git ctx main-worktree "rev-parse" "HEAD")
+        _ (rt/git ctx main-worktree "push" "origin" "HEAD:main")
+        result (rt/command ctx repo ["git" "merge" "--no-edit" base])
+        _ (is (= 1 (:exit result)))
+        original (assoc original :resume-status :ci :error {:message "Command failed" :details (assoc result :argv ["git" "merge" "--no-edit" base] :restricted false)})
+        _ (rt/update! ctx assoc-in [:tasks "authored"] original)
+        fresh (str (io/file (:state-dir ctx) "resolved-composition"))
+        branch "codex/resolved-composition"
+        _ (rt/git ctx repo "worktree" "add" "-b" branch fresh (:candidate original))
+        result (rt/command ctx fresh ["git" "merge" "--no-edit" base])
+        _ (is (= 1 (:exit result)))
+        _ (spit (io/file fresh "work.edn") "{:source 2 :main :main}\n")
+        _ (rt/git ctx fresh "add" "work.edn")
+        _ (rt/git ctx fresh "commit" "-m" "Preserve both changes in the owned conflict")
+        validation {:base base :candidate (rt/git ctx fresh "rev-parse" "HEAD")
+                    :tree (rt/git ctx fresh "rev-parse" "HEAD^{tree}") :worktree fresh :branch branch}
+        conflict (recovery/composition-conflict-snapshot! ctx original)
+        proof (str (io/file (:state-dir ctx) "resolution-peer.edn"))
+        _ (rt/write-edn! proof {:disposition :accepted-owned-composition-resolution :findings [] :task-key "authored"
+                                :source (select-keys original [:base :candidate :tree])
+                                :resolution (select-keys validation [:base :candidate :tree])
+                                :parents [(:candidate original) base] :conflict-paths (:conflict-paths conflict)})
+        evidence (str (io/file (:state-dir ctx) "composition-evidence.edn"))
+        receipt {:kind :owned-composition-conflict :task-key "authored" :original-pr (:pr original)
+                 :original-task-sha256 (rt/digest (pr-str original)) :original-conflict conflict
+                 :validation validation :checks [check-command]
+                 :resolution-acceptance {:path proof :sha256 (recovery/file-digest proof)}}
+        _ (rt/write-edn! evidence receipt)]
+    {:ctx ctx :repo repo :original original :fresh fresh :proof proof :evidence evidence :receipt receipt :conflict conflict}))
+
+(deftest owned-composition-recovery-preserves-the-conflict-and-original-pr
+  (let [{:keys [ctx repo original fresh evidence conflict]} (composition-conflict-fixture!)
+        jobs (:jobs @(:state ctx)) stages (atom [])
+        request (flow/queue-recovery! ctx :recover-composition "authored" evidence)]
+    (flow/process-recovery-requests! ctx #{"authored"})
+    (is (= original (flow/task ctx "authored")) "An active native writer blocks the request")
+    (flow/process-recovery-requests! ctx #{})
+    (let [queued (flow/task ctx "authored")]
+      (is (= :applied (get-in @(:state ctx) [:operator-recovery-requests (:request request) :status])))
+      (is (= original (get-in queued [:composition-recovery-history 0 :original-task])))
+      (is (= (:pr original) (:pr queued)))
+      (is (= (:branch original) (:publication-branch queued)))
+      (is (= (:error original) (:error queued)))
+      (with-redefs [gh/status! (fn [& _] nil) gh/comment! (fn [& _] nil) gh/draft! (fn [& _] nil)
+                    gh/api (fn ([_ endpoint]
+                                (is (str/includes? endpoint (str "head=fixture:" (:branch original))))
+                                [(assoc (:pr original) :state "open" :draft true)])
+                             ([_ _ _ _] (throw (ex-info "Must not recreate the existing PR" {}))))
+                    codex/command! (fn [_ _ cwd argv]
+                                     (is (= fresh cwd)) (is (= check-command argv))
+                                     (swap! stages conj :check) {:exitCode 0})
+                    codex/job! (fn [c _ _ mode _ _ _]
+                                 (is (= :read mode)) (swap! stages conj :review)
+                                 (assoc (select-keys (flow/task c "authored") [:base :candidate :tree])
+                                        :verdict "approved" :findings []))]
+        (flow/prepare! ctx "authored"))
+      (is (= [:check :review] @stages))
+      (is (= :ci (:status (flow/task ctx "authored")))))
+    (is (= jobs (:jobs @(:state ctx))))
+    (is (= conflict (recovery/composition-conflict-snapshot! ctx original)))
+    (is (= (:candidate (flow/task ctx "authored"))
+           (first (str/split (rt/git ctx repo "ls-remote" "origin" (str "refs/heads/" (:branch original))) #"\s+"))))))
+
+(deftest owned-composition-recovery-rejects-stale-refused-or-unaccepted-inputs
+  (doseq [mutation [:stale-task :conflict-bytes :refusal :uncertain :foreign-resolution :wrong-proof :stale-proof :dirty-resolution :shared-api]]
+    (let [{:keys [ctx repo original fresh evidence receipt proof]} (composition-conflict-fixture!)
+          changed (case mutation
+                    :stale-task (assoc receipt :original-task-sha256 "stale")
+                    :wrong-proof (do (rt/write-edn! proof (assoc (rt/read-edn proof) :findings ["unresolved"]))
+                                     (assoc-in receipt [:resolution-acceptance :sha256] (recovery/file-digest proof)))
+                    receipt)]
+      (case mutation
+        :conflict-bytes (spit (io/file repo "work.edn") "changed after inspection")
+        :refusal (rt/update! ctx assoc-in [:tasks "authored" :error :details :restricted] true)
+        :uncertain (rt/update! ctx assoc-in [:effects "unknown"] {:status :uncertain})
+        :stale-proof (spit proof "{:changed true}")
+        :dirty-resolution (spit (io/file fresh "work.edn") "dirty")
+        :foreign-resolution (do (spit (io/file fresh "foreign.edn") "foreign")
+                                (rt/git ctx fresh "add" "foreign.edn")
+                                (rt/git ctx fresh "commit" "--amend" "--no-edit"))
+        :shared-api (rt/shared-restrict! ctx :api (rt/digest (pr-str ["POST" "graphql"])) {:message "held"})
+        nil)
+      (rt/write-edn! evidence changed)
+      (let [before (flow/task ctx "authored")]
+        (is (thrown? Exception (flow/recover-composition! ctx "authored" evidence)) (name mutation))
+        (is (= before (flow/task ctx "authored")))
+        (is (nil? (:composition-recovery (flow/task ctx "authored"))))))))
+
 (deftest fresh-source-validation-rejects-unflagged-check-refusals
   (doseq [stream [:stdout :stderr]]
     (let [{:keys [ctx evidence receipt original]} (fresh-source-fixture! false)

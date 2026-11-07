@@ -17,7 +17,7 @@
 
 (defn error-digest [task] (rt/digest (pr-str (:error task))))
 
-(defn- path-output! [ctx cwd argv]
+(defn- source-command! [ctx cwd argv exits]
   (let [key (rt/digest (pr-str argv))]
     (require! (not (get-in @(:state ctx) [:restricted-commands key])) "Source path inspection is locally refused")
     (rt/assert-authorized! ctx :command key)
@@ -25,8 +25,11 @@
       (when (rt/authorization-denied? (:err result))
         (rt/remember-denial! ctx :command key {:argv argv :result result})
         (rt/fail! "Authored inspection encountered a refusal" {:restricted true :writer-ended? true}))
-      (require! (zero? (:exit result)) "Cannot inspect the authored delta")
-      (:out result))))
+      (require! (contains? exits (:exit result)) "Cannot inspect the authored delta")
+      result)))
+
+(defn- path-output! [ctx cwd argv]
+  (:out (source-command! ctx cwd argv #{0})))
 
 (defn changes [ctx cwd]
   (vec (distinct
@@ -482,6 +485,94 @@
         original (get-in task [:fresh-source-validation-history (dec (count (:fresh-source-validation-history task))) :original-task])]
     (require! (= inspection (inspect-fresh-source! ctx original (:evidence-file inspection)))
               "The fresh validation handoff changed before native checking")
+    inspection))
+
+(defn composition-conflict-snapshot! [ctx task]
+  (let [cwd (:worktree task)
+        conflicts (vec (remove empty? (str/split (path-output! ctx cwd
+                                  ["git" "diff" "--name-only" "--diff-filter=U" "-z" "--"]) #"\u0000")))]
+    (require! (seq conflicts) "The original worktree has no unresolved merge conflict")
+    (doseq [path conflicts] (owned-file! task path))
+    {:head (rt/git ctx cwd "rev-parse" "HEAD")
+     :merge-head (rt/git ctx cwd "rev-parse" "MERGE_HEAD")
+     :conflict-paths conflicts
+     :index-sha256 (rt/digest (path-output! ctx cwd ["git" "ls-files" "--stage" "-z"]))
+     :files (into (sorted-map)
+                  (for [path (changes ctx cwd)
+                        :let [file (owned-file! (assoc task :paths [path]) path)]]
+                    [path {:sha256 (file-digest file) :executable (.canExecute file)}]))}))
+
+(defn inspect-composition! [ctx task evidence-file]
+  (let [file (io/file (rt/canonical evidence-file))
+        _ (require! (.startsWith (.toPath file) (.toPath (io/file (rt/canonical (:state-dir ctx)))))
+                    "Composition evidence must be retained by this controller")
+        receipt (rt/read-edn file) validation (:validation receipt)
+        {:keys [base candidate tree worktree branch]} validation
+        details (get-in task [:error :details])
+        proof (referenced-evidence! (:resolution-acceptance receipt))
+        snapshot (composition-conflict-snapshot! ctx task)
+        repo (get-in ctx [:config :repo-dir])
+        commands (vec (distinct (concat (get-in ctx [:config :checks]) (:checks receipt))))]
+    (require! (and (= :attention (:status task)) (= :ci (:resume-status task)) (:pr task)
+                   (= :owned-composition-conflict (:kind receipt)) (= (:key task) (:task-key receipt))
+                   (= (:pr task) (:original-pr receipt))
+                   (= (rt/digest (pr-str task)) (:original-task-sha256 receipt))
+                   (= "Command failed" (get-in task [:error :message])) (= 1 (:exit details))
+                   (false? (:restricted details)) (= ["git" "merge" "--no-edit" base] (:argv details))
+                   (not (rt/authorization-denied? (str (:out details) "\n" (:err details))))
+                   (= snapshot (:original-conflict receipt))
+                   (= [(:candidate task) base] [(:head snapshot) (:merge-head snapshot)]))
+              "This is not the exact ordinary owned composition conflict")
+    (require! (not-any? #(#{:pending :uncertain :restricted} (:status %)) (vals (:effects @(:state ctx))))
+              "Unsettled effects must be inspected before composition recovery")
+    (require! (and (= :accepted-owned-composition-resolution (:disposition proof))
+                   (= [] (:findings proof)) (= (:key task) (:task-key proof))
+                   (= (select-keys task [:base :candidate :tree]) (:source proof))
+                   (= (select-keys validation [:base :candidate :tree]) (:resolution proof))
+                   (= [(:candidate task) base] (:parents proof))
+                   (= (:conflict-paths snapshot) (:conflict-paths proof)))
+              "The exact conflict resolution needs independent acceptance")
+    (require! (and (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [base candidate tree])
+                   (string? branch) (str/starts-with? branch "codex/") (not= branch (:branch task))
+                   (string? worktree) (not= (rt/canonical worktree) (rt/canonical (:worktree task)))
+                   (= (rt/common-git-directory worktree) (rt/common-git-directory repo))
+                   (= (rt/canonical worktree) (rt/canonical (rt/git ctx worktree "rev-parse" "--show-toplevel")))
+                   (= branch (rt/git ctx worktree "symbolic-ref" "--short" "HEAD"))
+                   (= candidate (rt/git ctx worktree "rev-parse" "HEAD"))
+                   (= tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")) (empty? (changes ctx worktree))
+                   (= [(:candidate task) base] (str/split (rt/git ctx worktree "show" "-s" "--format=%P" candidate) #" ")))
+              "The resolved candidate needs a distinct clean named normal composition")
+    (let [automatic (source-command! ctx repo ["git" "merge-tree" "--write-tree" (:candidate task) base] #{1})
+          automatic-tree (first (str/split-lines (:out automatic)))
+          _ (require! (re-matches #"[0-9a-f]{40}" (or automatic-tree "")) "Automatic conflict tree is unavailable")
+          resolved (vec (remove empty? (str/split (path-output! ctx worktree
+                                     ["git" "diff" "--name-only" "--no-renames" "-z" automatic-tree candidate "--"]) #"\u0000")))]
+      (require! (= (set (:conflict-paths snapshot)) (set resolved))
+                "Resolution changed paths beyond the recorded conflicts"))
+    (require! (and (seq commands) (every? #(and (vector? %) (seq %) (every? string? %)
+                                               (contains? (get-in ctx [:config :check-executables]) (first %))) commands))
+              "Composition checks are outside the configured toolset")
+    (doseq [argv commands]
+      (require! (and (not (get-in @(:state ctx) [:restricted-checks (codex/check-key ctx argv)]))
+                     (not (get-in @(:state ctx) [:restricted-commands (rt/digest (pr-str argv))])))
+                "A composition check remains refused")
+      (rt/assert-authorized! ctx :check (codex/check-key ctx argv))
+      (rt/assert-authorized! ctx :command (rt/digest (pr-str argv))))
+    (let [shared (rt/coordinate! ctx (fn [s] [s (select-keys s [:main-effects :restrictions])]))]
+      (require! (not-any? #(= (:state-file ctx) (:state-file %)) (vals (:main-effects shared)))
+                "An original Main operation still needs inspection")
+      (require! (not (get-in shared [:restrictions :api (rt/digest (pr-str ["POST" "graphql"]))]))
+                "The shared API refusal still blocks continuation"))
+    (rt/git ctx repo "merge-base" "--is-ancestor" base (rt/fresh-main! ctx))
+    {:kind :owned-composition-conflict :stage :queued :validation validation :commands commands
+     :original-error-sha256 (error-digest task) :evidence-file (str file) :evidence-sha256 (file-digest file)
+     :resolution-acceptance (:resolution-acceptance receipt) :original-conflict snapshot}))
+
+(defn validate-composition-queued! [ctx task]
+  (let [inspection (:composition-recovery task)
+        original (:original-task (peek (:composition-recovery-history task))) ]
+    (require! (= inspection (inspect-composition! ctx original (:evidence-file inspection)))
+              "The composition resolution changed before native checking")
     inspection))
 
 (defn review-permitted? [task]
