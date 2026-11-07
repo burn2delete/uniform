@@ -721,24 +721,36 @@
                 (str prefix (apply str (repeat (- length (count prefix)) filler))))
         large-body (sized body-marker 240000 "b")
         large-repository (sized repository-marker 300000 "r")
-        repository {:id 99 :node_id "repo-99" :name "repo" :full_name "fixture/repo"
-                    :html_url "https://example.invalid/repos/fixture/repo" :url "https://api.example.invalid/repos/fixture/repo"
-                    :fork true :default_branch "stable" :disabled true :archived true
-                    :permissions {:pull true :push false}
-                    :description large-repository}
+        repository-a {:id 99 :node_id "repo-99" :name "repo-a" :full_name "fixture/repo-a"
+                      :html_url "https://example.invalid/repos/fixture/repo-a" :url "https://api.example.invalid/repos/fixture/repo-a"
+                      :fork false :default_branch "main" :disabled false :archived false
+                      :permissions {:pull true :push false :admin false}
+                      :description large-repository}
+        repository-b {:id 100 :node_id "repo-100" :name "repo-b" :full_name "fixture/repo-b"
+                      :html_url "https://example.invalid/repos/fixture/repo-b" :url "https://api.example.invalid/repos/fixture/repo-b"
+                      :fork true :default_branch "release" :disabled true :archived true
+                      :permissions {:pull false :push true :admin true}
+                      :description large-repository}
+        labels-a [{:id 91 :node_id "label-91" :url "https://example.invalid/labels/91"
+                   :name "seedless-a" :description "planner label A" :color "5319e7" :default true}]
+        labels-b [{:id 92 :node_id "label-92" :url "https://example.invalid/labels/92"
+                   :name "seedless-b" :description "planner label B" :color "c0ffee" :default false}]
         task (assoc (slice "a") :status :attention :base base :candidate "candidate-sha" :tree "candidate-tree"
                     :issue {:number 7 :node_id "issue-7" :html_url "https://example.invalid/issues/7"
                             :body "preserved-task-history"}
                     :error {:message "known planner blocker" :details {:history "preserved-error-history"}}
                     :dependencies [] :stack-on "")
         pr (fn [number ref sha]
-             {:number number :title (str "Large historical PR " number)
-              :html_url (str "https://example.invalid/pulls/" number)
-              :state "OPEN" :draft true :body large-body
-              :labels [{:id 91 :name "seedless" :color "5319e7"}]
-              :head {:ref ref :sha sha :repo repository}
-              :base {:ref "main" :sha base :repo repository}
-              :changed_files 3 :changed_paths ["tools/seedless/src/seedless/workflow.clj"]})
+             (let [[repository labels] (if (= number 12)
+                                         [repository-a labels-a]
+                                         [repository-b labels-b])]
+               {:number number :title (str "Large historical PR " number)
+                :html_url (str "https://example.invalid/pulls/" number)
+                :state "OPEN" :draft true :body large-body
+                :labels labels
+                :head {:ref ref :sha sha :repo repository}
+                :base {:ref "main" :sha base :repo repository}
+                :changed_files 3 :changed_paths ["tools/seedless/src/seedless/workflow.clj"]}))
         open-prs [(pr 12 "codex/large-12" "head-sha-12") (pr 13 "codex/large-13" "head-sha-13")]
         prompts (atom [])
         valid {:coverage ["module.clj"] :source-closure ["module.clj"] :target "fixture target"
@@ -789,15 +801,16 @@
                (get-in (first open-prs-prompt) [:body :uniform/retained-untrusted-pr-body :path])))
         (is (= "head-sha-12" (get-in (first open-prs-prompt) [:head :sha])))
         (is (= "head-sha-13" (get-in (second open-prs-prompt) [:head :sha])))
-        (is (= "fixture/repo" (get-in (first open-prs-prompt) [:head :repo :full_name])))
-        (is (= true (get-in (first open-prs-prompt) [:head :repo :fork])))
-        (is (= "stable" (get-in (first open-prs-prompt) [:head :repo :default_branch])))
-        (is (= true (get-in (first open-prs-prompt) [:head :repo :disabled])))
-        (is (= true (get-in (first open-prs-prompt) [:head :repo :archived])))
-        (is (= {:pull true :push false}
-               (get-in (first open-prs-prompt) [:head :repo :permissions])))
-        (is (= [{:id 91 :name "seedless" :color "5319e7"}]
-               (:labels (first open-prs-prompt))))
+        (is (= "fixture/repo-a" (get-in (first open-prs-prompt) [:head :repo :full_name])))
+        (is (= (select-keys repository-a [:fork :default_branch :disabled :archived :permissions])
+               (select-keys (get-in (first open-prs-prompt) [:head :repo])
+                            [:fork :default_branch :disabled :archived :permissions])))
+        (is (= labels-a (:labels (first open-prs-prompt))))
+        (is (= "fixture/repo-b" (get-in (second open-prs-prompt) [:head :repo :full_name])))
+        (is (= (select-keys repository-b [:fork :default_branch :disabled :archived :permissions])
+               (select-keys (get-in (second open-prs-prompt) [:head :repo])
+                            [:fork :default_branch :disabled :archived :permissions])))
+        (is (= labels-b (:labels (second open-prs-prompt))))
         (is (= #{:artifact :sha256 :path}
                (set (keys (get-in (first open-prs-prompt)
                                   [:head :repo :uniform/retained-repository-metadata-v2])))))
@@ -813,6 +826,24 @@
                (get-in raw [:open-prs])))
         (is (= (get-in raw [:open-prs])
                (restore-planning-open-prs open-prs-prompt (get-in raw [:open-prs]))))
+        (let [swapped-labels (assoc-in open-prs-prompt [0 :labels]
+                                       (:labels (second open-prs-prompt)))
+              control-keys [:fork :default_branch :disabled :archived :permissions]
+              first-repo (get-in open-prs-prompt [0 :head :repo])
+              second-repo (get-in open-prs-prompt [1 :head :repo])
+              swapped-controls (assoc-in open-prs-prompt [0 :head :repo]
+                                         (merge first-repo (select-keys second-repo control-keys)))
+              label-loss (update-in open-prs-prompt [0 :labels]
+                                    (fn [labels] (mapv #(dissoc % :description) labels)))
+              control-loss (update-in open-prs-prompt [0 :head :repo] dissoc :permissions)]
+          (is (not= (get-in raw [:open-prs])
+                    (restore-planning-open-prs swapped-labels (get-in raw [:open-prs]))))
+          (is (not= (get-in raw [:open-prs])
+                    (restore-planning-open-prs swapped-controls (get-in raw [:open-prs]))))
+          (is (not= (get-in raw [:open-prs])
+                    (restore-planning-open-prs label-loss (get-in raw [:open-prs]))))
+          (is (not= (get-in raw [:open-prs])
+                    (restore-planning-open-prs control-loss (get-in raw [:open-prs])))))
         (is (= "preserved-task-history"
                (get-in raw [:tasks "a" :issue :body])))
         (is (= [task]
