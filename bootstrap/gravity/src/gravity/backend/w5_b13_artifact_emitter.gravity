@@ -163,10 +163,14 @@
     :release-attempt? :provenance :clojure-seed-boundary? :self-hosted?
     :release? :public-authority? :authority :non-authority})
 
+; Module-development def initializers are inert literals, not expressions.
+; Keep this exported value self-contained rather than embedding var references.
 (def w5-b13-diagnostic-catalog
   {:artifact :gravity/w5-b13-diagnostic-catalog
    :schema-version 1
-   :diagnostics w5-b13-diagnostic-ids
+   :diagnostics ["B13-SCHEMA" "B13-HASH" "B13-PROVENANCE" "B13-SOURCEMAP"
+                 "B13-EVIDENCE" "B13-TARGET" "B13-CONFORMANCE"
+                 "B13-REPRODUCIBILITY" "B13-RELEASE" "B13-GRAPH"]
    :remediation
    {"B13-SCHEMA" :emit-supported-common-manifest-schema
     "B13-HASH" :recompute-content-hash-and-manifest-digest
@@ -178,7 +182,12 @@
     "B13-REPRODUCIBILITY" :record-environment-inputs-nondeterminism-and-timestamp-policy
     "B13-RELEASE" :block-release-grade-output-until-release-evidence-is-present
     "B13-GRAPH" :repair-artifact-graph-nodes-and-edges}
-   :non-authority w5-b13-non-authority})
+   :non-authority {:clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false
+                   :full-language? false
+                   :authority :non-authority}})
 
 (defn w5-b13-policy []
   {:artifact :gravity/w5-b13-artifact-emission-policy
