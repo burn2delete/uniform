@@ -44,7 +44,8 @@
               *print-level* 6]
       (println (pr-str (merge {:marker "ci-public-release-subset"
                                :phase phase
-                               :edge edge}
+                               :edge edge
+                               :monotonic-ns (System/nanoTime)}
                               data)))
       (flush))
     (catch Throwable _

@@ -104,6 +104,9 @@ files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
 markers to stderr. It preserves public commands, results and the existing
 60-second inner process watchdog. CI still rejects tracked source mutation;
 the normal artifact checksum manifest includes the generated proof files.
+Markers include monotonic nanoseconds for intervals within that child JVM.
+The existing syntax-regression cohort also emits the development runner's
+test-level progress; its six namespaces and 600-second watchdog are retained.
 This is current bootstrap-hosted public subset coverage, not full-language,
 self-hosting or seedless-release acceptance.
 

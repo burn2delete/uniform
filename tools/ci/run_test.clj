@@ -725,7 +725,16 @@
                        #'public-adapter-rejected-record]
         originals (mapv var-get original-vars)
         flushes (atom 0)
-        writer (public-adapter-error-writer flushes)]
+        writer (public-adapter-error-writer flushes)
+        assert-monotonic-markers!
+        (fn [output]
+          (let [markers (->> (str/split-lines (str output))
+                             (remove str/blank?)
+                             (mapv edn/read-string))]
+            (is (seq markers))
+            (is (every? #(integer? (:monotonic-ns %)) markers))
+            (when (seq markers)
+              (is (apply <= (mapv :monotonic-ns markers))))))]
     (reset! public-adapter-events [])
     (reset! public-adapter-throw? false)
     (let [result (binding [*err* writer]
@@ -745,7 +754,8 @@
       (doseq [phase [:p18-shell-run :t02-package :t04-sweep
                      :accepted-fixture :rejected-fixture]]
         (is (str/includes? (str writer) (str ":phase " phase)) phase))
-      (is (str/includes? (str writer) ":edge :return")))
+      (is (str/includes? (str writer) ":edge :return"))
+      (assert-monotonic-markers! writer))
     (let [failure (ex-info "fixture wrapper failure" {:phase :t04})
           throw-flushes (atom 0)
           throw-writer (public-adapter-error-writer throw-flushes)]
@@ -763,7 +773,8 @@
         (is (= originals (mapv var-get original-vars)))
         (is (pos? @throw-flushes))
         (is (str/includes? (str throw-writer) ":phase :t04-sweep"))
-        (is (str/includes? (str throw-writer) ":edge :throw"))))
+        (is (str/includes? (str throw-writer) ":edge :throw"))
+        (assert-monotonic-markers! throw-writer)))
     (reset! public-adapter-throw? false)))
 
 (deftest public-adapter-rejects-unknown-options-before-heavy-load-and-propagates-nonzero-exit
@@ -1925,10 +1936,23 @@
         full {:kind :full :reason :path-discovery-failed :paths []}
         unknown {:kind :selected :paths ["src/new-owner.clj"]}
         docs-only {:kind :docs-only :paths ["README.md"]}]
-    (let [ordinary-commands (command-ids ordinary-reader)]
+    (let [ordinary-catalog (ci/commands-for-selection "bootstrap" ordinary-reader)
+          ordinary-commands (mapv first ordinary-catalog)]
       (is (some #{"reader-regression"} ordinary-commands))
       (is (some #{"syntax-regression"} ordinary-commands))
-      (is (not (has-input-controls? ordinary-reader))))
+      (is (not (has-input-controls? ordinary-reader)))
+      (let [[syntax-id syntax-timeout syntax-argv]
+            (some #(when (= "syntax-regression" (first %)) %) ordinary-catalog)]
+        (is (= "syntax-regression" syntax-id))
+        (is (= 600 syntax-timeout))
+        (is (= (ci/command "2g" "-M:dev-test" "--progress"
+                           "--namespace" "gravity.syntax.pipeline-test"
+                           "--namespace" "gravity.syntax.owner-calls-test"
+                           "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")
+               syntax-argv))))
     (doseq [path boundary-paths]
       (is (ci/bootstrap-input-control-path? path) path)
       (is (has-input-controls? (selected-boundary path)) path))
