@@ -11,9 +11,9 @@ main `643d75125f1b32a7756f80560ff6f3fbd5c5fbbb`. That normal merge imports only
 the two published A1 diagnostic-path files; all other source modes and blobs
 remain unchanged. Earlier acceptance does not transfer to this successor.
 
-## Proposed Runtime boundary
+## Runtime boundary
 
-Move the existing exception-envelope constructor from private
+The existing exception-envelope constructor moves from private
 `p15-s23-stage2-runtime-source-throw!` in component 00590 into:
 
 ```clojure
@@ -81,3 +81,50 @@ Held Reader/C2 routes, authenticated composition, private source factories,
 backend source builders and release admission remain uninvoked and unchanged.
 The permitted seed rule loader does not provide those authorities. No Reader
 rebinding, source repinning or replacement admission route is included.
+
+## Executed development evidence
+
+The original Runtime namespace passes 63 tests and 2484 assertions. After the
+extraction and five new tests, it passes 68 tests and 2552 assertions, with zero
+failures or errors. The new tests compare the original constructor, stage API
+and compatibility wrapper in one process, retaining physical token, payload,
+source and module identity. A plan lookup changes the token and exception
+constructor roots to check their original selection order. Exact host exception
+propagation and once-only operand evaluation are checked separately.
+
+The paired direct-typed-throw programs compile through the ordinary seed route,
+emit complete EDN plans with actual source path/hash and compiler provenance,
+and execute both branches. The four new zero/many-operand fixtures reject with
+`L2-THROW-ILLEGAL` before transport. All six complete before/after observations
+are retained externally; the process-local token is checked before exclusion
+from serialized records. The baseline receipt SHA256 is
+`117e809ca8243dd8d99a291eb05c7de55c6dd6aff667f76844debc390dd41eb2`;
+the candidate receipt SHA256 is
+`80821ee9f17f8310bda48b9bf813688c434ed4b21107e84f1bec5df7f158fc27`.
+Implementation hashes differ intentionally and are recorded separately from
+semantic observations.
+
+The candidate language/ownership gate passes 48 tests and 1202 assertions.
+The document validator passes all 240 canonical documents and 19 phase indexes;
+the full-language roadmap structural validator passes. These checks do not
+establish full-language or milestone completion. A supporting batch initially
+ran from an older worktree; its revision guard stopped source capture before
+emission. Those logs are retained and confer no candidate evidence. The checks
+reported here ran from this Runtime worktree.
+
+The unchanged `runtime-native-validation` command passes with its existing 2g
+heap and 180-second host watchdog. All 21 contract command vectors and test
+registrations are unchanged. The CI harness passes 54 tests and 650 assertions.
+Cold Runtime loading exposes 38 APIs without loading Bootstrap. Conservation
+receipt SHA256
+`d7cbdf830f76041e1c141b8bc6c90fe4b726b7c280e536fbaf78f26919e7a284`
+records all 37 previous Runtime bodies, the token allocation and all nonmoved
+00590 forms unchanged, 14 protected paths, six equal source observations and
+19 byte-preserved generated files archived outside the worktree. The two source
+files lint with zero warnings. Whole-file test formatting retains pre-existing
+drift; the five added test forms are formatted separately with their reader
+forms preserved, allowing for fresh anonymous-function argument symbols.
+
+The early draft is PR #1284. Exact final-source review, current-main context,
+provider/CI acceptance and integration remain separate obligations. Earlier
+Package or Runtime acceptance does not transfer to this source tuple.

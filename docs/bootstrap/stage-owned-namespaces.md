@@ -132,6 +132,16 @@ owners until moved with their implementation.
 | `gravity.bootstrap` | BOOT1-8; seed composition and compatibility | Existing adapters and `-main`; [module literal data](bootstrap-literals-evidence.md) via `gravity.bootstrap.module-literals/materialize!`: explicit diagnostic Var + parsed form -> inert literal data or refusal; source + seed/stage records -> stage artifacts | Caller retains BOOT2006 shape refusals and all source/admission guards; helper grants no authority | `gravity.bootstrap.module-literals-test`, `gravity.bootstrap-test` and focused self-hosting kernels: complete paired development plans and quota-free valid data / real malformed literals, duplicate declarations and substituted source |
 | `gravity.release` | PKG3/PKG7/PKG10/PKG12, T1, BOOT8; [native JAR inventory reports](release-inventory-evidence.md) and [observed file bytes/digests](release-file-evidence.md) | `jar-source-inventory-report`, `jar-inventory-report`, `file-bytes`, `bytes-sha256`, `file-sha256`; observed entry names, explicit late inventory suppliers, caller-owned paths/bytes and file/digest Vars -> inventory reports, file bytes or observed digests. Canonical `assemble`/`verify-release` remain proposed. | Stage decides inventory membership/order/duplicates and propagates file errors; the missing-file digest remains a sentinel. Bootstrap retains P18T02006 construction, archive creation/parsing and all release authority. | `gravity.release.pipeline-test`: actual disposable JAR and canonical source order / actual unexpected archive member, omissions, duplicates, ordering and late Var/dependency failures; selected file tests cover real emitted plan bytes/digests, missing-file refusal and function-root lookup before argument evaluation |
 
+The [Runtime source-throw extraction](runtime-source-throw-evidence.md) adds
+`source-throw!`: a trusted key/token Var, compiled seed plan and evaluated
+payload produce the existing process-local exception envelope. Runtime owns
+construction; Bootstrap retains token allocation, recognition and wiring.
+L9 joins the Runtime row's governing contracts. Paired emitted/executed seed
+plans, four malformed-arity source refusals, constructor/token lookup order,
+payload/source/module identity and unchanged host exceptions cover this slice.
+There is no portable error ABI, serialized token, plan admission or fresh
+C7/C8 evidence. Dependency direction remains core to Runtime to Bootstrap.
+
 The [Runtime control extraction](runtime-control-evidence.md) adds `map-entry`,
 `fail-recur!`, `nontail-value!`, `execute-generic-builtin-call-scoped` and
 `execute-call-scoped` for trusted native map/recurrence/call carriers and late
