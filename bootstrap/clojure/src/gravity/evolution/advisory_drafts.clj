@@ -67,7 +67,7 @@
                [(diagnostic field-path :missing-field)]
                (not (valid? (get data field)))
                [(diagnostic field-path :invalid-field)]
-               nested (field-errors (get data field) field-path nested)
+               nested (field-errors (into {} (get data field)) field-path nested)
                :else []))))
         fields))
 
@@ -77,7 +77,10 @@
   Unknown top-level fields cannot promote the draft. No input is mutated and
   no reference is resolved. Version declarations remain unauthenticated."
   [advisory]
-  (let [diagnostics
+  ;; Enumerating native map entries does not invoke a tree map's comparator.
+  ;; Use our own map before field lookup/projection, including nested fields.
+  (let [advisory (if (data-map? advisory) (into {} advisory) advisory)
+        diagnostics
         (if-not (data-map? advisory)
           [(diagnostic [:advisory] :invalid-field)]
           (let [errors (field-errors advisory [:advisory] advisory-fields)]

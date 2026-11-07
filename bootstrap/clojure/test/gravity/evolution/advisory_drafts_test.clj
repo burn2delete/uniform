@@ -121,6 +121,62 @@
         (is (= complete-product under-bindings))
         (is (= (complete-render actual) (complete-render under-bindings)))))))
 
+(defn armed-tree-map-input [input path mode reversed?]
+  (let [armed? (atom false)
+        callbacks (atom 0)
+        comparator (fn [a b]
+                     (when @armed?
+                       (swap! callbacks inc)
+                       (when (= mode :throwing)
+                         (throw (ex-info "Caller comparator invoked" {}))))
+                     (if reversed? (compare b a) (compare a b)))
+        entries (if (empty? path) input (get-in input path))
+        tree (into (sorted-map-by comparator) entries)
+        wrapped (if (empty? path) tree (assoc-in input path tree))]
+    ;; Construction may compare keys; only subsequent callbacks are forbidden.
+    (reset! armed? true)
+    [wrapped callbacks]))
+
+(deftest tree-map-comparators-do-not-run-during-draft-production
+  (let [rendered (complete-render (drafts/create-draft complete-input))]
+    (doseq [mode [:stateful :throwing]
+            reversed? [false true]
+            path [[] [:subject] [:provenance] [:provenance :assessment]
+                  [:history 0] [:history 1] [:history 1 :embargo]
+                  [:history 1 :patch] [:history 1 :backport] [:history 1 :release]]]
+      (testing (str mode " comparator at " path ", reversed=" reversed?)
+        (let [[input callbacks] (armed-tree-map-input complete-input path mode reversed?)]
+          (dotimes [_ 2]
+            (let [actual (assert-product input complete-product)]
+              (is (= rendered (complete-render actual)))))
+          (is (zero? @callbacks) "No caller comparator may run"))))))
+
+(deftest tree-map-comparators-do-not-run-during-rejection
+  (let [marker "SYNTHETIC-SECRET-MARKER"
+        cases [[(dissoc complete-input :impact) []
+                (rejection [:advisory :impact] :missing-field)]
+               [(update complete-input :subject dissoc :registry) [:subject]
+                (rejection [:advisory :subject :registry] :missing-field)]
+               [(assoc-in complete-input [:provenance :references] [nil marker])
+                [:provenance]
+                (rejection [:advisory :provenance :references] :invalid-field)]
+               [(assoc-in complete-input [:history 0 :extension] (atom marker))
+                [:history 0] (rejection [:advisory :history] :invalid-field)]
+               [(assoc-in complete-input [:subject :extension] (atom marker))
+                [:subject] (rejection [:advisory] :invalid-field)]
+               [(assoc complete-input :extension (atom marker)) []
+                (rejection [:advisory] :invalid-field)]]]
+    (doseq [mode [:stateful :throwing]
+            reversed? [false true]
+            [plain path expected] cases]
+      (testing (str mode " comparator at " path ", reversed=" reversed?)
+        (let [[input callbacks] (armed-tree-map-input plain path mode reversed?)]
+          (dotimes [_ 2]
+            (let [actual (assert-product input expected)]
+              (is (= (complete-render expected) (complete-render actual)))
+              (is (not (str/includes? (complete-render actual) marker)))))
+          (is (zero? @callbacks) "Rejection must not invoke caller comparators"))))))
+
 (deftest missing-affected-versions
   (assert-product (dissoc complete-input :affected-versions)
                   (rejection [:advisory :affected-versions] :missing-field)))

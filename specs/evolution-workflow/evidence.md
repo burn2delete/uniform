@@ -433,3 +433,65 @@ package enforcement and their producer/consumer feedback remain unrun
 composition obligations. Independent acceptance, integration and release remain
 separate. This increment closes no parent criteria and claims no publication,
 grant, release, self-hosting or seed retirement. No commit was made.
+
+## Advisory tree-map comparator repair
+
+Finding `evolution.advisory-drafts.required-payload-production-v1`, P2
+pure-data follow-up, authored in `increment-1316` on 2026-11-06 using the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md).
+Supplied review identities: base
+`de1eccf9a148cc199ff50f41014bc4732b715a1d`, candidate
+`bbdccce2d044f9022f4c09aa062db784adb567db`, tree
+`90c13f4a7d9b7878de90e5ad618925a9ac68ade6`. The feedback reports passing
+receipts for that reviewed candidate while requesting this repair. These are
+supplied historical identities/results, not checks of the uncommitted repair.
+
+Accepted native tree maps can carry caller comparators. Copy root entries into
+an ordinary map before required-field lookup and top-level projection; copy
+validated subject/provenance entries before nested field lookup. Entry
+traversal, carrier validation and recursive canonical construction do not call
+the supplied comparator. Required fields, diagnostic order, public-data
+validation, retained history and non-admitting draft authority are unchanged.
+Updated only the advisory carrier appendix outside the captured task region
+before implementation, the producer, its tests and this additive evidence.
+
+Authored `tree-map-comparators-do-not-run-during-draft-production` and
+`tree-map-comparators-do-not-run-during-rejection`. Comparators are armed only
+after construction: one mutates a callback counter and the other increments
+the counter then throws. Both must receive zero calls. Complete draft controls
+cover root, subject, provenance, nested assessment, history records and their
+embargo/patch/backport/release extensions in ascending and descending order.
+Rejection controls cover missing root/nested fields, malformed provenance and
+mutable secret-marker extensions at root, subject and history. Repeated calls
+compare full expected products/diagnostics, deterministic complete rendering
+and unchanged input rendering; rejections must remain payload-free. These are
+authored controls, not observed passing results.
+
+Actual worker activity/results: passive source/document reads, four owned-path
+edits and textual review only. No tests, builds, validators, Git commands,
+network operations or consumer composition ran. Controller-owned verification
+prohibits worker check execution and Git inspection, including
+`git status --short`; none was attempted, retried or transferred. No new
+refusal occurred and all retained refusals remain binding. Ready means authored
+for native controller checking. Proposed vectors, all unrun here:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.advisory-drafts-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+No new semantic ambiguity was found. The accountable individual remains
+unassigned; actual owner/disclosure/publication authority and authenticated
+assessment, provenance, patch/backport/release evidence are still missing.
+Version declarations and severity remain opaque supplied claims. GOV2
+exceptions, embargo/disclosure decisions, registry publication, package
+enforcement and genuine producer/consumer feedback remain unrun composition
+obligations. Independent acceptance and release remain separate. The parent
+stays Open. The authenticated plan.md, captured task region, source criteria
+and historical receipts were not edited. Coordinate additive deltas with
+PR1308/1310 and retained reconciliation candidates without adopting their code
+or acceptance. No commit, integration, grant, publication, release, self-hosting
+or seed-retirement authority is claimed.

@@ -328,6 +328,11 @@ decoded carrier. These are representation rules, not input quotas. All supplied
 values, including extensions, must satisfy the carrier. All data must already
 be disclosure-safe: ordinary strings are neither secret-scanned nor redacted.
 
+Accepted map entries must be copied into comparator-independent maps before
+field lookup or projection. Traversing an accepted tree map must never invoke
+its caller-supplied comparator, including on malformed inputs. Comparator
+state is not advisory data and must not affect the product or diagnostics.
+
 Success is `{:status :draft, :diagnostics [], :artifact ...}`. The artifact is
 `{:schema :gravity.evolution/advisory-draft-v1,
 :kind :gravity/security-advisory-draft, :status :draft,
@@ -362,6 +367,10 @@ Required accepted fixtures: `complete-advisory-payload`,
 required fields, explicit empty patched declarations/history, full diagnostic
 order and supported immutable leaves. Compare complete products/diagnostics
 and unchanged inputs, including after caller mutation of refused host values.
+Armed stateful and throwing tree-map comparators must receive zero callbacks
+for root, subject, provenance and retained nested maps. Compare full draft
+products, deterministic rendering, payload-free rejections and unchanged inputs
+across repeated calls and reversed entry ordering.
 
 Start requires only explicit draft inputs and no predecessor increment.
 Composition requires actual GOV4 assessment, authenticated patch/backport and
