@@ -272,3 +272,60 @@ remain explicit. Owner authentication, emergency governance, publication,
 package enforcement, historical rebuild execution, independent acceptance and
 integration remain separate unrun obligations. The parent stays Open. No
 commit, yank, grant, release, self-hosting or seed-retirement claim is made.
+
+## Mutable resolution declaration repair
+
+Finding `evolution.yank-proposals.version-bound-production-v1`, P2 resolution
+follow-up, authored in `increment-1296` on 2026-11-06 using the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md).
+Supplied review identities: base
+`9f201518f400b118a7cf60533d6cebb94f5bcd68`, candidate
+`ffbcbd22499b5b3a5c886205b4ac9917956812b7`, tree
+`ce054a3fb93c8a5d1e7a3544d105bde7fc3a3ea8`.
+The feedback reports supplied checks passed but requests changes because
+equality admits a mutable Java HashMap as the resolution declaration. These
+identities and reported results describe the reviewed input, not this repair;
+no Git inspection or check execution was performed here.
+
+Require `:resolution-behavior` to pass the existing Clojure map and inert
+public-data predicates before comparing the exact ordinary-yank entries.
+Java maps and records are rejected with the existing payload-free `GOV10006`,
+`[:proposal :resolution-behavior]`, `:invalid-field` diagnostic, so no mutable
+declaration can escape through that field into an artifact. Other proposal
+fields, canonicalization and package policy behavior are unchanged.
+
+Authored `inert-resolution-maps-preserve-complete-product` to compare complete
+products and unchanged inputs for Clojure array, hash and sorted maps.
+Authored `mutable-resolution-map-is-rejected-without-payload` with initially
+equal HashMap entries: compare the full rejection and unchanged inputs, then
+mutate new-selection to allowed or existing-locks to erase and require the
+previous result and a fresh call to retain the full rejection. Adding a secret
+marker after mutation must also leave the result unchanged and payload-free.
+
+Updated only the existing carrier appendix outside the captured task region,
+the producer, its fixtures and this evidence record. The authenticated plan.md,
+canonical task bodies, source criteria, Open states and historical receipts
+are preserved; no PR767/1291 or retained Evolution changes are adopted.
+
+Actual worker activity: passive source/document reads, scoped edits and textual
+review only. No test, build, validator, Git command, commit or consumer
+composition ran. Worker Git inspection and check execution remain prohibited
+by the controller-owned verification boundary and were not attempted, retried
+or transferred. No new refused action occurred. Ready means authored for native
+controller checking; all following argument vectors remain unrun here:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.yank-proposals-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+No new semantic ambiguity was found. The existing opaque exact-version
+limitation and missing actual owner/registry authorization remain. Owner
+authentication, emergency governance, publication, package enforcement,
+historical rebuild execution and independent acceptance remain separate unrun
+composition/acceptance obligations. The parent remains Open. No integration,
+yank issuance, approval, grant, release, self-hosting or seed retirement is
+claimed, and every retained refused operation remains prohibited.

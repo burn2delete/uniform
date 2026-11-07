@@ -50,7 +50,8 @@
    [:reason text? "GOV10006"]
    [:replacement-guidance text? "GOV10006"]
    [:resolution-behavior
-    #(= {:new-selection :forbidden :existing-locks :preserve} %)
+    #(and (map? %) (public-data? %)
+          (= {:new-selection :forbidden :existing-locks :preserve} %))
     "GOV10006"]])
 (def ^:private provenance-fields
   (mapv #(vector % text? "GOV10002")

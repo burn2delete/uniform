@@ -224,6 +224,36 @@
   (is (= (rejection "GOV10006" [:proposal :replacement-guidance] :invalid-field)
          (yanks/propose-yank release (assoc proposal :replacement-guidance " ") provenance))))
 
+(deftest inert-resolution-maps-preserve-complete-product
+  (doseq [resolution [(array-map :new-selection :forbidden :existing-locks :preserve)
+                      (hash-map :new-selection :forbidden :existing-locks :preserve)
+                      (sorted-map :new-selection :forbidden :existing-locks :preserve)]]
+    (let [inputs [release (assoc proposal :resolution-behavior resolution) provenance]
+          before (pr-str inputs)
+          product (apply yanks/propose-yank inputs)]
+      (is (= expected-product product))
+      (is (= before (pr-str inputs))))))
+
+(deftest mutable-resolution-map-is-rejected-without-payload
+  (doseq [[field value] [[:new-selection :allowed] [:existing-locks :erase]]]
+    (let [resolution (doto (java.util.HashMap.)
+                       (.put :new-selection :forbidden)
+                       (.put :existing-locks :preserve))
+          inputs [release (assoc proposal :resolution-behavior resolution) provenance]
+          before (pr-str inputs)
+          expected (rejection "GOV10006" [:proposal :resolution-behavior] :invalid-field)
+          product (apply yanks/propose-yank inputs)]
+      ;; Equal entries alone do not make a host map an inert declaration.
+      (is (= (:resolution-behavior proposal) resolution))
+      (is (= expected product))
+      (is (= before (pr-str inputs)))
+      (.put resolution field value)
+      (is (= value (.get resolution field)))
+      (is (= expected product (apply yanks/propose-yank inputs)))
+      (.put resolution :extension "SECRET_MARKER")
+      (is (= expected product (apply yanks/propose-yank inputs)))
+      (is (not (str/includes? (pr-str product) "SECRET_MARKER"))))))
+
 (deftest missing-resolution-behavior
   (is (= (rejection "GOV10006" [:proposal :resolution-behavior] :missing-field)
          (yanks/propose-yank release (dissoc proposal :resolution-behavior) provenance)))

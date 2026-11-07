@@ -208,8 +208,8 @@ arguments are explicit decoded public data, supplied by a trusted host caller:
   no supplied historical records. Preserve complete records and their order,
   including extension metadata, without rewriting versions or content links.
 - `proposal`: nonblank `:owner`, `:reason`, `:replacement-guidance` and explicit
-  `:resolution-behavior` equal to `{:new-selection :forbidden,
-  :existing-locks :preserve}`. Guidance may state that no replacement exists
+  `:resolution-behavior` as an inert Clojure map (excluding records), equal to
+  `{:new-selection :forbidden, :existing-locks :preserve}`. Guidance may state that no replacement exists
   with rationale. This increment supports the ordinary GOV10 yank behavior;
   it cannot express or authorize an emergency exception.
 - `provenance`: nonblank public `:source-id`, `:input-id`, `:policy-id` and
@@ -269,6 +269,10 @@ release metadata and historical extensions, before and after host mutation.
 Printer fixtures compare complete products and unchanged release/history under
 truncated length/level bindings, retain unequal values with identical complete
 printing, and preserve malformed-value rejection under the same bindings.
+Resolution fixtures accept ordinary Clojure map representations and reject a
+Java HashMap even when its entries equal the required declaration. Require the
+complete payload-free GOV10006 field rejection to remain unchanged after caller
+mutation to allow new selection or erase existing locks.
 
 Start requires only these explicit inputs. Composition requires actual owner
 authorization and authentic registry/content/provenance, GOV2/GOV4 emergency
