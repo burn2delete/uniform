@@ -283,3 +283,89 @@ captured task region; preserve historical receipts and coordinate later merges
 with PR767/1291 and retained Evolution work without adopting their changes.
 Controller-owned verification will run the focused namespace, applicable
 acceptance-dependency controls, language boundary and document validators.
+
+## Deprecation proposal carrier
+
+Finding `evolution.deprecation-proposals.migration-payload-v1` is a producer
+increment of `evolution/stabilization-decision`, which remains Open. This
+appendix is specified before implementation, outside the captured task region;
+the authenticated plan, canonical task criteria and historical evidence remain
+unchanged. It implements construction under GOV8 Deprecation Record, Outputs,
+Rejection Rules and Diagnostics, with GOV1 history/provenance and GOV2 affected
+surfaces. It does not decide stabilization, deprecation or removal.
+
+Pure Clojure `gravity.evolution.deprecation-proposals/create-proposal` takes
+three explicit decoded public maps, supplied by a trusted caller:
+
+- `subject`: nonblank exact `:contract` and `:revision` strings; nonempty
+  `:surfaces` set of keywords naming the affected surfaces; explicit `:history`
+  vector of public maps in historical order (empty means no history supplied);
+  nonempty `:retained-tests` vector of nonblank test references.
+- `proposal`: nonblank `:id` and accountable `:owner`; nonblank `:replacement`
+  guidance or explicit `:no-replacement-rationale` (both may be supplied);
+  nonblank `:diagnostic`, `:warn-in`, `:error-in` and `:remove-in` strings;
+  nonempty `:migration` vector of nonblank artifact/fix-data references. A
+  no-replacement proposal still supplies migration or mitigation guidance.
+- `provenance`: nonblank public `:source-id`, `:input-id`, `:policy-id` and
+  `:tool-id` references. Their presence is not authentication or approval.
+
+All input maps exclude records and contain only inert public data: nil,
+booleans, strings, keywords, exact immutable numeric classes Byte, Short,
+Integer, Long, Float, Double, java.math.BigInteger, java.math.BigDecimal,
+clojure.lang.BigInt and clojure.lang.Ratio, vectors, keyword-keyed maps and
+sets of keywords. Other host objects (including mutable Number objects, Java
+collections, atoms, callbacks and lazy sequences) are outside this carrier.
+This is a type/schema boundary, with no input size/work quotas. Unknown inert
+fields are ignored except inside history maps, which are retained completely.
+Collection metadata is not transported; explicit history fields are retained.
+The caller is responsible for disclosure-safe inputs; no secret discovery or
+source/owner/reference authentication is performed.
+
+Success is `{:status :proposed :diagnostics [] :artifact ...}`. The flat artifact
+contains `:schema :gravity.evolution/deprecation-proposal-v1`,
+`:kind :gravity/deprecation-proposal`, `:status :proposed`,
+`:authority :non-admitting`, all declared subject/proposal fields that are
+present, and the four selected references in `:provenance`. Rebuild maps in
+keyword order, keyword sets in keyword order and vectors in supplied order.
+Complete products and ordinary EDN rendering are independent of input map/set
+insertion order; no caller collection/comparator or metadata escapes.
+Caller `:state :removed`, `:status`, approval, emergency or grant fields cannot
+promote the product. Historical states remain historical data only.
+
+Failure has `:status :rejected` and `:diagnostics`, with no artifact. Each
+diagnostic contains constant `:id`, `:message`, a known field `:path` and
+`:reason`, never input values, unknown keys or provenance. An invalid inert
+map yields one `DEPRECATION-INPUT` diagnostic for that argument; otherwise
+validate fields in the order listed above, with replacement before rationale.
+Absent required keys use `:missing-field`, malformed/blank values use
+`:invalid-field`. Missing both guidance alternatives yields one `GOV8003` at
+`[:proposal :replacement]`, reason `:missing-replacement-or-rationale`;
+present but malformed guidance/rationale also uses `GOV8003`. Missing/invalid
+diagnostic or any schedule declaration uses `GOV8004`. Other carrier defects
+use `DEPRECATION-INPUT`: GOV8 assigns no distinct malformed-carrier diagnostic,
+and this local code does not assert an actual coverage/removal/consumer failure.
+
+Schedule and revision strings are opaque exact declarations. GOV8 supplies no
+version ordering or window-evaluation algorithm for this carrier. Construction
+neither compares nor normalizes labels and cannot authorize removal.
+
+Required accepted fixtures: `complete-deprecation-proposal`,
+`explicit-no-replacement-rationale`, `changed-migration-changes-product`,
+`retained-history-and-test-references`, `reordered-input-determinism`.
+Required rejected fixtures: `missing-replacement-and-rationale` (GOV8003),
+`missing-diagnostic-or-schedule` (GOV8004), malformed/mutable carrier inputs
+and payload-free rejection. `caller-removed-state-cannot-promote` preserves
+historical states while constructing only a non-admitting proposal. Compare
+complete products/diagnostics and unchanged inputs, including history/tests.
+
+Start requires these explicit inputs, independently of final library admission
+or stabilization. Composition still requires actual GOV1/GOV2 review, applicable
+GOV3/STD20/GOV4/GOV7 evidence, approved removal-window evaluation, retained
+executable tests, and diagnostic/docs/package/migration/release consumer
+results. Emergency removal still requires actual GOV4 and GOV2 records. The
+library-admission/stabilization feedback dependencies remain genuine; proposal
+construction does not resolve them. Independent acceptance remains pending.
+Only append shared task/evidence documentation; serialize these edits without
+adopting PR767/1291 or other Evolution implementations or review dispositions.
+Controller checks and their unrun status are recorded in
+[the scoped evidence](evidence.md#deprecation-proposal-production).
