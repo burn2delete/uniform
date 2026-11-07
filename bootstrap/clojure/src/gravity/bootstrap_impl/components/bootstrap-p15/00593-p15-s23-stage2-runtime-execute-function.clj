@@ -90,73 +90,18 @@
 
 	(defn p15-s23-stage2-runtime-kernel-diagnostic-record
 	  [source-path id value data]
-	  {:artifact :gravity/diagnostic
-	   :diagnostic-id (str "diag-" (str/lower-case id))
-	   :diagnostic id
-	   :severity :error
-	   :stage :p15-s23-stage2-runtime-kernel
-	   :source-span {:source source-path}
-	   :message (get p15-s23-stage2-runtime-kernel-diagnostic-messages id)
-	   :facts data
-	   :observed value
-	   :remediation :repair_stage2_runtime_kernel})
+	  (gravity.runtime/kernel-diagnostic-record
+	   #'p15-s23-stage2-runtime-kernel-diagnostic-messages #'str/lower-case
+	   source-path id value data))
 
 	(defn p15-s23-stage2-runtime-kernel-rule-record
 	  [kernel]
-	  (let [instruction-rules (set (keys (:instruction-rules kernel)))
-	        runtime-primitives (set (get-in kernel
-	                                        [:runtime-primitives :functions]))
-	        primitive-exact-arities
-	        (get-in kernel
-	                [:runtime-primitives :compiler-internal-builtin-arities])
-	        primitive-contracts
-	        (get-in kernel
-	                [:runtime-primitives :compiler-internal-builtin-contracts])
-	        declared-arities-current?
-	        (= p15-s23-sh07-declared-builtin-exact-arities
-	           primitive-exact-arities)
-	        declared-contracts-current?
-	        (= p15-s23-sh07-declared-builtin-contracts primitive-contracts)
-	        missing-instructions
-	        (set/difference
-	         p15-s23-stage2-runtime-kernel-required-instructions
-	         instruction-rules)
-	        missing-primitives
-	        (set/difference
-	         (set/difference stage0-builtin-functions
-                          p15-s23-stage2-runtime-reader-bridge-builtins)
-	         runtime-primitives)
-	        primitive-boundary
-	        (get-in kernel [:runtime-primitives
-	                        :host-primitive-boundary])
-	        complete?
-	        (and (= :gravity-stage2-runtime-kernel-v1
-	                (:engine kernel))
-	             (= :stage2-instruction-plan (:input kernel))
-	             (= :stage2-runtime-kernel-execution-record
-	                (:output kernel))
-	             (= :gravity-runtime-primitives primitive-boundary)
-	             (empty? missing-instructions)
-	             (empty? missing-primitives)
-	             declared-arities-current?
-	             declared-contracts-current?)]
-	    {:artifact :gravity/p15-s23-stage2-runtime-kernel-rule-record
-	     :engine (:engine kernel)
-	     :primitive-engine (get-in kernel [:runtime-primitives :engine])
-	     :input (:input kernel)
-	     :output (:output kernel)
-	     :primitive-boundary primitive-boundary
-	     :instruction-rules (p15-s23-stage2-sort-values
-	                         instruction-rules)
-	     :runtime-primitives (p15-s23-stage2-sort-values
-	                          runtime-primitives)
-	     :primitive-exact-arities primitive-exact-arities
-	     :declared-builtin-arities-current? declared-arities-current?
-	     :compiler-internal-builtin-contracts primitive-contracts
-	     :declared-builtin-contracts-current? declared-contracts-current?
-	     :missing-instructions (p15-s23-stage2-sort-values
-	                            missing-instructions)
-	     :missing-runtime-primitives (p15-s23-stage2-sort-values
-	                                  missing-primitives)
-	     :rule-set-complete? complete?
-	     :status (if complete? :complete :failed)}))
+	  (gravity.runtime/kernel-rule-record
+	   kernel
+	   {:declared-builtin-exact-arities #'p15-s23-sh07-declared-builtin-exact-arities
+	    :declared-builtin-contracts #'p15-s23-sh07-declared-builtin-contracts
+	    :required-instructions #'p15-s23-stage2-runtime-kernel-required-instructions
+	    :builtin-functions #'stage0-builtin-functions
+	    :reader-bridge-builtins #'p15-s23-stage2-runtime-reader-bridge-builtins
+	    :difference #'set/difference
+	    :sort-values #'p15-s23-stage2-sort-values}))

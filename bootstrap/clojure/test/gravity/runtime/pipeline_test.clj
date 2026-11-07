@@ -1,5 +1,6 @@
 (ns gravity.runtime.pipeline-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
             [gravity.runtime :as runtime]))
@@ -29,7 +30,8 @@
            'executor-rule-record 'fail-call-arity! 'assert-min-arity! 'assert-exact-arity!
            'assert-between-arity! 'assert-even-arity! 'hosted-unary-builtin
            'map-entry 'fail-recur! 'nontail-value!
-           'execute-generic-builtin-call-scoped 'execute-call-scoped}
+           'execute-generic-builtin-call-scoped 'execute-call-scoped
+           'kernel-rule-record 'kernel-diagnostic-record}
          (set (keys (ns-publics 'gravity.runtime)))))
   (let [contract (:gravity/namespace-contract (meta #'runtime/execute-plan))]
     (is (= (set (keys (:public-api contract)))
@@ -962,6 +964,113 @@
                data (b/p15-s23-compiler-source-form-record path)]
            {:path path :source data
             :definition (b/p15-s23-compiler-def-value path (:forms data) 'p15-s23-stage2-runtime-executor)})))
+
+(def ^:private compiler-kernel-rule
+  (delay (let [{:keys [path source]} @compiler-runtime-rule]
+           (b/p15-s23-compiler-def-value path (:forms source) 'p15-s23-stage2-runtime-kernel))))
+
+(defn- kernel-rule-operations []
+  {:declared-builtin-exact-arities (ns-resolve 'gravity.bootstrap 'p15-s23-sh07-declared-builtin-exact-arities)
+   :declared-builtin-contracts (ns-resolve 'gravity.bootstrap 'p15-s23-sh07-declared-builtin-contracts)
+   :required-instructions (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-kernel-required-instructions)
+   :builtin-functions (ns-resolve 'gravity.bootstrap 'stage0-builtin-functions)
+   :reader-bridge-builtins (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-reader-bridge-builtins)
+   :difference (ns-resolve 'clojure.set 'difference)
+   :sort-values (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-sort-values)})
+
+(deftest actual-kernel-rule-data-retains-native-refusals-and-reader-bridge-boundary
+  (let [definition @compiler-kernel-rule before (pr-str definition)
+        operations (kernel-rule-operations)
+        contract (:gravity/namespace-contract (meta #'runtime/kernel-rule-record))
+        report (runtime/kernel-rule-record definition operations)]
+    (is (= :gravity/p15-s23-stage2-runtime-kernel-rule-record (:artifact report)))
+    (is (= :complete (:status report)))
+    (is (true? (:rule-set-complete? report)))
+    (is (= report (b/p15-s23-stage2-runtime-kernel-rule-record definition)))
+    (is (= before (pr-str definition)))
+    (is (= (set (get-in contract [:public-api 'kernel-rule-record :operation-keys]))
+           (set (keys operations))))
+    (is (every? var? (vals operations)))
+    (is (false? (get-in contract [:public-api 'kernel-rule-record :completion-label-admits?])))
+    (doseq [changed [(update definition :instruction-rules dissoc :local)
+                     (update-in definition [:runtime-primitives :functions] #(vec (remove #{'str} %)))
+                     (assoc-in definition [:runtime-primitives :compiler-internal-builtin-arities] {})
+                     (assoc-in definition [:runtime-primitives :compiler-internal-builtin-contracts] {})
+                     (assoc-in definition [:runtime-primitives :host-primitive-boundary] :other)
+                     (assoc definition :engine :other) (assoc definition :input :other)
+                     (assoc definition :output :other)]]
+      (let [report (runtime/kernel-rule-record changed operations)]
+        (is (= :failed (:status report)))
+        (is (false? (:rule-set-complete? report)))
+        (is (= report (b/p15-s23-stage2-runtime-kernel-rule-record changed)))))
+    (let [without-bridge (update-in definition [:runtime-primitives :functions]
+                                   #(vec (remove #{'build-read-declared-input} %)))
+          missing-ordinary (update-in without-bridge [:runtime-primitives :functions]
+                                      #(vec (remove #{'str} %)))]
+      (is (= :complete (:status (runtime/kernel-rule-record without-bridge operations))))
+      (is (= ['str] (:missing-runtime-primitives (runtime/kernel-rule-record missing-ordinary operations)))))))
+
+(deftest kernel-rule-vars-remain-late-after-input-observation
+  (let [definition @compiler-kernel-rule exact (clojure.lang.Var/create {})
+        observed (reify clojure.lang.ILookup
+                   (valAt [_ key]
+                     (when (= :instruction-rules key)
+                       (alter-var-root exact (constantly (get-in definition [:runtime-primitives :compiler-internal-builtin-arities]))))
+                     (get definition key))
+                   (valAt [_ key default] (get definition key default)))
+        report (runtime/kernel-rule-record observed
+                                            (assoc (kernel-rule-operations) :declared-builtin-exact-arities exact))]
+    (is (= :complete (:status report)))
+    (is (true? (:declared-builtin-arities-current? report)))))
+
+(deftest kernel-rule-selects-callable-before-observable-data-port-lookup
+  (let [definition @compiler-kernel-rule operations (kernel-rule-operations)
+        difference @(get operations :difference) events (atom [])
+        difference-var (clojure.lang.Var/create
+                        (fn [& args] (swap! events conj :original-difference) (apply difference args)))
+        lookup (fn [key default]
+                 (when (= :required-instructions key)
+                   (swap! events conj :required-instructions)
+                   (alter-var-root difference-var
+                                   (constantly (fn [& args] (swap! events conj :late-difference)
+                                                 (apply difference args)))))
+                 (get (assoc operations :difference difference-var) key default))
+        observed (reify clojure.lang.ILookup
+                   (valAt [_ key] (lookup key nil))
+                   (valAt [_ key default] (lookup key default)))]
+    (is (= :complete (:status (runtime/kernel-rule-record definition observed))))
+    (is (= [:required-instructions :original-difference :late-difference :late-difference] @events))))
+
+(deftest kernel-compatibility-wrappers-retain-arity-and-explicit-live-vars
+  (let [data (Object.) seen (atom nil)]
+    (with-redefs [runtime/kernel-rule-record (fn [& arguments] (reset! seen arguments) :rule-sentinel)]
+      (is (= :rule-sentinel (b/p15-s23-stage2-runtime-kernel-rule-record data)))
+      (is (identical? data (first @seen)))
+      (is (= (kernel-rule-operations) (second @seen)))
+      (is (every? var? (vals (second @seen)))))
+    (with-redefs [runtime/kernel-diagnostic-record (fn [& arguments] (reset! seen arguments) :diagnostic-sentinel)]
+      (is (= :diagnostic-sentinel (b/p15-s23-stage2-runtime-kernel-diagnostic-record "source" "id" data {:fact true})))
+      (is (= [(ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-kernel-diagnostic-messages)
+              (ns-resolve 'clojure.string 'lower-case) "source" "id" data {:fact true}]
+             (vec @seen))))))
+
+(deftest kernel-diagnostic-records-preserve-source-facts-and-native-failure
+  (let [messages (clojure.lang.Var/create {"P15S23K003" "observed message"})
+        lower (clojure.lang.Var/create str/lower-case)
+        value (Object.) facts {:missing-fact :accepted-output-equivalence}
+        record (runtime/kernel-diagnostic-record messages lower "kernel.gravity" "P15S23K003" value facts)
+        error (ex-info "owner lowercase failure" {:identity :fixture})]
+    (is (= "diag-p15s23k003" (:diagnostic-id record)))
+    (is (= "P15S23K003" (:diagnostic record)))
+    (is (= "observed message" (:message record)))
+    (is (= {:source "kernel.gravity"} (:source-span record)))
+    (is (identical? value (:observed record)))
+    (is (identical? facts (:facts record)))
+    (is (= :repair_stage2_runtime_kernel (:remediation record)))
+    (alter-var-root messages (constantly {}))
+    (is (nil? (:message (runtime/kernel-diagnostic-record messages lower "kernel.gravity" "unknown" value facts))))
+    (alter-var-root lower (constantly (fn [_] (throw error))))
+    (is (identical? error (observed-error #(runtime/kernel-diagnostic-record messages lower "kernel.gravity" "P15S23K003" value facts))))))
 
 (deftest actual-compiler-source-rule-record-is-data-and-altered-rules-fail
   (let [{:keys [path source definition]} @compiler-runtime-rule ops (runtime-rule-operations)
