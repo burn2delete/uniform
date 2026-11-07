@@ -98,6 +98,12 @@ unknown or failed-discovery fallbacks. Documentation-only, exact Advance
 status-only and lint-tooling-only selections retain their existing exclusions.
 The child has a 900-second host watchdog inside the unchanged 20-minute
 contracts job. Existing contract commands and their order are retained.
+The CI-only `ci.public-release-subset` adapter delegates the same exact test
+to the development runner. It redirects the test's three generated P18 proof
+files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
+markers to stderr. It preserves public commands, results and the existing
+60-second inner process watchdog. CI still rejects tracked source mutation;
+the normal artifact checksum manifest includes the generated proof files.
 This is current bootstrap-hosted public subset coverage, not full-language,
 self-hosting or seedless-release acceptance.
 

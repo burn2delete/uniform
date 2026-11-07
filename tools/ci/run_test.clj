@@ -3,7 +3,8 @@
             [clojure.edn :as edn]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.test :as test :refer [deftest is run-tests]]))
+            [clojure.test :as test :refer [deftest is run-tests]]
+            [ci.public-release-subset :as public]))
 
 (binding [*command-line-args* nil] (load-file "tools/ci/run.clj"))
 (require '[ci.run :as ci])
@@ -549,6 +550,73 @@
    "c-native-validation" "runtime-native-validation" "effects-native-validation"
    "types-native-validation"])
 
+(def ^:private public-adapter-events (atom []))
+(def ^:private public-adapter-throw? (atom false))
+(def ^:private public-adapter-failure (atom nil))
+(def ^:private public-adapter-artifact-dir "original-p18-artifact-dir")
+
+(defn- public-adapter-current-artifact-dir []
+  (let [value public-adapter-artifact-dir]
+    (if (instance? clojure.lang.IDeref value) @value value)))
+
+(defn- public-adapter-record! [phase args]
+  (swap! public-adapter-events conj [phase (public-adapter-current-artifact-dir) (vec args)]))
+
+(defn- public-adapter-shell-run [& args]
+  (public-adapter-record! :shell-run args)
+  {:exit 0})
+
+(defn- public-adapter-t02-package [& args]
+  (public-adapter-record! :t02-package args)
+  :t02-return)
+
+(defn- public-adapter-t04-sweep [& args]
+  (public-adapter-record! :t04-sweep args)
+  (if @public-adapter-throw?
+    (throw @public-adapter-failure)
+    :t04-return))
+
+(defn- public-adapter-accepted-record [& args]
+  (public-adapter-record! :accepted-fixture args)
+  :accepted-return)
+
+(defn- public-adapter-rejected-record [& args]
+  (public-adapter-record! :rejected-fixture args)
+  :rejected-return)
+
+(defn- public-adapter-capture-runner [argv]
+  (swap! public-adapter-events conj [:runner (public-adapter-current-artifact-dir) argv])
+  :runner-return)
+
+(defn- public-adapter-exercising-runner [argv]
+  (swap! public-adapter-events conj [:runner (public-adapter-current-artifact-dir) argv])
+  (let [shell (public-adapter-shell-run ["gravity" "test"])
+        t02 (public-adapter-t02-package {:fixture :package})
+        t04 (public-adapter-t04-sweep {:fixture :sweep})
+        accepted (public-adapter-accepted-record {:fixture :accepted :command ["ok"]})
+        rejected (public-adapter-rejected-record {:fixture :rejected :command ["bad"]})]
+    (swap! public-adapter-events conj [:returns shell t02 t04 accepted rejected])
+    0))
+
+(defn- public-adapter-var [name]
+  (or (ns-resolve 'ci.public-release-subset (symbol name))
+      (throw (ex-info "Expected public adapter Var is not loaded" {:name name}))))
+
+(defn- public-adapter-runtime [runner]
+  {:runner runner
+   :artifact-dir #'public-adapter-artifact-dir
+   :shell-run #'public-adapter-shell-run
+   :t02-package #'public-adapter-t02-package
+   :t04-sweep #'public-adapter-t04-sweep
+   :accepted-record #'public-adapter-accepted-record
+   :rejected-record #'public-adapter-rejected-record})
+
+(defn- public-adapter-error-writer [flushes]
+  (proxy [java.io.StringWriter] []
+    (flush []
+      (swap! flushes inc)
+      (proxy-super flush))))
+
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
     (is (= (conj expected-contract-command-ids "public-release-subset")
@@ -590,12 +658,8 @@
                    (mapv first commands)))
             (is (= "public-release-subset" id))
             (is (= 900 timeout))
-            (is (= "gravity.bootstrap-test"
-                   (nth argv (inc (.indexOf ^java.util.List argv "--namespace")))))
-            (is (= ["--exact" "p18-public-test-command-runs-current-public-subset"]
-                   (subvec argv (- (count argv) 2))))
-            (is (= 1 (count (filter #{"--namespace"} argv))))
-            (is (= 1 (count (filter #{"--exact"} argv))))))]
+            (is (= (ci/command "2g" "-X:dev-test" "ci.public-release-subset/run!")
+                   argv))))]
     (doseq [selection full-selections]
       (assert-public-command (ci/commands-for-selection "contracts" selection)))
     (doseq [path stage-paths]
@@ -625,6 +689,116 @@
              (mapv first (ci/commands-for-selection "contracts" selection))) label)
       (is (not-any? #(= "public-release-subset" (first %))
                     (ci/commands-for-selection "contracts" selection)) label))))
+
+(deftest public-adapter-defers-runtime-resolution-and-delegates-exact-argv-once
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        resolver (public-adapter-var "resolve-runtime-vars")
+        exit-var (public-adapter-var "exit!")
+        resolver-calls (atom 0)
+        exits (atom [])
+        runner-results (with-redefs-fn
+                         {#'public-adapter-artifact-dir "original-p18-artifact-dir"
+                          resolver (fn [] (swap! resolver-calls inc) {})
+                          (public-adapter-var "run-with-runtime!") (fn [_] 0)
+                          exit-var (fn [code] (swap! exits conj code))}
+                         (fn [] [(public/run! {}) (public/run!)]))]
+    (is (= [0 0] runner-results))
+    (is (= [0 0] @exits))
+    (is (= 2 @resolver-calls))
+    (reset! public-adapter-events [])
+    (let [result (run-with-runtime (public-adapter-runtime
+                                    #'public-adapter-capture-runner))]
+      (is (= :runner-return result))
+      (is (= [[:runner "target/ci/p18-public-test-artifacts"
+               ["--progress"
+                "--namespace" "gravity.bootstrap-test"
+                "--exact" "p18-public-test-command-runs-current-public-subset"]]]
+             @public-adapter-events)))))
+
+(deftest public-adapter-isolates-artifacts-and-restores-on-return-or-throw
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        original-vars [#'public-adapter-artifact-dir
+                       #'public-adapter-shell-run
+                       #'public-adapter-t02-package
+                       #'public-adapter-t04-sweep
+                       #'public-adapter-accepted-record
+                       #'public-adapter-rejected-record]
+        originals (mapv var-get original-vars)
+        flushes (atom 0)
+        writer (public-adapter-error-writer flushes)]
+    (reset! public-adapter-events [])
+    (reset! public-adapter-throw? false)
+    (let [result (binding [*err* writer]
+                   (run-with-runtime (public-adapter-runtime
+                                      #'public-adapter-exercising-runner)))]
+      (is (= 0 result))
+      (is (some #(and (= :runner (first %))
+                      (= "target/ci/p18-public-test-artifacts" (second %)))
+                @public-adapter-events))
+      (is (some #(= [:returns {:exit 0} :t02-return :t04-return
+                     :accepted-return :rejected-return]
+                    %)
+                @public-adapter-events))
+      (is (= "original-p18-artifact-dir" (public-adapter-current-artifact-dir)))
+      (is (= originals (mapv var-get original-vars)))
+      (is (pos? @flushes))
+      (doseq [phase [:p18-shell-run :t02-package :t04-sweep
+                     :accepted-fixture :rejected-fixture]]
+        (is (str/includes? (str writer) (str ":phase " phase)) phase))
+      (is (str/includes? (str writer) ":edge :return")))
+    (let [failure (ex-info "fixture wrapper failure" {:phase :t04})
+          throw-flushes (atom 0)
+          throw-writer (public-adapter-error-writer throw-flushes)]
+      (reset! public-adapter-events [])
+      (reset! public-adapter-failure failure)
+      (reset! public-adapter-throw? true)
+      (let [caught (try
+                     (binding [*err* throw-writer]
+                       (run-with-runtime (public-adapter-runtime
+                                          #'public-adapter-exercising-runner)))
+                     nil
+                     (catch Throwable error error))]
+        (is (identical? failure caught))
+        (is (= "original-p18-artifact-dir" (public-adapter-current-artifact-dir)))
+        (is (= originals (mapv var-get original-vars)))
+        (is (pos? @throw-flushes))
+        (is (str/includes? (str throw-writer) ":phase :t04-sweep"))
+        (is (str/includes? (str throw-writer) ":edge :throw"))))
+    (reset! public-adapter-throw? false)))
+
+(deftest public-adapter-rejects-unknown-options-before-heavy-load-and-propagates-nonzero-exit
+  (let [resolver (public-adapter-var "resolve-runtime-vars")
+        run-with-runtime (public-adapter-var "run-with-runtime!")
+        exit-var (public-adapter-var "exit!")
+        resolver-calls (atom 0)
+        exits (atom [])
+        unknown-error (try
+                        (with-redefs-fn
+                          {resolver (fn [] (swap! resolver-calls inc) {})}
+                          (fn [] (public/run! {:unexpected-option true})))
+                        nil
+                        (catch Throwable error error))]
+    (is (instance? clojure.lang.ExceptionInfo unknown-error))
+    (is (zero? @resolver-calls))
+    (let [result (with-redefs-fn
+                   {resolver (fn [] (swap! resolver-calls inc) {:runtime :fake})
+                    run-with-runtime (fn [_] 9)
+                    exit-var (fn [code] (swap! exits conj code))}
+                   (fn [] (public/run! {})))]
+      (is (= 9 result))
+      (is (= [9] @exits))
+      (is (= 1 @resolver-calls)))
+    (let [invalid-error (with-redefs-fn
+                          {resolver (fn [] {:runtime :fake})
+                           run-with-runtime (fn [_] :not-an-exit)
+                           exit-var (fn [code] (swap! exits conj code))}
+                          (fn []
+                            (try
+                              (public/run! {})
+                              nil
+                              (catch Throwable error error))))]
+      (is (instance? clojure.lang.ExceptionInfo invalid-error))
+      (is (= [9] @exits)))))
 
 (deftest contracts-include-the-complete-native-wasm-namespace
   (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 6)

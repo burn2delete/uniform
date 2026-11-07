@@ -592,9 +592,7 @@
 
 (defn public-conformance-command []
   ["public-release-subset" 900
-   (command "2g" "-M:dev-test" "--progress"
-            "--namespace" "gravity.bootstrap-test"
-            "--exact" "p18-public-test-command-runs-current-public-subset")])
+   (command "2g" "-X:dev-test" "ci.public-release-subset/run!")])
 
 (defn public-conformance-required? [selection]
   (not (or (= :docs-only (:kind selection))
