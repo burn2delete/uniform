@@ -26,7 +26,7 @@
 (deftest contract-names-the-three-source-apis-and-retains-canonical-owner
   (let [contract (:gravity/namespace-contract (meta #'safety/record-native-outcome-call!))
         ports (var-get (ns-resolve 'gravity.bootstrap 'safe1-source-outcome-operations))]
-    (is (= 15 (count (ns-publics 'gravity.safety)) (count (:public-api contract))))
+    (is (= 18 (count (ns-publics 'gravity.safety)) (count (:public-api contract))))
     (doseq [operation [#'safety/emit-native-outcome-diagnostic! #'safety/check-native-outcome!
                        #'safety/record-native-outcome-call!]]
       (let [api (get-in contract [:public-api (:name (meta operation))])]

@@ -605,7 +605,9 @@
    ["diagnostics-carrier-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.diagnostics.carrier-test")]
    ["safety-source-outcomes-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.source-outcomes-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.source-outcomes-test")]
+   ["safety-unsafe-audit-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.safety.unsafe-audit-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)

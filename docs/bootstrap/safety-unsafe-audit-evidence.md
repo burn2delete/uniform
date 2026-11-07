@@ -2,7 +2,7 @@
 
 ## Scope and governing contracts
 
-This scope precedes implementation and an early draft PR. D1, D2, D3, D8,
+This scope was committed before implementation and early draft PR #1304. D1, D2, D3, D8,
 D9, SAFE1, SAFE6, SAFE15, C1, C6, C7, C8, C10, C15, BOOT8 and TEST2 govern
 the slice. Starting source is
 `087b7d2cccec0c209e9c1d14467f2efe2bdf5a37`, tree
@@ -114,6 +114,62 @@ cold loading, CI harness, docs/roadmap and complete current-main lint checks.
 Archive actual generated outputs with byte hashes. Final exact independent
 semantic/adversarial review, provider/CI audit, clean source freeze and current
 integration preflight remain required. The designated integrator retains Main.
+
+## Current development evidence
+
+All three complete bodies are extracted, including all ten recorder branches.
+The historical names/arities are thin adapters. All 15 earlier Safety body
+texts, unrelated component bytes, the SAFE6 conformance summary and the other
+catalogs are conserved. Safety exposes 18 APIs and cold-loads without Bootstrap
+or Diagnostics. The appended complete command is contract 24 at 2g/180;
+all 23 earlier command forms are identical.
+
+The complete new test namespace passes 14 tests and 314 assertions, including
+all ten branches, map/set/vector traversal, quote and outer-island boundaries,
+recursive function selection, late catalog/operation roots, five context reads,
+physical identity, defaults, owner exceptions and lazy first refusal. Existing
+native Safety passes 4/155, SAFE1 source 10/264, Types/Effects 20/263,
+language/ownership 48/1202 and the CI harness 54/671. Ten typed catalog-refusal
+compatibility controls remain explicitly caller-owned.
+
+Three actual unsafe-audit artifacts emit, and two actual ordinary hello plans
+compile and execute in the temporary Clojure Stage0 interpreter. Two genuine
+unsafe forms refuse with their existing SAFE6 diagnostics. All seven complete
+before/after source observations, including plans, stdout, artifacts, typed
+hashes, diagnostics and callback counts, are equal. Baseline receipt SHA256:
+`5bb543554ec247a1daa5c08d6040e6cb44885c6d9a07e80ad63e2ba902ec1bfe`;
+current receipt:
+`9cc406052f60941b4100f97548e38b2d3ca2cb4e682bf97bda2b505003289600`.
+The conservation receipt binds 24 protected paths, including the actual source
+traversal, Stage0 compiler, source readers, source/projector wrappers, typed
+catalog dispatcher, required-key catalog, SAFE1 adapters, pins, and other stage
+implementations. Its SHA256 is
+`14732dc9aca7c052589f61f1cfa063492969572d19c06501b3d4fe7aefb1d4ee`.
+
+Independent scope review SHA256
+`5f63632e4e1aa8e086d70373504185d8e11de8e8534a326a3f26592bc8fdd3dc`
+supports the full group with distinct recorder and executable-presence
+boundaries. Its immutable identity/Var-selection clarification supplement is
+`a7d33f163548562adb9b38e048f8a84faa2a0cbd4c3af8c1921344cd9a8aaab5`.
+The supplement corrects a tree transcription; it changes no source or scope.
+
+Standalone helper/test syntax corrections were caught by lint before execution
+and are development history. The first 12-test native run passed; the expanded
+14-test run adds the typed catalog, lazy refusal, and malformed-carrier controls.
+No production behavior was changed to satisfy a test. Document and roadmap
+structural checks pass. Thirty-five generated output files are byte-preserved
+in the archive bound by final conservation receipt SHA256
+`bac01df0cbb6e9a78918ac1742780f3b92235e0a72fbfc452e9626d12c9d1d10`.
+Final independent source/adversarial acceptance, clean candidate/current-main
+lint, provider/hosted CI audit and integration remain pending.
+
+This authored capture uses Main-aa6. Later published main
+`9f201518f400b118a7cf60533d6cebb94f5bcd68`, tree
+`b8c6e8673f007cd810835266936c7f0362e8fa14`, adds ten separate
+software-factory/Advance paths and changes none of the nine shared client API
+blobs. Any later own-branch composition must preserve the authored ten-path
+surface, import only the published changes and receive independent review.
+Earlier source/provider/CI acceptance does not transfer to that later tuple.
 
 ## Unsupported boundaries
 

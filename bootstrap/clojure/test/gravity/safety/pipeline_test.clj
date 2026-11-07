@@ -20,7 +20,8 @@
 
 (deftest contract-identifies-records-and-keeps-classification-with-the-owner
   (is (empty? (ns-aliases 'gravity.safety)))
-  (is (= #{'emit-native-outcome-diagnostic! 'check-native-outcome! 'record-native-outcome-call!
+  (is (= #{'native-unsafe-forms 'validate-native-unsafe-island! 'record-native-unsafe-audit-call!
+           'emit-native-outcome-diagnostic! 'check-native-outcome! 'record-native-outcome-call!
            'managed-allocation-check 'transcript-delivery-check 'safety-basis
            'pure-safety-proof 'pure-safety-proof-valid? 'structural-safety-proof
            'structural-safety-proof-valid? 'child-obligation-refs 'rederive-proven-safety
