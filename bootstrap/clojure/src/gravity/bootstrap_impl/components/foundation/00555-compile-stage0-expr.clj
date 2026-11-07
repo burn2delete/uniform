@@ -1,104 +1,23 @@
 
 
+(def ^:private stage0-instruction-lowering-operations
+  {:compile-expression #'compile-stage0-expr
+   :compile-collection #'compile-stage0-collection
+   :compile-let #'compile-stage0-let
+   :builtin-functions #'stage0-builtin-functions
+   :fail! #'fail!})
+
 (defn compile-stage0-expr
   [module locals form]
-  (cond
-    (symbol? form)
-    (if (contains? locals form)
-      {:op :local :name form}
-      (fail! "L2-UNKNOWN-SYMBOL"
-             "stage0 cannot resolve symbol"
-             {:source-span {:source (:source-path module)}
-              :symbol form
-              :remediation "Define the symbol or stay within the stage0 subset."}))
-
-    (seq? form)
-    (case (first form)
-      println {:op :println
-               :effect :io/write
-               :capability :io/stdout
-               :args (mapv #(compile-stage0-expr module locals %) (rest form))}
-      do {:op :do
-          :body (mapv #(compile-stage0-expr module locals %) (rest form))}
-      if (let [[_ test then else] form]
-           {:op :if
-            :test (compile-stage0-expr module locals test)
-            :then (compile-stage0-expr module locals then)
-            :else (compile-stage0-expr module locals else)})
-      let (let [[_ bindings & body] form]
-            (compile-stage0-let module locals bindings body))
-      quote {:op :quote :value (second form)}
-      host-reflect (fail! "P4-HOST-REFLECTION"
-                          "host reflection is not implemented in stage0"
-                          {:source-span {:source (:source-path module)}
-                           :remediation "Remove host reflection from the stage0 executable subset."})
-      (let [callee (first form)
-            args (mapv #(compile-stage0-expr module locals %) (rest form))]
-        (cond
-          (contains? stage0-builtin-functions callee)
-          {:op :builtin-call :function callee :args args}
-
-          (contains? (:function-table module) callee)
-          {:op :function-call :function callee :args args}
-
-          :else
-          (fail! "L2-UNKNOWN-CORE-FORM"
-                 "stage0 cannot execute this form"
-                 {:source-span {:source (:source-path module)}
-                  :operator callee
-                  :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage0 hosted subset."}))))
-
-    (or (vector? form) (map? form) (set? form))
-    (compile-stage0-collection module locals form)
-
-    :else
-    {:op :literal :value form}))
+  (gravity.lowering/compile-native-expression stage0-instruction-lowering-operations module locals form))
 
 (defn compile-stage0-function
-  [module {:keys [name params body] :as definition}]
-  (assoc definition
-         :binding {:name name
-                   :kind :function
-                   :namespace (:module module)
-                   :profile (:profile module)
-                   :target (:target module)
-                   :visibility (if (seq (:exports module))
-                                 (if (contains? (set (:exports module)) name)
-                                   :public
-                                   :private)
-                                 :stage0-local)
-                   :effects (:effects module)
-                   :capabilities (:capabilities module)}
-         :instructions (mapv #(compile-stage0-expr module (set params) %) body)))
+  [module definition]
+  (gravity.lowering/compile-native-function #'compile-stage0-expr module definition))
 
 (defn stage0-instruction-summary
   [instruction]
-  (let [children
-        (case (:op instruction)
-          :println (:args instruction)
-          :do (:body instruction)
-          :if [(:test instruction) (:then instruction) (:else instruction)]
-          :let (concat (map :expr (:bindings instruction)) (:body instruction))
-          :loop (concat (map :expr (:bindings instruction))
-                        (:body instruction))
-          :recur (:args instruction)
-          :throw [(:value instruction)]
-          :builtin-call (:args instruction)
-          :function-call (:args instruction)
-          :compiler-module-call (:args instruction)
-          :vector-literal (:items instruction)
-          :set-literal (:items instruction)
-          :map-literal (mapcat (fn [{:keys [key value]}] [key value])
-                                (:entries instruction))
-          [])]
-    ;; A parent and child may share an opcode (for example nested builtin
-    ;; calls).  Add the parent fact instead of letting `merge` overwrite it;
-    ;; this makes the stage0 comparison describe every concrete instruction.
-    (merge-with +
-                {(:op instruction) 1}
-                (apply merge-with +
-                       (map stage0-instruction-summary
-                            (remove nil? children))))))
+  (gravity.lowering/native-instruction-summary #'stage0-instruction-summary instruction))
 
 (defn stage0-compiled-core-plan
   [source-path source-text module]
