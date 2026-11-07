@@ -1,6 +1,7 @@
 (ns seedless.main-invariants-test
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is use-fixtures]]
             [seedless.github :as gh]
             [seedless.main :as main]
@@ -277,8 +278,10 @@
    {"effect/completed"
     {:status :done :message "completed"
      :result {:ordinary-result "must not be projected wholesale"}
-     :prior {:status :restricted :message "prior refusal" :restricted true}
+     :prior {:status :restricted :message "prior refusal" :restricted true
+             :result {:prior-result "retained-prior-result"}}
      :previous {:status :not-applied :outcome :not-applied
+                :result {:previous-result "retained-previous-result"}
                 :settlement {:outcome :not-applied
                              :receipt-digests {:authorization "recorded-authorization-digest"}
                              :receipt-digest "nested-settlement-receipt"}
@@ -350,6 +353,11 @@
 (defn bytes-digest [bytes]
   (format "%064x"
           (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256") bytes))))
+
+(defn content-identity [value]
+  {:present true
+   :sha256 (rt/digest (pr-str value))
+   :serialization :edn-pr-str-utf8})
 
 (defn contains-recorded? [value needle]
   (or (= value needle)
@@ -452,8 +460,18 @@
       (is (= :done (get-in current-effects ["effect/completed" :status])))
       (is (= true (get-in current-effects ["effect/completed" :result-present])))
       (is (= true (get-in current-effects ["effect/completed" :reconciliation-present])))
+      (is (= (content-identity (get-in state [:effects "effect/completed" :result]))
+             (get-in current-effects ["effect/completed" :result-identity])))
+      (is (= (content-identity (get-in state [:effects "effect/completed" :reconciliation]))
+             (get-in current-effects ["effect/completed" :reconciliation-identity])))
       (is (not (contains? (current-effects "effect/completed") :result)))
       (is (= :done (get-in histories ["effect/completed" :current-status])))
+      (is (= (content-identity (get-in state [:effects "effect/completed" :prior :result]))
+             (get-in histories ["effect/completed" :prior :result])))
+      (is (= (content-identity (get-in state [:effects "effect/completed" :previous :result]))
+             (get-in histories ["effect/completed" :previous :result])))
+      (is (= (content-identity (get-in state [:effects "effect/completed" :reconciliation]))
+             (get-in histories ["effect/completed" :reconciliation-identity])))
       (is (= "recorded-authorization-digest"
              (get-in histories ["effect/completed" :previous :settlement
                                 :receipt-digests :authorization])))
@@ -505,6 +523,49 @@
       (is (= :unverified (get-in summary [:liveness :service])))
       (finally (fixture/delete-tree! (:root ctx))))))
 
+(deftest status-summary-redacts-credential-scalars-without-dropping-identities
+  (let [{:keys [ctx config]} (status-context)
+        state (-> (status-state config)
+                  (assoc-in [:tasks "attention/restricted" :error]
+                            "Bearer scalar-error-secret")
+                  (assoc-in [:tasks "attention/restricted" :reporting-error]
+                            {:message "Bearer reporting-secret"
+                             :remote-pr-refusal {:authorization "credential-key-secret"
+                                                 :detail "Bearer nested-secret"}})
+                  (assoc-in [:effects "effect/completed" :reconciliation]
+                            "Bearer reconciliation-secret")
+                  (assoc :completion {:status :blocked
+                                      :result "Bearer blocker-secret"
+                                      :authorization "credential-key-secret"}))
+        raw (pr-str state)
+        summary (main/status-summary config state (rt/digest raw)
+                                     {:file "control.edn" :available false
+                                      :status :unavailable})
+        attention (first (:attention summary))
+        current-effects (into {} (map (juxt :id identity) (get-in summary [:effects :current])))
+        histories (into {} (map (juxt :id identity) (get-in summary [:effects :history])))
+        serialized (pr-str summary)]
+    (try
+      (is (= "Bearer [REDACTED]" (get-in attention [:error :message])))
+      (is (= "Bearer [REDACTED]"
+             (get-in attention [:reporting-error :message])))
+      (is (= "[REDACTED]"
+             (get-in attention [:reporting-error :remote-pr-refusal :authorization])))
+      (is (= "Bearer [REDACTED]"
+             (get-in attention [:reporting-error :remote-pr-refusal :detail])))
+      (is (= "Bearer [REDACTED]"
+             (get-in histories ["effect/completed" :reconciliation])))
+      (is (= (content-identity "Bearer reconciliation-secret")
+             (get-in current-effects ["effect/completed" :reconciliation-identity])))
+      (is (= (content-identity "Bearer reconciliation-secret")
+             (get-in histories ["effect/completed" :reconciliation-identity])))
+      (is (= "Bearer [REDACTED]"
+             (get-in summary [:recorded-blockers :completion :result])))
+      (doseq [secret ["scalar-error-secret" "reporting-secret" "credential-key-secret"
+                      "nested-secret" "reconciliation-secret" "blocker-secret"]]
+        (is (not (str/includes? serialized secret))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
 (deftest status-summary-reader-fails-closed-and-binds-exact-bytes
   (let [{:keys [ctx config state-file control-file]} (status-context)
         state (status-state config)
@@ -541,7 +602,21 @@
                                   #"another campaign/configuration"
                                   #"malformed state shape"))
                               (main/status-summary! config))))
+      (doseq [bad-state [(assoc state :status nil)
+                         (assoc state :status "running")
+                         (update-in state [:tasks "ready/map-key-only"] dissoc :status)
+                         (assoc-in state [:tasks "ready/map-key-only" :status] "ready")
+                         (update-in state [:jobs "job/model"] dissoc :status)
+                         (assoc-in state [:jobs "job/model" :status] "attention")
+                         (update-in state [:effects "effect/completed"] dissoc :status)
+                         (assoc-in state [:effects "effect/completed" :status] "done")]]
+        (spit state-file (pr-str bad-state))
+        (is (thrown-with-msg? Exception #"malformed state shape"
+                              (main/status-summary! config))))
       (spit state-file (str state-raw "\n" state-raw))
+      (is (thrown-with-msg? Exception #"malformed state"
+                            (main/status-summary! config)))
+      (spit state-file "#factory/unsupported {:status :running}")
       (is (thrown-with-msg? Exception #"malformed state"
                             (main/status-summary! config)))
       (write-bytes! state-file (invalid-utf8-at-marker
@@ -616,6 +691,17 @@
           (is (= :seedless/v1 (:schema parsed)))
           (is (= :running (get-in parsed [:state :recorded-status])))
           (is (= (rt/digest raw) (get-in parsed [:state :sha256])))))
+      (let [output (java.io.StringWriter.)
+            failure (try
+                      (binding [*out* output]
+                        (with-redefs [main/config! (fn [_] config)
+                                      rt/fail! (fn [message _] (throw (Error. message)))
+                                      clojure.core/shutdown-agents (fn [] nil)]
+                          (main/-main "status-summary" (str config-file) "unexpected")))
+                      nil
+                      (catch Error error error))]
+        (is (= "status-summary takes no additional arguments" (.getMessage failure)))
+        (is (= "" (str output))))
       (let [output (with-out-str (main/dispatch! {:state (atom state)} "status" []))]
         (is (= state (edn/read-string output))))
       (finally (fixture/delete-tree! (:root ctx))))))

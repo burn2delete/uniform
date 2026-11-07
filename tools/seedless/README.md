@@ -52,6 +52,11 @@ remote identity. The output distinguishes an effect's current status from its
 retained refusal and settlement history. A completed effect does not erase an
 active restriction or grant permission to replay its original action.
 
+Omitted result and reconciliation payloads retain presence and content
+identities labelled `:edn-pr-str-utf8`: SHA-256 of the Clojure EDN value's
+`pr-str` serialization in UTF-8. These value identities are separate from the
+state-file digest, which hashes the original bytes read from disk.
+
 Recorded model jobs do not cover all native checks or other processes. These
 records establish neither service health, worker drain, idleness nor dispatch
 authority. State and control may change after they are read. The command takes

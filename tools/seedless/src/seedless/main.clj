@@ -75,6 +75,12 @@
 (defn- nonblank-string? [value]
   (and (string? value) (not (str/blank? value))))
 
+(defn- content-identity [value]
+  (let [serialized (pr-str value)]
+    {:present true
+     :sha256 (rt/digest serialized)
+     :serialization :edn-pr-str-utf8}))
+
 (defn- status-identity [config state]
   (let [recorded (:identity state)
         keys (vec (filter #(contains? config %) status-identity-keys))
@@ -93,7 +99,10 @@
      :git-common-dir :recorded-only}))
 
 (defn- status-record-map? [value]
-  (and (map? value) (every? map? (vals value))))
+  (and (map? value)
+       (every? (fn [[_ record]]
+                 (and (map? record) (keyword? (:status record))))
+               value)))
 
 (defn- validate-status-state! [config state path]
   (let [fields [:tasks :jobs :effects]
@@ -108,6 +117,7 @@
                    (= :seedless/v1 (:schema state))
                    (map? (:identity state))
                    (contains? state :status)
+                   (keyword? (:status state))
                    (status-record-map? (:tasks state))
                    (status-record-map? (:jobs state))
                    (status-record-map? (:effects state))
@@ -202,7 +212,7 @@
                     [:message :effect :effect-id :effect-status :restricted :uncertain
                      :reason :remote-pr-refusal :main-effect :writer-ended? :outcome
                      :job :refusal :path :slice])))
-    :else {:message (str error)}))
+    :else {:message (rt/redact (str error))}))
 
 (defn- effect-reference-values [value]
   (cond
@@ -245,12 +255,12 @@
 (defn- history-facts [value]
   (cond
     (map? value)
-    (into {}
-          (for [[key nested] value
-                :when (not (#{:result :output :raw-response} key))]
-            (let [projected (history-facts nested)
-                  key-name (when (or (keyword? key) (string? key)) (name key))]
-              [key (cond
+    (reduce-kv
+     (fn [result key nested]
+       (let [projected (history-facts nested)
+             key-name (when (or (keyword? key) (string? key)) (name key))
+             value (cond
+                     (#{:result :output :raw-response} key) (content-identity nested)
                      (= :authorization key)
                      (if (map? nested)
                        {:present true :sha256 (rt/digest (pr-str nested))}
@@ -259,8 +269,16 @@
                          {:present true :sha256 (rt/digest (pr-str nested))}))
                      key-name (if (= "[REDACTED]" (get (rt/redact {key nil}) key))
                                 "[REDACTED]"
-                                projected)
-                     :else projected)])))
+                                (if (or (map? projected) (sequential? projected))
+                                  projected
+                                  (rt/redact projected)))
+                     :else projected)
+             result (assoc result key value)]
+         (if (= :reconciliation key)
+           (assoc result :reconciliation-identity (content-identity nested))
+           result)))
+     {}
+     value)
     (sequential? value) (mapv history-facts value)
     :else (rt/redact value)))
 
@@ -275,7 +293,9 @@
      :previous (history-facts previous)
      :reconciliation (if (map? (:reconciliation record))
                        (history-facts (:reconciliation record))
-                       (:reconciliation record))
+                       (rt/redact (:reconciliation record)))
+     :reconciliation-identity (when (contains? record :reconciliation)
+                                (content-identity (:reconciliation record)))
      :settlements (->> [(:settlement record)
                         (get-in record [:prior :settlement])
                         (get-in record [:previous :settlement])]
@@ -314,6 +334,11 @@
                              (cond-> {:id id :status (:status record)
                                       :result-present (contains? record :result)
                                       :reconciliation-present (contains? record :reconciliation)
+                                      :result-identity (when (contains? record :result)
+                                                         (content-identity (:result record)))
+                                      :reconciliation-identity
+                                      (when (contains? record :reconciliation)
+                                        (content-identity (:reconciliation record)))
                                       :record {:state-file state-file :state-sha256 state-digest
                                                :effect-id id}}
                                (some? (:message record))
@@ -336,7 +361,7 @@
      :operator-api-recoveries recoveries
      :refusal-settlement-history {:effects history
                                   :operator-api-recoveries recoveries
-                                  :recorded (rt/redact retained)}}))
+                                  :recorded (history-facts retained)}}))
 
 (defn- task-status-summary [state effects-view state-file state-digest [map-key task]]
   (let [key map-key
@@ -410,7 +435,7 @@
        :status (:status value)
        :result (when (or (keyword? (:result value)) (string? (:result value))
                          (boolean? (:result value)) (number? (:result value)))
-                 (:result value))
+                 (rt/redact (:result value)))
        :result-present (contains? value :result)
        :restricted (:restricted value)
        :effect-refs (task-effect-ids value)
