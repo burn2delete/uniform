@@ -509,6 +509,48 @@
                (get-in record [:input :literal-records-hash])))
         (is (= record same-record))))))
 
+(deftest product-integrity-record-v3-binds-decimal-projection-identity
+  (let [source-unit (base-source-unit false)
+        incremental {:artifact :gravity/reader-incremental-hashes
+                     :source-unit source-id
+                     :form-tree "sha256:forms"
+                     :token-stream "sha256:tokens"}
+        literal-records
+        [{:literal-id :lit-0 :form-id :form-0 :kind :decimal
+          :span source-span-a :decoded "1.2E+0"}]
+        deferred-records
+        [{:literal-id :lit-1 :form-id :form-1 :kind :decimal
+          :span (span source-a "sha256:deferred-file" 1 2)
+          :decoded {:semantic-validation :deferred}}]
+        projection-id-a "sha256:decimal-projection-a"
+        projection-id-b "sha256:decimal-projection-b"
+        operations (hash-operations)]
+    (identity/with-operations
+     operations
+     #(let [record (identity/c2-reader-product-integrity-record-v3
+                    source-unit [:form-0] incremental literal-records
+                    deferred-records projection-id-a)
+            changed-record
+            (identity/c2-reader-product-integrity-record-v3
+             source-unit [:form-0] incremental literal-records
+             deferred-records projection-id-b)
+            legacy-record
+            (identity/c2-reader-product-integrity-record
+             source-unit [:form-0] incremental literal-records deferred-records)]
+        (is (= :gravity/c2-reader-product-integrity (:artifact record)))
+        (is (= :verified (:status record)))
+        (is (= projection-id-a
+               (get-in record [:input :decimal-occurrence-projection-id])))
+        (is (not= (:integrity-hash record)
+                  (:integrity-hash changed-record)))
+        (is (not= (:integrity-hash record)
+                  (:integrity-hash legacy-record)))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (identity/with-operations
+                  (assoc operations :c2-reader-product-integrity-record-v3
+                         :not-a-function)
+                  (fn [] :unused))))))
+
 (deftest artifact-id-preimage-is-exact-and-checkout-path-neutral
   (let [integrity {:artifact :gravity/c2-reader-product-integrity
                    :integrity-hash "sha256:integrity"
@@ -653,8 +695,19 @@
              :c2-diagnostic-hash-input
              :c2-incremental-hashes
              :c2-reader-product-integrity-record
+             :c2-reader-product-integrity-record-v3
              :c2-reader-artifact-id}
            (get-in contract [:operation-interposition :accepted-keys])))
+    (is (= '([source-unit top-level-form-ids incremental-hashes
+              literal-records deferred-literal-records
+              decimal-occurrence-projection-id])
+           (get-in contract [:public-api
+                             'c2-reader-product-integrity-record-v3
+                             :arglists])))
+    (is (= #{:sha256-hex}
+           (get-in contract
+                   [:operation-interposition :entrypoint-requirements
+                    'c2-reader-product-integrity-record-v3])))
     (is (true? (get-in contract
                        [:operation-interposition :partial-overrides?])))
     (is (true? (get-in contract

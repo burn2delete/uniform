@@ -847,6 +847,8 @@
     conformance)]
   (assoc artifact :artifact-id (c3-artifact-id artifact))))
 
+(declare registered-literal-integrity-view)
+
 (defn
  reader-products-authentic?
  "Recompute the existing reader-to-syntax association and envelope checks."
@@ -899,7 +901,10 @@
      (if
       gravity-boundary
       (let
-       [result
+       [integrity-report
+        (c3-c2-reader-integrity-report
+         (registered-literal-integrity-view c2-artifact))
+        result
         (:resolved-syntax-result gravity-boundary)
         result-stream
         (:syntax-object-stream result)
@@ -925,6 +930,7 @@
          result-stream
          (repeat serialization-id))]
        (and
+        (:authentic? integrity-report)
         (sh04-syntax-registered-literal-projection-authentic?
          c2-artifact
          gravity-boundary)
@@ -2393,6 +2399,50 @@
    (throw interrupted))
   (catch Throwable _ false)))
 
+(defn-
+ registered-literal-integrity-view
+ "Restore host literal values before re-running C2 integrity.
+
+  The C3 reader view intentionally projects registered Date/UUID values to
+  serializable Gravity descriptors. C2 integrity is defined over the
+  unprojected reader products, so validate that view without treating the
+  projection itself as a new C2 product."
+ [c2-artifact]
+ (let [bindings
+       (get-in c2-artifact [:registered-literal-projection :bindings])
+       replacements
+       (into
+        {}
+        (keep
+         (fn [{:keys [tag descriptor]}]
+           (case
+            tag
+            inst
+            (when-let [milliseconds
+                       (get-in descriptor [:canonical-value :epoch-milliseconds])]
+              [descriptor (java.util.Date. (Long/parseLong milliseconds))])
+            uuid
+            (when-let [canonical-text
+                       (get-in descriptor [:canonical-value :canonical-text])]
+              [descriptor (java.util.UUID/fromString canonical-text)])
+            nil))
+         bindings))]
+   (if-not (seq replacements)
+     c2-artifact
+     (letfn [(restore [value]
+               (cond
+                (contains? replacements value) (get replacements value)
+                (map? value)
+                (into (empty value)
+                      (map (fn [[key child]] [(restore key) (restore child)]) value))
+                (vector? value) (mapv restore value)
+                (set? value) (into #{} (map restore) value)
+                (seq? value) (apply list (map restore value))
+                :else value))]
+       (dissoc
+        (restore (dissoc c2-artifact :registered-literal-projection))
+        :registered-literal-projection)))))
+
 (defn
  current-reader-identity-view
  [source-path
@@ -2610,6 +2660,8 @@
       :reader-diagnostics
       :incremental-reader-hashes
       :reader-product-integrity])
+    :sh07-decimal-occurrence-projection
+    (:sh07-decimal-occurrence-projection c2-artifact)
     :sh03-reader-authentication
     (cond->
      {:reader-result-id
@@ -2626,6 +2678,11 @@
       (get-in
        boundary
        [:authenticated-envelope :provenance-binding-id])}
+     (get-in boundary [:adapter-contract])
+     (assoc :adapter-contract (get-in boundary [:adapter-contract]))
+     (get-in boundary [:decimal-occurrence-projection-id])
+     (assoc :decimal-occurrence-projection-id
+            (get-in boundary [:decimal-occurrence-projection-id]))
      (=
       :gravity/sh03-current-source-reader-plan-binding
       (get-in boundary [:plan-binding :artifact]))
@@ -2693,6 +2750,7 @@
  {:adapter-contract
   (or
    (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+   (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
    :gravity/sh03-to-c2-reader-products-v2),
   :adapted-source-unit-id
   (get-in c2-artifact [:source-unit-record :source-id]),
@@ -2888,6 +2946,7 @@
      :adapter-contract
      (or
       (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+      (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
       :gravity/sh03-to-c2-reader-products-v2),
      :semantic-reader-products semantic-core})
    envelope-id

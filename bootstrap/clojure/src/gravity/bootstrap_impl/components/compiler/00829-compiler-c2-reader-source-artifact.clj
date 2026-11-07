@@ -83,6 +83,18 @@
           top-level-form-ids (:root-form-ids products)
           _records (:parsed-records products)
           forms (:parsed-values products)
+          decimal-occurrence-projection
+          (sh03-reader-decimal-occurrence-projection-from-products!
+           source-path products)
+          _ (when-not (= decimal-occurrence-projection
+                         (:sh07-decimal-occurrence-projection products))
+              (c2-reader-fail!
+               "C2-HASH" source-path
+               {:stage :read-source
+                :source-span (source-span source-path 0)
+                :reader-options reader-options}
+               {:missing-fields
+                [:internal-sh03-c2-decimal-occurrence-projection]}))
           _ (validate-ns-syntax! source-path forms)
           module-context (reader-module-context forms)
           overrides (c2-reader-overrides-from-forms forms)
@@ -121,9 +133,10 @@
           incremental-hashes (c2-incremental-hashes
                               source-unit token-stream form-tree syntax-seeds
                               extension-invocations diagnostics)
-          integrity-record (c2-reader-product-integrity-record
+          integrity-record (c2-reader-product-integrity-record-v3
                             source-unit top-level-form-ids incremental-hashes
-                            literal-records deferred-literals)
+                            literal-records deferred-literals
+                            (:projection-id decimal-occurrence-projection))
           projection
           (gravity.reader/native-document-projection
            source-path source-text project-context reader-options
@@ -133,15 +146,28 @@
             :top-level-form-ids top-level-form-ids :lexical-validation lexical-validation
             :syntax-seeds syntax-seeds :literal-records literal-records
             :extension-invocations extension-invocations :deferred-literals deferred-literals
-            :diagnostics diagnostics :incremental-hashes incremental-hashes :integrity-record integrity-record}
+            :diagnostics diagnostics :incremental-hashes incremental-hashes
+            :integrity-record integrity-record}
            {:governing-document-var #'c2-reader-governing-document
             :diagnostic-ids-var #'c2-reader-diagnostic-ids
             :uncredited-entrypoints-var #'sh03-reader-uncredited-source-model-entrypoints
             :trivia-records-var #'c2-trivia-records :rejected-designs-var #'c2-reader-rejected-designs
             :validate-var #'c2-reader-validate! :capability-proof-var #'c2-reader-capability-proof
             :pure-text-options-var #'reader-pure-text/options?
-            :resource-options-var #'reader-resource-options? :artifact-id-var #'c2-reader-artifact-id})]
-      (:artifact projection))
+            :resource-options-var #'reader-resource-options? :artifact-id-var #'c2-reader-artifact-id})
+          artifact-with-bridge
+          (-> (:artifact projection)
+              (assoc :sh07-decimal-occurrence-projection
+                     decimal-occurrence-projection)
+              (assoc-in [:gravity-reader-boundary
+                         :decimal-occurrence-projection-id]
+                        (:projection-id decimal-occurrence-projection))
+              (update-in [:pass :emits]
+                         (fnil conj [])
+                         :sh07-decimal-occurrence-projection))
+          artifact (assoc artifact-with-bridge
+                          :artifact-id (c2-reader-artifact-id artifact-with-bridge))]
+      artifact)
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))
 
