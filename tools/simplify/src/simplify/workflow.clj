@@ -241,6 +241,19 @@
 
 (defn recover-dependency! [ctx key evidence-file] (recover-inspected! ctx key evidence-file true))
 
+(defn recover-review-checks! [ctx key evidence-file]
+  (let [original (task ctx key)]
+    (if-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
+      (rt/with-claimed-paths ctx lease
+        (fn []
+          (assert-identity! ctx original)
+          (let [inspection (recovery/inspect-review-checks! ctx original evidence-file)]
+            (rt/update! ctx update-in [:tasks key :review-check-recovery-history] (fnil conj [])
+                        {:original-task original :inspection inspection})
+            (task! ctx key :review-check-recovery inspection :status :repair)
+            inspection)))
+      (rt/fail! "Review check continuation is waiting for its actual writer scope" {:finding key :ownership-wait true}))))
+
 (defn recover-fresh-source! [ctx key evidence-file]
   (let [original (task ctx key)]
     (when-not (= :attention (:status original)) (rt/fail! "Only an Attention source can enter fresh validation" {:finding key}))
@@ -283,7 +296,8 @@
       (rt/fail! "Composition recovery is waiting for its actual paths" {:finding key :ownership-wait true}))))
 
 (def recovery-operations
-  {:recover-dependency {:inspection-key :inspected-authored :kind :inspected-source-dependency-resolution :recover #'recover-dependency!}
+  {:recover-review-checks {:inspection-key :review-check-recovery :kind :review-check-evidence :recover #'recover-review-checks!}
+   :recover-dependency {:inspection-key :inspected-authored :kind :inspected-source-dependency-resolution :recover #'recover-dependency!}
    :recover-fresh-source {:inspection-key :fresh-source-validation :kind :fresh-source-validation :recover #'recover-fresh-source!}
    :recover-composition {:inspection-key :composition-recovery :kind :owned-composition-conflict :recover #'recover-composition!}})
 
@@ -343,7 +357,7 @@
             (rt/fail! "Recovery request identity or operation differs" {}))
           (reset! validated? true)
           (when-not (or (contains? occupied (:task-key @request))
-                        (and (#{:recover-fresh-source :recover-composition} (:operation @request))
+                        (and (#{:recover-fresh-source :recover-composition :recover-review-checks} (:operation @request))
                              (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"])))))
             (if (recovery-request-applied? ctx @request)
               (record! :applied {:observed-existing-native-queue true})
@@ -439,17 +453,22 @@
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
      (prepare! ctx key lease)))
   ([ctx key lease]
-   (if (or (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
+   (if (or (= :queued (get-in (task ctx key) [:review-check-recovery :stage]))
+           (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
            (= :queued (get-in (task ctx key) [:composition-recovery :stage])))
      (do
        (rt/with-claimed-paths ctx lease
          (fn []
            (let [t (task ctx key) composition? (= :queued (get-in t [:composition-recovery :stage]))
-                 inspection (if composition? (recovery/validate-composition-queued! ctx t)
-                                (recovery/validate-fresh-queued! ctx t))]
+                 review-checks? (= :queued (get-in t [:review-check-recovery :stage]))
+                 inspection (cond review-checks? (recovery/validate-review-checks-queued! ctx t)
+                                  composition? (recovery/validate-composition-queued! ctx t)
+                                  :else (recovery/validate-fresh-queued! ctx t))]
              (prepare-base! ctx t)
              (when-let [validate (:before-implement ctx)] (validate ctx (task ctx key)))
-             (rt/update! ctx assoc-in [:tasks key (if composition? :composition-recovery :fresh-source-validation) :stage] :continuing)
+             (rt/update! ctx assoc-in [:tasks key (cond review-checks? :review-check-recovery
+                                                       composition? :composition-recovery
+                                                       :else :fresh-source-validation) :stage] :continuing)
              (transition! ctx key :implementing)
              (rt/lease-phase! ctx lease :checking)
              (checks! ctx (task ctx key) (:commands inspection))
