@@ -248,6 +248,19 @@
                                          :result {:not-applied true :main (:base t)}})
               (main/dispatch! ctx "reconcile" [id result-file])
               (is (= :done (get-in @(:state ctx) [:effects id :prior :status])))
+              (doseq [[name content] [["missing-guidance.edn" nil]
+                                      ["malformed-guidance.edn" "{:summary"]
+                                      ["tagged-guidance.edn" "#unsupported/guidance {:summary \"data\"}"]]]
+                (let [path (str (io/file (:state-dir ctx) name))
+                      _ (when content (spit path content))
+                      before-state @(:state ctx)
+                      before-inspection (rt/main-merge-state ctx id)
+                      before-calls @calls]
+                  (is (thrown? Exception (main/dispatch! ctx "retry" [(:key t) path])))
+                  (is (= before-state @(:state ctx)) "Invalid guidance cannot persist a successor intent or change any native state")
+                  (is (= intent (flow/main-intent (flow/task ctx (:key t)))))
+                  (is (= before-inspection (rt/main-merge-state ctx id)))
+                  (is (= before-calls @calls) "Invalid guidance cannot issue a provider or check command")))
               (main/dispatch! ctx "retry" [(:key t)])
               (let [next-intent (flow/main-intent (flow/task ctx (:key t)))]
                 (is (not= id (:id next-intent)))
