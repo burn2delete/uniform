@@ -83,9 +83,27 @@
   (let [task-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-task-reference-key))
         body-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-body-reference-key))
         description-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-description-reference-key))
+        issue-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-issue-reference-key))
+        check-failure-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-check-failure-reference-key))
+        error-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-error-reference-key))
+        feedback-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-feedback-reference-key))
         inline-user-keys (var-get (ns-resolve 'seedless.workflow 'planning-inline-user-keys))]
     (mapv (fn [task]
-            (let [task-key (:key task)
+            (let [task (cond-> task
+                         (get-in task [:issue issue-reference-key])
+                         (assoc :issue (get-in raw (get-in task [:issue issue-reference-key :path])))
+                         (get-in task [:error error-reference-key])
+                         (assoc :error (get-in raw (get-in task [:error error-reference-key :path])))
+                         (get-in task [:feedback feedback-reference-key])
+                         (assoc :feedback (get-in raw (get-in task [:feedback feedback-reference-key :path])))
+                         (sequential? (:check-failures task))
+                         (assoc :check-failures
+                                (mapv (fn [failure]
+                                        (if-let [reference (get failure check-failure-reference-key)]
+                                          (get-in raw (:path reference))
+                                          failure))
+                                      (:check-failures task))))
+                  task-key (:key task)
                   issue (:issue task)
                   restore-map (fn [value path]
                                 (if (contains? value task-reference-key)
@@ -1013,7 +1031,9 @@
         description-reference (get-in (first projected) [:description :uniform/retained-task-description])
         reference-keys #{:artifact :sha256 :path :field :type :value-sha256}]
     (is (= :attention (:status (first projected))))
-    (is (= {:message "preserved failure"} (:error (first projected))))
+    (is (= "preserved failure" (get-in (first projected) [:error :message])))
+    (is (= [:tasks "issue-metadata" :error]
+           (get-in (first projected) [:error :uniform/retained-task-error-v1 :path])))
     (is (= 42 (:number issue)))
     (is (= :string
            (get-in issue [:body :uniform/retained-untrusted-pr-body :type])))
@@ -1061,6 +1081,69 @@
                           (project [(assoc task :issue
                                             (assoc-in (:issue task) [:milestone :creator] 42))]
                                    reference)))))
+
+(deftest planner-projects-retained-diagnostics-with-authenticated-raw-references
+  (let [project (var-get (ns-resolve 'seedless.workflow 'project-planning-tasks))
+        reference {:file "/tmp/seedless-planning.raw-input.edn" :sha256 "snapshot-sha"}
+        large (apply str (repeat 4096 "retained-diagnostic-"))
+        user {:id 17 :node_id "user-17" :login "seedless" :html_url "https://example.invalid/u"
+              :type "User" :site_admin false :user_view_type "public"
+              :avatar_url "https://example.invalid/avatar"}
+        task (assoc (slice "retained-diagnostics")
+                    :status :attention
+                    :base "base-sha" :candidate "candidate-sha" :tree "tree-sha"
+                    :issue {:id 42 :node_id "issue-42" :number 42 :title "Retained issue"
+                            :html_url "https://example.invalid/issues/42"
+                            :state "open" :labels [{:id 1 :name "seedless" :description "retained"}]
+                            :body "untrusted issue body" :user user
+                            :provider-history large}
+                    :check-failures [{:base "base-sha" :candidate "candidate-sha" :tree "tree-sha"
+                                      :error {:message "known check blocker" :restricted true
+                                              :command ["clojure" "-M:test"]
+                                              :result {:stdout large :stderr large}}}]
+                    :feedback {:base "base-sha" :candidate "candidate-sha" :tree "tree-sha"
+                               :summary "repair the retained check failure"
+                               :verdict :changes-requested :local-check large
+                               :diagnostics [{:message large}]}
+                    :error {:message "retained restriction" :details {:restricted true
+                                                                         :job "review-42"
+                                                                         :refusal large}})
+        projected (project [task] reference)
+        result (first projected)
+        issue (:issue result)
+        failure (first (:check-failures result))
+        feedback (:feedback result)
+        error (:error result)]
+    (is (< (count (pr-str projected)) (count (pr-str [task]))))
+    (is (= #{:id :node_id :number :title :html_url :state :labels :body :user
+             :uniform/retained-task-issue-metadata-v1}
+           (set (keys issue))))
+    (is (= "seedless" (get-in issue [:labels 0 :name])))
+    (is (= [:tasks "retained-diagnostics" :issue]
+           (get-in issue [:uniform/retained-task-issue-metadata-v1 :path])))
+    (is (= :attention (:status result)))
+    (is (= ["base-sha" "candidate-sha" "tree-sha"]
+           (mapv failure [:base :candidate :tree])))
+    (is (= "known check blocker" (get-in failure [:error :message])))
+    (is (true? (get-in failure [:error :restricted])))
+    (is (nil? (get-in failure [:error :result])))
+    (is (= [:tasks "retained-diagnostics" :check-failures 0]
+           (get-in failure [:uniform/retained-task-check-failure-v1 :path])))
+    (is (= "repair the retained check failure" (:summary feedback)))
+    (is (= :changes-requested (:verdict feedback)))
+    (is (nil? (:local-check feedback)))
+    (is (= [:tasks "retained-diagnostics" :feedback]
+           (get-in feedback [:uniform/retained-task-feedback-v1 :path])))
+    (is (= "retained restriction" (:message error)))
+    (is (true? (get-in error [:details :restricted])))
+    (is (= [:tasks "retained-diagnostics" :error]
+           (get-in error [:uniform/retained-task-error-v1 :path])))
+    (is (= [task]
+           (restore-planning-tasks projected {:tasks {"retained-diagnostics" task}})))
+    (is (thrown-with-msg? Exception #"Planning check failure is malformed"
+                          (project [(assoc task :check-failures [42])] reference)))
+    (is (thrown-with-msg? Exception #"Planning task feedback is malformed"
+                          (project [(assoc task :feedback "not-a-map")] reference)))))
 
 (deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
   (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}

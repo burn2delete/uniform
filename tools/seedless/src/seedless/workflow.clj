@@ -944,6 +944,10 @@
 (def ^:private planning-body-reference-key :uniform/retained-untrusted-pr-body)
 (def ^:private planning-description-reference-key :uniform/retained-task-description)
 (def ^:private planning-description-reference-policy :uniform/retained-task-description-v1)
+(def ^:private planning-issue-reference-key :uniform/retained-task-issue-metadata-v1)
+(def ^:private planning-check-failure-reference-key :uniform/retained-task-check-failure-v1)
+(def ^:private planning-error-reference-key :uniform/retained-task-error-v1)
+(def ^:private planning-feedback-reference-key :uniform/retained-task-feedback-v1)
 (def ^:private planning-inline-repository-keys
   ;; Keep repository control facts inline because the planner consumes them as
   ;; decision inputs.  Other provider metadata remains an exact raw reference.
@@ -953,6 +957,19 @@
   #{:id :node_id :login :html_url :type :site_admin :user_view_type})
 (def ^:private planning-inline-milestone-keys
   #{:id :node_id :number :state :title :creator})
+(def ^:private planning-inline-issue-keys
+  ;; Keep task identity, labels, lifecycle, ownership and dependency signals
+  ;; inline.  The remaining provider decoration is retained by an authenticated
+  ;; reference to the complete raw task snapshot.
+  #{:id :node_id :number :title :html_url :url :repository_url :state :state_reason
+    :locked :active_lock_reason :labels :body :user :milestone :assignee :assignees
+    :author_association :issue_dependencies_summary :sub_issues_summary})
+(def ^:private planning-inline-error-keys
+  #{:message :restricted :writer-ended? :seedless-check :local-only :kind :status
+    :effect :effect-id :provider-shape :command :reason})
+(def ^:private planning-inline-feedback-keys
+  #{:base :candidate :tree :summary :verdict :evidence-scope :residual-host-boundary
+    :workflows :ci :instruction})
 
 (defn- planning-reference [artifact artifact-sha path]
   {:artifact artifact :sha256 artifact-sha :path path})
@@ -963,6 +980,13 @@
    :path path
    :field field
    :type (if (map? value) :map :string)
+   :value-sha256 (rt/digest (pr-str value))})
+
+(defn- planning-retained-reference [artifact artifact-sha path value]
+  {:artifact artifact
+   :sha256 artifact-sha
+   :path path
+   :type :edn
    :value-sha256 (rt/digest (pr-str value))})
 
 (defn- project-planning-provider-map [value path inline artifact artifact-sha]
@@ -982,6 +1006,20 @@
                planning-reference-key
                (planning-reference artifact artifact-sha path))
         value))))
+
+(defn- project-planning-repository-map [value path artifact artifact-sha]
+  ;; The repository reference already authenticates the complete repository
+  ;; value, including its owner.  Keep the owner's identity facts inline, but
+  ;; do not repeat a second full owner reference at every head/base location.
+  (when (and (some? (:owner value)) (not (map? (:owner value))))
+    (rt/fail! "Planning provider metadata is malformed"
+              {:path (conj path :owner) :actual-type (type (:owner value))}))
+  (let [projected (project-planning-provider-map
+                   value path (disj planning-inline-repository-keys :owner)
+                   artifact artifact-sha)]
+    (if (map? (:owner value))
+      (assoc projected :owner (select-keys (:owner value) planning-inline-user-keys))
+      projected)))
 
 (defn- project-planning-task-provider-map [value path inline artifact artifact-sha]
   (cond
@@ -1024,15 +1062,117 @@
                  (planning-task-reference artifact artifact-sha path :milestone value nil))
           projected-value)))))
 
+(defn- project-planning-check-failure [failure path artifact artifact-sha]
+  (when-not (map? failure)
+    (rt/fail! "Planning check failure is malformed"
+              {:path path :actual-type (type failure)}))
+  (let [error (:error failure)]
+    (when-not (map? error)
+      (rt/fail! "Planning check failure error is malformed"
+                {:path (conj path :error) :actual-type (type error)}))
+    (assoc (select-keys failure [:base :candidate :tree])
+           :error (assoc (select-keys error planning-inline-error-keys)
+                         planning-error-reference-key
+                         (planning-retained-reference artifact artifact-sha
+                                                       (conj path :error) error))
+           planning-check-failure-reference-key
+           (planning-retained-reference artifact artifact-sha path failure))))
+
+(defn- project-planning-check-failures [failures path artifact artifact-sha]
+  (cond
+    (nil? failures) nil
+    (not (sequential? failures))
+    (rt/fail! "Planning check failures are malformed"
+              {:path path :actual-type (type failures)})
+    :else
+    (mapv (fn [[index failure]]
+            (project-planning-check-failure failure (conj path index)
+                                            artifact artifact-sha))
+          (map-indexed vector failures))))
+
+(defn- project-planning-error [error path artifact artifact-sha]
+  (cond
+    (nil? error) nil
+    (not (map? error))
+    (rt/fail! "Planning task error is malformed"
+              {:path path :actual-type (type error)})
+    :else
+    (let [details (:details error)
+          projected-details
+          (when (map? details)
+            (assoc (select-keys details [:job :restricted :writer-ended? :reason :status :kind
+                                         :effect :effect-id])
+                   planning-error-reference-key
+                   (planning-retained-reference artifact artifact-sha
+                                                 (conj path :details) details)))]
+      (cond-> (assoc (select-keys error planning-inline-error-keys)
+                     planning-error-reference-key
+                     (planning-retained-reference artifact artifact-sha path error))
+        (map? details) (assoc :details projected-details)))))
+
+(defn- project-planning-feedback [feedback path artifact artifact-sha]
+  (cond
+    (nil? feedback) nil
+    (not (map? feedback))
+    (rt/fail! "Planning task feedback is malformed"
+              {:path path :actual-type (type feedback)})
+    :else
+    (let [omitted (remove planning-inline-feedback-keys (keys feedback))]
+      (if (seq omitted)
+        (assoc (select-keys feedback planning-inline-feedback-keys)
+               planning-feedback-reference-key
+               (assoc (planning-retained-reference artifact artifact-sha path feedback)
+                      :keys (vec (sort omitted))))
+        feedback))))
+
+(defn- project-planning-issue [issue projected path artifact artifact-sha]
+  (when (or (contains? issue planning-issue-reference-key)
+            (contains? issue planning-legacy-reference-key))
+    (rt/fail! "Planning issue metadata already has a presentation reference"
+              {:path path}))
+  (let [omitted (remove planning-inline-issue-keys (keys issue))]
+    (if (seq omitted)
+      (assoc (cond-> (select-keys projected planning-inline-issue-keys)
+               (map? (:user projected))
+               (update :user dissoc planning-task-reference-key
+                       planning-legacy-task-reference-key)
+               (map? (:milestone projected))
+               (update :milestone dissoc planning-task-reference-key
+                       planning-legacy-task-reference-key)
+               (map? (get-in projected [:milestone :creator]))
+               (update-in [:milestone :creator]
+                          dissoc planning-task-reference-key
+                          planning-legacy-task-reference-key))
+             planning-issue-reference-key
+             (planning-retained-reference artifact artifact-sha path issue))
+      projected)))
+
+(defn- project-planning-task-retained-fields [task artifact artifact-sha]
+  (let [task-key (:key task)]
+    (cond-> task
+      (contains? task :check-failures)
+      (assoc :check-failures
+             (project-planning-check-failures
+              (:check-failures task) [:tasks task-key :check-failures]
+              artifact artifact-sha))
+      (contains? task :feedback)
+      (assoc :feedback
+             (project-planning-feedback
+              (:feedback task) [:tasks task-key :feedback]
+              artifact artifact-sha))
+      (contains? task :error)
+      (assoc :error
+             (project-planning-error
+              (:error task) [:tasks task-key :error]
+              artifact artifact-sha)))))
+
 (defn- planning-metadata-paths [open-prs]
   (vec (concat
         (for [index (range (count open-prs))
-              path-spec [[[:head :repo :owner] planning-inline-user-keys]
-                         [[:head :user] planning-inline-user-keys]
-                         [[:head :repo] planning-inline-repository-keys]
-                         [[:base :repo :owner] planning-inline-user-keys]
+              path-spec [[[:head :user] planning-inline-user-keys]
+                         [[:head :repo] (disj planning-inline-repository-keys :owner)]
                          [[:base :user] planning-inline-user-keys]
-                         [[:base :repo] planning-inline-repository-keys]]]
+                         [[:base :repo] (disj planning-inline-repository-keys :owner)]]]
           [(into [index] (first path-spec)) (second path-spec)])
         (for [index (range (count open-prs))]
           [[index :user] planning-inline-user-keys]))))
@@ -1051,8 +1191,11 @@
                            (or (= ::absent value) (nil? value)) current
                            :else
                            (assoc-in current path
-                                     (project-planning-provider-map value path inline
-                                                                     artifact artifact-sha)))))
+                                     (if (= :repo (last path))
+                                       (project-planning-repository-map value path
+                                                                        artifact artifact-sha)
+                                       (project-planning-provider-map value path inline
+                                                                       artifact artifact-sha))))))
                      open-prs
                      (planning-metadata-paths open-prs))]
       (mapv (fn [index pr]
@@ -1117,27 +1260,32 @@
                         (:milestone issue) (:milestone projected-issue)
                         [:tasks task-key :issue :milestone] artifact artifact-sha))
                 projected-issue)
+              projected-issue-with-history
+              (project-planning-issue issue projected-issue-with-milestone
+                                      [:tasks task-key :issue] artifact artifact-sha)
               _ (when (and (map? description)
                            (contains? description planning-description-reference-key))
                   (rt/fail! "Planning task description already has a presentation reference"
                             {:path [:tasks task-key :description]}))
-              projected-task (assoc task :issue projected-issue-with-milestone)
+              projected-task (assoc task :issue projected-issue-with-history)
               duplicate-description?
               (and (map? description)
                    (every? (fn [field]
                              (and (contains? task field)
                                   (= (get task field) (get description field))))
                            (keys description)))]
-          (if duplicate-description?
-            (assoc projected-task :description
-                   {planning-description-reference-key
-                    {:artifact artifact
-                     :sha256 artifact-sha
-                     :path [:tasks task-key :description]
-                     :policy planning-description-reference-policy
-                     :keys (vec (sort (keys description)))
-                     :value-sha256 (rt/digest (pr-str description))}})
-            projected-task))))))
+          (project-planning-task-retained-fields
+           (if duplicate-description?
+             (assoc projected-task :description
+                    {planning-description-reference-key
+                     {:artifact artifact
+                      :sha256 artifact-sha
+                      :path [:tasks task-key :description]
+                      :policy planning-description-reference-policy
+                      :keys (vec (sort (keys description)))
+                      :value-sha256 (rt/digest (pr-str description))}})
+             projected-task)
+           artifact artifact-sha))))))
 
 (defn- project-planning-tasks [tasks raw-reference]
   (if-not (and (map? raw-reference)
