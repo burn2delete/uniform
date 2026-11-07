@@ -1,0 +1,86 @@
+{:source-review
+ {:reviewer "/root/review_requirements",
+  :workflow-sha256
+  "7ed90fc5a544b2a91f240f99824365e75b498c4b7b947661971e5a2fbe6b769b",
+  :verdict :approved},
+ :focused-tests
+ {:tests 6,
+  :assertions 77,
+  :failures 0,
+  :errors 0,
+  :reviewer "/root/test_advance"},
+ :source-files
+ {"tools/advance/README.md"
+  "29083d31926b2961601e606f77ba3a0d24e3e4e1c5a07372b9796019e0cfc6bb",
+  "tools/advance/src/advance/workflow.clj"
+  "7ed90fc5a544b2a91f240f99824365e75b498c4b7b947661971e5a2fbe6b769b",
+  "tools/advance/test/advance/workflow_test.clj"
+  "4a33c1e649942789e4f601149b7246f09e03c00bdead675529a3a22c6a3b5aa5"},
+ :negative-history
+ {:initial-result :failed,
+  :finding
+  "Real candidate snapshot deletion/tampering after helper verification reached model dispatch.",
+  :correction
+  "Reverify exact candidate and increment snapshot envelopes immediately before model dispatch, without recreation.",
+  :current-result :passed},
+ :source-tree "288f6fbbde837b514146fe7d45542c276b005899",
+ :state :validated-local-awaiting-main-and-adoption,
+ :checks
+ [{:cwd
+   "/Users/matt/.codex/worktrees/factory-pr-body-context/uniform/tools/advance",
+   :argv ["clojure" "-M:test"],
+   :exit 0,
+   :tests 144,
+   :assertions 1421,
+   :failures 0,
+   :errors 0,
+   :log-sha256
+   "715e53d4f592071850728457edfb8b4551fc4a4add060101997528c0cef9179c"}
+  {:cwd "/Users/matt/.codex/worktrees/factory-pr-body-context/uniform",
+   :argv
+   ["clojure"
+    "-M:test"
+    "--namespace"
+    "gravity.self-hosting.sh01-language-boundary-test"],
+   :exit 0,
+   :tests 6,
+   :assertions 11,
+   :failures 0,
+   :errors 0,
+   :log-sha256
+   "11c452ebc63df2466e0ae72a782ba392340ad8706234477d05db1a0c73a5b300"}
+  {:cwd "/Users/matt/.codex/worktrees/factory-pr-body-context/uniform",
+   :argv ["clojure" "-M" "tools/validate_workstream_governance.clj"],
+   :exit 0,
+   :workstreams 185,
+   :log-sha256
+   "9023aed67ff6e46bf61ef0d2ee190b02ba7c7326d78e67381f9910b4ac5f9441"}],
+ :source-commit "c7fca3a6e11ec9cc3877ccddd87a6425056f09d9",
+ :recorded-at "2026-11-07T03:46:03.180706Z",
+ :measurement
+ {:replacement-prompt-bytes 406092,
+  :receipt
+  "target/validation/software-factory/factory-003/factory-003-measurement.edn",
+  :old-section-bytes 425776,
+  :source-note
+  "Measurement used workflow SHA5552600b; final source adds only predispatch verification/captured task envelopes, preserving serialization. Independent review verified that delta.",
+  :prompt-sha256
+  "99db29b1751857620a249465f819a4b0ec129e9d37f9a6603cabfc7745b45bd2",
+  :authority
+  "Same captured prompt, replacing only the candidate section; not a live prompt, latency, token or selection-quality result.",
+  :bytes-reduced 207632,
+  :snapshot-bytes 425964,
+  :new-section-bytes 218144,
+  :candidate-count 60,
+  :receipt-sha256
+  "eb71ed9d5c1661b6120897eea8464abfd3af4d0c3f2bf38f8a6bb5ffbc28ae7d",
+  :old-prompt-bytes 613724,
+  :snapshot-digest
+  "043edbc3a4024df25811c4ba5c25ebaef6ad2cacc4cabf2af7c941755a6ebe04",
+  :changed-path-records 1318,
+  :all-records-paths-bodies-and-digests-exact true},
+ :base "e24b2da4be8b79960462b8f61b7134b71b17f30a",
+ :version 1,
+ :proposal "FACTORY-003",
+ :main :not-yet-integrated,
+ :actual-planner-adoption :not-yet-observed}
