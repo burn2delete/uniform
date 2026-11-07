@@ -1,7 +1,7 @@
 # Implementation plan: Requirement progress reconciliation
 
 Spec: [spec.md](spec.md). Owner: canonical requirement reconciliation maintainer.
-Input: `a1b991be499d50579a8b4366976c519ae8949224`.
+Initial input: `a1b991be499d50579a8b4366976c519ae8949224`.
 
 ## Contract alignment
 
@@ -73,6 +73,11 @@ facets where they constrain the same observable behavior. Candidate clause count
 are not summed. Shared invariants are joined centrally; distinct contextual
 behavior remains a refinement or separate requirement with a stated boundary.
 
+## Historical import checkpoints
+
+The following paragraphs preserve intermediate import observations. They are
+not the current manifest census or independent full-scope acceptance.
+
 The first central slice defines three source-unit requirements from one exact
 L1 paragraph. Independent local semantic review validates that split and its
 historical entailment: one reviewed disposition, zero proposed dispositions,
@@ -85,18 +90,55 @@ scope and evidence qualification work remains visible in the draft.
 The complete profile/performance batch adds proposed dispositions for all 1,052
 nonblank blocks in its 23 documents, with 2,485 exact byte/line/hash facets and
 79 proposed behaviors. Those dispositions remain proposed pending batch semantic
-and cross-family equivalence review. Thus the current source ledger has one
+and cross-family equivalence review. At that import checkpoint the source ledger had one
 reviewed block, 1,052 proposed blocks and 9,043 blocks with no disposition; the
 last two populations together remain 10,095 unresolved blocks. These are
 classification-work counts, never completion percentages or additive estimates.
 
 The next complete imports cover AI/build/tools (36 documents), mathematics and
 backends (25), compiler architecture (18), and runtime/domains/schemas (42).
-They retain 630 additional candidate IDs and exact provenance partitions. The
-current canonical draft therefore contains 712 candidates and 20,000 source
+They retain 630 additional candidate IDs and exact provenance partitions. That
+intermediate canonical draft contained 712 candidates and 20,000 source
 facets, with 5,710 proposed nonblank dispositions plus the one reviewed L1
-paragraph. Another 4,385 blocks have no canonical disposition yet. All original
-documents now have complete family proposals outside the canonical draft;
+paragraph. Another 4,385 blocks have no canonical disposition yet. At that checkpoint all original
+documents had complete family proposals outside the canonical draft;
 normalization, semantic review, cross-family joins and evidence qualification
 continue before those proposals can close scope. Missing task interfaces remain
 separate from missing source semantics, and neither receives implementation credit.
+
+## Verified source checkpoint and remaining work
+
+At `df2db82f55dd1544415731838c8b138c379ed22e`, the read-only census
+conserves 245 source views: the 240 original documents and five explicitly
+declared extensions. The manifest has 1,231 proposed requirement IDs and
+90 alias relations with zero unreviewed aliases. These are source and
+relation observations, not an admitted requirement denominator. One
+nonblank source disposition is reviewed and 10,095 remain proposed and
+unresolved; denominator readiness is false and denominator/rate remain nil.
+
+The existing [evidence record](evidence.md) preserves the current compiler
+and testing semantic reviews, their scoped binding and prior histories.
+The checkpoint passed source reconciliation, conservation audit, document,
+full-language roadmap, governance, language-boundary and whitespace checks,
+with independent model, author/evidence and end/release reviews. Those
+results do not establish implementation, main integration or full-scope
+acceptance. Source/task bridges likewise do not renew historical evidence.
+
+Continue [T002 and T003](tasks.md) against the existing manifest and
+component task authorities: complete source dispositions, atomicity,
+cross-family nonoverlap, compound and ownership decisions, and actionable
+task/evidence bindings. Preserve unresolved semantic and product choices
+with their owning outcomes. T004 validates that resulting scope; T005
+requires independent exact-candidate acceptance and verified integration
+into main. T006 remains a separate validated dashboard handoff. None of
+T002-T006 is closed by this checkpoint.
+
+The first implementation increment remains
+`reader/finite-remaining-work/contract-coverage-reconciliation` in the
+[Reader task authority](../reader-workflow/tasks.md), owned by the Reader
+maintainer. Bind each required literal, abbreviation, namespace, extension
+and output to its implementation location and accepted/refused fixture, or
+retain an explicit failing implementation case. Follow the existing
+[dependency navigation](../../.specify/implementation-readiness.md); this
+source/fixture increment does not close every Reader outcome or authorize
+held execution. No new task population or roadmap is created here.
