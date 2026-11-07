@@ -60,7 +60,7 @@
   (let [reference-key (var-get (ns-resolve 'seedless.workflow 'planning-reference-key))
         body-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-body-reference-key))
         metadata-paths ((var-get (ns-resolve 'seedless.workflow 'planning-metadata-paths)) raw)
-        with-bodies (mapv (fn [index pr]
+        with-bodies (mapv (fn [_ pr]
                             (if (contains? pr :body)
                               (if-let [reference (get-in pr [:body body-reference-key])]
                                 (assoc pr :body (get-in raw (get reference :path)))
@@ -68,7 +68,7 @@
                               pr))
                           (range) projected)]
     (reduce (fn [current [path inline]]
-              (if-let [reference (get-in current (conj path reference-key))]
+              (if (contains? (get-in current path) reference-key)
                 (let [projected-value (get-in current path)
                       raw-value (get-in raw path)
                       fields (remove inline (keys raw-value))]
