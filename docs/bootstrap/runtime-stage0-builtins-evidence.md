@@ -68,7 +68,10 @@ owner Vars are explicit supplied operations, not authentication or authority.
 Runtime owns ordinary Stage0 arm selection, arity-check placement and the
 existing `Exception` to `L2-BUILTIN-ERROR` remap decision and local facts.
 Supplied arity helpers retain their existing predicates and
-`L2-BUILTIN-ARITY` facts. The supplied failure operation retains generic
+`L2-BUILTIN-ARITY` facts. The subsequent [native arity
+extraction](runtime-stage0-arity-evidence.md) moves those helper bodies and
+their local facts into Runtime while preserving these five Bootstrap adapter
+Vars. The supplied failure operation retains generic
 diagnostic construction and transport. Its Bootstrap selection, source/plan
 admission, readable printer/normalizer bodies and reserved policy paths remain
 with their existing owners. The separate Stage2/P15 outer error translation
@@ -153,6 +156,13 @@ own hosted CI, provider review and Main integration remain pending; provisional
 review of dirty source does not confer acceptance. The original module carrier
 differs from the Stage2 plan, so
 `hosted-builtin` and its seventeen-key map are not substitutes for this body.
+
+These counts and observations describe the ordinary-builtin extraction at its
+recorded capture. The subsequent native arity extraction adds five distinct
+APIs and takes the current public inventory to 48. The builtin's eight ports,
+guard placement and outer host-error remap stay unchanged; Bootstrap now
+retains arity adapters and generic failure transport rather than the five
+helper algorithm bodies.
 
 `build-read-declared-input` remains an existing catalog/lowering vocabulary
 gap without a usable service in this dispatcher. This increment adds no

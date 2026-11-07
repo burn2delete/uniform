@@ -33,7 +33,7 @@
   (let [names '[execute-native-stage0-instructions execute-native-stage0-instruction
                 execute-native-stage0-function execute-native-stage0-plan]
         contract (:gravity/namespace-contract (meta #'runtime/execute-native-stage0-plan))]
-    (is (= 43 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= 48 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
     (is (= (set (keys operations))
            (set (mapcat :operation-keys (vals (select-keys (:public-api contract) names))))))
     (is (every? var? (vals operations)))
@@ -321,3 +321,127 @@
       (reset! events [])
       (is (= :late (runtime/invoke-native-stage0-builtin builtin-operations module 'unknown-builtin [])))
       (is (= [:source-path :late] @events)))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-contract-is-explicit-and-distinct
+  (let [contract (:gravity/namespace-contract (meta #'runtime/fail-native-stage0-call-arity!))]
+    (doseq [[operation args port]
+            [[#'runtime/fail-native-stage0-call-arity! '[fail-var id module callee args expected] 'fail-var]
+             [#'runtime/assert-native-stage0-min-arity! '[fail-call-arity-var module callee args n] 'fail-call-arity-var]
+             [#'runtime/assert-native-stage0-exact-arity! '[fail-call-arity-var module callee args n] 'fail-call-arity-var]
+             [#'runtime/assert-native-stage0-between-arity! '[fail-call-arity-var module callee args min-n max-n] 'fail-call-arity-var]
+             [#'runtime/assert-native-stage0-even-arity! '[fail-call-arity-var module callee args] 'fail-call-arity-var]]]
+      (let [api (get-in contract [:public-api (:name (meta operation))])]
+        (is (= (list args) (:arglists (meta operation)) (:arglists api)))
+        (is (= :stage0-native-call-arity (:contract-boundary api)))
+        (is (= :trusted-native-stage0-module-and-call-signature (:input-boundary api)))
+        (is (= [port] (:operation-vars api)))
+        (is (= :late-owner-var-before-call-arguments (:operation-selection api)))
+        (is (= :nil-or-supplied-owner-return-or-unchanged-failure (:result-boundary api)))
+        (is (= :none (:admission api)))
+        (is (true? (:hosted-seed-only? api)))))
+    (is (= :supplied-operation (get-in contract [:public-api 'fail-native-stage0-call-arity! :failure-transport-owner])))
+    (is (false? (:authenticates-plans? contract)))
+    (is (false? (:grants-authority? contract)))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-predicates-preserve-validity-and-returned-refusals
+  (doseq [size (range 6)
+          [guard parameters valid? expected]
+          [[runtime/assert-native-stage0-min-arity! [2] (<= 2 size) "at least 2"]
+           [runtime/assert-native-stage0-exact-arity! [2] (= 2 size) 2]
+           [runtime/assert-native-stage0-between-arity! [2 3] (<= 2 size 3) "2 to 3"]
+           [runtime/assert-native-stage0-even-arity! [] (even? size) "an even number of arguments"]]]
+    (let [calls (atom []) token (Object.) module (Object.) args (vec (range size))
+          failure (clojure.lang.Var/create (fn [& values] (swap! calls conj (vec values)) token))
+          result (apply guard failure module 'native args parameters)]
+      (if valid?
+        (do (is (nil? result)) (is (empty? @calls))
+            (is (nil? (apply guard nil module 'native args parameters))))
+        (do (is (identical? token result))
+            (is (= [["L2-BUILTIN-ARITY" module 'native args expected]] @calls)))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-facts-use-the-module-path-and-exact-messages
+  (let [path (Object.) expected (Object.) token (Object.) args [:a :b]
+        module {:source-path path :source {:path :wrong-stage2-carrier}}]
+    (doseq [[id message] [["L2-FUNCTION-ARITY" "stage0 function call has the wrong arity"]
+                          ["L2-BUILTIN-ARITY" "stage0 builtin call has the wrong arity"]
+                          ["other-id" "stage0 call has the wrong arity"]]]
+      (let [calls (atom []) failure (clojure.lang.Var/create
+                                    (fn [& values] (swap! calls conj (vec values)) token))]
+        (is (identical? token (runtime/fail-native-stage0-call-arity! failure id module 'native args expected)))
+        (is (= [[id message {:source-span {:source path} :function 'native
+                            :expected-arity expected :actual-arity 2
+                            :remediation "Call the function with the arity supported by the stage0 hosted subset."}]]
+               @calls))
+        (is (identical? path (get-in @calls [0 2 :source-span :source])))
+        (is (identical? expected (get-in @calls [0 2 :expected-arity])))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-ports-retain-count-and-fact-construction-order
+  (let [events (atom []) failure (clojure.lang.Var/create (fn [& _] :old))
+        args (reify clojure.lang.Counted
+               (count [_]
+                 (swap! events conj :count)
+                 (alter-var-root failure (constantly (fn [& values] (swap! events conj values) :new))) 0))]
+    (is (= :new (runtime/assert-native-stage0-min-arity! failure {} 'native args 1)))
+    (is (= :count (first @events)))
+    (is (= ["L2-BUILTIN-ARITY" {} 'native args "at least 1"] (vec (second @events)))))
+  (let [events (atom []) token (Object.) failure (clojure.lang.Var/create nil)
+        late (fn [& _] (swap! events conj :late) :late)
+        lookup (fn [key not-found]
+                 (if (= :source-path key)
+                   (do (swap! events conj :source-path)
+                       (alter-var-root failure (constantly late)) :retained-path) not-found))
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key] (lookup key nil))
+                 (valAt [_ key not-found] (lookup key not-found)))
+        args (reify clojure.lang.Counted (count [_] (swap! events conj :count) 3))]
+    (alter-var-root failure (constantly (fn [_ _ facts]
+                                         (swap! events conj :selected)
+                                         (is (= {:source :retained-path} (:source-span facts)))
+                                         (is (= 3 (:actual-arity facts))) token)))
+    (is (identical? token (runtime/fail-native-stage0-call-arity! failure "L2-BUILTIN-ARITY" module 'native args 2)))
+    (is (= [:source-path :count :selected] @events))
+    (reset! events [])
+    (is (= :late (runtime/fail-native-stage0-call-arity! failure "L2-BUILTIN-ARITY" module 'native args 2)))
+    (is (= [:source-path :count :late] @events))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-adapters-preserve-signatures-and-interposition
+  (doseq [[legacy stage args owner]
+          [[#'b/fail-call-arity! #'runtime/fail-native-stage0-call-arity! '[id module callee args expected] #'b/fail!]
+           [#'b/assert-min-arity! #'runtime/assert-native-stage0-min-arity! '[module callee args n] #'b/fail-call-arity!]
+           [#'b/assert-exact-arity! #'runtime/assert-native-stage0-exact-arity! '[module callee args n] #'b/fail-call-arity!]
+           [#'b/assert-between-arity! #'runtime/assert-native-stage0-between-arity! '[module callee args min-n max-n] #'b/fail-call-arity!]
+           [#'b/assert-even-arity! #'runtime/assert-native-stage0-even-arity! '[module callee args] #'b/fail-call-arity!]]]
+    (let [values (mapv (fn [_] (Object.)) args) calls (atom []) token (Object.) error (ex-info "owner" {:id :owner})]
+      (is (= (list args) (:arglists (meta legacy))))
+      (is (not (:private (meta legacy))))
+      (with-redefs-fn {stage (fn [& actual] (swap! calls conj (vec actual)) token)}
+        #(is (identical? token (apply @legacy values))))
+      (is (= [(into [owner] values)] @calls))
+      (with-redefs-fn {stage (fn [& _] (throw error))}
+        #(is (identical? error (observed-error (fn [] (apply @legacy values)))))))))
+
+(deftest ^{:runtime :managed :host :temporary-clojure-bootstrap :profile :hosted :target :jvm
+           :artifact :native-stage0-call-arity}
+  native-stage0-arity-owner-failures-propagate-without-remapping
+  (doseq [error [(ex-info "info" {:id :native-info}) (Exception. "host") (Error. "fatal")]]
+    (let [calls (atom 0) failure (clojure.lang.Var/create (fn [& _] (swap! calls inc) (throw error)))]
+      (doseq [[guard parameters]
+              [[runtime/assert-native-stage0-min-arity! [1]]
+               [runtime/assert-native-stage0-exact-arity! [1]]
+               [runtime/assert-native-stage0-between-arity! [1 2]]
+               [runtime/assert-native-stage0-even-arity! []]]]
+        (let [args (if (= guard runtime/assert-native-stage0-even-arity!) [:odd] [])]
+          (is (identical? error (observed-error #(apply guard failure {} 'native args parameters))))))
+      (is (identical? error
+                     (observed-error #(runtime/fail-native-stage0-call-arity! failure "L2-FUNCTION-ARITY" {} 'native [] 1))))
+      (is (= 5 @calls)))))

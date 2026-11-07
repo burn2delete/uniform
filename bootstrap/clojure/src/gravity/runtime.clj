@@ -4,9 +4,19 @@
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
     :contract-boundary :hosted-seed-stage0-stage2-invocation-instruction-evaluation-and-value-operations
-    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2]
+    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2 TEST3]
     :public-api
-    {invoke-native-stage0-builtin
+    {fail-native-stage0-call-arity!
+     {:admission :none, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-var], :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :failure-transport-owner :supplied-operation, :arglists ([fail-var id module callee args expected]), :contract-boundary :stage0-native-call-arity}
+     assert-native-stage0-min-arity!
+     {:arglists ([fail-call-arity-var module callee args n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-exact-arity!
+     {:arglists ([fail-call-arity-var module callee args n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-between-arity!
+     {:arglists ([fail-call-arity-var module callee args min-n max-n]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     assert-native-stage0-even-arity!
+     {:arglists ([fail-call-arity-var module callee args]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-call-arity, :input-boundary :trusted-native-stage0-module-and-call-signature, :operation-vars [fail-call-arity-var], :operation-selection :late-owner-var-before-call-arguments, :result-boundary :nil-or-supplied-owner-return-or-unchanged-failure}
+     invoke-native-stage0-builtin
      {:arglists ([operations module callee args]) :admission :none :hosted-seed-only? true
       :contract-boundary :stage0-native-ordinary-builtin-invocation
       :input-boundary :trusted-native-stage0-module-and-evaluated-arguments
@@ -174,7 +184,8 @@
     :diagnostic-ownership {:native-stage0-instruction-traversal-and-lookup :stage
                            :native-stage0-entry-and-function-arity-placement :stage
                            :native-stage0-ordinary-builtin-dispatch-arity-placement-and-host-exception-remap :stage
-                           :native-stage0-policy-arity-helper-implementations-and-failure-transport :bootstrap
+                           :native-stage0-arity-predicates-message-selection-and-local-failure-facts :stage
+                           :native-stage0-policy-implementations-and-generic-failure-transport :bootstrap
                            :source-throw-envelope-construction :stage
                            :source-throw-token-key-and-recognition :bootstrap
                            :ordinary-builtin-dispatch-and-arity-placement :stage
@@ -1367,6 +1378,42 @@
               :function callee
               :cause-message (.getMessage ex)
               :remediation "Keep builtin inputs inside the checked stage0 core subset."}))))
+
+(defn fail-native-stage0-call-arity!
+  [fail-var id module callee args expected]
+  ((deref fail-var) id
+         (case id
+           "L2-FUNCTION-ARITY" "stage0 function call has the wrong arity"
+           "L2-BUILTIN-ARITY" "stage0 builtin call has the wrong arity"
+           "stage0 call has the wrong arity")
+         {:source-span {:source (:source-path module)}
+          :function callee
+          :expected-arity expected
+          :actual-arity (count args)
+          :remediation "Call the function with the arity supported by the stage0 hosted subset."}))
+
+(defn assert-native-stage0-min-arity!
+  [fail-call-arity-var module callee args n]
+  (when (< (count args) n)
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      (str "at least " n))))
+
+(defn assert-native-stage0-exact-arity!
+  [fail-call-arity-var module callee args n]
+  (when-not (= n (count args))
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args n)))
+
+(defn assert-native-stage0-between-arity!
+  [fail-call-arity-var module callee args min-n max-n]
+  (when-not (<= min-n (count args) max-n)
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      (str min-n " to " max-n))))
+
+(defn assert-native-stage0-even-arity!
+  [fail-call-arity-var module callee args]
+  (when (odd? (count args))
+    ((deref fail-call-arity-var) "L2-BUILTIN-ARITY" module callee args
+                      "an even number of arguments")))
 
 (doseq
  [name (keys (:public-api namespace-contract))

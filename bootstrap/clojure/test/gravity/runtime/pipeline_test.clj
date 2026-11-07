@@ -23,6 +23,9 @@
   (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
            'execute-native-stage0-instructions 'execute-native-stage0-instruction
            'execute-native-stage0-function 'execute-native-stage0-plan 'invoke-native-stage0-builtin
+           'fail-native-stage0-call-arity! 'assert-native-stage0-min-arity!
+           'assert-native-stage0-exact-arity! 'assert-native-stage0-between-arity!
+           'assert-native-stage0-even-arity!
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal

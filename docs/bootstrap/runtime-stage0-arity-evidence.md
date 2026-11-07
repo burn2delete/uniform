@@ -2,14 +2,14 @@
 
 ## Scope and governing contracts
 
-Move the complete existing `fail-call-arity!`, `assert-min-arity!`,
+The complete existing `fail-call-arity!`, `assert-min-arity!`,
 `assert-exact-arity!`, `assert-between-arity!` and `assert-even-arity!` bodies
-from foundation component `00546` into `gravity.runtime`. Keep all five old
-Bootstrap signatures as adapters. Leave every preceding validation/header/
-function-table body in that component unchanged.
+move from foundation component `00546` into `gravity.runtime`. All five old
+Bootstrap signatures remain adapters. Every preceding validation/header/
+function-table body in that component is unchanged.
 
 D0, D1, D2, D3, D6, D8, D9, L2, C1, C6, C15, R1, R4, R11, R12,
-BOOT8 and TEST2 govern this increment. L2 requires evaluation-order and
+BOOT8, TEST2 and TEST3 govern this increment. L2 requires evaluation-order and
 failure preservation. C6 legality remains upstream; these existing native
 execution guards do not establish checked-Core admission. C15/R12 constrain
 diagnostic provenance without making the legacy failure payload a complete
@@ -27,7 +27,7 @@ release; an immutable predecessor awaiting CI does not reserve these paths.
 
 ## Public API and artifacts
 
-The proposed APIs are:
+The implemented APIs are:
 
 ```clojure
 (fail-native-stage0-call-arity! fail-var id module callee args expected)
@@ -72,31 +72,58 @@ validation, source/plan admission and reserved/compiler-native dispatch keep
 their existing owners. Moving a runtime guard does not defer compile-time
 profile/effect/capability/ownership/safety legality to execution.
 
-## Tests and evidence plan
+## Tests and evidence
 
-Capture paired accepted and rejected sources through unheld public
+Paired accepted and rejected sources use unheld public
 `macro-source-artifact(path, text)`, its genuine module/expanded forms,
-`stage0-compiled-core-plan` and the public executor. Compile real plans and
-demonstrate genuine function/builtin arity refusals after emission. Compare
-complete macro/module/plan/report observations, source facts, identities,
-stdout, helper calls and failures before and after extraction. Absent paired
-fixture files must be labeled caller-supplied text, with no file-authentication
-claim.
+`stage0-compiled-core-plan` and the public executor. The route compiles real
+plans and demonstrates genuine function/builtin arity refusals after emission.
+Complete macro/module/plan/report observations, source facts, identities,
+stdout, helper calls and failures are identical before and after extraction.
+Absent paired fixture files are labeled caller-supplied text, with no
+file-authentication claim. The fourteen observations contain fourteen real plans, six successful
+stdout executions and eight runtime refusals, reaching all five arity helpers.
+Both source spellings cover core-app examples/accepted fixtures, function and
+builtin arity fixtures, all ordinary builtin arms, odd assoc key/value arity
+and division by zero. The host-error control retains the existing outer
+`L2-BUILTIN-ERROR` remap; it is not new arity-rejection credit.
 
-Extend the existing whole `gravity.runtime.stage0-execution-test` command
+Baseline receipt SHA256
+`6f1a513de50aa07c3531648db0da08236bd79b7fd7717a20a0f9e4710bd4f4b2`
+and implementation observation SHA256
+`650bae71a250d58ebcf0713eee0a2ca5db82d97a8de0aa1602d69b6224defbc6`
+both record the actual scope HEAD
+`3d9600cd7d1bb3cb836420271da9e9c092cf211e`, with separate producer file
+hashes. They do not claim a later clean commit was observed. Their
+authentication, Reader/pin and private-factory nonclaims apply only to this
+recorded public observation route.
+
+The existing whole `gravity.runtime.stage0-execution-test` command is extended
 with five API/Var contracts, all valid/invalid arity rules, diagnostic/source
 identity, opaque argument-count lookup, late root selection, returning failure
-behavior and adapter interposition. Preserve all 19 earlier tests except the
-documented 43-to-48 inventory literal. Add only the five new names to the
-exact inventory in `gravity.runtime.pipeline-test`; preserve its old entries
-and generic non-authority assertions. Reuse existing whole-namespace CI
-commands; no workflow, command, ownership, catalog or load-order edit is
-required.
+behavior and adapter interposition. All 19 earlier test bodies remain unchanged
+except the documented 43-to-48 inventory literal. Only the five new names are
+added to the exact inventory in `gravity.runtime.pipeline-test`; its old entries
+and generic non-authority assertions remain. The six new tests declare managed
+runtime, temporary Clojure host, hosted profile, JVM target and the native arity
+operations under test. They do not claim canonical runtime conformance.
+The whole Stage0 namespace passes 25 tests and 387 assertions; the selected
+public-inventory test passes 1 test and 344 assertions. Language-boundary and
+ownership checks pass 48 tests and 1202 assertions. Runtime and both changed
+test files pass clj-kondo with zero errors/warnings; `git diff --check` passes.
+Four selected Stage2 arity/unary/adapter regressions pass 4 tests and 92
+assertions. Cold loading exposes all 48 public APIs with matching declarations
+and argument lists, no namespace aliases, and no Bootstrap or Diagnostics
+namespace loaded. Structural document validation passes 240 documents and 19
+phase indexes; the full-language roadmap structural validator also passes.
+Those structural checks do not establish semantic or roadmap completion.
+Existing whole-namespace CI commands cover the additions; no workflow, command,
+ownership, catalog or load-order edit is required.
 
-Conserve every earlier Runtime function body, the Stage2 helpers, surrounding
-`00546` source and all existing 69 CI vectors/29 contract commands. Run focused
-regressions, the language boundary, document/roadmap validators and complete
-current-Main comparison lint. Independent semantic, adversarial, conservation,
+The extraction retains every earlier Runtime function body, Stage2 helper and
+surrounding `00546` source. All existing 69 CI vectors/29 contract commands
+remain unchanged. Complete current-Main comparison lint remains required.
+Independent semantic, adversarial, conservation,
 provider and own-CI review must bind the exact clean source and base before
 integration eligibility. Do not rerun the excluded broader local Runtime
 pipeline incident from the parent workstream or transfer its evidence here.
@@ -109,9 +136,20 @@ is discovery evidence, not source acceptance.
 
 ## Current status and unsupported boundaries
 
-This is the early scope draft; the five new Runtime APIs are not implemented
-at this capture. The current public count remains 43. The draft will be
-maintained as actual implementation, tests and reviews complete.
+The five complete bodies and compatibility adapters are implemented in the
+current working tree, taking the public API inventory from 43 to 48. The
+original-body receipt has SHA256
+`5c5daf9f03cc264c4518d0dbe6265d3dc84caa9ee00e2a64565cfe139b61d9bf`.
+A later whitespace-only receipt
+`2e8aebce87194e42b3a38e9defece2a33886be57c2d3a387a64604bf69bd3eea`
+records removal of the wrapper file's final blank line without rewriting the
+original extraction record. Clean source publication, final independent
+reviews, own hosted CI/provider audit and Main integration remain pending.
+
+The preceding builtin/executor evidence preserves its historical API counts
+and helper-ownership statements at those captures. This arity extraction
+supersedes those statements for current helper-body ownership; their original
+observations and checks do not become current arity acceptance.
 
 This temporary native boundary does not implement canonical Core/MIR admission,
 complete compile-time call checking, canonical L2/C15/runtime semantics,

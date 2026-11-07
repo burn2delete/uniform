@@ -197,36 +197,20 @@
 
 (defn fail-call-arity!
   [id module callee args expected]
-  (fail! id
-         (case id
-           "L2-FUNCTION-ARITY" "stage0 function call has the wrong arity"
-           "L2-BUILTIN-ARITY" "stage0 builtin call has the wrong arity"
-           "stage0 call has the wrong arity")
-         {:source-span {:source (:source-path module)}
-          :function callee
-          :expected-arity expected
-          :actual-arity (count args)
-          :remediation "Call the function with the arity supported by the stage0 hosted subset."}))
+  (gravity.runtime/fail-native-stage0-call-arity! #'fail! id module callee args expected))
 
 (defn assert-min-arity!
   [module callee args n]
-  (when (< (count args) n)
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      (str "at least " n))))
+  (gravity.runtime/assert-native-stage0-min-arity! #'fail-call-arity! module callee args n))
 
 (defn assert-exact-arity!
   [module callee args n]
-  (when-not (= n (count args))
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args n)))
+  (gravity.runtime/assert-native-stage0-exact-arity! #'fail-call-arity! module callee args n))
 
 (defn assert-between-arity!
   [module callee args min-n max-n]
-  (when-not (<= min-n (count args) max-n)
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      (str min-n " to " max-n))))
+  (gravity.runtime/assert-native-stage0-between-arity! #'fail-call-arity! module callee args min-n max-n))
 
 (defn assert-even-arity!
   [module callee args]
-  (when (odd? (count args))
-    (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                      "an even number of arguments")))
+  (gravity.runtime/assert-native-stage0-even-arity! #'fail-call-arity! module callee args))
