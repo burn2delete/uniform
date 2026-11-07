@@ -1,0 +1,130 @@
+{:version 1
+ :observer-thread "01a1b393-75d9-7770-92fa-50eeb3bd3c56"
+ :checkout "/Users/matt/.codex/worktrees/a3b6/uniform"
+ :initial-source "33811b2b5c1a1c57c2243da12719ca0c4edbfdce"
+ :automation {:id "review-uniform-factory-improvements"
+              :interval-minutes 30 :status :active}
+ :communication :read-only-other-chats
+ :completion-policy {:requires [:verified-main-integration :verified-project-adoption]
+                     :local-validation-is-completion false
+                     :merge-alone-is-completion false
+                     :authority "User instruction: land improvements in main and get the project adopting them before considering them done."
+                     :preserve [:independent-acceptance :repository-protections :actual-writer-ownership :restricted-actions :no-messages-to-other-chats]}
+ :last-monitor {:observed-at "2026-11-07T02:03:22Z"
+                :disposition :no-new-user-decision
+                :source-identities {:observer "33811b2b5c1a1c57c2243da12719ca0c4edbfdce"
+                                    :advance "fa14c00518690feb113f9e506d3c8c0b8a96ebea"
+                                    :simplify "e15f1c13b22301d3a9b488eac40f3176f6788a07"
+                                    :seedless "a2eaf453d7735141dd3176fce1db00286e69a6c5"}
+                :deployment-identities :unverified
+                :other-chat-messages-sent 0}
+ :inventory
+ [{:id :advance :paths ["tools/advance" "tools/simplify"]
+   :thread "01a1a45f-c7f6-7a30-9e86-43370f59647e"
+   :title "Plan a Speckit task harness" :host "local"
+   :checkout "/Users/matt/.codex/worktrees/9da8/uniform"
+   :observed-source "fa14c00518690feb113f9e506d3c8c0b8a96ebea"
+   :role :task-discovery-and-delivery :deployment :unverified}
+  {:id :simplify :paths ["tools/simplify"]
+   :thread "01a18f6f-756d-7001-9e3a-58202fe52dc3"
+   :title "Identify project over-engineering" :host "local"
+   :checkout "/Users/matt/.codex/worktrees/simplify2-integration/uniform"
+   :role :complexity-audit-and-delivery :deployment :unverified}
+  {:id :seedless :paths ["tools/seedless" "tools/simplify"]
+   :thread "01a19f8f-3be7-7550-983e-0c4de9acadd1"
+   :title "Separate Uniform from bootstrap" :host "local"
+   :checkout "/Users/matt/.codex/worktrees/bootstrap-replacement-integration/uniform"
+   :observed-source "a2eaf453d7735141dd3176fce1db00286e69a6c5"
+   :role :bootstrap-replacement-and-delivery :deployment :unverified}
+  {:id :integration
+   :thread "01a198d5-f667-7200-af7c-7b035fd04051"
+   :title "Review and close every PR" :host "local"
+   :role :existing-integration-coordinator :observation :listing-only}]
+ :progress-cursors {"01a1a45f-c7f6-7a30-9e86-43370f59647e" "3afc5a9e-f536-43dc-97e8-c19bb4213dea:23"
+                    "01a19f8f-3be7-7550-983e-0c4de9acadd1" "aca0d9ef-3368-4e1b-bc10-4b23d416818e:15"
+                    "01a18f6f-756d-7001-9e3a-58202fe52dc3" "815fe0dc-830b-44e6-ad8d-f8e9b305f252:46"}
+ :observations
+ [{:id "OBS-001" :observed-at "2026-11-07T01:17:18Z"
+   :kind :planner-context-size
+   :basis :app-reported-titleOriginalChars
+   :samples [{:thread "01a1b372-2d81-7280-af21-c29e99557391" :characters 553181}
+             {:thread "01a1b327-6091-7be3-80e4-b3b134a98678" :characters 934481}
+             {:thread "01a1b30a-b182-7b82-be3e-d1347da9cba6" :characters 907863}
+             {:thread "01a1b2c9-19e0-7fd3-bd5f-6b69ee4a0a53" :characters 841213}
+             {:thread "01a1af8a-9573-7b52-bcac-a7f92dcd98b0" :characters 1021919}]
+   :source-evidence [{:path "tools/advance/src/advance/workflow.clj" :line 150
+                      :fact :embeds-retained-proposals-errors-reviews-and-checks}
+                     {:path "tools/seedless/src/seedless/workflow.clj" :line 780
+                      :fact :embeds-complete-existing-slices}]
+   :limits "Title character counts are not model token counts, billing, runtime latency or proof of selection errors. No deployed process was inspected."}
+  {:id "OBS-002" :observed-at "2026-11-07T01:17:18Z"
+   :kind :overlap-check
+   :basis :recent-owner-chat-messages-and-source
+   :fact "Recent Advance, Simplify and Seedless messages concern rate-limit recovery, held effects and current-Main composition. No planner-context implementation appeared in inspected messages."
+   :limits "Two recent turns per owner are a partial view, not exhaustive duplicate detection. Recheck active claims and source before approved implementation. No recovery action is proposed or authorized here."}
+  {:id "OBS-003" :observed-at "2026-11-07T01:41:16Z"
+   :kind :status-output
+   :source-state-bytes 5597126
+   :source-path "/Users/matt/.codex/worktrees/9da8/uniform/target/validation/advance/state.edn"
+   :fact "Advance status delegates to simplify.main/dispatch!, which prints the entire state. No compact status equivalent found in inspected local and owner Advance/Simplify source."
+   :limits "Local retained state is not verified live process health. No status command was invoked against an active controller."}
+  {:id "OBS-004" :observed-at "2026-11-07T01:41:16Z"
+   :kind :factory-001-baseline
+   :source-state-sha256 "d654dd965d29c1fea201d64b56287a7f564880fdec525f9b040a2e505424f6cf"
+   :capture-sha256 "6f00778055b987fd53dd1292ba5cfd2e6f89e50af79b31c06dc71dd35b394728"
+   :capture-path "target/validation/software-factory/factory-001-task-input.edn"
+   :augmented-capture-path "target/validation/software-factory/factory-001-input.edn"
+   :augmented-capture-sha256 "bea62a4fbe2dc6354f53f92d3c038cab5e57b852c68c13ad06302d5541e8f854"
+   :task-count 20 :status-counts {:attention 18 :ready 1 :done 1}
+   :legacy-section-characters 54174 :legacy-section-utf8-bytes 54174
+   :source-base "7204d9b0b9c80011e637f8456deec558301127c1"
+   :source-tree "2170ea5b3ae5bb50fc9647213c5778eef9b8fe84"
+   :limits "Captured tasks only, from one read of original state. Measures Existing increments serialization, not the full prompt or model latency."}
+  {:id "OBS-005" :observed-at "2026-11-07T02:01:25Z"
+   :kind :provider-polling-investigation
+   :source-checkout "/Users/matt/.codex/worktrees/9da8/uniform"
+   :source-revision "fa14c00518690feb113f9e506d3c8c0b8a96ebea"
+   :sample "target/validation/software-factory/graphql-command-sample.jsonl"
+   :sample-count 60
+   :first-event "2026-11-07T00:45:00.600229Z"
+   :last-event "2026-11-07T01:34:00.282997Z"
+   :fact "Recent retained command-start events identify generic GraphQL POSTs but omit stdin query bodies and operation tags. Searching the controls query literal found a historical command-output record, not a controls-request count."
+   :limits "These events cannot attribute requests to controls polling, establish idle intervals, prove avoidable traffic, or describe current deployment health. No new implementation proposal is supported yet. Other owners continue their own recovery/CI work; their messages convey no authority to this observer."}]
+ :proposals [{:id "FACTORY-001" :state :awaiting-main-and-adoption
+              :path ".agents/software-factory/proposals/FACTORY-001.md"
+              :observation-ids ["OBS-001" "OBS-002" "OBS-004"]}
+             {:id "FACTORY-002" :state :awaiting-main-and-adoption
+              :path ".agents/software-factory/proposals/FACTORY-002.md"
+              :observation-ids ["OBS-003"]}]
+ :next-investigation
+ {:system :advance-provider-polling
+  :state :needs-operation-attribution
+  :hypothesis "Fetching the full paginated Project controls on every idle scheduler iteration may create avoidable successful provider traffic."
+  :source ["tools/advance/src/advance/workflow.clj:385"
+           "tools/advance/src/advance/github.clj:46"
+           "tools/advance/config.edn:9"]
+  :known "Configured scheduler poll is 15000ms; the loop calls project/settings before deciding whether discovery inputs changed."
+  :unknown "Actual idle controls-request counts and unchanged-control intervals are not measured; generic GraphQL command events do not distinguish operations."
+  :method "Inspect existing redacted event timestamps and source only. Preserve current controls before dispatch/integration and every denial or uncertain effect; no provider query, retry or policy change is authorized by this investigation."}
+ :user-decisions [{:proposal "FACTORY-001" :decision :approved
+                   :recorded-at "2026-11-07T01:39:13Z"
+                   :message "Approved. Use subagents to implement the Advance-only experiment in parallel, and keep looking for the next factory improvement while they work. Do not message other threads."
+                   :scope :local-advance-implementation-and-validation}
+                  {:proposal "FACTORY-002" :decision :approved
+                   :recorded-at "2026-11-07T01:46:14Z"
+                   :message "Approve local experiment"
+                   :source :change-decision-question-reply
+                   :scope :local-advance-implementation-and-validation}
+                  {:proposals ["FACTORY-001" "FACTORY-002"] :decision :extend-delivery-scope
+                   :message "Update your instructions, you must land your improvements in main and get the project adopting them before you can consider them done."
+                   :scope :reviewed-main-integration-and-verified-project-adoption}]
+ :outcomes [{:proposal "FACTORY-001" :state :implemented-local
+             :original-section-bytes 54174 :compact-section-bytes 22411
+             :reduction-percent 58.63 :task-count 20
+             :validation ".agents/software-factory/validation.edn"
+             :deployment :not-performed :integration :not-performed}
+            {:proposal "FACTORY-002" :state :implemented-local
+             :raw-state-bytes 5597126 :summary-bytes 29648
+             :reduction-percent 99.47 :attention-items 18 :recorded-jobs 47
+             :validation ".agents/software-factory/validation.edn"
+             :deployment :not-performed :integration :not-performed}]}
