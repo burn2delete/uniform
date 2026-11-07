@@ -52,7 +52,7 @@
 (deftest plan-boundary-is-explicit-and-non-authenticating
   (let [contract (:gravity/namespace-contract (meta #'lowering/assemble-native-stage0-plan))
         entry (get-in contract [:public-api 'assemble-native-stage0-plan])]
-    (is (= 23 (count (ns-publics 'gravity.lowering)) (count (:public-api contract))))
+    (is (= 25 (count (ns-publics 'gravity.lowering)) (count (:public-api contract))))
     (is (= (:arglists (meta #'lowering/assemble-native-stage0-plan)) (:arglists entry)))
     (is (= :stage0-native-plan-assembly (:contract-boundary entry)))
     (is (= (set (keys operations)) (set (:required-operations entry))))

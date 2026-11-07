@@ -88,8 +88,54 @@ Integration requires independent acceptance at the exact current base.
 
 ## Status and unsupported boundaries
 
-This is the initial scope record, before implementation. Source observations,
-tests, clean source acceptance, publication and own CI audit remain pending.
+Draft PR #1368 was opened at scope commit
+`52f7b6c5191c19f213306f9385f559b7235a3e08`, tree
+`42315115a5f952bbe500a5bc691f80ed6d5576be`, before moving source bodies.
+Both bodies now live in Lowering behind the original two Bootstrap adapters.
+All 23 prior Lowering APIs remain; four existing inventories now expect 25.
+Original/moved body and adapter receipt SHA256 is
+`2f8b81520aa9534982c3eb167ca6b187867303f179ecd881e3632d662ce881f5`.
+Its test snapshots precede the added controls and record inventory-only edits.
+
+Sixteen complete public-source observations match before and after extraction:
+four genuine executable plans and compiler/runtime reports, four interpreted
+and compiled execution agreements, and twelve pre-emission refusals. Both
+source extensions cover the absent suite, nonempty accepted metadata exercising
+both input kinds and all five proof-marker fields, and existing C1/C11/C14/C18
+refusal fixtures. Full source/module/plan/report products, helper arguments,
+results/classes, failure payloads and deterministic identities are retained.
+Baseline SHA256 is
+`a76fa8a918973560274bda3f2d0b691c14bc5d5520d3c0a90047e03d77eba589`;
+implementation capture SHA256 is
+`5d96c33a596f4a98bacda2e01997accbe0f581c5d17022e279f47c6575a0947c`.
+Both bind actual scope HEAD; the implementation capture records dirty producer
+hashes, not a future clean commit. Text is caller supplied under paired paths,
+with no file-authentication or verified-IR/proof authority claim. Adjacent MIR
+diagnostics retain their original payload shape rather than inventing a C14
+top-level source-span field.
+
+Initial baseline preparation used an unreadable numeric keyword suffix and
+failed before source execution; the source fixture now uses `input-N` names.
+A later baseline assertion incorrectly expected the C14 top-level source-span
+shape for the neighboring MIR diagnostic. Its log remains history; the
+corrected capture compares full unchanged payloads and genuine module paths,
+and still requires exact C14 diagnostic spans. An extraction helper spacing
+assertion stopped before source writes; its original log is preserved.
+
+Plan-assembly/native-backend regressions pass 25 tests/281 assertions. The
+single native pipeline inventory passes 1/85 without forcing its delayed
+private source factory. Language/ownership gates pass 48/1202. Cold loading
+checks all 25 API declarations/arglists and only the existing `clojure.set`
+alias, with no Bootstrap or Diagnostics loading.
+
+The final focused instruction suite passes 21 tests/302 assertions, including
+eight new C14 tests alongside all 13 prior tests. The added returning-refusal
+control confirms that the later proof check observes its newly rebound Var and
+receives the identical original record. Changed Lowering/test files lint with
+zero errors/warnings. Canonical document validation passes 240 documents and
+19 indexes with ASCII/no filler checks. The roadmap structural check passes;
+its dated coverage figures are explicitly non-authoritative. Full current-Main
+lint and clean source reviews/publication remain pending.
 
 This increment does not implement authenticated verified-IR admission, proof
 verification, backend emission, target/ABI/provider legality, canonical C14

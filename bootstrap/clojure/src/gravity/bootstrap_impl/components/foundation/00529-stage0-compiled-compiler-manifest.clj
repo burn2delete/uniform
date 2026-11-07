@@ -56,10 +56,7 @@
       :remediation
       "Keep generic MIR target-independent; move target opcodes behind verified target lowering."})))
 
-(defn stage0-compiled-target-proof-present?
-  [record]
-  (or (perf-present? (:proof-id record))
-      (perf-present? (:proof record))
-      (perf-present? (:certificate record))
-      (perf-present? (:certificate-id record))
-      (perf-present? (:translation-validation record))))
+(defn stage0-compiled-target-proof-present? [record]
+  (gravity.lowering/native-stage0-target-proof-present?
+    #'perf-present?
+    record))

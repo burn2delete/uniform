@@ -345,6 +345,20 @@ instructions lack canonical node/fact verification and do not establish
 Core/MIR admission, C14/backend support, release or self-hosting. Dependency
 direction remains Bootstrap adapters to Lowering, without a reverse import.
 
+The [Stage0 target metadata extraction](lowering-target-metadata-evidence.md)
+moves the complete C14 input and proof-presence checks into the existing
+Lowering owner. `native-stage0-target-proof-present?` consumes a late presence
+Var and caller-owned marker data; `validate-native-stage0-target-lowering!`
+consumes module/lowering metadata and late failure/proof-check Vars. They return
+the original presence value, nil or unchanged owner result/exception. The stage
+owns C14-INPUT/C14-PROOF-METADATA decision facts; Bootstrap retains diagnostic
+transport, suite selection and mixed C1/C11/C14/C18 orchestration. Existing
+instruction tests cover genuine paired-source emission/refusal, opaque lookup
+order, late callbacks, exact throws, returning failures and deterministic
+identities. Metadata flags and labels confer no verified-IR or proof authority;
+this slice adds no backend artifact or canonical C14 admission. Dependencies
+remain Bootstrap to Lowering to its existing Clojure dependencies.
+
 The [native Safety report extraction](safety-native-reports-evidence.md) adds
 `native-verifier-report`, `native-capability-proof` and
 `validate-native-report!` for trusted C9/inventory/outcome/evidence records and

@@ -32,7 +32,7 @@
     (b/stage0-compiled-core-plan path source input)))
 
 (deftest complete-group-has-explicit-contracts
-  (is (= 23 (count (ns-publics 'gravity.lowering))))
+  (is (= 25 (count (ns-publics 'gravity.lowering))))
   (is (some #{'D0} (:governing-contracts (:gravity/namespace-contract (meta #'lowering/compile-native-expression)))))
   (doseq [operation [#'lowering/compile-native-expression #'lowering/compile-native-collection
                      #'lowering/compile-native-let #'lowering/compile-native-function
@@ -221,3 +221,201 @@
   (is (contains? b/stage0-builtin-functions 'build-read-declared-input))
   (is (= {:op :builtin-call :function 'build-read-declared-input :args [{:op :literal :value "input"}]}
          (b/compile-stage0-expr module #{} '(build-read-declared-input "input")))))
+
+(defn- target-presence-port [value] (b/perf-present? value))
+(defn- target-proof-port [record]
+  (lowering/native-stage0-target-proof-present? #'target-presence-port record))
+(defn- target-failure-port [id source artifact subject extra]
+  (throw (ex-info "native target metadata refusal"
+                  {:id id :source source :artifact artifact :subject subject :extra extra})))
+(defn- target-ports [] {:fail! #'target-failure-port :proof-present? #'target-proof-port})
+(def ^:private target-record
+  {:input-kind :verified-mir :verified? true :input-artifact-id :native/input :backend :jvm})
+
+(deftest target-metadata-apis-have-explicit-native-contracts
+  (doseq [operation [#'lowering/native-stage0-target-proof-present?
+                     #'lowering/validate-native-stage0-target-lowering!]]
+    (let [contract (:gravity/namespace-contract (meta operation))
+          entry (get-in contract [:public-api (:name (meta operation))])]
+      (is (= (:arglists (meta operation)) (:arglists entry)))
+      (is (= :stage0-native-target-lowering-metadata (:contract-boundary entry)))
+      (is (= :none (:admission entry)))
+      (is (false? (:authenticates-proofs? entry)))
+      (is (false? (:authenticates-inputs? contract)))
+      (is (false? (:issues-certificates? contract)))
+      (is (every? (set (:governing-contracts contract)) '[C14 C15 C18 D9])))))
+
+(deftest target-proof-presence-preserves-order-truthiness-and-return-identity
+  (doseq [field [:proof-id :proof :certificate :certificate-id :translation-validation]
+          value [false 0 "" :marker]]
+    ;; These are presence markers, including false and empty text, not proofs.
+    (is (true? (target-proof-port {field value}))))
+  (doseq [value [nil [] {} #{} '()]]
+    (is (false? (target-proof-port (zipmap [:proof-id :proof :certificate :certificate-id :translation-validation]
+                                        (repeat value))))))
+  (let [calls (atom []) marker (Object.)]
+    (with-redefs [target-presence-port (fn [value]
+                                       (swap! calls conj value)
+                                       (when (= value :third) marker))]
+      (is (identical? marker (target-proof-port {:proof-id :first :proof :second :certificate :third
+                                                :certificate-id :unreached})))
+      (is (= [:first :second :third] @calls))))
+  (let [calls (atom [])]
+    (with-redefs [target-presence-port (fn [value] (swap! calls conj value) nil)]
+      (is (nil? (target-proof-port {})))
+      (is (= [nil nil nil nil nil] @calls)))))
+
+(deftest target-proof-selects-each-callee-before-looking-up-its-argument
+  (let [events (atom []) marker (Object.)
+        later (fn [value] (swap! events conj [:later value]) marker)
+        original (fn [value] (swap! events conj [:original value]) nil)
+        record (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:lookup key])
+                   (alter-var-root #'target-presence-port (constantly later))
+                   key)
+                 (valAt [_ key _]
+                   (swap! events conj [:lookup-default key]) key))]
+    (with-redefs [target-presence-port original]
+      (is (identical? marker (target-proof-port record)))
+      (is (= [[:lookup :proof-id] [:original :proof-id]
+              [:lookup :proof] [:later :proof]] @events))))
+  (doseq [sentinel [(Exception. "original predicate exception") (Error. "original predicate error")]]
+    (with-redefs [target-presence-port (fn [_] (throw sentinel))]
+      (is (identical? sentinel (try (target-proof-port {}) (catch Throwable error error)))))))
+
+(deftest target-metadata-checks-preserve-flags-fallback-and-failure-facts
+  (doseq [kind [:verified-mir :verified-domain-ir]]
+    (is (nil? (lowering/validate-native-stage0-target-lowering!
+               {:fail! nil :proof-present? nil} module (assoc target-record :input-kind kind)))))
+  (doseq [[kind verified] [[:raw-source true] [:verified-mir nil] [:verified-mir false]
+                          [:verified-domain-ir :truthy] [:verified-mir 1]]]
+    (let [opaque (Object.) original (assoc target-record :input-kind kind :verified? verified
+                                         :backend false :extra opaque :pass-id :overwritten
+                                         :source-span {:source :overwritten})
+          data (error-data #(lowering/validate-native-stage0-target-lowering! (target-ports) module original))]
+      (is (= "C14-INPUT" (:id data)))
+      (is (= (:source-path module) (:source data)))
+      (is (= {:lowering-request {:profile :hosted :target {:backend :jvm}}
+              :input :native/input} (:artifact data)))
+      (is (= (assoc original :pass-id :stage0-compiled-target-lowering-gate
+                              :source-span {:source (:source-path module)}) (:subject data)))
+      (is (identical? opaque (get-in data [:subject :extra])))
+      (is (= [:verified-mir-or-domain-ir] (get-in data [:extra :missing-fields])))))
+  (let [original (assoc target-record :target-metadata [{:target-metadata :nuw}])
+        data (error-data #(lowering/validate-native-stage0-target-lowering! (target-ports) module original))]
+    (is (= "C14-PROOF-METADATA" (:id data)))
+    (is (= [:proof-id] (get-in data [:extra :missing-fields])))
+    (is (= (assoc original :pass-id :stage0-compiled-target-lowering-gate
+                            :source-span {:source (:source-path module)}) (:subject data)))
+    (is (nil? (lowering/validate-native-stage0-target-lowering! (target-ports) module
+                (assoc original :proof false))))))
+
+(deftest target-metadata-opaque-lookups-and-association-keep-original-order
+  (let [events (atom []) opaque (Object.)
+        lookup-module (reify clojure.lang.ILookup
+                        (valAt [_ key] (swap! events conj [:module key]) (get module key))
+                        (valAt [_ key default] (get module key default)))
+        data (assoc target-record :backend nil :extra opaque)
+        record (reify clojure.lang.Associative
+                 (valAt [_ key] (swap! events conj [:lowering key]) (get data key))
+                 (valAt [_ key default] (get data key default))
+                 (containsKey [_ key] (contains? data key))
+                 (entryAt [_ key] (find data key))
+                 (assoc [_ key value] (swap! events conj [:assoc key value]) (assoc data key value))
+                 (count [_] (count data))
+                 (cons [_ value] (conj data value))
+                 (empty [_] {})
+                 (equiv [_ value] (= data value))
+                 (seq [_] (seq data)))]
+    (is (nil? (lowering/validate-native-stage0-target-lowering! (target-ports) lookup-module record)))
+    (is (= [[:module :source-path] [:lowering :backend] [:module :target] [:module :profile]
+            [:lowering :input-artifact-id] [:assoc :pass-id :stage0-compiled-target-lowering-gate]
+            [:lowering :input-kind] [:lowering :verified?] [:lowering :target-metadata]] @events)))
+  (let [events (atom [])
+        data (assoc target-record :input-kind :raw-source)
+        lookup-module (reify clojure.lang.ILookup
+                        (valAt [_ key] (swap! events conj key) (get module key))
+                        (valAt [_ key default] (get module key default)))]
+    (is (= "C14-INPUT" (:id (error-data #(lowering/validate-native-stage0-target-lowering!
+                                           (target-ports) lookup-module data)))))
+    (is (= [:source-path :profile] @events))))
+
+(deftest target-metadata-returning-failures-continue-and-original-throws-survive
+  (let [calls (atom []) marker (Object.) invalid (assoc target-record :input-kind :raw-source
+                                                     :target-metadata [:native-metadata])]
+    (with-redefs [target-failure-port (fn [& args] (swap! calls conj (vec args)) marker)]
+      (is (identical? marker (lowering/validate-native-stage0-target-lowering! (target-ports) module invalid)))
+      (is (= ["C14-INPUT" "C14-PROOF-METADATA"] (mapv first @calls)))
+      (reset! calls [])
+      (is (nil? (lowering/validate-native-stage0-target-lowering! (target-ports) module
+                  (dissoc invalid :target-metadata))))
+      (is (= ["C14-INPUT"] (mapv first @calls)))))
+  (let [calls (atom []) record (assoc target-record :input-kind :raw-source :target-metadata [:marker])]
+    (with-redefs [target-failure-port (fn [& args]
+                                       (swap! calls conj (first args))
+                                       (alter-var-root #'target-proof-port
+                                                       (constantly (fn [actual]
+                                                                    (is (identical? record actual)) true)))
+                                       :returned)
+                  target-proof-port (fn [_] (throw (AssertionError. "stale proof predicate")))]
+      (is (nil? (lowering/validate-native-stage0-target-lowering! (target-ports) module record)))
+      (is (= ["C14-INPUT"] @calls))))
+  (doseq [sentinel [(Exception. "original target exception") (Error. "original target error")]]
+    (let [calls (atom [])]
+      (with-redefs [target-failure-port (fn [& args] (swap! calls conj (first args)) (throw sentinel))
+                    target-proof-port (fn [_] (throw (AssertionError. "proof check followed thrown refusal")))]
+        (is (identical? sentinel
+                        (try (lowering/validate-native-stage0-target-lowering! (target-ports) module
+                               (assoc target-record :input-kind :raw-source :target-metadata [:marker]))
+                             (catch Throwable error error))))
+        (is (= ["C14-INPUT"] @calls))))))
+
+(deftest target-metadata-bootstrap-adapters-retain-signatures-and-live-vars
+  (is (= '([record]) (:arglists (meta #'b/stage0-compiled-target-proof-present?))))
+  (is (= '([module lowering]) (:arglists (meta #'b/validate-stage0-compiled-target-lowering!))))
+  (let [calls (atom []) marker (Object.)]
+    (with-redefs [lowering/native-stage0-target-proof-present?
+                  (fn [operation record] (swap! calls conj [operation record]) marker)
+                  lowering/validate-native-stage0-target-lowering!
+                  (fn [operations input record] (swap! calls conj [operations input record]) marker)]
+      (is (identical? marker (b/stage0-compiled-target-proof-present? target-record)))
+      (is (identical? marker (b/validate-stage0-compiled-target-lowering! module target-record)))
+      (is (= [[#'b/perf-present? target-record]
+              [{:fail! #'b/optimization-lowering-fail! :proof-present? #'b/stage0-compiled-target-proof-present?}
+               module target-record]] @calls)))))
+
+(deftest genuine-source-target-metadata-emits-and-refuses-before-instruction-lowering
+  (doseq [extension ["gravity" "qst"]]
+    (let [records (mapv (fn [index field]
+                          (assoc target-record :input-kind (if (even? index) :verified-mir :verified-domain-ir)
+                                 :input-artifact-id (keyword "native-presence" (str "input-" index))
+                                 :target-metadata [{:target-metadata :nuw :operation :op/add}]
+                                 field :native-presence-marker))
+                        (range) [:proof-id :proof :certificate :certificate-id :translation-validation])
+          text (str "(ns lowering.target-metadata (:profile :hosted) (:target :jvm)"
+                    " (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:safety :safe) (:metadata "
+                    (pr-str {:compiler {:compiled-gate {:target-lowering records}}})
+                    "))\n(defn main [] (println (+ 2 3)))\n")
+          path (str "lowering-target-metadata." extension) calls (atom []) original b/validate-stage0-compiled-target-lowering!
+          plan (with-redefs [b/validate-stage0-compiled-target-lowering!
+                              (fn [input record] (swap! calls conj record) (original input record))]
+                 (compile-source path text))]
+      (is (= records @calls))
+      (is (= plan (compile-source path text)))
+      (is (= path (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex text)) (get-in plan [:source :sha256])))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id)))) (:plan-id plan)))
+      (is (= "5\n" (b/execute-stage0-compiled-plan plan))))
+    (doseq [[suffix expected] [["pass-contract" "C1-PASS-CONTRACT"] ["evidence-drop" "C1-EVIDENCE-DROP"]
+                               ["mir-target-leak" "C11-TARGET-LEAK"] ["lowering-input" "C14-INPUT"]
+                               ["proof-metadata" "C14-PROOF-METADATA"] ["verification-evidence" "C18-EVIDENCE"]]]
+      (let [path (str "compiler-refusal/" suffix "." extension)
+            text (slurp (str "bootstrap/clojure/fixtures/rejected/core-app-compiler-" suffix ".gravity"))
+            calls (atom 0) original b/compile-stage0-function
+            data (with-redefs [b/compile-stage0-function (fn [& args] (swap! calls inc) (apply original args))]
+                   (error-data #(compile-source path text)))]
+        (is (= expected (:id data)))
+        (when (contains? #{"C14-INPUT" "C14-PROOF-METADATA"} expected)
+          (is (= path (get-in data [:source-span :source]))))
+        (is (zero? @calls))))))

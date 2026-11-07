@@ -7,7 +7,11 @@
  [:stage0-native-complete-instruction-plan :stage0-native-instructions :stage0-native-opcode-frequency-map :native-reconstruction-records :native-c14-artifact-and-projection],
  :authenticates-inputs? false,
  :public-api
- {assemble-native-stage0-plan
+ {native-stage0-target-proof-present?
+  {:admission :none, :operation-vars [present-var], :authenticates-proofs? false, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :artifact-inputs [:caller-owned-proof-presence-marker-data], :arglists ([present-var record]), :artifact-outputs [:original-short-circuit-presence-result], :contract-boundary :stage0-native-target-lowering-metadata}
+  validate-native-stage0-target-lowering!
+  {:authenticates-inputs? false, :required-operations [:fail! :proof-present?], :admission :none, :authenticates-proofs? false, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :artifact-inputs [:caller-owned-module-and-target-lowering-metadata], :arglists ([operations module lowering]), :artifact-outputs [:nil-or-unchanged-owner-return-or-failure], :contract-boundary :stage0-native-target-lowering-metadata}
+  assemble-native-stage0-plan
   {:arglists ([operations source-path source-text module]), :admission :none,
    :required-operations [:function-table :profile! :executable-profile! :effects! :safety! :performance! :math! :compiler! :backend! :runtime! :domain! :schema! :ai! :package! :tooling! :conformance! :compile-function :fail! :sha256-hex :instruction-summary],
    :contract-boundary :stage0-native-plan-assembly},
@@ -116,7 +120,8 @@
      raw]),
    :admission :none}},
  :supported
- [:existing-stage0-whole-plan-assembly-and-fixed-policy-call-order
+ [:existing-stage0-native-target-input-and-proof-presence-metadata-checks
+  :existing-stage0-whole-plan-assembly-and-fixed-policy-call-order
   :late-native-function-table-policy-compilation-summary-failure-and-digest-vars
   :existing-stage0-native-expression-collection-let-function-and-summary-bodies
   :late-native-recursion-helper-catalog-and-failure-vars
@@ -192,7 +197,8 @@
   :native-prefix-check-as-integrity
   :native-proof-or-conformance-labels-as-authority],
  :artifact-inputs
- [:trusted-stage0-source-path-text-module-and-live-owner-operations
+ [:caller-owned-stage0-target-lowering-metadata-and-late-owner-vars
+  :trusted-stage0-source-path-text-module-and-live-owner-operations
   :trusted-stage0-native-module-local-scope-forms-and-function-data
   :trusted-stage0-instruction-and-explicit-live-operation-vars
   :caller-owned-optimized-mir-and-policy-data
@@ -238,7 +244,8 @@
    "B14-NEGATIVE"],
   :propagated ["C11-VERIFY" :strict-structure-mismatch],
   :existing-owner
-  [:stage0-source-function-header-and-policy-admission
+  [:native-target-metadata-diagnostic-transport-and-mixed-compiler-orchestration
+   :stage0-source-function-header-and-policy-admission
    :stage0-native-diagnostic-construction-and-publication
    :stage0-digest-operation-and-plan-execution
    :canonical-c11-c13-admission
@@ -249,7 +256,8 @@
    :native-backend-failure-payload-assembly
    :native-backend-selected-failure-operation]},
  :artifact-outputs
- [:stage0-native-hosted-core-compiled-plan
+ [:native-target-proof-presence-or-target-metadata-refusal
+  :stage0-native-hosted-core-compiled-plan
   :stage0-native-expression-instructions
   :stage0-native-function-binding-and-instructions
   :stage0-native-opcode-frequency-map
@@ -261,7 +269,9 @@
   :legacy-structural-completion-or-refusal
   :legacy-native-backend-coverage-record],
  :consumer-component-paths
- ["bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00554-invoke-stage0-builtin.clj"
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00529-stage0-compiled-compiler-manifest.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00530-validate-stage0-compiled-target-lowering.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00554-invoke-stage0-builtin.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00555-compile-stage0-expr.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00209-native-lowering-source-overrides.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00210-native-lowering-source-artifact.clj"
@@ -1177,6 +1187,54 @@
     (assoc plan-base
            :plan-id (str "sha256:" ((deref (:sha256-hex operations)) (pr-str plan-base))))))
 
+
+(defn native-stage0-target-proof-present? [present-var record]
+  (or
+    ((deref present-var) (:proof-id record))
+    ((deref present-var) (:proof record))
+    ((deref present-var) (:certificate record))
+    ((deref present-var) (:certificate-id record))
+    ((deref present-var) (:translation-validation record))))
+
+(defn validate-native-stage0-target-lowering! [operations
+                                               module
+                                               lowering]
+  (let [source-path (:source-path module)
+        backend (or (:backend lowering) (:target module))
+        artifact {:lowering-request
+                  {:profile (:profile module),
+                   :target {:backend backend}},
+                  :input (:input-artifact-id lowering)}
+        subject (assoc
+                  lowering
+                  :pass-id
+                  :stage0-compiled-target-lowering-gate
+                  :source-span
+                  {:source source-path})]
+    (when-not (and
+                (contains?
+                  #{:verified-mir :verified-domain-ir}
+                  (:input-kind lowering))
+                (true? (:verified? lowering)))
+      ((deref (:fail! operations))
+        "C14-INPUT"
+        source-path
+        artifact
+        subject
+        {:missing-fields [:verified-mir-or-domain-ir],
+         :remediation
+         "Target lowering must consume verified MIR or verified domain IR before backend artifacts are claimed."}))
+    (when (and
+            (seq (:target-metadata lowering))
+            (not ((deref (:proof-present? operations)) lowering)))
+      ((deref (:fail! operations))
+        "C14-PROOF-METADATA"
+        source-path
+        artifact
+        subject
+        {:missing-fields [:proof-id],
+         :remediation
+         "Attach proof or certificate metadata before preserving target-specific lowering facts."}))))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
