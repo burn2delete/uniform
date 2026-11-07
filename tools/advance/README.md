@@ -102,6 +102,15 @@ digest and EDN contents before dispatch; missing, corrupt or changed snapshots
 fail closed. Existing records are never replaced, truncated, or treated as new
 dispatch authority.
 
+Open candidate records use the same snapshot boundary. The selector receives
+every candidate number, title, URL, draft state, sanitized head/base reference,
+and changed or renamed path inline. Only the body value becomes a
+path/line/key/digest pointer to the exact full candidate record in the ignored
+snapshot. Nil and empty bodies remain distinct in the full record, and
+provider context remains available through its existing raw-record reference.
+Candidate snapshot integrity is checked before model dispatch; missing or
+tampered body evidence fails closed.
+
 Authors own only declared paths, including their source task file for scoped
 evidence. The controller commits the first meaningful change and opens a draft
 before running local checks and independent review. New checked/reviewed heads
