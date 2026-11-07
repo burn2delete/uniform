@@ -42,6 +42,14 @@
         envelope (:authenticated-envelope boundary)
         envelope-descriptor
         (:authenticated-envelope-descriptor boundary)
+        decimal-projection
+        (:sh07-decimal-occurrence-projection c2-artifact)
+        decimal-projection-id
+        (:decimal-occurrence-projection-id boundary)
+        descriptor-summary
+        (:value
+         (some #(when (= :reader-product-identities (:name %)) %)
+               (:semantic-projections envelope-descriptor)))
         expected-binding
         (dissoc (:binding context) :plan)]
     (when-not
@@ -50,8 +58,13 @@
              (:kind c2-artifact))
           (= :SH-03 (:slice boundary))
           (= :gravity-source (:owner boundary))
-          (= :gravity/sh03-to-c2-reader-products-v2
+          (= :gravity/sh03-to-c2-reader-products-v3
              (:adapter-contract boundary))
+          (sh03-reader-decimal-occurrence-projection-shape-valid?
+           decimal-projection)
+          (= decimal-projection-id (:projection-id decimal-projection))
+          (= decimal-projection-id
+             (:decimal-occurrence-projection-id descriptor-summary))
           (= expected-binding (:plan-binding boundary))
           (= p15-s23-sh02-stage-envelope-keys (set (keys envelope)))
           (= :accepted (:status envelope))

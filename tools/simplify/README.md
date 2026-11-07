@@ -165,6 +165,174 @@ merges finish tracking, existing CI candidates return to CI, and unfinished
 implementation returns to repair. Restricted actions and unresolved current
 external effects cannot use this route. Attention is not completion.
 
+An ordinary `needs_input` report may retain an owned dirty patch while waiting
+for an external source dependency. After that dependency has a verified merge
+on current main, the original operator can inspect the retained work without
+pretending it was a verification-only restriction:
+
+```text
+clojure -M:run recover-dependency config.edn FINDING-KEY inspected-source.edn
+```
+
+This command uses the original controller lock; it is not a second live
+controller or a reason to pause a running service. When deploying this recovery
+support, queue an eligible inspection at the necessary stopped deployment
+boundary and promptly return the same service. The command never starts it.
+
+The inspection file is retained under the original state directory. It binds
+the original job/error/prompt/base/candidate/tree, exact changed-file bytes and
+executable modes, and a nonblank `:source-provenance` basis and SHA for every
+file, including separately authored supplements. Its operator classification
+is `:verified-external-source-dependency`, `:inspector :controller-operator`,
+`:phase :source-development-current`, the exact original-output SHA and explicit
+no-unresolved-authority/no-unresolved-semantics findings. A model report alone
+does not provide this classification.
+
+Each `:verified-source-dependencies` entry contains `:owner-state-file`,
+`:intent-id`, `:commit`, `:candidate`, `:tree`, `:history-sha256` and changed
+`:source-paths`. It must match an actual shared `:main-verified` history entry;
+the merge must advance the retained base and be an ancestor of fresh main, with
+matching Git tree and at least one changed dependency path outside the author's
+scope. This records an observed dependency, not new ownership of its files.
+Actual Git parents must match the recorded merge or squash intent, and the
+candidate tree must match the value integrated on Main. Each entry also binds
+`:source-phase`: the original Source `:owner-state-file`, `:lease-id`,
+`:lease-token`, `:paths`, current accepted `:candidate` and `:tree`, explicit
+`:writer-ended?` and `:no-unresolved-authority` findings, and immutable
+`:release-evidence` and `:acceptance-evidence` references (`:path`, `:sha256`).
+The original release record must retain the same lease identity and paths.
+Current relevant writer rows and refusals for that exact Source owner still
+block recovery. A Main publisher is not substituted for the Source author;
+unrelated historical owner identities remain separate held evidence. A later
+unchanged published-Main import may use an authenticated evidence join without
+inventing a new lease or rewriting the original release or acceptance records.
+
+For an admitted immutable lineage, tag the phase `:accepted-immutable-lineage`
+instead of inventing a creation lease. Its `:acceptance-evidence` is parsed as a
+`:source-only-admission` record with `:disposition :accepted-source-only`, a
+`:subject` binding the candidate, tree, exact paths, per-path blob/mode entries,
+known current `:owner-state-files`, and the admitted source parent/tree. Every
+source entry must equal Git at both that parent and the current candidate.
+Immutable references to the genuine independent reviews remain in `:evidence`.
+The admission's `:nonclaims` must retain `:no-retroactive-source-ownership`,
+`:no-standalone-held-source-admission`, `:no-release` and
+`:no-migration-authority`. This is source evidence, not integration authority.
+The strict original-lease branch remains available for an owned dirty source
+phase and uses the same parsed source-value admission.
+
+Both variants require `:status-evidence`: an immutable
+`:dependency-source-status` record binding that entire subject, `:known-end true`
+and `:current-status {:writers {} :refusals {}}`. The controller compares it to
+the current shared records for those exact Source identities and paths. An old
+Main publisher or unrelated historical hold is not relabeled as the Source
+creator; relevant active or unknown writers and refusals still block. Protected
+Main history and actual merge parentage are separately required in both cases.
+
+`:preserved-failed-actions` is the exact ordered vector of completed exit-one
+semantic checks, each with `:id`, `:command`, `:exit` and `:output-sha256`.
+`:preserved-nonclaims` explicitly retains historical nonpasses and evidence
+boundaries. Those old checks are never relabeled as passed. Native terminal
+events must prove an empty active-action set even when older job metadata lacks
+that field. Actual refusal text, privileged requests, unknown/unfinished actions,
+other failure exits, stale source or a retained restriction still reject this
+route. In particular, it cannot recover HTTP permission or process-inspection
+refusals, renew reader pins, or confer migration authority.
+
+An accepted inspection queues native checking only. The controller commits the
+retained owned patch, normally composes fresh main, runs the configured and
+originally proposed checks, and obtains independent exact review and new-head
+CI. The old job, output, error and nonpasses remain unchanged. A changed queued
+inspection or later refusal stops the continuation before authoring or checks.
+
+### Fresh validation after a retained status or check failure
+
+`recover-authored` and `recover-dependency` do not reclassify a genuine HTTP
+refusal, failed check or unknown cleanup. When the human specifically authorizes
+fresh validation of the committed source, a distinct route preserves those
+records and uses a separate, clean, independently accepted normal composition:
+
+```text
+clojure -M:run recover-fresh-source config.edn FINDING-KEY fresh-source.edn
+```
+
+The evidence is retained inside this controller's state directory. It binds the
+entire original task SHA, PR, error SHA, explicit operator classification and
+preserved nonclaims; immutable human authorization and independent Source and
+composition evidence; the exact fresh base/commit/tree/normal parents, named
+branch and worktree; and specific configured-toolset checks. The authorization
+scope `:fresh-prNNN-status-validation` or `:fresh-prNNN-whitespace-validation`
+must name this original PR and cover the actual validation step. A retained
+status-read refusal additionally needs the newly authorized identical argv,
+successful original-provider response, matching original head and open/main
+identity bound to that authorization. An old approval or cached old status
+result is insufficient. An unresolved shared API refusal still blocks.
+
+The accepted Source bookend binds `:source-review` (source-only disposition,
+zero findings, original committed source and owned paths) and `:composition`
+(fresh base/candidate/tree and ordered source/Main parents). The controller
+checks the real Git merge tree and rejects foreign paths, a dirty/detached or
+reused original worktree, stale input, or any refused proposed check. It never
+reads or edits the abandoned old worktree or retries its failed commands.
+
+Queueing archives the complete original task in
+`:fresh-source-validation-history`, retains its original error and all global
+guards, and records a distinct fresh phase. Native preparation imports current
+Main, performs fresh checks and passive independent review, then publishes a
+native-owned follow-up PR with a new durable creation-effect identity. It does
+not replay the original PR creation or close the original PR. No new author turn
+is needed for already committed source. New failures replace the current phase's
+error normally while the complete old records remain immutable in history.
+Old Macro/process-cleanup results stay nonpasses with their original unknown
+boundaries; only fresh exact-head CI can satisfy the new candidate's gates.
+
+For a running controller, submit the same inspected evidence without taking its
+state lock or stopping the service:
+
+```text
+clojure -M:run queue-recovery config.edn recover-fresh-source FINDING-KEY fresh-source.edn
+clojure -M:run queue-recovery config.edn recover-dependency FINDING-KEY inspected-source.edn
+```
+
+Submission publishes a complete immutable, content-addressed request inside
+`operator-recovery-requests/`; it does not write the native snapshot. The
+original controller consumes it at an unpaused scheduler boundary using the
+same guarded recovery function. Busy task scopes wait. Fresh-source requests
+also wait while the shared API guard is held; only an actual authorized guard
+resolution permits further inspection. All evidence hashes and recovery gates
+are rechecked by the controller. Applied or rejected outcomes are retained in
+`:operator-recovery-requests`, and request files remain for inspection. A
+rejected request does not change the held task or clear its restrictions.
+After a crash following an actual native queue, the exact recorded inspection
+is observed instead of replaying the queue. This interface requires its merged
+runtime implementation; it is not an unmerged launcher overlay.
+
+### An owned conflict while composing current Main
+
+An ordinary, nonrestricted `git merge --no-edit MAIN` conflict in an owned
+task path can use the same live inbox with operation `recover-composition`.
+This does not retry a denied command or edit the original conflicted worktree.
+Resolve the conflict in a separate owned, named worktree first. Its accepted
+commit must have ordered parents `[original-candidate MAIN]`; every change
+from Git's automatic conflict tree must be confined to the original conflict
+paths. Independent resolution acceptance binds the exact source and resolved
+base/commit/tree, parents, task key, conflict paths and empty findings.
+
+The controller-retained evidence has kind `:owned-composition-conflict`, the
+task key, original PR and entire task SHA, `:validation` with the resolved
+base/candidate/tree/worktree/branch, configured-toolset `:checks`, immutable
+`:resolution-acceptance` reference and `:original-conflict` snapshot. The
+snapshot binds original HEAD/MERGE_HEAD, conflict paths, full index SHA and
+all changed-file bytes and modes. Stale bytes, foreign resolution changes,
+refusals, unsettled effects and a shared API hold block continuation.
+
+Only the original controller archives the entire task in
+`:composition-recovery-history` and queues fresh native checks and passive
+review. It retains the current PR and publishes normally to that PR's original
+branch; the distinct resolved worktree keeps its own branch. Missing or changed
+PR identity fails closed instead of creating a replacement. Old conflicts,
+failed checks, unknown cleanup and refusal history remain preserved. New-head
+CI and normal Main integration are still required.
+
 Known-ended, nonrestricted semantic check failures return to repair with the
 failed source tuple and check result retained. The repair must preserve meaningful
 checks, including authenticity and provenance. Restricted or uncertain effects

@@ -17,6 +17,7 @@
    :c2-diagnostic-hash-input c2-diagnostic-hash-input
    :c2-incremental-hashes c2-incremental-hashes
    :c2-reader-product-integrity-record c2-reader-product-integrity-record
+   :c2-reader-product-integrity-record-v3 c2-reader-product-integrity-record-v3
    :c2-reader-artifact-id c2-reader-artifact-id}
     ;; Default recursion needs no bootstrap round trip at every node. Retain
     ;; the compatibility operation whenever either wrapper is interposed.

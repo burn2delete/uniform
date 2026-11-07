@@ -52,7 +52,19 @@
     form-id-map
     token-id-map
     token-stream
-    form-tree)]
+    form-tree)
+   decimal-occurrence-projection
+   (sh03-reader-decimal-occurrence-projection!
+    source-path
+    result
+    source-unit
+    raw-tokens
+    raw-forms
+    token-id-map
+    form-id-map
+    token-stream
+    form-tree
+    adapted-evidence)]
   (clojure.core/assoc
    state
    :forms-by-id
@@ -62,4 +74,6 @@
    :parsed-records
    parsed-records
    :adapted-evidence
-   adapted-evidence)))
+   adapted-evidence
+   :decimal-occurrence-projection
+   decimal-occurrence-projection)))

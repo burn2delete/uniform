@@ -2,7 +2,9 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.self-hosting.a1-canonical-schema :as a1])
+            [gravity.self-hosting.a1-canonical-schema :as a1]
+            [gravity.self-hosting.a1-canonical-schema.config :as config]
+            [gravity.self-hosting.a1-canonical-schema.digest :as digest])
   (:import (clojure.lang BigInt PersistentHashMap PersistentVector)
            (java.math BigInteger)
            (java.util ArrayList HashMap)))
@@ -13,6 +15,38 @@
 
 (defn- result [diagnostic path]
   {"status" "typed-rejected" "diagnostic" diagnostic "value" nil "path" path})
+
+(deftest diagnostic-path-materialization-preserves-segments-and-vector-shape
+  (let [segments ["" 2 "field/name" 0 "leaf"]]
+    (doseq [[path expected]
+            [[nil []] ['() []] [[] []]
+             [segments segments]
+             [(with-meta segments {:origin :host}) segments]
+             [(subvec (into [:unused] segments) 1) segments]
+             [(config/path-child (config/path-of "" 2 "field/name" 0) "leaf")
+              segments]]]
+      (let [actual (config/path-vector path)]
+        (is (= expected actual))
+        (is (= PersistentVector (class actual)))
+        (is (nil? (meta actual)))))))
+
+(deftest deep-mixed-path-rejection-retains-the-full-diagnostic
+  (let [path (vec (mapcat (fn [index] [(str "field-" index) (mod index 3)])
+                          (range 33)))
+        nested (fn [leaf]
+                 (reduce (fn [value segment]
+                           (if (string? segment)
+                             {segment value}
+                             (assoc (vec (repeat (inc segment) nil)) segment value)))
+                         leaf (rseq path)))
+        accepted-value (nested nil)
+        rejected (a1/canonical-copy (nested -1))]
+    (is (= {"status" "accepted" "diagnostic" "OK"
+            "value" accepted-value "path" []}
+           (a1/canonical-copy accepted-value)))
+    (is (= (result "E-TYPE" path) rejected))
+    (is (= PersistentVector (class (get rejected "path"))))
+    (is (nil? (meta (get rejected "path"))))))
 
 (defn- phm [entries]
   (reduce (fn [m [k v]] (assoc m k v)) PersistentHashMap/EMPTY entries))
@@ -213,6 +247,104 @@
            (get (a1/validate-and-copy registry :uint 1) "diagnostic")))
     (is (= "E-ID-SYNTAX"
            (get (a1/validate-and-copy registry "Bad" 1) "diagnostic")))))
+
+(def uniqueness-registry
+  {"text" {"kind" "string" "ascii-only" false "max-bytes" 16}
+   "items" {"kind" "array" "item" "text" "min-items" 0
+            "max-items" 2048 "unique" true}
+   "root" {"kind" "object" "required" {"items" "items"} "optional" {}}})
+
+(deftest uniqueness-accepts-large-distinct-enums-and-arrays
+  (let [values (mapv #(str "v" %) (range 2048))
+        enum-registry {"choice" {"kind" "enum" "values" values}}
+        digested (atom [])
+        compared (atom [])
+        value-digest! digest/value-digest!
+        canonical-equal! digest/canonical-equal!]
+    (with-redefs [digest/value-digest!
+                  (fn [value path]
+                    (swap! digested conj [value (config/path-vector path)])
+                    (value-digest! value path))
+                  digest/canonical-equal!
+                  (fn [left right path]
+                    (swap! compared conj [left right])
+                    (canonical-equal! left right path))]
+      (doseq [[run expected-value prefix]
+              [[#(a1/admit-schema-registry enum-registry)
+                enum-registry ["choice" "values"]]
+               [#(a1/validate-and-copy uniqueness-registry "root" {"items" values})
+                {"items" values} ["items"]]]]
+        (reset! digested [])
+        (is (= {"status" "accepted" "diagnostic" "OK"
+                "value" expected-value "path" []}
+               (run)))
+        (is (= (mapv (fn [index value] [value (conj prefix index)])
+                     (range (count values)) values)
+               @digested)))
+      (is (empty? @compared)))))
+
+(deftest uniqueness-confirms-digest-collisions-in-earlier-index-order
+  (let [canonical-equal! digest/canonical-equal!
+        value-digest! digest/value-digest!]
+    (doseq [forced-collision? [false true]
+            [run prefix]
+            [[(fn [values]
+                (a1/admit-schema-registry
+                  {"choice" {"kind" "enum" "values" values}}))
+              ["choice" "values"]]
+             [(fn [values]
+                (a1/validate-and-copy uniqueness-registry "root" {"items" values}))
+              ["items"]]]]
+      (let [compared (atom [])]
+        (with-redefs [digest/value-digest!
+                      (if forced-collision?
+                        ;; Fresh arrays with identical bytes must share a bucket.
+                        (fn [_ _] (byte-array (repeat 32 7)))
+                        value-digest!)
+                      digest/canonical-equal!
+                      (fn [left right path]
+                        (swap! compared conj [left right (config/path-vector path)])
+                        (canonical-equal! left right path))]
+          (is (= "accepted" (get (run ["z" "a" "m"]) "status")))
+          (is (= (if forced-collision?
+                   [["z" "a" (conj prefix 0)]
+                    ["z" "m" (conj prefix 0)]
+                    ["a" "m" (conj prefix 1)]]
+                   [])
+                 @compared))
+          (reset! compared [])
+          (is (= (result "E-SCHEMA" (conj prefix 3))
+                 (run ["z" "a" "m" "a" "z"])))
+          (is (= (if forced-collision?
+                   [["z" "a" (conj prefix 0)]
+                    ["z" "m" (conj prefix 0)]
+                    ["a" "m" (conj prefix 1)]
+                    ["z" "a" (conj prefix 0)]
+                    ["a" "a" (conj prefix 1)]]
+                   [["a" "a" (conj prefix 1)]])
+                 @compared)))))))
+
+(deftest uniqueness-uses-canonical-structural-equality-for-composite-items
+  (let [registry (assoc uniqueness-registry
+                        "uint" {"kind" "uint64"}
+                        "pair" {"kind" "object"
+                                "required" {"a" "uint" "b" "uint"}
+                                "optional" {}}
+                        "items" {"kind" "array" "item" "pair" "min-items" 0
+                                 "max-items" 4 "unique" true})
+        values [{"a" 1 "b" 2} {"a" 2 "b" 1}]
+        duplicate (phm [["b" 2N] ["a" 1N]])
+        value-digest! digest/value-digest!]
+    (doseq [forced-collision? [false true]]
+      (with-redefs [digest/value-digest!
+                    (if forced-collision?
+                      (fn [_ _] (byte-array (repeat 32 7)))
+                      value-digest!)]
+        (is (= "accepted"
+               (get (a1/validate-and-copy registry "root" {"items" values}) "status")))
+        (is (= (result "E-SCHEMA" ["items" 2])
+               (a1/validate-and-copy registry "root"
+                                     {"items" (conj values duplicate)})))))))
 
 (deftest larger-valid-values-keep-the-closed-domain
   (let [long-string (apply str (repeat 65537 "a"))

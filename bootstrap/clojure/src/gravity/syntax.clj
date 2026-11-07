@@ -10,7 +10,12 @@
             [gravity.c3-syntax-verification :as verification]))
 
 (def ^:private namespace-contract
- '{:public-api
+ '{:owner-call-resolution
+ {:operations [boundary-fail! registered-literal-fail! accept-result! require-result-carrier! execute-plan!]
+  :evaluation :per-use-before-arguments :var-ports :current-callable-root
+  :other-callable-ports :unchanged :admission-check-added? false
+  :test-owner gravity.syntax.owner-calls-test}
+ :public-api
  {resolve-stream-request-preimage!
   {:arglists ([source-path request resolved-digests operations]),
    :operation-inputs [:sh04-syntax-boundary-fail!],
@@ -842,6 +847,8 @@
     conformance)]
   (assoc artifact :artifact-id (c3-artifact-id artifact))))
 
+(declare registered-literal-integrity-view)
+
 (defn
  reader-products-authentic?
  "Recompute the existing reader-to-syntax association and envelope checks."
@@ -894,7 +901,10 @@
      (if
       gravity-boundary
       (let
-       [result
+       [integrity-report
+        (c3-c2-reader-integrity-report
+         (registered-literal-integrity-view c2-artifact))
+        result
         (:resolved-syntax-result gravity-boundary)
         result-stream
         (:syntax-object-stream result)
@@ -920,6 +930,7 @@
          result-stream
          (repeat serialization-id))]
        (and
+        (:authentic? integrity-report)
         (sh04-syntax-registered-literal-projection-authentic?
          c2-artifact
          gravity-boundary)
@@ -1242,6 +1253,12 @@
 
 ;; Pinned SH-04 plan runtime. Operations are trusted seed dependencies.
 
+(defn- owner-function
+  "Capture a supplied Var before call arguments; retain other callable values."
+  [operation]
+  (if (var? operation) (deref operation) operation))
+
+
 (defn
  boundary-fail!
  [rule
@@ -1250,10 +1267,10 @@
   observed
   facts
   {:keys [c3-syntax-fail! source-span]}]
- (c3-syntax-fail!
+ ((owner-function c3-syntax-fail!)
   rule
   source-path
-  {:source-span (source-span source-path 0),
+  {:source-span ((owner-function source-span) source-path 0),
    :producer :gravity.bootstrap.syntax,
    :form-kind :syntax-object}
   {:missing-fields [missing-field],
@@ -1664,9 +1681,9 @@
     sh04-syntax-strip-host-metadata]}]
  (try
   (let
-   [clean-arguments (sh04-syntax-strip-host-metadata arguments)]
-   (sh04-syntax-strip-host-metadata
-    (p15-s23-stage2-runtime-execute-function
+   [clean-arguments ((owner-function sh04-syntax-strip-host-metadata) arguments)]
+   ((owner-function sh04-syntax-strip-host-metadata)
+    ((owner-function p15-s23-stage2-runtime-execute-function)
      {:engine :gravity-sh04-pinned-syntax-runner,
       :compiler-artifact-plan? true}
      (:plan binding)
@@ -1680,7 +1697,7 @@
   (catch
    StackOverflowError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :bounded-syntax-host-stack
@@ -1689,7 +1706,7 @@
   (catch
    AssertionError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-assertion
@@ -1698,7 +1715,7 @@
   (catch
    LinkageError
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-linkage
@@ -1707,7 +1724,7 @@
   (catch
    clojure.lang.ExceptionInfo
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-runtime-diagnostic
@@ -1716,7 +1733,7 @@
   (catch
    Exception
    error
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :contained-syntax-host-failure
@@ -1733,12 +1750,12 @@
    [p15-s23-trusted-carrier-validation sh04-syntax-boundary-fail!]}]
  (let
   [validation
-   (p15-s23-trusted-carrier-validation
+   ((owner-function p15-s23-trusted-carrier-validation)
     value
     :default-only)]
   (when-not
    (= :passed (:status validation))
-   (sh04-syntax-boundary-fail!
+   ((owner-function sh04-syntax-boundary-fail!)
     "C3-SHAPE"
     source-path
     :bounded-syntax-result-carrier
@@ -1753,7 +1770,7 @@
  [source-path
   result
   {:keys [c3-syntax-fail! sh04-syntax-require-carrier! source-span]}]
- (sh04-syntax-require-carrier!
+ ((owner-function sh04-syntax-require-carrier!)
   source-path
   :gravity-syntax-result
   result)
@@ -1764,13 +1781,13 @@
     (first (:diagnostics result))
     rule
     (or (:rule diagnostic) "C3-SHAPE")]
-   (c3-syntax-fail!
+   ((owner-function c3-syntax-fail!)
     rule
     source-path
     {:source-span
      (or
       (get-in diagnostic [:primary :span])
-      (source-span source-path 0)),
+      ((owner-function source-span) source-path 0)),
      :syntax-id (get-in diagnostic [:primary :syntax-id]),
      :producer :gravity.bootstrap.syntax,
      :form-kind (get-in diagnostic [:facts :form-kind])}
@@ -2028,10 +2045,10 @@
   missing-fields
   facts
   {:keys [c3-syntax-fail! source-span]}]
- (c3-syntax-fail!
+ ((owner-function c3-syntax-fail!)
   "C3-FACT-STALE"
   source-path
-  {:source-span (or (:span form-record) (source-span source-path 0)),
+  {:source-span (or (:span form-record) ((owner-function source-span) source-path 0)),
    :producer :gravity.bootstrap.reader,
    :form-kind :tagged-literal}
   {:missing-fields missing-fields, :facts facts}))
@@ -2382,6 +2399,50 @@
    (throw interrupted))
   (catch Throwable _ false)))
 
+(defn-
+ registered-literal-integrity-view
+ "Restore host literal values before re-running C2 integrity.
+
+  The C3 reader view intentionally projects registered Date/UUID values to
+  serializable Gravity descriptors. C2 integrity is defined over the
+  unprojected reader products, so validate that view without treating the
+  projection itself as a new C2 product."
+ [c2-artifact]
+ (let [bindings
+       (get-in c2-artifact [:registered-literal-projection :bindings])
+       replacements
+       (into
+        {}
+        (keep
+         (fn [{:keys [tag descriptor]}]
+           (case
+            tag
+            inst
+            (when-let [milliseconds
+                       (get-in descriptor [:canonical-value :epoch-milliseconds])]
+              [descriptor (java.util.Date. (Long/parseLong milliseconds))])
+            uuid
+            (when-let [canonical-text
+                       (get-in descriptor [:canonical-value :canonical-text])]
+              [descriptor (java.util.UUID/fromString canonical-text)])
+            nil))
+         bindings))]
+   (if-not (seq replacements)
+     c2-artifact
+     (letfn [(restore [value]
+               (cond
+                (contains? replacements value) (get replacements value)
+                (map? value)
+                (into (empty value)
+                      (map (fn [[key child]] [(restore key) (restore child)]) value))
+                (vector? value) (mapv restore value)
+                (set? value) (into #{} (map restore) value)
+                (seq? value) (apply list (map restore value))
+                :else value))]
+       (dissoc
+        (restore (dissoc c2-artifact :registered-literal-projection))
+        :registered-literal-projection)))))
+
 (defn
  current-reader-identity-view
  [source-path
@@ -2599,6 +2660,8 @@
       :reader-diagnostics
       :incremental-reader-hashes
       :reader-product-integrity])
+    :sh07-decimal-occurrence-projection
+    (:sh07-decimal-occurrence-projection c2-artifact)
     :sh03-reader-authentication
     (cond->
      {:reader-result-id
@@ -2615,6 +2678,11 @@
       (get-in
        boundary
        [:authenticated-envelope :provenance-binding-id])}
+     (get-in boundary [:adapter-contract])
+     (assoc :adapter-contract (get-in boundary [:adapter-contract]))
+     (get-in boundary [:decimal-occurrence-projection-id])
+     (assoc :decimal-occurrence-projection-id
+            (get-in boundary [:decimal-occurrence-projection-id]))
      (=
       :gravity/sh03-current-source-reader-plan-binding
       (get-in boundary [:plan-binding :artifact]))
@@ -2682,6 +2750,7 @@
  {:adapter-contract
   (or
    (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+   (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
    :gravity/sh03-to-c2-reader-products-v2),
   :adapted-source-unit-id
   (get-in c2-artifact [:source-unit-record :source-id]),
@@ -2877,6 +2946,7 @@
      :adapter-contract
      (or
       (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+      (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
       :gravity/sh03-to-c2-reader-products-v2),
      :semantic-reader-products semantic-core})
    envelope-id

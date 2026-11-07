@@ -2,8 +2,7 @@
   "Schema algebra, ranked diagnostics, references, and registry admission."
   (:require [gravity.self-hosting.a1-canonical-schema.config :as config]
             [gravity.self-hosting.a1-canonical-schema.digest :as digest]
-            [gravity.self-hosting.a1-canonical-schema.ordering :as ordering])
-  (:import (java.util Arrays)))
+            [gravity.self-hosting.a1-canonical-schema.ordering :as ordering]))
 
 (defn schema-id! [value path]
   (when-not (config/exact-class? value String) (config/fail! "E-ID-TYPE" path))
@@ -29,24 +28,19 @@
     value))
 
 (defn ensure-unique! [values path]
-  (let [n (count values)
-        digests (object-array n)]
-    (loop [index 0]
+  (let [n (count values)]
+    (loop [index 0 buckets {}]
       (when (< index n)
         (let [item (nth values index)
               item-path (config/path-child path index)
-              value-digest (digest/value-digest! item item-path)]
-          (loop [prior-index 0]
-            (when (< prior-index index)
-              (if (and (Arrays/equals ^bytes (aget digests prior-index)
-                                      ^bytes value-digest)
-                       (digest/canonical-equal!
-                         (nth values prior-index) item
-                         (config/path-child path prior-index)))
-                (config/fail! "E-SCHEMA" item-path)
-                (recur (inc prior-index)))))
-          (aset digests index value-digest)
-          (recur (inc index)))))))
+              digest-key (vec (digest/value-digest! item item-path))]
+          ;; Digest keys compare by content; each bucket retains index order.
+          (doseq [prior-index (get buckets digest-key)]
+            (when (digest/canonical-equal!
+                    (nth values prior-index) item
+                    (config/path-child path prior-index))
+              (config/fail! "E-SCHEMA" item-path)))
+          (recur (inc index) (update buckets digest-key (fnil conj []) index)))))))
 
 (defn refs-in-definition! [definition path]
   (let [kind (get definition "kind")]
