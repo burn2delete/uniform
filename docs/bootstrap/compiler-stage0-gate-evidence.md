@@ -20,8 +20,11 @@ The frozen parent is `f85d92ff1860c7a020c13f1939333045499ef6ed`, tree
 `a3f6dd8d85d2915ea9de36204e3b0bac246b18df`, source freeze SHA256
 `84154146078d0211d7ca97b135aeaf8ceacd2f8c1976f07cb8a3cb762a0f56a3`.
 Main `21f42b7d92d163be9ede20376c32808ec3b90efd` is already an ancestor;
-the seven-path worktree claim imports no additional Main files. Parent CI is
-under independent audit and transfers no acceptance. The nine publication SDK
+the seven-path worktree claim imports no additional Main files. Parent MIR CI
+`42397126374/1` failed when `syntax-regression` timed out at 600 seconds
+(exit 124). That terminal failure is preserved without retry; this successor
+was opened and implemented before the result and neither replaces nor
+transfers parent acceptance. The nine publication SDK
 records match current Main and source. No CI/workflow change is planned.
 
 ## Public API, inputs and outputs
@@ -106,10 +109,47 @@ source's own hosted provider/run before exact current-base integration.
 
 ## Status and unsupported boundaries
 
-This is the initial scope record before implementation. Source captures,
-focused tests, source acceptance, final publication and own CI audit remain
-pending. The seven owned paths are the manifest namespace, components 00529
-and 00531, the two existing test files, this record and the namespace map.
+The five bodies now live in the manifest owner, with all five original
+Bootstrap signatures retained as adapters. Public API inventory grows from
+33 to 38 without importing Bootstrap. The aggregate and neighboring MIR,
+Lowering and JVM catalog code remain in place.
+
+The clean pre-move capture is scope commit
+`3637bcb65fdcccbbb24d4bb86bfda4c98eeb7102`. Its SHA256 is
+`1b0d0f5564dffb92f7105c96845822535051fd57bf5b678e4a3520f3e05b11d2`.
+The after capture honestly records that same HEAD with dirty producer hashes,
+not a future clean commit. Its SHA256 is
+`07c07d0e802b7306e83612bc213e6f979cec54c851c0082a73b49afa7a7f0fdb`.
+All 20 full observations match: eight emitted plans, compiler/runtime reports
+and interpreted/compiled execution agreements, plus twelve pre-emission
+refusals. Four accepted cases per extension cover absent, nonempty, empty and
+nil legacy gates. Six refusals per extension cover C1 pass fields, durable-fact
+loss, C11 target leakage, C14 input/proof metadata and C18 missing evidence.
+Caller-supplied paired `.gravity`/`.qst` text retains actual module paths and
+content-derived plan/report identities. C11 preserves the fixture's explicit
+span; it is not replaced by the paired caller path. All five helpers are
+observed through the public macro/module/Stage0 plan route. Original/moved
+body receipt SHA256 is
+`4bd5575e48d18a0fb57c7f28812694a5b59327728b7490dc9c489db64c8421c0`.
+
+Focused native tests pass: 9 tests, 204 assertions, with Bootstrap absent.
+The whole existing plan-assembly and instruction regression namespaces pass:
+38 tests, 654 assertions. Four new plan-assembly tests retain the paired
+nonempty/empty/nil/absent source controls, real refusals before compilation,
+all adapter argument/Var identities and C1/C11/C14/C18 aggregate order. The
+language/ownership gates pass: 48 tests, 1202 assertions. Fresh cold loading
+finds all 38 API declarations aligned, Bootstrap absent and the existing
+Diagnostics/leaves/aliases present. Direct changed native/test lint has no
+errors and retains the two pre-existing unused private helper warnings;
+neither helper was removed as unrelated cleanup.
+
+Independent final-source reviews, complete current-Main lint, final
+publication and this slice's own hosted provider/run audit remain pending.
+The seven owned paths are the manifest namespace, components 00529 and 00531,
+the two existing test files, this record and the namespace map. Draft PR
+[#1372](https://github.com/burn2delete/uniform/pull/1372) was opened at the
+scope commit before the move. Local tests and this record confer no acceptance
+or integration authority.
 
 No canonical C1/C18 authority, full compiler verification, authenticated
 source/IR/evidence, certificate or trust-provider checking, canonical C15

@@ -255,6 +255,22 @@ The native family label is not MIR verification: accepted reports still state
 that this path emits no verified MIR. The stage remains core-only and grants
 no authentication, backend, release or self-hosting authority.
 
+The [legacy Stage0 compiler-gate extraction](compiler-stage0-gate-evidence.md)
+moves five complete C1/C18 metadata algorithms into existing
+`gravity.compiler-pass-manifest`: manifest projection, suite lookup/presence,
+pass-field/durable-fact validation and risk/evidence subset validation. Five
+native APIs consume caller-owned metadata and separate explicit late C1/C18
+owner Vars; they return the original projection, suite, presence, nil or owner
+result/exception. Bootstrap retains the five adapters and mixed
+C1/C11/C14/C18 invocation order. The manifest stage owns refusal selection and
+facts, while existing diagnostic owners retain construction and transport.
+Its native tests remain Bootstrap-free; genuine paired source controls live
+in `gravity.lowering.plan-assembly-test` and emit/execute deterministic plans
+or refuse invalid metadata before function compilation. Absent, nil and empty
+legacy gates remain distinct. Modern pass-suite APIs are unchanged. Matching
+native evidence labels grant no canonical C1/C18 verification, proof admission,
+verified MIR, complete source maps, backend, release or self-hosting authority.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four

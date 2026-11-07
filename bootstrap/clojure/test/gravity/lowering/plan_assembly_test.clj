@@ -1,6 +1,8 @@
 (ns gravity.lowering.plan-assembly-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.set :as set]
             [gravity.bootstrap :as b]
+            [gravity.compiler-pass-manifest :as manifest]
             [gravity.digest :as digest]
             [gravity.lowering :as lowering]))
 
@@ -214,3 +216,108 @@
       (is (= expected (:id data)))
       (is (= path (get-in data [:source-span :source])))
       (is (zero? @calls)))))
+
+(def ^:private legacy-compiler-gate
+  {:pass-contracts
+   [{:pass :native/compile :owner-doc :C1 :input :macro-expanded-core
+     :output :stage0-instruction-plan :requires #{} :preserves #{:profile :target}
+     :invalidates #{:types :source-spans} :regenerates #{:types} :capabilities #{}
+     :profiles #{:hosted} :emits #{:source-spans} :rejects #{"L2-MAIN-ARITY"}
+     :verifier-gate? true :risk :high :evidence-class #{:fixture}}]
+   :verification-risk
+   [{:pass :native/compile :risk :high :artifact-id :native/pass
+     :minimum-evidence #{:fixture :translation-validation}
+     :available-evidence #{:fixture :translation-validation}}
+    {:pass :native/recheck :risk :critical :version "native-v1" :artifact-id :native/recheck
+     :minimum-evidence #{:fixture} :available-evidence #{:fixture}}]})
+
+(deftest real-legacy-compiler-gates-emit-deterministic-plans-with-native-metadata
+  ;; Matching labels are metadata, not authenticated verification evidence.
+  (doseq [extension [".gravity" ".qst"]
+          [label compiler present?] [["nonempty" {:compiled-gate legacy-compiler-gate} true]
+                                     ["empty" {:compiled-gate {}} true]
+                                     ["nil" {:compiled-gate nil} true]
+                                     ["absent" {} false]]]
+    (let [path (str "legacy-compiler-" label extension)
+          source (str "(ns compiler.native (:profile :hosted) (:target :jvm) (:effects #{:io/write}) "
+                      "(:capabilities #{:io/stdout}) (:metadata " (pr-str {:compiler compiler}) "))\n"
+                      "(defn main [] (println (+ 2 3)))\n")
+          {:keys [module plan]} (compile-source path source)
+          report (b/stage0-compiled-plan-compiler-report plan module)]
+      (is (= present? (b/stage0-compiled-compiler-suite-present? module)))
+      (is (= (get compiler :compiled-gate {}) (b/stage0-compiled-compiler-suite module)))
+      (is (= {:profile :hosted :target :jvm :source-effects #{:io/write}
+              :source-capabilities #{:io/stdout} :metadata {:compiler compiler}}
+             (b/stage0-compiled-compiler-manifest module)))
+      (is (= plan (:plan (compile-source path source))))
+      (is (= path (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex source)) (get-in plan [:source :sha256])))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id)))) (:plan-id plan)))
+      (is (= (:plan-id plan) (:compiled-plan-id report)))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc report :report-id)))) (:report-id report)))
+      (is (= {:emitted? false :reason :stage0-instruction-plan-path
+              :target-specific-opcode-policy :rejected :required-next :build-verified-mir}
+             (:mir-status report)))
+      (is (= "5\n" (b/run-main module) (b/execute-stage0-compiled-plan plan))))))
+
+(deftest real-legacy-compiler-refusals-retain-family-and-stop-before-compilation
+  (doseq [extension [".gravity" ".qst"]
+          [suffix expected family] [["pass-contract" "C1-PASS-CONTRACT" :compiler-pass-contract]
+                                    ["evidence-drop" "C1-EVIDENCE-DROP" :compiler-pass-contract]
+                                    ["verification-evidence" "C18-EVIDENCE" :compiler-pass-correctness]
+                                    ["mir-target-leak" "C11-TARGET-LEAK" nil]
+                                    ["lowering-input" "C14-INPUT" nil]
+                                    ["proof-metadata" "C14-PROOF-METADATA" nil]]]
+    (let [path (str "legacy-compiler-" suffix extension)
+          source (slurp (str "bootstrap/clojure/fixtures/rejected/core-app-compiler-" suffix ".gravity") :encoding "UTF-8")
+          calls (atom 0) original b/compile-stage0-function
+          failure (with-redefs [b/compile-stage0-function (fn [& args] (swap! calls inc) (apply original args))]
+                    (error-data #(compile-source path source)))]
+      (is (= expected (:id failure)))
+      (when family (is (= family (:diagnostic-family failure))))
+      ;; C11's explicit fixture span is preserved rather than replaced by this caller path.
+      (when (contains? #{"C14-INPUT" "C14-PROOF-METADATA"} expected)
+        (is (= path (get-in failure [:source-span :source]))))
+      (is (zero? @calls)))))
+
+(deftest legacy-compiler-adapters-forward-original-arguments-and-live-vars
+  (let [input (Object.) projection (Object.) record (Object.) marker (Object.) calls (atom [])]
+    (with-redefs [manifest/native-stage0-compiler-manifest (fn [& args] (swap! calls conj [:manifest args]) marker)
+                  manifest/native-stage0-compiler-suite (fn [& args] (swap! calls conj [:suite args]) marker)
+                  manifest/native-stage0-compiler-suite-present? (fn [& args] (swap! calls conj [:present args]) marker)
+                  manifest/validate-native-stage0-pass-contract! (fn [& args] (swap! calls conj [:c1 args]) marker)
+                  manifest/validate-native-stage0-verification-risk! (fn [& args] (swap! calls conj [:c18 args]) marker)]
+      (is (identical? marker (b/stage0-compiled-compiler-manifest input)))
+      (is (identical? marker (b/stage0-compiled-compiler-suite input)))
+      (is (identical? marker (b/stage0-compiled-compiler-suite-present? input)))
+      (is (identical? marker (b/validate-stage0-compiled-pass-contract! input projection record)))
+      (is (identical? marker (b/validate-stage0-compiled-verification-risk! input record)))
+      (is (= [:manifest :suite :present :c1 :c18] (mapv first @calls)))
+      (doseq [[_ args] (take 3 @calls)] (is (identical? input (first args))))
+      (let [[c1 module manifest contract] (second (nth @calls 3))
+            [c18 risk-module risk] (second (nth @calls 4))]
+        (is (= {:missing-fields #'b/compiler-pass-missing-fields
+                :required-fields #'b/compiler-pass-contract-required-fields
+                :durable-facts #'b/compiler-pass-durable-facts :intersection #'set/intersection
+                :difference #'set/difference :fail! #'b/compiler-pass-fail!} c1))
+        (is (= {:subset? #'set/subset? :difference #'set/difference :fail! #'b/c18-verification-fail!} c18))
+        (is (identical? input module))
+        (is (identical? projection manifest))
+        (is (identical? record contract))
+        (is (identical? input risk-module))
+        (is (identical? record risk))))))
+
+(deftest legacy-compiler-aggregate-retains-cross-stage-order
+  ;; Native orchestration fixture; this does not admit a source artifact.
+  (let [pass (Object.) mir (Object.) target (Object.) risk (Object.) events (atom [])
+        input {:metadata {:compiler {:compiled-gate {:pass-contracts [pass] :mir-operations [mir]
+                                                    :target-lowering [target] :verification-risk [risk]}}}}]
+    (with-redefs [b/validate-stage0-compiled-pass-contract! (fn [module _ record] (swap! events conj [:c1 module record]))
+                  b/validate-stage0-compiled-mir! (fn [module _ record] (swap! events conj [:c11 module record]))
+                  b/validate-stage0-compiled-target-lowering! (fn [module record] (swap! events conj [:c14 module record]))
+                  b/validate-stage0-compiled-verification-risk! (fn [module record] (swap! events conj [:c18 module record]))]
+      (is (nil? (b/validate-stage0-compiled-compiler! input)))
+      (is (= [:c1 :c11 :c14 :c18] (mapv first @events)))
+      (doseq [[[_ module actual] expected] (map vector @events [pass mir target risk])]
+        (is (identical? input module))
+        (is (identical? expected actual))))))
