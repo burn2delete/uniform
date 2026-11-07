@@ -3,7 +3,7 @@
             [clojure.edn :as edn]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is run-tests]]))
+            [clojure.test :as test :refer [deftest is run-tests]]))
 
 (binding [*command-line-args* nil] (load-file "tools/ci/run.clj"))
 (require '[ci.run :as ci])
@@ -11,6 +11,90 @@
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
 (binding [*command-line-args* nil] (load-file "tools/ci/lint_context_test.clj"))
+
+(def ^:private exact-selector "--exact")
+
+(defn- fully-qualified-test-name?
+  [value]
+  (and (string? value)
+       (= 2 (count (str/split value #"/" -1)))
+       (let [[namespace-name var-name] (str/split value #"/" -1)]
+         (and (re-matches #"[A-Za-z_][A-Za-z0-9_.-]*" namespace-name)
+              (re-matches #"[A-Za-z_*!?+<>=.$%-][A-Za-z0-9_*!?+<>=.$%-]*" var-name)))))
+
+(defn- exact-selection-error
+  [message data]
+  (throw (ex-info message (assoc data :selector exact-selector))))
+
+(defn- parse-exact-selection
+  "Validate the complete command line before resolving or running a test."
+  [args]
+  (let [args (vec args)]
+    (when-not (= exact-selector (first args))
+      (exact-selection-error "Exact CI selection must start with --exact" {:args args}))
+    (let [names (subvec args 1)]
+      (when (empty? names)
+        (exact-selection-error "--exact needs one or more fully qualified test Vars"
+                               {:args args}))
+      (when-not (every? fully-qualified-test-name? names)
+        (exact-selection-error "--exact accepts only fully qualified test Vars"
+                               {:args args :invalid (remove fully-qualified-test-name? names)}))
+      (when-not (= (count names) (count (distinct names)))
+        (exact-selection-error "--exact does not accept duplicate test Vars" {:args args}))
+      names)))
+
+(defn- resolve-loaded-test-vars
+  "Resolve only Vars in namespaces already loaded by this script."
+  [names]
+  (mapv (fn [qualified-name]
+          (let [[namespace-name var-name] (str/split qualified-name #"/" -1)
+                namespace-symbol (symbol namespace-name)
+                var-symbol (symbol var-name)
+                namespace-object (find-ns namespace-symbol)
+                value (when namespace-object (get (ns-interns namespace-object) var-symbol))]
+            (when-not namespace-object
+              (exact-selection-error "--exact names an unloaded namespace"
+                                     {:name qualified-name :namespace namespace-name}))
+            (when-not (and (var? value) (fn? (:test (meta value))))
+              (exact-selection-error "--exact names a missing or non-test Var"
+                                     {:name qualified-name :namespace namespace-name}))
+            value))
+        names))
+
+(defn- run-selected-tests!
+  "Run selected Vars with the same namespace fixture and report boundaries as run-tests."
+  [vars]
+  (binding [test/*report-counters* (ref test/*initial-report-counters*)]
+    (doseq [[namespace-object namespace-vars]
+            (sort-by (comp str key)
+                     (reduce (fn [groups value]
+                               (update groups (-> value meta :ns) (fnil conj []) value))
+                             {}
+                             vars))]
+      (test/do-report {:type :begin-test-ns :ns namespace-object})
+      (test/test-vars namespace-vars)
+      (test/do-report {:type :end-test-ns :ns namespace-object}))
+    (let [summary @test/*report-counters*]
+      (test/do-report (assoc summary :type :summary))
+      summary)))
+
+(defn- run-exact-selection!
+  [args]
+  (let [vars (try
+               (resolve-loaded-test-vars (parse-exact-selection args))
+               (catch clojure.lang.ExceptionInfo error
+                 (binding [*out* *err*]
+                   (println (str "Exact CI selection rejected: " (.getMessage error))))
+                 nil))]
+    (if vars
+      (run-selected-tests! vars)
+      {:test 0 :pass 0 :fail 1 :error 0})))
+
+(defn- run-command!
+  [args]
+  (if (seq args)
+    (run-exact-selection! args)
+    (run-tests 'ci.run-test 'ci.lint-context-test)))
 
 (defn fixture-tool!
   ([directory argv input allowed-exits]
@@ -1660,5 +1744,60 @@
     (is (has-input-controls? nil))
     (is (not (has-input-controls? docs-only)))))
 
-(let [result (run-tests 'ci.run-test 'ci.lint-context-test)]
+(deftest exact-selection-validates-all-names-before-running
+  (let [invoked (atom false)
+        selected-test "ci.run-test/bootstrap-selection-runs-historical-input-controls-only-at-boundary"
+        result (with-redefs [run-selected-tests!
+                             (fn [_]
+                               (reset! invoked true)
+                               {:test 1 :pass 1 :fail 0 :error 0})]
+                 (run-exact-selection! [exact-selector
+                                        selected-test
+                                        "ci.run-test/exact-selection-missing-test"]))]
+    (is (= {:test 0 :pass 0 :fail 1 :error 0} result))
+    (is (false? @invoked))))
+
+(deftest exact-selection-does-not-swallow-execution-ex-info
+  (let [selected-test "ci.run-test/bootstrap-selection-runs-historical-input-controls-only-at-boundary"]
+    (with-redefs [run-selected-tests!
+                  (fn [_] (throw (ex-info "selected test failed" {:phase :execution})))]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"selected test failed"
+                            (run-exact-selection! [exact-selector selected-test]))))))
+
+(deftest exact-selection-preserves-fixtures-and-report-counters
+  (let [once-calls (atom 0)
+        each-calls (atom 0)
+        body-calls (atom 0)
+        fixture-ns (create-ns (symbol (str "ci.run-test.fixture-" (gensym))))
+        test-body (fn []
+                    (is (= 1 (swap! body-calls inc))))
+        test-var (intern fixture-ns 'fixture-test test-body)]
+    (try
+      (alter-meta! test-var assoc :test test-body)
+      (alter-meta! fixture-ns assoc
+                   :clojure.test/once-fixtures
+                   [(fn [f] (swap! once-calls inc) (f))]
+                   :clojure.test/each-fixtures
+                   [(fn [f] (swap! each-calls inc) (f))])
+      (let [result (run-selected-tests! [test-var])]
+        (is (= {:test 1 :pass 1 :fail 0 :error 0} result))
+        (is (= 1 @once-calls))
+        (is (= 1 @each-calls))
+        (is (= 1 @body-calls)))
+      (finally
+        (remove-ns (ns-name fixture-ns))))))
+
+(deftest no-argument-dispatch-keeps-full-suite-namespaces
+  (let [summary {:test 2 :pass 2 :fail 0 :error 0}
+        calls (atom [])]
+    (with-redefs [run-tests (fn [& namespaces]
+                              (swap! calls conj namespaces)
+                              summary)]
+      (is (= summary (run-command! nil)))
+      (is (= [['ci.run-test 'ci.lint-context-test]] @calls)))))
+
+(let [result (if (seq *command-line-args*)
+               (run-command! *command-line-args*)
+               (run-command! nil))]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
