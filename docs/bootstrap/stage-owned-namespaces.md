@@ -271,6 +271,23 @@ legacy gates remain distinct. Modern pass-suite APIs are unchanged. Matching
 native evidence labels grant no canonical C1/C18 verification, proof admission,
 verified MIR, complete source maps, backend, release or self-hosting authority.
 
+The [Stage0 check-elision metadata extraction](optimization-check-elision-evidence.md)
+moves the complete five-field presence and erased-without-marker refusal
+bodies into `gravity.optimization`. Two explicit native APIs consume
+caller-owned module/record metadata and late presence/failure Vars, returning
+the original presence, nil or owner result/exception. Optimization owns
+`PERF10-PROOF-MISSING` selection and facts; Bootstrap retains generic
+diagnostics, both adapters and PERF1 aggregation/order. Dependencies continue
+from Bootstrap to the core-only Optimization stage. Native owner controls run
+in the existing Bootstrap-free C13 leaf; genuine paired source controls use
+the existing plan-assembly route. The v1 primary-component dependency arrays
+cannot encode the helper import and remain unchanged. Empty strings retain
+their legacy native presence meaning. Ordinary plans still omit module
+metadata, and their performance reports retain `:optimization-mode :none`
+and `:no-checks-elided`; no report input is fabricated to claim more. Proof
+markers confer no certificate/dominance validation, actual check removal,
+performance certification, backend, release or self-hosting authority.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four

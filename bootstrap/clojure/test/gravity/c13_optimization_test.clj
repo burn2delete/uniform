@@ -1,6 +1,7 @@
 (ns gravity.c13-optimization-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.c13-optimization :as c13]
+            [gravity.optimization :as optimization]
             [gravity.optimization-lowering :as shared]
             [gravity.c13-optimization.artifact :as artifact]
             [gravity.c13-optimization.operations :as c13-ops]
@@ -238,3 +239,149 @@
                        #(c13/c13-optimization-validate! "throwing-native.gravity" changed))
                      nil (catch clojure.lang.ExceptionInfo observed observed))]
       (is (identical? error observed)))))
+
+(def ^:private elision-fields [:proof-id :proof :certificate :certificate-id :dominating-proof])
+(defn- elision-present [_] false)
+(defn- elision-proof [_] false)
+(defn- elision-failure [id message data] (throw (ex-info message (assoc data :id id))))
+(def ^:private elision-module {:source-path "native-elision.gravity" :profile :hosted :target :jvm})
+
+(deftest stage0-elision-owner-declares-metadata-without-facade-authority
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (empty? (ns-aliases 'gravity.optimization)))
+  (is (= 16 (count (ns-publics 'gravity.optimization))))
+  (doseq [operation [#'optimization/native-stage0-check-elision-proof-present?
+                     #'optimization/validate-native-stage0-check-elision!]]
+    (let [contract (:gravity/namespace-contract (meta operation))
+          entry (get-in contract [:public-api (:name (meta operation))])]
+      (is (= (:arglists (meta operation)) (:arglists entry)))
+      (is (= :none (:admission entry)))
+      (is (true? (:native-data-only? entry)))
+      (is (= :stage0-check-elision-metadata-presence-and-refusal (:contract-boundary entry)))
+      (is (false? (:authenticates-inputs? contract)))
+      (is (false? (:issues-verifier-certificates? contract)))
+      (is (some #{:safety-check-elision} (:unsupported contract)))
+      (is (some #{:proof-provider-validation} (:unsupported contract)))
+      (is (not (contains? (ns-publics 'gravity.c13-optimization) (:name (meta operation))))))))
+
+(deftest stage0-elision-presence-retains-field-order-short-circuits-and-values
+  (doseq [hit (range 5)]
+    (let [values (vec (repeatedly 5 #(Object.))) marker (Object.) events (atom [])
+          lookup (zipmap elision-fields values)
+          input (reify clojure.lang.ILookup
+                  (valAt [_ key] (swap! events conj [:get key]) (get lookup key))
+                  (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted presence lookup"))))]
+      (with-redefs [elision-present (fn [value] (swap! events conj [:call value])
+                                     (when (identical? value (nth values hit)) marker))]
+        (is (identical? marker (optimization/native-stage0-check-elision-proof-present? #'elision-present input)))
+        (is (= (vec (mapcat (fn [field value] [[:get field] [:call value]])
+                           (take (inc hit) elision-fields) (take (inc hit) values))) @events)))))
+  (doseq [result [nil false]]
+    (let [calls (atom [])]
+      (with-redefs [elision-present (fn [value] (swap! calls conj value) result)]
+        (is (= result (optimization/native-stage0-check-elision-proof-present? #'elision-present {})))
+        (is (= [nil nil nil nil nil] @calls))))))
+
+(deftest stage0-elision-presence-selects-callee-before-getter-and-reloads-next-field
+  (let [events (atom []) first-value (Object.) second-value (Object.) marker (Object.)
+        late (fn [value] (swap! events conj [:late value]) marker)
+        input (reify clojure.lang.ILookup
+                (valAt [_ key]
+                  (swap! events conj [:get key])
+                  (case key :proof-id (do (alter-var-root #'elision-present (constantly late)) first-value)
+                    :proof second-value (throw (AssertionError. "presence failed to short circuit"))))
+                (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted lookup"))))]
+    (with-redefs [elision-present (fn [value] (swap! events conj [:selected value]) false)]
+      (is (identical? marker (optimization/native-stage0-check-elision-proof-present? #'elision-present input)))
+      (is (= [[:get :proof-id] [:selected first-value] [:get :proof] [:late second-value]] @events)))))
+
+(deftest stage0-elision-validation-keeps-strict-erasure-and-unconditional-presence
+  (doseq [[flag checks erased?] [[true nil true] [true (Object.) true]
+                                 [false nil false] [nil [] false] [:truthy nil false] [0 nil false]
+                                 [false [:bounds] true] [nil '(:bounds) true]]
+          present? [false true]]
+    (let [record {:erased? flag :erased-checks checks :check-class :bounds :operation :at :ir-node :node}
+          marker (Object.) proofs (atom []) failures (atom [])]
+      (with-redefs [elision-proof (fn [actual] (swap! proofs conj actual) present?)
+                    elision-failure (fn [& args] (swap! failures conj (vec args)) marker)]
+        (let [value (optimization/validate-native-stage0-check-elision!
+                      #'elision-failure #'elision-proof elision-module record)]
+          (is (= 1 (count @proofs)))
+          (is (identical? record (first @proofs)))
+          (if (and erased? (not present?))
+            (do (is (identical? marker value))
+                (is (= [["PERF10-PROOF-MISSING" "compiled performance metadata erases a check without proof"
+                         {:source-span {:source "native-elision.gravity"} :profile :hosted :target :jvm
+                          :check-class :bounds :operation :at :ir-node :node :missing-proof :dominating-proof
+                          :pass-id :stage0-compiled-performance-gate :diagnostic-family :compiled-performance-validation
+                          :remediation "Keep the runtime check or attach a dominating proof and certificate before claiming check elision."}]]
+                       @failures)))
+            (do (is (nil? value)) (is (empty? @failures)))))))))
+
+(deftest stage0-elision-accepted-records-do-not-touch-failure-or-payload-fields
+  (let [module (reify clojure.lang.ILookup
+                 (valAt [_ key] (if (= :source-path key) "native-elision.gravity"
+                                   (throw (AssertionError. "accepted record read failure payload"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted module lookup"))))
+        unused-failure (reify clojure.lang.IDeref
+                         (deref [_] (throw (AssertionError. "accepted record selected failure"))))
+        calls (atom [])]
+    (doseq [record [{:erased? false} {:erased? true}]]
+      (with-redefs [elision-proof (fn [actual] (swap! calls conj actual) true)]
+        (is (nil? (optimization/validate-native-stage0-check-elision!
+                    unused-failure #'elision-proof module record)))))
+    (is (= [{:erased? false} {:erased? true}] @calls))))
+
+(deftest stage0-elision-validation-selects-late-proof-and-captures-failure-before-payload
+  (let [events (atom []) marker (Object.) calls (atom []) path (Object.) profile (Object.) target (Object.)
+        check (Object.) operation (Object.) node (Object.)
+        late-failure (fn [& _] (throw (AssertionError. "failure changed while constructing payload")))
+        selected-failure (fn [& args] (swap! events conj :failure) (swap! calls conj (vec args)) marker)
+        late-proof (fn [record] (swap! events conj [:proof record])
+                     (alter-var-root #'elision-failure (constantly selected-failure)) false)
+        record (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:record key])
+                   (case key :erased? false
+                     :erased-checks (do (alter-var-root #'elision-proof (constantly late-proof)) [:bounds])
+                     :check-class check :operation operation :ir-node node
+                     (throw (AssertionError. "unexpected validator record field"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted record lookup"))))
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key]
+                   (swap! events conj [:module key])
+                   (case key :source-path path
+                     :profile (do (alter-var-root #'elision-failure (constantly late-failure)) profile)
+                     :target target (throw (AssertionError. "unexpected module field"))))
+                 (valAt [_ _ _] (throw (AssertionError. "defaulted module lookup"))))]
+    (with-redefs [elision-proof (fn [& _] (throw (AssertionError. "proof selected before erased fields")))
+                  elision-failure (fn [& _] (throw (AssertionError. "failure selected before proof helper")))]
+      (is (identical? marker (optimization/validate-native-stage0-check-elision!
+                              #'elision-failure #'elision-proof module record)))
+      (is (= [[:module :source-path] [:record :erased?] [:record :erased-checks] [:proof record]]
+             (subvec @events 0 4)))
+      ;; Do not infer payload map expression order from its source spelling.
+      (is (= :failure (last @events)))
+      (is (= 1 (count @calls)))
+      (let [facts (get-in @calls [0 2])]
+        (doseq [[expected actual] [[path (get-in facts [:source-span :source])] [profile (:profile facts)]
+                                   [target (:target facts)] [check (:check-class facts)]
+                                   [operation (:operation facts)] [node (:ir-node facts)]]]
+          (is (identical? expected actual)))))))
+
+(deftest stage0-elision-retains-original-owner-exceptions-and-errors
+  (doseq [sentinel [(Exception. "native elision exception") (Error. "native elision error")]]
+    (with-redefs [elision-present (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/native-stage0-check-elision-proof-present? #'elision-present {})
+                           (catch Throwable error error)))))
+    (with-redefs [elision-proof (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/validate-native-stage0-check-elision!
+                             #'elision-failure #'elision-proof elision-module {:erased? false})
+                           (catch Throwable error error)))))
+    (with-redefs [elision-proof (constantly false) elision-failure (fn [& _] (throw sentinel))]
+      (is (identical? sentinel
+                      (try (optimization/validate-native-stage0-check-elision!
+                             #'elision-failure #'elision-proof elision-module {:erased? true})
+                           (catch Throwable error error)))))))

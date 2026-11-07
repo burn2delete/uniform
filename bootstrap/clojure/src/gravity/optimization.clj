@@ -1,11 +1,24 @@
 (ns gravity.optimization
-  "Native seed equality reconstruction and complete C13 artifact pipeline; no admission.")
+  "Native seed equality reconstruction, C13 artifacts and Stage0 check-elision metadata; no admission.")
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {native-source-overrides {:arglists ([module]), :admission :none},
+ {native-stage0-check-elision-proof-present?
+  {:arglists ([perf-present-var record]), :admission :none, :native-data-only? true,
+   :contract-boundary :stage0-check-elision-metadata-presence-and-refusal,
+   :operation-selection :late-var-before-field-arguments,
+   :artifact-inputs [:caller-owned-check-elision-record :late-presence-var],
+   :artifact-outputs [:native-marker-presence-value]},
+  validate-native-stage0-check-elision!
+  {:arglists ([failure-var proof-presence-var module record]), :admission :none, :native-data-only? true,
+   :contract-boundary :stage0-check-elision-metadata-presence-and-refusal,
+   :operation-selection :late-var-before-field-arguments,
+   :artifact-inputs [:caller-owned-stage0-module-and-record :late-failure-and-presence-vars],
+   :artifact-outputs [:nil-or-original-owner-result-or-exception],
+   :diagnostics [PERF10-PROOF-MISSING]},
+  native-source-overrides {:arglists ([module]), :admission :none},
   native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
   native-diagnostic-catalog
   {:arglists ([configuration source-path source-span]), :admission :none},
@@ -38,7 +51,8 @@
   {:arglists ([selection rewrite restore output-id mir evidence base]),
    :admission :none}},
  :supported
- [:single-entry-or-diamond-data-shape
+ [:stage0-check-elision-metadata-presence-and-refusal
+  :single-entry-or-diamond-data-shape
   :one-integer-equality-of-two-i64-constants
   :exact-edge-use-reconstruction
   :existing-record-assembly
@@ -47,7 +61,8 @@
   :late-compatibility-function-suppliers],
  :dependency-direction
  {:requires [],
-  :consumed-by [gravity.bootstrap-c13-comparison
+  :consumed-by [gravity.bootstrap
+                gravity.bootstrap-c13-comparison
                 gravity.c13-optimization.artifact
                 gravity.c13-optimization.projection
                 gravity.c13-optimization.validation],
@@ -58,7 +73,8 @@
    gravity.release]},
  :issues-verifier-certificates? false,
  :governing-contracts
- [D1
+ [D0
+  D1
   D2
   D3
   D6
@@ -89,7 +105,9 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:explicit-native-mir-data
+ [:caller-owned-stage0-module-and-check-elision-record
+  :late-marker-presence-and-failure-vars
+  :explicit-native-mir-data
   :two-i64-constant-equality-selection
   :reconstruction-delta
   :existing-evidence-and-base-records
@@ -100,15 +118,18 @@
   :late-native-operation-and-source-input-suppliers],
  :namespace gravity.optimization,
  :diagnostic-ownership
- {:stage [C13-VERIFY :reconstruction-and-output-identity-mismatch
+ {:stage [PERF10-PROOF-MISSING :stage0-check-elision-marker-presence-and-refusal
+          C13-VERIFY :reconstruction-and-output-identity-mismatch
           :native-c13-catalog-and-ordered-refusal-selection],
-  :native-refusal-ids [C13-CONTRACT C13-PRESERVE C13-INVALIDATE C13-PROOF
+  :native-refusal-ids [PERF10-PROOF-MISSING C13-CONTRACT C13-PRESERVE C13-INVALIDATE C13-PROOF
                        C13-CHECK-ELISION C13-EFFECT C13-SAFETY C13-DOMAIN
                        C13-NONDETERMINISM C13-VERIFY],
   :existing-owner
-  [:input-admission :c11-verification :diagnostic-publication]},
+  [:input-admission :c11-verification :diagnostic-publication
+   :generic-failure-construction-and-exception-transport]},
  :artifact-outputs
- [:selection-or-nil
+ [:native-marker-presence-or-nil-owner-result-or-exception
+  :selection-or-nil
   :rewritten-mir
   :reconstructed-mir-or-nil
   :unchanged-output-identity-protocol
@@ -579,5 +600,34 @@
                        (((:source-artifact operations)) configuration source-path source-text))
                      path (((:slurp operations)) path)))
 
+(defn native-stage0-check-elision-proof-present?
+  [perf-present-var record]
+  (or ((deref perf-present-var) (:proof-id record))
+      ((deref perf-present-var) (:proof record))
+      ((deref perf-present-var) (:certificate record))
+      ((deref perf-present-var) (:certificate-id record))
+      ((deref perf-present-var) (:dominating-proof record))))
+
+
+(defn validate-native-stage0-check-elision!
+  [failure-var proof-presence-var module record]
+  (let [source-path (:source-path module)
+        erased? (or (true? (:erased? record))
+                    (seq (:erased-checks record)))
+        proof-present? ((deref proof-presence-var)
+                        record)]
+    (when (and erased? (not proof-present?))
+      ((deref failure-var) "PERF10-PROOF-MISSING"
+             "compiled performance metadata erases a check without proof"
+             {:source-span {:source source-path}
+              :profile (:profile module)
+              :target (:target module)
+              :check-class (:check-class record)
+              :operation (:operation record)
+              :ir-node (:ir-node record)
+              :missing-proof :dominating-proof
+              :pass-id :stage0-compiled-performance-gate
+              :diagnostic-family :compiled-performance-validation
+              :remediation "Keep the runtime check or attach a dominating proof and certificate before claiming check elision."}))))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

@@ -22,7 +22,7 @@ The frozen source parent is
 `2b5bcbb089166599086e5ac0603435f8329ae328`, tree
 `851d99c658c614a7eb44229b051be6656d99bacd`. Source freeze SHA256 is
 `8e6329d93670476be564151b1597f8f34ebbd6d1c144d16c5039901ffcec482a`.
-Its seven-path writer was released normally; this isolated eight-path writer
+Its seven-path writer was released normally; this isolated writer
 does not inherit CI, source admission or integration acceptance. Parent own CI
 is under independent audit. Main
 `21f42b7d92d163be9ede20376c32808ec3b90efd` is already an ancestor; no Main
@@ -79,9 +79,15 @@ metadata support boundary while retaining `:safety-check-elision` and
 
 Extend the existing Bootstrap-free `gravity.c13-optimization-test` leaf with
 direct Optimization native controls. It is already in the fresh portable
-leaf catalog. Add its actual direct Optimization test dependency to
-`contracts/stage0-clojure-components.json`; no CI command or workflow change
-is needed. Keep the facade's authority tests. Update the existing Optimization
+leaf catalog. The initial scope proposed a component-inventory dependency
+edit, but independent review SHA256
+`a42319d65e0114830bc310dbc6b86a69ba10b676dcfe9fc459808f2f1e92e0f3`
+confirmed that v1 dependency arrays reference only primary component IDs and
+cannot encode a test import of a production helper. Leave
+`contracts/stage0-clojure-components.json` unchanged as an explicit no-op
+owned context path. The real direct require and this record declare the helper
+dependency without inventing a schema or overloading an ID. No CI command or
+workflow change is needed. Keep the facade's authority tests. Update the existing Optimization
 pipeline API inventory for the two added APIs. Local selection of its pure
 inventory must not force the existing private source-factory delays or run
 the broader authenticated/compiler-carrier tests.
@@ -104,11 +110,56 @@ own hosted provider/run. Exact current-base integration remains separate.
 
 ## Status and unsupported boundaries
 
-This is the initial scope record before implementation. Captures, source
-changes, focused checks, source acceptance, final publication and own hosted
-CI audit remain pending. The eight owned paths are Optimization, component
-00523, the native leaf test, the pipeline inventory test, plan-assembly source
-tests, the component inventory, this record and the namespace map.
+The early draft is [PR #1387](https://github.com/burn2delete/uniform/pull/1387),
+opened before the move at clean scope commit
+`5ba3aba947c2a3fb3860db39b0d808764d5bafdf`. Both complete bodies now live in
+Optimization with their original Bootstrap adapters. The public API grows
+from fourteen to sixteen; modern C13 assembly/reconstruction and PERF1
+orchestration remain unchanged. Raw body text was retained with only function
+names, arguments and operation references changed; map forms were not walked
+or reprinted. Original/moved-body receipt SHA256 is
+`b05922e2d3cd9a36bbdc93a1ee8494868d444c7ca237c70157dcf6981ee828f3`.
+
+All twenty complete paired observations match: eight emitted plans,
+compiler/runtime/performance reports and interpreted/compiled agreements,
+plus twelve pre-emission refusals. Nonempty metadata exercises all five marker
+fields and both erasure forms. Real PERF10, PERF1 and C1 refusals remain
+ordered before instruction compilation. Baseline SHA256 is
+`a4920fd8e6cd995bbab0e9cc2978d8cb1aa6012b505a6171f5ee174a8ea418b6`;
+after-capture SHA256 is
+`487fd5d7983c2c3700407932d51ff8197f808a5972a9434a6016348c892b19af`.
+The baseline binds the actual clean scope HEAD. The after-capture binds that
+same HEAD and dirty producer hashes, not a future clean commit.
+
+Two initial harness expectations were wrong and their failed logs are
+preserved. First, the emitted plan's module projection omits metadata; the
+performance report on that genuine plan therefore reports
+`:no-checks-elided`, even when the original module's metadata reached the gate.
+The original module/artifact and source hash retain the supplied metadata's
+provenance. No metadata is injected into a plan to manufacture report support.
+The report's native `:certificate-backed` projection is not certificate
+validation and is not reached through these ordinary plan inputs. Second, the
+legacy presence operation treats an empty string as present because strings
+are not Clojure collections. The final capture preserves that accepted native
+case and separately rejects nil/empty-collection-only markers. These are
+metadata observations, not proof, trust or actual check removal.
+
+The Bootstrap-free C13 leaf passes 15 tests/235 assertions, including seven
+new owner-level native tests. The whole plan-assembly/instruction regressions
+pass 42 tests/863 assertions, including real paired sources, all marker fields,
+both erasure forms, empty-string presence, real refusals, PERF1-before-PERF10
+ordering and both adapter Var/object identities. Language/ownership gates
+pass 48 tests/1202 assertions. Cold loading verifies all sixteen API
+declarations with no aliases or Bootstrap, Safety, Diagnostics or facade
+load. Native/test lint has zero errors or warnings. The existing pipeline
+inventory is updated, but its broader private compiler-carrier test suite is
+not run locally; native leaf and cold-load checks cover this metadata boundary.
+
+Complete current-Main lint, final-source acceptance, final publication and own
+hosted CI audit remain pending. Seven paths will change within the eight-path owned
+context: Optimization, component 00523, the native leaf test, the pipeline
+inventory test, plan-assembly source tests, this record and the namespace map.
+The component inventory remains an explicit no-op; no schema edit is made.
 
 No proof, certificate, dominance, invalidation, residual-check, policy,
 backend-preservation or source-map verification is claimed. Matching labels

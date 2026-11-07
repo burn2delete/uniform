@@ -4,6 +4,7 @@
             [gravity.bootstrap :as b]
             [gravity.compiler-pass-manifest :as manifest]
             [gravity.digest :as digest]
+            [gravity.optimization :as optimization]
             [gravity.lowering :as lowering]))
 
 (def ^:private operations
@@ -321,3 +322,91 @@
       (doseq [[[_ module actual] expected] (map vector @events [pass mir target risk])]
         (is (identical? input module))
         (is (identical? expected actual))))))
+
+(def ^:private elision-marker-records
+  (conj (mapv (fn [field] {:erased? true :check-class (keyword "native" (name field))
+                           :operation :fixture/op :ir-node :fixture/node field :native/marker})
+              [:proof-id :proof :certificate :certificate-id :dominating-proof])
+        {:erased? false :erased-checks [:native/check] :proof-id :native/marker}))
+(defn- elision-source [performance]
+  (str "(ns elision.native (:profile :hosted) (:target :jvm) (:effects #{:io/write}) "
+       "(:capabilities #{:io/stdout}) (:safety :safe) (:metadata " (pr-str {:performance performance}) "))\n"
+       "(defn main [] (println (+ 2 3)))\n"))
+
+(deftest real-elision-metadata-gates-run-before-deterministic-plan-execution
+  (doseq [extension [".gravity" ".qst"]
+          [label records] [["empty" []] ["markers" elision-marker-records]
+                           ["nonerased" [{:erased? false :erased-checks []}]]
+                           ["empty-string-is-present" [{:erased? true :certificate-id ""}]]]]
+    (let [path (str "elision-" label extension) source (elision-source {:check-elision records})
+          seen (atom []) original b/validate-stage0-compiled-check-elision!
+          {:keys [module plan]}
+          (with-redefs [b/validate-stage0-compiled-check-elision!
+                        (fn [input record] (swap! seen conj [input record]) (original input record))]
+            (compile-source path source))
+          report (b/stage0-compiled-plan-performance-report plan)]
+      (is (= records (mapv second @seen)))
+      (doseq [[input _] @seen]
+        (is (= path (:source-path input)))
+        (is (= records (get-in input [:metadata :performance :check-elision]))))
+      (is (= records (get-in module [:metadata :performance :check-elision])))
+      (is (= plan (:plan (compile-source path source))))
+      (is (= path (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex source)) (get-in plan [:source :sha256])))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id)))) (:plan-id plan)))
+      (is (= (:plan-id plan) (:compiled-plan-id report)))
+      (is (= (str "sha256:" (digest/sha256-hex (pr-str (dissoc report :report-id)))) (:report-id report)))
+      (is (= :none (get-in report [:performance-contract-manifest :optimization-mode])))
+      (is (= :retain-safe-semantics (:decision (last (:optimization-decision-log report)))))
+      ;; The existing plan projection omits metadata. Do not inject it to
+      ;; manufacture report coverage or claim certificate-backed check removal.
+      (is (not (contains? (:module plan) :metadata)))
+      (is (= :no-checks-elided (get-in report [:check-elision-report :status])))
+      (is (= "5\n" (b/run-main module) (b/execute-stage0-compiled-plan plan))))))
+
+(deftest real-elision-and-performance-refusals-stop-before-function-compilation
+  (doseq [extension [".gravity" ".qst"]
+          [label source expected]
+          (concat
+           (for [[name id] [["elision" "PERF10-PROOF-MISSING"] ["claim" "PERF1-CLAIM"] ["target" "PERF1-TARGET"]]]
+             [name (slurp (str "bootstrap/clojure/fixtures/rejected/core-app-performance-" name ".gravity") :encoding "UTF-8") id])
+           [["erased-checks" (elision-source {:check-elision [{:erased? false :erased-checks [:bounds]}]})
+             "PERF10-PROOF-MISSING"]
+            ["empty-collections" (elision-source {:check-elision [{:erased? true :proof-id nil :proof []
+                                                                  :certificate {} :certificate-id nil :dominating-proof #{}}]})
+             "PERF10-PROOF-MISSING"]])]
+    (let [path (str "elision-refusal-" label extension) calls (atom 0) original b/compile-stage0-function
+          failure (with-redefs [b/compile-stage0-function (fn [& args] (swap! calls inc) (apply original args))]
+                    (error-data #(compile-source path source)))]
+      (is (= expected (:id failure)))
+      (is (= path (get-in failure [:source-span :source])))
+      (is (zero? @calls)))))
+
+(deftest real-perf1-claim-refusal-precedes-elision-records
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (str "elision-claim-order" extension)
+          source (elision-source {:claim {:claim-id :native/incomplete}
+                                  :check-elision [{:erased? true}]})
+          calls (atom [])
+          failure (with-redefs [b/validate-stage0-compiled-check-elision! (fn [& _] (swap! calls conj :elision))
+                                b/compile-stage0-function (fn [& _] (swap! calls conj :compile))]
+                    (error-data #(compile-source path source)))]
+      (is (= "PERF1-CLAIM" (:id failure)))
+      (is (= path (get-in failure [:source-span :source])))
+      (is (empty? @calls)))))
+
+(deftest elision-bootstrap-adapters-forward-original-objects-and-live-vars
+  (let [input (Object.) record (Object.) marker (Object.) calls (atom [])]
+    (with-redefs [optimization/native-stage0-check-elision-proof-present?
+                  (fn [& args] (swap! calls conj [:presence (vec args)]) marker)
+                  optimization/validate-native-stage0-check-elision!
+                  (fn [& args] (swap! calls conj [:validation (vec args)]) marker)]
+      (is (identical? marker (b/stage0-compiled-check-elision-proof-present? record)))
+      (is (identical? marker (b/validate-stage0-compiled-check-elision! input record)))
+      (is (= [:presence :validation] (mapv first @calls)))
+      (is (identical? #'b/perf-present? (get-in @calls [0 1 0])))
+      (is (identical? record (get-in @calls [0 1 1])))
+      (is (identical? #'b/fail! (get-in @calls [1 1 0])))
+      (is (identical? #'b/stage0-compiled-check-elision-proof-present? (get-in @calls [1 1 1])))
+      (is (identical? input (get-in @calls [1 1 2])))
+      (is (identical? record (get-in @calls [1 1 3]))))))
