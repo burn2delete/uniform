@@ -188,7 +188,49 @@
      :test-policy {:deterministic? true :performance? false
                    :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "types-native-checks"
+ [{:test-id "mobile-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"
+   :namespace gravity.backend.mobile.native-manifest-test
+   :jvm-group "mobile-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "query-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"
+   :namespace gravity.backend.query.native-manifest-test
+   :jvm-group "query-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "workflow-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"
+   :namespace gravity.backend.workflow.native-manifest-test
+   :jvm-group "workflow-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "hdl-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/hdl/native_manifest_test.clj"
+   :namespace gravity.backend.hdl.native-manifest-test
+   :jvm-group "hdl-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "gpu-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/gpu/native_manifest_test.clj"
+   :namespace gravity.backend.gpu.native-manifest-test
+   :jvm-group "gpu-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "mlir-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/mlir/native_manifest_test.clj"
+   :namespace gravity.backend.mlir.native-manifest-test
+   :jvm-group "mlir-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "llvm-native-manifest"
+   :path "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"
+   :namespace gravity.backend.llvm.native-manifest-test
+   :jvm-group "llvm-native-manifest"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "types-native-checks"
    :path "bootstrap/clojure/test/gravity/types/pipeline_test.clj"
    :namespace gravity.types.pipeline-test
    :jvm-group "types-native-checks"
