@@ -11,4 +11,5 @@
          c2-diagnostic-hash-input
          c2-incremental-hashes
          c2-reader-product-integrity-record
+         c2-reader-product-integrity-record-v3
          c2-reader-artifact-id)

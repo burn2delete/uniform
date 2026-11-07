@@ -8,6 +8,7 @@
     :c2-deferred-semantic-literals
     :c3-deferred-ratio-descriptor-from-raw
     :c2-reader-product-integrity-record
+    :c2-reader-product-integrity-record-v3
     :reader-canonical-hash
     :sha256-hex
     :c2-reader-artifact-id
