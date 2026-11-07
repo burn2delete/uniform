@@ -50,3 +50,77 @@ for this resumption. Current Build/Release receiver-field composition, original
 source-facet traceability, accountable individual ownership, actual operation
 implementation and consumer conformance remain required. Ordinary development
 does not acquire a new permission or accounting prerequisite.
+
+## Version-bound yank proposal production
+
+Finding: `evolution.yank-proposals.version-bound-production-v1`.
+Owning task: `evolution/registry-yank`, still Open. Authored in the supplied
+`increment-1296` worktree on 2026-11-06; no commit/base/tree identity was supplied
+or inferred, and no Git inspection was attempted. Apply the final controller
+checks to the exact resulting candidate before independent acceptance.
+
+Applied the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md)
+within the worker's narrower path ownership and controller restrictions.
+Read the owning spec/plan/task/evidence, `.specify/README.md`, constitution,
+semantic naming, repository instructions, development verification and the
+GOV10/GOV1/GOV2/GOV4, PKG4/5/9 and D0/D1/D2/D3/D6/D8/D9 contracts.
+Passive source reads confirm the historical `p17-artifact-values` catalog and
+the supplied-status policy consumer `gravity.package/decide-policy` remain
+separate from this producer. Neither existing implementation was edited.
+
+Appended the [carrier contract](plan.md#version-bound-yank-proposal-carrier)
+before authoring pure `gravity.evolution.yank-proposals/propose-yank` and
+`gravity.evolution.yank-proposals-test`. The output binds the supplied exact
+package/registry/version, content/provenance references, accountable owner,
+reason, replacement guidance, ordinary resolution declaration and complete
+retained release/history data. It always constructs a proposed, non-admitting
+artifact. The fixtures compare full expected products and diagnostics,
+map-order-independent rendering, changed inputs, unchanged input/history
+records, malformed secret-marker controls and caller approval non-promotion.
+The original task region, source criteria, Open states and historical receipts
+were preserved by append-only documentation edits. The historical whole-file
+task hash above describes its original subject, not the appended current file.
+
+Actual result: source and fixture authoring plus passive textual review only.
+No Clojure execution, test, build, validator, Git command, registry operation or
+consumer composition ran. There are no observed test counters, exit codes or
+passing receipts for this increment. Worker verification and Git inspection
+(including `git status --short`) are prohibited by the controller-owned
+verification instructions; they were not attempted or routed elsewhere.
+Existing denied operations remain denied. Unrun controller checks do not by
+themselves make the authored increment restricted.
+
+Proposed controller argument vectors, all unrun here (first element is the
+executable):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.yank-proposals-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The acceptance-dependency controls include captured-task preservation,
+historical-source non-promotion, conditional edges and the existing structural
+audit. They establish only their own scoped results if run successfully; no
+new acceptance edge, task authority or implementation credit is inferred.
+
+Missing authority and semantic limits: the accountable individual in the
+parent remains unassigned. Fixture owner and provenance strings are explicit
+public test inputs; actual release authenticity, owner authorization,
+signatures, content availability and source/policy/tool identity verification
+are not established by their presence. GOV10 supplies no registry version
+grammar for this carrier, so exact version labels are retained opaquely; no
+SemVer/range interpretation or registry lookup is invented. Publication and
+private metadata access require their actual owner/registry authority.
+Emergency exceptions remain a distinct GOV2/GOV4 composition obligation;
+this producer supports only forbidden new selection with preserved old locks.
+
+Package selection/install enforcement and historical rebuild execution remain
+unrun consumer composition. Independent acceptance and integration are pending.
+Coordinate any later documentation merge with PR767/1291 and retained Evolution
+work using this appended scope; none of their changes or review dispositions
+was adopted here. No parent completion, release, self-hosting, seed retirement,
+governance approval, yank issuance or new grant is claimed.
