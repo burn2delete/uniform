@@ -202,47 +202,67 @@
 (deftest stage2-module-literal-map-key-seed-handoff-development-kernel
   ;; Genuine tiny C5 -> original fresh module-source -> original raw compiler.
   ;; This is the context handoff control, not public bundle/runtime evidence.
-  (let [p (fixture "modules" "leaf" ".gravity")
-        text (str "(ns example.literal-map-handoff (:profile :meta) (:target :jvm)"
+  (let [text (str "(ns example.literal-map-handoff (:profile :meta) (:target :jvm)"
                   " (:exports [main]) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))\n"
                   "(defn main [] {:artifact :fixture :schema-version 1 :diagnostics [] :remediation {\"key\" :value}})\n")
-        artifact (bootstrap/compiler-c5-resolution-source-artifact p text)
-        selected (bootstrap/p15-s23-stage2-module-source artifact)
-        syntax (first (filter #(and (seq? (:form %)) (= 'main (second (:form %)))) (:syntax selected)))
-        actual (nth (nth (:form syntax) 2) 2)
-        seed (first (get-in selected [:functions 'main :body]))
-        row (get (:map-order selected) ['main [0]])
-        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! p :jvm))
-        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw emitter p text {} (:map-order selected))
-        compiled (get-in plan [:functions 'main :instructions 0])]
-    (is (= :accepted (:status artifact)))
-    (is (= (:artifact-id artifact) (:module-id selected)))
-    (is (= actual seed))
-    (is (not= (mapv first actual) (mapv first seed)))
-    (is (= (mapv first seed) (:host-keys row)))
-    (is (= [:artifact :schema-version :diagnostics :remediation]
-           (mapv #(get-in % [:key :value]) (:entries compiled))))
-    (is (= :map-literal (:op compiled)))
-    (is (= :map-source-order-mismatch
-           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
-                                {:p15-s23-stage2-map-order (:map-order selected)
-                                 :p15-s23-sh07-enclosing-function 'main}
-                                actual [0])) [:facts :reason])))))
+        ;; Current C4 authenticates bytes against the source path, so the
+        ;; synthetic handoff source gets its own real temporary path.
+        temporary (java.io.File/createTempFile "uniform-literal-map-handoff-" ".gravity")]
+    (try
+      (spit temporary text)
+      (let [p (.getCanonicalPath temporary)
+            artifact (bootstrap/compiler-c5-resolution-source-artifact
+                      p text {:artifact :gravity/sh06-module-inputs
+                              :schema-version 1 :module-artifacts []}
+                      (:reader-source-path current-reader-invocation)
+                      current-reader-invocation)
+            selected (bootstrap/p15-s23-stage2-module-source artifact current-reader-invocation)
+            syntax (first (filter #(and (seq? (:form %)) (= 'main (second (:form %)))) (:syntax selected)))
+            actual (nth (nth (:form syntax) 2) 2)
+            seed (first (get-in selected [:functions 'main :body]))
+            row (get (:map-order selected) ['main [0]])
+            emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! p :jvm))
+            plan (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw emitter p text {} (:map-order selected))
+            compiled (get-in plan [:functions 'main :instructions 0])]
+        (is (= :accepted (:status artifact)))
+        (is (= (:artifact-id artifact) (:module-id selected)))
+        (is (= actual seed))
+        (is (not= (mapv first actual) (mapv first seed)))
+        (is (= (mapv first seed) (:host-keys row)))
+        (is (= [:artifact :schema-version :diagnostics :remediation]
+               (mapv #(get-in % [:key :value]) (:entries compiled))))
+        (is (= :map-literal (:op compiled)))
+        (is (= :map-source-order-mismatch
+               (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
+                                    {:p15-s23-stage2-map-order (:map-order selected)
+                                     :p15-s23-sh07-enclosing-function 'main}
+                                    actual [0])) [:facts :reason]))))
+      (finally
+        (.delete temporary)))))
 
 (deftest stage2-module-literal-map-key-authenticated-composition
   ;; Five G C5 attempts, genuine no-import leaf bundle and original public gates.
   (let [leaf-path (fixture "modules" "leaf" ".gravity") root-path (fixture "modules" "root" ".gravity")
         text (slurp root-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! root-path :jvm))
-        _ (println :literal-map-phase :leaf-c5) leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
+        _ (println :literal-map-phase :leaf-c5)
+        leaf (bootstrap/compiler-c5-resolution-source-artifact
+              leaf-path (slurp leaf-path) {:artifact :gravity/sh06-module-inputs
+                                           :schema-version 1 :module-artifacts []}
+              (:reader-source-path current-reader-invocation) current-reader-invocation)
         c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
-        _ (println :literal-map-phase :root-c5) caller (bootstrap/compiler-c5-resolution-file-artifact root-path c5-inputs)
+        _ (println :literal-map-phase :root-c5)
+        caller (bootstrap/compiler-c5-resolution-source-artifact
+                root-path text c5-inputs (:reader-source-path current-reader-invocation)
+                current-reader-invocation)
         _ (println :literal-map-phase :leaf-bundle)
         leaf-bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path)
-                     {:caller-resolution-artifact leaf :dependency-plans []})
+                     {:caller-resolution-artifact leaf :dependency-plans []}
+                     current-reader-invocation)
         independent (:plan (first (:modules leaf-bundle)))
         inputs {:caller-resolution-artifact caller :dependency-plans [independent]}
         _ (println :literal-map-phase :root-bundle)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter root-path text inputs)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter root-path text inputs
+                current-reader-invocation)
         root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle))) routes (:routes bundle)
         refs (into {} (map (juxt :syntax-id identity))
                    (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :references]))]
@@ -258,7 +278,10 @@
       (is (= (:symbol route) (:symbol (get refs (:reference-syntax-id route)))))
       (is (= (:artifact-id leaf) (:callee-module-id route) (get-in route [:origin :ordinary-module-artifact-id]))))
     (let [result (atom nil) _ (println :literal-map-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :literal-map-test} bundle 'main [])))]
+          output (with-out-str (reset! result
+                                       (bootstrap/p15-s23-stage2-module-execute-function
+                                        {:engine :literal-map-test} bundle 'main []
+                                        current-reader-invocation)))]
       (is (= [:z [:y] :a [:left :right] :string :keyword :smile :beam :escaped :provide-exact-versioned-request
               {:authority :non-authority :clojure-seed-boundary? true :self-hosted? false :release? false :public-authority? false}
               '(leaf/hidden {0 :inert "data" :quoted})] @result))
@@ -269,13 +292,18 @@
           changed (assoc-in bundle [:routes 0] changed-route)
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id bundle) (:modules bundle) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
-          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
-                                                                              {:engine :literal-map-test} forged 'main []))))]
+          failure (atom nil) output (with-out-str (reset! failure
+                                                          (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                                        {:engine :literal-map-test} forged 'main []
+                                                                        current-reader-invocation))))]
       (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash identity)))
       (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
       (is (= "" output)))
     (let [bad (fixture "rejected" "private" ".gravity")
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact bad c5-inputs))]
+          failure (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                bad (slurp bad) c5-inputs
+                                (:reader-source-path current-reader-invocation)
+                                current-reader-invocation))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (= bad (get-in failure [:source-span :source]))))
     (doseq [[label changed expected]
@@ -283,13 +311,30 @@
                          (str/replace "(leaf/identity (do (println \"z\") :z))" "(leaf/identity :z :extra)")
                          (str/replace "(leaf/identity (do (println \"escaped-d\") :escaped))" "(leaf/identity :escaped :extra :extra)")) "L2-FUNCTION-ARITY"]
              [:numeric (str/replace-first text "{\"z\" " "{0 ") :map-source-distinct-literal-key-bijection]]]
-      (let [_ (println :literal-map-phase label) artifact (bootstrap/compiler-c5-resolution-source-artifact root-path changed c5-inputs)
-            failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
-                                                                                emitter root-path changed (assoc inputs :caller-resolution-artifact artifact)))))]
-        (is (not= text changed))
-        (is (= :accepted (:status artifact)))
-        (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
-        (is (= "" output))
-        (when (= label :arity)
-          (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
-          (is (= root-path (get-in @failure [:source-span :primary :source]))))))))
+      (let [_ (println :literal-map-phase label)
+            ;; Mutated negative inputs likewise need an authentic source path;
+            ;; current C4 must observe the changed bytes there.
+            temporary (java.io.File/createTempFile "uniform-literal-map-negative-" ".gravity")]
+        (try
+          (spit temporary changed)
+          (let [source-path (.getCanonicalPath temporary)
+                artifact (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path changed c5-inputs
+                          (:reader-source-path current-reader-invocation)
+                          current-reader-invocation)
+                failure (atom nil)
+                output (with-out-str
+                         (reset! failure
+                                 (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                               emitter source-path changed
+                                               (assoc inputs :caller-resolution-artifact artifact)
+                                               current-reader-invocation))))]
+            (is (not= text changed))
+            (is (= :accepted (:status artifact)))
+            (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
+            (is (= "" output))
+            (when (= label :arity)
+              (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
+              (is (= source-path (get-in @failure [:source-span :primary :source])))))
+          (finally
+            (.delete temporary)))))))

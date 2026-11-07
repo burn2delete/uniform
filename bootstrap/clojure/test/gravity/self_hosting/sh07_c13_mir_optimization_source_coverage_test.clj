@@ -465,7 +465,7 @@
 (deftest sh07-b33-proof-contract-registers-c13-source-exactly
   (let [contract (edn/read-string (slurp (path proof-contract-relative-path)))
         nonclaims (set (:nonclaims contract))]
-    (is (= "SH-07-B33" (:coverage-milestone contract)))
+    (is (= "SH-07-B47" (:coverage-milestone contract)))
     (is (= c13-relative-path
            (get-in contract [:authoritative-modules :c13-mir-optimization])))
     (is (= {:keyword-lookups 0}
