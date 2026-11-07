@@ -20,7 +20,8 @@
 
 (deftest namespace-contract-is-explicit-and-does-not-admit-plans
   (is (empty? (ns-aliases 'gravity.runtime)))
-  (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
+  (is (= #{'native-stage0-runtime-suite 'native-stage0-runtime-suite-present? 'validate-native-stage0-runtime-selection! 'validate-native-stage0-managed-runtime! 'validate-native-stage0-runtime-capability! 'validate-native-stage0-runtime-observability! 'validate-native-stage0-runtime!
+           'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
            'execute-native-stage0-instructions 'execute-native-stage0-instruction
            'execute-native-stage0-function 'execute-native-stage0-plan 'invoke-native-stage0-builtin
            'fail-native-stage0-call-arity! 'assert-native-stage0-min-arity!

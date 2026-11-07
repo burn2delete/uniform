@@ -1,5 +1,6 @@
 (ns gravity.runtime.stage0-execution-test
-  (:require [clojure.string :as str]
+  (:require [clojure.set :as set]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as b]
             [gravity.digest :as digest]
@@ -29,11 +30,195 @@
         module (assoc (:module expanded) :forms (:expanded-forms expanded))]
     (b/stage0-compiled-core-plan path source module)))
 
+(def ^:private valid-runtime-metadata
+  {:runtime {:compiled-gate
+             {:selections [{:family :managed :profile :hosted :target :jvm :selection-mode :explicit
+                            :hidden-services [] :used-services [:stdout] :forbidden []}]
+              :managed-runtimes [{:family :managed :host-runtime :clojure-jvm :host-version "1.12.5"
+                                  :module-system :gravity :package-system :gravity :services {} :interop {}
+                                  :collection-semantics :persistent :dynamic-state :declared
+                                  :exception-policy :diagnostic :nullability-policy :checked :reflection-policy :forbidden
+                                  :interop-policy :explicit :source-debug-map :declared :capability-enforcement :explicit
+                                  :observability :development-only :null-flow [{:checked? true}]}]
+              :capability-decisions [{:decision :grant :capability :io/stdout :effect :io/write
+                                      :principal :metadata/main :provider :clojure-jvm-stdout}]
+              :observability-sinks [{:sink :local :sink-capability-granted? true}]}}})
+(defn- metadata-carrier [values lookup]
+  (reify clojure.lang.ILookup
+    (valAt [_ key] (lookup key) (get values key))
+    (valAt [_ key not-found] (lookup key) (get values key not-found))))
+(defn- selection-operations [fail-var]
+  {:fail! fail-var :intersection #'set/intersection})
+(defn- managed-operations [fail-var]
+  {:fail! fail-var :missing-fields #'b/compiler-pass-missing-fields
+   :required-fields #'b/stage0-compiled-managed-runtime-required-fields})
+
+(deftest runtime-metadata-contract-and-presence-are-distinct-from-authority
+  (let [contract (:gravity/namespace-contract (meta #'runtime/native-stage0-runtime-suite))
+        names '[native-stage0-runtime-suite native-stage0-runtime-suite-present?
+                validate-native-stage0-runtime-selection! validate-native-stage0-managed-runtime!
+                validate-native-stage0-runtime-capability! validate-native-stage0-runtime-observability!
+                validate-native-stage0-runtime!]]
+    (doseq [name names :let [operation (ns-resolve 'gravity.runtime name)
+                            api (get-in contract [:public-api name])]]
+      (is (= (:arglists (meta operation)) (:arglists api)))
+      (is (= :stage0-native-runtime-metadata (:contract-boundary api)))
+      (is (= :none (:admission api)))
+      (is (false? (:grants-runtime-authority? api)))))
+  (doseq [[metadata expected present?] [[{} {} false] [{:runtime {}} {} false]
+                                      [{:runtime {:compiled-gate nil}} nil true]
+                                      [valid-runtime-metadata (get-in valid-runtime-metadata [:runtime :compiled-gate]) true]]]
+    (let [reads (atom []) module (metadata-carrier {:metadata metadata} #(swap! reads conj %))]
+      (is (= present? (runtime/native-stage0-runtime-suite-present? module)))
+      (is (= expected (runtime/native-stage0-runtime-suite module)))
+      (is (= [:metadata :metadata] @reads)))))
+
+(deftest runtime-selection-keeps-refusal-order-facts-and-returning-failures
+  (let [path (Object.) calls (atom []) marker (Object.)
+        fail-var (clojure.lang.Var/create (fn [& args] (swap! calls conj (vec args)) marker))
+        selection {:family :other :profile :other :target :other :selection-mode :implicit
+                   :hidden-services [:z :a] :used-services [:network] :forbidden [:network]}
+        result (runtime/validate-native-stage0-runtime-selection! (selection-operations fail-var) {:source-path path} selection)]
+    (is (identical? marker result))
+    (is (= ["R1-SELECTION" "R1-FORBIDDEN"] (mapv first @calls)))
+    (is (every? #(identical? path (second %)) @calls))
+    (is (= [:family :profile :target :selection-mode] (get-in @calls [0 3 :missing-fields])))
+    (is (= [:a :z] (get-in @calls [1 3 :hidden-services])))
+    (is (= [:network] (get-in @calls [1 3 :forbidden-services]))))
+  (let [calls (atom []) fail-var (clojure.lang.Var/create (fn [& _] (swap! calls conj :old)))
+        families (atom 0)
+        selection (metadata-carrier {:family :other :profile :hosted :target :jvm :selection-mode :explicit}
+                                    #(when (and (= :family %) (= 2 (swap! families inc)))
+                                       (alter-var-root fail-var (constantly (fn [& _] (swap! calls conj :new))))))]
+    (runtime/validate-native-stage0-runtime-selection! (selection-operations fail-var) {} selection)
+    (is (= [:old] @calls)))
+  (let [calls (atom []) intersection (clojure.lang.Var/create (fn [& _] (swap! calls conj :old) #{}))
+        selection (metadata-carrier {:family :managed :profile :hosted :target :jvm :selection-mode :explicit}
+                                    #(when (= :used-services %)
+                                       (alter-var-root intersection (constantly (fn [& _] (swap! calls conj :new) #{})))))]
+    (is (nil? (runtime/validate-native-stage0-runtime-selection! {:intersection intersection :fail! (Object.)} {} selection)))
+    (is (= [:old] @calls))))
+
+(deftest managed-runtime-keeps-catalog-order-null-flow-and-exception-identity
+  (let [calls (atom []) fail-var (clojure.lang.Var/create (fn [& args] (swap! calls conj (vec args))))
+        path (Object.) module {:source-path path :profile :hosted :target :jvm}]
+    (runtime/validate-native-stage0-managed-runtime! (managed-operations fail-var) module {})
+    (is (= b/stage0-compiled-managed-runtime-required-fields (get-in @calls [0 3 :missing-fields])))
+    (is (= "R4-MANIFEST" (ffirst @calls)))
+    (is (identical? path (get-in @calls [0 1]))))
+  (doseq [error [(ex-info "missing manifest" {:opaque (Object.)}) (Exception. "owner") (Error. "owner")]]
+    (let [reads (atom []) managed (metadata-carrier {} #(swap! reads conj %))
+          fail-var (clojure.lang.Var/create (fn [& _] (throw error)))]
+      (is (identical? error (observed-error #(runtime/validate-native-stage0-managed-runtime!
+                                             (assoc (managed-operations fail-var)
+                                                    :missing-fields (clojure.lang.Var/create (fn [& _] [:host-version])))
+                                             {} managed))))
+      (is (not-any? #{:null-flow} @reads))))
+  (let [managed (first (get-in valid-runtime-metadata [:runtime :compiled-gate :managed-runtimes]))
+        calls (atom []) fail-var (clojure.lang.Var/create (fn [& args] (swap! calls conj (vec args))))
+        allowed (concat [{:checked? true}] (map #(hash-map :wrapper %) [:option :result :opaque-foreign :opaque-checked]))]
+    (is (nil? (runtime/validate-native-stage0-managed-runtime! (managed-operations (Object.)) {} (assoc managed :null-flow allowed))))
+    (is (nil? (runtime/validate-native-stage0-managed-runtime! (managed-operations fail-var) {}
+                                                            (assoc managed :null-flow [{:checked? :truthy :host-symbol :first}
+                                                                                      {:checked? false :host-symbol :second}]))))
+    (is (= ["R4-NULL" "R4-NULL"] (mapv first @calls)))
+    (is (= [:first :second] (mapv #(get-in % [2 :host-symbol]) @calls)))))
+
+(deftest managed-runtime-selects-live-helper-and-catalog-after-source-lookup
+  (let [reads (atom []) seen (atom nil) path (Object.) catalog [:late-catalog]
+        old-helper (fn [& _] (throw (AssertionError. "helper was snapshotted")))]
+    (with-redefs [b/compiler-pass-missing-fields old-helper
+                  b/stage0-compiled-managed-runtime-required-fields [:old-catalog]]
+      (let [module (metadata-carrier {:source-path path}
+                                    (fn [key]
+                                      (swap! reads conj key)
+                                      (when (= :source-path key)
+                                        (alter-var-root #'b/stage0-compiled-managed-runtime-required-fields (constantly catalog))
+                                        (alter-var-root #'b/compiler-pass-missing-fields
+                                                        (constantly (fn [record fields]
+                                                                      (reset! seen [record fields]) []))))))
+            managed {}]
+        (is (nil? (b/validate-stage0-compiled-managed-runtime! module managed)))
+        (is (= [:source-path] @reads))
+        (is (identical? managed (first @seen)))
+        (is (identical? catalog (second @seen)))))))
+
+(deftest runtime-capability-and-sink-checks-preserve-native-truthiness
+  (let [path (Object.) module {:source-path path :profile :hosted :target :jvm}
+        decision {:decision :grant :capability 0 :effect "" :principal [] :provider {}}]
+    (is (nil? (runtime/validate-native-stage0-runtime-capability! (Object.) module decision)))
+    (doseq [value [nil false]]
+      (let [seen (atom nil) marker (Object.) fail-var (clojure.lang.Var/create (fn [& args] (reset! seen (vec args)) marker))]
+        (is (identical? marker (runtime/validate-native-stage0-runtime-capability! fail-var module (assoc decision :provider value))))
+        (is (= "R11-GRANT" (first @seen)))
+        (is (identical? path (second @seen)))
+        (is (= value (get-in @seen [2 :provider])))))
+    (doseq [sink [nil false]]
+      (is (nil? (runtime/validate-native-stage0-runtime-observability! (Object.) module {:sink sink}))))
+    (is (nil? (runtime/validate-native-stage0-runtime-observability! (Object.) module {:sink 0 :sink-capability-granted? true})))
+    (let [seen (atom nil) marker (Object.) fail-var (clojure.lang.Var/create (fn [& args] (reset! seen (vec args)) marker))]
+      (is (identical? marker (runtime/validate-native-stage0-runtime-observability! fail-var module {:sink :local :sink-capability-granted? :truthy})))
+      (is (= "R12-SINK" (first @seen)))
+      (is (identical? path (second @seen))))))
+
+(deftest runtime-metadata-aggregate-keeps-late-family-order-and-no-suite-barrier
+  (is (nil? (runtime/validate-native-stage0-runtime! {:suite-present? (clojure.lang.Var/create (constantly false))} (Object.))))
+  (let [module (Object.) seen (atom [])
+        managed (clojure.lang.Var/create (fn [& _] (swap! seen conj :old-managed)))
+        suite {:selections [:selection] :managed-runtimes [:managed] :capability-decisions [:capability] :observability-sinks [:sink]}
+        record (fn [label] (clojure.lang.Var/create (fn [actual & _] (is (identical? module actual)) (swap! seen conj label))))
+        ops {:suite-present? (clojure.lang.Var/create (fn [actual] (is (identical? module actual)) (swap! seen conj :presence) true))
+             :suite (clojure.lang.Var/create (fn [actual] (is (identical? module actual)) (swap! seen conj :suite) suite))
+             :selection! (clojure.lang.Var/create (fn [actual _] (is (identical? module actual)) (swap! seen conj :selection)
+                                                  (alter-var-root managed (constantly (fn [actual _] (is (identical? module actual)) (swap! seen conj :new-managed))))))
+             :managed! managed :capability! (record :capability) :observability! (record :observability)}]
+    (is (nil? (runtime/validate-native-stage0-runtime! ops module)))
+    (is (= [:presence :suite :selection :new-managed :capability :observability] @seen)))
+  (let [marker (ex-info "selection denied" {})
+        ops {:suite-present? (clojure.lang.Var/create (constantly true))
+             :suite (clojure.lang.Var/create (constantly {:selections [:bad] :managed-runtimes [:later]}))
+             :selection! (clojure.lang.Var/create (fn [& _] (throw marker)))}]
+    (is (identical? marker (observed-error #(runtime/validate-native-stage0-runtime! ops {}))))))
+
+(deftest all-seven-runtime-metadata-bootstrap-adapters-retain-their-arglists
+  (doseq [[legacy stage args]
+          [[#'b/stage0-compiled-runtime-suite #'runtime/native-stage0-runtime-suite '[module]]
+           [#'b/stage0-compiled-runtime-suite-present? #'runtime/native-stage0-runtime-suite-present? '[module]]
+           [#'b/validate-stage0-compiled-runtime-selection! #'runtime/validate-native-stage0-runtime-selection! '[module selection]]
+           [#'b/validate-stage0-compiled-managed-runtime! #'runtime/validate-native-stage0-managed-runtime! '[module managed-runtime]]
+           [#'b/validate-stage0-compiled-runtime-capability! #'runtime/validate-native-stage0-runtime-capability! '[module decision]]
+           [#'b/validate-stage0-compiled-runtime-observability! #'runtime/validate-native-stage0-runtime-observability! '[module sink]]
+           [#'b/validate-stage0-compiled-runtime! #'runtime/validate-native-stage0-runtime! '[module]]]]
+    (let [inputs (vec (repeatedly (count args) #(Object.))) marker (Object.) seen (atom nil)]
+      (is (= (list args) (:arglists (meta legacy))))
+      (is (not (:private (meta legacy))))
+      (is (identical? marker (with-redefs-fn {stage (fn [& call] (reset! seen call) marker)} #(apply @legacy inputs))))
+      (is (every? true? (map identical? inputs (take-last (count inputs) @seen)))))
+    (is (:gravity/namespace-contract (meta stage)))))
+
+(deftest genuine-runtime-metadata-sources-emit-and-refuse-before-execution
+  (let [source (str "(ns metadata.sample (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}) (:metadata "
+                    (pr-str valid-runtime-metadata) "))\n(defn main [] (println (+ 2 3)))\n")]
+    (doseq [extension [".gravity" ".qst"] :let [path (str "runtime-metadata-valid" extension) plan (compile-source path source)]]
+      (is (= "5\n" (b/execute-stage0-compiled-plan plan)))
+      (is (= path (get-in plan [:source :path])))
+      (is (= (str "sha256:" (digest/sha256-hex source)) (get-in plan [:source :sha256])))
+      (is (= (:plan-id plan) (str "sha256:" (digest/sha256-hex (pr-str (dissoc plan :plan-id))))))))
+  (doseq [[suffix id] [["selection" "R1-SELECTION"] ["forbidden-service" "R1-FORBIDDEN"]
+                      ["managed-manifest" "R4-MANIFEST"] ["managed-null" "R4-NULL"]
+                      ["capability-grant" "R11-GRANT"] ["observability-sink" "R12-SINK"]]
+          extension [".gravity" ".qst"]
+          :let [source (slurp (str "bootstrap/clojure/fixtures/rejected/core-app-runtime-" suffix ".gravity"))
+                path (str "runtime-metadata-" suffix extension)
+                error (observed-error #(compile-source path source))]]
+    (is (= id (:id (ex-data error))))
+    (is (= path (get-in (ex-data error) [:source-span :source])))))
+
 (deftest native-execution-contract-is-explicit-and-non-authorizing
   (let [names '[execute-native-stage0-instructions execute-native-stage0-instruction
                 execute-native-stage0-function execute-native-stage0-plan]
         contract (:gravity/namespace-contract (meta #'runtime/execute-native-stage0-plan))]
-    (is (= 54 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= 61 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
     (is (= (set (keys operations))
            (set (mapcat :operation-keys (vals (select-keys (:public-api contract) names))))))
     (is (every? var? (vals operations)))
@@ -459,7 +644,7 @@
   (let [names '[eval-native-stage0-do bind-native-stage0-let invoke-native-stage0-function
                 eval-native-stage0-collection eval-native-stage0-expr run-native-stage0-main]
         contract (:gravity/namespace-contract (meta #'runtime/eval-native-stage0-expr))]
-    (is (= 54 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= 61 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
     (is (= (set (keys interpreter-operations))
            (set (get-in contract [:public-api 'eval-native-stage0-expr :operation-keys]))))
     (is (= [:stage0-builtin-functions]

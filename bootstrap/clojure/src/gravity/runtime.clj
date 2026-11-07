@@ -4,9 +4,23 @@
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
     :contract-boundary :hosted-seed-stage0-stage2-invocation-instruction-evaluation-and-value-operations
-    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2 TEST3]
+    :governing-contracts [D0 D1 D2 D3 D6 D8 D9 L2 L9 C1 C6 C15 P4 SAFE9 R1 R4 R11 R12 BOOT1 BOOT8 TEST2 TEST3]
     :public-api
-    {eval-native-stage0-do
+    {native-stage0-runtime-suite
+     {:arglists ([module]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-runtime-metadata, :input-boundary :trusted-native-runtime-metadata, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false}
+     native-stage0-runtime-suite-present?
+     {:arglists ([module]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-runtime-metadata, :input-boundary :trusted-native-runtime-metadata, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false}
+     validate-native-stage0-runtime-selection!
+     {:admission :none, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false, :input-boundary :trusted-native-runtime-metadata, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :operation-keys [:fail! :intersection], :arglists ([operations module selection]), :contract-boundary :stage0-native-runtime-metadata}
+     validate-native-stage0-managed-runtime!
+     {:admission :none, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false, :input-boundary :trusted-native-runtime-metadata, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :operation-keys [:fail! :missing-fields :required-fields], :data-operation-keys [:required-fields], :arglists ([operations module managed-runtime]), :contract-boundary :stage0-native-runtime-metadata}
+     validate-native-stage0-runtime-capability!
+     {:admission :none, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false, :input-boundary :trusted-native-runtime-metadata, :operation-vars [fail-var], :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :arglists ([fail-var module decision]), :contract-boundary :stage0-native-runtime-metadata}
+     validate-native-stage0-runtime-observability!
+     {:admission :none, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false, :input-boundary :trusted-native-runtime-metadata, :operation-vars [fail-var], :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :arglists ([fail-var module sink]), :contract-boundary :stage0-native-runtime-metadata}
+     validate-native-stage0-runtime!
+     {:admission :none, :result-boundary :suite-presence-nil-or-unchanged-owner-return-or-failure, :grants-runtime-authority? false, :input-boundary :trusted-native-runtime-metadata, :operation-selection :late-owner-var-before-call-arguments, :hosted-seed-only? true, :operation-keys [:suite-present? :suite :selection! :managed! :capability! :observability!], :arglists ([operations module]), :contract-boundary :stage0-native-runtime-metadata}
+     eval-native-stage0-do
      {:arglists ([eval-expr-var module env forms]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [eval-expr-var]}
      bind-native-stage0-let
      {:arglists ([fail-var eval-expr-var module env bindings]), :admission :none, :hosted-seed-only? true, :contract-boundary :stage0-native-interpretation, :input-boundary :trusted-native-stage0-module-expressions-and-environment, :operation-selection :late-owner-var-before-call-arguments, :result-boundary :native-value-environment-stdout-or-unchanged-owner-failure, :operation-vars [fail-var eval-expr-var]}
@@ -183,7 +197,7 @@
       :operation-keys [:fail! :execute-instructions]
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
-    :artifact-inputs [:trusted-native-stage0-module-expressions-environment-and-late-interpreter-owner-vars :trusted-native-stage0-builtin-module-and-evaluated-arguments :late-stage0-builtin-owner-vars :trusted-native-stage0-plan-instructions-environment-callee-and-arguments :late-stage0-execution-operation-vars :trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
+    :artifact-inputs [:trusted-native-runtime-metadata-and-late-check-owner-vars :trusted-native-stage0-module-expressions-environment-and-late-interpreter-owner-vars :trusted-native-stage0-builtin-module-and-evaluated-arguments :late-stage0-builtin-owner-vars :trusted-native-stage0-plan-instructions-environment-callee-and-arguments :late-stage0-execution-operation-vars :trusted-source-throw-key-and-token-var :already-evaluated-source-throw-payload
                       :runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
                       :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
@@ -192,8 +206,9 @@
                       :trusted-late-instruction-and-recurrence-operation-vars
                       :trusted-instruction-function-and-data-operation-vars
                       :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :native-kernel-and-diagnostic-data :late-native-kernel-operation-and-catalog-vars :call-signature-and-arity-data :trusted-late-policy-operation-vars]
-    :artifact-outputs [:native-stage0-interpreted-value-and-environment :native-stage0-ordinary-builtin-result :native-stage0-instruction-result :native-stage0-captured-stdout :function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
-    :diagnostic-ownership {:native-stage0-interpreted-control-binding-traversal-entry-and-local-failure-facts :stage
+    :artifact-outputs [:native-runtime-suite-or-presence :nil-or-runtime-metadata-refusal :native-stage0-interpreted-value-and-environment :native-stage0-ordinary-builtin-result :native-stage0-instruction-result :native-stage0-captured-stdout :function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :legacy-kernel-rule-and-diagnostic-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
+    :diagnostic-ownership {:native-stage0-runtime-metadata-rule-decisions-and-facts :stage
+                           :native-stage0-interpreted-control-binding-traversal-entry-and-local-failure-facts :stage
                            :native-stage0-instruction-traversal-and-lookup :stage
                            :native-stage0-entry-and-function-arity-placement :stage
                            :native-stage0-ordinary-builtin-dispatch-arity-placement-and-host-exception-remap :stage
@@ -207,7 +222,7 @@
                            :map-entry-recurrence-facts-and-call-sequencing :stage
                            :arity-guards-call-facts-unary-selection-and-rule-data :stage
                            :native-kernel-rule-and-diagnostic-record-construction :stage
-                           :stage [L2-LET-BINDING P4-HOST-REFLECTION L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
+                           :stage [R1-SELECTION R1-FORBIDDEN R4-MANIFEST R4-NULL R11-GRANT R12-SINK L2-LET-BINDING P4-HOST-REFLECTION L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [:recurrence-representation :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-primitives-and-call-authority
                                                  :generic-builtin-host-error-boundary-and-failure-transport]}
@@ -1543,6 +1558,154 @@
                 :remediation "Use (defn main [] ...)."}))
       (with-out-str
         ((deref eval-do-var) module {} body)))))
+
+(defn native-stage0-runtime-suite [module]
+  (get-in module [:metadata :runtime :compiled-gate] {}))
+
+(defn native-stage0-runtime-suite-present? [module]
+  (contains? (get-in module [:metadata :runtime] {}) :compiled-gate))
+
+(defn validate-native-stage0-runtime-selection! [operations
+                                                 module
+                                                 selection]
+  (let [source-path (:source-path module)
+        required-missing (cond->
+                           []
+                           (not= :managed (:family selection))
+                           (conj :family)
+                           (not= :hosted (:profile selection))
+                           (conj :profile)
+                           (not= :jvm (:target selection))
+                           (conj :target)
+                           (not= :explicit (:selection-mode selection))
+                           (conj :selection-mode))
+        hidden-services (set (:hidden-services selection))
+        used-forbidden-services ((deref (:intersection operations))
+                                  (set (:used-services selection))
+                                  (set (:forbidden selection)))]
+    (when (seq required-missing)
+      ((deref (:fail! operations))
+        "R1-SELECTION"
+        source-path
+        {:runtime-family (:family selection),
+         :profile (:profile selection),
+         :target (:target selection),
+         :service-id :runtime-family-selection,
+         :artifact-id (:artifact-id selection)}
+        {:missing-fields required-missing,
+         :remediation
+         "Compiled hosted core runtime metadata must explicitly select the managed JVM runtime family for the :hosted profile before execution."}))
+    (when (or (seq hidden-services) (seq used-forbidden-services))
+      ((deref (:fail! operations))
+        "R1-FORBIDDEN"
+        source-path
+        {:runtime-family (:family selection),
+         :profile (:profile selection),
+         :target (:target selection),
+         :service-id
+         (or
+           (first hidden-services)
+           (first used-forbidden-services)
+           :runtime-service),
+         :artifact-id (:artifact-id selection)}
+        {:hidden-services (vec (sort-by name hidden-services)),
+         :forbidden-services
+         (vec (sort-by name used-forbidden-services)),
+         :missing-fields [:runtime-service-classification],
+         :remediation
+         "Compiled runtime services must be classified as linked, generated, delegated, external, or forbidden; hidden service dependencies are rejected."}))))
+
+(defn validate-native-stage0-managed-runtime! [operations
+                                               module
+                                               managed-runtime]
+  (let [source-path (:source-path module)
+        missing-fields ((deref (:missing-fields operations))
+                         managed-runtime
+                         (deref (:required-fields operations)))]
+    (when (seq missing-fields)
+      ((deref (:fail! operations))
+        "R4-MANIFEST"
+        source-path
+        {:host-runtime (:host-runtime managed-runtime),
+         :host-symbol :stage0-compiled-runtime,
+         :profile (:profile module),
+         :target (:target module)}
+        {:missing-fields missing-fields,
+         :remediation
+         "Compiled hosted core runtime metadata must expose the managed host runtime manifest before execution."}))
+    (doseq [flow (:null-flow managed-runtime)]
+      (when (and
+              (not (true? (:checked? flow)))
+              (not
+                (contains?
+                  #{:opaque-checked :opaque-foreign :option :result}
+                  (:wrapper flow))))
+        ((deref (:fail! operations))
+          "R4-NULL"
+          source-path
+          {:host-runtime (:host-runtime managed-runtime),
+           :host-symbol (:host-symbol flow),
+           :profile (:profile module),
+           :target (:target module)}
+          {:missing-fields [:checked-nullability-wrapper],
+           :remediation
+           "Managed host nulls must be checked or wrapped before they can enter safe Gravity runtime execution."})))))
+
+(defn validate-native-stage0-runtime-capability! [fail-var
+                                                  module
+                                                  decision]
+  (when-not (and
+              (= :grant (:decision decision))
+              (:capability decision)
+              (:effect decision)
+              (:principal decision)
+              (:provider decision))
+    ((deref fail-var)
+      "R11-GRANT"
+      (:source-path module)
+      {:action-id (:action-id decision),
+       :principal (:principal decision),
+       :effect (:effect decision),
+       :capability (:capability decision),
+       :provider (:provider decision),
+       :decision (:decision decision),
+       :profile (:profile module),
+       :target (:target module)}
+      {:missing-fields [:matching-runtime-capability-grant],
+       :remediation
+       "A compiled runtime action may execute only when the effect, principal, provider, and capability decision produce an explicit grant."})))
+
+(defn validate-native-stage0-runtime-observability! [fail-var
+                                                     module
+                                                     sink]
+  (when (and
+          (:sink sink)
+          (not (true? (:sink-capability-granted? sink))))
+    ((deref fail-var)
+      "R12-SINK"
+      (:source-path module)
+      {:event-id (:event-id sink),
+       :artifact-id (:artifact-id sink),
+       :sink (:sink sink),
+       :redaction-policy (:redaction-policy sink),
+       :capability (:capability sink),
+       :profile (:profile module),
+       :target (:target module)}
+      {:missing-fields [:observability-sink-capability],
+       :remediation
+       "Runtime observability sinks must be capability checked and redacted before compiled execution can emit events."})))
+
+(defn validate-native-stage0-runtime! [operations module]
+  (when ((deref (:suite-present? operations)) module)
+    (let [suite ((deref (:suite operations)) module)]
+      (doseq [selection (:selections suite)]
+        ((deref (:selection! operations)) module selection))
+      (doseq [managed-runtime (:managed-runtimes suite)]
+        ((deref (:managed! operations)) module managed-runtime))
+      (doseq [decision (:capability-decisions suite)]
+        ((deref (:capability! operations)) module decision))
+      (doseq [sink (:observability-sinks suite)]
+        ((deref (:observability! operations)) module sink)))))
 
 (doseq
  [name (keys (:public-api namespace-contract))

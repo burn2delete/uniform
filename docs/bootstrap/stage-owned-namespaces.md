@@ -168,6 +168,23 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [native Stage0 Runtime metadata extraction](runtime-stage0-metadata-evidence.md)
+adds seven APIs in existing `gravity.runtime`: `native-stage0-runtime-suite`,
+`native-stage0-runtime-suite-present?`, `validate-native-stage0-runtime-selection!`,
+`validate-native-stage0-managed-runtime!`, `validate-native-stage0-runtime-capability!`,
+`validate-native-stage0-runtime-observability!` and `validate-native-stage0-runtime!`.
+Caller-owned module/runtime metadata and late catalog/helper/failure Vars yield
+the existing suite/presence values, nil, owner returns or unchanged failures.
+Runtime owns the native R1-SELECTION, R1-FORBIDDEN, R4-MANIFEST, R4-NULL,
+R11-GRANT and R12-SINK predicates/facts; Bootstrap retains its seven original
+adapters, diagnostic transport and managed-field catalog. Checks remain in
+plan assembly before emission. Existing Stage0 tests now include a nonempty
+accepted source suite, all six source refusals, lookup/callback timing,
+truthiness, catalog interposition and opaque exception/provenance controls.
+Dependencies remain Bootstrap to Runtime to core. Supplied metadata does not
+authenticate source or grant scoped runtime authority, enforce live providers,
+emit events or establish canonical R1/R4/R11/R12 conformance.
+
 The [hosted Stage0 namespace parser](resolution-stage0-namespace-evidence.md)
 moves eight complete clause, dependency and module parsing bodies into
 `gravity.resolution.stage0-namespace`. Its explicit callbacks, native forms,
