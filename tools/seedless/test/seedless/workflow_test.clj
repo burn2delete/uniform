@@ -52,6 +52,199 @@
    :positive "Actual caller with fallback disabled" :negative "Malformed input rejection"
    :residual-host-boundary "Hosted runner remains" :paths ["module.clj"] :dependencies [] :stack-on ""})
 
+(def project-api-restriction
+  {:method "POST" :endpoint "graphql" :error "HTTP 403: recorded Project API rate limit"
+   :at "fixture"})
+
+(defn warm-project! [ctx]
+  (let [issue-marker
+        (gh/marker
+         (str "issue/"
+              (rt/digest
+               (pr-str ["fixture/repo" "fixture" "Fixture seed removal"
+                        "campaign" "issue" "campaign"]))))]
+    (rt/update! ctx assoc
+                :project {:id "project" :number 4 :title "Uniform Seedless"
+                          :url "https://github.com/users/fixture/projects/4"
+                          :workflow {:id "status" :name "Status"
+                                     :options (mapv (fn [name] {:id (str/lower-case name) :name name})
+                                                    gh/states)}}
+                :campaign-issue {:number 100 :id 100 :node_id "campaign" :title "Fixture campaign"
+                                 :repository_url "https://api.github.com/repos/fixture/repo"
+                                 :labels [{:name "seedless"} {:name "seedless:campaign"}]
+                                 :body (str "Fixture campaign\n\n" issue-marker)})
+    ctx))
+
+(defn restriction-key []
+  (rt/digest (pr-str ["POST" "graphql"])))
+
+(deftest recorded-project-restriction-keeps-active-status-local-and-terminal-strict
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (rt/update! ctx assoc-in [:tasks "slice"] {:key "slice" :status :ready
+                                                 :issue {:number 1 :node_id "issue-1"}
+                                                 :paths ["module.clj"]})
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (w/transition! ctx "slice" :implementing)
+        (is (= :implementing (:status (w/task ctx "slice"))))
+        (is (= :holding (get-in @(:state ctx) [:project-tracking :mode])))
+        (is (empty? @calls))
+        (let [error (try (w/transition! ctx "slice" :done) nil (catch Exception e e))]
+          (is (true? (:restricted (ex-data error))))
+          (is (= :implementing (:status (w/task ctx "slice"))))
+          (is (empty? @calls))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest warm-restricted-startup-does-not-setup-status-or-plan
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (rt/write-edn! (:control-file ctx) {:paused true})
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/setup! (fn [& _] (swap! calls conj :setup))
+                    gh/status! (fn [& _] (swap! calls conj :status))
+                    w/plan! (fn [& _] (swap! calls conj :plan))]
+        (w/campaign! ctx)
+        (is (= :attention (:status @(:state ctx))))
+        (is (= :holding (get-in @(:state ctx) [:project-tracking :mode])))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest restricted-startup-without-recorded-project-fails-before-provider
+  (let [ctx (repository! (context)) calls (atom [])]
+    (try
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/setup! (fn [& _] (swap! calls conj :setup))
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (is (thrown-with-msg? Exception #"Recorded Project identity is required"
+                              (w/campaign! ctx)))
+        (is (empty? @calls))
+        (is (nil? (:project-tracking @(:state ctx)))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest unknown-project-restriction-identity-fails-closed-before-provider
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              {:error "recorded but unclassified"}))
+                    gh/setup! (fn [& _] (swap! calls conj :setup))]
+        (let [error (try (w/campaign! ctx) nil (catch Exception error error))]
+          (is (instance? Exception error))
+          (is (re-find #"restriction has unknown identity" (.getMessage error)))
+          (is (true? (:restricted (ex-data error)))))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest warm-restricted-campaign-holds-before-dispatch
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (rt/update! ctx assoc-in [:tasks "slice"] (assoc (slice "slice") :status :ready
+                                                       :issue {:number 1 :node_id "issue-1"}))
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/setup! (fn [& _] (swap! calls conj :setup))
+                    gh/status! (fn [& _] (swap! calls conj :status))
+                    w/plan! (fn [& _] (swap! calls conj :plan))
+                    w/prepare! (fn [& _] (swap! calls conj :prepare))
+                    w/integrate! (fn [& _] (swap! calls conj :integrate))]
+        (w/campaign! ctx)
+        (is (= :attention (:status @(:state ctx))))
+        (is (= :ready (:status (w/task ctx "slice"))))
+        (is (= :holding (get-in @(:state ctx) [:project-tracking :mode])))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest remote-startup-passes-context-to-setup-and-records-verification
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (rt/write-edn! (:control-file ctx) {:paused true})
+      (with-redefs [rt/shared-restriction (fn [& _] nil)
+                    gh/setup! (fn [received]
+                                (swap! calls conj [:setup received])
+                                (:project @(:state received)))
+                    w/campaign-issue! (fn [received]
+                                        (swap! calls conj :campaign)
+                                        (:campaign-issue @(:state received)))
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (w/campaign! ctx)
+        (is (= :paused (:status @(:state ctx))))
+        (is (map? (second (first @calls))))
+        (is (= :verified-setup (get-in @(:state ctx) [:project :verification :source])))
+        (is (= [:setup :campaign :campaign :status]
+               (mapv #(if (vector? %) (first %) %) @calls))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest weak-project-record-fails-closed-before-provider
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])]
+    (try
+      (rt/update! ctx update-in [:campaign-issue] dissoc :body)
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/setup! (fn [& _] (swap! calls conj :setup))
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (is (thrown-with-msg? Exception #"Recorded Project identity is required"
+                              (w/campaign! ctx)))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest holding-blocks-provider-boundaries-before-remote-access
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])
+        task (assoc (slice "slice") :status :ci :issue {:number 1 :node_id "issue-1"})]
+    (try
+      (rt/update! ctx assoc-in [:tasks "slice"] task)
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    codex/job! (fn [& _] (swap! calls conj :model))
+                    transport/pages (fn [& _] (swap! calls conj :pages))
+                    shared/pr-info (fn [& _] (swap! calls conj :pr-info))
+                    gh/api (fn [& _] (swap! calls conj :api))]
+        (is (thrown-with-msg? Exception #"nonproductive holding"
+                              (w/prepare-candidate! ctx "slice" nil)))
+        (is (thrown-with-msg? Exception #"nonproductive holding"
+                              (w/integrate! ctx task)))
+        (is (thrown-with-msg? Exception #"nonproductive holding"
+                              (w/plan! ctx)))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest retained-restricted-task-stays-held-after-shared-key-disappears
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])
+        task {:key "held" :status :ready :issue {:number 1254 :node_id "issue-1254"}
+              :paths ["module.clj"] :dependencies [] :stack-on ""
+              :effect-ids ["e1" "e2"]}]
+    (try
+      (rt/update! ctx assoc :tasks {"held" task}
+                  :effects {"e1" {:status :restricted :message "Project API denied"}
+                            "e2" {:status :restricted :message "Project API denied"}})
+      (with-redefs [rt/shared-restriction (fn [_ kind key]
+                                            (when (and (= :api kind) (= (restriction-key) key))
+                                              project-api-restriction))
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (let [error (try (w/transition! ctx "held" :implementing)
+                         nil
+                         (catch Exception e e))]
+          (is (true? (:restricted (ex-data error))))
+          (is (= #{"e1" "e2"} (set (:effect-ids (ex-data error)))))
+          (is (= :ready (:status (w/task ctx "held")))))
+        (with-redefs [rt/shared-restriction (fn [& _] nil)]
+          (let [error (try (w/transition! ctx "held" :checking)
+                           nil
+                           (catch Exception e e))]
+            (is (true? (:restricted (ex-data error))))
+            (is (= :ready (:status (w/task ctx "held"))))))
+        (is (empty? @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
 (defn add-task! [ctx s]
   (rt/update! ctx assoc-in [:tasks (:key s)]
               (assoc s :description s :status :ready :issue {:number 1 :id 1 :node_id "issue1"})))
