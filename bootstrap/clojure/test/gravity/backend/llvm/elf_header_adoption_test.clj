@@ -119,29 +119,42 @@
     (assoc
      (into {}
            (for [[step text]
-                 [[:version-step "Docker captured version"]
-                  [:info-step "Docker captured info"]
-                  [:image-step image]
-                  [:clang-step "clang version 20.1.8"]
-                  [:llvm-step "LLVM version 20.1.8"]
-                  [:triple-step (:target-triple policy)]
-                  [:hashes-step tool-snapshot-text]
-                  [:emulation-step "uname -m x86_64\nkernel captured-kernel\nbinfmt-status unavailable\nqemu-x86_64-static unavailable"]
-                  [:object-step ""] [:link-step ""]
-                  [:object-header-step (:header object)]
-                  [:executable-header-step (:header executable)]
-                  [:sections-step ""] [:providers-step ""] [:run-step ""]]]
+                 [[:docker-version "Docker captured version"]
+                  [:docker-info "Docker captured info"]
+                  [:image-inspect image]
+                  [:clang-version "clang version 20.1.8"]
+                  [:llvm-version "LLVM version 20.1.8"]
+                  [:clang-target-triple (:target-triple policy)]
+                  [:llvm-tool-hashes tool-snapshot-text]
+                  [:emulation-environment "uname -m x86_64\nkernel captured-kernel\nbinfmt-status unavailable\nqemu-x86_64-static unavailable"]
+                  [:llvm-to-object ""] [:link ""]
+                  [:elf-object-header (:header object)]
+                  [:elf-executable-header (:header executable)]
+                  [:elf-sections ""] [:runtime-providers ""] [:run ""]]]
              [step {:record {:step step :fixture? true}
-                    :result {:stdout {:text text} :exit-code 42}}]))
+                    :result {:stdout {:text text}
+                             :exit-code (if (= :run step) 42 0)}}]))
      :object-snapshot object :executable-snapshot executable)))
 
 (defn- observe! [state]
-  (private-call
-   'semantic-llvm-linux-toolchain-observations!
-   nil source-path {:expected-exit-code 42} nil nil nil nil
-   @(ns-resolve 'gravity.bootstrap 'p15-s23-b3-llvm-linux-image)
-   (:target-triple @(ns-resolve 'gravity.bootstrap 'p15-s23-b3-llvm-policy))
-   nil state))
+  ; Cleanup unmaps the observation helper. Enter through its retained owner,
+  ; replacing only captured tool steps and native file snapshots. The real
+  ; transaction invokes the observation helper and constructs its result.
+  (with-redefs-fn
+    {(ns-resolve 'gravity.bootstrap 'p15-s23-b3-llvm-linux-run-step!)
+     (fn [_ _ _ step _]
+       (or (get state step)
+           (throw (ex-info "Unexpected captured tool step" {:step step}))))
+     (ns-resolve 'gravity.bootstrap 'p15-s23-b3-llvm-file-snapshot!)
+     (fn [_ _ _ _ operation _]
+       (case operation
+         :linux-elf-object-snapshot (:object-snapshot state)
+         :linux-elf-executable-snapshot (:executable-snapshot state)))}
+    #(private-call
+      'p15-s23-b3-llvm-linux-development-evidence
+      source-path {:llvm-ir "; controlled observation fixture\n"
+                   :expected-exit-code 42}
+      {:run-linux-development-tools? true})))
 
 (deftest toolchain-observation-consumer-executes-the-adopted-predicate
   (let [state (observation-state)
@@ -154,14 +167,14 @@
     (is (= [[(header 1) :object] [(header 2) :executable]]
            (mapv :arguments (:uniform @calls))))
     (is (= [true true] (mapv :result (:uniform @calls))))
-    (is (= (:object-snapshot state) (:object-snapshot result)))
-    (is (= (:executable-snapshot state) (:executable-snapshot result)))
-    (is (= (select-keys (:object-snapshot state) [:byte-count :content-hash])
-           (:object-content result)))
-    (is (= (select-keys (:executable-snapshot state) [:byte-count :content-hash])
-           (:executable-content result)))
-    (is (= 15 (count (:records result))))
-    (is (= 42 (:observed-exit result)))))
+    (doseq [[snapshot-key artifact-key] [[:object-snapshot :elf-object]
+                                       [:executable-snapshot :elf-executable]]]
+      (is (identical? (get-in state [snapshot-key :bytes])
+                      (get-in result [artifact-key :bytes])))
+      (is (= (dissoc (get state snapshot-key) :status)
+             (get result artifact-key))))
+    (is (= 15 (count (:tool-records result))))
+    (is (= 42 (get-in result [:process-result :observed-exit-code])))))
 
 (deftest invalid-snapshots-keep-the-observation-diagnostic
   (doseq [[kind type] [[:object 1] [:executable 2]]
