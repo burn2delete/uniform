@@ -875,30 +875,29 @@
 (def ^:private planning-reference-key :uniform/retained-repository-metadata)
 (def ^:private planning-task-reference-key :uniform/retained-task-provider-field)
 (def ^:private planning-body-reference-key :uniform/retained-untrusted-pr-body)
-(def ^:private planning-reference-policy :uniform/retained-repository-metadata-v1)
-(def ^:private planning-task-reference-policy :uniform/retained-task-provider-field-v1)
+(def ^:private planning-reference-policy :uniform/retained-repository-metadata-v2)
+(def ^:private planning-task-reference-policy :uniform/retained-task-provider-field-v2)
 (def ^:private planning-description-reference-key :uniform/retained-task-description)
 (def ^:private planning-description-reference-policy :uniform/retained-task-description-v1)
 (def ^:private planning-inline-repository-keys
-  #{:id :node_id :name :full_name :fullName :private :html_url :fork :default_branch
-    :owner :visibility :disabled :archived :permissions})
+  ;; Keep only stable identity and visibility inline.  The authenticated raw
+  ;; snapshot retains every other provider field by exact path and digest.
+  #{:id :node_id :name :full_name :fullName :private :html_url :owner :visibility})
 (def ^:private planning-inline-user-keys
   #{:id :node_id :login :html_url :type :site_admin :user_view_type})
+(def ^:private planning-inline-milestone-keys
+  #{:id :node_id :number :state :title :creator})
 
 (defn- planning-reference [artifact artifact-sha path]
   {:artifact artifact :sha256 artifact-sha :path path :policy planning-reference-policy})
 
-(defn- planning-task-reference [artifact artifact-sha path field value inline]
+(defn- planning-task-reference [artifact artifact-sha path field value _inline]
   {:artifact artifact
    :sha256 artifact-sha
    :path path
    :field field
    :policy planning-task-reference-policy
    :type (if (map? value) :map :string)
-   :inline-keys (vec (sort inline))
-   :omitted-keys (vec (sort (if (map? value)
-                              (remove inline (keys value))
-                              [])))
    :value-sha256 (rt/digest (pr-str value))})
 
 (defn- project-planning-provider-map [value path inline artifact artifact-sha]
@@ -931,6 +930,31 @@
     (assoc (select-keys value inline)
            planning-task-reference-key
            (planning-task-reference artifact artifact-sha path (last path) value inline))))
+
+(defn- project-planning-task-milestone [value projected-value path artifact artifact-sha]
+  (cond
+    (nil? value) projected-value
+    (not (map? value))
+    (rt/fail! "Planning provider metadata is malformed"
+              {:path path :actual-type (type value)})
+    (contains? projected-value planning-task-reference-key)
+    (rt/fail! "Planning provider metadata already has a presentation reference"
+              {:path path})
+    :else
+    (do
+      (when (and (contains? value :creator)
+                 (some? (:creator value))
+                 (not (map? (:creator value))))
+        (rt/fail! "Planning provider metadata is malformed"
+                  {:path (conj path :creator) :actual-type (type (:creator value))}))
+      (let [omitted (remove planning-inline-milestone-keys (keys value))]
+        (if (seq omitted)
+          (assoc (cond-> (select-keys projected-value planning-inline-milestone-keys)
+                   (map? (:creator value))
+                   (assoc :creator (select-keys (:creator value) planning-inline-user-keys)))
+                 planning-task-reference-key
+                 (planning-task-reference artifact artifact-sha path :milestone value nil))
+          projected-value)))))
 
 (defn- planning-metadata-paths [open-prs]
   (vec (concat
@@ -1011,16 +1035,25 @@
                                                            planning-inline-user-keys
                                                            artifact artifact-sha))
                 (and (map? (:milestone issue))
+                     (not (seq (remove planning-inline-milestone-keys
+                                       (keys (:milestone issue)))))
                      (contains? (:milestone issue) :creator))
                 (assoc-in [:milestone :creator]
                           (project-planning-task-provider-map
                            (get-in issue [:milestone :creator]) creator-path
                            planning-inline-user-keys artifact artifact-sha)))
+              projected-issue-with-milestone
+              (if (map? (:milestone issue))
+                (assoc projected-issue :milestone
+                       (project-planning-task-milestone
+                        (:milestone issue) (:milestone projected-issue)
+                        [:tasks task-key :issue :milestone] artifact artifact-sha))
+                projected-issue)
               _ (when (and (map? description)
                            (contains? description planning-description-reference-key))
                   (rt/fail! "Planning task description already has a presentation reference"
                             {:path [:tasks task-key :description]}))
-              projected-task (assoc task :issue projected-issue)
+              projected-task (assoc task :issue projected-issue-with-milestone)
               duplicate-description?
               (and (map? description)
                    (every? (fn [field]

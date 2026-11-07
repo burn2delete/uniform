@@ -109,7 +109,11 @@
                   (get-in issue [:milestone :creator])
                   (assoc-in [:issue :milestone :creator]
                             (restore-map (get-in issue [:milestone :creator])
-                                         [:tasks task-key :issue :milestone :creator]))))))
+                                         [:tasks task-key :issue :milestone :creator]))
+                  (get-in issue [:milestone :uniform/retained-task-provider-field])
+                  (assoc-in [:issue :milestone]
+                            (get-in raw (get-in issue
+                                                [:milestone :uniform/retained-task-provider-field :path])))))))
           projected)))
 
 (defn harness [scenario operation]
@@ -783,7 +787,7 @@
         (is (= "head-sha-12" (get-in (first open-prs-prompt) [:head :sha])))
         (is (= "head-sha-13" (get-in (second open-prs-prompt) [:head :sha])))
         (is (= "fixture/repo" (get-in (first open-prs-prompt) [:head :repo :full_name])))
-        (is (= :uniform/retained-repository-metadata-v1
+        (is (= :uniform/retained-repository-metadata-v2
                (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :policy])))
         (is (= (str artifact)
                (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :artifact])))
@@ -821,15 +825,17 @@
                     :error {:message "preserved failure"}
                     :issue {:number 42 :id 4200 :node_id "issue-42" :title "Issue title"
                             :body body :user user
-                            :milestone {:number 7 :title "SH-07" :creator creator}})
+                            :milestone {:number 7 :title "SH-07" :creator creator
+                                        :description "retained milestone metadata"
+                                        :url "https://example.invalid/milestones/7"}})
         projected (project [task] reference)
         issue (:issue (first projected))
         body-reference (get-in issue [:body :uniform/retained-untrusted-pr-body])
         user-reference (get-in issue [:user :uniform/retained-task-provider-field])
         creator-reference (get-in issue [:milestone :creator :uniform/retained-task-provider-field])
+        milestone-reference (get-in issue [:milestone :uniform/retained-task-provider-field])
         description-reference (get-in (first projected) [:description :uniform/retained-task-description])
-        reference-keys #{:artifact :sha256 :path :field :policy :type :inline-keys
-                         :omitted-keys :value-sha256}]
+        reference-keys #{:artifact :sha256 :path :field :policy :type :value-sha256}]
     (is (= :attention (:status (first projected))))
     (is (= {:message "preserved failure"} (:error (first projected))))
     (is (= 42 (:number issue)))
@@ -838,8 +844,8 @@
     (is (= [:tasks "issue-metadata" :issue :body]
            (get-in issue [:body :uniform/retained-untrusted-pr-body :path])))
     (is (= reference-keys (set (keys body-reference))))
-    (is (= {:field :body :type :string :inline-keys [] :omitted-keys []}
-           (select-keys body-reference [:field :type :inline-keys :omitted-keys])))
+    (is (= {:field :body :type :string}
+           (select-keys body-reference [:field :type])))
     (is (not= body (:body issue)))
     (is (= 17 (get-in issue [:user :id])))
     (is (= "seedless" (get-in issue [:user :login])))
@@ -848,11 +854,16 @@
     (is (= reference-keys (set (keys user-reference))))
     (is (= :user (:field user-reference)))
     (is (= :map (:type user-reference)))
-    (is (= [:avatar_url :url] (:omitted-keys user-reference)))
-    (is (= [:tasks "issue-metadata" :issue :milestone :creator]
-           (get-in issue [:milestone :creator :uniform/retained-task-provider-field :path])))
-    (is (= reference-keys (set (keys creator-reference))))
-    (is (= :creator (:field creator-reference)))
+    (is (= :uniform/retained-task-provider-field-v2 (:policy user-reference)))
+    (is (nil? creator-reference))
+    (is (= #{:id :node_id :login :html_url :type :site_admin :user_view_type}
+           (set (keys (get-in issue [:milestone :creator])))))
+    (is (= reference-keys (set (keys milestone-reference))))
+    (is (= :milestone (:field milestone-reference)))
+    (is (= [:tasks "issue-metadata" :issue :milestone] (:path milestone-reference)))
+    (is (= :uniform/retained-task-provider-field-v2 (:policy milestone-reference)))
+    (is (nil? (:inline-keys milestone-reference)))
+    (is (nil? (:omitted-keys milestone-reference)))
     (is (= #{:artifact :sha256 :path :policy :keys :value-sha256}
            (set (keys description-reference))))
     (is (= [:tasks "issue-metadata" :description] (:path description-reference)))
