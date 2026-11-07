@@ -191,3 +191,66 @@ consumer composition retain their separate obligations. The compatibility
 artifact is not evidence of complete C15 producer coverage. Controller checks,
 exact candidate identity and independent acceptance remain pending. The parent
 task stays Open; no release, self-hosting or seed-retirement authority is claimed.
+
+## Pass fixture facts CI repair
+
+Date: 2026-11-06. Author: bounded repair worker in `increment-1288`, applying
+`speckit-implement`. Finding and owning task remain
+`diag.pass-fixtures.structured-fact-map-v1` and
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+
+Supplied CI feedback reports `contracts` failed in run `42332360841`, attempt 1,
+for head `0a3b88699f75ac2799d62e62605930e922938048`, completed
+`2026-11-07T03:09:31Z`. It reports successful static/bootstrap checks and other
+unfinished jobs; those results describe that supplied subject, not this repair.
+No failure log was supplied or fetched, so the failing child and its exact
+diagnostic remain unconfirmed. The supplied head is not a verified local
+identity or an identity for the edited files.
+
+Passive source review found a concrete contract violation in the authored task
+note: `diag-pass-fixtures-facts` had been inserted inside the first captured
+task body. The preserved body in
+[crosswalk.edn](../sh-family-crosswalk/crosswalk.edn) has four newline characters
+between `diag-canonical-records:end` and `diag-library-source-diagnostics:start`.
+The inserted note interrupted that exact sequence.
+[current-task-body!](../../tools/acceptance_dependencies.clj) requires the
+captured bytes to occur exactly once, and `task-sh-view` applies that check to
+the current Diag task. The CI contracts command list includes
+`tools/acceptance_dependencies_test.clj`. This establishes a source-backed
+failure mechanism; without the job log or native verification it does not
+establish the complete cause of the reported CI failure.
+
+The repair moves the increment note to the task-ledger preamble and restores
+the captured body's original adjacency. It retains the note's owning task,
+fact-shape contract and evidence links. The plan records that placement rule.
+No crosswalk snapshot, digest, validator, CI selection, implementation source
+or semantic fixture is changed. Existing positive/negative facts fixtures remain
+in place. The existing
+`unchanged-captured-spans-follow-layout-only-ledger-edits` fixture in
+[acceptance_dependencies_test.clj](../../tools/acceptance_dependencies_test.clj)
+already covers allowed preamble changes and rejected changed/duplicated bodies;
+no duplicate test or weaker authentication rule is introduced.
+
+Actual local work: passive reads and edits to `tasks.md`, `plan.md` and this
+evidence record. No test/build/check command, Git/cache inspection, network
+operation or commit was executed. All current check results remain unrun.
+The controller's verification ownership prohibits worker execution; the retained
+the907 Git whitespace, select23 Git/cache and Review50/53 Git/cache/Clojure
+refusals remain binding and were not replayed. Build1173 and
+environment-scope1176 remain restricted Attention findings. No new tool refusal
+occurred. Readiness means authored for controller checking only.
+
+Proposed controller argument vectors, additional to the six facts/regression,
+language-boundary and document vectors above:
+
+```clojure
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj" "--self-test"]
+```
+
+These are proposals, not authority to replay denied jobs. Exact candidate
+binding, the reported contracts child diagnosis, current native results,
+independent acceptance and PR1269 composition remain controller obligations.
+There is no new semantic ambiguity or missing implementation authority for this
+navigation repair. All parent statuses remain Open. Historical receipts retain
+their subjects; no release, self-hosting or seed-retirement claim is made.

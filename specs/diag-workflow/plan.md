@@ -287,6 +287,12 @@ candidate. Release retains the broader task's completion dependencies. The
 parent remains Open. [Attributed evidence](evidence.md#pass-fixture-facts-carrier-increment)
 separates authored assertions, unrun checks and retained restrictions.
 
+Keep increment navigation in the task-ledger preamble, outside captured task
+bodies. The existing acceptance-dependency contract requires each captured body
+to remain one unique exact byte sequence; adding notes inside it breaks source
+authentication. Preserve that contract and its tamper controls. See the
+[CI repair evidence](evidence.md#pass-fixture-facts-ci-repair).
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority
