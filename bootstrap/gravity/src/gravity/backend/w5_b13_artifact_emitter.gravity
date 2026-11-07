@@ -267,6 +267,8 @@
 ; SH-20 implementation only: octet data, no file, hash or artifact authority.
 ; Scan the entire carrier, but inspect ELF fields only in its 20-byte prefix.
 ; The octet and u16 widths are format requirements, not input allowances.
+; Vector reads, comparisons and integer arithmetic require no build effects
+; or capabilities. Compilation, execution and native byte transport stay hosted.
 (defn w5-b13-octets-valid? [octets]
   (loop [index 0]
     (if (= index (count octets))
