@@ -1,5 +1,6 @@
 (ns gravity.backend.wasm.pipeline-test
   (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.test :refer [deftest is]]
             [gravity.backend.wasm :as wasm]
             [gravity.bootstrap :as bootstrap]))
@@ -95,6 +96,169 @@
 (defn- gravity-call [name arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
    {:engine :gravity-wasm-codec-development :compiler-artifact-plan? true} @gravity-plan name arguments))
+
+(defn- gravity-module [mir]
+  (let [{:keys [function block-order operations operation-index] :as input} (emission-input mir)
+        instructions (gravity-call 'b4-function-instructions [function block-order operations operation-index])
+        body (vec (concat [1] (gravity-call 'b4-u32-leb [(count operations)])
+                          [0x7f] instructions [0x0b]))
+        code (vec (concat [1] (gravity-call 'b4-u32-leb [(count body)]) body))
+        bytes (vec (concat [0 97 115 109 1 0 0 0]
+                           (gravity-call 'b4-section [1 [1 0x60 0 1 0x7f]])
+                           (gravity-call 'b4-section [3 [1 0]])
+                           (gravity-call 'b4-section [7 [1 4 0x6d 0x61 0x69 0x6e 0 0]])
+                           (gravity-call 'b4-section [10 code])))
+        expected (native "reconstruct" input)]
+    (is (= bytes (:wasm-bytes expected)))
+    {:input input :bytes bytes :expected expected}))
+
+(defn- large-module []
+  (let [ops (mapv #(operation (str "large-" %) "entry" :constant []
+                              :gravity/integer Integer/MAX_VALUE) (range 7500))
+        mir {:functions {'main {:entry "entry" :blocks
+                               {"entry" {:instructions ops :terminator {:operands ["large-7499"]}}}}}}
+        expected (native "reconstruct" (emission-input mir))]
+    {:bytes (:wasm-bytes expected) :expected expected}))
+
+(deftest real-gravity-byte-modules-pass-relative-native-structural-verification
+  ;; Gravity helpers emit the bytes; the expected packet is native fixture
+  ;; data, with no B1 admission, source authentication or Node execution.
+  (doseq [[label mir] (fixtures)
+          :let [{:keys [input bytes expected]} (gravity-module mir)
+                before (pr-str [input bytes expected])
+                report (native "parse-module!" bytes expected)]]
+    (is (= :passed (:status report)) label)
+    (is (= [1 3 7 10] (:section-ids report)))
+    (is (= (:expected-result expected) (:decoded-result report)))
+    (is (= (count (:operations input)) (:operation-count report) (count (:operation-byte-map report))))
+    (is (= (mapv :op-id (:operations input)) (mapv :operation-id (:operation-byte-map report))))
+    (is (= :code-section-payload (:operation-byte-map-coordinate report)))
+    (is (= before (pr-str [input bytes expected])))
+    (let [section-offset (:offset (last (:section-offsets report)))
+          [_ payload-start] (native "decode-u32" bytes (inc section-offset) (count bytes))
+          instruction-start (+ payload-start (:byte-start (first (:operation-byte-map report))))]
+      (doseq [[opcode fact] [[0x20 :local-get-after-definite-initialization]
+                             [0x21 :local-set-i32-stack-value]
+                             [0x46 :i32-comparison-two-stack-operands]]]
+        (let [record (refusal #(native "parse-module!" (assoc bytes instruction-start opcode) expected))]
+          (is (= "B4-MANIFEST" (:id record)))
+          (is (= fact (:missing-fact record))))))
+    (doseq [[changed id] [[(assoc bytes 1 0) "B4-MANIFEST"]
+                          [(assoc bytes 4 2) "B4-TARGET"]
+                          [(assoc bytes 8 2) "B4-IMPORT"]
+                          [(assoc bytes 8 5) "B4-MEMORY"]
+                          [(assoc bytes (dec (count bytes)) 0xff) "B4-MANIFEST"]]]
+      (is (= id (:id (refusal #(native "parse-module!" changed expected))))))
+    (is (= "B4-MANIFEST"
+           (:id (refusal #(native "parse-module!" bytes (assoc expected :expected-result -999))))))))
+
+(deftest valid-emitted-module-is-not-refused-by-the-retired-byte-quota
+  (let [{:keys [bytes expected]} (large-module)
+        report (native "parse-module!" bytes expected)]
+    (is (> (count bytes) 65536))
+    (is (= :passed (:status report)))
+    (is (= 7500 (:operation-count report) (count (:operation-byte-map report))
+           (count (:definitely-initialized-locals report))))
+    (is (= Integer/MAX_VALUE (:decoded-result report)))
+    (is (= :code-section-payload (:operation-byte-map-coordinate report)))
+    (is (nil? (ns-resolve 'gravity.bootstrap 'p15-s23-b4-wasm-max-module-bytes)))))
+
+(defn- parser-operations []
+  (into {:intersection #'set/intersection :map-invert #'set/map-invert}
+        (map (fn [[key name]]
+               [key (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-b4-wasm-" name)))]))
+        [[:decode-u32 "decode-u32"] [:decode-s32 "decode-s32"] [:fail! "fail!"]
+         [:parse-instructions! "parse-instructions!"] [:evaluate-decoded-ast "evaluate-decoded-ast"]
+         [:flatten-decoded-ast "flatten-decoded-ast"] [:comparison-opcodes "comparison-opcodes"]]))
+
+(deftest parser-contract-and-direct-composition-retain-relative-native-results
+  (let [publics (ns-publics 'gravity.backend.wasm)
+        contract (:gravity/namespace-contract (meta #'wasm/parse-module!))]
+    (is (empty? (ns-aliases 'gravity.backend.wasm)))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name function] publics]
+      (is (= (:arglists (meta function)) (get-in contract [:public-api name :arglists])))
+      (is (= :none (get-in contract [:public-api name :admission])))))
+  (doseq [[_ mir] (fixtures)
+          :let [{:keys [bytes expected]} (gravity-module mir)
+                report (wasm/parse-module! (parser-operations) bytes expected)
+                ast (:decoded-ast report)]]
+    (is (= (native "parse-module!" bytes expected) report))
+    (is (= (native "evaluate-decoded-ast" ast {} [])
+           (wasm/evaluate-decoded-ast (:evaluate-decoded-ast (parser-operations)) ast {} [])))
+    (is (= (native "flatten-decoded-ast" ast)
+           (wasm/flatten-decoded-ast (:flatten-decoded-ast (parser-operations)) ast)))
+    (is (= :passed (:status report)))
+    (is (every? (fn [{:keys [byte-start byte-end]}] (< byte-start byte-end)) (:operation-byte-map report)))))
+
+(deftest parser-recursion-keeps-the-live-bootstrap-vars-and-owner-exceptions
+  (let [{:keys [bytes expected]} (gravity-module (get (fixtures) "diamond"))
+        operations (parser-operations) calls (atom [])
+        keys [:parse-instructions! :evaluate-decoded-ast :flatten-decoded-ast]
+        original (into {} (map #(vector % @(get operations %)) keys))
+        replacements (into {} (map (fn [key]
+                                     [(get operations key)
+                                      (fn [& args] (swap! calls conj key) (apply (get original key) args))]) keys))]
+    (with-redefs-fn replacements #(is (= :passed (:status (native "parse-module!" bytes expected)))))
+    (doseq [key keys] (is (< 1 (count (filter #{key} @calls)))))
+    (let [failure (ex-info "original parser owner refusal" {})
+          caught (try (wasm/parse-module!
+                       (assoc operations :fail! (fn [& _] (throw failure))) (assoc bytes 1 0) expected)
+                      nil (catch clojure.lang.ExceptionInfo error error))]
+      (is (identical? failure caught)))
+    (let [changed (assoc bytes 1 0) failures (atom [])
+          report (wasm/parse-module!
+                  (assoc operations :fail! (fn [& args] (swap! failures conj args) false))
+                  changed (assoc expected :wasm-bytes changed))]
+      (is (= :passed (:status report)))
+      (is (= [:raw-wasm-magic] (mapv #(:missing-fact (nth % 3)) @failures))))))
+
+(deftest module-parser-selects-callables-before-arguments-and-reads-the-late-catalog
+  (let [{:keys [bytes expected]} (gravity-module (get (fixtures) "straight"))
+        operations (parser-operations) invert-var (:map-invert operations)
+        comparison-var (:comparison-opcodes operations)
+        invert @invert-var comparison @comparison-var
+        original-report (wasm/parse-module! operations bytes expected)
+        calls (atom [])
+        replacement (fn [index] (swap! calls conj :after) (invert index))
+        observe (fn [key fallback]
+                  (when (= :operation-index key)
+                    (alter-var-root invert-var (constantly replacement)))
+                  (get expected key fallback))
+        observed (reify clojure.lang.ILookup
+                   (valAt [_ key] (observe key nil))
+                   (valAt [_ key fallback] (observe key fallback)))]
+    (with-redefs-fn {invert-var (fn [index] (swap! calls conj :before) (invert index))}
+      #(is (= original-report (wasm/parse-module! operations bytes observed))))
+    (is (= [:before] @calls))
+    (let [report (with-redefs-fn
+                   {comparison-var comparison
+                    invert-var (fn [index]
+                                 (alter-var-root comparison-var (constantly {}))
+                                 (invert index))}
+                   #(wasm/parse-module! operations bytes expected))]
+      (is (= :passed (:status report)))
+      (is (not= (:operation-byte-map original-report) (:operation-byte-map report))))))
+
+(deftest parser-facades-pass-unchanged-arguments-and-explicit-live-ports
+  (doseq [[name stage-function arity owner-keys]
+          [["parse-instructions!" #'wasm/parse-instructions! 7
+            [:decode-u32 :decode-s32 :fail! :parse-instructions! :intersection]]
+           ["parse-module!" #'wasm/parse-module! 2
+            [:decode-u32 :parse-instructions! :evaluate-decoded-ast :flatten-decoded-ast
+             :fail! :map-invert :comparison-opcodes]]]]
+    (let [arguments (vec (repeatedly arity #(Object.))) observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage-function (fn [& args] (reset! observed args) marker)}
+        #(is (identical? marker (apply native name arguments))))
+      (is (= (select-keys (parser-operations) owner-keys) (first @observed)))
+      (is (every? true? (map identical? arguments (rest @observed))))))
+  (doseq [[name stage-function arity] [["evaluate-decoded-ast" #'wasm/evaluate-decoded-ast 3]
+                                      ["flatten-decoded-ast" #'wasm/flatten-decoded-ast 1]]]
+    (let [arguments (vec (repeatedly arity #(Object.))) observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage-function (fn [& args] (reset! observed args) marker)}
+        #(is (identical? marker (apply native name arguments))))
+      (is (identical? (get (parser-operations) (keyword name)) (first @observed)))
+      (is (every? true? (map identical? arguments (rest @observed)))))))
 
 (deftest emits-real-core-modules-and-refuses-invalid-operations-and-encodings
   (doseq [[label mir] (fixtures)

@@ -178,15 +178,16 @@
 (deftest types-stage-contract-states-the-seed-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
-    (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
-    (is (= 29 (count publics)))
+    (is (= :seed-type-products-current-gravity-runtime-and-native-annotation-checks (:contract-boundary contract)))
+    (is (= 32 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= contract (:gravity/namespace-contract (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (or (true? (:seed-compatibility-data-only? api))
-              (true? (:current-gravity-runtime-data-only? api))))
+              (true? (:current-gravity-runtime-data-only? api))
+              (true? (:seed-compatibility-checks-only? api))))
       (is (false? (:authenticates-inputs? api)))
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
