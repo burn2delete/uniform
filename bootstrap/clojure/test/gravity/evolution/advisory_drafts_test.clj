@@ -331,11 +331,22 @@
           expected (assoc-in complete-product [:artifact :advisory :history 0 :extension] value)]
       (assert-product input expected))))
 
+(defn- linked-subvector [backing start end]
+  ;; The host constructor flattens nested views. Fabricate an actual retained
+  ;; link only in fixtures, so validation exercises the immediate backing's
+  ;; extent rather than a different, normalized root extent.
+  (let [view (clojure.lang.APersistentVector$SubVector. nil [] start end)
+        field (.getField clojure.lang.APersistentVector$SubVector "v")]
+    (.setAccessible field true)
+    (.set field view backing)
+    (is (identical? backing (.-v view)))
+    view))
+
 (deftest legal-subvector-backing-and-visible-elements
   (let [backing [(atom "SYNTHETIC-SECRET-MARKER") "release-c" "unused"]
         ordinary (subvec backing 1 2)
-        nested (clojure.lang.APersistentVector$SubVector. nil ordinary 0 1)
-        empty-view (clojure.lang.APersistentVector$SubVector. nil nested 1 1)]
+        nested (linked-subvector ordinary 0 1)
+        empty-view (linked-subvector nested 1 1)]
     (doseq [[view visible] [[ordinary ["release-c"]]
                            [nested ["release-c"]] [empty-view []]]]
       (let [input (assoc complete-input :patched-versions view)
@@ -347,6 +358,21 @@
                (complete-render actual)))))
     (is (identical? backing (.-v ^clojure.lang.APersistentVector$SubVector ordinary)))
     (is (identical? ordinary (.-v nested)))))
+
+(deftest constructor-normalized-empty-subvector-is-legal
+  (let [backing []
+        invalid (clojure.lang.APersistentVector$SubVector. nil backing 0 1)
+        normalized (clojure.lang.APersistentVector$SubVector. nil invalid 0 0)
+        input (assoc complete-input :patched-versions normalized)
+        expected (assoc-in complete-product [:artifact :advisory :patched-versions] [])]
+    ;; No invalid inner link survives construction in this input. This differs
+    ;; from the retained-link rejection below; the producer cannot inspect a
+    ;; discarded object or infer its construction history.
+    (is (identical? backing (.-v normalized)))
+    (is (= [0 0] [(.-start normalized) (.-end normalized)]))
+    (assert-product input expected)
+    (is (identical? backing (.-v invalid)))
+    (is (= [0 1] [(.-start invalid) (.-end invalid)]))))
 
 (defn assert-rejected-view [^clojure.lang.APersistentVector$SubVector view]
   ;; Printing/equality of malformed views can itself traverse their backing.
@@ -376,15 +402,16 @@
     (is (= before (complete-render complete-input)))))
 
 (deftest invalid-subvector-extents-are-payload-free
-  (let [inner (clojure.lang.APersistentVector$SubVector. nil ["hidden" "visible"] 1 2)
+  (let [inner (clojure.lang.APersistentVector$SubVector.
+               nil ["hidden" "visible" "unused"] 1 2)
         invalid (clojure.lang.APersistentVector$SubVector. nil [] 0 1)]
     (doseq [view [invalid
                  (clojure.lang.APersistentVector$SubVector. nil ["hidden"] -1 1)
                  (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 1 0)
                  (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 0 2)
                  (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 2 2)
-                 (clojure.lang.APersistentVector$SubVector. nil inner 0 2)
-                 (clojure.lang.APersistentVector$SubVector. nil invalid 0 0)]]
+                 (linked-subvector inner 0 2)
+                 (linked-subvector invalid 0 0)]]
       (assert-rejected-view view))))
 
 (deftest foreign-subvector-backing-never-receives-callbacks
@@ -405,7 +432,7 @@
                          "SYNTHETIC-SECRET-MARKER"))))
           nonempty (clojure.lang.APersistentVector$SubVector. nil foreign 0 1)
           empty-view (clojure.lang.APersistentVector$SubVector. nil foreign 0 0)
-          nested (clojure.lang.APersistentVector$SubVector. nil nonempty 0 1)]
+          nested (linked-subvector nonempty 0 1)]
       (doseq [view [nonempty empty-view nested]]
         (assert-rejected-view view))
       (is (zero? @calls) "No foreign backing method may run"))))

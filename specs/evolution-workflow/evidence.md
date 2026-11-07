@@ -568,3 +568,77 @@ registry publication, package enforcement and genuine producer/consumer feedback
 remain composition obligations. Independent acceptance, integration and release
 remain separate. No commit was made; no grant, publication, release,
 self-hosting or seed-retirement authority is claimed.
+
+## Advisory retained-link fixture repair
+
+Finding `evolution.advisory-drafts.required-payload-production-v1`, repair of
+the supplied local-check failure in `increment-1316`, authored 2026-11-07 using
+the [speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md).
+The controller supplied this command/result for the preceding worktree state:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.advisory-drafts-test"]
+;; Reported exit 1: 25 tests, 1336 assertions, 11 failures, 0 errors.
+```
+
+These are reported results, not worker execution or evidence for the repaired
+state. No new immutable candidate identity was supplied for this feedback;
+the older candidate identities above retain only their historical scope.
+
+The failure output shows that the host SubVector constructor flattened the
+purported nested view to the original root vector. The same normalization
+discarded the invalid intermediate view when constructing an empty outer view:
+its decoded input was a legal empty view. Ten failures demanded rejection of
+that legal input at patched-version, history and extension boundaries; the
+eleventh demanded an intermediate link that construction did not retain.
+The producer's native class, extent, callback and public-data checks are
+unchanged. No required diagnostic, authenticity or provenance check was relaxed.
+
+Before repairing fixtures, clarified the existing carrier appendix outside
+the captured task region. Test-only `linked-subvector` constructs a native
+view over an ordinary vector, then uses Java field reflection to assign its
+instance backing link and asserts that exact identity. This creates the actual
+retained representation under test without the constructor flattening it.
+Reflection is confined to fixture fabrication; production has no new reflective
+access, callback or host input allowance. The helper's name describes its
+behavior; no public API, namespace, schema or diagnostic identity changed.
+
+Legal nonempty and empty nested controls now use retained links, as does the
+foreign-backing nested control. The invalid outer/valid inner case now has
+spare root capacity, so rejection specifically requires the immediate inner
+extent check. The empty outer/invalid inner case retains the invalid link and
+still requires complete payload-free GOV10006 rejections at all eight input
+locations, repeated calls, unchanged native links/bounds and no secret marker.
+The new `constructor-normalized-empty-subvector-is-legal` control separately
+asserts the flattened root identity and legal bounds, the complete expected
+draft and unchanged inputs; it also checks the discarded invalid object's
+link/bounds remain unchanged. Existing negative fixtures and zero-callback
+requirements remain in place. These are authored controls, not observed passes.
+
+Actual worker activity: passive source/document reads, three owned-path edits
+and textual review. No test, build, validator, Clojure or Git command ran.
+Worker verification and Git inspection, including `git status --short`, remain
+prohibited by controller-owned verification. No refused action was attempted,
+retried or transferred; no new refusal occurred. Ready means authored for
+controller checking. Proposed argument vectors, all unrun here:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.advisory-drafts-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The parent `evolution/security-response` stays Open. The authenticated plan.md,
+captured task region, source criteria and historical receipts are unchanged.
+Coordinate additive task/evidence deltas with PR1308/1310 and retained
+reconciliation candidates without adopting their implementation or acceptance.
+No new semantic ambiguity was found. The accountable individual remains
+unassigned; actual owner/disclosure/publication authority and authenticated
+assessment, provenance, patch/backport/release evidence are still missing.
+Opaque version/severity claims, GOV2 exceptions, embargo/disclosure decisions,
+registry publication, package enforcement and genuine producer/consumer feedback
+remain composition obligations. Independent acceptance, integration and release
+are separate. No commit was made; no grant, publication, release, self-hosting
+or seed-retirement authority is claimed.

@@ -383,6 +383,12 @@ Subvector controls require complete payload-free GOV10006 rejections for
 invalid extents and armed foreign backing, with zero callbacks and unchanged
 native view links/bounds. Include nonempty, empty and nested backing views,
 and full accepted products for ordinary and nested legal subvectors.
+The host SubVector constructor flattens nested views. Tests for retained native
+links must construct those links explicitly and assert their identity before
+calling the producer; an empty outer view normalized to a legal root extent
+must be accepted. An invalid inner link that construction discarded is not
+part of the decoded input. Retained invalid inner extents must still reject,
+including behind an empty outer view or inside a larger legal root extent.
 
 Start requires only explicit draft inputs and no predecessor increment.
 Composition requires actual GOV4 assessment, authenticated patch/backport and
