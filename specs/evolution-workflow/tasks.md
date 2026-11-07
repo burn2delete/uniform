@@ -333,6 +333,14 @@ field lookup or projection. Traversing an accepted tree map must never invoke
 its caller-supplied comparator, including on malformed inputs. Comparator
 state is not advisory data and must not affect the product or diagnostics.
 
+Before traversing a subvector, inspect its native backing links and validate
+each extent against its immediate backing's legal extent. Every link must be
+an exact native persistent vector or subvector, terminating without a cycle.
+Reject foreign backing and invalid extents without invoking foreign methods,
+even for an empty view. Only visible elements are advisory data; unused backing
+payload and backing metadata are not traversed. Visible vectors still require
+nil metadata. Ordinary and nested legal native views retain acceptance.
+
 Success is `{:status :draft, :diagnostics [], :artifact ...}`. The artifact is
 `{:schema :gravity.evolution/advisory-draft-v1,
 :kind :gravity/security-advisory-draft, :status :draft,
@@ -371,6 +379,10 @@ Armed stateful and throwing tree-map comparators must receive zero callbacks
 for root, subject, provenance and retained nested maps. Compare full draft
 products, deterministic rendering, payload-free rejections and unchanged inputs
 across repeated calls and reversed entry ordering.
+Subvector controls require complete payload-free GOV10006 rejections for
+invalid extents and armed foreign backing, with zero callbacks and unchanged
+native view links/bounds. Include nonempty, empty and nested backing views,
+and full accepted products for ordinary and nested legal subvectors.
 
 Start requires only explicit draft inputs and no predecessor increment.
 Composition requires actual GOV4 assessment, authenticated patch/backport and

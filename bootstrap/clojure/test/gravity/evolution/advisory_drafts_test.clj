@@ -330,3 +330,82 @@
     (let [input (assoc-in complete-input [:history 0 :extension] value)
           expected (assoc-in complete-product [:artifact :advisory :history 0 :extension] value)]
       (assert-product input expected))))
+
+(deftest legal-subvector-backing-and-visible-elements
+  (let [backing [(atom "SYNTHETIC-SECRET-MARKER") "release-c" "unused"]
+        ordinary (subvec backing 1 2)
+        nested (clojure.lang.APersistentVector$SubVector. nil ordinary 0 1)
+        empty-view (clojure.lang.APersistentVector$SubVector. nil nested 1 1)]
+    (doseq [[view visible] [[ordinary ["release-c"]]
+                           [nested ["release-c"]] [empty-view []]]]
+      (let [input (assoc complete-input :patched-versions view)
+            expected (assoc-in complete-product
+                               [:artifact :advisory :patched-versions] visible)
+            actual (assert-product input expected)]
+        (is (= (complete-render (drafts/create-draft
+                                (assoc complete-input :patched-versions visible)))
+               (complete-render actual)))))
+    (is (identical? backing (.-v ^clojure.lang.APersistentVector$SubVector ordinary)))
+    (is (identical? ordinary (.-v nested)))))
+
+(defn assert-rejected-view [^clojure.lang.APersistentVector$SubVector view]
+  ;; Printing/equality of malformed views can itself traverse their backing.
+  ;; Snapshot native links/bounds instead; render only the returned diagnostic.
+  (let [backing (.-v view) start (.-start view) end (.-end view)
+        before (complete-render complete-input)]
+    (doseq [[location path]
+            [[[:affected-versions] [:advisory :affected-versions]]
+             [[:patched-versions] [:advisory :patched-versions]]
+             [[:mitigations] [:advisory :mitigations]]
+             [[:provenance :references] [:advisory :provenance :references]]
+             [[:history] [:advisory :history]]
+             [[:history 0 :extension] [:advisory :history]]
+             [[:subject :extension] [:advisory]]
+             [[:extension] [:advisory]]]]
+      (let [input (assoc-in complete-input location view)
+            expected (rejection path :invalid-field)]
+        (dotimes [_ 2]
+          (let [actual (drafts/create-draft input)]
+            (is (= expected actual))
+            (is (not (str/includes? (complete-render actual)
+                                   "SYNTHETIC-SECRET-MARKER")))))
+        (is (identical? view (get-in input location)))))
+    (is (identical? backing (.-v view)))
+    (is (= start (.-start view)))
+    (is (= end (.-end view)))
+    (is (= before (complete-render complete-input)))))
+
+(deftest invalid-subvector-extents-are-payload-free
+  (let [inner (clojure.lang.APersistentVector$SubVector. nil ["hidden" "visible"] 1 2)
+        invalid (clojure.lang.APersistentVector$SubVector. nil [] 0 1)]
+    (doseq [view [invalid
+                 (clojure.lang.APersistentVector$SubVector. nil ["hidden"] -1 1)
+                 (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 1 0)
+                 (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 0 2)
+                 (clojure.lang.APersistentVector$SubVector. nil ["hidden"] 2 2)
+                 (clojure.lang.APersistentVector$SubVector. nil inner 0 2)
+                 (clojure.lang.APersistentVector$SubVector. nil invalid 0 0)]]
+      (assert-rejected-view view))))
+
+(deftest foreign-subvector-backing-never-receives-callbacks
+  (doseq [mode [:stateful :throwing]]
+    (let [calls (atom 0)
+          foreign (java.lang.reflect.Proxy/newProxyInstance
+                   (.getClassLoader clojure.lang.IPersistentVector)
+                   (into-array Class [clojure.lang.IPersistentVector])
+                   (reify java.lang.reflect.InvocationHandler
+                     (invoke [_ _ method _]
+                       (swap! calls inc)
+                       (when (= mode :throwing)
+                         (throw (ex-info "SYNTHETIC-SECRET-MARKER" {})))
+                       (case (.getName ^java.lang.reflect.Method method)
+                         ("count" "length" "hashCode") (int 1)
+                         "equals" false
+                         "seq" (seq ["SYNTHETIC-SECRET-MARKER"])
+                         "SYNTHETIC-SECRET-MARKER"))))
+          nonempty (clojure.lang.APersistentVector$SubVector. nil foreign 0 1)
+          empty-view (clojure.lang.APersistentVector$SubVector. nil foreign 0 0)
+          nested (clojure.lang.APersistentVector$SubVector. nil nonempty 0 1)]
+      (doseq [view [nonempty empty-view nested]]
+        (assert-rejected-view view))
+      (is (zero? @calls) "No foreign backing method may run"))))

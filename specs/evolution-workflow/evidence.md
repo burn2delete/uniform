@@ -495,3 +495,76 @@ and historical receipts were not edited. Coordinate additive deltas with
 PR1308/1310 and retained reconciliation candidates without adopting their code
 or acceptance. No commit, integration, grant, publication, release, self-hosting
 or seed-retirement authority is claimed.
+
+## Advisory subvector backing repair
+
+Finding `evolution.advisory-drafts.required-payload-production-v1`, P2
+representation follow-up, authored in `increment-1316` on 2026-11-07 using
+the local [speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md).
+Supplied review identities: base `de1eccf9a148cc199ff50f41014bc4732b715a1d`,
+candidate `5bb962f05c11d75a9cf03595d9a332cdd0cb2f74`, tree
+`88ea4a79a0feb563573c518361e0eca4611d9f51`. Feedback reports that supplied
+native checks passed for that candidate and identifies unchecked subvector
+backing/extents. Those reported results do not validate this uncommitted repair.
+
+Read the owning carrier and GOV4/GOV10 contracts and passively inspected
+`p15-s23-hosted-native-view-reason`. Updated only the advisory appendix after
+the captured task region before changing implementation. The producer now
+checks exact native backing classes and links before enumeration, rejects
+cycles, and validates each subvector's start/end against its immediate backing
+extent from the terminal native vector outward. No method is dispatched on a
+foreign backing. Legal views retain visible elements only; unused backing
+payload/metadata is not traversed. Visible metadata requirements, GOV10006
+field paths, deterministic products and non-admitting authority are unchanged.
+The new private helper `native-vector-backing?` names its behavior; no public
+namespace, API, diagnostic or artifact identity changed.
+
+Authored `invalid-subvector-extents-are-payload-free` covering the supplied
+empty-backing/nonempty-view example, negative starts, reversed bounds,
+overlong and out-of-range empty views, an outer view exceeding a valid inner
+extent, and an empty outer view hiding invalid inner bounds.
+`foreign-subvector-backing-never-receives-callbacks` uses stateful and throwing
+IPersistentVector proxies under nonempty, empty and nested native views.
+Every method increments a callback counter; all must remain zero. Both tests
+require entire constant GOV10006 rejection products at affected/patched-version,
+mitigation, provenance-reference, history and nested extension boundaries,
+repeated calls, and absence of a synthetic secret marker from rendered results.
+Malformed input is never printed or compared by value: assertions retain
+native view-link identity and start/end bounds, the inserted view identity and
+unchanged surrounding fixture data, avoiding test-induced foreign callbacks.
+
+Authored `legal-subvector-backing-and-visible-elements` comparing full expected
+products and deterministic rendering for ordinary, explicitly nested and empty
+native views. A hidden mutable marker outside the visible extent is not copied
+or traversed. Existing ordinary-subvector and metadata rejection controls remain.
+These are authored fixtures, not observed passing checks.
+
+Actual worker activity/results: passive `pwd`, `cat`, `sed`, `rg` source and
+document reads, scoped `apply_patch` edits and textual review only. No test,
+build, check, Clojure or Git command ran; no network, process enumeration or
+external action occurred. Controller-owned verification prohibits worker
+checks and Git inspection, including `git status --short`; no prohibited or
+previously refused action was attempted, retried, transferred or routed around.
+No new refusal occurred. Ready means authored for controller checking, with no
+observed exit statuses or passing receipts. Proposed vectors, all unrun here:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.advisory-drafts-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The parent `evolution/security-response` remains Open. The authenticated plan.md,
+captured task region, source criteria and historical receipts were not edited.
+Coordinate the additive task/evidence deltas with PR1308/1310 and retained
+reconciliation candidates without adopting their implementation or acceptance.
+No new semantic ambiguity was found. The accountable individual remains
+unassigned; actual owner/disclosure/publication authority and authenticated
+assessment, provenance, patch/backport/release evidence are still missing.
+Opaque version/severity claims, GOV2 exceptions, accountable embargo/disclosure,
+registry publication, package enforcement and genuine producer/consumer feedback
+remain composition obligations. Independent acceptance, integration and release
+remain separate. No commit was made; no grant, publication, release,
+self-hosting or seed-retirement authority is claimed.

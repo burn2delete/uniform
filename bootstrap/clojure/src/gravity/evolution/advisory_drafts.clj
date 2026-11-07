@@ -14,10 +14,32 @@
        (nil? (meta x))
        (every? keyword? (keys x))))
 
+(defn- native-vector-backing? [x]
+  ;; Inspect links before enumeration: SubVector can wrap foreign vectors or
+  ;; invalid bounds. Never count or otherwise dispatch on a foreign backing.
+  (let [seen (java.util.IdentityHashMap.)]
+    (loop [current x views []]
+      (cond
+        (.containsKey seen current) false
+        (identical? clojure.lang.PersistentVector (class current))
+        (loop [remaining (rseq views)
+               extent (.count ^clojure.lang.PersistentVector current)]
+          (and (not (neg? extent))
+               (if-let [[start end] (first remaining)]
+                 (and (<= 0 start end extent)
+                      (recur (next remaining) (- end start)))
+                 true)))
+        (identical? clojure.lang.APersistentVector$SubVector (class current))
+        (let [^clojure.lang.APersistentVector$SubVector view current]
+          (.put seen current true)
+          (recur (.-v view) (conj views [(.-start view) (.-end view)])))
+        :else false))))
+
 (defn- data-vector? [x]
   (and (contains? #{clojure.lang.PersistentVector
                     clojure.lang.APersistentVector$SubVector} (class x))
-       (nil? (meta x))))
+       (nil? (meta x))
+       (native-vector-backing? x)))
 
 (defn- public-data? [x]
   (cond
