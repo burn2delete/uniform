@@ -36,6 +36,10 @@
          :token-spans (mapv #(select-keys % [:token-id :span]) token-stream)
          :form-spans
          (mapv #(select-keys % [:form-id :span :parent-form-id]) form-tree)}
+        decimal-occurrence-projection
+        (when (and token-id-map form-id-map)
+          (sh03-reader-decimal-occurrence-projection-from-products!
+           source-path products))
         source-unit
         (c2-source-unit-record source-path source-text standard-reader-options
                                project-context)
@@ -43,7 +47,7 @@
         (when (and token-id-map form-id-map)
           (sh03-reader-adapter-summary
            result source-unit token-stream form-tree extension-records
-           token-id-map form-id-map))
+           token-id-map form-id-map decimal-occurrence-projection))
         descriptor (:sh02-reader-envelope-descriptor products)
         descriptor-summary
         (:value
@@ -62,6 +66,11 @@
          (= source-map (:gravity-reader-source-map products))
          (= (:semantic-value-table-id summary)
             (:sh03-semantic-value-table-id products))
+         (= decimal-occurrence-projection
+            (:sh07-decimal-occurrence-projection products))
+         (= (:decimal-occurrence-projection-id summary)
+            (get-in products
+                    [:sh07-decimal-occurrence-projection :projection-id]))
          (= summary (:sh03-reader-adapter-descriptor products))
          (= summary descriptor-summary)
          (if-not (some #(= :tagged-literal (:kind %)) raw-forms)
@@ -114,7 +123,7 @@
                 #(mapv (partial sh03-reader-resolve-diagnostic-id source-path)
                        %))]
     (when-not
-     (and (= :gravity/sh03-to-c2-reader-products-v2
+     (and (= :gravity/sh03-to-c2-reader-products-v3
              (:sh03-reader-adapter-contract products))
           (not (contains? products :pure-extension-results))
           (= expected-binding (:sh03-reader-plan-binding products))

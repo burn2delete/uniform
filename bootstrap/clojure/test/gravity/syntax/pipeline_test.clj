@@ -470,6 +470,21 @@
 (def ^:private literal-gravity (delay (literal-case ".gravity")))
 (def ^:private literal-qst (delay (literal-case ".qst")))
 
+(defn- complete-reader-surface-path []
+  (.getCanonicalPath
+   (io/file
+    "bootstrap/clojure/fixtures/self-hosting/sh-03/accepted/complete-reader-surface.gravity")))
+
+(def ^:private complete-reader-surface
+  (delay
+    (let [source (complete-reader-surface-path)
+          text (slurp source)]
+      {:source source
+       :artifact
+       (bootstrap/compiler-c3-syntax-source-artifact
+        source text (bootstrap/reader-project-context-for-source source)
+        nil nil (reader-path) (current-syntax-invocation))})))
+
 (deftest paired-literal-views-preserve-occurrences-identity-and-provenance
   (doseq [[extension product] [[".gravity" literal-gravity] [".qst" literal-qst]]]
     (let [{:keys [source reader artifact registry view]} @product
@@ -573,6 +588,45 @@
         ;; facts. The separate predicate above checks reader authentication.
         (is (= "C3-SERIALIZE" (:id diagnostic)))
         (is (= source (get-in diagnostic [:source-span :source])))))))
+
+(deftest registered-literal-reader-products-reverify-decimal-occurrence-identity
+  (let [{:keys [source artifact]} @complete-reader-surface
+        c2 (:c2-reader-artifact artifact)
+        authentic? (fn [candidate]
+                     (syntax/reader-products-authentic?
+                      (:syntax-object-stream candidate)
+                      (:c2-reader-artifact candidate)
+                      (:gravity-syntax-boundary candidate)
+                      (current-syntax-invocation)
+                      (reader-operations)))
+        proof (fn [candidate]
+                (bootstrap/c3-syntax-capability-proof
+                 candidate (current-syntax-invocation)))
+        occurrence-tampered
+        (assoc-in artifact
+                  [:c2-reader-artifact :sh07-decimal-occurrence-projection
+                   :occurrences 0 :adapted-form-id]
+                  "sha256:tampered-occurrence")
+        projection-tampered
+        (assoc-in artifact
+                  [:c2-reader-artifact :sh07-decimal-occurrence-projection
+                   :projection-id]
+                  "sha256:tampered-projection")]
+    (is (= source (get-in c2 [:source-unit-record :path])))
+    (is (contains? c2 :registered-literal-projection))
+    (is (= 10 (get-in c2 [:sh07-decimal-occurrence-projection :occurrence-count])))
+    (is (true? (authentic? artifact)))
+    (is (= :complete (:status (proof artifact))))
+    (is (true? (:reader-products-authentic? (proof artifact))))
+    (is (true? (:syntax-verifier-current? (proof artifact))))
+    (doseq [[label candidate] [[:occurrence-id occurrence-tampered]
+                              [:projection-id projection-tampered]]]
+      (testing (name label)
+        (is (false? (authentic? candidate)))
+        (let [tampered-proof (proof candidate)]
+          (is (= :failed (:status tampered-proof)))
+          (is (false? (:reader-products-authentic? tampered-proof)))
+          (is (false? (:syntax-verifier-current? tampered-proof))))))))
 
 (deftest selected-registered-products-require-the-authenticated-syntax-owner
   (let [{:keys [artifact]} @literal-gravity
