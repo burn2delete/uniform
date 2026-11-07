@@ -97,3 +97,283 @@ is established by this transfer. No compiler/runtime source or tests, diagnostic
 or wire identity, permission, contract semantics or other task status changed.
 No component release, self-hosting, seed retirement, dependency readiness or
 overall completion percentage is claimed. All four outcomes remain open.
+
+## Pass fixture facts carrier increment
+
+Date: 2026-11-06. Author: bounded implementation worker in worktree
+`increment-1288`. Finding: `diag.pass-fixtures.structured-fact-map-v1`.
+Owning task:
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+This section records current authorship and passive source observations; earlier
+results retain their historical subjects. No current commit/tree identity was
+supplied or inspected. Git inspection is prohibited for this worker; exact
+candidate binding and independent acceptance belong to the controller.
+
+### Authored change and fixture expectations
+
+Passive reads of C15, the owning spec/plan/task, suite assembly, failure carrier
+and artifact constructor established the narrow boundary: the constructor runs
+diagnostic validation before constructing its manifest. The existing
+`support/present?` accepted nonnil prose and scalars. The authored change in
+[diagnostic_validation.clj](../../bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj)
+replaces that facts condition with a nonempty-map check and adds fixture
+indexing. Facts failures retain `C15-FACTS` and `:schema-field :facts`; absent
+or nil maps use `:missing`, empty maps use `:empty`, and other shapes use
+`:invalid-shape` in `:reason`. Failures identify the zero-based fixture index,
+offending diagnostic, stage and primary artifact without copying rejected
+facts. Public arities, default records and surrounding validation clauses are
+preserved in the authored source.
+
+[diagnostic_facts_test.clj](../../bootstrap/clojure/test/gravity/compiler_pass_manifest/diagnostic_facts_test.clj)
+contains authored expectations, not executed results:
+
+| Fixtures | Expected result at both boundaries |
+| --- | --- |
+| `default-facts-unchanged`, `structured-facts-preserved`, `nested-fact-values-preserved` | Public validation completes and the actual constructor preserves complete fixture records, nested values and the profile manifest. |
+| `missing-facts`, `nil-facts` | `C15-FACTS`, `:reason :missing`, no returned artifact. |
+| `empty-facts` | `C15-FACTS`, `:reason :empty`, no returned artifact. |
+| `prose-facts`, `scalar-facts`, `vector-facts`, `secret-marker-facts` | `C15-FACTS`, `:reason :invalid-shape`, no returned artifact or rejected fact payload in failure data/message. Scalars include a number, false and a keyword. |
+| Precedence and repeated-call controls | Schema/catalog/span/origin failures precede facts; facts precede later same-fixture remediation/redaction and stream order. Valid facts retain those later refusals. Earlier fixture failures precede later fixture failures, with identical repeated results. |
+
+Both default fixture positions are covered for each malformed facts case.
+Inputs reach the public suite through profile-manifest metadata; accepted
+records exercise both diagnostic-id merging and full fixture replacement.
+The constructor itself is not stubbed. Failure capture returns diagnostics
+instead of an artifact only when the operation actually throws. The marker is
+a synthetic test string, checked against the entire captured failure/message.
+
+### Actual results and unrun controller checks
+
+Observed: the two source/test paths and three owning artifacts were authored
+and read back for source review. No test, build, validator, Git command or
+cache inspection was executed. No exit status, assertion count or successful
+verification is claimed for this increment. No new execution refusal occurred.
+
+The following are proposed argument vectors, all unrun. `:dev-test` selects
+the new namespace directly without editing a shared runner catalog.
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest.diagnostic-facts-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Worker execution of these checks is prohibited by the controller-owned
+verification instruction. The vectors describe proposed native verification;
+they do not authorize replay of a retained denied job. Git status/diff,
+including the907's denied Git whitespace action, select23's denied Git/cache
+inspections and Review50/53 Git/cache/Clojure refusals (including B709/C5f5,
+C154 snapshots and focused tests) remain restricted and were not retried,
+transferred or routed through another executable. Build1173 and
+environment-scope1176 remain restricted Attention findings. Unrun checks alone
+do not restrict authored readiness.
+
+### Coordination, authority and remaining obligations
+
+Only the five paths authorized by the finding are edited. New test namespace
+`gravity.compiler-pass-manifest.diagnostic-facts-test` names subsystem and
+behavior; the finding key remains traceability metadata. No new public API or
+compatibility identity is introduced. PR1269's severity implementation and
+evidence are separate; this worker changes only fixture indexing and the facts
+clause in their shared validator and adds distinct artifact sections. Network,
+PR edits and reviewer messages are unavailable under this worker's instructions;
+the controller must reconcile shared writes and the exact PR1269 candidate
+before composition. No PR state, coordination receipt or acceptance is claimed.
+
+There is no unresolved semantic ambiguity for this narrow map-shape contract:
+nil and absence share the missing reason; values within accepted maps are
+preserved without new type or quota rules. Producer normalization, semantic
+fact validation, redaction policy for otherwise structured records and real
+consumer composition retain their separate obligations. The compatibility
+artifact is not evidence of complete C15 producer coverage. Controller checks,
+exact candidate identity and independent acceptance remain pending. The parent
+task stays Open; no release, self-hosting or seed-retirement authority is claimed.
+
+## Pass fixture facts CI repair
+
+Date: 2026-11-06. Author: bounded repair worker in `increment-1288`, applying
+`speckit-implement`. Finding and owning task remain
+`diag.pass-fixtures.structured-fact-map-v1` and
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+
+Supplied CI feedback reports `contracts` failed in run `42332360841`, attempt 1,
+for head `0a3b88699f75ac2799d62e62605930e922938048`, completed
+`2026-11-07T03:09:31Z`. It reports successful static/bootstrap checks and other
+unfinished jobs; those results describe that supplied subject, not this repair.
+No failure log was supplied or fetched, so the failing child and its exact
+diagnostic remain unconfirmed. The supplied head is not a verified local
+identity or an identity for the edited files.
+
+Passive source review found a concrete contract violation in the authored task
+note: `diag-pass-fixtures-facts` had been inserted inside the first captured
+task body. The preserved body in
+[crosswalk.edn](../sh-family-crosswalk/crosswalk.edn) has four newline characters
+between `diag-canonical-records:end` and `diag-library-source-diagnostics:start`.
+The inserted note interrupted that exact sequence.
+[current-task-body!](../../tools/acceptance_dependencies.clj) requires the
+captured bytes to occur exactly once, and `task-sh-view` applies that check to
+the current Diag task. The CI contracts command list includes
+`tools/acceptance_dependencies_test.clj`. This establishes a source-backed
+failure mechanism; without the job log or native verification it does not
+establish the complete cause of the reported CI failure.
+
+The repair moves the increment note to the task-ledger preamble and restores
+the captured body's original adjacency. It retains the note's owning task,
+fact-shape contract and evidence links. The plan records that placement rule.
+No crosswalk snapshot, digest, validator, CI selection, implementation source
+or semantic fixture is changed. Existing positive/negative facts fixtures remain
+in place. The existing
+`unchanged-captured-spans-follow-layout-only-ledger-edits` fixture in
+[acceptance_dependencies_test.clj](../../tools/acceptance_dependencies_test.clj)
+already covers allowed preamble changes and rejected changed/duplicated bodies;
+no duplicate test or weaker authentication rule is introduced.
+
+Actual local work: passive reads and edits to `tasks.md`, `plan.md` and this
+evidence record. No test/build/check command, Git/cache inspection, network
+operation or commit was executed. All current check results remain unrun.
+The controller's verification ownership prohibits worker execution; the retained
+the907 Git whitespace, select23 Git/cache and Review50/53 Git/cache/Clojure
+refusals remain binding and were not replayed. Build1173 and
+environment-scope1176 remain restricted Attention findings. No new tool refusal
+occurred. Readiness means authored for controller checking only.
+
+Proposed controller argument vectors, additional to the six facts/regression,
+language-boundary and document vectors above:
+
+```clojure
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj" "--self-test"]
+```
+
+These are proposals, not authority to replay denied jobs. Exact candidate
+binding, the reported contracts child diagnosis, current native results,
+independent acceptance and PR1269 composition remain controller obligations.
+There is no new semantic ambiguity or missing implementation authority for this
+navigation repair. All parent statuses remain Open. Historical receipts retain
+their subjects; no release, self-hosting or seed-retirement claim is made.
+
+## Pass fixture facts current-source binding repair
+
+Date: 2026-11-06. Author: bounded repair worker in `increment-1288`, applying
+`speckit-implement`. Finding: `diag.pass-fixtures.structured-fact-map-v1`.
+Owning task remains
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`,
+with Status Open.
+
+The supplied local-check result for
+`["clojure" "-M" "tools/acceptance_dependencies_test.clj"]` reports exit 1:
+31 tests, 7225 assertions, zero failures and eight errors. The errors report
+`ACCEPTANCE-DEPENDENCY`: current source transition is not bound to the
+checked-out current source. These are controller-supplied results for the
+pre-repair subject, not results from this worker or the edited files.
+
+Passive source review identifies the second authenticity obligation missed by
+the preceding repair. In addition to captured task bodies,
+[validate-current-source-transition!](../../tools/requirement_sources.clj)
+requires complete current file bytes to equal the authenticated applying
+source. Its current successor records name both `plan.md` and `tasks.md` at
+`cc8a79074fc8eeeb65d72333e5d64542b201f0d4`. The declared plan SHA-256 is
+`02519403a80757d900109e54ab505fa52099334dd928cef8570bd090bd07891b`;
+the declared task SHA-256 is
+`05050c2e3f03b410934a857e3a9a3dbae2528bb81d3d44024edd3ba09b5b73be`.
+These are passively read contract identities, not newly verified local hashes.
+A preamble addition still changes the complete file and cannot satisfy that
+binding. The earlier CI repair remains historical evidence of an incomplete
+repair; its preamble-placement recommendation is superseded here.
+
+The authored repair removes only the added carrier-increment section from
+`plan.md` and the `diag-pass-fixtures-facts` preamble block from `tasks.md`,
+intending to restore their authenticated source. The scoped plan and task note
+are retained below in this owning evidence artifact, already linked from both
+files. No task body, status, source transition, historical snapshot, digest,
+validator, implementation or fixture is changed by this repair. Updating the
+authenticated source frame would require paths outside this finding's ownership;
+no authority to do so is inferred. Native equality/authentication checking is
+pending with the controller. There is no semantic ambiguity in the facts rule.
+
+### Retained carrier plan
+
+This is the narrow implementation plan formerly added to `plan.md`, retained
+under the same existing task rather than creating another task authority.
+[C15 Facts and Remediation](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#facts-and-remediation)
+requires structured fields;
+[C15 Diagnostics](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostics)
+assigns missing or unstructured payloads to `C15-FACTS`.
+
+Accept exactly a nonempty map in pass-fixture `:facts`, preserving all keys and
+complete nested values, including collections, strings, numbers, false and nil.
+Absence and nil use `:reason :missing`, an empty map uses `:reason :empty`, and
+other shapes use `:reason :invalid-shape`. Retain `C15-FACTS`,
+`:schema-field :facts`, zero-based `:fixture-index`, offending diagnostic
+identity, stage, primary artifact, source and remediation. Omit rejected facts
+from failure data and messages. Fact-family typing remains a producer obligation.
+
+The implementation changes only fixture indexing and the facts clause in
+[diagnostic_validation.clj](../../bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj).
+Preserve public arities, default records, provenance and refusal order: schema,
+catalog, then each fixture's span, origin, facts, remediation and redaction,
+followed by stream order. The first failing fixture wins. PR1269's severity
+implementation remains separate; the controller must reconcile shared source
+and artifact composition against its exact candidate. No PR state or
+independent acceptance was inspected here.
+
+[diagnostic_facts_test.clj](../../bootstrap/clojure/test/gravity/compiler_pass_manifest/diagnostic_facts_test.clj)
+exercises public validation and actual construction using profile metadata
+suite overrides and full fixture replacement. Preserve complete records in
+`default-facts-unchanged`, `structured-facts-preserved` and
+`nested-fact-values-preserved`. Reject `missing-facts`, `nil-facts`,
+`empty-facts`, `prose-facts`, `scalar-facts`, `vector-facts` and
+`secret-marker-facts` at both positions without returning an artifact or
+copying rejected payloads. Retain deterministic repeated refusals,
+schema/catalog/span/origin precedence and first-failure controls.
+
+Start uses existing suite, validator, failure carrier and constructor
+interfaces. Producer normalization, semantic fact validation and actual
+consumer composition remain separate obligations. Independent acceptance needs
+native controller checks and independent review of the exact candidate.
+Release retains the broader task's completion dependencies.
+
+### Retained scoped task note
+
+The carrier increment belongs to the existing schema-reconciliation task;
+Status remains Open. The validator and constructor fixtures above are authored
+work, not passing evidence. Controller verification, PR1269 composition and
+independent acceptance remain pending. This note resides in evidence because
+the current source binding authenticates the complete plan and task files,
+including preambles. It grants no implementation completion or acceptance.
+
+### Repair checks and remaining authority
+
+Actual local actions were passive source reads and edits to the three owned
+Markdown artifacts. No test/build/check command, Git/cache inspection, network
+action or commit ran. No new tool refusal occurred. No current commit/tree
+identity was supplied or inspected. The existing facts implementation and its
+positive/negative fixtures are retained unchanged; the existing
+`current-source-transition-authenticates-file-and-span-identities` test covers
+the whole-file binding and forged identity/span controls. No duplicate fixture
+or weaker authentication path is added.
+
+The controller proposals below are all unrun for this repair. They do not
+authorize replay of retained denied jobs:
+
+```clojure
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest.diagnostic-facts-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Worker execution of checks and Git remains prohibited by controller ownership.
+The retained the907 Git whitespace, select23 Git/cache and Review50/53
+Git/cache/Clojure refusals, including B709/C5f5, C154 snapshots and focused
+tests, remain binding. Build1173 and environment-scope1176 remain restricted
+Attention findings. None was retried, transferred or routed around. Authored
+readiness claims no check success. Exact source binding, independent acceptance
+and composition remain controller obligations. No release, self-hosting or
+seed-retirement authority is claimed.
