@@ -241,6 +241,20 @@ without a reverse import. This adds no canonical C8 legality, source admission,
 capability proof or provider grant, backend/runtime service, release or
 self-hosting authority; `network-listen` remains only an inference fact.
 
+The [Stage0 MIR target-independence extraction](mir-stage0-target-independence-evidence.md)
+moves the complete compiler-gate family predicate to `gravity.mir` through
+`validate-native-stage0-mir-operation!`. Caller-owned module, unused manifest
+and operation metadata plus a late failure Var produce nil or the original
+owner result/exception. MIR owns the C11-TARGET-LEAK decision and supplied
+missing-field/remediation facts; Bootstrap retains diagnostic construction,
+explicit/nested/fallback span selection and mixed compiler orchestration.
+Focused tests in `gravity.mir.pipeline-test` cover genuine paired-source
+instruction-plan emission/refusal, no-touch accepted inputs, opaque identities,
+callee-before-argument order, returning/throwing callbacks and legacy adapters.
+The native family label is not MIR verification: accepted reports still state
+that this path emits no verified MIR. The stage remains core-only and grants
+no authentication, backend, release or self-hosting authority.
+
 The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
 moves the complete instruction-sequence, instruction, compiled-function and
 compiled-plan executor bodies into `gravity.runtime`. The four

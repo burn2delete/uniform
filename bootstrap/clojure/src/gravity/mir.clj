@@ -4,9 +4,11 @@
 (def ^:private namespace-contract
   '{:namespace gravity.mir
     :contract-boundary :native-seed-c11-records-and-relative-validation
-    :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
+    :governing-contracts [D0 D6 C18 D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {validate-constructed!
+    {validate-native-stage0-mir-operation!
+     {:authenticates-inputs? false, :admission :none, :operation-vars [failure-var], :issues-verifier-certificates? false, :operation-selection :late-owner-var-before-call-arguments, :artifact-inputs [:caller-owned-module-manifest-and-mir-operation-metadata], :arglists ([failure-var module _manifest mir-operation]), :artifact-outputs [:nil-or-unchanged-owner-return-or-exception], :contract-boundary :stage0-native-mir-target-independence, :native-data-only? true}
+     validate-constructed!
      {:arglists ([owner-operations source-path checked-core mir]) :admission :none
       :operation-inputs [:validate-carrier! :validate-module-envelope! :validate-fact-tables! :validate-operations! :validate-runtime-checks! :validate-cfg! :validate-effect-edge-placement! :validate-data-flow!]
       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
@@ -107,7 +109,8 @@
                  :borrowed-report-data :input-identity :source-provenance :exception-identity]
      :test-owner gravity.mir.pipeline-test :source-owner gravity.bootstrap
      :admission :none :authenticates-inputs? false :issues-verifier-certificates? false}
-    :artifact-inputs [:native-diagnostic-context-inputs :explicit-scalar-redaction-operation
+    :artifact-inputs [:caller-owned-stage0-module-manifest-operation-and-late-failure-var
+                      :native-diagnostic-context-inputs :explicit-scalar-redaction-operation
                       :native-diagnostic-rule-catalogs-and-records :explicit-diagnostic-message-operations
                       :native-opcode-and-source-operation-vocabularies
                       :native-block-operation-and-terminator-schema-data
@@ -126,7 +129,8 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-diagnostic-context-data :borrowed-native-diagnostic-rule-contract :native-display-message :stage0-c11-exception-info
+    :artifact-outputs [:native-stage0-mir-target-independence-nil-or-owner-result
+                       :native-diagnostic-context-data :borrowed-native-diagnostic-rule-contract :native-display-message :stage0-c11-exception-info
                        :native-opcode-and-source-operation-sets
                        :native-block-operation-and-terminator-key-sets
                        :native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
@@ -137,7 +141,8 @@
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-c11-context-projection :native-c11-rule-lookup-display-and-exception-view
+    :diagnostic-ownership {:stage [:stage0-native-mir-target-family-decision-and-facts
+                                  :native-c11-context-projection :native-c11-rule-lookup-display-and-exception-view
                                   :native-opcode-and-source-operation-vocabularies
                                   :native-block-operation-and-terminator-key-schemas
                                   :native-pass-contract-block-and-operation-order-and-path-rules
@@ -158,7 +163,7 @@
                            :forbids [gravity.bootstrap gravity.c11-mir gravity.cli gravity.release]}
     :supported-cfg-families [:single-entry-return :single-conditional-diamond]
     :authenticates-inputs? false :issues-verifier-certificates? false
-    :unsupported [:canonical-c15-conformance :public-diagnostic-projection :diagnostic-publication
+    :unsupported [:stage0-family-label-as-mir-verification :canonical-c15-conformance :public-diagnostic-projection :diagnostic-publication
                   :proof-authentication :runtime-check-legality :untrusted-native-ingress :callback-authentication :full-c11-verification
                   :general-cfgs :loops :matches :exceptions :source-admission :b1-admission
                   :backend-or-native-execution :migration :release :self-hosting :seed-retirement]})
@@ -1846,6 +1851,23 @@
          (= (:value-id use) (nth (:operands terminator) operand-index))
          (= expected-edge-kind (:edge-kind use))
          dominates?)))
+
+(defn validate-native-stage0-mir-operation! [failure-var
+                                             module
+                                             _manifest
+                                             mir-operation]
+  (when (= :target-specific (:family mir-operation))
+    ((deref failure-var)
+      "C11-TARGET-LEAK"
+      (:source-path module)
+      {:mir-module
+       {:profile (:profile module),
+        :target-request (:target module),
+        :module :stage0-compiled-core-app}}
+      mir-operation
+      {:missing-fields [:target-independent-opcode],
+       :remediation
+       "Keep generic MIR target-independent; move target opcodes behind verified target lowering."})))
 
 (doseq
  [name (keys (:public-api namespace-contract))

@@ -98,8 +98,46 @@ Integration requires independent acceptance at the exact current base.
 
 ## Status and unsupported boundaries
 
-This is the initial scope record before implementation. Source captures,
-focused tests, source review, final publication and own CI audit remain pending.
+Draft PR #1369 was opened at scope commit
+`2d4e8e5f2f29de8772e9f1773bb43339363b266d`, tree
+`3130821f2801e68b2afda02e41d90bf9c78327a6`, before moving the body.
+That two-document scope commit also corrects the preceding C14 span wording;
+its code and captured diagnostic payloads are unchanged.
+
+The complete predicate now lives in MIR behind the original Bootstrap adapter.
+All 50 previous public APIs remain, with one addition and no dependency or
+orchestration changes. Original/moved-body and adapter receipt SHA256 is
+`f742277e70b51d9dc183c9b44f3af280ed3bfda03d8859182cf6e9814a846854`.
+Its test snapshots record the initial inventory-only edit before new controls.
+
+Twenty complete before/after public-source observations match: four genuine
+instruction plans and compiler/runtime reports, four interpreted/compiled
+execution agreements, and sixteen pre-emission refusals. Paired spellings cover
+the absent suite, nonempty generic MIR metadata, the six existing compiler
+refusal fixtures and two additional target-leak cases for fallback and nested
+spans. Full macro/module/plan/report products, helper arguments and return/error
+classes, exact diagnostics, provenance and deterministic identities survive.
+Baseline SHA256 is
+`c5196d2a2c994a0dc91372415f52d30e65ef9a09c1d775f086d90ea01f2a10be`;
+implementation capture SHA256 is
+`5f65139650eb9d52eff8b06b89f1c99730cf65efad3085f8bf896e651efd72b0`.
+Both record actual scope HEAD; the latter binds dirty producer hashes, not a
+future clean commit. Supplied paired text has no file-authentication claim.
+The accepted report explicitly retains `:emitted? false` for MIR and requires
+a later verified-MIR build; the emitted product here is the instruction plan.
+
+Focused tests pass 8 tests/444 assertions: seven new native/ordinary Stage0
+tests and the existing pure MIR API inventory. The exact selection is recorded;
+eight named existing private-source-factory delays remain unforced before and
+after that selection. This is a route-local observation, not proof of global
+route absence. Full MIR pipeline/private-factory tests were not run locally.
+Lowering instruction/plan regressions pass 34/478, language/ownership gates
+48/1202, and cold loading validates all 51 API declarations with no aliases,
+Bootstrap or Diagnostics imports. Changed MIR/test files lint with zero errors
+or warnings. Canonical document validation passes 240 documents/19 indexes;
+the roadmap structural check passes and its dated coverage figures remain
+non-authoritative. Current-Main comparison, clean source review/publication
+and own CI audit remain pending.
 
 The slice establishes no full MIR verification, canonical diagnostic identity,
 source/checked-Core authentication, profile/effect/ownership/safety legality,
