@@ -85,7 +85,8 @@
     (is (= {:id "effect/restricted" :status :restricted
             :restricted true :uncertain false :pending false}
            (first (get-in by-key ["attention/restricted" :effects]))))
-    (is (= {:count 1 :records [{:job "job/one" :status :running
+    (is (= {:scope :recorded-model-jobs-only
+            :count 1 :records [{:job "job/one" :status :running
                                 :mode :read :thread "thread-1" :turn "turn-1"
                                 :record {:state-file (str (io/file dir "state.edn"))
                                          :state-sha256 digest :job-key "job/one"}}]}
@@ -98,6 +99,103 @@
     (is (= digest (get-in summary [:state :sha256])))
     (is (not (contains? (:state summary) :operator-planning))
         "retained history is represented by pointers and attention facts, not copied wholesale")))
+
+(deftest status-summary-shows-non-attention-evidence-with-explicit-identity-status
+  (let [dir (temp-dir)
+        cfg (config dir)
+        evidence-tasks
+        {"ci/early"
+         {:key "ci/early" :status :ci :base "base-ci" :candidate "candidate-ci" :tree "tree-ci"
+          :checks nil :review nil}
+         "check/failed"
+         {:key "check/failed" :status :repair :base "base-failed" :candidate "candidate-failed" :tree "tree-failed"
+          :checks {:candidate "candidate-failed" :tree "tree-failed" :result :failed :commands [["check"]]}
+          :review {:base "base-failed" :candidate "candidate-failed" :tree "tree-failed"
+                   :verdict "changes_requested"}}
+         "check/unknown"
+         {:key "check/unknown" :status :ready :base "base-unknown" :candidate "candidate-unknown" :tree "tree-unknown"
+          :checks {:candidate "candidate-unknown" :tree "tree-unknown" :result :unknown}
+          :review {:base "base-unknown" :candidate "candidate-unknown" :tree "tree-unknown"
+                   :verdict "commented"}}
+         "check/passed"
+         {:key "check/passed" :status :ready :base "base-passed" :candidate "candidate-passed" :tree "tree-passed"
+          :checks {:candidate "candidate-passed" :tree "tree-passed" :result :passed}
+          :review {:base "base-passed" :candidate "candidate-passed" :tree "tree-passed"
+                   :verdict "approved"}}
+         "check/stale"
+         {:key "check/stale" :status :repair :base "base-current" :candidate "candidate-current" :tree "tree-current"
+          :checks {:candidate "candidate-old" :tree "tree-old" :result :passed}
+          :review {:base "base-current" :candidate "candidate-old" :tree "tree-old"
+                   :verdict "approved"}}
+         "check/incomplete-evidence"
+         {:key "check/incomplete-evidence" :status :ready :base "base-incomplete" :candidate "candidate-incomplete"
+          :tree "tree-incomplete"
+          :checks {:candidate nil :tree "tree-incomplete" :result :passed}
+          :review {:base " " :candidate "candidate-incomplete" :tree "tree-incomplete"
+                   :verdict "approved"}}
+         "check/incomplete-task"
+         {:key "check/incomplete-task" :status :ready :base "base-task" :candidate "" :tree "tree-task"
+          :checks {:candidate "candidate-task" :tree "tree-task" :result :failed}
+          :review {:base "base-task" :candidate "candidate-task" :tree "tree-task"
+                   :verdict "changes_requested"}}
+         "check/both-blank"
+         {:key "check/both-blank" :status :ready :base "" :candidate "" :tree ""
+          :checks {:candidate "" :tree "" :result :failed}
+          :review {:base "" :candidate "" :tree "" :verdict "commented"}}
+         "review/nil-base"
+         {:key "review/nil-base" :status :ready :base nil :candidate "candidate-nil-base" :tree "tree-nil-base"
+          :checks {:candidate "candidate-nil-base" :tree "tree-nil-base" :result :unknown}
+          :review {:base "base-recorded" :candidate "candidate-nil-base" :tree "tree-nil-base"
+                   :verdict "approved"}}}
+        state (assoc (update (state-fixture) :tasks merge evidence-tasks) :jobs {})
+        digest (rt/digest (pr-str state))
+        control {:file (str (io/file dir "control.edn"))
+                 :available true :status :active :paused false}
+        summary (main/status-summary cfg state digest control)
+        by-key (into {} (map (juxt :key identity) (:non-attention summary)))
+        state-file (str (io/file dir "state.edn"))]
+    (is (= :recorded-model-jobs-only (get-in summary [:jobs :scope])))
+    (is (= {:scope :recorded-model-jobs-only :count 0 :records []}
+           (:jobs summary)))
+    (is (= (set (conj (set (keys evidence-tasks)) "ready/item"))
+           (set (keys by-key))))
+    (doseq [[key task] (merge {"ready/item" (get-in state [:tasks "ready/item"])} evidence-tasks)
+            :let [entry (by-key key)]]
+      (is (= (merge {:base nil :candidate nil :tree nil}
+                    (select-keys task [:key :status :base :candidate :tree]))
+             (select-keys entry [:key :status :base :candidate :tree])))
+      (is (= {:state-file state-file :state-sha256 digest :task-key key}
+             (:record entry))))
+    (is (= {:identity-status :missing :identity {} :recorded-result nil}
+           (:checks (by-key "ci/early"))))
+    (is (= {:identity-status :missing :identity {} :recorded-verdict nil}
+           (:review (by-key "ci/early"))))
+    (doseq [[key result verdict]
+            [["check/failed" :failed "changes_requested"]
+             ["check/unknown" :unknown "commented"]
+             ["check/passed" :passed "approved"]]]
+      (is (= :matching (get-in (by-key key) [:checks :identity-status])))
+      (is (= result (get-in (by-key key) [:checks :recorded-result])))
+      (is (= :matching (get-in (by-key key) [:review :identity-status])))
+      (is (= verdict (get-in (by-key key) [:review :recorded-verdict]))))
+    (is (= {:candidate "candidate-failed" :tree "tree-failed"}
+           (get-in (by-key "check/failed") [:checks :identity])))
+    (is (= {:base "base-failed" :candidate "candidate-failed" :tree "tree-failed"}
+           (get-in (by-key "check/failed") [:review :identity])))
+    (is (= :stale (get-in (by-key "check/stale") [:checks :identity-status])))
+    (is (= :stale (get-in (by-key "check/stale") [:review :identity-status])))
+    (is (= :passed (get-in (by-key "check/stale") [:checks :recorded-result])))
+    (is (= "candidate-old" (get-in (by-key "check/stale") [:checks :identity :candidate])))
+    (is (= "candidate-old" (get-in (by-key "check/stale") [:review :identity :candidate])))
+    (doseq [key ["check/incomplete-evidence" "check/incomplete-task" "check/both-blank"]]
+      (is (= :stale (get-in (by-key key) [:checks :identity-status])) key)
+      (is (= :stale (get-in (by-key key) [:review :identity-status])) key))
+    (is (= :matching (get-in (by-key "review/nil-base") [:checks :identity-status])))
+    (is (= :stale (get-in (by-key "review/nil-base") [:review :identity-status])))
+    (is (nil? (get-in (by-key "check/incomplete-evidence") [:checks :identity :candidate])))
+    (is (= " " (get-in (by-key "check/incomplete-evidence") [:review :identity :base])))
+    (is (= "candidate-task" (get-in (by-key "check/incomplete-task") [:checks :identity :candidate])))
+    (is (= "base-recorded" (get-in (by-key "review/nil-base") [:review :identity :base])))))
 
 (deftest status-summary-redacts-credentials-and-is-deterministic
   (let [dir (temp-dir)
