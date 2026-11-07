@@ -502,6 +502,8 @@
   {:namespace gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
   {:namespace gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
+  "bootstrap/clojure/test/gravity/lowering/native_backend_test.clj"
+  {:namespace gravity.lowering.native-backend-test :slice "SH-17" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
   {:namespace gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
   "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"
@@ -512,18 +514,32 @@
   {:namespace gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}
   "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"
   {:namespace gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
+  "bootstrap/clojure/test/gravity/backend/llvm/native_manifest_test.clj"
+  {:namespace gravity.backend.llvm.native-manifest-test :slice "SH-18" :owner :sh-target-llvm}
   "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj"
   {:namespace gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
+  "bootstrap/clojure/test/gravity/backend/mlir/native_manifest_test.clj"
+  {:namespace gravity.backend.mlir.native-manifest-test :slice "SH-18" :owner :sh-target-mlir}
   "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"
   {:namespace gravity.backend.gpu.pipeline-test :slice "SH-18" :owner :sh-target-gpu}
+  "bootstrap/clojure/test/gravity/backend/gpu/native_manifest_test.clj"
+  {:namespace gravity.backend.gpu.native-manifest-test :slice "SH-18" :owner :sh-target-gpu}
   "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj"
   {:namespace gravity.backend.hdl.pipeline-test :slice "SH-18" :owner :sh-target-hdl}
+  "bootstrap/clojure/test/gravity/backend/hdl/native_manifest_test.clj"
+  {:namespace gravity.backend.hdl.native-manifest-test :slice "SH-18" :owner :sh-target-hdl}
   "bootstrap/clojure/test/gravity/backend/workflow/pipeline_test.clj"
   {:namespace gravity.backend.workflow.pipeline-test :slice "SH-18" :owner :sh-target-workflow}
+  "bootstrap/clojure/test/gravity/backend/workflow/native_manifest_test.clj"
+  {:namespace gravity.backend.workflow.native-manifest-test :slice "SH-18" :owner :sh-target-workflow}
   "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj"
   {:namespace gravity.backend.query.pipeline-test :slice "SH-18" :owner :sh-target-query}
+  "bootstrap/clojure/test/gravity/backend/query/native_manifest_test.clj"
+  {:namespace gravity.backend.query.native-manifest-test :slice "SH-18" :owner :sh-target-query}
   "bootstrap/clojure/test/gravity/backend/mobile/pipeline_test.clj"
   {:namespace gravity.backend.mobile.pipeline-test :slice "SH-18" :owner :sh-target-mobile}
+  "bootstrap/clojure/test/gravity/backend/mobile/native_manifest_test.clj"
+  {:namespace gravity.backend.mobile.native-manifest-test :slice "SH-18" :owner :sh-target-mobile}
   "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"
