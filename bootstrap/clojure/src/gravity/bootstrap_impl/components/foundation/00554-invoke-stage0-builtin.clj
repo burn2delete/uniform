@@ -2,57 +2,9 @@
 
 (defn invoke-stage0-builtin
   [module callee args]
-  (try
-    (case callee
-      + (apply + args)
-      - (do (assert-min-arity! module callee args 1)
-            (apply - args))
-      * (apply * args)
-      / (do (assert-min-arity! module callee args 1)
-            (apply / args))
-      = (do (assert-min-arity! module callee args 1)
-            (apply = args))
-      < (do (assert-min-arity! module callee args 2)
-            (apply < args))
-      > (do (assert-min-arity! module callee args 2)
-            (apply > args))
-      <= (do (assert-min-arity! module callee args 2)
-             (apply <= args))
-      >= (do (assert-min-arity! module callee args 2)
-             (apply >= args))
-      str (apply str args)
-      pr-str (p15-s23-seed-readable-pr-str (:source-path module) args)
-      hash-map (do (assert-even-arity! module callee args)
-                   (apply hash-map args))
-      vector (vec args)
-      list (apply list args)
-      conj (do (assert-min-arity! module callee args 1)
-               (apply conj args))
-      assoc (do
-              (assert-min-arity! module callee args 3)
-              (when (even? (count args))
-                (fail-call-arity! "L2-BUILTIN-ARITY" module callee args
-                                  "a collection followed by key/value pairs"))
-              (apply assoc args))
-      get (do (assert-between-arity! module callee args 2 3)
-              (apply get args))
-      first (do (assert-exact-arity! module callee args 1)
-                (first (first args)))
-      second (do (assert-exact-arity! module callee args 1)
-                 (second (first args)))
-      rest (do (assert-exact-arity! module callee args 1)
-               (p15-s23-seed-readable-normalized-rest (first args)))
-      count (do (assert-exact-arity! module callee args 1)
-                (count (first args))))
-    (catch clojure.lang.ExceptionInfo ex
-      (throw ex))
-    (catch Exception ex
-      (fail! "L2-BUILTIN-ERROR"
-             "stage0 builtin call failed"
-             {:source-span {:source (:source-path module)}
-              :function callee
-              :cause-message (.getMessage ex)
-              :remediation "Keep builtin inputs inside the checked stage0 core subset."}))))
+  (gravity.runtime/invoke-native-stage0-builtin
+    {:assert-min-arity! (var assert-min-arity!), :assert-exact-arity! (var assert-exact-arity!), :assert-between-arity! (var assert-between-arity!), :assert-even-arity! (var assert-even-arity!), :fail-call-arity! (var fail-call-arity!), :readable-pr-str (var p15-s23-seed-readable-pr-str), :normalized-rest (var p15-s23-seed-readable-normalized-rest), :fail! (var fail!)}
+    module callee args))
 
 (defn invoke-stage0-function
   [module callee args]

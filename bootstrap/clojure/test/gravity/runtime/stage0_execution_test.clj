@@ -12,6 +12,11 @@
    :validate-effects! #'b/validate-module-effects!
    :invoke-builtin #'b/invoke-stage0-builtin
    :fail-call-arity! #'b/fail-call-arity! :fail! #'b/fail! :join #'str/join})
+(def ^:private builtin-operations
+  {:assert-min-arity! #'b/assert-min-arity! :assert-exact-arity! #'b/assert-exact-arity!
+   :assert-between-arity! #'b/assert-between-arity! :assert-even-arity! #'b/assert-even-arity!
+   :fail-call-arity! #'b/fail-call-arity! :readable-pr-str #'b/p15-s23-seed-readable-pr-str
+   :normalized-rest #'b/p15-s23-seed-readable-normalized-rest :fail! #'b/fail!})
 (def ^:private native-plan {:source {:path "execution.gravity"}
                            :module {:source-path "execution.gravity"}
                            :entrypoint 'main})
@@ -28,7 +33,7 @@
   (let [names '[execute-native-stage0-instructions execute-native-stage0-instruction
                 execute-native-stage0-function execute-native-stage0-plan]
         contract (:gravity/namespace-contract (meta #'runtime/execute-native-stage0-plan))]
-    (is (= 42 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
+    (is (= 43 (count (ns-publics 'gravity.runtime)) (count (:public-api contract))))
     (is (= (set (keys operations))
            (set (mapcat :operation-keys (vals (select-keys (:public-api contract) names))))))
     (is (every? var? (vals operations)))
@@ -193,3 +198,126 @@
       (is (= :gravity/stage0-hosted-core-compiled-plan (:kind plan)))
       (is (= expected (:id (ex-data error))))
       (is (= path (get-in (ex-data error) [:source-span :source]))))))
+
+(deftest ordinary-stage0-builtin-contract-has-its-own-eight-ports
+  (let [contract (:gravity/namespace-contract (meta #'runtime/invoke-native-stage0-builtin))
+        api (get-in contract [:public-api 'invoke-native-stage0-builtin])]
+    (is (= '{:arglists ([operations module callee args]) :admission :none :hosted-seed-only? true
+             :contract-boundary :stage0-native-ordinary-builtin-invocation
+             :input-boundary :trusted-native-stage0-module-and-evaluated-arguments
+             :operation-keys [:assert-min-arity! :assert-exact-arity! :assert-between-arity! :assert-even-arity!
+                              :fail-call-arity! :readable-pr-str :normalized-rest :fail!]
+             :operation-selection :late-owner-var-before-call-arguments
+             :argument-evaluation-owner :existing-caller :failure-transport-owner :supplied-operation}
+           api))
+    (is (= (:arglists (meta #'runtime/invoke-native-stage0-builtin)) (:arglists api)))
+    (is (= (set (:operation-keys api)) (set (keys builtin-operations))))
+    (is (every? var? (vals builtin-operations)))
+    (is (false? (:authenticates-plans? contract)))
+    (is (false? (:grants-authority? contract)))
+    (is (some #{:stage0-build-read-declared-input} (:unsupported contract)))))
+
+(deftest ordinary-stage0-builtin-arms-preserve-native-values
+  (let [module {:source-path "builtin-native.gravity"}
+        cases [['+ [] 0] ['+ [1 2 3] 6] ['- [8] -8] ['* [] 1] ['/ [12 3] 4]
+               ['= [nil nil] true] ['< [1 2 3] true] ['> [3 2] true]
+               ['<= [1 1] true] ['>= [2 2] true] ['str [nil false "x"] "falsex"]
+               ['pr-str ['(a b)] "(a b)"] ['hash-map [:a 1] {:a 1}]
+               ['vector [:a nil] [:a nil]] ['list [1 2] '(1 2)] ['conj [[1] 2] [1 2]]
+               ['assoc [{} :a 1] {:a 1}] ['get [{:a false} :a] false]
+               ['get [{} :absent :missing] :missing] ['first [[1 2]] 1]
+               ['second [[1 2]] 2] ['rest [[1 2 3]] '(2 3)] ['count [[1 2]] 2]]]
+    (is (= '#{+ - * / = < > <= >= str pr-str hash-map vector list conj assoc get first second rest count}
+           (set (map first cases))))
+    (doseq [[callee args expected] cases]
+      (is (= expected (runtime/invoke-native-stage0-builtin builtin-operations module callee args))
+          (str callee " " args)))
+    (is (= clojure.lang.PersistentList
+           (class (runtime/invoke-native-stage0-builtin builtin-operations module 'rest [[1 2 3]]))))))
+
+(deftest ordinary-stage0-builtin-arity-and-host-error-facts-stay-local
+  (let [path (Object.) module {:source-path path}]
+    (doseq [[callee args] [['- []] ['/ []] ['= []] ['< [1]] ['> [1]] ['<= [1]] ['>= [1]]
+                           ['hash-map [:odd]] ['conj []] ['assoc [{} :key]] ['assoc [{} :x 1 :y]]
+                           ['get []] ['get [{} :a :b :c]] ['first []] ['second []] ['rest []] ['count []]]]
+      (let [error (observed-error #(runtime/invoke-native-stage0-builtin builtin-operations module callee args))]
+        (is (= "L2-BUILTIN-ARITY" (:id (ex-data error))))
+        (is (= callee (:function (ex-data error))))
+        (is (identical? path (get-in (ex-data error) [:source-span :source])))))
+    (doseq [[callee args] [['/ [1 0]] ['count [42]] ['build-read-declared-input []]]]
+      (let [error (observed-error #(runtime/invoke-native-stage0-builtin builtin-operations module callee args))]
+        (is (= "L2-BUILTIN-ERROR" (:id (ex-data error))))
+        (is (= callee (:function (ex-data error))))
+        (is (identical? path (get-in (ex-data error) [:source-span :source])))))))
+
+(deftest ordinary-stage0-owner-exceptions-and-returning-failures-are-preserved
+  (let [module {:source-path "builtin-errors.gravity"} sentinel (ex-info "owner" {:opaque :owner})
+        fatal (Error. "fatal owner")]
+    (doseq [error [sentinel fatal]]
+      (with-redefs [b/assert-min-arity! (fn [& _] (throw error))
+                    b/fail! (fn [& _] (throw (Exception. "unexpected remap")))]
+        (is (identical? error
+                       (observed-error #(runtime/invoke-native-stage0-builtin builtin-operations module '- [1]))))))
+    (let [events (atom [])]
+      (with-redefs [b/assert-min-arity! (fn [& _] (throw (Exception. "ordinary owner")))
+                    b/fail! (fn [id message data] (swap! events conj [id message data]) (throw sentinel))]
+        (is (identical? sentinel
+                       (observed-error #(runtime/invoke-native-stage0-builtin builtin-operations module '- [1])))))
+      (is (= 1 (count @events)))
+      (is (= "L2-BUILTIN-ERROR" (ffirst @events)))
+      (is (= "ordinary owner" (get-in @events [0 2 :cause-message]))))
+    (let [events (atom []) token (Object.)]
+      (with-redefs [b/fail-call-arity! (fn [& _] (swap! events conj :arity) false)
+                    b/fail! (fn [id & _] (swap! events conj id) token)]
+        (is (identical? token
+                       (runtime/invoke-native-stage0-builtin builtin-operations module 'assoc [{} :x 1 :y])))
+        (is (= [:arity "L2-BUILTIN-ERROR"] @events))))))
+
+(deftest ordinary-stage0-formatter-is-selected-before-source-lookup
+  (let [events (atom []) path (Object.) token (Object.)
+        late (fn [& _] (swap! events conj :late) :late)
+        source-lookup (fn [key not-found]
+                        (if (= :source-path key)
+                          (do (swap! events conj :source-path)
+                              (alter-var-root #'b/p15-s23-seed-readable-pr-str (constantly late)) path)
+                          not-found))
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key] (source-lookup key nil))
+                 (valAt [_ key not-found] (source-lookup key not-found)))
+        lookup (fn [key not-found] (swap! events conj key) (get builtin-operations key not-found))
+        ports (reify clojure.lang.ILookup
+                (valAt [_ key] (lookup key nil))
+                (valAt [_ key not-found] (lookup key not-found)))]
+    (with-redefs [b/p15-s23-seed-readable-pr-str
+                  (fn [input values]
+                    (swap! events conj :selected)
+                    (is (identical? path input)) (is (= [:value] values)) token)]
+      (is (= 3 (runtime/invoke-native-stage0-builtin ports module '+ [1 2])))
+      (is (empty? @events))
+      (is (identical? token (runtime/invoke-native-stage0-builtin ports module 'pr-str [:value])))
+      (is (= [:readable-pr-str :source-path :selected] @events))
+      (reset! events [])
+      (is (= :late (runtime/invoke-native-stage0-builtin ports module 'pr-str [:after])))
+      (is (= [:readable-pr-str :source-path :late] @events)))))
+
+(deftest ordinary-stage0-error-owner-is-selected-before-fact-construction
+  (let [events (atom []) path (Object.) token (Object.)
+        late (fn [& _] (swap! events conj :late) :late)
+        lookup (fn [key not-found]
+                 (if (= :source-path key)
+                   (do (swap! events conj :source-path)
+                       (alter-var-root #'b/fail! (constantly late)) path)
+                   not-found))
+        module (reify clojure.lang.ILookup
+                 (valAt [_ key] (lookup key nil))
+                 (valAt [_ key not-found] (lookup key not-found)))]
+    (with-redefs [b/fail! (fn [id _ data]
+                           (swap! events conj :selected)
+                           (is (= "L2-BUILTIN-ERROR" id))
+                           (is (identical? path (get-in data [:source-span :source]))) token)]
+      (is (identical? token
+                     (runtime/invoke-native-stage0-builtin builtin-operations module 'unknown-builtin [])))
+      (is (= [:source-path :selected] @events))
+      (reset! events [])
+      (is (= :late (runtime/invoke-native-stage0-builtin builtin-operations module 'unknown-builtin [])))
+      (is (= [:source-path :late] @events)))))

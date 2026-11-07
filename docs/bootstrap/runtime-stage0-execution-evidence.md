@@ -47,8 +47,12 @@ ports eagerly, add a generic dispatcher or sort execution inputs.
 
 Bootstrap calls Runtime; Runtime does not require Bootstrap, Lowering, CLI,
 release or a backend. Bootstrap retains source intake, macro expansion,
-instruction/plan compilation, all individual policy implementations, native
-builtin dispatch, diagnostic construction/publication and artifact admission.
+instruction/plan compilation, all individual policy implementations, the native
+builtin adapter and helper bodies, diagnostic construction/publication and
+artifact admission. The subsequent [ordinary Stage0 builtin
+extraction](runtime-stage0-builtins-evidence.md) moves that adapter's dispatch,
+arity placement and ordinary-host-exception remap into Runtime; supplied arity
+helpers and generic failure transport keep their original implementations.
 The moved stage owns instruction selection, traversal, local/function lookup,
 entry/arity-check placement and existing diagnostic decisions. Failure payloads
 and messages retain the original operation boundary and identity.
@@ -88,8 +92,8 @@ the exact clean authored tuple.
 
 ## Current status and unsupported boundaries
 
-The four complete executor bodies are implemented behind eight live owner Var
-ports. Runtime exposes forty-two public APIs; all thirty-eight earlier public
+The four complete executor bodies were implemented behind eight live owner Var
+ports. That extraction exposed forty-two public APIs; all thirty-eight earlier public
 function bodies remain byte-identical. Bootstrap's surrounding compiler and
 assembler bodies are unchanged, and all twenty-six earlier CI vectors remain
 structurally identical. Conservation receipt SHA256:
@@ -124,7 +128,10 @@ slice; neither discovery grants acceptance. Structural document and full-languag
 roadmap validators pass; those checks do not establish semantic or release
 completion. Independent semantic/adversarial review, complete current-Main lint, clean
 authored publication, provider/CI audit and integration remain pending at this
-capture. No Main integration is claimed.
+capture. No Main integration is claimed. These counts, hashes and observations
+describe the executor extraction at its recorded capture. The subsequent ordinary
+Stage0 builtin extraction adds a distinct API, taking the public inventory to 43;
+its current checks and evidence are recorded separately in the linked document.
 
 The original nine-path lease governs authoring. Main
 integration remains with the designated integrator after exact current-base

@@ -213,13 +213,35 @@ callee/argument data plus eight explicit live owner Vars; they return existing
 host values, writer effects, captured stdout or unchanged failures. They own
 execution-time traversal, lookup, entry and function-arity decisions, separately
 from Lowering's compile-time entry decisions. Bootstrap retains policy bodies,
-builtin dispatch, diagnostic construction/transport and source/plan compilation.
+the builtin adapter/helpers, diagnostic construction/transport and source/plan
+compilation. The subsequent ordinary builtin extraction below owns the
+adapter's dispatch decisions and ordinary host-error remap.
 Tests in `gravity.runtime.stage0-execution-test` cover real source execution and
 post-emission arity refusals, late ports, evaluation order, writer capture,
 opaque values and malformed-native-data compatibility. Runtime remains a
 dependency of Bootstrap adapters without a reverse import. This native Stage0
 family adds no source/plan authentication, runtime/provider grants, canonical
 Core/MIR/runtime manifests, backend execution, release or self-hosting authority.
+
+The [native Stage0 ordinary builtin extraction](runtime-stage0-builtins-evidence.md)
+adds `invoke-native-stage0-builtin [operations module callee args]` with eight
+explicit late owner Vars. It consumes the trusted native module and already
+evaluated arguments, returning the existing values or failures for all twenty-one
+ordinary arms. This module's `:source-path` carrier differs from the existing
+Stage2 `hosted-builtin` plan and seventeen-port interface. Runtime owns Stage0
+arm selection, arity placement and `L2-BUILTIN-ERROR` remap decisions/local
+facts; supplied helpers retain arity predicates/facts and generic failure
+construction/transport. Bootstrap retains the readable formatter/normalizer
+bodies, argument evaluation, reserved/compiler-native dispatch and source/plan
+admission. Tests in `gravity.runtime.stage0-execution-test` and the exact public
+inventory in `gravity.runtime.pipeline-test` cover values, refusals, late Var
+selection before argument lookup, exception/source identity and non-authority.
+The enclosing public source route preserves real plans, reports, deterministic
+IDs, stdout and refusals; the builtin creates no standalone artifact. Code
+dependencies remain Bootstrap to Runtime to core without a reverse import.
+`build-read-declared-input` remains unsupported. This adds no canonical runtime,
+portable error ABI, Reader/build-read service, backend, authentication, release
+or self-hosting authority.
 
 The [native Stage0 plan assembly extraction](lowering-plan-assembly-evidence.md)
 adds `assemble-native-stage0-plan [operations source-path source-text module]`

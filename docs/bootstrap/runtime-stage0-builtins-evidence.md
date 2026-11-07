@@ -2,10 +2,10 @@
 
 ## Scope and governing contracts
 
-Move the complete existing `invoke-stage0-builtin` body from
+The complete existing `invoke-stage0-builtin` body moves from
 `00554-invoke-stage0-builtin.clj` into
-`gravity.runtime/invoke-native-stage0-builtin`. Keep the existing three-argument
-Bootstrap entry as an adapter. The other interpreter/compiler definitions in
+`gravity.runtime/invoke-native-stage0-builtin`. The existing three-argument
+Bootstrap entry remains an adapter. The other interpreter/compiler definitions in
 that component and the separate Stage2 `hosted-builtin` API remain outside
 this extraction.
 
@@ -19,7 +19,8 @@ The source parent is frozen Parser source
 `6385ef78ce88ba60fd5b9308d8aba13d4771a873`, tree
 `abe36db99599822795dbf0d1ec0946fb3054878e`. Published Main
 `b722e29a0096381fbf476ca04771fe6567657f69` is already an ancestor. At scope
-capture the parent's own hosted CI is pending independent audit. This source
+capture the parent's own hosted CI was pending independent audit. Its later
+successful independent audit is dependency context, not acceptance here. This source
 imports no new Main paths and inherits no source, provider or CI acceptance.
 The seven-path claim owns the two implementation files, two existing Runtime
 test files, this document and two existing Runtime boundary/evidence documents.
@@ -83,28 +84,54 @@ Returning failure callbacks retain compatibility behavior without admission.
 
 ## Tests, consumers and verification
 
-Use the ordinary public `macro-source-artifact(path, text)` route, its genuine
-module/expanded forms, `stage0-compiled-core-plan` and the public executor.
-Compile and execute both `core-app` spellings, then prove a genuine builtin
-arity refusal after real plan emission. Compare full before/after plans,
-reports, source/path facts, identities, results, stdout and refusal data.
+Before/after observations use the ordinary public
+`macro-source-artifact(path, text)` route, its genuine module/expanded forms,
+`stage0-compiled-core-plan` and the public executor. All twelve complete
+observations are identical: twelve actual plans, six successful stdout
+executions and six runtime refusals after emission. Both source spellings
+cover the example and accepted-fixture `core-app`, the builtin minimum-arity
+fixture, all twenty-one ordinary arms, odd `assoc` key/value arity and division
+by zero. Refusals retain `L2-BUILTIN-ARITY` or `L2-BUILTIN-ERROR` with the
+original source facts. Plans, reports, module/macro records, source paths and
+hashes, deterministic IDs, builtin calls and value classes are unchanged.
+
+The baseline receipt SHA256 is
+`a2ab302d47a12181f12c5e9b0e8d0c98922dab2d05ac5f23213ea520d7758ed3`;
+the implementation observation receipt SHA256 is
+`b338f7327c555764735fb369fdfb131b64098f0f85086928910b0f6115a4218b`.
+Both record the actual scope HEAD
+`2fb7ea6e73d4ba856055349d7a64121b3a167911`, with separate implementation
+file hashes; they do not claim a later clean commit was observed. Example
+inputs use actual file bytes. Where the fixture has no `.qst` file, its paired
+text is explicitly caller-supplied under that path. Inline cases are likewise
+caller-supplied text. No file authentication or source admission is inferred.
 
 The existing whole `gravity.runtime.stage0-execution-test` command owns new
-Stage0 cases. Add separate eight-port API contract checks, all ordinary arm
+Stage0 cases. Separate eight-port API contract checks cover all ordinary arm
 results, malformed arities, host exceptions, exact exception/source identity,
 late selection, unselected-port avoidance and operator selection before
-argument lookup. Preserve the four executor API contract checks and update
-the Runtime public count from 42 to 43. Add only the new public name to the
-exact inventory in `gravity.runtime.pipeline-test`; retain every old entry
-and generic non-authority assertion. Keep Stage2/P15 behavior tests unchanged.
+argument lookup. The four executor API contract checks remain separate and
+the Runtime public count changes from 42 to 43. Only the new public name is
+added to the exact inventory in `gravity.runtime.pipeline-test`; every old
+entry and generic non-authority assertion remains. Stage2/P15 behavior tests
+are unchanged. The whole Stage0 namespace passes 19 tests and 222 assertions;
+the selected generic public-inventory test passes 1 test and 309 assertions.
+Language-boundary and namespace-ownership checks pass 48 tests and 1202
+assertions. Runtime and both changed test files pass clj-kondo with zero errors
+and warnings; `git diff --check` passes. Eleven selected earlier native Runtime
+tests pass 419 assertions without invoking their source-compiler fixtures.
+Cold loading exposes all 43 public APIs with matching declarations and argument
+lists, no namespace aliases, and no Bootstrap or Diagnostics namespace loaded.
+The structural document validator passes 240 documents and 19 phase indexes;
+the full-language roadmap structural validator also passes. Neither validator
+establishes semantic completeness or current roadmap coverage.
 Existing whole-namespace CI mappings already select both test files, so no CI
 command, workflow, catalog, ownership or load-order edit is required.
 
-Update the existing Stage0 execution evidence and namespace map to distinguish
-the new ordinary Stage0 API from the existing Stage2 builtin API and to narrow
-the old Bootstrap-dispatch ownership statement. Retain historical observations
-as history. Run proportionate native regressions, the language boundary,
-document/roadmap checks and complete current-Main comparison lint. Independent
+The existing Stage0 execution evidence and namespace map distinguish
+the new ordinary Stage0 API from the existing Stage2 builtin API and narrow
+the old Bootstrap-dispatch ownership statement. Historical observations remain
+history. Complete current-Main comparison lint remains required. Independent
 semantic, adversarial, conservation, provider and own-CI review must bind the
 clean final source and its exact base before integration eligibility.
 
@@ -117,8 +144,14 @@ are discovery evidence, not implementation acceptance.
 
 ## Current status and unsupported boundaries
 
-This is the early scope draft. The new Runtime API is not yet implemented at
-this capture. The original module carrier differs from the Stage2 plan, so
+The new Runtime API and compatibility adapter are implemented in the current
+working tree. The original complete-body receipt has SHA256
+`27c48a26aaea4798c989d64ac507b2ae92eab347c459a8f14bb9c34a8041a7a9`.
+It retains the original and transformed bodies, the exact eight operator
+substitutions, new argument list and adapter. Final clean-commit acceptance,
+own hosted CI, provider review and Main integration remain pending; provisional
+review of dirty source does not confer acceptance. The original module carrier
+differs from the Stage2 plan, so
 `hosted-builtin` and its seventeen-key map are not substitutes for this body.
 
 `build-read-declared-input` remains an existing catalog/lowering vocabulary
