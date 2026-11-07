@@ -873,8 +873,12 @@
   snapshot)
 
 (def ^:private planning-reference-key :uniform/retained-repository-metadata)
+(def ^:private planning-task-reference-key :uniform/retained-task-provider-field)
 (def ^:private planning-body-reference-key :uniform/retained-untrusted-pr-body)
 (def ^:private planning-reference-policy :uniform/retained-repository-metadata-v1)
+(def ^:private planning-task-reference-policy :uniform/retained-task-provider-field-v1)
+(def ^:private planning-description-reference-key :uniform/retained-task-description)
+(def ^:private planning-description-reference-policy :uniform/retained-task-description-v1)
 (def ^:private planning-inline-repository-keys
   #{:id :node_id :name :full_name :fullName :private :html_url :fork :default_branch
     :owner :visibility :disabled :archived :permissions})
@@ -883,6 +887,19 @@
 
 (defn- planning-reference [artifact artifact-sha path]
   {:artifact artifact :sha256 artifact-sha :path path :policy planning-reference-policy})
+
+(defn- planning-task-reference [artifact artifact-sha path field value inline]
+  {:artifact artifact
+   :sha256 artifact-sha
+   :path path
+   :field field
+   :policy planning-task-reference-policy
+   :type (if (map? value) :map :string)
+   :inline-keys (vec (sort inline))
+   :omitted-keys (vec (sort (if (map? value)
+                              (remove inline (keys value))
+                              [])))
+   :value-sha256 (rt/digest (pr-str value))})
 
 (defn- project-planning-provider-map [value path inline artifact artifact-sha]
   (cond
@@ -900,6 +917,20 @@
                planning-reference-key
                (planning-reference artifact artifact-sha path))
         value))))
+
+(defn- project-planning-task-provider-map [value path inline artifact artifact-sha]
+  (cond
+    (nil? value) value
+    (not (map? value))
+    (rt/fail! "Planning provider metadata is malformed"
+              {:path path :actual-type (type value)})
+    (contains? value planning-task-reference-key)
+    (rt/fail! "Planning provider metadata already has a presentation reference"
+              {:path path})
+    :else
+    (assoc (select-keys value inline)
+           planning-task-reference-key
+           (planning-task-reference artifact artifact-sha path (last path) value inline))))
 
 (defn- planning-metadata-paths [open-prs]
   (vec (concat
@@ -946,6 +977,67 @@
                 pr))
             (range) projected))))
 
+(defn- project-planning-task [task artifact artifact-sha]
+  (let [task-key (:key task)
+        issue (:issue task)]
+    (if-not (some? issue)
+      task
+      (do
+        (when-not (map? issue)
+          (rt/fail! "Planning issue metadata is malformed"
+                    {:path [:tasks task-key :issue]
+                     :actual-type (type issue)}))
+        (let [body-path [:tasks task-key :issue :body]
+              user-path [:tasks task-key :issue :user]
+              creator-path [:tasks task-key :issue :milestone :creator]
+              description (:description task)
+              projected-issue
+              (cond-> issue
+                (contains? issue :body)
+                (assoc :body
+                       (let [body (:body issue)]
+                         (cond
+                           (nil? body) nil
+                           (string? body)
+                           {planning-body-reference-key
+                            (planning-task-reference artifact artifact-sha body-path
+                                                      :body body #{})}
+                           :else
+                           (rt/fail! "Planning issue body is malformed"
+                                     {:path body-path :actual-type (type body)}))))
+                (contains? issue :user)
+                (assoc :user
+                       (project-planning-task-provider-map (:user issue) user-path
+                                                           planning-inline-user-keys
+                                                           artifact artifact-sha))
+                (and (map? (:milestone issue))
+                     (contains? (:milestone issue) :creator))
+                (assoc-in [:milestone :creator]
+                          (project-planning-task-provider-map
+                           (get-in issue [:milestone :creator]) creator-path
+                           planning-inline-user-keys artifact artifact-sha)))
+              _ (when (and (map? description)
+                           (contains? description planning-description-reference-key))
+                  (rt/fail! "Planning task description already has a presentation reference"
+                            {:path [:tasks task-key :description]}))
+              projected-task (assoc task :issue projected-issue)
+              duplicate-description?
+              (and (map? description)
+                   (every? (fn [field]
+                             (and (contains? task field)
+                                  (= (get task field) (get description field))))
+                           (keys description)))]
+          (if duplicate-description?
+            (assoc projected-task :description
+                   {planning-description-reference-key
+                    {:artifact artifact
+                     :sha256 artifact-sha
+                     :path [:tasks task-key :description]
+                     :policy planning-description-reference-policy
+                     :keys (vec (sort (keys description)))
+                     :value-sha256 (rt/digest (pr-str description))}})
+            projected-task))))))
+
 (defn- project-planning-tasks [tasks raw-reference]
   (if-not (and (map? raw-reference)
                (string? (:file raw-reference))
@@ -953,48 +1045,7 @@
     tasks
     (let [artifact (:file raw-reference)
           artifact-sha (:sha256 raw-reference)]
-      (mapv (fn [task]
-              (let [task-key (:key task)
-                    issue (:issue task)]
-                (if-not (some? issue)
-                  task
-                  (do
-                    (when-not (map? issue)
-                      (rt/fail! "Planning issue metadata is malformed"
-                                {:path [:tasks task-key :issue]
-                                 :actual-type (type issue)}))
-                    (let [body-path [:tasks task-key :issue :body]
-                          user-path [:tasks task-key :issue :user]
-                          creator-path [:tasks task-key :issue :milestone :creator]
-                          projected-issue
-                          (cond-> issue
-                            (contains? issue :body)
-                            (assoc :body
-                                   (let [body (:body issue)]
-                                     (cond
-                                       (nil? body) nil
-                                       (string? body)
-                                       {planning-body-reference-key
-                                        {:artifact artifact :sha256 artifact-sha
-                                         :path body-path
-                                         :value-sha256 (rt/digest (pr-str body))
-                                         :type :string}}
-                                       :else
-                                       (rt/fail! "Planning issue body is malformed"
-                                                 {:path body-path :actual-type (type body)}))))
-                            (contains? issue :user)
-                            (assoc :user
-                                   (project-planning-provider-map (:user issue) user-path
-                                                                  planning-inline-user-keys
-                                                                  artifact artifact-sha))
-                            (and (map? (:milestone issue))
-                                 (contains? (:milestone issue) :creator))
-                            (assoc-in [:milestone :creator]
-                                      (project-planning-provider-map
-                                       (get-in issue [:milestone :creator]) creator-path
-                                       planning-inline-user-keys artifact artifact-sha)))]
-                      (assoc task :issue projected-issue))))))
-            tasks))))
+      (mapv #(project-planning-task % artifact artifact-sha) tasks))))
 
 (defn- latest-planning-feedback [ctx]
   (some->> (:inspections @(:state ctx))

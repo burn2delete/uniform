@@ -80,22 +80,26 @@
             (reverse metadata-paths))))
 
 (defn restore-planning-tasks [projected raw]
-  (let [reference-key (var-get (ns-resolve 'seedless.workflow 'planning-reference-key))
+  (let [task-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-task-reference-key))
         body-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-body-reference-key))
+        description-reference-key (var-get (ns-resolve 'seedless.workflow 'planning-description-reference-key))
         inline-user-keys (var-get (ns-resolve 'seedless.workflow 'planning-inline-user-keys))]
     (mapv (fn [task]
             (let [task-key (:key task)
                   issue (:issue task)
                   restore-map (fn [value path]
-                                (if (contains? value reference-key)
+                                (if (contains? value task-reference-key)
                                   (let [raw-value (get-in raw path)
                                         fields (remove inline-user-keys (keys raw-value))]
-                                    (merge (dissoc value reference-key)
+                                    (merge (dissoc value task-reference-key)
                                            (select-keys raw-value fields)))
                                   value))]
               (if-not (map? issue)
                 task
                 (cond-> task
+                  (get-in task [:description description-reference-key])
+                  (assoc :description
+                         (get-in raw (get-in task [:description description-reference-key :path])))
                   (get-in issue [:body body-reference-key])
                   (assoc-in [:issue :body]
                             (get-in raw (get-in issue [:body body-reference-key :path])))
@@ -813,13 +817,19 @@
               :type "User" :site_admin false :user_view_type "public"
               :avatar_url "https://example.invalid/avatar" :url "https://api.example.invalid/u"}
         creator (assoc user :id 18 :node_id "user-18" :login "creator")
-        task (assoc (slice "issue-metadata") :status :attention
+        task (assoc (slice "issue-metadata") :description (slice "issue-metadata") :status :attention
                     :error {:message "preserved failure"}
                     :issue {:number 42 :id 4200 :node_id "issue-42" :title "Issue title"
                             :body body :user user
                             :milestone {:number 7 :title "SH-07" :creator creator}})
         projected (project [task] reference)
-        issue (:issue (first projected))]
+        issue (:issue (first projected))
+        body-reference (get-in issue [:body :uniform/retained-untrusted-pr-body])
+        user-reference (get-in issue [:user :uniform/retained-task-provider-field])
+        creator-reference (get-in issue [:milestone :creator :uniform/retained-task-provider-field])
+        description-reference (get-in (first projected) [:description :uniform/retained-task-description])
+        reference-keys #{:artifact :sha256 :path :field :policy :type :inline-keys
+                         :omitted-keys :value-sha256}]
     (is (= :attention (:status (first projected))))
     (is (= {:message "preserved failure"} (:error (first projected))))
     (is (= 42 (:number issue)))
@@ -827,15 +837,33 @@
            (get-in issue [:body :uniform/retained-untrusted-pr-body :type])))
     (is (= [:tasks "issue-metadata" :issue :body]
            (get-in issue [:body :uniform/retained-untrusted-pr-body :path])))
+    (is (= reference-keys (set (keys body-reference))))
+    (is (= {:field :body :type :string :inline-keys [] :omitted-keys []}
+           (select-keys body-reference [:field :type :inline-keys :omitted-keys])))
     (is (not= body (:body issue)))
     (is (= 17 (get-in issue [:user :id])))
     (is (= "seedless" (get-in issue [:user :login])))
     (is (= [:tasks "issue-metadata" :issue :user]
-           (get-in issue [:user :uniform/retained-repository-metadata :path])))
+           (get-in issue [:user :uniform/retained-task-provider-field :path])))
+    (is (= reference-keys (set (keys user-reference))))
+    (is (= :user (:field user-reference)))
+    (is (= :map (:type user-reference)))
+    (is (= [:avatar_url :url] (:omitted-keys user-reference)))
     (is (= [:tasks "issue-metadata" :issue :milestone :creator]
-           (get-in issue [:milestone :creator :uniform/retained-repository-metadata :path])))
+           (get-in issue [:milestone :creator :uniform/retained-task-provider-field :path])))
+    (is (= reference-keys (set (keys creator-reference))))
+    (is (= :creator (:field creator-reference)))
+    (is (= #{:artifact :sha256 :path :policy :keys :value-sha256}
+           (set (keys description-reference))))
+    (is (= [:tasks "issue-metadata" :description] (:path description-reference)))
+    (is (= :uniform/retained-task-description-v1 (:policy description-reference)))
+    (is (= (vec (sort (keys (:description task)))) (:keys description-reference)))
     (is (= [task]
            (restore-planning-tasks projected {:tasks {"issue-metadata" task}})))
+    (is (thrown-with-msg? Exception #"Planning task description already has a presentation reference"
+                          (project [(assoc task :description
+                                            {:uniform/retained-task-description {:artifact "/tampered"}})]
+                                   reference)))
     (is (thrown-with-msg? Exception #"Planning issue body is malformed"
                           (project [(assoc task :issue (assoc (:issue task) :body 42))]
                                    reference)))
