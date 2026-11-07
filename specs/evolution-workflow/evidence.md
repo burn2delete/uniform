@@ -329,3 +329,107 @@ historical rebuild execution and independent acceptance remain separate unrun
 composition/acceptance obligations. The parent remains Open. No integration,
 yank issuance, approval, grant, release, self-hosting or seed retirement is
 claimed, and every retained refused operation remains prohibited.
+
+## Substantive security advisory drafts
+
+Finding: `evolution.advisory-drafts.required-payload-production-v1`.
+Owning task: `evolution/security-response`, still Open. Authored on 2026-11-06
+in the supplied `increment-1316` worktree. No current candidate/base/commit/tree
+identity was supplied or inferred; controller checks must bind the resulting
+candidate. The earlier yank review identities and receipts above describe their
+own historical subjects and provide no advisory implementation or acceptance.
+
+Applied the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md)
+within the four explicitly owned paths. This is substantive new behavior, not
+a private rename. `gravity.evolution.advisory-drafts/create-draft` and its test
+namespace name the subsystem and behavior; planning/finding identities remain
+metadata. Read the selected Spec Kit artifacts, repository instructions,
+constitution, semantic naming, development verification, phase navigation and
+GOV4/GOV10/GOV2 and D0/D1/D2/D3/D6/D8/D9 contracts. Passive reads confirm
+`p17-artifact-values` constructs constant summaries and `gravity.package/decide-policy`
+consumes supplied statuses; neither constructs this advisory. Neither was edited.
+
+Documented the narrow decoded public-data
+[carrier](tasks.md#security-advisory-draft-carrier) after the captured task
+region before authoring the producer. It requires advisory identity/revision,
+accountable owner, package/registry subject, affected and explicit patched-version
+declarations, severity, impact, mitigations, public provenance and retained
+history. Output contains the actual input-sensitive advisory payload and always
+sets draft status, non-admitting authority and unauthenticated version claims.
+Canonical maps preserve deterministic complete rendering across map insertion
+orders; vector content and order survive. No version syntax, range order,
+severity ranking, signature result or disclosure policy is inferred. Explicit
+empty patched-version declarations claim no supplied patch, not patch readiness.
+The producer performs no IO and copies no host mutable object into an artifact.
+
+Authored the required `complete-advisory-payload`,
+`changed-impact-changes-product`, `retained-history-and-provenance` and
+`reordered-map-determinism` fixtures with full expected products and unchanged
+input rendering. Retained history includes withdrawn/corrected drafts and
+public embargo/patch/backport/release references; fixtures retain their content
+without granting their claims authenticity. Map-order controls compare complete
+rendering outside both normal and truncated caller printer bindings.
+
+Authored named missing-affected, missing-patched-declaration, missing-severity,
+missing-impact, missing-mitigations and missing-provenance fixtures, plus
+identity, nested subject/provenance, malformed-field and ordered multi-error
+controls. These compare entire payload-free GOV10006 products with exact
+known-field paths and missing/invalid reasons. `malformed-secret-marker` covers
+bad required data and unknown keys without echoing marker values or keys.
+`mutable-host-input` rejects nested AtomicLong, Java HashMap and ArrayList
+values and a Java root map, compares complete results and unchanged inputs,
+then mutates the rejected host data and requires the original/fresh rejections
+to remain unchanged. `caller-published-state-cannot-promote-draft` compares the
+entire product after supplied publication, authority, approval and grant claims.
+Additional controls cover explicit empty history/patched declarations, opaque
+duplicate version declarations, immutable numeric leaves, Clojure map/vector
+representations and rejection of records, callbacks, lazy/unsupported carriers
+and metadata. These are authored fixtures, not observed passing checks.
+
+Actual worker activity/results: passive `pwd`, `cat`, `sed`, `rg` source/document
+reads and scoped `apply_patch` edits only. No Clojure command, test, build,
+validator, Git command, process enumeration, network operation or consumer
+composition was executed. There are no observed test counters, exits or passing
+receipts. Worker verification and Git inspection, including `git status --short`,
+are prohibited by the controller-owned verification instruction; neither was
+attempted, transferred or routed around. Existing refusals remain binding; no
+new refused action occurred. Ready means authored for controller checking.
+
+Proposed controller argument vectors, all unrun here (executable first):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.advisory-drafts-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Acceptance-dependency controls retain captured task/source identity, historical
+non-promotion, conditional artifact edges, genuine cycles and current-source
+authenticity. Their success, if obtained, proves only their scoped controls.
+The authenticated plan.md was never edited; no whole-file source transition
+was rebound. The captured task region, original criteria, parent Open state,
+yank appendix and all historical receipts remain untouched. Only additive
+task/evidence sections accompany the two new source/test files. Coordinate
+these additive deltas with PR1308/1310 and retained reconciliation candidates
+at integration; none of their code, status or acceptance was adopted here.
+
+Missing authority and semantic limits: the parent's accountable individual is
+still unassigned. The fixture owner and all provenance/patch/version strings
+are public supplied claims; presence does not establish owner authorization,
+security correctness, patch availability, backport verification, provenance
+authenticity or publication authority. GOV10 does not supply a registry range
+grammar, severity scoring system or advisory revision ordering here. Those
+declarations remain opaque. The decoded carrier is deliberately explicit and
+does not parse source files, scan ordinary strings for secrets or authenticate
+history. Actual disclosure-safe inputs must be supplied by the caller.
+
+Start needs only explicit inputs and no predecessor increment. Actual security
+assessment, patch/backport/release verification, GOV2 migration/emergency
+exceptions, accountable embargo/disclosure decisions, registry publication,
+package enforcement and their producer/consumer feedback remain unrun
+composition obligations. Independent acceptance, integration and release remain
+separate. This increment closes no parent criteria and claims no publication,
+grant, release, self-hosting or seed retirement. No commit was made.
