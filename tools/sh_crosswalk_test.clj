@@ -890,7 +890,11 @@
         old-payloads (:source-snapshots previous) new-payloads (:source-snapshots view)]
     (is (= (:sha256 descriptor) (sh-inventory/sha256 previous-text)))
     (is (= (:mapping-review previous) sh-crosswalk/auth-crypto-predecessor-mapping-review))
-    (is (= (:mapping-review previous) (get-in view [:mapping-review :predecessor-current-source-review])))
+    ;; Select this historical Auth/Crypto successor after a later helper-input
+    ;; review wraps the current projection; its original predecessor is unchanged.
+    (is (= (:mapping-review previous)
+           (:predecessor-current-source-review
+             sh-crosswalk/published-main-helper-predecessor-mapping-review)))
     (is (= 578 (count old-payloads)))
     (is (= old-payloads (select-keys new-payloads (keys old-payloads))))
     (is (= (:requirements previous) (:requirements view)))
