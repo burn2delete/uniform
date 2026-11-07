@@ -103,6 +103,33 @@
     (is (= historical-content (get-in product [:artifact :release :history :contents 0])))
     (is (= before (pr-str with-history)))))
 
+(deftest immutable-numeric-leaves-preserve-complete-product
+  (doseq [value [(byte 1) (short 2) (int 3) (long 4) (float 1.5) (double 2.5)
+                 (biginteger 5) 6N 7.5M 1/3]]
+    (let [with-numbers (-> release
+                           (assoc-in [:metadata :numbers] [value])
+                           (assoc-in [:history :locks 0 :extension] {:number value})
+                           (assoc-in [:history :contents 0 :extension] (list value)))
+          before (pr-str with-numbers)
+          product (yanks/propose-yank with-numbers proposal provenance)]
+      (is (= (assoc-in expected-product [:artifact :release] with-numbers) product))
+      (is (= before (pr-str with-numbers))))))
+
+(deftest nested-mutable-number-is-rejected-without-payload
+  (doseq [path [[:metadata :extension]
+                [:history :locks 0 :extension]
+                [:history :contents 0 :extension]
+                [:history :events 0 :extension]]]
+    (let [mutable-number (java.util.concurrent.atomic.AtomicLong. 8675309)
+          with-number (assoc-in release path {:numbers [mutable-number]})
+          expected (rejection "GOV10006" [:release] :invalid-field)
+          product (yanks/propose-yank with-number proposal provenance)]
+      (is (= expected product))
+      (is (= 8675309 (.get mutable-number)))
+      (.set mutable-number 42)
+      (is (= expected product (yanks/propose-yank with-number proposal provenance)))
+      (is (= 42 (.get mutable-number))))))
+
 (deftest changed-bindings-change-complete-product
   (doseq [[argument field value]
           [[0 :package "acme/http"] [0 :registry "mirror-public"]

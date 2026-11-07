@@ -216,9 +216,12 @@ arguments are explicit decoded public data, supplied by a trusted host caller:
   `:tool-id` references. These are supplied identities, not verified authority.
 
 The retained release/history carrier is inert EDN: nil, booleans, strings,
-keywords, symbols, numbers, vectors, lists, sets and maps; maps use keyword
-keys. Reject host objects and malformed field shapes. This is a type boundary,
-not an input-size allowance. The caller supplies only disclosure-safe data;
+keywords, symbols, supported immutable numbers, vectors, lists, sets and maps;
+maps use keyword keys. Numeric leaves use exact classes Byte, Short, Integer,
+Long, Float, Double, java.math.BigInteger, java.math.BigDecimal,
+clojure.lang.BigInt and clojure.lang.Ratio. Reject other Number implementations
+(including AtomicLong), host subclasses and malformed field shapes. This is a
+type boundary, not an input-size allowance. The caller supplies only disclosure-safe data;
 this producer does not discover secrets or authenticate release/lock/content
 references. GOV10 does not specify registry version syntax here: `:version`
 is an opaque exact release label from the caller's decoded release record,
@@ -257,6 +260,9 @@ release identity/owner, missing or blank reason, absent replacement guidance,
 missing resolution behavior, malformed secret-marker payloads and attempted
 caller approval promotion. Compare whole expected products/diagnostics and
 unchanged inputs/history; a constant catalog or shape-only test is insufficient.
+Numeric fixtures preserve complete products for the supported immutable types
+and require payload-free GOV10006 rejection for nested AtomicLong values in
+release metadata and historical extensions, before and after host mutation.
 
 Start requires only these explicit inputs. Composition requires actual owner
 authorization and authentic registry/content/provenance, GOV2/GOV4 emergency

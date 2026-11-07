@@ -162,3 +162,51 @@ their positive real-source and negative forged-identity cases. No check success
 is claimed. Owner authorization, consumer composition, independent acceptance
 and the Open parent disposition remain as recorded above. No Git command,
 commit or previously refused action was attempted.
+
+## Mutable numeric carrier repair
+
+Finding `evolution.yank-proposals.version-bound-production-v1`, P2 follow-up,
+authored in `increment-1296` on 2026-11-06. Supplied review identities:
+base `aa6af9bddd96776a3d59d8c920ab0e4a4d8839b0`,
+candidate `b46856480f0e3e42ecdca123d59b828d4760b669`,
+tree `d1f4bf0f56a68c7e4abd472ba58950016908fc60`.
+The review reports supplied checks passed on that candidate but requests changes
+because `number?` admits mutable host Number objects. Those identities and
+reported results describe the reviewed input, not this uncommitted repair;
+no Git inspection or check execution was performed to re-establish them.
+
+Replaced the broad numeric predicate with exact supported immutable numeric
+classes. AtomicLong and other host Number implementations/subclasses no longer
+pass the retained release/history carrier. The existing payload-free
+`GOV10006`, `[:release]`, `:invalid-field` rejection is preserved. Updated only
+the carrier appendix outside the captured task region; plan.md, canonical task
+bodies, source criteria, Open statuses and historical receipts remain unchanged.
+
+Authored `immutable-numeric-leaves-preserve-complete-product` to compare whole
+products and unchanged release/history input rendering for each supported
+numeric class. Authored `nested-mutable-number-is-rejected-without-payload`
+with AtomicLong nested in release metadata, historical lock/content extensions
+and historical events. It compares the full payload-free rejection, verifies
+the producer leaves the host value untouched, mutates the host value and
+requires the same rejection while the earlier result stays unchanged.
+
+Actual worker activity: source/document reads, scoped edits and passive textual
+review only. No tests, builds, validators, Git commands or consumer composition
+ran. All checks below are proposed controller argument vectors, unrun here;
+ready means authored for native controller verification, not passing checks:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.yank-proposals-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+No new semantic ambiguity or authority is introduced by this carrier repair.
+The existing opaque-version limitation and missing actual owner/registry
+authorization remain. Publication, emergency governance, package enforcement,
+historical rebuild execution and independent acceptance remain separate,
+unrun composition/acceptance obligations. The parent remains Open. No commit,
+integration, release, self-hosting, seed retirement, yank or grant is claimed;
+all retained refused operations remain prohibited and were not retried.

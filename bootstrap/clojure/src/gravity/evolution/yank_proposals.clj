@@ -6,10 +6,17 @@
 
 (defn- text? [x] (and (string? x) (not (str/blank? x))))
 
+(defn- immutable-number? [x]
+  ;; Exact classes exclude mutable Number implementations and host subclasses.
+  (contains? #{Byte Short Integer Long Float Double
+               java.math.BigInteger java.math.BigDecimal
+               clojure.lang.BigInt clojure.lang.Ratio}
+             (class x)))
+
 (defn- public-data? [x]
   (cond
     (or (nil? x) (boolean? x) (string? x) (keyword? x)
-        (symbol? x) (number? x)) true
+        (symbol? x) (immutable-number? x)) true
     (and (map? x) (not (record? x)))
     (and (every? keyword? (keys x)) (every? public-data? (vals x)))
     (or (vector? x) (list? x) (set? x)) (every? public-data? x)
