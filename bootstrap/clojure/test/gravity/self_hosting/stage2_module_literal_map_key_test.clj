@@ -19,6 +19,15 @@
 (defn- definition [source]
   (merge (get-in source [:functions 'main]) {:source-path (:source-path source)
           :p15-s23-stage2-map-order (bootstrap/p15-s23-stage2-module-map-order source)}))
+(def ^:private current-reader-invocation
+  (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")]
+    {:reader-source-path (.getCanonicalPath (io/file reader))
+     :authenticated-envelope-options {:source :development-current}
+     :syntax-source-selection
+     {:schema :gravity/sh04-development-syntax-selection-v1
+      :source-path (.getCanonicalPath (io/file syntax))}
+     :macro-source-mode :development-current}))
 
 (deftest stage2-module-literal-map-key-fixture-parity
   (doseq [[family name] [["modules" "root"] ["modules" "leaf"] ["rejected" "private"]]]
@@ -70,6 +79,16 @@
       (is (= 2 (count index)))
       (is (= 2 (count (filter #(= 'leaf/identity (:symbol %))
                               (get-in caller [:request :references]))))))))
+  (let [key '(get token :value-id)
+        body {key (list 'leaf/identity :value)}
+        input (source body [key])
+        [caller syntax] ((ns-resolve 'gravity.self-hosting.stage2-module-map-call-test 'reference-input)
+                         input body)
+        index (bootstrap/p15-s23-stage2-module-map-reference-index caller syntax (definition input))]
+    ;; Expression keys retain the imported-reference census and source path;
+    ;; the ordinary get call is not evaluated while indexing the map.
+    (is (= [[0 1]] (vec (keys index))))
+    (is (= 'leaf/identity (:symbol (get index [0 1])))))
 
 (deftest stage2-module-literal-map-key-rejections-development-kernel
   (let [input (source {"a" :first "b" :second :tag :keyword} ["a" "b" :tag])
@@ -91,7 +110,7 @@
       (is (= "BOOT2006" (:id (diagnostic #(definition changed)))) label))
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (assoc-in input (conj records-path (key-index "b") :value) "a"))) [:facts :reason]))))
-  (doseq [key [0 [:key] {:key :value} '(str "computed")]]
+  (doseq [key [0 [:key] {:key :value} '(let [computed "computed"] computed)]]
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (source {key :value} []))) [:facts :reason]))))
   (let [keys ['entry 'choice 'other 'join]
@@ -113,12 +132,72 @@
   (let [quoted '(quote {0 (leaf/hidden :data) "key" :inert}) input (source quoted [])]
     (is (= {} (:p15-s23-stage2-map-order (definition input))))
     (is (= [] (bootstrap/p15-s23-stage2-module-call-sites (definition input)))))
+  (let [key '(get token :value-id)
+        input (source {key :value} [key])
+        records (get-in input records-path)
+        key-index (first (keep-indexed #(when (= key (:value %2)) %1) records))
+        value-id-index (first (keep-indexed #(when (= :value-id (:value %2)) %1) records))
+        key-record (get records key-index)
+        module (assoc (definition input)
+                      :p15-s23-sh07-callsite-path [0]
+                      :p15-s23-sh07-enclosing-function 'main)
+        emitter {:collection-rules {:map {:op :map-literal}}
+                 :call-rules {:builtin-functions #{'get} :builtin-op :builtin-call}
+                 :special-form-rules {}}
+        compiled (bootstrap/p15-s23-stage2-seed-compile-collection emitter module #{'token} {key :value})
+        changed-operator (assoc-in input (conj records-path key-index :value)
+                                    '(different token :value-id))
+        changed-operand (assoc-in input (conj records-path value-id-index :value) :other)
+        changed-kind (assoc-in input (conj records-path key-index :kind) :vector)
+        missing-child (assoc-in input (conj records-path key-index :children) [])
+        duplicate-child (assoc-in input (conj records-path key-index :children)
+                                  [(first (:children key-record)) (first (:children key-record))])]
+    ;; Structural authentication remains required after admitting ordinary
+    ;; expression-shaped keys; changing operator, operand, native kind, or
+    ;; child links remains a stable BOOT2006 rejection.
+    (is (= [key] (:host-keys (get (:p15-s23-stage2-map-order (definition input)) ['main [0]]))))
+    (is (= {:op :builtin-call :function 'get
+            :args [{:op :local :name 'token}
+                   {:op :literal :value :value-id}]}
+           (get-in compiled [:entries 0 :key])))
+    (doseq [changed [changed-operator changed-operand changed-kind missing-child duplicate-child]]
+      (is (= "BOOT2006" (:id (diagnostic #(definition changed)))))))
+
   (doseq [[value keys expected] [[{"a" '(recur) "z" '(throw)} ["z" "a"] "L2-THROW-ILLEGAL"]
                                 [{"a" '(throw) "z" '(recur)} ["z" "a"] "L2-RECUR-TARGET"]]]
     (let [body (list 'do value '(loop [x] x)) d (definition (source body keys))
           original (diagnostic #(bootstrap/p15-s23-stage2-seed-validate-tail-body! d [body] 0 true))]
       (is (= expected (:id original)))
       (is (= original (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites d)))))))
+
+(deftest stage2-module-expression-map-key-current-c11-fragment
+  ;; Focused genuine current Reader/C5/Syntax route for the exact C11 key
+  ;; shape; this is not the complete C11 dependency build or SH17 acceptance.
+  (let [text (str "(ns example.expression-map (:profile :meta) (:target :jvm)"
+                  " (:exports [main]) (:effects #{:memory/allocate})"
+                  " (:capabilities #{}) (:safety :safe))\n"
+                  "(defn main [token] {(get token :value-id) token})\n")
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        temporary (java.io.File/createTempFile "uniform-expression-map-" ".gravity")]
+    (try
+      (spit temporary text)
+      (let [source-path (.getCanonicalPath temporary)
+            artifact (bootstrap/compiler-c5-resolution-source-artifact
+                      source-path text inputs (:reader-source-path current-reader-invocation)
+                      current-reader-invocation)
+            selected (bootstrap/p15-s23-stage2-module-source artifact current-reader-invocation)
+            key '(get token :value-id)
+            row (get-in selected [:map-order ['main [0]]])]
+        (is (= :accepted (:status artifact)))
+        (is (= [key] (:host-keys row)))
+        (is (= [0] (:entry-order row)))
+        (is (some #(= key (:value %)) (get-in artifact [:sh05-macro-artifact
+                                                         :gravity-macro-boundary
+                                                         :authenticated-sh04-artifact
+                                                         :c2-reader-artifact
+                                                         :form-tree]))))
+      (finally
+        (.delete temporary)))))
 
 (deftest stage2-module-literal-map-key-seed-handoff-development-kernel
   ;; Genuine tiny C5 -> original fresh module-source -> original raw compiler.

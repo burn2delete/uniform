@@ -1,6 +1,19 @@
 ;; L2 source expression order, not a Map enumeration policy.  This context is
 ;; derived after original C5 verification and is never a public proof input.
 (declare p15-s23-stage2-module-fail! sh06-resolution-semantic-span)
+
+(def ^:private p15-s23-stage2-expression-map-key-forbidden-operators
+  '#{def defn fn defconst match try syntax-quote
+     println do if let loop recur throw quote host-reflect})
+
+(defn- p15-s23-stage2-expression-map-key?
+  "Recognize only an authenticated ordinary call shape; never evaluate it here."
+  [value]
+  (and (seq? value)
+       (symbol? (first value))
+       (not (contains? p15-s23-stage2-expression-map-key-forbidden-operators
+                       (first value)))))
+
 (defn p15-s23-stage2-module-map-order [source]
   (let [c2 (get-in source [:artifact :sh05-macro-artifact :gravity-macro-boundary
                            :authenticated-sh04-artifact :c2-reader-artifact])
@@ -53,6 +66,14 @@
                                               ;; equality; do not coerce them to
                                               ;; literal keys.
                                               :symbol (symbol? (:value %))
+                                              ;; Ordinary call-shaped expression
+                                              ;; keys are admitted only after the
+                                              ;; authenticated C2 source/value,
+                                              ;; child-link, occurrence and order
+                                              ;; walks below.  This predicate is
+                                              ;; structural and never host-evaluates
+                                              ;; a key or whitelists a callee.
+                                              :list (p15-s23-stage2-expression-map-key? (:value %))
                                               false) (map first pairs))
                                    (every? some? order) (= (set order) (set (range (count entries)))))
                       (fail :map-source-distinct-literal-key-bijection record))
@@ -139,7 +160,9 @@
                 (map? actual)
                 (let [entries (if (map? seed) (vec seed) []) host-keys (mapv first entries) slots (zipmap host-keys (range))]
                   (when-not (and (map? seed) (= (count actual) (count seed))
-                                 (every? #(or (keyword? %) (string? %) (symbol? %)) (keys actual))
+                                 (every? #(or (keyword? %) (string? %) (symbol? %)
+                                              (p15-s23-stage2-expression-map-key? %))
+                                          (keys actual))
                                  (= (set (keys actual)) (set host-keys))) (fail :map-reference-key-bijection))
                   (when path (p15-s23-stage2-module-map-entries module seed path))
                   (doseq [[key value] actual]
