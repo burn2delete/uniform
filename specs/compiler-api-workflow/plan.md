@@ -306,6 +306,22 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Expose authentic versioned pipeline/pass/plugin contexts, output verifiers, preserved/invalidated/regenerated facts and real checker/proof products. Library wrappers create no second engine or hidden state authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual current versioned stage/fact/origin products for semantic lint/REPL queries and normal checked evaluation. Absent later facts are reported honestly; source-only services require only applicable inputs. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current versioned stage/fact/origin/input/output and verifier/preservation products. Source-only views require only applicable inputs, and tools cannot invent later facts or authorize compiler mutation. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply genuine risk/evidence policy and scoped checker/translation-validation interfaces, including existing C18 minimum scope; Opt invokes actual verifiers and consumes results without creating a second checker. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration
