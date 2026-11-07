@@ -33,7 +33,7 @@ use the explicit CLI route for focused execution.
 | Check | PR | Main/manual/weekly | Evidence and limits |
 | --- | --- | --- | --- |
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
-| contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
+| contracts (projections and public subset) | Retained by the existing selector | Always | Canonical document/roadmap/dependency controls, component validation, and the existing P18 public release subset on full or semantic selections. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
 | macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
 | checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
@@ -86,6 +86,20 @@ Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
 snapshot repeatability controls from the static job; it never replaces the
 other static controls.
+
+The contracts mode also selects the existing
+`gravity.bootstrap-test/p18-public-test-command-runs-current-public-subset`
+test in a fresh child process. Its existing setup builds the packaged JVM CLI;
+the test exercises five accepted programs through public check/run/compile and
+emitted execution, 32 rejected cases with stable diagnostics, source path and
+extension provenance, and rejection of a full-conformance overclaim. It runs
+on main/manual/scheduled full selections, ordinary semantic selections, and
+unknown or failed-discovery fallbacks. Documentation-only, exact Advance
+status-only and lint-tooling-only selections retain their existing exclusions.
+The child has a 900-second host watchdog inside the unchanged 20-minute
+contracts job. Existing contract commands and their order are retained.
+This is current bootstrap-hosted public subset coverage, not full-language,
+self-hosting or seedless-release acceptance.
 
 The leaves jobs use the same verified pull-request path records. For regular
 source or test changes, `tools/ci/run.clj` follows the reviewed `:require`

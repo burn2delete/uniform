@@ -590,7 +590,19 @@
      :reason :path-discovery-failed
      :selection-error (:selection-error selection)}))
 
-(defn contract-commands []
+(defn public-conformance-command []
+  ["public-release-subset" 900
+   (command "2g" "-M:dev-test" "--progress"
+            "--namespace" "gravity.bootstrap-test"
+            "--exact" "p18-public-test-command-runs-current-public-subset")])
+
+(defn public-conformance-required? [selection]
+  (not (or (= :docs-only (:kind selection))
+           (and (= :selected (:kind selection))
+                (contains? #{:advance-status-only :lint-tooling-only}
+                           (:reason selection))))))
+
+(defn- base-contract-commands []
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
    (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
@@ -609,6 +621,13 @@
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
    ["types-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]])
+
+(defn contract-commands
+  ([] (contract-commands nil))
+  ([selection]
+   (cond-> (base-contract-commands)
+     (public-conformance-required? selection)
+     (conj (public-conformance-command)))))
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
@@ -960,7 +979,7 @@
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
-    "contracts" (contract-commands)
+    "contracts" (contract-commands selection)
     "bootstrap"
     (cond-> [["cold-bootstrap-load" 120
               (command "1g" "-M" "-e"

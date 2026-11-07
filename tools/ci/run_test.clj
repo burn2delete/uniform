@@ -543,12 +543,16 @@
                     source-vars))
        #{}))))
 
+(def expected-contract-command-ids
+  ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
+   "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
+   "c-native-validation" "runtime-native-validation" "effects-native-validation"
+   "types-native-validation"])
+
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
-    (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
-            "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
-            "c-native-validation" "runtime-native-validation" "effects-native-validation"
-            "types-native-validation"] (mapv first commands)))
+    (is (= (conj expected-contract-command-ids "public-release-subset")
+           (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -565,6 +569,62 @@
         (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
         (is (empty? (macro-selected-vars
                      (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))))
+
+(deftest contracts-append-public-subset-for-full-and-stage-selections
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        full-selections [nil
+                         {:kind :full :reason :non-pull-request :paths []}
+                         {:kind :full :reason :unknown-or-cross-stage-path
+                          :paths ["unknown/new-owner.clj"]}
+                         {:kind :full :reason :path-discovery-failed
+                          :paths [] :selection-error "discovery failed"}]
+        stage-paths ["bootstrap/clojure/src/gravity/reader.clj"
+                     "language/compiler/src/gravity/macro.gravity"
+                     "bootstrap/clojure/src/gravity/resolution.clj"
+                     "language/compiler/src/gravity/checked_core.gravity"]
+        assert-public-command
+        (fn [commands]
+          (let [[id timeout argv] (last commands)]
+            (is (= (conj expected-contract-command-ids "public-release-subset")
+                   (mapv first commands)))
+            (is (= "public-release-subset" id))
+            (is (= 900 timeout))
+            (is (= "gravity.bootstrap-test"
+                   (nth argv (inc (.indexOf ^java.util.List argv "--namespace")))))
+            (is (= ["--exact" "p18-public-test-command-runs-current-public-subset"]
+                   (subvec argv (- (count argv) 2))))
+            (is (= 1 (count (filter #{"--namespace"} argv))))
+            (is (= 1 (count (filter #{"--exact"} argv))))))]
+    (doseq [selection full-selections]
+      (assert-public-command (ci/commands-for-selection "contracts" selection)))
+    (doseq [path stage-paths]
+      (let [selection (ci/stage-selection [(change path)])]
+        (is (= :selected (:kind selection)) path)
+        (is (= :affected-stage (:reason selection)) path)
+        (assert-public-command (ci/commands-for-selection "contracts" selection))))))
+
+(deftest contracts-omit-public-subset-for-narrow-exclusions
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        docs-only {:kind :docs-only :reason :known-documentation-only
+                   :paths ["README.md"]}
+        advance (ci/stage-selection
+                 (mapv change ["tools/advance/README.md"
+                               "tools/advance/src/advance/main.clj"
+                               "tools/advance/test/advance/main_test.clj"]))
+        lint-tooling (ci/stage-selection [(change "tools/ci/lint.clj")])]
+    (doseq [[label expected-kind selection]
+            [["docs-only" :docs-only docs-only]
+             ["advance-status-only" :selected advance]
+             ["lint-tooling-only" :selected lint-tooling]]]
+      (is (= expected-kind (:kind selection)) label)
+      (is (contains? #{:known-documentation-only :advance-status-only :lint-tooling-only}
+                     (:reason selection)) label)
+      (is (= expected-contract-command-ids
+             (mapv first (ci/commands-for-selection "contracts" selection))) label)
+      (is (not-any? #(= "public-release-subset" (first %))
+                    (ci/commands-for-selection "contracts" selection)) label))))
 
 (deftest contracts-include-the-complete-native-wasm-namespace
   (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 6)
