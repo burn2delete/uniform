@@ -266,3 +266,38 @@
                       (try (manifest/validate-native-stage0-verification-risk! (legacy-c18-ports) legacy-module
                              {:risk :critical :minimum-evidence [:needed]})
                            (catch Throwable error error)))))))
+
+(deftest legacy-c18-subject-retains-risk-and-module-lookup-interleaving
+  (let [events (atom []) pass-selected? (atom false) marker (Object.) calls (atom [])
+        risk (reify clojure.lang.ILookup
+               (valAt [_ key]
+                 (swap! events conj [:risk key])
+                 (case key
+                   :minimum-evidence [:z :a]
+                   :available-evidence []
+                   :risk :high
+                   :pass (do (reset! pass-selected? true) :native/compile)
+                   :version (if @pass-selected? "after-pass" "before-pass")
+                   :artifact-id (if @pass-selected? :after-pass-artifact :before-pass-artifact)
+                   nil))
+               (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted risk lookup"))))
+        input (reify clojure.lang.ILookup
+                (valAt [_ key]
+                  (swap! events conj [:module key])
+                  (get legacy-module key))
+                (valAt [_ _ _] (throw (AssertionError. "unexpected defaulted module lookup"))))]
+    (with-redefs [legacy-c18-failure (fn [& args] (swap! events conj :failure)
+                                     (swap! calls conj (vec args)) marker)]
+      (is (identical? marker (manifest/validate-native-stage0-verification-risk! (legacy-c18-ports) input risk)))
+      ;; The original nine-entry Clojure literal reads as a hash map. Its
+      ;; measured expression order differs from the source spelling order.
+      (is (= [[:risk :minimum-evidence] [:risk :available-evidence] [:risk :risk]
+              [:module :source-path] [:risk :artifact-id] [:risk :risk] [:module :profile]
+              [:risk :version] [:module :target] [:risk :pass] :failure]
+             @events))
+      (is (= [["C18-EVIDENCE" "legacy-compiler.gravity"
+               {:stage :stage0-compiled-compiler-gate :pass-id :native/compile :version "before-pass"
+                :risk-class :high :required-evidence #{:a :z} :available-evidence #{}
+                :affected-profiles #{:hosted} :affected-targets #{:jvm} :artifact-id :before-pass-artifact}
+               {:missing-fields [:a :z]}]]
+             @calls)))))

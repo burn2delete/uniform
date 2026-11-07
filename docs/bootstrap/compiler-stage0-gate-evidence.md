@@ -132,7 +132,7 @@ observed through the public macro/module/Stage0 plan route. Original/moved
 body receipt SHA256 is
 `4bd5575e48d18a0fb57c7f28812694a5b59327728b7490dc9c489db64c8421c0`.
 
-Focused native tests pass: 9 tests, 204 assertions, with Bootstrap absent.
+Focused native tests pass: 10 tests, 207 assertions, with Bootstrap absent.
 The whole existing plan-assembly and instruction regression namespaces pass:
 38 tests, 654 assertions. Four new plan-assembly tests retain the paired
 nonempty/empty/nil/absent source controls, real refusals before compilation,
@@ -150,6 +150,37 @@ the two existing test files, this record and the namespace map. Draft PR
 [#1372](https://github.com/burn2delete/uniform/pull/1372) was opened at the
 scope commit before the move. Local tests and this record confer no acceptance
 or integration authority.
+
+### C18 expression-order review
+
+The first published candidate is
+`0d018fa97739b4edd4ffb0a652e833dee36f1900`. An independent static review
+(`718aa74fc235a5316b8377c89028f0c1f651dc9afa390b2fda0ad28904aaa8ff`)
+suspected that reordered subject-map spelling changed C18 expression order.
+That finding was investigated rather than accepted from spelling alone.
+A lexical-order test failed twice on both the published body and a temporary
+restoration of the original spelling. The original nine-entry map reads as a
+`clojure.lang.PersistentHashMap`, with the same entry order as the moved map.
+
+A separate Bootstrap-free native control compiled only the two exact small
+C18 metadata function forms, from frozen parent `f85d92ff` and published
+candidate `0d018fa9`, under local anonymous names. It compared both with the
+temporarily restored-spelling implementation using opaque lookup inputs.
+All three produced identical lookup traces, failure arguments and owner
+return identity. Receipt SHA256 is
+`3a488390bcfe599ced2128f8c0cdae2aa0420bc6b435f993526418ca53f97985`.
+This control neither executes a Gravity program nor loads Bootstrap,
+authenticates source or invokes private factories.
+
+The unnecessary production edit was removed. All three producer files remain
+byte-identical to the published candidate and original after-capture. The
+added native regression protects the measured original Clojure 1.12.5
+interleaving, including values that change if pass lookup moves earlier;
+it does not invent lexical evaluation order or canonical C15 ordering.
+The initial review, failed lexical expectations and temporary-spelling capture
+are retained as history. Fresh independent final-source acceptance is still
+required. The already running CI for `0d018fa9` cannot transfer acceptance to
+a later commit that adds this regression.
 
 No canonical C1/C18 authority, full compiler verification, authenticated
 source/IR/evidence, certificate or trust-provider checking, canonical C15
