@@ -4,6 +4,7 @@
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [simplify.coordination :as coordination]
             [simplify.main :as base]
             [simplify.runtime :as rt])
@@ -85,6 +86,37 @@
    :turn (:turn record)
    :record {:state-file state-file :state-sha256 state-digest :job-key job}})
 
+(defn- complete-identity? [value keys]
+  (and (map? value)
+       (every? (fn [key]
+                 (let [identity (get value key)]
+                   (and (string? identity) (not (str/blank? identity)))))
+               keys)))
+
+(defn- evidence-summary [task evidence-key identity-keys evidence-outcome-key output-key]
+  (let [evidence (get task evidence-key)
+        identity (if (map? evidence) (select-keys evidence identity-keys) {})
+        identity-status (cond
+                          (nil? evidence) :missing
+                          (not (map? evidence)) :stale
+                          (not (complete-identity? task identity-keys)) :stale
+                          (not (complete-identity? evidence identity-keys)) :stale
+                          (= (select-keys task identity-keys) identity) :matching
+                          :else :stale)]
+    {:identity-status identity-status
+     :identity identity
+     output-key (when (map? evidence) (get evidence evidence-outcome-key))}))
+
+(defn- non-attention-summary [state-file state-digest task]
+  {:key (:key task)
+   :status (:status task)
+   :base (:base task)
+   :candidate (:candidate task)
+   :tree (:tree task)
+   :checks (evidence-summary task :checks [:candidate :tree] :result :recorded-result)
+   :review (evidence-summary task :review [:base :candidate :tree] :verdict :recorded-verdict)
+   :record {:state-file state-file :state-sha256 state-digest :task-key (:key task)}})
+
 (defn status-summary
   "Build a compact, observational projection from one already-read state.
 
@@ -99,6 +131,8 @@
                   (mapv #(job-status-summary state-file state-digest %)))
         attention (->> tasks (filter #(= :attention (:status %)))
                        (mapv #(task-status-summary state state-file state-digest %)))
+        non-attention (->> tasks (remove #(= :attention (:status %)))
+                           (mapv #(non-attention-summary state-file state-digest %)))
         statuses (frequencies (map :status tasks))]
     {:schema (:schema state)
      :repository (:repository state)
@@ -111,7 +145,8 @@
              :task-count (count tasks)
              :counts statuses}
      :attention attention
-     :jobs {:count (count jobs) :records jobs}
+     :non-attention non-attention
+     :jobs {:scope :recorded-model-jobs-only :count (count jobs) :records jobs}
      :operator-controls {:local-control control
                          :github {:status :unavailable
                                   :reason :no-provider-read-in-read-only-summary}}
