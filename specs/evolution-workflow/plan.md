@@ -218,3 +218,67 @@ Current source/interface entailment and independent acceptance remain pending. P
 Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing conditional change-review/stabilization owners consume affected old/new ABI/schema/type/error/resource/profile/target/lock and incumbent parity facts for actual stable changes or shim promotion. Keep compatibility/deprecation and temporary shim state explicit. This adds no task body, review renewal or ordinary per-run approval/migration-proof gate.
 
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+## Namespace reservation proposal carrier
+
+Finding `evolution.namespace-reservations.reason-bound-proposals-v1` is a
+construction increment of `evolution/namespace-decision`, not its closing
+decision. GOV10 Registry Decisions permits reservations for standard-library,
+governance, security or ecosystem reasons; its Conformance Criteria requires
+audit records. PKG9 Requirements forbids private metadata disclosure. The
+existing task requires retained reason, identity, policy and history. These
+contracts do not prescribe a decoded proposal schema; the following narrow
+carrier is local to this operation and does not redefine registry policy.
+
+`gravity.evolution.namespace-proposals/propose-reservation` consumes one decoded
+map with exactly `:visibility`, `:registry`, `:namespace`, `:requester`, `:reason`,
+`:policy-reference`, `:provenance` and `:audit-history`. Visibility is `:public`.
+Registry, namespace and accountable requester are public references, each
+exactly `{:id <nonblank string> :visibility :public}`. Reason and policy reference
+are nonblank strings. Provenance is a nonempty vector of public references.
+Audit history is an ordered vector (possibly empty) of records with exactly
+`:id`, `:visibility`, `:action`, `:actor`, `:reason`, `:policy-reference` and
+`:provenance`. Its visibility is public; id/action/actor/reason/policy-reference
+are nonblank strings and provenance follows the same reference-vector schema.
+Historical actions are inert text, including prior approvals. No timestamp,
+takeover interval, reason enumeration or input quota is inferred.
+
+Only native Clojure PersistentArrayMap/PersistentHashMap and PersistentVector
+containers with keyword keys, strings, keywords, booleans or nil are decoded
+carriers. Reject metadata, cycles and other host values before lookup, equality,
+printing or callback dispatch on them. Copy containers, validate Unicode scalar
+strings, and order map keys canonically; preserve vector order, duplicates and
+all history fields. Unknown fields and nonpublic references/records reject with
+PKG9002. This is a public-only API: callers must supply already-public data;
+declaring a string public does not authenticate or declassify it.
+
+The complete product is `{:artifact :gravity/namespace-reservation-proposal
+:schema :gravity/namespace-reservation-proposal-v1 :status :proposed
+:authority :non-authorizing :request <validated complete input>}`. It binds every
+input directly without a lossy summary or a fabricated approval/hash receipt.
+Identical inputs, including reordered input maps, yield identical products and
+printed EDN. No ownership, registry or history state is written. Missing or
+malformed registry/namespace/requester yields GOV10001; reason/policy/history
+errors yield GOV10007; absent/malformed provenance yields GOV10002. An extra
+caller `:status` field rejects with GOV10007 and cannot promote the proposal.
+Rejected results contain only `:status :rejected` and a diagnostic vector with
+static `:diagnostic` and `:rule` values, never supplied keys, values or paths.
+
+The owned source/test paths are
+`bootstrap/clojure/src/gravity/evolution/namespace_proposals.clj` and
+`bootstrap/clojure/test/gravity/evolution/namespace_proposals_test.clj`.
+Names describe subsystem/behavior; the finding key remains traceability only.
+Tests compare complete products and unchanged inputs for the four named accepted
+fixtures and the three named refusals, plus mutable host maps, caller status,
+malformed/metadata/Unicode controls and input-binding changes.
+
+Start requires these explicit inputs and no predecessor increment. Composition
+requires actual PKG9 identity/ownership facts, accountable GOV10 policy
+disposition and applicable GOV4 security review; proposal data grants none of
+them. Independent exact-candidate acceptance is separate. Transfer, takeover,
+reserved-name enforcement, registry publication and release remain unfinished.
+The parent stays Open. Append scoped task/evidence notes outside the captured
+task region. PR1297, PR767 and PR1291 have shared documentation deltas: the
+controller must compose the append-only notes with those exact candidates and
+route independent review without adopting their implementation or acceptance.
+No network coordination, acceptance or integration is claimed here.
+

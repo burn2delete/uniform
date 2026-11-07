@@ -172,3 +172,24 @@ Dependencies: Profile/backend/runtime maintainers' actual conformance and unsupp
 
 Exact source criteria: facet/bootstrap-governance/4eceae9d88f01eb253bbe7a3, facet/bootstrap-governance/04a8868fd265bc5f56fa1cb3, facet/bootstrap-governance/62c0d501f1d64dbb6a10f31d, facet/bootstrap-governance/2e080329a6c2d62733c5c55f, facet/bootstrap-governance/06d4ca3f7dcb36a077cc5e66, facet/bootstrap-governance/47fb9cbd6f7eb5075c03dbf8, facet/bootstrap-governance/c80548adc87f4e13358c3f0c, facet/bootstrap-governance/e8cae63e624d06b4c34f3cd0, facet/bootstrap-governance/a7f917ff5e2890d043a586d4, facet/bootstrap-governance/5fb0bc41fb6661f61933e55e, facet/bootstrap-governance/cfc281b6d7d6ad9d93641733, facet/bootstrap-governance/de30927e135b42798c01b64a, facet/bootstrap-governance/9e9deae21ab496b379775120, facet/bootstrap-governance/a00f3bdd2c96f86865c1be26, facet/bootstrap-governance/f2799806eaaa04915859e863, facet/bootstrap-governance/35cea1f3aa759ffd2128ba52, facet/bootstrap-governance/0758015ed6f39b5a3ed494fa, facet/bootstrap-governance/226734711be61bd854004b05, facet/bootstrap-governance/dc60e40e3f4f16e63bdccde3, facet/bootstrap-governance/3b280db33c52a24ddd481fdd, facet/bootstrap-governance/9127517310165b8c9a7b4cab, facet/bootstrap-governance/535e857346984d08daaebf02, facet/bootstrap-governance/a4a603161a8e0f48c6ebc45a, facet/bootstrap-governance/f26bd2a7ea408f993b29fd28, facet/bootstrap-governance/1dd68adba80eea96b1934d8b, facet/bootstrap-governance/48465a961715d500cec0d34c, facet/bootstrap-governance/e011218231f653a745b26fd1, facet/bootstrap-governance/f03ff95376962887d3e4ff63, facet/bootstrap-governance/f0a9219c72d06a084372c907, facet/bootstrap-governance/d1307b3eac31e47b5cfa7186, facet/bootstrap-governance/5e5ff36d565c421949f6b4af, facet/bootstrap-governance/c28af2c65fc5ecd8ec3fb303, facet/bootstrap-governance/16202364711389084f8b3f7d, facet/bootstrap-governance/7faa830960f4a705466efda2, facet/bootstrap-governance/2039b4fcc3a95cb93766cfaf, facet/bootstrap-governance/793765cca448a987da1ba4da, facet/bootstrap-governance/cd56daa8157f97e7e36be6a8, facet/bootstrap-governance/ef8397157e174aa42fcd85db, facet/bootstrap-governance/b2010f9bab878db4580fe794, facet/bootstrap-governance/c73b2be0128064100c9dfb4a, facet/bootstrap-governance/067a88e7b883317c9d23d042, facet/bootstrap-governance/a5b0f4fac0e1900a2503f022, facet/bootstrap-governance/2796f764b3c8eba3d29245b3, facet/bootstrap-governance/e033da913e2889475a0d2c9b, facet/bootstrap-governance/cccaec2903edb5503d964cb0, facet/bootstrap-governance/f4a6f1dc930e524bbda4f294, facet/bootstrap-governance/c2beb2c898d4c0f0a5c8ff30, facet/bootstrap-governance/2fac1019117e5cd0c81bc273, facet/bootstrap-governance/51fe3359df60733a6df6f64e, facet/bootstrap-governance/2890e9f7bf9f1b181188f694, facet/bootstrap-governance/fbfd9adf3ec388a201e1eefc, facet/bootstrap-governance/1e80eb4047330bf96312caa8.
 <!-- evolution-implementation-tasks:end -->
+
+## Scoped namespace proposal progress
+
+Finding `evolution.namespace-reservations.reason-bound-proposals-v1`, within
+`evolution/namespace-decision`: the pure public reservation proposal operation
+and focused accepted/rejected fixtures are authored in
+`gravity.evolution.namespace-proposals` and
+`gravity.evolution.namespace-proposals-test`. The carrier contract is appended
+to [plan.md](plan.md#namespace-reservation-proposal-carrier); check disposition
+and remaining composition are in
+[evidence.md](evidence.md#namespace-reservation-proposal-increment).
+
+The captured task region, canonical criteria, historical evidence and Open
+status are retained. This is scoped construction progress, pending controller
+verification and independent exact-candidate acceptance. Start has explicit
+inputs and no predecessor; actual PKG9 identity/ownership, GOV10 policy
+disposition and conditional GOV4 review remain composition obligations.
+Transfer, takeover, reserved-name enforcement, registry publication and release
+remain unfinished. The controller must compose this append-only documentation
+delta with PR1297, PR767 and PR1291 without adopting their implementation or
+acceptance. No shared-candidate review or integration was performed here.
