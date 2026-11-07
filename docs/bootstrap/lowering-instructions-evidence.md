@@ -137,6 +137,13 @@ and are maintained with the PR; acceptance does not transfer across tuples.
 The complete Stage0 pipeline is still not extracted: header admission,
 orchestration and execution retain the explicit owners listed above and receive
 no extraction credit from this change.
+
+Independent semantic review of authored `490ea964f58d82220ffefd6fc47f4c769b3af2a9`
+found a P2 metadata omission: this document named D0 while the machine contract
+omitted it. The correction adds D0 and a regression assertion, without changing
+any implementation body or instruction/plan semantics. The preceding local
+counts describe the authored capture; checks and independent review for the
+corrected successor are recorded separately with their exact identity.
 The original ten-path writer lease governs implementation. This manually
 authored external source has no Main, Ready, controller, service or recovery
 role; final current-base preflight and integration remain with the designated

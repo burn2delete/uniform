@@ -33,6 +33,7 @@
 
 (deftest complete-group-has-explicit-contracts
   (is (= 22 (count (ns-publics 'gravity.lowering))))
+  (is (some #{'D0} (:governing-contracts (:gravity/namespace-contract (meta #'lowering/compile-native-expression)))))
   (doseq [operation [#'lowering/compile-native-expression #'lowering/compile-native-collection
                      #'lowering/compile-native-let #'lowering/compile-native-function
                      #'lowering/native-instruction-summary]]

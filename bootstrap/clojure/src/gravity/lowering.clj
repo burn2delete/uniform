@@ -139,7 +139,7 @@
  :invalidates [],
  :legacy-status-labels-authoritative? false,
  :governing-contracts
- [L2 C6 BOOT1 D1
+ [D0 L2 C6 BOOT1 D1
   D2
   D3
   D6
