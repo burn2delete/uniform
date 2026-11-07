@@ -82,6 +82,41 @@
                    (assoc entry :execution :observed)]]
       (is (false? (valid? value)) (pr-str value)))))
 
+(deftest current-source-preserves-provenance-suffix-rejections
+  ;; Compiling the complete owner must also retain the provenance predicate
+  ;; that previously used an unsupported or form.
+  (let [fixture-path "bootstrap/clojure/fixtures/self-hosting/w5-b14/accepted/backend-conformance.gravity"
+        emitter (:emitter
+                 (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                  fixture-path :jvm))
+        fixture-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                      emitter fixture-path (slurp fixture-path))
+        runtime {:engine :gravity-b14-linux-evidence-input-test
+                 :compiler-artifact-plan? true}
+        request (bootstrap/p15-s23-stage2-runtime-execute-function
+                 runtime fixture-plan 'w5-b14-conformance-request [])
+        valid? (fn [value]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  runtime @plan 'w5-b14-record-links-valid? [value]))]
+    (is (true? (valid? request)))
+    (doseq [extension [".gravity" ".qst"]]
+      (is (true? (valid? (-> request
+                            (assoc-in [:provenance :actual-source-path]
+                                      (str "/checkout/source" extension))
+                            (assoc-in [:provenance :logical-source]
+                                      (str "source" extension)))))))
+    (doseq [[actual logical] [["source.txt" "source.txt"]
+                              ["source.gravity.txt" "source.gravity"]
+                              ["source.qst.txt" "source.qst"]
+                              ["" "source.qst"] [nil "source.qst"]
+                              ["source.gravity" "source.qst"]
+                              ["source.qst" "source.gravity"]]]
+      (is (false? (valid? (-> request
+                             (assoc-in [:provenance :actual-source-path] actual)
+                             (assoc-in [:provenance :logical-source] logical))))))
+    (is (false? (valid? (assoc-in request [:provenance :compiler-source-path]
+                                 "compiler.qst"))))))
+
 (defn- native-var [name]
   (or (ns-resolve 'gravity.bootstrap (symbol name))
       (throw (ex-info "Missing production function" {:name name}))))

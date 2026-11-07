@@ -1048,11 +1048,12 @@
                                                        (get provenance
                                                            :compiler-source-path)
                                                        ".gravity")
-                                                    (if (or
+                                                    (if (if
                                                          (w5-b14-path-ends-with?
                                                           (get provenance
                                                               :actual-source-path)
                                                           ".gravity")
+                                                         true
                                                          (w5-b14-path-ends-with?
                                                           (get provenance
                                                               :actual-source-path)
