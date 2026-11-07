@@ -70,6 +70,10 @@ and outer plan/report identity. Keep the C13 facade's explicit absence of
 check-elision authority.
 
 Dependencies point Bootstrap adapters to Optimization and then Clojure core.
+Bootstrap explicitly requires Optimization. The first full-Main comparison
+found that the adapters otherwise relied on a transitive C13 load and reported
+an unresolved-namespace warning. That failed check is preserved; an additional
+one-path writer claim owns the direct Bootstrap require correction.
 Add no reverse Bootstrap, facade, Safety, Diagnostics or backend import.
 Existing native C13 assembly/reconstruction APIs remain intact. Add the narrow
 metadata support boundary while retaining `:safety-check-elision` and
@@ -131,6 +135,15 @@ after-capture SHA256 is
 The baseline binds the actual clean scope HEAD. The after-capture binds that
 same HEAD and dirty producer hashes, not a future clean commit.
 
+After the explicit Bootstrap require correction, all twenty observations still
+match the original baseline. The three-producer capture binds actual HEAD
+`98f7137c448abf9029ef3d139b4825ddaf395a0e` with dirty producer hashes;
+SHA256 is
+`021ee9116cd4b1585a317a37ece7ac8ed37a0bc9bd91ee667f9e0fb6ce506299`.
+Source/instruction regressions again pass 42/863 and language/ownership gates
+again pass 48/1202. The earlier candidate remains held by its failed Main lint;
+its bounded semantic review does not replace corrected-source acceptance.
+
 Two initial harness expectations were wrong and their failed logs are
 preserved. First, the emitted plan's module projection omits metadata; the
 performance report on that genuine plan therefore reports
@@ -155,9 +168,10 @@ load. Native/test lint has zero errors or warnings. The existing pipeline
 inventory is updated, but its broader private compiler-carrier test suite is
 not run locally; native leaf and cold-load checks cover this metadata boundary.
 
-Complete current-Main lint, final-source acceptance, final publication and own
-hosted CI audit remain pending. Seven paths will change within the eight-path owned
-context: Optimization, component 00523, the native leaf test, the pipeline
+Complete corrected-source verification, current-Main lint, final-source
+acceptance, final publication and own hosted CI audit remain pending. Eight
+paths will change within the nine-path owned context: Bootstrap's require,
+Optimization, component 00523, the native leaf test, the pipeline
 inventory test, plan-assembly source tests, this record and the namespace map.
 The component inventory remains an explicit no-op; no schema edit is made.
 

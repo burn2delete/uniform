@@ -10,6 +10,7 @@
             [gravity.bootstrap.module-literals]
             [gravity.checked-core]
             [gravity.mir]
+            [gravity.optimization]
             [gravity.lowering]
             [gravity.runtime]
             [gravity.safety]
