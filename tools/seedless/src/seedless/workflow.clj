@@ -966,7 +966,8 @@
     :author_association :issue_dependencies_summary :sub_issues_summary})
 (def ^:private planning-inline-error-keys
   #{:message :restricted :writer-ended? :seedless-check :local-only :kind :status
-    :effect :effect-id :provider-shape :command :reason})
+    :effect :effect-id :effect-status :uncertain :main-effect :remote-pr-refusal
+    :provider-shape :command :reason})
 (def ^:private planning-inline-feedback-keys
   #{:base :candidate :tree :summary :verdict :evidence-scope :residual-host-boundary
     :workflows :ci :instruction})
@@ -1101,7 +1102,8 @@
           projected-details
           (when (map? details)
             (assoc (select-keys details [:job :restricted :writer-ended? :reason :status :kind
-                                         :effect :effect-id])
+                                         :effect :effect-id :effect-status :uncertain
+                                         :main-effect :remote-pr-refusal])
                    planning-error-reference-key
                    (planning-retained-reference artifact artifact-sha
                                                  (conj path :details) details)))]
@@ -1216,7 +1218,7 @@
   (let [task-key (:key task)
         issue (:issue task)]
     (if-not (some? issue)
-      task
+      (project-planning-task-retained-fields task artifact artifact-sha)
       (do
         (when-not (map? issue)
           (rt/fail! "Planning issue metadata is malformed"

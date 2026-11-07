@@ -1145,6 +1145,40 @@
     (is (thrown-with-msg? Exception #"Planning task feedback is malformed"
                           (project [(assoc task :feedback "not-a-map")] reference)))))
 
+(deftest planner-retains-blocking-error-controls-without-issue-metadata
+  (let [project (var-get (ns-resolve 'seedless.workflow 'project-planning-tasks))
+        reference {:file "/tmp/seedless-planning.raw-input.edn" :sha256 "snapshot-sha"}
+        flags {:effect-status :uncertain :uncertain true :main-effect true
+               :remote-pr-refusal true}
+        common (merge (slice "issueless-diagnostics")
+                      {:status :attention
+                       :check-failures [{:base "base-sha" :candidate "candidate-sha" :tree "tree-sha"
+                                         :error (merge {:message "blocked check" :restricted true} flags)}]
+                       :feedback {:summary "preserve the blocked operation"
+                                  :residual-host-boundary "provider refusal remains held"
+                                  :diagnostics {:attempted false}}
+                       :error (merge {:message "retained blocked operation"
+                                      :details (merge {:restricted true :reason :held} flags)}
+                                     flags)})
+        variants [(dissoc common :issue)
+                  (assoc common :issue nil)
+                  (assoc common :issue {})]]
+    (doseq [task variants]
+      (let [projected (project [task] reference)
+            projected-task (first projected)
+            failure (first (:check-failures projected-task))
+            error (:error projected-task)]
+        (is (= flags (select-keys error (keys flags))))
+        (is (= flags (select-keys (:details error) (keys flags))))
+        (is (= flags (select-keys (:error failure) (keys flags))))
+        (is (= [:tasks "issueless-diagnostics" :error]
+               (get-in error [:uniform/retained-task-error-v1 :path])))
+        (is (= [:tasks "issueless-diagnostics" :check-failures 0]
+               (get-in failure [:uniform/retained-task-check-failure-v1 :path])))
+        (is (= [task]
+               (restore-planning-tasks projected
+                                        {:tasks {"issueless-diagnostics" task}})))))))
+
 (deftest malformed-planner-provider-snapshot-fails-closed-before-model-admission
   (doseq [malformed [{:number 12 :head {:ref "codex/bad" :repo "not-a-map"} :base {:repo nil}}
                      {:number 13 :head nil :base {:ref "main" :repo nil}}
