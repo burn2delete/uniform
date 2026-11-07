@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
             [gravity.digest :as digest]
+            [gravity.optimization :as optimization]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
@@ -14272,6 +14273,78 @@
     (is (some #(= #{:bounds}
                   (get-in % [:runtime-check-report :erased-checks]))
               (:runtime-check-erasure-report artifact)))))
+
+(deftest zero-cost-source-pairs-retain-products-and-upstream-identity
+  (let [source (slurp (fixture "accepted/zero-cost-abstractions.gravity") :encoding "UTF-8")]
+    (doseq [extension [".gravity" ".qst"]]
+      (let [path (str "zero-cost-source-pair" extension)
+            artifact (bootstrap/zero-cost-source-artifact path source)
+            repeated (bootstrap/zero-cost-source-artifact path source)
+            performance (bootstrap/performance-source-artifact path source)
+            macro-artifact (bootstrap/macro-source-artifact path source)]
+        (is (= artifact repeated))
+        (is (= :gravity/stage0-zero-cost-abstraction-artifact (:kind artifact)))
+        (is (= 5 (get-in artifact [:abstraction-erasure-report :claim-count])))
+        (is (= path (get-in performance [:profile-manifest :source-path])))
+        (is (= path (get-in macro-artifact [:module :source-path])))
+        (is (= (get-in performance [:profile-manifest :metadata]) (get-in macro-artifact [:module :metadata])))
+        (is (= (:performance-artifact-hash artifact) (str "sha256:" (digest/sha256-hex (pr-str performance)))))
+        (is (= (get-in performance [:performance-contract-manifest :claim-id])
+               (get-in artifact [:performance-contract-manifest :claim-id])))
+        (is (nil? (var-get #'bootstrap/*authenticated-source-form-records*)))))))
+
+(deftest zero-cost-source-pairs-retain-all-nine-diagnostic-families
+  (doseq [[name expected] zero-cost-rejected-fixtures
+          extension [".gravity" ".qst"]]
+    (let [path (str "zero-cost-source-refusal/" name extension)
+          source (slurp (fixture (str "rejected/" name)) :encoding "UTF-8")
+          failure (diagnostic-data #(bootstrap/zero-cost-source-artifact path source))]
+      (is (= expected (:id failure)))
+      (is (= path (get-in failure [:source-span :source])))
+      (is (= :zero-cost-abstraction-validation (:diagnostic-family failure)))
+      (is (nil? (var-get #'bootstrap/*authenticated-source-form-records*))))))
+
+(deftest zero-cost-source-route-retains-live-owner-vars-and-diagnostic-transport
+  (let [source (slurp (fixture "accepted/zero-cost-abstractions.gravity") :encoding "UTF-8")
+        validate @#'optimization/validate-native-zero-cost-claim!
+        proof @#'optimization/native-zero-cost-capability-proof
+        calls (atom []) proof-calls (atom [])]
+    (with-redefs [optimization/validate-native-zero-cost-claim!
+                  (fn [& args] (swap! calls conj (vec args)) (apply validate args))
+                  optimization/native-zero-cost-capability-proof
+                  (fn [& args] (swap! proof-calls conj (vec args)) (apply proof args))]
+      (let [artifact (bootstrap/zero-cost-source-artifact "zero-cost-live.gravity" source)]
+        (is (= 5 (get-in artifact [:abstraction-erasure-report :claim-count])))
+        (is (= 5 (count @calls)))
+        (doseq [args @calls]
+          (is (= [#'bootstrap/perf2-missing-claim-fields #'bootstrap/perf2-hidden-costs
+                  #'bootstrap/perf2-missing-evidence #'bootstrap/perf2-fail!
+                  #'bootstrap/perf2-abstraction-families #'bootstrap/perf2-cost-diagnostic]
+                 (subvec args 0 6)))
+          (is (= "zero-cost-live.gravity" (nth args 6))))
+        (is (= 1 (count @proof-calls)))
+        (is (= [#'bootstrap/perf-present? #'bootstrap/perf2-ir-artifact-id]
+               (subvec (first @proof-calls) 0 2))))))
+  (let [source (slurp (fixture "rejected/zero-cost-boxing.gravity") :encoding "UTF-8")
+        failure @#'optimization/native-zero-cost-failure! calls (atom [])]
+    (with-redefs [optimization/native-zero-cost-failure!
+                  (fn [& args] (swap! calls conj (vec args)) (apply failure args))]
+      (let [result (diagnostic-data #(bootstrap/zero-cost-source-artifact "zero-cost-live.qst" source))]
+        (is (= "PERF2-BOXING" (:id result)))
+        (is (= "zero-cost-live.qst" (get-in result [:source-span :source])))
+        (is (= 1 (count @calls)))
+        (is (identical? #'bootstrap/fail! (ffirst @calls))))))
+  (with-redefs [bootstrap/perf2-required-claim-fields [:native/missing-only]
+                bootstrap/perf2-required-nonempty-claim-fields #{:native/missing-only}]
+    (is (= [:native/missing-only] (bootstrap/perf2-missing-claim-fields {}))))
+  (let [marker [:native/value :after-ir] calls (atom []) claim {:native/marker :native/value}]
+    (with-redefs [bootstrap/perf2-costs-in-ir (fn [input key] (swap! calls conj [input key]) marker)]
+      ;; union/into preserves this vector's value and type, with no promise
+      ;; of object identity or normalization into a set.
+      (let [result (bootstrap/perf2-hidden-costs claim)]
+        (is (= marker result))
+        (is (vector? result)))
+      (is (= [[claim :after-ir]] @calls)))))
 
 (deftest specialization-artifact-preserves-perf3-contract
   (let [artifact (bootstrap/specialization-file-artifact

@@ -51,19 +51,24 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.compiler-pass-manifest
    :contract-boundary :stage0-compiler-pass-manifest
-   :artifact-inputs [:math-conformance-artifact :compiler-pass-overrides]
-   :artifact-outputs [:compiler-pipeline-manifest :pass-contract-registry
+   :governing-contracts '[D0 D1 D2 D3 D6 D8 D9 C1 C15 C18 BOOT8 TEST2]
+   :authenticates-inputs? false :issues-certificates? false
+   :source-test-owner 'gravity.lowering.plan-assembly-test
+   :artifact-inputs [:caller-owned-legacy-module-pass-risk-and-late-owner-vars :math-conformance-artifact :compiler-pass-overrides]
+   :artifact-outputs [:legacy-native-manifest-suite-presence-or-owner-result :compiler-pipeline-manifest :pass-contract-registry
                       :diagnostic-registry :incremental-cache-key-schema
                       :plugin-pass-api-manifest :verification-plan
                       :compiler-trust-report]
-   :owns [:stage0-pass-contract-construction
+   :owns [:legacy-stage0-manifest-suite-presence-and-c1-c18-rule-facts
+          :stage0-pass-contract-construction
           :stage0-pass-contract-validation
           :stage0-pass-contract-capability-proof]
    :dependency-direction
    {:requires ['clojure.set 'clojure.string 'gravity.diagnostics
                'gravity.digest]
+    :consumed-by ['gravity.bootstrap]
     :forbids ['gravity.bootstrap]}
-   :does-not-own [:canonical-compiler-authority
+   :does-not-own [:native-labels-as-authenticated-proof :complete-c1-c18-verification :canonical-compiler-authority
                   :self-hosting :release :seed-retirement
                   :math-conformance-construction
                   :source-reading :target-lowering]
@@ -163,8 +168,92 @@
   (artifact/compiler-pass-source-artifact-from-upstream
    source-path upstream-artifact))
 
+(defn native-stage0-compiler-manifest [module]
+  {:profile (:profile module),
+   :target (:target module),
+   :source-effects (:effects module),
+   :source-capabilities (:capabilities module),
+   :metadata (:metadata module)})
+
+(defn native-stage0-compiler-suite [module]
+  (get-in module [:metadata :compiler :compiled-gate] {}))
+
+(defn native-stage0-compiler-suite-present? [module]
+  (contains? (get-in module [:metadata :compiler] {}) :compiled-gate))
+
+(defn validate-native-stage0-pass-contract! [operations
+                                             module
+                                             manifest
+                                             contract]
+  (let [source-path (:source-path module)
+        missing-fields ((deref (:missing-fields operations))
+                         contract
+                         (deref (:required-fields operations)))]
+    (if (seq missing-fields)
+      ((deref (:fail! operations))
+        "C1-PASS-CONTRACT"
+        source-path
+        manifest
+        contract
+        {:missing-fields missing-fields,
+         :remediation
+         "Expose the compiled executable pass contract before claiming compiler architecture coverage."})
+      (let [durable-drops ((deref (:intersection operations))
+                            (deref (:durable-facts operations))
+                            (set (:invalidates contract)))
+            replacements (set
+                           (concat
+                             (:regenerates contract)
+                             (:replacement-evidence contract)
+                             (:emits contract)))
+            missing-replacements ((deref (:difference operations))
+                                   durable-drops
+                                   replacements)]
+        (when (seq missing-replacements)
+          ((deref (:fail! operations))
+            "C1-EVIDENCE-DROP"
+            source-path
+            manifest
+            contract
+            {:missing-fields (vec missing-replacements),
+             :remediation
+             "Regenerate durable facts, emit replacement proof, keep runtime checks, or reject the transformation."}))))))
+
+(defn validate-native-stage0-verification-risk! [operations
+                                                 module
+                                                 risk-record]
+  (let [required (set (:minimum-evidence risk-record))
+        available (set (:available-evidence risk-record))]
+    (when (and
+            (contains? #{:high :critical} (:risk risk-record))
+            (not ((deref (:subset? operations)) required available)))
+      ((deref (:fail! operations))
+        "C18-EVIDENCE"
+        (:source-path module)
+        {:stage :stage0-compiled-compiler-gate,
+         :required-evidence required,
+         :artifact-id (:artifact-id risk-record),
+         :available-evidence available,
+         :risk-class (:risk risk-record),
+         :affected-profiles #{(:profile module)},
+         :version (or (:version risk-record) "stage0-p06-s1"),
+         :affected-targets #{(:target module)},
+         :pass-id (:pass risk-record)}
+        {:missing-fields
+         (vec
+           (sort-by
+             name
+             ((deref (:difference operations))
+               required
+               available)))}))))
+
 (def public-api
-  {'public-api {:kind :contract}
+  {'native-stage0-compiler-manifest {:authenticates-inputs? false, :admission :none, :operation-selection :late-owner-var-before-call-arguments, :artifact-inputs [:caller-owned-legacy-module-pass-and-risk-metadata], :arglists (quote ([module])), :artifact-outputs [:legacy-manifest-suite-presence-nil-or-owner-result], :issues-certificates? false, :contract-boundary :stage0-native-legacy-compiler-gate, :native-data-only? true}
+   'native-stage0-compiler-suite {:authenticates-inputs? false, :admission :none, :operation-selection :late-owner-var-before-call-arguments, :artifact-inputs [:caller-owned-legacy-module-pass-and-risk-metadata], :arglists (quote ([module])), :artifact-outputs [:legacy-manifest-suite-presence-nil-or-owner-result], :issues-certificates? false, :contract-boundary :stage0-native-legacy-compiler-gate, :native-data-only? true}
+   'native-stage0-compiler-suite-present? {:authenticates-inputs? false, :admission :none, :operation-selection :late-owner-var-before-call-arguments, :artifact-inputs [:caller-owned-legacy-module-pass-and-risk-metadata], :arglists (quote ([module])), :artifact-outputs [:legacy-manifest-suite-presence-nil-or-owner-result], :issues-certificates? false, :contract-boundary :stage0-native-legacy-compiler-gate, :native-data-only? true}
+   'validate-native-stage0-pass-contract! {:authenticates-inputs? false, :admission :none, :operation-selection :late-owner-var-before-call-arguments, :operation-keys [:missing-fields :required-fields :durable-facts :intersection :difference :fail!], :data-operation-keys [:required-fields :durable-facts], :artifact-inputs [:caller-owned-legacy-module-pass-and-risk-metadata], :arglists (quote ([operations module manifest contract])), :artifact-outputs [:legacy-manifest-suite-presence-nil-or-owner-result], :issues-certificates? false, :contract-boundary :stage0-native-legacy-compiler-gate, :native-data-only? true}
+   'validate-native-stage0-verification-risk! {:authenticates-inputs? false, :admission :none, :operation-selection :late-owner-var-before-call-arguments, :operation-keys [:subset? :difference :fail!], :artifact-inputs [:caller-owned-legacy-module-pass-and-risk-metadata], :arglists (quote ([operations module risk-record])), :artifact-outputs [:legacy-manifest-suite-presence-nil-or-owner-result], :issues-certificates? false, :contract-boundary :stage0-native-legacy-compiler-gate, :native-data-only? true}
+   'public-api {:kind :contract}
    'compiler-pass-manifest-contract {:arglists '([])}
    'compiler-pass-diagnostic-ids {:kind :constant}
    'compiler-pass-default-stage-order {:kind :constant}

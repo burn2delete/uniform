@@ -1,11 +1,56 @@
 (ns gravity.optimization
-  "Native seed equality reconstruction and complete C13 artifact pipeline; no admission.")
+  "Native seed optimization artifacts and performance metadata validation; no admission."
+  (:require [clojure.set]))
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {native-source-overrides {:arglists ([module]), :admission :none},
+ {native-zero-cost-required-claim-fields {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [], :artifact-outputs [:native-policy-data]},
+  native-zero-cost-required-nonempty-claim-fields {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [], :artifact-outputs [:native-policy-data]},
+  native-zero-cost-required-artifacts {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [], :artifact-outputs [:native-policy-data]},
+  native-zero-cost-abstraction-families {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [], :artifact-outputs [:native-policy-data]},
+  native-zero-cost-cost-diagnostic {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [], :artifact-outputs [:native-policy-data]},
+  native-zero-cost-normalize-claim {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([claim])},
+  native-zero-cost-missing-claim-fields {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([present-var required-fields-var nonempty-fields-var claim])},
+  native-zero-cost-failure! {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([failure-var id source-path manifest performance-claim claim extra])},
+  native-zero-cost-ir-artifact-id {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([claim key])},
+  native-zero-cost-costs-in-ir {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([claim ir-key])},
+  native-zero-cost-hidden-costs {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([costs-in-ir-var claim])},
+  native-zero-cost-missing-evidence {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([present-var artifact-id-var required-artifacts-var claim])},
+  validate-native-zero-cost-claim! {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([missing-fields-var hidden-costs-var missing-evidence-var failure-var abstraction-families-var cost-diagnostic-var source-path manifest performance-claim claim])},
+  native-zero-cost-capability-proof {:admission :none, :native-data-only? true, :contract-boundary :native-zero-cost-metadata-validation, :artifact-inputs [:caller-owned-native-records-and-explicit-late-vars], :artifact-outputs [:native-record-set-label-or-original-owner-result-or-exception], :arglists ([present-var artifact-id-var manifest performance-claim claims])},
+  native-performance-required-claim-fields
+  {:admission :none, :native-data-only? true, :artifact-outputs [:ordered-required-field-policy]},
+  native-performance-present?
+  {:arglists ([value]), :admission :none, :native-data-only? true},
+  native-performance-normalize-claim
+  {:arglists ([claim]), :admission :none, :native-data-only? true},
+  native-performance-missing-claim-fields
+  {:arglists ([present-var fields-var claim]), :admission :none, :native-data-only? true},
+  native-performance-failure!
+  {:arglists ([failure-var id source-path manifest claim extra]), :admission :none, :native-data-only? true},
+  native-performance-target-fingerprint
+  {:arglists ([claim]), :admission :none, :native-data-only? true},
+  validate-native-performance-claim!
+  {:arglists ([missing-fields-var fingerprint-var present-var failure-var source-path manifest performance claim]),
+   :admission :none, :native-data-only? true, :contract-boundary :native-performance-claim-validation,
+   :artifact-inputs [:caller-owned-manifest-performance-and-claim :late-native-operation-vars],
+   :artifact-outputs [:relative-complete-label-or-original-owner-exception]},
+  native-stage0-check-elision-proof-present?
+  {:arglists ([perf-present-var record]), :admission :none, :native-data-only? true,
+   :contract-boundary :stage0-check-elision-metadata-presence-and-refusal,
+   :operation-selection :late-var-before-field-arguments,
+   :artifact-inputs [:caller-owned-check-elision-record :late-presence-var],
+   :artifact-outputs [:native-marker-presence-value]},
+  validate-native-stage0-check-elision!
+  {:arglists ([failure-var proof-presence-var module record]), :admission :none, :native-data-only? true,
+   :contract-boundary :stage0-check-elision-metadata-presence-and-refusal,
+   :operation-selection :late-var-before-field-arguments,
+   :artifact-inputs [:caller-owned-stage0-module-and-record :late-failure-and-presence-vars],
+   :artifact-outputs [:nil-or-original-owner-result-or-exception],
+   :diagnostics [PERF10-PROOF-MISSING]},
+  native-source-overrides {:arglists ([module]), :admission :none},
   native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
   native-diagnostic-catalog
   {:arglists ([configuration source-path source-span]), :admission :none},
@@ -38,7 +83,10 @@
   {:arglists ([selection rewrite restore output-id mir evidence base]),
    :admission :none}},
  :supported
- [:single-entry-or-diamond-data-shape
+ [:native-zero-cost-metadata-validation
+  :native-performance-claim-validation
+  :stage0-check-elision-metadata-presence-and-refusal
+  :single-entry-or-diamond-data-shape
   :one-integer-equality-of-two-i64-constants
   :exact-edge-use-reconstruction
   :existing-record-assembly
@@ -46,8 +94,9 @@
   :ordered-native-c13-validation
   :late-compatibility-function-suppliers],
  :dependency-direction
- {:requires [],
-  :consumed-by [gravity.bootstrap-c13-comparison
+ {:requires [clojure.set],
+  :consumed-by [gravity.bootstrap
+                gravity.bootstrap-c13-comparison
                 gravity.c13-optimization.artifact
                 gravity.c13-optimization.projection
                 gravity.c13-optimization.validation],
@@ -58,7 +107,8 @@
    gravity.release]},
  :issues-verifier-certificates? false,
  :governing-contracts
- [D1
+ [D0
+  D1
   D2
   D3
   D6
@@ -76,7 +126,10 @@
   BOOT8
   TEST2],
  :unsupported
- [:untrusted-native-ingress
+ [:general-zero-cost-erasure
+  :unlisted-cost-vocabulary
+  :cross-runtime-diagnostic-precedence
+  :untrusted-native-ingress
   :callback-authentication
   :genuine-c11-admission
   :general-mir-optimization
@@ -89,7 +142,13 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:explicit-native-mir-data
+ [:caller-owned-native-zero-cost-claims-and-ir-audits
+  :late-zero-cost-policy-and-helper-vars
+  :caller-owned-performance-claims-manifests-and-metadata
+  :late-required-field-presence-fingerprint-and-failure-vars
+  :caller-owned-stage0-module-and-check-elision-record
+  :late-marker-presence-and-failure-vars
+  :explicit-native-mir-data
   :two-i64-constant-equality-selection
   :reconstruction-delta
   :existing-evidence-and-base-records
@@ -100,15 +159,24 @@
   :late-native-operation-and-source-input-suppliers],
  :namespace gravity.optimization,
  :diagnostic-ownership
- {:stage [C13-VERIFY :reconstruction-and-output-identity-mismatch
+ {:stage [:native-perf2-policy-ir-audit-and-ordered-refusal-facts
+          :native-perf1-policy-normalization-and-ordered-diagnostic-facts
+          PERF10-PROOF-MISSING :stage0-check-elision-marker-presence-and-refusal
+          C13-VERIFY :reconstruction-and-output-identity-mismatch
           :native-c13-catalog-and-ordered-refusal-selection],
-  :native-refusal-ids [C13-CONTRACT C13-PRESERVE C13-INVALIDATE C13-PROOF
+  :native-refusal-ids [PERF2-CLAIM PERF2-RESIDUAL PERF2-ALLOCATION PERF2-BOXING PERF2-DISPATCH
+                       PERF2-REFLECTION PERF2-CHECK PERF2-PROFILE PERF2-EVIDENCE PERF1-CLAIM PERF1-PROFILE PERF1-TARGET PERF1-EVIDENCE PERF1-SAFETY
+                       PERF1-EFFECT PERF1-CAPABILITY PERF1-NUMERIC PERF1-VARIANT PERF10-PROOF-MISSING C13-CONTRACT C13-PRESERVE C13-INVALIDATE C13-PROOF
                        C13-CHECK-ELISION C13-EFFECT C13-SAFETY C13-DOMAIN
                        C13-NONDETERMINISM C13-VERIFY],
   :existing-owner
-  [:input-admission :c11-verification :diagnostic-publication]},
+  [:input-admission :c11-verification :diagnostic-publication
+   :generic-failure-construction-and-exception-transport]},
  :artifact-outputs
- [:selection-or-nil
+ [:native-zero-cost-policy-claim-ir-audit-evidence-and-proof-envelope
+  :native-policy-normalized-claim-missing-fields-fingerprint-or-relative-complete
+  :native-marker-presence-or-nil-owner-result-or-exception
+  :selection-or-nil
   :rewritten-mir
   :reconstructed-mir-or-nil
   :unchanged-output-identity-protocol
@@ -578,6 +646,382 @@
                      (fn [source-path source-text]
                        (((:source-artifact operations)) configuration source-path source-text))
                      path (((:slurp operations)) path)))
+
+(defn native-stage0-check-elision-proof-present?
+  [perf-present-var record]
+  (or ((deref perf-present-var) (:proof-id record))
+      ((deref perf-present-var) (:proof record))
+      ((deref perf-present-var) (:certificate record))
+      ((deref perf-present-var) (:certificate-id record))
+      ((deref perf-present-var) (:dominating-proof record))))
+
+
+(defn validate-native-stage0-check-elision!
+  [failure-var proof-presence-var module record]
+  (let [source-path (:source-path module)
+        erased? (or (true? (:erased? record))
+                    (seq (:erased-checks record)))
+        proof-present? ((deref proof-presence-var)
+                        record)]
+    (when (and erased? (not proof-present?))
+      ((deref failure-var) "PERF10-PROOF-MISSING"
+             "compiled performance metadata erases a check without proof"
+             {:source-span {:source source-path}
+              :profile (:profile module)
+              :target (:target module)
+              :check-class (:check-class record)
+              :operation (:operation record)
+              :ir-node (:ir-node record)
+              :missing-proof :dominating-proof
+              :pass-id :stage0-compiled-performance-gate
+              :diagnostic-family :compiled-performance-validation
+              :remediation "Keep the runtime check or attach a dominating proof and certificate before claiming check elision."}))))
+(def native-performance-required-claim-fields
+  [:claim-id :profile :target :target-features :input-shape :layout
+   :safety-mode :benchmark])
+
+
+(defn native-performance-present?
+  [value]
+  (and (some? value)
+       (not (and (coll? value) (empty? value)))))
+
+
+(defn native-performance-normalize-claim
+  [claim]
+  (let [claim-id (or (:claim-id claim) (:claim claim))
+        input-shape (or (:input-shape claim) (:input-domain claim))]
+    (assoc claim
+           :claim-id claim-id
+           :input-shape input-shape)))
+
+
+(defn native-performance-missing-claim-fields
+  [present-var fields-var claim]
+  (vec (remove #((deref present-var) (get claim %))
+               (deref fields-var))))
+
+
+(defn native-performance-failure!
+  [failure-var id source-path manifest claim extra]
+  ((deref failure-var) id
+         (case id
+           "PERF1-CLAIM" "performance claim is incomplete"
+           "PERF1-EVIDENCE" "performance claim is missing required evidence"
+           "PERF1-SAFETY" "optimization loses required safety evidence"
+           "PERF1-PROFILE" "optimization introduces profile-illegal behavior"
+           "PERF1-EFFECT" "optimization hides or expands effects"
+           "PERF1-CAPABILITY" "optimization hides or expands capability authority"
+           "PERF1-NUMERIC" "optimization changes numeric mode without evidence"
+           "PERF1-TARGET" "performance claim lacks target feature or fingerprint evidence"
+           "PERF1-VARIANT" "generated variant lacks guard predicate evidence"
+           "performance claim is invalid")
+         (merge {:source-span {:source source-path}
+                 :profile (:profile manifest)
+                 :target (:target manifest)
+                 :claim-id (:claim-id claim)
+                 :target-request (:target claim)
+                 :diagnostic-family :performance-claim-validation}
+                extra)))
+
+
+(defn native-performance-target-fingerprint
+  [claim]
+  (or (get-in claim [:benchmark :target-fingerprint])
+      (get-in claim [:benchmark :environment-fingerprint])))
+
+
+(defn validate-native-performance-claim!
+  [missing-fields-var fingerprint-var present-var failure-var source-path manifest performance claim]
+  (let [missing-fields ((deref missing-fields-var) claim)
+        target-features (set (:target-features claim))
+        target-fingerprint ((deref fingerprint-var) claim)
+        semantic-proof (set (:semantic-proof claim))
+        safety-proof (set (:safety-proof claim))
+        artifacts (set (:artifacts claim))
+        lost-safety-facts (set (:lost-safety-facts performance))
+        expanded-effects (set (:expanded-effects performance))
+        expanded-capabilities (set (:expanded-capabilities performance))
+        numeric-change (:numeric-mode-change performance)
+        variants (vec (:generated-variants performance))]
+    (when (seq missing-fields)
+      ((deref failure-var) "PERF1-CLAIM" source-path manifest claim
+                   {:missing-fields missing-fields
+                    :remediation "Record profile, target, feature, input, layout, safety, and benchmark fields in the performance claim."}))
+    (when-not (= (:profile manifest) (:profile claim))
+      ((deref failure-var) "PERF1-PROFILE" source-path manifest claim
+                   {:active-profile (:profile manifest)
+                    :requested-profile (:profile claim)
+                    :remediation "The performance claim profile must match the already validated source profile."}))
+    (when (or (empty? target-features)
+              (not ((deref present-var) target-fingerprint)))
+      ((deref failure-var) "PERF1-TARGET" source-path manifest claim
+                   {:target-features target-features
+                    :target-fingerprint target-fingerprint
+                    :remediation "Record target features and benchmark target fingerprint evidence."}))
+    (when (or (empty? semantic-proof)
+              (empty? safety-proof)
+              (not (contains? artifacts :optimized-mir))
+              (not (contains? artifacts :proof-index))
+              (not (contains? artifacts :benchmark-report)))
+      ((deref failure-var) "PERF1-EVIDENCE" source-path manifest claim
+                   {:missing-evidence
+                    (cond-> #{}
+                      (empty? semantic-proof) (conj :semantic-proof)
+                      (empty? safety-proof) (conj :safety-proof)
+                      (not (contains? artifacts :optimized-mir))
+                      (conj :optimized-mir)
+                      (not (contains? artifacts :proof-index))
+                      (conj :proof-index)
+                      (not (contains? artifacts :benchmark-report))
+                      (conj :benchmark-report))
+                    :remediation "Attach semantic proof, safety proof, optimized MIR, proof index, and benchmark report evidence."}))
+    (when (seq lost-safety-facts)
+      ((deref failure-var) "PERF1-SAFETY" source-path manifest claim
+                   {:lost-safety-facts lost-safety-facts
+                    :remediation "Preserve, regenerate, or retain runtime checks for every safety fact."}))
+    (when (seq expanded-effects)
+      ((deref failure-var) "PERF1-EFFECT" source-path manifest claim
+                   {:expanded-effects expanded-effects
+                    :declared-effects (:source-effects manifest)
+                    :remediation "Optimization must not hide or expand effects outside the validated manifest."}))
+    (when (seq expanded-capabilities)
+      ((deref failure-var) "PERF1-CAPABILITY" source-path manifest claim
+                   {:expanded-capabilities expanded-capabilities
+                    :declared-capabilities (:source-capabilities manifest)
+                    :remediation "Optimization must not hide or expand authority outside the validated manifest."}))
+    (when (and (:source-mode numeric-change)
+               (:optimized-mode numeric-change)
+               (not= (:source-mode numeric-change)
+                     (:optimized-mode numeric-change))
+               (not ((deref present-var) (:certificate numeric-change))))
+      ((deref failure-var) "PERF1-NUMERIC" source-path manifest claim
+                   {:source-numeric-mode (:source-mode numeric-change)
+                    :optimized-numeric-mode (:optimized-mode numeric-change)
+                    :certificate-id (:certificate numeric-change)
+                    :remediation "Attach an explicit math or numeric certificate for mode changes."}))
+    (when-let [bad-variant (first (filter #(not ((deref present-var)
+                                                 (:guard-predicate %)))
+                                          variants))]
+      ((deref failure-var) "PERF1-VARIANT" source-path manifest claim
+                   {:generated-variant (:variant-id bad-variant)
+                    :missing-fact :guard-predicate
+                    :remediation "Generated fast paths and variants require guard predicates and compatibility evidence."}))
+    :complete))
+
+(def native-zero-cost-required-claim-fields
+  [:claim-id :profile :target :abstraction :equivalent-form
+   :expected-erased-costs :erased-costs :residual-costs
+   :semantic-proof :safety-proof :proof-ids :artifacts
+   :source-operation :before-ir :after-ir])
+
+
+(def native-zero-cost-required-nonempty-claim-fields
+  #{:claim-id :profile :target :abstraction :equivalent-form
+    :expected-erased-costs :semantic-proof :safety-proof :proof-ids
+    :artifacts :source-operation :before-ir :after-ir})
+
+
+(def native-zero-cost-required-artifacts
+  #{:before-mir :after-mir})
+
+
+(def native-zero-cost-abstraction-families
+  #{:protocol-dispatch :interface-call :generic-function :record-field-access
+    :newtype-wrapper :wrapper-value :iterator-pipeline
+    :collection-view :pattern-match :macro :facet-generated-form
+    :higher-order-function :error-result-wrapper :resource-wrapper
+    :numeric-mode-wrapper :standard-library-wrapper})
+
+
+(def native-zero-cost-cost-diagnostic
+  {:allocation "PERF2-ALLOCATION"
+   :hidden-allocation "PERF2-ALLOCATION"
+   :boxing "PERF2-BOXING"
+   :unboxing "PERF2-BOXING"
+   :representation-conversion "PERF2-BOXING"
+   :dynamic-dispatch "PERF2-DISPATCH"
+   :vtable-lookup "PERF2-DISPATCH"
+   :reflection "PERF2-REFLECTION"
+   :host-reflection "PERF2-REFLECTION"
+   :runtime-bounds-check "PERF2-CHECK"
+   :runtime-type-check "PERF2-CHECK"
+   :runtime-check "PERF2-CHECK"})
+
+
+(defn native-zero-cost-normalize-claim
+  [claim]
+  (assoc claim
+         :claim-id (or (:claim-id claim) (:claim claim))
+         :expected-erased-costs
+         (or (:expected-erased-costs claim) (:erased-costs claim) #{})
+         :residual-costs (or (:residual-costs claim) #{})))
+
+
+(defn native-zero-cost-missing-claim-fields
+  [present-var required-fields-var nonempty-fields-var claim]
+  (vec (remove #(if (contains? (deref nonempty-fields-var) %)
+                  ((deref present-var) (get claim %))
+                  (contains? claim %))
+               (deref required-fields-var))))
+
+
+(defn native-zero-cost-failure!
+  [failure-var id source-path manifest performance-claim claim extra]
+  ((deref failure-var) id
+         (case id
+           "PERF2-CLAIM" "zero-cost abstraction claim is incomplete"
+           "PERF2-RESIDUAL" "residual work contradicts zero-cost claim"
+           "PERF2-ALLOCATION" "zero-cost claim hides allocation"
+           "PERF2-BOXING" "zero-cost claim hides boxing or representation conversion"
+           "PERF2-DISPATCH" "zero-cost claim leaves dynamic dispatch unerased"
+           "PERF2-REFLECTION" "zero-cost claim hides host reflection"
+           "PERF2-CHECK" "zero-cost claim leaves runtime checks unaccounted"
+           "PERF2-PROFILE" "zero-cost erasure relies on profile-illegal behavior"
+           "PERF2-EVIDENCE" "zero-cost claim is missing IR or proof evidence"
+           "zero-cost abstraction claim is invalid")
+         (merge {:source-span {:source source-path}
+                 :profile (:profile manifest)
+                 :target (:target manifest)
+                 :target-request (:target performance-claim)
+                 :claim-id (:claim-id claim)
+                 :abstraction (:abstraction claim)
+                 :equivalent-form (:equivalent-form claim)
+                 :expected-erased-costs (:expected-erased-costs claim)
+                 :residual-costs (:residual-costs claim)
+                 :ir-artifacts (:artifacts claim)
+                 :diagnostic-family :zero-cost-abstraction-validation}
+                extra)))
+
+
+(defn native-zero-cost-ir-artifact-id
+  [claim key]
+  (or (get-in claim [key :artifact-id])
+      (get-in claim [key :id])))
+
+
+(defn native-zero-cost-costs-in-ir
+  [claim ir-key]
+  (set (concat (get-in claim [ir-key :costs])
+               (mapcat :costs (get-in claim [ir-key :operations])))))
+
+
+(defn native-zero-cost-hidden-costs
+  [costs-in-ir-var claim]
+  (clojure.set/union (set (:residual-costs claim))
+             ((deref costs-in-ir-var) claim :after-ir)
+             (set (get-in claim [:allocation-audit :hidden-allocations]))
+             (set (get-in claim [:boxing-audit :hidden-boxing]))
+             (set (get-in claim [:dispatch-specialization-report
+                                  :residual-dispatch]))
+             (set (get-in claim [:reflection-audit :hidden-reflection]))
+             (set (get-in claim [:runtime-check-report
+                                  :unaccounted-checks]))))
+
+
+(defn native-zero-cost-missing-evidence
+  [present-var artifact-id-var required-artifacts-var claim]
+  (let [artifacts (set (:artifacts claim))]
+    (cond-> #{}
+      (empty? (:semantic-proof claim)) (conj :semantic-proof)
+      (empty? (:safety-proof claim)) (conj :safety-proof)
+      (empty? (:proof-ids claim)) (conj :proof-ids)
+      (not ((deref present-var) ((deref artifact-id-var) claim :before-ir)))
+      (conj :before-ir)
+      (not ((deref present-var) ((deref artifact-id-var) claim :after-ir)))
+      (conj :after-ir)
+      (not (clojure.set/subset? (deref required-artifacts-var) artifacts))
+      (conj :before-after-mir-artifacts))))
+
+
+(defn validate-native-zero-cost-claim!
+  [missing-fields-var hidden-costs-var missing-evidence-var failure-var abstraction-families-var cost-diagnostic-var
+   source-path manifest performance-claim claim]
+  (let [missing-fields ((deref missing-fields-var) claim)
+        artifacts (set (:artifacts claim))
+        expected-erased-costs (set (:expected-erased-costs claim))
+        erased-costs (set (:erased-costs claim))
+        residual-costs (set (:residual-costs claim))
+        unerased-expected-costs (clojure.set/difference expected-erased-costs
+                                                erased-costs)
+        hidden-costs (clojure.set/union ((deref hidden-costs-var) claim)
+                                unerased-expected-costs)
+        profile-illegal (set (:profile-illegal-behavior claim))
+        missing-evidence ((deref missing-evidence-var) claim)]
+    (when (seq missing-fields)
+      ((deref failure-var) "PERF2-CLAIM" source-path manifest performance-claim claim
+                   {:missing-fields missing-fields
+                    :remediation "Record abstraction kind, equivalent form, erased/residual costs, before/after IR, proof ids, and proof artifacts."}))
+    (when (or (not= (:profile manifest) (:profile claim))
+              (not= (:profile performance-claim) (:profile claim))
+              (not= (:target performance-claim) (:target claim))
+              (not (contains? (deref abstraction-families-var)
+                              (:abstraction claim)))
+              (seq profile-illegal))
+      ((deref failure-var) "PERF2-PROFILE" source-path manifest performance-claim claim
+                   {:active-profile (:profile manifest)
+                    :performance-profile (:profile performance-claim)
+                    :target-request (:target performance-claim)
+                    :profile-illegal-behavior profile-illegal
+                    :remediation "Zero-cost erasure must use a legal abstraction family under the already validated profile and target request."}))
+    (when (or (seq missing-evidence)
+              (not (contains? artifacts :dispatch-report))
+              (nil? (:allocation-audit claim))
+              (nil? (:boxing-audit claim))
+              (nil? (:runtime-check-report claim)))
+      ((deref failure-var) "PERF2-EVIDENCE" source-path manifest performance-claim claim
+                   {:missing-evidence
+                    (cond-> missing-evidence
+                      (not (contains? artifacts :dispatch-report))
+                      (conj :dispatch-report)
+                      (nil? (:allocation-audit claim))
+                      (conj :allocation-audit)
+                      (nil? (:boxing-audit claim))
+                      (conj :boxing-audit)
+                      (nil? (:runtime-check-report claim))
+                      (conj :runtime-check-report))
+                    :remediation "Attach before/after MIR, dispatch report, allocation and boxing audits, runtime-check report, and proof artifacts."}))
+    (when-let [[cost id] (first (keep (fn [cost]
+                                        (when-let [id ((deref cost-diagnostic-var)
+                                                       cost)]
+                                          [cost id]))
+                                      hidden-costs))]
+      ((deref failure-var) id source-path manifest performance-claim claim
+                   {:residual-cost cost
+                    :remediation "Report the residual cost instead of accepting the zero-cost claim, or prove that the equivalent lower-level form has the same cost."}))
+    (when (seq (clojure.set/union residual-costs unerased-expected-costs))
+      ((deref failure-var) "PERF2-RESIDUAL" source-path manifest performance-claim claim
+                   {:residual-costs (clojure.set/union residual-costs
+                                               unerased-expected-costs)
+                    :remediation "A zero-cost claim must have an empty residual-cost set; non-erased work belongs in a performance report."}))
+    :complete))
+
+
+(defn native-zero-cost-capability-proof
+  [present-var artifact-id-var manifest performance-claim claims]
+  {:profile-legality-preserved? (every? #(= (:profile manifest)
+                                            (:profile %))
+                                        claims)
+   :target-request-preserved? (every? #(= (:target performance-claim)
+                                          (:target %))
+                                      claims)
+   :effect-authority-preserved?
+   (every? #(= (set (get-in % [:effect-proof :source-effects]))
+               (set (get-in % [:effect-proof :optimized-effects])))
+           claims)
+   :capability-authority-preserved?
+   (every? #(= (set (get-in % [:capability-proof
+                               :source-capabilities]))
+               (set (get-in % [:capability-proof
+                               :optimized-capabilities])))
+           claims)
+   :safety-evidence-preserved? (every? #(seq (:safety-proof %)) claims)
+   :before-after-ir-recorded?
+   (every? #(and ((deref present-var) ((deref artifact-id-var) % :before-ir))
+                 ((deref present-var) ((deref artifact-id-var) % :after-ir)))
+           claims)
+   :residual-costs-empty? (every? #(empty? (:residual-costs %)) claims)
+   :status :complete})
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

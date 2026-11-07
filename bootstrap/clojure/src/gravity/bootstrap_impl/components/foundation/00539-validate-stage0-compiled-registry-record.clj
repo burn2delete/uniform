@@ -2,32 +2,19 @@
 
 (defn validate-stage0-compiled-registry-record!
   [module registry-record]
-  (when-not (true? (:access-grant registry-record))
-    (compiled-package-fail!
-     "PKG9001" module registry-record
-     {:missing-fields [:access-grant]})))
+  (gravity.package/check-registry-record! #'compiled-package-fail! module registry-record))
 
 (defn validate-stage0-compiled-provenance-record!
   [module provenance-record]
-  (when-not (:source-graph-hash provenance-record)
-    (compiled-package-fail!
-     "PKG10001" module provenance-record
-     {:missing-fields [:source-graph-hash]})))
+  (gravity.package/check-provenance-record! #'compiled-package-fail! module provenance-record))
 
 (defn validate-stage0-compiled-target-matrix!
   [module target-matrix]
-  (when (true? (:implicit-host-target? target-matrix))
-    (compiled-package-fail!
-     "PKG11002" module target-matrix
-     {:missing-fields [:explicit-target]})))
+  (gravity.package/check-target-matrix! #'compiled-package-fail! module target-matrix))
 
 (defn validate-stage0-compiled-signing-sbom!
   [module signing-sbom-verification]
-  (when-not (true? (get-in signing-sbom-verification
-                           [:signature :canonical-payload]))
-    (compiled-package-fail!
-     "PKG12002" module signing-sbom-verification
-     {:missing-fields [:canonical-payload]})))
+  (gravity.package/check-signing-sbom! #'compiled-package-fail! module signing-sbom-verification))
 
 (defn validate-stage0-compiled-package!
   [module]
