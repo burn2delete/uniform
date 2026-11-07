@@ -872,31 +872,31 @@
                                        :pending-effect (:effect pending)})))))
   snapshot)
 
-(def ^:private planning-reference-key :uniform/retained-repository-metadata)
-(def ^:private planning-task-reference-key :uniform/retained-task-provider-field)
+(def ^:private planning-reference-key :uniform/retained-repository-metadata-v2)
+(def ^:private planning-legacy-reference-key :uniform/retained-repository-metadata)
+(def ^:private planning-task-reference-key :uniform/retained-task-provider-field-v2)
+(def ^:private planning-legacy-task-reference-key :uniform/retained-task-provider-field)
 (def ^:private planning-body-reference-key :uniform/retained-untrusted-pr-body)
-(def ^:private planning-reference-policy :uniform/retained-repository-metadata-v2)
-(def ^:private planning-task-reference-policy :uniform/retained-task-provider-field-v2)
 (def ^:private planning-description-reference-key :uniform/retained-task-description)
 (def ^:private planning-description-reference-policy :uniform/retained-task-description-v1)
 (def ^:private planning-inline-repository-keys
-  ;; Keep only stable identity and visibility inline.  The authenticated raw
-  ;; snapshot retains every other provider field by exact path and digest.
-  #{:id :node_id :name :full_name :fullName :private :html_url :owner :visibility})
+  ;; Keep repository control facts inline because the planner consumes them as
+  ;; decision inputs.  Other provider metadata remains an exact raw reference.
+  #{:id :node_id :name :full_name :fullName :private :html_url :fork :default_branch
+    :owner :visibility :disabled :archived :permissions})
 (def ^:private planning-inline-user-keys
   #{:id :node_id :login :html_url :type :site_admin :user_view_type})
 (def ^:private planning-inline-milestone-keys
   #{:id :node_id :number :state :title :creator})
 
 (defn- planning-reference [artifact artifact-sha path]
-  {:artifact artifact :sha256 artifact-sha :path path :policy planning-reference-policy})
+  {:artifact artifact :sha256 artifact-sha :path path})
 
 (defn- planning-task-reference [artifact artifact-sha path field value _inline]
   {:artifact artifact
    :sha256 artifact-sha
    :path path
    :field field
-   :policy planning-task-reference-policy
    :type (if (map? value) :map :string)
    :value-sha256 (rt/digest (pr-str value))})
 
@@ -906,7 +906,8 @@
     (not (map? value))
     (rt/fail! "Planning provider metadata is malformed"
               {:path path :actual-type (type value)})
-    (contains? value planning-reference-key)
+    (or (contains? value planning-reference-key)
+        (contains? value planning-legacy-reference-key))
     (rt/fail! "Planning provider metadata already has a presentation reference"
               {:path path})
     :else
@@ -923,7 +924,8 @@
     (not (map? value))
     (rt/fail! "Planning provider metadata is malformed"
               {:path path :actual-type (type value)})
-    (contains? value planning-task-reference-key)
+    (or (contains? value planning-task-reference-key)
+        (contains? value planning-legacy-task-reference-key))
     (rt/fail! "Planning provider metadata already has a presentation reference"
               {:path path})
     :else
@@ -937,7 +939,8 @@
     (not (map? value))
     (rt/fail! "Planning provider metadata is malformed"
               {:path path :actual-type (type value)})
-    (contains? projected-value planning-task-reference-key)
+    (or (contains? projected-value planning-task-reference-key)
+        (contains? projected-value planning-legacy-task-reference-key))
     (rt/fail! "Planning provider metadata already has a presentation reference"
               {:path path})
     :else

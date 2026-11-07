@@ -110,10 +110,10 @@
                   (assoc-in [:issue :milestone :creator]
                             (restore-map (get-in issue [:milestone :creator])
                                          [:tasks task-key :issue :milestone :creator]))
-                  (get-in issue [:milestone :uniform/retained-task-provider-field])
+                  (get-in issue [:milestone task-reference-key])
                   (assoc-in [:issue :milestone]
                             (get-in raw (get-in issue
-                                                [:milestone :uniform/retained-task-provider-field :path])))))))
+                                                [:milestone task-reference-key :path])))))))
           projected)))
 
 (defn harness [scenario operation]
@@ -723,6 +723,8 @@
         large-repository (sized repository-marker 300000 "r")
         repository {:id 99 :node_id "repo-99" :name "repo" :full_name "fixture/repo"
                     :html_url "https://example.invalid/repos/fixture/repo" :url "https://api.example.invalid/repos/fixture/repo"
+                    :fork true :default_branch "stable" :disabled true :archived true
+                    :permissions {:pull true :push false}
                     :description large-repository}
         task (assoc (slice "a") :status :attention :base base :candidate "candidate-sha" :tree "candidate-tree"
                     :issue {:number 7 :node_id "issue-7" :html_url "https://example.invalid/issues/7"
@@ -733,6 +735,7 @@
              {:number number :title (str "Large historical PR " number)
               :html_url (str "https://example.invalid/pulls/" number)
               :state "OPEN" :draft true :body large-body
+              :labels [{:id 91 :name "seedless" :color "5319e7"}]
               :head {:ref ref :sha sha :repo repository}
               :base {:ref "main" :sha base :repo repository}
               :changed_files 3 :changed_paths ["tools/seedless/src/seedless/workflow.clj"]})
@@ -787,14 +790,23 @@
         (is (= "head-sha-12" (get-in (first open-prs-prompt) [:head :sha])))
         (is (= "head-sha-13" (get-in (second open-prs-prompt) [:head :sha])))
         (is (= "fixture/repo" (get-in (first open-prs-prompt) [:head :repo :full_name])))
-        (is (= :uniform/retained-repository-metadata-v2
-               (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :policy])))
+        (is (= true (get-in (first open-prs-prompt) [:head :repo :fork])))
+        (is (= "stable" (get-in (first open-prs-prompt) [:head :repo :default_branch])))
+        (is (= true (get-in (first open-prs-prompt) [:head :repo :disabled])))
+        (is (= true (get-in (first open-prs-prompt) [:head :repo :archived])))
+        (is (= {:pull true :push false}
+               (get-in (first open-prs-prompt) [:head :repo :permissions])))
+        (is (= [{:id 91 :name "seedless" :color "5319e7"}]
+               (:labels (first open-prs-prompt))))
+        (is (= #{:artifact :sha256 :path}
+               (set (keys (get-in (first open-prs-prompt)
+                                  [:head :repo :uniform/retained-repository-metadata-v2])))))
         (is (= (str artifact)
-               (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :artifact])))
+               (get-in (first open-prs-prompt) [:head :repo :uniform/retained-repository-metadata-v2 :artifact])))
         (is (= [0 :base :repo]
-               (get-in (first open-prs-prompt) [:base :repo :uniform/retained-repository-metadata :path])))
+               (get-in (first open-prs-prompt) [:base :repo :uniform/retained-repository-metadata-v2 :path])))
         (is (= [1 :head :repo]
-               (get-in (second open-prs-prompt) [:head :repo :uniform/retained-repository-metadata :path])))
+               (get-in (second open-prs-prompt) [:head :repo :uniform/retained-repository-metadata-v2 :path])))
         (is (= large-body
                (get-in raw [:open-prs 0 :body])))
         (is (= open-prs
@@ -831,11 +843,11 @@
         projected (project [task] reference)
         issue (:issue (first projected))
         body-reference (get-in issue [:body :uniform/retained-untrusted-pr-body])
-        user-reference (get-in issue [:user :uniform/retained-task-provider-field])
-        creator-reference (get-in issue [:milestone :creator :uniform/retained-task-provider-field])
-        milestone-reference (get-in issue [:milestone :uniform/retained-task-provider-field])
+        user-reference (get-in issue [:user :uniform/retained-task-provider-field-v2])
+        creator-reference (get-in issue [:milestone :creator :uniform/retained-task-provider-field-v2])
+        milestone-reference (get-in issue [:milestone :uniform/retained-task-provider-field-v2])
         description-reference (get-in (first projected) [:description :uniform/retained-task-description])
-        reference-keys #{:artifact :sha256 :path :field :policy :type :value-sha256}]
+        reference-keys #{:artifact :sha256 :path :field :type :value-sha256}]
     (is (= :attention (:status (first projected))))
     (is (= {:message "preserved failure"} (:error (first projected))))
     (is (= 42 (:number issue)))
@@ -850,18 +862,18 @@
     (is (= 17 (get-in issue [:user :id])))
     (is (= "seedless" (get-in issue [:user :login])))
     (is (= [:tasks "issue-metadata" :issue :user]
-           (get-in issue [:user :uniform/retained-task-provider-field :path])))
+           (get-in issue [:user :uniform/retained-task-provider-field-v2 :path])))
     (is (= reference-keys (set (keys user-reference))))
     (is (= :user (:field user-reference)))
     (is (= :map (:type user-reference)))
-    (is (= :uniform/retained-task-provider-field-v2 (:policy user-reference)))
+    (is (nil? (:policy user-reference)))
     (is (nil? creator-reference))
     (is (= #{:id :node_id :login :html_url :type :site_admin :user_view_type}
            (set (keys (get-in issue [:milestone :creator])))))
     (is (= reference-keys (set (keys milestone-reference))))
     (is (= :milestone (:field milestone-reference)))
     (is (= [:tasks "issue-metadata" :issue :milestone] (:path milestone-reference)))
-    (is (= :uniform/retained-task-provider-field-v2 (:policy milestone-reference)))
+    (is (nil? (:policy milestone-reference)))
     (is (nil? (:inline-keys milestone-reference)))
     (is (nil? (:omitted-keys milestone-reference)))
     (is (= #{:artifact :sha256 :path :policy :keys :value-sha256}
@@ -916,14 +928,15 @@
                           (project [{:body 42 :head {:ref "head" :repo nil}
                                      :base {:ref "main" :repo nil}}]
                                    reference)))
-    (is (thrown-with-msg? Exception #"already has a presentation reference"
-                          (project [{:head {:ref "head"
-                                            :repo {:id 7
-                                                   :description "untrusted"
-                                                   :uniform/retained-repository-metadata
-                                                   {:artifact "/tampered"}}}
-                                     :base {:ref "main" :repo nil}}]
-                                   reference)))))
+    (doseq [reference-key [:uniform/retained-repository-metadata
+                           :uniform/retained-repository-metadata-v2]]
+      (is (thrown-with-msg? Exception #"already has a presentation reference"
+                            (project [{:head {:ref "head"
+                                              :repo {:id 7
+                                                     :description "untrusted"
+                                                     reference-key {:artifact "/tampered"}}}
+                                       :base {:ref "main" :repo nil}}]
+                                     reference))))))
 
 (deftest planner-accepts-deleted-repository-in-valid-pr-boundaries
   (let [ctx (repository! (assoc (context) :config {:objective "Fixture objective" :contracts ["AGENTS.md"]}))
