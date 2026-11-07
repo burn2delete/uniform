@@ -422,3 +422,51 @@ coordinate these appendices with PR1308 and retained documentation candidates;
 none of their edits, authority or acceptance was adopted here. No accounting
 or input quota was added. No commit, admission, release, self-hosting or
 seed-retirement claim is made.
+
+## Change sketch CI feedback disposition
+
+Follow-up for `evolution.change-sketches.owner-scope-production-v1`,
+2026-11-07. Supplied CI feedback identifies head
+`05393417cbbf0709552ad2b72200a0db299eaaca`, run `42348084392`, and a failed
+`darwin-unsupported-host` job `128330167973`. These are reported input
+identities and results, not locally authenticated identities or a result for
+this evidence edit. The supplied feedback contains no failed-step log,
+exception, assertion output or failure receipt. Its other pending/queued jobs
+are not reported as passing.
+
+Passive source review found the requested producer, carrier appendix and named
+positive/negative fixtures already present in the four owned paths. The failed
+job is configured in `.github/workflows/ci.yml` for macos-15 and JDK 26.0.1+8.
+Its Clojure refusal assertion in `tools/ci/darwin_unsupported_test.clj` loads
+Darwin publication, not change sketch construction, and requires native
+preflight refusal before publication I/O. The job also performs setup, host
+probes and receipt handling. A job-level FAILURE alone does not identify which
+step failed or justify changing its expected refusal. No causal defect in the
+owned producer or fixtures was established from this feedback.
+
+Only this additive evidence entry was edited. No assertion, selector, workflow,
+host guard, producer or fixture was weakened or skipped. The captured task
+region, Open parent, authenticated plan and historical evidence are unchanged.
+Actual activity was passive source reads and an evidence edit; no Git, network,
+test, build, validator or native operation ran. Controller-owned verification
+remains unrun; no check success or independent acceptance is claimed.
+
+Repair needs the failed step's log and available `target/ci` failure receipt
+from the supplied job. If those locate the defect outside the four owned
+paths, the controller must route it to the appropriate owner; this increment
+has no authority to edit CI or Darwin publication. No material ambiguity in
+the declared GOV1 carrier was found, and the previously recorded missing owner
+authentication and later composition/acceptance obligations remain.
+
+The five controller Clojure argument vectors in the preceding section remain
+proposed and unrun. For the existing unsupported-host assertion, its direct
+controller vector on the configured host/JDK is also unrun here:
+
+```clojure
+["clojure" "-Srepro" "-J-Xmx256m" "-J--enable-native-access=ALL-UNNAMED"
+ "-M" "tools/ci/darwin_unsupported_test.clj"]
+```
+
+This direct assertion does not replace the complete CI job or establish that
+its setup, host probes and receipt steps succeeded. No retained refusal was
+retried or transferred, and no commit or release authority is claimed.
