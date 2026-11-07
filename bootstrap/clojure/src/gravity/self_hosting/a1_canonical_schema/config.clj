@@ -42,7 +42,7 @@
     (nth path (- (count path) index 1))))
 
 (defn path-vector [path]
-  (mapv #(path-segment path %) (range (path-count path))))
+  (into [] (if (vector? path) path (reverse path))))
 
 (defn fail! [diagnostic path]
   (throw (ex-info diagnostic {:a1/failure true
