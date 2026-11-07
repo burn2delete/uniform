@@ -668,7 +668,9 @@
         (w/complete! ctx)
         (is (= [main/completion-check] @checks))
         (is (= :complete (:status @(:state ctx))))
-        (is (= base (get-in @(:state ctx) [:completion :base]))))
+        (is (= base (get-in @(:state ctx) [:completion :base])))
+        (is (nil? (w/task ctx "completion")))
+        (is (map? (get-in @(:state ctx) [:completion :review-evidence]))))
       (finally (delete-tree! (:root ctx))))))
 
 (deftest a-failed-or-moving-completion-review-cannot-finish
@@ -749,7 +751,10 @@
 
 (deftest stale-independent-review-is-rejected
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
-        t (assoc (w/worktree! ctx "review-fixture" base) :base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}"))]
+        t (assoc (w/worktree! ctx "review-fixture" base) :kind "adoption" :paths ["module.clj"]
+                 :base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+                 :checks {:candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+                          :commands [["clojure" "-M" "focused"]] :result :passed})]
     (try
       (with-redefs [rt/event! (fn [& _]) w/job! (fn [& _] (assoc (select-keys t [:base :candidate :tree]) :candidate "wrong"
                                                                  :verdict "approved" :evidence-scope "adoption"))]
@@ -836,3 +841,166 @@
                                                (simplify.schema/object-of {:value simplify.schema/text}))))
         (is (= "uniform_seedless" (get-in @requests [0 1 :clientInfo :name]))))
       (finally (delete-tree! (:root ctx))))))
+
+(deftest fresh-review-snapshot-binds-source-patch-checks-and-passive-prompt
+  (let [ctx (repository! (context))
+        worktree (io/file (get-in ctx [:config :worktree-root]) "review-snapshot")
+        source (io/file worktree "module.clj")
+        calls (atom [])
+        t {:key "fresh-review" :kind "adoption" :base "base" :candidate "candidate"
+           :tree "tree" :paths ["module.clj"] :worktree (str worktree)
+           :checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                    :result :passed}}]
+    (try
+      (.mkdirs worktree)
+      (spit source "(ns fixture)\n(def seed :clojure)\n")
+      (rt/update! ctx assoc-in [:tasks "fresh-review"] t)
+      (with-redefs [w/assert-identity! (fn [& _] (swap! calls conj :identity))
+                    w/assert-clean! (fn [& _] (swap! calls conj :clean))
+                    rt/assert-authorized! (fn [& _] (swap! calls conj :authorized))
+                    rt/command (fn [_ _ argv & _]
+                                 (swap! calls conj [:snapshot argv])
+                                 {:exit 0 :out "diff --git a/module.clj b/module.clj\n" :err ""})
+                    w/job! (fn [_ _ _ prompt _ job]
+                             (swap! calls conj [:review job prompt])
+                             {:verdict "approved" :base "base" :candidate "candidate" :tree "tree"
+                              :evidence-scope "adoption" :summary "evidence supplied"
+                              :findings [] :residual-host-boundary "Fixture host remains"})]
+        (is (= "approved" (:verdict (w/review! ctx t "adoption"))))
+        (let [receipt (get-in @(:state ctx) [:tasks "fresh-review" :review-evidence])
+              review-call (some #(when (and (vector? %) (= :review (first %))) %) @calls)
+              prompt (nth review-call 2)]
+          (is (= {:base "base" :candidate "candidate" :tree "tree"} (:tuple receipt)))
+          (is (= "adoption" (:scope receipt)))
+          (is (= (rt/digest "diff --git a/module.clj b/module.clj\n")
+                 (:patch-sha256 receipt)))
+          (is (= "module.clj" (get-in receipt [:source 0 :path])))
+          (is (= (rt/digest "(ns fixture)\n(def seed :clojure)\n")
+                 (get-in receipt [:source 0 :sha256])))
+          (is (= (rt/digest prompt) (:prompt-sha256 receipt)))
+          (is (some #(and (vector? %) (= :snapshot (first %))) @calls))
+          (is (some #(and (vector? %) (= :review (first %))) @calls))
+          (is (.contains ^String prompt "diff --git a/module.clj b/module.clj"))
+          (is (.contains ^String prompt "(def seed :clojure)"))
+          (is (.contains ^String prompt "Do not run Git, Clojure, tests, builds"))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest review-snapshot-supports-owned-directories-and-deletions
+  (let [ctx (repository! (context))
+        repo (get-in ctx [:config :repo-dir])
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        wt (w/worktree! ctx "review-directory-delete" base)]
+    (try
+      (let [worktree (:worktree wt)]
+        (.mkdirs (io/file worktree "owned"))
+        (spit (io/file worktree "owned" "new.clj") "(ns fixture.new)\n")
+        (rt/git ctx worktree "rm" "module.clj")
+        (rt/git ctx worktree "add" "owned/new.clj")
+        (rt/git ctx worktree "commit" "-m" "directory and deletion fixture")
+        (let [candidate (rt/git ctx worktree "rev-parse" "HEAD")
+              tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")
+              t (merge wt {:key "directory-delete" :kind "adoption"
+                           :paths ["owned" "module.clj"] :base base
+                           :candidate candidate :tree tree
+                           :checks {:candidate candidate :tree tree
+                                    :commands [["clojure" "-M" "focused"]]
+                                    :result :passed}})]
+          (rt/update! ctx assoc-in [:tasks "directory-delete"] t)
+          (with-redefs [w/job! (fn [& _] {:verdict "approved" :base base
+                                          :candidate candidate :tree tree
+                                          :evidence-scope "adoption" :summary "Fixture review"
+                                          :findings [] :residual-host-boundary "Fixture host remains"})]
+            (is (= "approved" (:verdict (w/review! ctx t "adoption")))))
+          (let [sources (get-in @(:state ctx) [:tasks "directory-delete" :review-evidence :source])]
+            (is (= #{"module.clj" "owned/new.clj"} (set (map :path sources))))
+            (is (= :deleted (:status (some #(when (= "module.clj" (:path %)) %) sources))))
+            (is (= :added (:status (some #(when (= "owned/new.clj" (:path %)) %) sources)))))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest review-snapshot-supports-owned-renames
+  (let [ctx (repository! (context))
+        repo (get-in ctx [:config :repo-dir])
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        wt (w/worktree! ctx "review-rename" base)]
+    (try
+      (let [worktree (:worktree wt)]
+        (.mkdirs (io/file worktree "owned"))
+        (rt/git ctx worktree "mv" "module.clj" "owned/renamed.clj")
+        (rt/git ctx worktree "commit" "-m" "rename fixture")
+        (let [candidate (rt/git ctx worktree "rev-parse" "HEAD")
+              tree (rt/git ctx worktree "rev-parse" "HEAD^{tree}")
+              t (merge wt {:key "rename" :kind "adoption"
+                           :paths ["module.clj" "owned"] :base base
+                           :candidate candidate :tree tree
+                           :checks {:candidate candidate :tree tree
+                                    :commands [["clojure" "-M" "focused"]]
+                                    :result :passed}})]
+          (rt/update! ctx assoc-in [:tasks "rename"] t)
+          (with-redefs [w/job! (fn [& _] {:verdict "approved" :base base
+                                          :candidate candidate :tree tree
+                                          :evidence-scope "adoption" :summary "Fixture review"
+                                          :findings [] :residual-host-boundary "Fixture host remains"})]
+            (is (= "approved" (:verdict (w/review! ctx t "adoption")))))
+          (let [source (first (get-in @(:state ctx) [:tasks "rename" :review-evidence :source]))]
+            (is (= :renamed (:status source)))
+            (is (= "owned/renamed.clj" (:path source)))
+            (is (= "module.clj" (:old-path source))))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest tampered-review-evidence-is-rejected-before-a-review-turn
+  (let [checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                :result :passed}
+        t {:key "evidence" :base "base" :candidate "candidate" :tree "tree"
+           :paths ["module.clj"] :checks checks}
+        source "(ns fixture)\n"
+        evidence {:tuple {:base "base" :candidate "candidate" :tree "tree"}
+                  :scope "adoption" :paths ["module.clj"] :patch "patch"
+                  :patch-sha256 (rt/digest "patch")
+                  :source [{:path "module.clj" :sha256 (rt/digest source)
+                            :executable false :content source}]
+                  :checks checks :checks-sha256 (rt/digest (pr-str checks))}]
+    (is (= evidence (w/validate-review-evidence! t "adoption" evidence)))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (w/validate-review-evidence! t "adoption"
+                                              (assoc-in evidence [:source 0 :content]
+                                                        "(ns tampered)\n"))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (w/validate-review-evidence! t "adoption"
+                                              (assoc-in evidence [:tuple :candidate]
+                                                        "other"))))))
+
+(deftest changed-path-without-source-entry-is-rejected
+  (let [checks {:candidate "candidate" :tree "tree"
+                :commands [["clojure" "-M" "focused"]] :result :passed}
+        source "(ns fixture)\n"
+        t {:key "changed-path-evidence" :base "base" :candidate "candidate" :tree "tree"
+           :paths ["owned"] :checks checks}
+        evidence {:tuple {:base "base" :candidate "candidate" :tree "tree"}
+                  :scope "adoption" :paths ["owned"]
+                  :source-paths ["owned/kept.clj"]
+                  :changed-paths [{:status :added :path "owned/new.clj"}]
+                  :patch "patch" :patch-sha256 (rt/digest "patch")
+                  :source [{:path "owned/kept.clj" :status :present
+                            :sha256 (rt/digest source) :executable false :content source}]
+                  :checks checks :checks-sha256 (rt/digest (pr-str checks))}]
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"omits a changed path"
+                          (w/validate-review-evidence! t "adoption" evidence)))))
+
+(deftest restricted-candidate-refuses-before-review-snapshot
+  (let [ctx (context)
+        t {:key "restricted-review" :kind "adoption" :base "base" :candidate "candidate"
+           :tree "tree" :paths ["module.clj"] :worktree "/tmp/never-read"
+           :error {:details {:restricted true}}
+           :checks {:candidate "candidate" :tree "tree" :commands [["clojure" "-M" "focused"]]
+                    :result :passed}}
+        called (atom [])]
+    (rt/update! ctx assoc-in [:tasks "restricted-review"] t)
+    (with-redefs [w/assert-identity! (fn [& _] (swap! called conj :identity))
+                  rt/command (fn [& _] (swap! called conj :snapshot) {:exit 0 :out "" :err ""})
+                  w/job! (fn [& _] (swap! called conj :review))]
+      (let [failure (try (w/review! ctx t "adoption")
+                         nil
+                         (catch clojure.lang.ExceptionInfo e e))]
+        (is (some? failure))
+        (is (true? (:restricted (ex-data failure))))
+        (is (empty? @called))))))
