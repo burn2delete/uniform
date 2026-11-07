@@ -97,3 +97,97 @@ is established by this transfer. No compiler/runtime source or tests, diagnostic
 or wire identity, permission, contract semantics or other task status changed.
 No component release, self-hosting, seed retirement, dependency readiness or
 overall completion percentage is claimed. All four outcomes remain open.
+
+## Pass fixture facts carrier increment
+
+Date: 2026-11-06. Author: bounded implementation worker in worktree
+`increment-1288`. Finding: `diag.pass-fixtures.structured-fact-map-v1`.
+Owning task:
+`diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema`.
+This section records current authorship and passive source observations; earlier
+results retain their historical subjects. No current commit/tree identity was
+supplied or inspected. Git inspection is prohibited for this worker; exact
+candidate binding and independent acceptance belong to the controller.
+
+### Authored change and fixture expectations
+
+Passive reads of C15, the owning spec/plan/task, suite assembly, failure carrier
+and artifact constructor established the narrow boundary: the constructor runs
+diagnostic validation before constructing its manifest. The existing
+`support/present?` accepted nonnil prose and scalars. The authored change in
+[diagnostic_validation.clj](../../bootstrap/clojure/src/gravity/compiler_pass_manifest/diagnostic_validation.clj)
+replaces that facts condition with a nonempty-map check and adds fixture
+indexing. Facts failures retain `C15-FACTS` and `:schema-field :facts`; absent
+or nil maps use `:missing`, empty maps use `:empty`, and other shapes use
+`:invalid-shape` in `:reason`. Failures identify the zero-based fixture index,
+offending diagnostic, stage and primary artifact without copying rejected
+facts. Public arities, default records and surrounding validation clauses are
+preserved in the authored source.
+
+[diagnostic_facts_test.clj](../../bootstrap/clojure/test/gravity/compiler_pass_manifest/diagnostic_facts_test.clj)
+contains authored expectations, not executed results:
+
+| Fixtures | Expected result at both boundaries |
+| --- | --- |
+| `default-facts-unchanged`, `structured-facts-preserved`, `nested-fact-values-preserved` | Public validation completes and the actual constructor preserves complete fixture records, nested values and the profile manifest. |
+| `missing-facts`, `nil-facts` | `C15-FACTS`, `:reason :missing`, no returned artifact. |
+| `empty-facts` | `C15-FACTS`, `:reason :empty`, no returned artifact. |
+| `prose-facts`, `scalar-facts`, `vector-facts`, `secret-marker-facts` | `C15-FACTS`, `:reason :invalid-shape`, no returned artifact or rejected fact payload in failure data/message. Scalars include a number, false and a keyword. |
+| Precedence and repeated-call controls | Schema/catalog/span/origin failures precede facts; facts precede later same-fixture remediation/redaction and stream order. Valid facts retain those later refusals. Earlier fixture failures precede later fixture failures, with identical repeated results. |
+
+Both default fixture positions are covered for each malformed facts case.
+Inputs reach the public suite through profile-manifest metadata; accepted
+records exercise both diagnostic-id merging and full fixture replacement.
+The constructor itself is not stubbed. Failure capture returns diagnostics
+instead of an artifact only when the operation actually throws. The marker is
+a synthetic test string, checked against the entire captured failure/message.
+
+### Actual results and unrun controller checks
+
+Observed: the two source/test paths and three owning artifacts were authored
+and read back for source review. No test, build, validator, Git command or
+cache inspection was executed. No exit status, assertion count or successful
+verification is claimed for this increment. No new execution refusal occurred.
+
+The following are proposed argument vectors, all unrun. `:dev-test` selects
+the new namespace directly without editing a shared runner catalog.
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest.diagnostic-facts-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Worker execution of these checks is prohibited by the controller-owned
+verification instruction. The vectors describe proposed native verification;
+they do not authorize replay of a retained denied job. Git status/diff,
+including the907's denied Git whitespace action, select23's denied Git/cache
+inspections and Review50/53 Git/cache/Clojure refusals (including B709/C5f5,
+C154 snapshots and focused tests) remain restricted and were not retried,
+transferred or routed through another executable. Build1173 and
+environment-scope1176 remain restricted Attention findings. Unrun checks alone
+do not restrict authored readiness.
+
+### Coordination, authority and remaining obligations
+
+Only the five paths authorized by the finding are edited. New test namespace
+`gravity.compiler-pass-manifest.diagnostic-facts-test` names subsystem and
+behavior; the finding key remains traceability metadata. No new public API or
+compatibility identity is introduced. PR1269's severity implementation and
+evidence are separate; this worker changes only fixture indexing and the facts
+clause in their shared validator and adds distinct artifact sections. Network,
+PR edits and reviewer messages are unavailable under this worker's instructions;
+the controller must reconcile shared writes and the exact PR1269 candidate
+before composition. No PR state, coordination receipt or acceptance is claimed.
+
+There is no unresolved semantic ambiguity for this narrow map-shape contract:
+nil and absence share the missing reason; values within accepted maps are
+preserved without new type or quota rules. Producer normalization, semantic
+fact validation, redaction policy for otherwise structured records and real
+consumer composition retain their separate obligations. The compatibility
+artifact is not evidence of complete C15 producer coverage. Controller checks,
+exact candidate identity and independent acceptance remain pending. The parent
+task stays Open; no release, self-hosting or seed-retirement authority is claimed.
