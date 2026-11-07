@@ -866,6 +866,57 @@
         (is (= :uncertain (get-in @(:state ctx) [:effects "project-status/project/content-1/1" :status]))))
       (finally (delete-tree! (:root ctx))))))
 
+(deftest reconciled-ready-admission-reissues-only-the-status-write
+  (let [ctx (repository! (context)) statuses (atom []) graphql-calls (atom 0)
+        s (slice "existing") status-key "project-status/project/issue1"
+        old-status-id (str status-key "/4") member-id "project-item/project/issue1"]
+    (try
+      (add-task! ctx s)
+      (rt/update! ctx merge
+                  {:project {:id "project" :workflow {:id "field"
+                                                        :options [{:id "ready" :name "Ready"}]}}
+                   :tracking-sequence 4
+                   :tracking-intents {status-key old-status-id}
+                   :effects {old-status-id {:status :not-applied :result {:old true}}
+                             member-id {:status :done :result {:id "item-1"}}}})
+      (with-redefs [gh/status! (fn [context issue status]
+                                 (swap! statuses conj [(:node_id issue) status])
+                                 (transport/status! context issue status))
+                    transport/graphql (fn [& _]
+                                        (swap! graphql-calls inc)
+                                        {:updateProjectV2ItemFieldValue
+                                         {:projectV2Item {:id "item-1"}}})]
+        (w/admit! ctx "base" [s]))
+      (is (= [["issue1" "Ready"]] @statuses))
+      (is (= 1 @graphql-calls))
+      (is (= (str status-key "/5") (get-in @(:state ctx) [:tracking-intents status-key])))
+      (is (= :not-applied (get-in @(:state ctx) [:effects old-status-id :status])))
+      (is (= :done (get-in @(:state ctx) [:effects member-id :status])))
+      (is (= :done (get-in @(:state ctx) [:effects (str status-key "/5") :status])))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest ready-tracking-repair-requires-settled-child-and-reconciled-status
+  (doseq [[status child-status] [[:done :done] [:uncertain :done] [:not-applied :uncertain]
+                                  [:not-applied :pending]]]
+    (let [ctx (repository! (context)) statuses (atom []) s (slice "existing")
+          status-key "project-status/project/issue1" old-status-id (str status-key "/4")
+          member-id "project-item/project/issue1"]
+      (try
+        (add-task! ctx s)
+        (rt/update! ctx merge
+                    {:project {:id "project"}
+                     :tracking-sequence 4
+                     :tracking-intents {status-key old-status-id}
+                     :effects {old-status-id {:status status :result {:old true}}
+                               member-id {:status child-status :result {:id "item-1"}}}})
+        (with-redefs [gh/status! (fn [& _] (swap! statuses conj :unexpected))]
+          (w/admit! ctx "base" [s]))
+        (is (empty? @statuses))
+        (is (= old-status-id (get-in @(:state ctx) [:tracking-intents status-key])))
+        (is (= status (get-in @(:state ctx) [:effects old-status-id :status])))
+        (is (= child-status (get-in @(:state ctx) [:effects member-id :status])))
+        (finally (delete-tree! (:root ctx)))))))
+
 (deftest unknown-or-restricted-project-admission-still-fails-closed
   (doseq [details [{:project "project" :content "content-1" :duplicate true
                     :restricted true :effect-status :restricted}

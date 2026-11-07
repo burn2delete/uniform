@@ -126,6 +126,32 @@
                              ["seedless:campaign"] nil)]
         (rt/update! ctx assoc :campaign-issue issue) issue)))
 
+(defn- ready-tracking-repair [ctx task]
+  (let [project-id (get-in @(:state ctx) [:project :id])
+        node-id (get-in task [:issue :node_id])
+        status-key (when (and (string? project-id) (string? node-id))
+                     (str "project-status/" project-id "/" node-id))
+        status-effect-id (get-in @(:state ctx) [:tracking-intents status-key])
+        member-effect-id (when status-key (str "project-item/" project-id "/" node-id))
+        status-effect (get-in @(:state ctx) [:effects status-effect-id])
+        member-effect (get-in @(:state ctx) [:effects member-effect-id])]
+    (when (and (= :ready (:status task))
+               status-effect-id
+               (= :not-applied (:status status-effect))
+               (= :done (:status member-effect)))
+      {:status-key status-key
+       :status-effect-id status-effect-id
+       :member-effect-id member-effect-id
+       :task (:key task)})))
+
+(defn- repair-ready-tracking! [ctx task]
+  (when-let [repair (ready-tracking-repair ctx task)]
+    ;; The membership effect is already done, so status! reuses that result and
+    ;; creates only a successor tracking intent for the retained not-applied
+    ;; status write. Uncertain, pending and restricted effects do not match.
+    (gh/status! ctx (:issue task) "Ready")
+    (rt/event! ctx :ready-tracking-repair repair)))
+
 (defn admit! [ctx base slices]
   (doseq [slice slices :when (nil? (task ctx (:key slice)))]
     (let [issue (gh/issue! ctx (:key slice) (:title slice)
@@ -145,6 +171,12 @@
       (rt/update! ctx update-in [:tasks (:key slice)] merge slice)
       (gh/relation! ctx (campaign-issue! ctx) "sub_issues" (:id issue))
       (gh/status! ctx issue "Ready")))
+  ;; A prior admission may have persisted the native Ready task and completed
+  ;; the child membership while its outer status write was inspected as
+  ;; not-applied. Re-emit only that exact safe successor; all other retained
+  ;; effects stay fail-closed under the normal recovery rules.
+  (doseq [slice slices]
+    (repair-ready-tracking! ctx (task ctx (:key slice))))
   ;; All issues exist before creating dependency links, including later siblings.
   (doseq [slice slices dep (:dependencies slice)]
     (gh/relation! ctx (:issue (task ctx (:key slice))) "dependencies/blocked_by"
