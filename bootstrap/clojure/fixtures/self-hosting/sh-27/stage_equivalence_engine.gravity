@@ -108,10 +108,6 @@
    :maximum-deltas 32
    :maximum-mode-values 256
    :maximum-string-length 4096
-   :maximum-carrier-nodes 32768
-   :maximum-carrier-depth 64
-   :maximum-container-width 1024
-   :maximum-scalar-units 1048576
    :target-independent-opcodes
    [:argument :literal :call :branch :jump :phi
     :runtime-check :return :error-return :panic]
@@ -132,87 +128,6 @@
     :sh27-completion]
    :self-hosted? false
    :clojure-seed-boundary? true})
-
-(defn sh27-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh27-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh27-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh27-max [left right]
-  (if (> left right) left right))
-
-(defn sh27-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 32768)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 64)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh27-aggregate? current)
-              (let [width (sh27-aggregate-width current)]
-                (if (> width 1024)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh27-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj result
-                                   [(first remaining)
-                                    (+ depth 1)]))))]
-                    (recur
-                     next-frontier next-nodes scalar-units
-                     (sh27-max observed-depth depth)
-                     (sh27-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units
-                       (count (vec (str current))))]
-                (if (> next-scalar-units 1048576)
-                  {:status :rejected
-                   :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier) next-nodes
-                   next-scalar-units
-                   (sh27-max observed-depth depth)
-                   observed-width))))))))))
 
 (defn sh27-stage-valid? [stage]
   (if (map? stage)
@@ -953,8 +868,6 @@
    :allowed-environment (get environment :allowed-environment)})
 
 (defn sh27-compare-stages [request]
-  (let [preflight (sh27-carrier-preflight request)]
-  (if (= :accepted (get preflight :status))
   (if (sh27-request-valid? request)
     (let [outcomes
           (sh27-compare-products
@@ -1011,18 +924,13 @@
          true)
        false)
       (sh27-rejected request "BOOT7005" :missing-stage-output)
-      (sh27-rejected request "BOOT7001" :invalid-request)))
-  (sh27-rejected
-   request "BOOT7005" (get preflight :reason)))))
+      (sh27-rejected request "BOOT7001" :invalid-request))))
 
 (defn sh27-verify-comparison [request candidate]
-  (let [candidate-preflight (sh27-carrier-preflight candidate)
-        expected (sh27-compare-stages request)]
+  (let [expected (sh27-compare-stages request)]
     {:artifact :gravity/sh27-stage-equivalence-verification
      :status
-     (if (= :accepted (get candidate-preflight :status))
-       (if (= expected candidate) :passed :rejected)
-       :rejected)
+     (if (= expected candidate) :passed :rejected)
      :checks
      [:exact-request-replay
       :stage-output-to-child-compiler-lineage-bound
@@ -1033,7 +941,4 @@
       :path-neutral-identity
       :actual-path-provenance-separated]
      :expected expected
-     :candidate
-     (if (= :accepted (get candidate-preflight :status))
-       candidate
-       :candidate-carrier-bound)}))
+     :candidate candidate}))

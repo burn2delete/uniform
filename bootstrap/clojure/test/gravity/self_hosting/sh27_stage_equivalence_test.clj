@@ -470,26 +470,68 @@
     (is (= :invalid-request
            (get-in rejected [:diagnostics 0 :facts :reason])))))
 
-(deftest sh27-overdeep-carriers-fail-closed
-  (let [overdeep
+(deftest sh27-aggregate-text-does-not-limit-seven-mode-comparison
+  (let [base (request accepted-gravity-plan
+                      'sh27-equivalent-stage-request)
+        code (apply str (repeat 4096 "C"))
+        entries (mapv (fn [index]
+                        {:code code
+                         :source-span {:source-id :compiler
+                                       :start-byte index
+                                       :end-byte (inc index)}
+                         :severity :error})
+                      (range 256))
+        expanded (replace-mode-product
+                  base :diagnostic
+                  #(assoc % :left entries :right entries))
+        result (compare-request expanded)
+        invalid (replace-mode-product
+                 expanded :diagnostic
+                 #(assoc-in % [:right 255 :source-span :end-byte] 0))]
+    ;; The two valid diagnostic vectors alone exceed the former scalar quota.
+    (is (> (* 2 (count entries) (count code)) 1048576))
+    (is (= :accepted (:status result)))
+    (is (= 7 (count (:outcomes result))))
+    (is (= entries (get-in result [:identity-input :products 2 :right])))
+    (is (= result (compare-request expanded)))
+    (is (= :passed
+           (:status (invoke engine-plan 'sh27-verify-comparison
+                            [expanded result]))))
+    (let [rejected (compare-request invalid)]
+      (is (= :rejected (:status rejected)))
+      (is (= "BOOT7005" (get-in rejected [:diagnostics 0 :rule])))
+      (is (= :diagnostic-shape
+             (get-in rejected [:diagnostics 0 :facts :reason]))))))
+
+(deftest sh27-malformed-carriers-fail-structurally-without-rendering
+  (let [base (request accepted-gravity-plan
+                      'sh27-equivalent-stage-request)
+        overdeep
         (reduce (fn [value _] [value])
                 :leaf
                 (range 70))
-        result (compare-request overdeep)
-        verification
-        (invoke
-         engine-plan 'sh27-verify-comparison
-         [(request accepted-gravity-plan
-                   'sh27-equivalent-stage-request)
-          overdeep])]
-    (is (= :rejected (:status result)))
-    (is (= "BOOT7005"
-           (get-in result [:diagnostics 0 :rule])))
-    (is (= :carrier-depth-bound
-           (get-in result [:diagnostics 0 :facts :reason])))
-    (is (= :rejected (:status verification)))
-    (is (= :candidate-carrier-bound
-           (:candidate verification)))))
+        opaque (proxy [Object] []
+                 (toString []
+                   (throw (ex-info "Opaque payload was rendered" {}))))]
+    (doseq [malformed [overdeep opaque
+                      (assoc base :recipe-id overdeep)
+                      (assoc base :recipe-id opaque)]]
+      (let [result (compare-request malformed)]
+        (is (= :rejected (:status result)))
+        (is (= "BOOT7001" (get-in result [:diagnostics 0 :rule])))
+        (is (= :invalid-request
+               (get-in result [:diagnostics 0 :facts :reason])))))
+    (let [malformed (replace-mode-product
+                     base :diagnostic
+                     #(assoc-in % [:right 0 :code] opaque))
+          result (compare-request malformed)]
+      (is (= :rejected (:status result)))
+      (is (= :diagnostic-shape
+             (get-in result [:diagnostics 0 :facts :reason]))))
+    (doseq [candidate [overdeep opaque]]
+      (is (= :rejected
+             (:status (invoke engine-plan 'sh27-verify-comparison
+                              [base candidate])))))))
 
 (deftest sh27-fixtures-are-byte-identical
   (is
