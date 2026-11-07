@@ -701,10 +701,10 @@
                           resolver (fn [] (swap! resolver-calls inc) {})
                           (public-adapter-var "run-with-runtime!") (fn [_] 0)
                           exit-var (fn [code] (swap! exits conj code))}
-                         (fn [] [(public/run! {}) (public/run!)]))]
-    (is (= [0 0] runner-results))
-    (is (= [0 0] @exits))
-    (is (= 2 @resolver-calls))
+                         (fn [] [(public/run! nil) (public/run! {}) (public/run!)]))]
+    (is (= [0 0 0] runner-results))
+    (is (= [0 0 0] @exits))
+    (is (= 3 @resolver-calls))
     (reset! public-adapter-events [])
     (let [result (run-with-runtime (public-adapter-runtime
                                     #'public-adapter-capture-runner))]
@@ -777,8 +777,15 @@
                           {resolver (fn [] (swap! resolver-calls inc) {})}
                           (fn [] (public/run! {:unexpected-option true})))
                         nil
-                        (catch Throwable error error))]
+                        (catch Throwable error error))
+        nonmap-error (try
+                       (with-redefs-fn
+                         {resolver (fn [] (swap! resolver-calls inc) {})}
+                         (fn [] (public/run! [:unexpected-option])))
+                       nil
+                       (catch Throwable error error))]
     (is (instance? clojure.lang.ExceptionInfo unknown-error))
+    (is (instance? clojure.lang.ExceptionInfo nonmap-error))
     (is (zero? @resolver-calls))
     (let [result (with-redefs-fn
                    {resolver (fn [] (swap! resolver-calls inc) {:runtime :fake})

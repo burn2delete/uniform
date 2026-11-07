@@ -129,7 +129,7 @@
   "Run the fixed public subset through the real development test runner."
   ([] (run! {}))
   ([options]
-   (when-not (and (map? options) (empty? options))
+   (when-not (or (nil? options) (and (map? options) (empty? options)))
      (throw (ex-info "Public subset runner accepts no execution options"
                      {:options options})))
    (marker! :runtime-resolution :enter {})
