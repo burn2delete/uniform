@@ -1,7 +1,7 @@
 # FACTORY-001: Compact Advance discovery context
 
-Status: implemented and locally validated; unfinished pending main integration
-and verified project adoption under the user's updated completion rule.
+Status: landed in main and deployed; unfinished pending an ordinary planner
+selection using the merged code.
 Initial local decision recorded at 2026-11-07T01:39:13Z. The later user
 instruction extends delivery through reviewed main integration and verified
 adoption. Initial observation: 2026-11-07T01:17:18Z.
@@ -112,4 +112,31 @@ Its additional
 snapshot code/storage and record retrieval are a real tradeoff. No model
 latency, token, selection-quality, deployed behavior or release improvement is
 established. validation.edn records exact source-file hashes, input hashes,
-measurements and check results. Nothing was deployed or integrated into main.
+measurements and check results. This paragraph describes the local validation
+stage; the subsequent delivery evidence follows.
+
+## Main integration and remaining adoption
+
+PR 1282 landed by squash as e24b2da4be8b79960462b8f61b7134b71b17f30a, tree
+06e8396bf423716b161a3b3b6894a6b51a9df37b, with the expected single parent.
+All current-head required CI passed, exact independent review and integration
+preflight passed, and actual merge identity/reachability were independently
+corroborated. The remote source branch was removed; local history is retained.
+
+The user subsequently authorized deployment takeover without owner messaging.
+Advance was paused, its active worker finished naturally, and its service
+exited successfully. Under its actual exclusive controller lock and a shared
+source/state lease, the clean source checkout was fast-forwarded from fa14c005
+to reviewed main e24b2da4. The boundary gate passed. Full native history was
+backed up; native state, controls, launcher, config and plist were preserved
+byte-for-byte through the update. Only the source-bound runtime handoff changed.
+The unchanged LaunchAgent started once after local pause was resumed. Its
+normal startup guards emitted verified-runtime-resume for e24b2da4 at
+2026-11-07T03:22:48.148153Z, with old denials preserved. No forced planner call
+or chat interruption occurred. Ordinary selection-history adoption is still
+being observed; a running service or fixture alone is insufficient.
+
+Effect 349 is now done following its
+original operator resolution, with its prior restriction preserved; this
+observer did not settle or replay it. adoption.edn binds the exact main result
+and this remaining gap. No messages were sent to the owning chat.
