@@ -21,6 +21,8 @@
 (deftest namespace-contract-is-explicit-and-does-not-admit-plans
   (is (empty? (ns-aliases 'gravity.runtime)))
   (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
+           'execute-native-stage0-instructions 'execute-native-stage0-instruction
+           'execute-native-stage0-function 'execute-native-stage0-plan
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal

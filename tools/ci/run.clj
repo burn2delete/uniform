@@ -611,7 +611,9 @@
    ["lowering-instructions-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.instructions-test")]
    ["lowering-plan-assembly-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.plan-assembly-test")]])
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.lowering.plan-assembly-test")]
+   ["runtime-stage0-execution-validation" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.stage0-execution-test")]])
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)

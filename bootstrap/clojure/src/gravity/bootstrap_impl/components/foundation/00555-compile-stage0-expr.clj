@@ -45,62 +45,22 @@
   [source-path source-text module]
   (gravity.lowering/assemble-native-stage0-plan stage0-plan-assembly-operations source-path source-text module))
 
+(declare execute-stage0-instructions)
+
+(def ^:private stage0-execution-operations
+  {:execute-instructions #'execute-stage0-instructions
+   :execute-instruction #'execute-stage0-instruction
+   :execute-function #'execute-stage0-compiled-function
+   :validate-effects! #'validate-module-effects!
+   :invoke-builtin #'invoke-stage0-builtin
+   :fail-call-arity! #'fail-call-arity!
+   :fail! #'fail!
+   :join #'clojure.string/join})
+
 (defn execute-stage0-instructions
   [plan env instructions]
-  (reduce (fn [_ instruction]
-            (execute-stage0-instruction plan env instruction))
-          nil
-          instructions))
+  (gravity.runtime/execute-native-stage0-instructions stage0-execution-operations plan env instructions))
 
 (defn execute-stage0-instruction
   [plan env instruction]
-  (case (:op instruction)
-    :literal (:value instruction)
-    :quote (:value instruction)
-    :local (if (contains? env (:name instruction))
-             (get env (:name instruction))
-             (fail! "L2-UNKNOWN-SYMBOL"
-                    "stage0 compiled plan cannot resolve local"
-                    {:source-span {:source (get-in plan [:source :path])}
-                     :symbol (:name instruction)
-                     :remediation "Regenerate the compiled plan from a valid stage0 source module."}))
-    :vector-literal (mapv #(execute-stage0-instruction plan env %)
-                          (:items instruction))
-    :set-literal (set (map #(execute-stage0-instruction plan env %)
-                           (:items instruction)))
-    :map-literal (into {}
-                       (map (fn [{:keys [key value]}]
-                              [(execute-stage0-instruction plan env key)
-                               (execute-stage0-instruction plan env value)]))
-                       (:entries instruction))
-    :println (let [module (:module plan)
-                   args (mapv #(execute-stage0-instruction plan env %)
-                              (:args instruction))]
-               (validate-module-effects! module)
-               (println (clojure.string/join " " (map str args))))
-    :do (execute-stage0-instructions plan env (:body instruction))
-    :if (if (execute-stage0-instruction plan env (:test instruction))
-          (execute-stage0-instruction plan env (:then instruction))
-          (execute-stage0-instruction plan env (:else instruction)))
-    :let (loop [env env
-                bindings (:bindings instruction)]
-           (if-let [{:keys [name expr]} (first bindings)]
-             (recur (assoc env name
-                           (execute-stage0-instruction plan env expr))
-                    (rest bindings))
-             (execute-stage0-instructions plan env (:body instruction))))
-    :builtin-call (let [module (:module plan)
-                        args (mapv #(execute-stage0-instruction plan env %)
-                                   (:args instruction))]
-                    (invoke-stage0-builtin module (:function instruction) args))
-    :function-call (let [args (mapv #(execute-stage0-instruction plan env %)
-                                    (:args instruction))]
-                     (execute-stage0-compiled-function
-                      plan
-                      (:function instruction)
-                      args))
-    (fail! "L2-UNKNOWN-CORE-FORM"
-           "stage0 compiled plan contains an unknown instruction"
-           {:source-span {:source (get-in plan [:source :path])}
-            :operator (:op instruction)
-            :remediation "Regenerate the compiled plan with a supported stage0 compiler."})))
+  (gravity.runtime/execute-native-stage0-instruction stage0-execution-operations plan env instruction))

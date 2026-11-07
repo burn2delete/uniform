@@ -8,8 +8,8 @@ compiled-function and compiled-plan executor bodies from Bootstrap into
 as adapters. This is the existing temporary Clojure interpreter, not a backend
 or an implementation of the canonical managed-runtime manifest.
 
-D0, D1, D2, D3, D6, D8, D9, L2, L9, C1, C15, R1, R4, R11, R12, BOOT1,
-BOOT8 and TEST2 govern this extraction and its explicit limits. L2 and L9
+D0, D1, D2, D3, D6, D8, D9, L2, L9, C1, C6, C15, SAFE9, R1, R4, R11,
+R12, BOOT1, BOOT8 and TEST2 govern this extraction and its explicit limits. L2 and L9
 govern execution order and failure compatibility. R1/R4/R11/R12 identify the
 runtime-service, host-delegation, authority and provenance requirements that
 this native seed interface does not establish. Compile-time policy checks stay
@@ -88,8 +88,45 @@ the exact clean authored tuple.
 
 ## Current status and unsupported boundaries
 
-This is the early draft scope. No new Runtime API is implemented or accepted
-at this capture. The original nine-path lease governs authoring. Main
+The four complete executor bodies are implemented behind eight live owner Var
+ports. Runtime exposes forty-two public APIs; all thirty-eight earlier public
+function bodies remain byte-identical. Bootstrap's surrounding compiler and
+assembler bodies are unchanged, and all twenty-six earlier CI vectors remain
+structurally identical. Conservation receipt SHA256:
+`9739141009754958726f7c63a511faa76f29b9db4a91b6c969ae45b4afc2df3f`.
+
+The genuine source baseline and current receipts have SHA256
+`fb3ca95fbff004d1228be852c1b0e64aa4150fce38b605ee6eb3de8afebcc524` and
+`66b303770cc6018b4da544308d867f55396ff758521dbbecaf7861532b673afe`.
+All twelve complete observations are identical: eight plans emitted, six
+executed, two execution-time arity refusals after emission, and four retained
+assembler/header/policy refusals before emission. Plans, reports, source
+paths/hashes, IDs, outputs and refusal payloads are unchanged. These are scope
+HEAD observations with the recorded actual implementation hashes, not a claim
+that an uncommitted implementation had a different Git identity.
+
+Focused Runtime tests pass: 13 tests, 108 assertions, including the actual
+appended whole-namespace command at index 26. Eleven selected earlier Runtime
+tests pass 674 assertions without invoking their source-compiler fixtures.
+Lowering instruction/backend/assembly regressions pass 38 tests and 424
+assertions; five unheld native pipeline tests pass 140 assertions; affected
+package/build/Safety tests pass 24 tests and 614 assertions; the CI harness
+passes 54 tests and 692 assertions; language-boundary and ownership checks pass
+48 tests and 1202 assertions. Cold loading exposes all 42 matching API
+declarations without Bootstrap or Diagnostics. Twenty generated outputs are
+archived byte-for-byte.
+
+Independent read-only discovery supports this four-body Runtime boundary in
+supplement SHA256
+`8b55c16440dc65fdcd6077779fa3ac21839778a4ffa5f0454b8f127ace78ed51`.
+Its companion effect-kernel discovery remains a separate possible subsequent
+slice; neither discovery grants acceptance. Structural document and full-language
+roadmap validators pass; those checks do not establish semantic or release
+completion. Independent semantic/adversarial review, complete current-Main lint, clean
+authored publication, provider/CI audit and integration remain pending at this
+capture. No Main integration is claimed.
+
+The original nine-path lease governs authoring. Main
 integration remains with the designated integrator after exact current-base
 preflight and required checks; this manual external source has no Main, Ready,
 controller, service or recovery role.

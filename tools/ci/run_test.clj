@@ -472,7 +472,7 @@
             "package-metadata-native-validation" "package-metadata-compiled-validation"
             "diagnostics-carrier-validation" "safety-source-outcomes-validation"
             "safety-unsafe-audit-validation" "lowering-instructions-validation"
-            "lowering-plan-assembly-validation"] (mapv first commands)))
+            "lowering-plan-assembly-validation" "runtime-stage0-execution-validation"] (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -555,7 +555,9 @@
            [24 "lowering-instructions-validation" "gravity.lowering.instructions-test"
             "bootstrap/clojure/test/gravity/lowering/instructions_test.clj"]
            [25 "lowering-plan-assembly-validation" "gravity.lowering.plan-assembly-test"
-            "bootstrap/clojure/test/gravity/lowering/plan_assembly_test.clj"]]]
+            "bootstrap/clojure/test/gravity/lowering/plan_assembly_test.clj"]
+           [26 "runtime-stage0-execution-validation" "gravity.runtime.stage0-execution-test"
+            "bootstrap/clojure/test/gravity/runtime/stage0_execution_test.clj"]]]
     (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) index)
           source-vars (binding [*read-eval* false]
                         (source-deftest-names path))]

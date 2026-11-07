@@ -168,6 +168,22 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [native Stage0 execution extraction](runtime-stage0-execution-evidence.md)
+moves the complete instruction-sequence, instruction, compiled-function and
+compiled-plan executor bodies into `gravity.runtime`. The four
+`execute-native-stage0-*` APIs consume trusted plan/instruction/environment and
+callee/argument data plus eight explicit live owner Vars; they return existing
+host values, writer effects, captured stdout or unchanged failures. They own
+execution-time traversal, lookup, entry and function-arity decisions, separately
+from Lowering's compile-time entry decisions. Bootstrap retains policy bodies,
+builtin dispatch, diagnostic construction/transport and source/plan compilation.
+Tests in `gravity.runtime.stage0-execution-test` cover real source execution and
+post-emission arity refusals, late ports, evaluation order, writer capture,
+opaque values and malformed-native-data compatibility. Runtime remains a
+dependency of Bootstrap adapters without a reverse import. This native Stage0
+family adds no source/plan authentication, runtime/provider grants, canonical
+Core/MIR/runtime manifests, backend execution, release or self-hosting authority.
+
 The [native Stage0 plan assembly extraction](lowering-plan-assembly-evidence.md)
 adds `assemble-native-stage0-plan [operations source-path source-text module]`
 under `:stage0-native-plan-assembly`. Twenty live owner Vars supply function-table
