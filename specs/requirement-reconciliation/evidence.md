@@ -1702,3 +1702,788 @@ Archive `p10-three-exact-model-binding`, SHA-256 `298441c9ebd9d89165fbb9ee24a7a5
 {:findings [], :execution {:repository-edits false, :new-claims false, :repository-tests false, :Sourcecriteria-or-semantic-review-redo false, :Reader-runtime-provider-model-tool-replay-probe-store-signing-workloads false, :remote-publication false}, :script {:path "/tmp/uniform-p10-independent-model-binding-20261106-c5e5.clj", :sha256 "9f16b9af0e77417cf638a4ab633a859dfabbb24678c52941cb19f0251e3eac97"}, :evidence {:complete-prior-records-and-prior-history-preserved true, :changed-fields [:task-reference :task-source-version-history], :checks [:actual-parent-commit :parent-model-sha :proposed-model-sha :review-sha :proposal-sha :preparation-subject :preparation-units :all-other-top-level-values :same1231-requirements :requirement-identities-order :exactly-three-changed :only-reviewed-records [:only-two-fields "ai/profile-tool-contract"] [:prior-history-preserved "ai/profile-tool-contract"] [:complete-prior-record "ai/profile-tool-contract"] [:exact-reviewed-reference "ai/profile-tool-contract"] [:history-subject "ai/profile-tool-contract"] [:history-proposal "ai/profile-tool-contract"] [:history-source-review "ai/profile-tool-contract"] [:history-qualified "ai/profile-tool-contract"] [:gap-qualification "ai/profile-tool-contract"] [:gaps-and-proposed-status "ai/profile-tool-contract"] [:only-two-fields "ai/prompt-memory-boundary"] [:prior-history-preserved "ai/prompt-memory-boundary"] [:complete-prior-record "ai/prompt-memory-boundary"] [:exact-reviewed-reference "ai/prompt-memory-boundary"] [:history-subject "ai/prompt-memory-boundary"] [:history-proposal "ai/prompt-memory-boundary"] [:history-source-review "ai/prompt-memory-boundary"] [:history-qualified "ai/prompt-memory-boundary"] [:gap-qualification "ai/prompt-memory-boundary"] [:gaps-and-proposed-status "ai/prompt-memory-boundary"] [:only-two-fields "ai/replay-evaluation-artifacts"] [:prior-history-preserved "ai/replay-evaluation-artifacts"] [:complete-prior-record "ai/replay-evaluation-artifacts"] [:exact-reviewed-reference "ai/replay-evaluation-artifacts"] [:history-subject "ai/replay-evaluation-artifacts"] [:history-proposal "ai/replay-evaluation-artifacts"] [:history-source-review "ai/replay-evaluation-artifacts"] [:history-qualified "ai/replay-evaluation-artifacts"] [:gap-qualification "ai/replay-evaluation-artifacts"] [:gaps-and-proposed-status "ai/replay-evaluation-artifacts"] :whole-value-inverse :all21bridges-unchanged :bridge-values-exact :textual-record-counts [:textual-old-record 3] [:textual-old-record 4] [:textual-old-record 5] :whole-byte-inverse :whole-inverse-sha :still-parent-checkout :repository-unchanged :preparation-frozen :proposed-frozen], :all-other1231-record-population-and-top-level-model-values-conserved true, :count 55, :whole-byte-inverse true, :whole-value-inverse true, :exactly-three-records-changed true, :task-source-version-bridges {:count 21, :values :byte-equivalent-via-whole-inverse-and-equal-model, :validation-not-rerun true}}, :scope :exact-three-private-record-model-binding-only, :records [{:id "ai/profile-tool-contract", :index 3, :reference-sha256 "c4b658fac74caa550e0cc14d1e4671d851d4df3ec7be109e9ae0c725eae36a63", :prior-record-sha256 "bf2b9cef9839a67dc24e3181112ec77cf04e8c1791da97c698f01b7eb9f42e7f", :history-entry-sha256 "a0826da7a5233efc2856880712db97153a5e15467d95f847bbc0695868e6f9d4", :gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed} {:id "ai/prompt-memory-boundary", :index 4, :reference-sha256 "3fa78341d441f8a896bd953a32a3ccbd84fbd139b3e540959d0839050d673296", :prior-record-sha256 "9879e82f9cbffc15790d58be79d77a600b381fe2d6b541748128bd3f02d6aadc", :history-entry-sha256 "edc64e8cc009158a61660c13594e1ce4efa63120bedf82471aa474bc8edca8f5", :gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed} {:id "ai/replay-evaluation-artifacts", :index 5, :reference-sha256 "f915398eea23e50d1e1ba97b9fe5f9aea9600da287541163c41ca5c0209fc82d", :prior-record-sha256 "b1775fd4c85251771fbe85f984c9645e5ac692dfd09267ad25bb390aa3881a58", :history-entry-sha256 "8cfd3dca5dfbcd1807f59ec5c093904bc09260ca1d01274c7eecf885e502f569", :gap "Bind exact requirement-specific implementation acceptance; component navigation and historical fixtures are not closure.", :atomicity :proposed, :nonoverlap :proposed}], :qualifications [:private-proposal-only :source-reference-review-not-redone :all-original-task-gaps-source-facets-corrections-history-states-and-compound-scope-holds-preserved :atomicity-nonoverlap-remain-proposed :all-implementation-acceptance-unassessed :no-new-task-unit-alias-source-bridge-or-denominator :no-T002-T003-T005-source-promotion :no-global-semantic-acceptance :no-stopped-cluster-reconstruction-transfer-adoption :no-implementation-Main-full240-credit :no-independent-release-test-acceptance-from-coordinator-status], :kind :independent-private-three-P10-model-binding-review, :verdict :qualified-MODEL-binding-PASS, :subjects {:base-commit "1e293dffcc9ae8d97caa80700f0590ba09f70236", :base-tree "2e5f16d06570d15929c4b432b3305b0ad67d42f0", :parent-model {:path "contracts/requirement-reconciliation.edn", :sha256 "27223cb3a423362eee9f01aa790c05ddca4a0e1d1ade317bb249e986afb61355"}, :preparation {:path "/tmp/uniform-three-p10-source-bindings-preparation.edn", :sha256 "1ebeb07db5837450f268188e4bc590e0623e78486d63c1b5b37ace5df5d9c89d"}, :proposed-model {:path "/tmp/uniform-three-p10-source-bindings-proposed-model.edn", :sha256 "140baf21e8ecd8194fb5171b78fb3aefdd4638aea7ce3e0c5629192fff8b969c"}, :source-proposal {:path "/tmp/uniform-three-p10-source-references-proposal-v2.edn", :sha256 "f4cce47ac41ad16f5a77cd9509118c47e31f00cfc4ed776746f74ddd7bc706c6"}, :prior-source-review {:path "/tmp/uniform-p10-independent-source-review-20261106-c5e5.edn", :sha256 "4c4bef1a3fe64c9b29aa90cacc20f896ffa3532299db8e55a3fe81e3ef0b61d9"}}}
 ~~~~~~
 <!-- source-reference-review-archive:p10-three-exact-model-binding:end -->
+
+
+## Current applied compiler and testing relation reviews
+
+The following current reviews cover the existing 40 compiler aliases and 25 testing aliases, including four already-applied testing predicate corrections. Their original e69 semantic records and task sources are unchanged at the qualified 9ec subject. Recording these scoped results changes applied-relation review metadata only. Requirements, ownership and wording decisions, compound boundaries, TEST5/SAFE16 overlap and the TEST9 artificial-resource exception retain their existing states. The unavailable historical 70b5 and 5cf payloads remain unconsumed and unpromoted. These reports confer no implementation, global-scope, denominator, release or Main acceptance.
+
+Archive `current-compiler-applied-alias-review`, SHA-256 `2bbf925e7802d7d35c6f0f635a497183c679d3c1e96d936852a6f88bdbe22829`; exact report bytes follow.
+
+<!-- source-reference-review-archive:current-compiler-applied-alias-review:start -->
+~~~~~~edn
+{:schema :uniform/applied-alias-current-semantic-adjudication-v1
+ :reviewer :review_922_mechanical
+ :reviewed-at "2026-11-06"
+ :review-mode :immutable-model-and-canonical-source-review
+ :candidate
+ {:model-commit "e69bb936a350a052215a6bacbea5ae69f833254c"
+  :model-tree "34bdd41c8229536351d7c2b3bab50160a52df5d5"
+  :model-parent "04a22a96940ec69f9ee6a65a6a71def037cf5097"
+  :model-path "contracts/requirement-reconciliation.edn"
+  :model-blob-sha256 "140baf21e8ecd8194fb5171b78fb3aefdd4638aea7ce3e0c5629192fff8b969c"
+  :model-bytes 45632964
+  :family :compiler
+  :candidate-ref "1ddf714a93222e59055db445ae60a75cfaf9ddda"
+  :source-pin "a1b991be499d50579a8b4366976c519ae8949224"
+  :source-review-artifact-sha256 "70b5e963ddb82256f046ce1f6ef54c15be17fef56ad3420a8c268886bf3afda9"
+  :alias-review-in-model :pending
+  :model-current-acceptance :unassessed}
+
+ :routes
+ [["compiler/c1/checked-backend-ingress" "backend/input-eligibility"]
+  ["compiler/c1/domain-anchor" "compiler/c12/domain-semantic-anchor"]
+  ["compiler/c1/pass-contract" "meta/pass-contract-execution"]
+  ["compiler/c10/certificate-consumption" "safety/safe1/safety-artifact"]
+  ["compiler/c10/runtime-safety-checks" "safety/safe1/runtime-checks"]
+  ["compiler/c10/safety-classification" "safety/safe1/outcomes"]
+  ["compiler/c11/mir-domain-anchor" "compiler/c12/domain-semantic-anchor"]
+  ["compiler/c11/mir-runtime-checks" "safety/safe15/check-erasure"]
+  ["compiler/c13/check-elision" "safety/safe15/check-erasure"]
+  ["compiler/c13/optimization-contract" "meta/pass-contract-execution"]
+  ["compiler/c13/regenerate-invalidated-facts" "compiler/c1/preserve-evidence"]
+  ["compiler/c14/abi-layout" "performance/layout-boundary"]
+  ["compiler/c14/target-provenance" "backend/common-emission-validation"]
+  ["compiler/c14/verified-lowering-ingress" "backend/input-eligibility"]
+  ["compiler/c17/plugin-pass-contract" "meta/pass-contract-execution"]
+  ["compiler/c18/backend-validation" "backend/conformance-execution-pack"]
+  ["compiler/c2/abbreviation-origins" "reader/abbreviation/explicit-syntax"]
+  ["compiler/c2/decode-source" "reader/source/decode-policy-bytes"]
+  ["compiler/c2/reader-extension-policy" "reader/extension/registered-effect-authority"]
+  ["compiler/c3/fact-invalidation" "compiler/c1/preserve-evidence"]
+  ["compiler/c4/build-authority" "language/effects/authorize-and-record-build-effect"]
+  ["compiler/c4/generated-origin" "compiler/c3/origin-preservation"]
+  ["compiler/c4/hygiene-capture" "safety/safe12/hygiene"]
+  ["compiler/c5/binding-identity" "language/module/publish-definition-entries"]
+  ["compiler/c5/cross-profile-boundary" "language/module/check-import-boundary"]
+  ["compiler/c5/dependency-cycle" "language/module/check-initialization-graph"]
+  ["compiler/c5/position-resolution" "language/module/resolve-binding"]
+  ["compiler/c5/resolution-invalidation" "compiler/c16/dependency-invalidation"]
+  ["compiler/c6/core-lowering" "language/core/normalize-to-declared-core"]
+  ["compiler/c6/evaluation-order" "language/core/preserve-observable-evaluation-order"]
+  ["compiler/c6/lowering-facts" "compiler/c1/preserve-evidence"]
+  ["compiler/c7/dynamic-boundaries" "language/types/check-dynamic-boundary"]
+  ["compiler/c7/profile-annotations" "language/types/check-core-typing"]
+  ["compiler/c7/schema-identity" "language/types/derive-schema-type"]
+  ["compiler/c7/type-inference" "language/types/check-core-typing"]
+  ["compiler/c8/declaration-legality" "language/effects/check-narrowest-allowance"]
+  ["compiler/c9/borrow-alias" "safety/safe3/borrow-exclusivity"]
+  ["compiler/c9/linear-terminal" "safety/safe5/terminal-flow"]
+  ["compiler/c9/move-consume" "safety/safe3/ownership-move"]
+  ["compiler/c9/runtime-ownership" "safety/safe1/runtime-checks"]]
+
+ :current-record-evidence
+ {:compiler-decisions 119
+  :alias-decisions 40
+  :alias-records 40
+  :archive-records 40
+  :distinct-target-routes 31
+  :all-source-obligations-present 40
+  :all-target-obligations-present 40
+  :all-alias-reasons-present 40
+  :alias-record-qualifications-present 40
+  :alias-record-source-review-pointers 40
+  :alias-record-review-state {:proposed 40}
+  :source-current-acceptance {:unassessed 119}
+  :source-record-atomicity {:proposed 40}
+  :source-record-nonoverlap {:proposed 40}
+  :target-record-atomicity {:proposed 40}
+  :target-record-nonoverlap {:proposed 40}
+  :source-facet-references 847
+  :source-facet-references-present-in-model 847
+  :target-facet-references 1962
+  :target-facet-references-present-in-model 1962
+  :target-source-contract-counts {0 21 1 13 2 3 3 2 5 1}
+  :target-context-refinement-counts {1 21 2 7 3 11 4 1}
+  :task-reference-identities 38
+  :task-reference-paths 14
+  :task-reference-paths-present-in-e69 14
+  :archived-records-retain-task-and-history-pointers true
+  :compound-partitions-preserved 36
+  :compound-outcomes-preserved 39
+  :five-ownership-holds-preserved
+  ["behavior/a4/nonidempotent-retry"
+   "behavior/a7/deletion-index-coherence"
+   "behavior/pkg12/provenance-subject-binding"
+   "behavior/pkg8/revoked-safety-invalidation"
+   "behavior/pkg9/registry-index-verification"]}
+
+ :semantic-adjudication
+ {:criteria
+  [:source-and-target-obligations-are-present
+   :source-facets-and-target-facets-are-authenticated-model-members
+   :alias-reason-describes-shared-predicate-or-owner-refinement
+   :target-retains-owning-contract-context
+   :record-keeps-source-task-history-and-qualification
+   :no-alias-creates-a-new-id-or-widens-authority]
+  :result :accepted-scoped-semantic-alias-relation
+  :route-families
+  {:reader-and-extension
+   ["compiler/c2/decode-source"
+    "compiler/c2/abbreviation-origins"
+    "compiler/c2/reader-extension-policy"]
+   :evidence-and-pass-contract
+   ["compiler/c1/pass-contract"
+    "compiler/c3/fact-invalidation"
+    "compiler/c6/lowering-facts"
+    "compiler/c13/optimization-contract"
+    "compiler/c13/regenerate-invalidated-facts"
+    "compiler/c17/plugin-pass-contract"]
+   :domain-anchor
+   ["compiler/c1/domain-anchor" "compiler/c11/mir-domain-anchor"]
+   :expansion-and-build-effects
+   ["compiler/c4/hygiene-capture"
+    "compiler/c4/build-authority"
+    "compiler/c4/generated-origin"]
+   :resolution-and-module
+   ["compiler/c5/position-resolution"
+    "compiler/c5/binding-identity"
+    "compiler/c5/cross-profile-boundary"
+    "compiler/c5/dependency-cycle"
+    "compiler/c5/resolution-invalidation"]
+   :core-and-order
+   ["compiler/c6/core-lowering"
+    "compiler/c6/evaluation-order"]
+   :types
+   ["compiler/c7/type-inference"
+    "compiler/c7/profile-annotations"
+    "compiler/c7/dynamic-boundaries"
+    "compiler/c7/schema-identity"]
+   :effects-and-safety
+   ["compiler/c8/declaration-legality"
+    "compiler/c9/borrow-alias"
+    "compiler/c9/move-consume"
+    "compiler/c9/linear-terminal"
+    "compiler/c9/runtime-ownership"
+    "compiler/c10/safety-classification"
+    "compiler/c10/runtime-safety-checks"
+    "compiler/c10/certificate-consumption"
+    "compiler/c11/mir-runtime-checks"
+    "compiler/c13/check-elision"]
+   :backend-and-layout
+   ["compiler/c1/checked-backend-ingress"
+    "compiler/c14/verified-lowering-ingress"
+    "compiler/c14/target-provenance"
+    "compiler/c14/abi-layout"
+    "compiler/c18/backend-validation"]}
+  :intermediate-route
+  {:source "compiler/c9/runtime-ownership"
+   :requested-target "compiler/c10/runtime-safety-checks"
+   :applied-target "safety/safe1/runtime-checks"
+   :assessment :explicit-owner-resolution-not-mismatch}
+  :canonical-source-review
+  {:immutable-e69-documents
+   ["docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+    "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+    "specs/requirement-reconciliation/spec.md"
+    "specs/requirement-reconciliation/evidence.md"
+    "specs/requirement-reconciliation/compiler-consolidation-receipt.edn"]
+   :owning-task-files
+   ["specs/auth-workflow/tasks.md"
+    "specs/backends-workflow/tasks.md"
+    "specs/compiler-api-workflow/tasks.md"
+    "specs/core-workflow/tasks.md"
+    "specs/effects-workflow/tasks.md"
+    "specs/expand-workflow/tasks.md"
+    "specs/legality-workflow/tasks.md"
+    "specs/lower-workflow/tasks.md"
+    "specs/mir-workflow/tasks.md"
+    "specs/opt-workflow/tasks.md"
+    "specs/reader-workflow/tasks.md"
+    "specs/resolve-workflow/tasks.md"
+    "specs/syntax-workflow/tasks.md"
+    "specs/types-workflow/tasks.md"]
+   :contract-conclusion
+   "D1/C1 require explicit pass inputs, preserved/invalidated facts, diagnostics and artifacts; C16 requires invalidation of every relevant semantic/proof/policy fact; C17 requires plugin/pass contracts and explicit grants; C18 requires actual verification evidence. The current alias records retain these source facets and route them to existing owning predicates, but none of those contracts is implementation evidence."}}
+
+ :limitations
+ [{:id :historical-70b5-payload-not-consumed
+   :severity :qualification
+   :artifact-sha256 "70b5e963ddb82256f046ce1f6ef54c15be17fef56ad3420a8c268886bf3afda9"
+   :status :not-present-in-current-git-object-or-checkout
+   :assessment "This review is a fresh adjudication of the immutable e69 records and canonical owning documents. It does not reconstruct, transfer or certify the missing historical compiler-family payload."}
+  {:id :model-state-remains-pending
+   :severity :qualification
+   :assessment "The external scoped result does not rewrite e69. All aliases remain proposed and all compiler current-acceptance fields remain unassessed until the coordinator records any later lifecycle transition."}]
+
+ :nonclaims
+ [:no-implementation-acceptance
+  :no-integration-approval
+  :no-provider-or-main-action
+  :no-global-240-acceptance
+  :no-denominator-or-rate
+  :no-new-unit-task-bridge-or-source-registry
+  :no-stopped-223-relation-or-135-cluster-reconstruction
+  :no-dispatch-certification-or-future-absence-quota]
+
+ :disposition :accepted-scoped-current-semantic-alias-adjudication}
+~~~~~~
+<!-- source-reference-review-archive:current-compiler-applied-alias-review:end -->
+
+Archive `current-testing-applied-graph-review`, SHA-256 `345bd5767c1c3ea043038e669084fd3815ddc0676221d7686cd156de7c616076`; exact report bytes follow.
+
+<!-- source-reference-review-archive:current-testing-applied-graph-review:start -->
+~~~~~~edn
+{:schema :uniform/testing-applied-graph-current-semantic-adjudication-v1
+ :reviewer :review_922_mechanical
+ :reviewed-at "2026-11-06"
+ :review-mode :immutable-model-and-canonical-testing-contract-review
+ :candidate
+ {:model-commit "e69bb936a350a052215a6bacbea5ae69f833254c"
+  :model-tree "34bdd41c8229536351d7c2b3bab50160a52df5d5"
+  :model-parent "04a22a96940ec69f9ee6a65a6a71def037cf5097"
+  :model-path "contracts/requirement-reconciliation.edn"
+  :model-blob-sha256 "140baf21e8ecd8194fb5171b78fb3aefdd4638aea7ce3e0c5629192fff8b969c"
+  :model-bytes 45632964
+  :family :testing
+  :candidate-ref "1ddf714a93222e59055db445ae60a75cfaf9ddda"
+  :source-pin "a1b991be499d50579a8b4366976c519ae8949224"
+  :source-review-artifact-sha256 "5cf2f5240a2b41d3b81f4d4bd89d395d3d2dfa19d0c3e63ccdc9c660ca36e26a"
+  :applied-graph-independent-review-in-model :pending
+  :model-current-acceptance :absent-or-nil}
+
+ :applied-alias-routes
+ [["testing/test1/diagnostic-match" "testing/test2/diagnostic-match"]
+  ["testing/test10/diagnostic-comparison" "testing/test2/diagnostic-match"]
+  ["testing/test10/failure-report" "testing/test9/minimize-regressions"]
+  ["testing/test11/counterexamples" "compiler/c18/counterexample-regression"]
+  ["testing/test11/machine-evidence" "schema/release-evidence-gating"]
+  ["testing/test11/math-certificates" "math/semantic-equality-proof-gate"]
+  ["testing/test11/proof-invalidation" "safety/safe15/invalidation"]
+  ["testing/test12/benchmark-identity" "gravity/benchmark-reproducibility"]
+  ["testing/test12/regression-decision" "performance/baseline-governance"]
+  ["testing/test13/release-provenance" "bootstrap/release-supply-chain"]
+  ["testing/test13/stage-identity" "bootstrap/stage-evidence"]
+  ["testing/test13/tcb-delta" "bootstrap/trust-reduction"]
+  ["testing/test13/unsafe-audit" "compiler/c10/unsafe-islands"]
+  ["testing/test2/crash-minimization" "testing/test9/minimize-regressions"]
+  ["testing/test4/fixture-identity" "testing/test1/fixture-contract"]
+  ["testing/test5/ai-misuse" "behavior/a9/safety-probe-coverage"]
+  ["testing/test6/fixture-identity" "testing/test1/fixture-contract"]
+  ["testing/test6/runtime-authority" "testing/test1/offline-authority"]
+  ["testing/test6/supported-semantics" "backend/conformance-execution-pack"]
+  ["testing/test7/documentation" "behavior/t7/runnable-doc-examples"]
+  ["testing/test8/eval-identity" "behavior/a9/eval-subject-binding"]
+  ["testing/test8/live-provider-policy" "behavior/a9/live-eval-policy"]
+  ["testing/test8/replay" "testing/test3/replay"]
+  ["testing/test8/safety-probes" "behavior/a9/safety-probe-coverage"]
+  ["testing/test8/structured-output" "behavior/a3/typed-output-admission"]]
+
+ :predicate-corrections
+ [{:id "testing/test2/cache-invalidation"
+   :action :correct
+   :proposed-obligation "Run incremental fixtures that change relevant source/dependency/profile/target/policy/compiler inputs and assert invalidated reuse plus rebuilding exactly affected graph nodes."
+   :semantic-assessment "This is a test of cache invalidation and affected-graph rebuilding, not a second cache implementation; irrelevant inputs need not invalidate everything."}
+  {:id "testing/test2/generated-reentry"
+   :action :correct
+   :proposed-obligation "Execute generated-code test fixtures through the normal compiler pipeline and assert retained source/generated provenance."
+   :semantic-assessment "This preserves the source-defined generated-code re-entry test and does not infer compiler implementation acceptance from a checker declaration."}
+  {:id "testing/test5/unsafe-audit"
+   :action :correct
+   :proposed-obligation "Inspect actual unsafe-fixture audit artifacts and fail or reject unaudited unsafe fixture results."
+   :semantic-assessment "The correction tests fixture audit artifacts; C10/SAFE6 remain owners of unsafe-audit implementation."}
+  {:id "testing/test9/property-oracle"
+   :action :correct
+   :proposed-obligation "Execute generated property cases against their declared expected invariant and failure oracle, retaining attributable replayable input and result evidence."
+   :semantic-assessment "The correction restores execution/result evidence to the property operation without inventing a generator or shrinking algorithm."}]
+
+ :structural-and-conservation-evidence
+ {:decision-count 104
+  :action-counts {:keep 41 :alias 25 :facet-refinement 15 :split 14 :correct 4
+                  :keep-join-hold 1 :conditional-refinement 3 :correction-hold 1}
+  :alias-records 25
+  :archived-alias-records 25
+  :alias-review-state {:proposed 25}
+  :alias-source-review-hash {"5cf2f5240a2b41d3b81f4d4bd89d395d3d2dfa19d0c3e63ccdc9c660ca36e26a" 25}
+  :archive-record-sha256-count 25
+  :archive-id-and-route-membership 25
+  :distinct-alias-targets 24
+  :all-alias-targets-present true
+  :source-obligations 25
+  :target-obligations 25
+  :source-facet-references 117
+  :source-facet-references-present-in-model 117
+  :target-facet-references 823
+  :target-facet-references-present-in-model 823
+  :target-atomicity {:proposed 25}
+  :target-nonoverlap {:proposed 25}
+  :current-acceptance {:absent-or-nil 104}
+  :alias-records-exact-to-22325-checkpoint 25
+  :all-four-correction-facets-present true
+  :correction-record-facet-references-including-held-exception 25
+  :correction-record-task-gaps 5
+  :global-join-states
+  {:root-adjudication-required-no-blanket-global-pass 60
+   :proposed-contextual-operation-join 25
+   :source-modality-and-context-must-survive 18
+   :bounded-overlap-not-full-equivalence 1}
+  :atomicity-states
+  {:single-scoped-operation-proposed 67
+   :acceptance-context-not-independent-unit 18
+   :compound-output-or-producer-consumer-as-defined 14
+   :predicate-correction-before-adjudication 4
+   :known-operation-with-exact-exception-held 1}
+  :source-conservation
+  {:source-views 245 :occurrences 19962 :facets 29177
+   :source-byte-changes 0 :scope-changes 0
+   :prior-candidates 1256 :current-candidates 1231
+   :all-task-and-historical-pointers-preserved true}}
+
+ :semantic-adjudication
+ {:criteria
+  [:source-and-target-obligations-are-present
+   :source-facets-and-target-facets-are-authenticated-model-members
+   :source-operation-is-the-same-test-or-an-explicit-owner-refinement
+   :target-retains-owning-contract-and-contextual-fields
+   :archived-record-keeps-task-gaps-history-and-atomicity
+   :predicate-correction-keeps-the-original-source-boundary
+   :removed-project-work-quotas-are-not-reintroduced]
+  :result :accepted-scoped-semantic-applied-graph-and-corrections
+  :alias-family-assessments
+  {:diagnostic-and-regression
+   ["testing/test1/diagnostic-match"
+    "testing/test10/diagnostic-comparison"
+    "testing/test10/failure-report"
+    "testing/test2/crash-minimization"]
+   :formal-evidence-and-proofs
+   ["testing/test11/counterexamples"
+    "testing/test11/machine-evidence"
+    "testing/test11/math-certificates"
+    "testing/test11/proof-invalidation"]
+   :benchmark-and-release
+   ["testing/test12/benchmark-identity"
+    "testing/test12/regression-decision"
+    "testing/test13/release-provenance"
+    "testing/test13/stage-identity"
+    "testing/test13/tcb-delta"
+    "testing/test13/unsafe-audit"]
+   :fixture-and-backend
+   ["testing/test4/fixture-identity"
+    "testing/test6/fixture-identity"
+    "testing/test6/runtime-authority"
+    "testing/test6/supported-semantics"]
+   :safety-and-ai-evaluation
+   ["testing/test5/ai-misuse"
+    "testing/test8/eval-identity"
+    "testing/test8/live-provider-policy"
+    "testing/test8/replay"
+    "testing/test8/safety-probes"
+    "testing/test8/structured-output"]
+   :documentation
+   ["testing/test7/documentation"]}
+  :test5-safe16-overlap
+  {:id "testing/test5/check-elision"
+   :action :keep-join-hold
+   :target "safety/safe16/optimization-backend"
+   :assessment "This is bounded overlap with SAFE16 erasure-evidence assertions. It remains distinct pending root corpus/test-operation partition; it is not aliased to SAFE15 check erasure and benchmark gain is not proof."}
+  :test9-resource-exception
+  {:id "testing/test9/valid-invalid"
+   :action :correction-hold
+   :assessment "Keep valid generated-program acceptance/type-effect preservation and stable invalid diagnostics/no-crash. Hold only the original known resource-limit-diagnostic exception against removed artificial project accounting. Real host failures, platform limits, billing/account restrictions and target representability remain legitimate external constraints; no node/depth/width/scalar/byte/token/form quota is restored."}
+  :canonical-source-review
+  {:immutable-e69-documents
+   ["docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+    "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"
+    "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md"
+    "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"
+    "specs/requirement-reconciliation/testing-consolidation-receipt.edn"
+    "specs/requirement-reconciliation/evidence.md"]
+   :contract-conclusion
+   "The immutable TEST1-TEST13 and SAFE16 contracts require executable positive/negative fixtures, stable diagnostics, provenance, replayable evidence and explicit resource/policy boundaries. The current 25 aliases map test operations to existing owners without erasing those contexts. The four corrections restore execution/evidence predicates; the TEST9 exception remains held exactly where removed project accounting would otherwise be reintroduced."}}
+
+ :limitations
+ [{:id :historical-5cf-payload-not-consumed
+   :severity :qualification
+   :artifact-sha256 "5cf2f5240a2b41d3b81f4d4bd89d395d3d2dfa19d0c3e63ccdc9c660ca36e26a"
+   :status :not-present-in-current-git-object-or-checkout
+   :assessment "This is a fresh adjudication of the immutable e69 records and canonical testing contracts. It does not reconstruct, transfer or promote the historical Testing review payload; its absence is not treated as an additional acceptance gate because the current records and owning contracts contain the finite semantic predicates reviewed here."}
+  {:id :model-state-remains-pending
+   :severity :qualification
+   :assessment "The external scoped result does not rewrite e69. The applied graph remains pending, aliases remain proposed, current acceptance remains nil, and root-owned correction/ownership joins remain unperformed."}]
+
+ :preserved-nonclaims
+ [:no-implementation-acceptance
+  :no-independent-full-testing-suite-claim
+  :no-global-240-acceptance
+  :no-integration-or-main-approval
+  :no-provider-or-native-action
+  :no-new-unit-task-bridge-denominator-or-rate
+  :no-stopped-223-relation-or-135-cluster-reconstruction
+  :no-dispatch-certification-or-future-absence-quota]
+
+ :disposition :accepted-scoped-current-testing-semantic-adjudication}
+~~~~~~
+<!-- source-reference-review-archive:current-testing-applied-graph-review:end -->
+
+Archive `current-65-alias-compatibility-9ec`, SHA-256 `10c299d0e431e6c525bca2b10168545be7d2cc1d8590aa8d267f16e376f96e8a`; exact report bytes follow.
+
+<!-- source-reference-review-archive:current-65-alias-compatibility-9ec:start -->
+~~~~~~edn
+{:reviewed-model-commit "e69bb936a350a052215a6bacbea5ae69f833254c",
+ :model-sha256
+ "140baf21e8ecd8194fb5171b78fb3aefdd4638aea7ce3e0c5629192fff8b969c",
+ :Main :not-claimed,
+ :subject-commit "9ecac510c8698ad91081227864a2dfc5b42b003f",
+ :historical-70b5-and-5cf-payloads :not-consumed-or-reconstructed,
+ :alias-count 65,
+ :model-path "contracts/requirement-reconciliation.edn",
+ :native-claim :none,
+ :source-and-target-record-values
+ :unchanged-by-whole-model-byte-identity,
+ :full240 :not-claimed,
+ :denominator-or-rate :not-admitted,
+ :archive-records 65,
+ :owning-task-files 16,
+ :compared-files 43,
+ :kind :private-existing65-current-semantic-review-compatibility,
+ :existing-alias-routes
+ [["compiler/c1/checked-backend-ingress" "backend/input-eligibility"]
+  ["compiler/c1/domain-anchor" "compiler/c12/domain-semantic-anchor"]
+  ["compiler/c1/pass-contract" "meta/pass-contract-execution"]
+  ["compiler/c10/certificate-consumption"
+   "safety/safe1/safety-artifact"]
+  ["compiler/c10/runtime-safety-checks" "safety/safe1/runtime-checks"]
+  ["compiler/c10/safety-classification" "safety/safe1/outcomes"]
+  ["compiler/c11/mir-domain-anchor"
+   "compiler/c12/domain-semantic-anchor"]
+  ["compiler/c11/mir-runtime-checks" "safety/safe15/check-erasure"]
+  ["compiler/c13/check-elision" "safety/safe15/check-erasure"]
+  ["compiler/c13/optimization-contract" "meta/pass-contract-execution"]
+  ["compiler/c13/regenerate-invalidated-facts"
+   "compiler/c1/preserve-evidence"]
+  ["compiler/c14/abi-layout" "performance/layout-boundary"]
+  ["compiler/c14/target-provenance"
+   "backend/common-emission-validation"]
+  ["compiler/c14/verified-lowering-ingress"
+   "backend/input-eligibility"]
+  ["compiler/c17/plugin-pass-contract" "meta/pass-contract-execution"]
+  ["compiler/c18/backend-validation"
+   "backend/conformance-execution-pack"]
+  ["compiler/c2/abbreviation-origins"
+   "reader/abbreviation/explicit-syntax"]
+  ["compiler/c2/decode-source" "reader/source/decode-policy-bytes"]
+  ["compiler/c2/reader-extension-policy"
+   "reader/extension/registered-effect-authority"]
+  ["compiler/c3/fact-invalidation" "compiler/c1/preserve-evidence"]
+  ["compiler/c4/build-authority"
+   "language/effects/authorize-and-record-build-effect"]
+  ["compiler/c4/generated-origin" "compiler/c3/origin-preservation"]
+  ["compiler/c4/hygiene-capture" "safety/safe12/hygiene"]
+  ["compiler/c5/binding-identity"
+   "language/module/publish-definition-entries"]
+  ["compiler/c5/cross-profile-boundary"
+   "language/module/check-import-boundary"]
+  ["compiler/c5/dependency-cycle"
+   "language/module/check-initialization-graph"]
+  ["compiler/c5/position-resolution" "language/module/resolve-binding"]
+  ["compiler/c5/resolution-invalidation"
+   "compiler/c16/dependency-invalidation"]
+  ["compiler/c6/core-lowering"
+   "language/core/normalize-to-declared-core"]
+  ["compiler/c6/evaluation-order"
+   "language/core/preserve-observable-evaluation-order"]
+  ["compiler/c6/lowering-facts" "compiler/c1/preserve-evidence"]
+  ["compiler/c7/dynamic-boundaries"
+   "language/types/check-dynamic-boundary"]
+  ["compiler/c7/profile-annotations"
+   "language/types/check-core-typing"]
+  ["compiler/c7/schema-identity" "language/types/derive-schema-type"]
+  ["compiler/c7/type-inference" "language/types/check-core-typing"]
+  ["compiler/c8/declaration-legality"
+   "language/effects/check-narrowest-allowance"]
+  ["compiler/c9/borrow-alias" "safety/safe3/borrow-exclusivity"]
+  ["compiler/c9/linear-terminal" "safety/safe5/terminal-flow"]
+  ["compiler/c9/move-consume" "safety/safe3/ownership-move"]
+  ["compiler/c9/runtime-ownership" "safety/safe1/runtime-checks"]
+  ["testing/test1/diagnostic-match" "testing/test2/diagnostic-match"]
+  ["testing/test10/diagnostic-comparison"
+   "testing/test2/diagnostic-match"]
+  ["testing/test10/failure-report"
+   "testing/test9/minimize-regressions"]
+  ["testing/test11/counterexamples"
+   "compiler/c18/counterexample-regression"]
+  ["testing/test11/machine-evidence" "schema/release-evidence-gating"]
+  ["testing/test11/math-certificates"
+   "math/semantic-equality-proof-gate"]
+  ["testing/test11/proof-invalidation" "safety/safe15/invalidation"]
+  ["testing/test12/benchmark-identity"
+   "gravity/benchmark-reproducibility"]
+  ["testing/test12/regression-decision"
+   "performance/baseline-governance"]
+  ["testing/test13/release-provenance"
+   "bootstrap/release-supply-chain"]
+  ["testing/test13/stage-identity" "bootstrap/stage-evidence"]
+  ["testing/test13/tcb-delta" "bootstrap/trust-reduction"]
+  ["testing/test13/unsafe-audit" "compiler/c10/unsafe-islands"]
+  ["testing/test2/crash-minimization"
+   "testing/test9/minimize-regressions"]
+  ["testing/test4/fixture-identity" "testing/test1/fixture-contract"]
+  ["testing/test5/ai-misuse" "behavior/a9/safety-probe-coverage"]
+  ["testing/test6/fixture-identity" "testing/test1/fixture-contract"]
+  ["testing/test6/runtime-authority" "testing/test1/offline-authority"]
+  ["testing/test6/supported-semantics"
+   "backend/conformance-execution-pack"]
+  ["testing/test7/documentation" "behavior/t7/runnable-doc-examples"]
+  ["testing/test8/eval-identity" "behavior/a9/eval-subject-binding"]
+  ["testing/test8/live-provider-policy" "behavior/a9/live-eval-policy"]
+  ["testing/test8/replay" "testing/test3/replay"]
+  ["testing/test8/safety-probes" "behavior/a9/safety-probe-coverage"]
+  ["testing/test8/structured-output"
+   "behavior/a3/typed-output-admission"]],
+ :reviews
+ [{:family :compiler,
+   :path
+   "/tmp/uniform-applied-alias-e69-current-semantic-adjudication.edn",
+   :sha256
+   "2bbf925e7802d7d35c6f0f635a497183c679d3c1e96d936852a6f88bdbe22829",
+   :existing-alias-count 40,
+   :scope-model-review-index 4,
+   :disposition :accepted-scoped-current-semantic-alias-adjudication}
+  {:family :testing,
+   :path
+   "/tmp/uniform-testing-applied-graph-e69-current-semantic-adjudication.edn",
+   :sha256
+   "345bd5767c1c3ea043038e669084fd3815ddc0676221d7686cd156de7c616076",
+   :existing-alias-count 25,
+   :scope-model-review-index 5,
+   :disposition
+   :accepted-scoped-current-testing-semantic-adjudication}],
+ :whole-model-byte-identity :exact,
+ :model-adoption :none,
+ :object-kind :immutable-Git-commits,
+ :canonical-and-task-file-comparisons
+ [{:path
+   "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+   :sha256
+   "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
+   :bytes-equal true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+   :sha256
+   "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc",
+   :bytes-equal true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+   :sha256
+   "7aae837fbf1063910b9bd147fff013c76cfee2e38a5d86766e2874e0759121a1",
+   :bytes-equal true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+   :sha256
+   "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63",
+   :bytes-equal true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b",
+   :bytes-equal true}
+  {:path
+   "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+   :sha256
+   "9d6f56b496118a9680a7b963568dd25dc8c775e21c4ec6ec9d490022adcc0eb4",
+   :bytes-equal true}
+  {:path
+   "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md",
+   :sha256
+   "030fa2eca59ce7be61371bc12e02c312de2f0aa413ef0d12dc2858e531c84c36",
+   :bytes-equal true}
+  {:path
+   "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+   :sha256
+   "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+   :bytes-equal true}
+  {:path
+   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+   :sha256
+   "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+   :bytes-equal true}
+  {:path
+   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+   :sha256
+   "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md",
+   :sha256
+   "6f454ef9cc8045b28ebc029df643616610ea4a2e676b3c04ace57a219e2434c4",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md",
+   :sha256
+   "89795b7e8618e88988914ee5f3b9280a8b1b115309fcf35177b73145df05b7d0",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md",
+   :sha256
+   "c9456336441ef6492c64f069e9ac5ab538d131a2182f5723ff2428cbcbc41144",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md",
+   :sha256
+   "51898a2877a201945dab17a04ee1d09d5f45c1c4c2665df14cc84a996a4bd31e",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md",
+   :sha256
+   "7aa8588d955bb97f9371ad5b5c90eee2fb6bb3fd26e87dafe871d739259b739f",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md",
+   :sha256
+   "4506cab535967ee5dff482ac522c5e9a95990dc07ffbfca61930057b1b0d5495",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md",
+   :sha256
+   "47b5be23480707358b9f790c2f16e4a85305e4190e5b7428784a952a9990b810",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md",
+   :sha256
+   "016d272bb500590a6f72230bfbb529d5767c354b0865a876f25fb3a53f81074f",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md",
+   :sha256
+   "ed5bb1686ffde66aa1e2b1b5cf05dc26be182e8bd3b5bd4ead36b9f86bfcc812",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md",
+   :sha256
+   "35e8d90f7255fa0ff41885219357018efae93fb71d1529bec5568cb0c326db3e",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md",
+   :sha256
+   "f8fd10e7b2cd8a0caff20ee15258cc1ae39c0b25eb97984be4a25763a9969872",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md",
+   :sha256
+   "7d48260cb0d39c67f0ea0d972474e83556b60244670421caa7837fa7697ba8ca",
+   :bytes-equal true}
+  {:path
+   "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md",
+   :sha256
+   "426a541df33b1b1ee418bf4a38c8080720bc87932e1e395fe23c614f1e1c1ba6",
+   :bytes-equal true}
+  {:path "specs/auth-workflow/tasks.md",
+   :sha256
+   "9a48036280d3ec34758f5c8b8e075db60f4512821ecb454f08bf3b5402d21e86",
+   :bytes-equal true}
+  {:path "specs/backends-workflow/tasks.md",
+   :sha256
+   "489828146db1d0cbf9894452d0ad0c5b96d0419c118a7b2cd9e75889262391a2",
+   :bytes-equal true}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :sha256
+   "5ba49e3cc67928a172e6e2e1a734f40d8a15920730b040976bb5bf456321745b",
+   :bytes-equal true}
+  {:path "specs/core-workflow/tasks.md",
+   :sha256
+   "a3edb3d9b274e77149d098b05db38273465465b7cbe55fe5572fb65766889e69",
+   :bytes-equal true}
+  {:path "specs/effects-workflow/tasks.md",
+   :sha256
+   "ffd8e09758643b5207053331929f08cbd2501405083055e0239be2e934451bc2",
+   :bytes-equal true}
+  {:path "specs/expand-workflow/tasks.md",
+   :sha256
+   "20a0dc66f08f66c66590b42ed29bfdfad975a0e3799eee30059920e0d48e39ab",
+   :bytes-equal true}
+  {:path "specs/legality-workflow/tasks.md",
+   :sha256
+   "fdd2770993d1e9f848def12b7741b21f01462192616b3b843acbe49508d03e1f",
+   :bytes-equal true}
+  {:path "specs/lower-workflow/tasks.md",
+   :sha256
+   "ca83727a3fdb84b4f325273da1f047bed0e74c3d3ce975318e6cd2ae7b315320",
+   :bytes-equal true}
+  {:path "specs/mir-workflow/tasks.md",
+   :sha256
+   "62c38cf3a309e67992bc38256aae5fe0678b5a8c717eb59629a46e1f8bb0aebf",
+   :bytes-equal true}
+  {:path "specs/opt-workflow/tasks.md",
+   :sha256
+   "58e2feda7ac60a99594e3ef737e35cd94ce19bda5c044c8c8549cdf65c97b303",
+   :bytes-equal true}
+  {:path "specs/reader-workflow/tasks.md",
+   :sha256
+   "9e278efbe41cc3d6e9f83eca2ea5b670c9cd83641876ce7cb317808bb7314181",
+   :bytes-equal true}
+  {:path
+   "specs/requirement-reconciliation/compiler-consolidation-receipt.edn",
+   :sha256
+   "4c991077102f43e34cc5c31ceccf655dddb1ec2351a0f7458b5d05b842eef0b5",
+   :bytes-equal true}
+  {:path "specs/requirement-reconciliation/evidence.md",
+   :sha256
+   "0b18f9115bde2daefcd1f8de15ee5b158ccf517337a1da23a90e1221cc12b11e",
+   :bytes-equal true}
+  {:path "specs/requirement-reconciliation/spec.md",
+   :sha256
+   "894acf622c5695ca30cc6303a2970e57e371ccdf1ac681e64b27a0cc3d338499",
+   :bytes-equal true}
+  {:path
+   "specs/requirement-reconciliation/testing-consolidation-receipt.edn",
+   :sha256
+   "ae0acb526716a69bb22d9dea01a16f57382c9bfe3f060922d41cf99e796921fe",
+   :bytes-equal true}
+  {:path "specs/resolve-workflow/tasks.md",
+   :sha256
+   "dddecd1a6e4e221cbd4bb91dcfd5c9af0e1d4e125ee25afc60e308baa669f99a",
+   :bytes-equal true}
+  {:path "specs/stdlib-workflow/tasks.md",
+   :sha256
+   "c7f392ddd67ae923d7848c63ff957a84548975461010052ff421b46516a4d617",
+   :bytes-equal true}
+  {:path "specs/syntax-workflow/tasks.md",
+   :sha256
+   "bbae3ccae165e17fa83250042f375a08d7826b57eb8d041eefd1775a1d892f9b",
+   :bytes-equal true}
+  {:path "specs/tools-workflow/tasks.md",
+   :sha256
+   "97c7c0f45d767ec962db7af3f81fa58434bfd2b6ad75fe4ee770b5dde92dec6f",
+   :bytes-equal true}
+  {:path "specs/types-workflow/tasks.md",
+   :sha256
+   "6c681ea228458bbcc02fbdb45c765ae22859d86a41092c30eb6c264c518cab43",
+   :bytes-equal true}],
+ :all-current-pending-aliases-covered-by-these-existing-routes true,
+ :held-overlaps-and-TEST9-exception :unchanged,
+ :working-checkout-read-or-write :none,
+ :implementation-acceptance :not-conferred,
+ :compiler119-and-testing104-decision-values :exactly-unchanged}
+~~~~~~
+<!-- source-reference-review-archive:current-65-alias-compatibility-9ec:end -->
+
+The following independent binding review retains its exact private-proposal subject; the three reviewed report archives and prior evidence remain unchanged.
+
+<!-- source-reference-review-archive:current-65-alias-model-evidence-binding-review:start -->
+~~~~~~edn
+{:findings [], :execution {:immutable-common-Git-reads-and-private-artifacts-only true, :working502-read-or-write false, :branch-switch-claim-checkout false, :semantic-review-rerun false, :product-executions false, :remote-action false}, :script {:path "/tmp/uniform-65-alias-binding-independent-20261106-c5e5.clj", :sha256 "143b9ecd4f92efc1344498b5816f341538d6676c36e607bef24c40b05c68c2a7"}, :evidence {:testing-decisions 104, :all-other-model-values-exact true, :complete-prior-records-and-all-existing-histories-preserved true, :archived-record-source-decision-and-record-sha-unchanged true, :compiler-decisions 119, :whole-model-byte-inverse true, :whole-model-value-inverse true, :entire-reviewed-model-identical-e69-to9ec true, :tamper-controls [{:id :route-change, :rejected true} {:id :historical-pointer-promotion, :rejected true} {:id :missing-prior-record, :rejected true} {:id :truncated-prior-record, :rejected true} {:id :wrong-current-report, :rejected true} {:id :wrong-audit-subject, :rejected true} {:id :implementation-promotion, :rejected true} {:id :global-scope-promotion, :rejected true} {:id :source-qualification-erasure, :rejected true} {:id :compatibility-substitution, :rejected true} {:id :missing-durable-review-archive, :rejected true} {:id :review-archive-digest-substitution, :rejected true} {:id :compatibility-archive-substitution, :rejected true} {:id :requirement-acceptance-promotion, :rejected true} {:id :compiler-decision-promotion, :rejected true}], :checks [[:private-pin "/tmp/uniform-current-65-alias-review-binding-preparation.edn"] [:private-pin "/tmp/uniform-current-65-alias-review-binding-evidence-preparation.edn"] [:private-pin "/tmp/uniform-current-65-alias-review-binding-proposed-model.edn"] [:private-pin "/tmp/uniform-current-65-alias-review-binding-proposed-evidence.md"] [:private-pin "/tmp/uniform-current-65-alias-review-compatibility-9ec.edn"] [:private-pin "/tmp/uniform-applied-alias-e69-current-semantic-adjudication.edn"] [:private-pin "/tmp/uniform-testing-applied-graph-e69-current-semantic-adjudication.edn"] :base-actual-commit :reviewed-actual-commit :immutable-base-model-pin :whole-e69-9ec-model-byte-identity :compatibility-subject [:immutable-current-source-blob "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"] [:immutable-current-source-sha "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"] [:compatibility-declares-bytes-equal "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"] [:immutable-current-source-blob "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"] [:immutable-current-source-sha "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"] [:compatibility-declares-bytes-equal "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"] [:immutable-current-source-blob "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"] [:immutable-current-source-sha "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"] [:compatibility-declares-bytes-equal "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md"] [:immutable-current-source-blob "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"] [:immutable-current-source-sha "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"] [:compatibility-declares-bytes-equal "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"] [:immutable-current-source-blob "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"] [:immutable-current-source-sha "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"] [:compatibility-declares-bytes-equal "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"] [:immutable-current-source-blob "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"] [:immutable-current-source-sha "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"] [:immutable-current-source-blob "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"] [:immutable-current-source-sha "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"] [:compatibility-declares-bytes-equal "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"] [:immutable-current-source-blob "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"] [:immutable-current-source-sha "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"] [:compatibility-declares-bytes-equal "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"] [:immutable-current-source-blob "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"] [:immutable-current-source-sha "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"] [:compatibility-declares-bytes-equal "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"] [:immutable-current-source-blob "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"] [:immutable-current-source-sha "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/195-test6-backend-conformance-test-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md"] [:immutable-current-source-blob "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"] [:immutable-current-source-sha "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"] [:compatibility-declares-bytes-equal "docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md"] [:immutable-current-source-blob "specs/auth-workflow/tasks.md"] [:immutable-current-source-sha "specs/auth-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/auth-workflow/tasks.md"] [:immutable-current-source-blob "specs/backends-workflow/tasks.md"] [:immutable-current-source-sha "specs/backends-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/backends-workflow/tasks.md"] [:immutable-current-source-blob "specs/compiler-api-workflow/tasks.md"] [:immutable-current-source-sha "specs/compiler-api-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/compiler-api-workflow/tasks.md"] [:immutable-current-source-blob "specs/core-workflow/tasks.md"] [:immutable-current-source-sha "specs/core-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/core-workflow/tasks.md"] [:immutable-current-source-blob "specs/effects-workflow/tasks.md"] [:immutable-current-source-sha "specs/effects-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/effects-workflow/tasks.md"] [:immutable-current-source-blob "specs/expand-workflow/tasks.md"] [:immutable-current-source-sha "specs/expand-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/expand-workflow/tasks.md"] [:immutable-current-source-blob "specs/legality-workflow/tasks.md"] [:immutable-current-source-sha "specs/legality-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/legality-workflow/tasks.md"] [:immutable-current-source-blob "specs/lower-workflow/tasks.md"] [:immutable-current-source-sha "specs/lower-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/lower-workflow/tasks.md"] [:immutable-current-source-blob "specs/mir-workflow/tasks.md"] [:immutable-current-source-sha "specs/mir-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/mir-workflow/tasks.md"] [:immutable-current-source-blob "specs/opt-workflow/tasks.md"] [:immutable-current-source-sha "specs/opt-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/opt-workflow/tasks.md"] [:immutable-current-source-blob "specs/reader-workflow/tasks.md"] [:immutable-current-source-sha "specs/reader-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/reader-workflow/tasks.md"] [:immutable-current-source-blob "specs/requirement-reconciliation/compiler-consolidation-receipt.edn"] [:immutable-current-source-sha "specs/requirement-reconciliation/compiler-consolidation-receipt.edn"] [:compatibility-declares-bytes-equal "specs/requirement-reconciliation/compiler-consolidation-receipt.edn"] [:immutable-current-source-blob "specs/requirement-reconciliation/evidence.md"] [:immutable-current-source-sha "specs/requirement-reconciliation/evidence.md"] [:compatibility-declares-bytes-equal "specs/requirement-reconciliation/evidence.md"] [:immutable-current-source-blob "specs/requirement-reconciliation/spec.md"] [:immutable-current-source-sha "specs/requirement-reconciliation/spec.md"] [:compatibility-declares-bytes-equal "specs/requirement-reconciliation/spec.md"] [:immutable-current-source-blob "specs/requirement-reconciliation/testing-consolidation-receipt.edn"] [:immutable-current-source-sha "specs/requirement-reconciliation/testing-consolidation-receipt.edn"] [:compatibility-declares-bytes-equal "specs/requirement-reconciliation/testing-consolidation-receipt.edn"] [:immutable-current-source-blob "specs/resolve-workflow/tasks.md"] [:immutable-current-source-sha "specs/resolve-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/resolve-workflow/tasks.md"] [:immutable-current-source-blob "specs/stdlib-workflow/tasks.md"] [:immutable-current-source-sha "specs/stdlib-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/stdlib-workflow/tasks.md"] [:immutable-current-source-blob "specs/syntax-workflow/tasks.md"] [:immutable-current-source-sha "specs/syntax-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/syntax-workflow/tasks.md"] [:immutable-current-source-blob "specs/tools-workflow/tasks.md"] [:immutable-current-source-sha "specs/tools-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/tools-workflow/tasks.md"] [:immutable-current-source-blob "specs/types-workflow/tasks.md"] [:immutable-current-source-sha "specs/types-workflow/tasks.md"] [:compatibility-declares-bytes-equal "specs/types-workflow/tasks.md"] :exact43-source-comparisons :exact-existing65-pending-aliases :exact-route-compatibility [:same-record-order :aliases] [:untouched-wrapper :aliases "language/macro/authorize-build-execution"] [:untouched-wrapper :aliases "language/safety/check-safe-wrapper"] [:untouched-wrapper :aliases "language/macro/check-generated-caller-program"] [:untouched-wrapper :aliases "language/memory/transfer-device-storage"] [:untouched-wrapper :aliases "domain/proof-applicability"] [:untouched-wrapper :aliases "runtime/static-service-elimination"] [:untouched-wrapper :aliases "profile/import-boundary"] [:untouched-wrapper :aliases "hosted/exception-translation"] [:untouched-wrapper :aliases "performance/claim-evidence"] [:untouched-wrapper :aliases "performance/reproducible-benchmark"] [:untouched-wrapper :aliases "kernel/atomic-support"] [:untouched-wrapper :aliases "core/authority-free-import"] [:untouched-wrapper :aliases "core/portable-numeric-mode"] [:untouched-wrapper :aliases "core/pure-source-subset"] [:untouched-wrapper :aliases "core/typed-error-behavior"] [:untouched-wrapper :aliases "distributed/nondeterminism-replay"] [:untouched-wrapper :aliases "formal/imported-proof-validation"] [:untouched-wrapper :aliases "hardware/clock-domain-crossing"] [:untouched-wrapper :aliases "hosted/consumer-safe-import"] [:untouched-wrapper :aliases "hosted/recorded-nondeterminism"] [:untouched-wrapper :aliases "meta/hermetic-build-execution"] [:untouched-wrapper :aliases "performance/partial-evaluation"] [:untouched-wrapper :aliases "performance/proof-governed-elision"] [:untouched-wrapper :aliases "profile/backend-eligibility"] [:untouched-wrapper :aliases "profile/ordered-legality-gate"] [:exact-wrapper :aliases "compiler/c2/decode-source"] [:exact-wrapper :aliases "compiler/c2/abbreviation-origins"] [:exact-wrapper :aliases "compiler/c2/reader-extension-policy"] [:exact-wrapper :aliases "compiler/c1/pass-contract"] [:exact-wrapper :aliases "compiler/c1/checked-backend-ingress"] [:exact-wrapper :aliases "compiler/c1/domain-anchor"] [:exact-wrapper :aliases "compiler/c3/fact-invalidation"] [:exact-wrapper :aliases "compiler/c4/hygiene-capture"] [:exact-wrapper :aliases "compiler/c4/build-authority"] [:exact-wrapper :aliases "compiler/c4/generated-origin"] [:exact-wrapper :aliases "compiler/c5/position-resolution"] [:exact-wrapper :aliases "compiler/c5/binding-identity"] [:exact-wrapper :aliases "compiler/c5/cross-profile-boundary"] [:exact-wrapper :aliases "compiler/c5/dependency-cycle"] [:exact-wrapper :aliases "compiler/c5/resolution-invalidation"] [:exact-wrapper :aliases "compiler/c6/core-lowering"] [:exact-wrapper :aliases "compiler/c6/evaluation-order"] [:exact-wrapper :aliases "compiler/c6/lowering-facts"] [:exact-wrapper :aliases "compiler/c7/type-inference"] [:exact-wrapper :aliases "compiler/c7/profile-annotations"] [:exact-wrapper :aliases "compiler/c7/dynamic-boundaries"] [:exact-wrapper :aliases "compiler/c7/schema-identity"] [:exact-wrapper :aliases "compiler/c8/declaration-legality"] [:exact-wrapper :aliases "compiler/c9/borrow-alias"] [:exact-wrapper :aliases "compiler/c9/move-consume"] [:exact-wrapper :aliases "compiler/c9/linear-terminal"] [:exact-wrapper :aliases "compiler/c9/runtime-ownership"] [:exact-wrapper :aliases "compiler/c10/safety-classification"] [:exact-wrapper :aliases "compiler/c10/runtime-safety-checks"] [:exact-wrapper :aliases "compiler/c10/certificate-consumption"] [:exact-wrapper :aliases "compiler/c11/mir-domain-anchor"] [:exact-wrapper :aliases "compiler/c11/mir-runtime-checks"] [:exact-wrapper :aliases "compiler/c13/optimization-contract"] [:exact-wrapper :aliases "compiler/c13/regenerate-invalidated-facts"] [:exact-wrapper :aliases "compiler/c13/check-elision"] [:exact-wrapper :aliases "compiler/c14/verified-lowering-ingress"] [:exact-wrapper :aliases "compiler/c14/target-provenance"] [:exact-wrapper :aliases "compiler/c14/abi-layout"] [:exact-wrapper :aliases "compiler/c17/plugin-pass-contract"] [:exact-wrapper :aliases "compiler/c18/backend-validation"] [:exact-wrapper :aliases "testing/test1/diagnostic-match"] [:exact-wrapper :aliases "testing/test2/crash-minimization"] [:exact-wrapper :aliases "testing/test4/fixture-identity"] [:exact-wrapper :aliases "testing/test5/ai-misuse"] [:exact-wrapper :aliases "testing/test6/supported-semantics"] [:exact-wrapper :aliases "testing/test6/fixture-identity"] [:exact-wrapper :aliases "testing/test6/runtime-authority"] [:exact-wrapper :aliases "testing/test7/documentation"] [:exact-wrapper :aliases "testing/test8/eval-identity"] [:exact-wrapper :aliases "testing/test8/structured-output"] [:exact-wrapper :aliases "testing/test8/safety-probes"] [:exact-wrapper :aliases "testing/test8/replay"] [:exact-wrapper :aliases "testing/test8/live-provider-policy"] [:exact-wrapper :aliases "testing/test10/diagnostic-comparison"] [:exact-wrapper :aliases "testing/test10/failure-report"] [:exact-wrapper :aliases "testing/test11/proof-invalidation"] [:exact-wrapper :aliases "testing/test11/counterexamples"] [:exact-wrapper :aliases "testing/test11/machine-evidence"] [:exact-wrapper :aliases "testing/test11/math-certificates"] [:exact-wrapper :aliases "testing/test12/benchmark-identity"] [:exact-wrapper :aliases "testing/test12/regression-decision"] [:exact-wrapper :aliases "testing/test13/stage-identity"] [:exact-wrapper :aliases "testing/test13/unsafe-audit"] [:exact-wrapper :aliases "testing/test13/release-provenance"] [:exact-wrapper :aliases "testing/test13/tcb-delta"] [:same-record-order :aliased-candidate-records] [:untouched-wrapper :aliased-candidate-records "language/macro/authorize-build-execution"] [:untouched-wrapper :aliased-candidate-records "language/safety/check-safe-wrapper"] [:untouched-wrapper :aliased-candidate-records "language/macro/check-generated-caller-program"] [:untouched-wrapper :aliased-candidate-records "language/memory/transfer-device-storage"] [:untouched-wrapper :aliased-candidate-records "domain/proof-applicability"] [:untouched-wrapper :aliased-candidate-records "runtime/static-service-elimination"] [:untouched-wrapper :aliased-candidate-records "profile/import-boundary"] [:untouched-wrapper :aliased-candidate-records "hosted/exception-translation"] [:untouched-wrapper :aliased-candidate-records "performance/claim-evidence"] [:untouched-wrapper :aliased-candidate-records "performance/reproducible-benchmark"] [:untouched-wrapper :aliased-candidate-records "kernel/atomic-support"] [:untouched-wrapper :aliased-candidate-records "core/authority-free-import"] [:untouched-wrapper :aliased-candidate-records "core/portable-numeric-mode"] [:untouched-wrapper :aliased-candidate-records "core/pure-source-subset"] [:untouched-wrapper :aliased-candidate-records "core/typed-error-behavior"] [:untouched-wrapper :aliased-candidate-records "distributed/nondeterminism-replay"] [:untouched-wrapper :aliased-candidate-records "formal/imported-proof-validation"] [:untouched-wrapper :aliased-candidate-records "hardware/clock-domain-crossing"] [:untouched-wrapper :aliased-candidate-records "hosted/consumer-safe-import"] [:untouched-wrapper :aliased-candidate-records "hosted/recorded-nondeterminism"] [:untouched-wrapper :aliased-candidate-records "meta/hermetic-build-execution"] [:untouched-wrapper :aliased-candidate-records "performance/partial-evaluation"] [:untouched-wrapper :aliased-candidate-records "performance/proof-governed-elision"] [:untouched-wrapper :aliased-candidate-records "profile/backend-eligibility"] [:untouched-wrapper :aliased-candidate-records "profile/ordered-legality-gate"] [:exact-wrapper :aliased-candidate-records "compiler/c2/decode-source"] [:archive-original-field "compiler/c2/decode-source" :record] [:archive-original-field "compiler/c2/decode-source" :record-sha256] [:archive-original-field "compiler/c2/decode-source" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c2/abbreviation-origins"] [:archive-original-field "compiler/c2/abbreviation-origins" :record] [:archive-original-field "compiler/c2/abbreviation-origins" :record-sha256] [:archive-original-field "compiler/c2/abbreviation-origins" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c2/reader-extension-policy"] [:archive-original-field "compiler/c2/reader-extension-policy" :record] [:archive-original-field "compiler/c2/reader-extension-policy" :record-sha256] [:archive-original-field "compiler/c2/reader-extension-policy" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c1/pass-contract"] [:archive-original-field "compiler/c1/pass-contract" :record] [:archive-original-field "compiler/c1/pass-contract" :record-sha256] [:archive-original-field "compiler/c1/pass-contract" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c1/checked-backend-ingress"] [:archive-original-field "compiler/c1/checked-backend-ingress" :record] [:archive-original-field "compiler/c1/checked-backend-ingress" :record-sha256] [:archive-original-field "compiler/c1/checked-backend-ingress" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c1/domain-anchor"] [:archive-original-field "compiler/c1/domain-anchor" :record] [:archive-original-field "compiler/c1/domain-anchor" :record-sha256] [:archive-original-field "compiler/c1/domain-anchor" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c3/fact-invalidation"] [:archive-original-field "compiler/c3/fact-invalidation" :record] [:archive-original-field "compiler/c3/fact-invalidation" :record-sha256] [:archive-original-field "compiler/c3/fact-invalidation" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c4/hygiene-capture"] [:archive-original-field "compiler/c4/hygiene-capture" :record] [:archive-original-field "compiler/c4/hygiene-capture" :record-sha256] [:archive-original-field "compiler/c4/hygiene-capture" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c4/build-authority"] [:archive-original-field "compiler/c4/build-authority" :record] [:archive-original-field "compiler/c4/build-authority" :record-sha256] [:archive-original-field "compiler/c4/build-authority" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c4/generated-origin"] [:archive-original-field "compiler/c4/generated-origin" :record] [:archive-original-field "compiler/c4/generated-origin" :record-sha256] [:archive-original-field "compiler/c4/generated-origin" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c5/position-resolution"] [:archive-original-field "compiler/c5/position-resolution" :record] [:archive-original-field "compiler/c5/position-resolution" :record-sha256] [:archive-original-field "compiler/c5/position-resolution" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c5/binding-identity"] [:archive-original-field "compiler/c5/binding-identity" :record] [:archive-original-field "compiler/c5/binding-identity" :record-sha256] [:archive-original-field "compiler/c5/binding-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c5/cross-profile-boundary"] [:archive-original-field "compiler/c5/cross-profile-boundary" :record] [:archive-original-field "compiler/c5/cross-profile-boundary" :record-sha256] [:archive-original-field "compiler/c5/cross-profile-boundary" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c5/dependency-cycle"] [:archive-original-field "compiler/c5/dependency-cycle" :record] [:archive-original-field "compiler/c5/dependency-cycle" :record-sha256] [:archive-original-field "compiler/c5/dependency-cycle" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c5/resolution-invalidation"] [:archive-original-field "compiler/c5/resolution-invalidation" :record] [:archive-original-field "compiler/c5/resolution-invalidation" :record-sha256] [:archive-original-field "compiler/c5/resolution-invalidation" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c6/core-lowering"] [:archive-original-field "compiler/c6/core-lowering" :record] [:archive-original-field "compiler/c6/core-lowering" :record-sha256] [:archive-original-field "compiler/c6/core-lowering" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c6/evaluation-order"] [:archive-original-field "compiler/c6/evaluation-order" :record] [:archive-original-field "compiler/c6/evaluation-order" :record-sha256] [:archive-original-field "compiler/c6/evaluation-order" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c6/lowering-facts"] [:archive-original-field "compiler/c6/lowering-facts" :record] [:archive-original-field "compiler/c6/lowering-facts" :record-sha256] [:archive-original-field "compiler/c6/lowering-facts" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c7/type-inference"] [:archive-original-field "compiler/c7/type-inference" :record] [:archive-original-field "compiler/c7/type-inference" :record-sha256] [:archive-original-field "compiler/c7/type-inference" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c7/profile-annotations"] [:archive-original-field "compiler/c7/profile-annotations" :record] [:archive-original-field "compiler/c7/profile-annotations" :record-sha256] [:archive-original-field "compiler/c7/profile-annotations" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c7/dynamic-boundaries"] [:archive-original-field "compiler/c7/dynamic-boundaries" :record] [:archive-original-field "compiler/c7/dynamic-boundaries" :record-sha256] [:archive-original-field "compiler/c7/dynamic-boundaries" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c7/schema-identity"] [:archive-original-field "compiler/c7/schema-identity" :record] [:archive-original-field "compiler/c7/schema-identity" :record-sha256] [:archive-original-field "compiler/c7/schema-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c8/declaration-legality"] [:archive-original-field "compiler/c8/declaration-legality" :record] [:archive-original-field "compiler/c8/declaration-legality" :record-sha256] [:archive-original-field "compiler/c8/declaration-legality" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c9/borrow-alias"] [:archive-original-field "compiler/c9/borrow-alias" :record] [:archive-original-field "compiler/c9/borrow-alias" :record-sha256] [:archive-original-field "compiler/c9/borrow-alias" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c9/move-consume"] [:archive-original-field "compiler/c9/move-consume" :record] [:archive-original-field "compiler/c9/move-consume" :record-sha256] [:archive-original-field "compiler/c9/move-consume" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c9/linear-terminal"] [:archive-original-field "compiler/c9/linear-terminal" :record] [:archive-original-field "compiler/c9/linear-terminal" :record-sha256] [:archive-original-field "compiler/c9/linear-terminal" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c9/runtime-ownership"] [:archive-original-field "compiler/c9/runtime-ownership" :record] [:archive-original-field "compiler/c9/runtime-ownership" :record-sha256] [:archive-original-field "compiler/c9/runtime-ownership" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c10/safety-classification"] [:archive-original-field "compiler/c10/safety-classification" :record] [:archive-original-field "compiler/c10/safety-classification" :record-sha256] [:archive-original-field "compiler/c10/safety-classification" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c10/runtime-safety-checks"] [:archive-original-field "compiler/c10/runtime-safety-checks" :record] [:archive-original-field "compiler/c10/runtime-safety-checks" :record-sha256] [:archive-original-field "compiler/c10/runtime-safety-checks" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c10/certificate-consumption"] [:archive-original-field "compiler/c10/certificate-consumption" :record] [:archive-original-field "compiler/c10/certificate-consumption" :record-sha256] [:archive-original-field "compiler/c10/certificate-consumption" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c11/mir-domain-anchor"] [:archive-original-field "compiler/c11/mir-domain-anchor" :record] [:archive-original-field "compiler/c11/mir-domain-anchor" :record-sha256] [:archive-original-field "compiler/c11/mir-domain-anchor" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c11/mir-runtime-checks"] [:archive-original-field "compiler/c11/mir-runtime-checks" :record] [:archive-original-field "compiler/c11/mir-runtime-checks" :record-sha256] [:archive-original-field "compiler/c11/mir-runtime-checks" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c13/optimization-contract"] [:archive-original-field "compiler/c13/optimization-contract" :record] [:archive-original-field "compiler/c13/optimization-contract" :record-sha256] [:archive-original-field "compiler/c13/optimization-contract" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c13/regenerate-invalidated-facts"] [:archive-original-field "compiler/c13/regenerate-invalidated-facts" :record] [:archive-original-field "compiler/c13/regenerate-invalidated-facts" :record-sha256] [:archive-original-field "compiler/c13/regenerate-invalidated-facts" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c13/check-elision"] [:archive-original-field "compiler/c13/check-elision" :record] [:archive-original-field "compiler/c13/check-elision" :record-sha256] [:archive-original-field "compiler/c13/check-elision" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c14/verified-lowering-ingress"] [:archive-original-field "compiler/c14/verified-lowering-ingress" :record] [:archive-original-field "compiler/c14/verified-lowering-ingress" :record-sha256] [:archive-original-field "compiler/c14/verified-lowering-ingress" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c14/target-provenance"] [:archive-original-field "compiler/c14/target-provenance" :record] [:archive-original-field "compiler/c14/target-provenance" :record-sha256] [:archive-original-field "compiler/c14/target-provenance" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c14/abi-layout"] [:archive-original-field "compiler/c14/abi-layout" :record] [:archive-original-field "compiler/c14/abi-layout" :record-sha256] [:archive-original-field "compiler/c14/abi-layout" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c17/plugin-pass-contract"] [:archive-original-field "compiler/c17/plugin-pass-contract" :record] [:archive-original-field "compiler/c17/plugin-pass-contract" :record-sha256] [:archive-original-field "compiler/c17/plugin-pass-contract" :source-decision] [:exact-wrapper :aliased-candidate-records "compiler/c18/backend-validation"] [:archive-original-field "compiler/c18/backend-validation" :record] [:archive-original-field "compiler/c18/backend-validation" :record-sha256] [:archive-original-field "compiler/c18/backend-validation" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test1/diagnostic-match"] [:archive-original-field "testing/test1/diagnostic-match" :record] [:archive-original-field "testing/test1/diagnostic-match" :record-sha256] [:archive-original-field "testing/test1/diagnostic-match" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test2/crash-minimization"] [:archive-original-field "testing/test2/crash-minimization" :record] [:archive-original-field "testing/test2/crash-minimization" :record-sha256] [:archive-original-field "testing/test2/crash-minimization" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test4/fixture-identity"] [:archive-original-field "testing/test4/fixture-identity" :record] [:archive-original-field "testing/test4/fixture-identity" :record-sha256] [:archive-original-field "testing/test4/fixture-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test5/ai-misuse"] [:archive-original-field "testing/test5/ai-misuse" :record] [:archive-original-field "testing/test5/ai-misuse" :record-sha256] [:archive-original-field "testing/test5/ai-misuse" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test6/supported-semantics"] [:archive-original-field "testing/test6/supported-semantics" :record] [:archive-original-field "testing/test6/supported-semantics" :record-sha256] [:archive-original-field "testing/test6/supported-semantics" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test6/fixture-identity"] [:archive-original-field "testing/test6/fixture-identity" :record] [:archive-original-field "testing/test6/fixture-identity" :record-sha256] [:archive-original-field "testing/test6/fixture-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test6/runtime-authority"] [:archive-original-field "testing/test6/runtime-authority" :record] [:archive-original-field "testing/test6/runtime-authority" :record-sha256] [:archive-original-field "testing/test6/runtime-authority" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test7/documentation"] [:archive-original-field "testing/test7/documentation" :record] [:archive-original-field "testing/test7/documentation" :record-sha256] [:archive-original-field "testing/test7/documentation" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test8/eval-identity"] [:archive-original-field "testing/test8/eval-identity" :record] [:archive-original-field "testing/test8/eval-identity" :record-sha256] [:archive-original-field "testing/test8/eval-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test8/structured-output"] [:archive-original-field "testing/test8/structured-output" :record] [:archive-original-field "testing/test8/structured-output" :record-sha256] [:archive-original-field "testing/test8/structured-output" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test8/safety-probes"] [:archive-original-field "testing/test8/safety-probes" :record] [:archive-original-field "testing/test8/safety-probes" :record-sha256] [:archive-original-field "testing/test8/safety-probes" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test8/replay"] [:archive-original-field "testing/test8/replay" :record] [:archive-original-field "testing/test8/replay" :record-sha256] [:archive-original-field "testing/test8/replay" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test8/live-provider-policy"] [:archive-original-field "testing/test8/live-provider-policy" :record] [:archive-original-field "testing/test8/live-provider-policy" :record-sha256] [:archive-original-field "testing/test8/live-provider-policy" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test10/diagnostic-comparison"] [:archive-original-field "testing/test10/diagnostic-comparison" :record] [:archive-original-field "testing/test10/diagnostic-comparison" :record-sha256] [:archive-original-field "testing/test10/diagnostic-comparison" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test10/failure-report"] [:archive-original-field "testing/test10/failure-report" :record] [:archive-original-field "testing/test10/failure-report" :record-sha256] [:archive-original-field "testing/test10/failure-report" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test11/proof-invalidation"] [:archive-original-field "testing/test11/proof-invalidation" :record] [:archive-original-field "testing/test11/proof-invalidation" :record-sha256] [:archive-original-field "testing/test11/proof-invalidation" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test11/counterexamples"] [:archive-original-field "testing/test11/counterexamples" :record] [:archive-original-field "testing/test11/counterexamples" :record-sha256] [:archive-original-field "testing/test11/counterexamples" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test11/machine-evidence"] [:archive-original-field "testing/test11/machine-evidence" :record] [:archive-original-field "testing/test11/machine-evidence" :record-sha256] [:archive-original-field "testing/test11/machine-evidence" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test11/math-certificates"] [:archive-original-field "testing/test11/math-certificates" :record] [:archive-original-field "testing/test11/math-certificates" :record-sha256] [:archive-original-field "testing/test11/math-certificates" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test12/benchmark-identity"] [:archive-original-field "testing/test12/benchmark-identity" :record] [:archive-original-field "testing/test12/benchmark-identity" :record-sha256] [:archive-original-field "testing/test12/benchmark-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test12/regression-decision"] [:archive-original-field "testing/test12/regression-decision" :record] [:archive-original-field "testing/test12/regression-decision" :record-sha256] [:archive-original-field "testing/test12/regression-decision" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test13/stage-identity"] [:archive-original-field "testing/test13/stage-identity" :record] [:archive-original-field "testing/test13/stage-identity" :record-sha256] [:archive-original-field "testing/test13/stage-identity" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test13/unsafe-audit"] [:archive-original-field "testing/test13/unsafe-audit" :record] [:archive-original-field "testing/test13/unsafe-audit" :record-sha256] [:archive-original-field "testing/test13/unsafe-audit" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test13/release-provenance"] [:archive-original-field "testing/test13/release-provenance" :record] [:archive-original-field "testing/test13/release-provenance" :record-sha256] [:archive-original-field "testing/test13/release-provenance" :source-decision] [:exact-wrapper :aliased-candidate-records "testing/test13/tcb-delta"] [:archive-original-field "testing/test13/tcb-delta" :record] [:archive-original-field "testing/test13/tcb-delta" :record-sha256] [:archive-original-field "testing/test13/tcb-delta" :source-decision] [:report-model-subject :compiler] [:report-route-count :compiler] [:scope-family :compiler] [:scope-state :compiler] [:scope-reference :compiler] [:scope-allowed-fields-only :compiler] [:scope-history :compiler] [:all-decisions-identical :compiler] [:decision-count :compiler] [:report-model-subject :testing] [:report-route-count :testing] [:scope-family :testing] [:scope-state :testing] [:scope-reference :testing] [:scope-allowed-fields-only :testing] [:scope-history :testing] [:all-decisions-identical :testing] [:decision-count :testing] :132-surgical-edits :everything-else-value-exact :whole-model-value-inverse [:span-population :aliases] [:span-population :aliased-candidate-records] [:span-population :scope-model-reviews] :whole-model-BYTE-inverse :whole-byte-inverse-sha :old-evidence-pin :full-old-evidence-prefix [:archive-unique "current-compiler-applied-alias-review"] [:archive-verbatim "current-compiler-applied-alias-review"] [:archive-digest "current-compiler-applied-alias-review"] [:archive-unique "current-testing-applied-graph-review"] [:archive-verbatim "current-testing-applied-graph-review"] [:archive-digest "current-testing-applied-graph-review"] [:archive-unique "current-65-alias-compatibility-9ec"] [:archive-verbatim "current-65-alias-compatibility-9ec"] [:archive-digest "current-65-alias-compatibility-9ec"] :exact-three-archives [:durable-reference-archive :compiler] [:durable-reference-archive :testing] [:tamper-rejected :route-change] [:tamper-rejected :historical-pointer-promotion] [:tamper-rejected :missing-prior-record] [:tamper-rejected :truncated-prior-record] [:tamper-rejected :wrong-current-report] [:tamper-rejected :wrong-audit-subject] [:tamper-rejected :implementation-promotion] [:tamper-rejected :global-scope-promotion] [:tamper-rejected :source-qualification-erasure] [:tamper-rejected :compatibility-substitution] [:tamper-rejected :missing-durable-review-archive] [:tamper-rejected :review-archive-digest-substitution] [:tamper-rejected :compatibility-archive-substitution] [:tamper-rejected :requirement-acceptance-promotion] [:tamper-rejected :compiler-decision-promotion] [:evidence-scope-qualification "40 compiler aliases"] [:evidence-scope-qualification "25 testing aliases"] [:evidence-scope-qualification "four already-applied testing predicate corrections"] [:evidence-scope-qualification "metadata only"] [:evidence-scope-qualification "TEST5/SAFE16"] [:evidence-scope-qualification "TEST9"] [:evidence-scope-qualification "unavailable historical 70b5 and 5cf"] [:evidence-scope-qualification "unconsumed and unpromoted"] [:evidence-scope-qualification "no implementation, global-scope, denominator, release or Main acceptance"] :parent-and-proposed-pins-still-exact], :canonical-and-task-file-byte-identities 43, :surgical-records {:aliases 65, :archives 65, :scope-reviews 2}, :existing-alias-routes {:compiler 40, :testing 25}, :count 586, :old-evidence-prefix-byte-exact true, :testing-four-corrections :already-applied-and-unchanged, :three-verbatim-durable-archives {"current-compiler-applied-alias-review" {:path "/tmp/uniform-applied-alias-e69-current-semantic-adjudication.edn", :sha256 "2bbf925e7802d7d35c6f0f635a497183c679d3c1e96d936852a6f88bdbe22829"}, "current-testing-applied-graph-review" {:path "/tmp/uniform-testing-applied-graph-e69-current-semantic-adjudication.edn", :sha256 "345bd5767c1c3ea043038e669084fd3815ddc0676221d7686cd156de7c616076"}, "current-65-alias-compatibility-9ec" {:path "/tmp/uniform-current-65-alias-review-compatibility-9ec.edn", :sha256 "10c299d0e431e6c525bca2b10168545be7d2cc1d8590aa8d267f16e376f96e8a"}}, :model-review-references-resolve-to-archive-digests true}, :scope :record-two-genuine-current-scoped-review-results-at-unchanged-subject, :assessment {:state-transition :proposed-to-reviewed-for-existing-applied-relation-wrappers-and-two-family-summaries-only, :genuine-current-results :compiler40-and-testing25-plus4-already-applied-corrections, :not-a-fresh-semantic-adjudication true, :historical70b5-and5cf :pointers-preserved-payloads-not-consumed-reconstructed-or-promoted, :TEST5-SAFE16 :bounded-overlap-held, :TEST9 :only-artificial-resource-limit-exception-held-real-host-platform-billing-target-constraints-retained, :ownership-compound-partitions-atomicity-nonoverlap-gaps-task-and-acceptance-statuses :unchanged}, :qualifications [:private-proposal-only :no-native-model-phase-or-repository-adoption-verified :no-requirement-source-facet-task-route-or-denominator-change :no-implementation-global-scope-nonoverlap-Main-release-or-full240-acceptance :no-missing-historical-payload-transfer-or-stopped223-135-reconstruction :Root-normal9ec-Main-work-is-independent-not-gated-by-this-review :actual-author-and-terminal-release-review-remain-separate], :kind :independent-private-current65-applied-review-model-evidence-binding, :verdict :qualified-MODEL-EVIDENCE-binding-PASS, :subjects {:base-commit "9ecac510c8698ad91081227864a2dfc5b42b003f", :base-tree "724658c85fd50f2f8b271f2b4ee17c3340bdb395", :semantic-review-subject "e69bb936a350a052215a6bacbea5ae69f833254c", :semantic-review-tree "34bdd41c8229536351d7c2b3bab50160a52df5d5", :parent-model-sha256 "140baf21e8ecd8194fb5171b78fb3aefdd4638aea7ce3e0c5629192fff8b969c", :artifacts [{:path "/tmp/uniform-current-65-alias-review-binding-preparation.edn", :sha256 "c8791f3351feb5a763bb6e4af02069bb4f789ea676b20839680c4974c11d3d7f"} {:path "/tmp/uniform-current-65-alias-review-binding-evidence-preparation.edn", :sha256 "36a09a173dd02aa3ad208ef3dd7a5e4e82cf7ba5a5a224cd07baba48ca1007df"} {:path "/tmp/uniform-current-65-alias-review-binding-proposed-model.edn", :sha256 "9817e0801b208c8d41e3964c879f88d0bb711d073d936361032ae2ddb19706a0"} {:path "/tmp/uniform-current-65-alias-review-binding-proposed-evidence.md", :sha256 "deec2a34b9939e4396dc1f02af7cafcdb75a70fb956dea61528bf2a794bdf17c"} {:path "/tmp/uniform-current-65-alias-review-compatibility-9ec.edn", :sha256 "10c299d0e431e6c525bca2b10168545be7d2cc1d8590aa8d267f16e376f96e8a"} {:path "/tmp/uniform-applied-alias-e69-current-semantic-adjudication.edn", :sha256 "2bbf925e7802d7d35c6f0f635a497183c679d3c1e96d936852a6f88bdbe22829"} {:path "/tmp/uniform-testing-applied-graph-e69-current-semantic-adjudication.edn", :sha256 "345bd5767c1c3ea043038e669084fd3815ddc0676221d7686cd156de7c616076"}]}}
+~~~~~~
+<!-- source-reference-review-archive:current-65-alias-model-evidence-binding-review:end -->
