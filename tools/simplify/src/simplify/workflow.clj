@@ -173,15 +173,18 @@
   (assert-clean! ctx (:worktree t))
   (assert-identity! ctx t)
   (let [{:keys [remote repository base-branch]} (:config ctx)
+        publication-branch (or (:publication-branch t) (:branch t))
         owner (first (str/split repository #"/"))
         _ (rt/effect! ctx (str "push/" (:candidate t))
-                      #(rt/git ctx (:worktree t) "push" remote (str (:candidate t) ":refs/heads/" (:branch t))))
-        existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t)))))
+                      #(rt/git ctx (:worktree t) "push" remote (str (:candidate t) ":refs/heads/" publication-branch)))
+        existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" publication-branch))))
+        _ (when (and (:composition-recovery t) (not= (get-in t [:pr :number]) (:number existing)))
+            (rt/fail! "The original composition PR is not the published branch's PR" {:writer-ended? true}))
         _ (when (and existing (not= "open" (:state existing))) (rt/fail! "Existing PR is terminal; preserving its history" {:pr (:html_url existing)}))
         pr (or existing
                (rt/effect! ctx (str "pr/" (or (:publication-effect-key t) (:key t)))
                            #(gh/api ctx "POST" (gh/repo-path ctx "pulls")
-                                    {:title (:title t) :head (:branch t) :base base-branch
+                                    {:title (:title t) :head publication-branch :base base-branch
                                      :draft (boolean (get-in ctx [:config :early-draft]))
                                      :body (str (:proposal t) "\n\nPreserves: " (:preserve t)
                                                 "\n\nImplements #" (get-in t [:issue :number]) ". The coordinator closes the issue after verifying the merge."
@@ -260,10 +263,34 @@
             inspection)))
       (rt/fail! "Fresh source validation is waiting for its actual paths" {:finding key :ownership-wait true}))))
 
+(defn recover-composition! [ctx key evidence-file]
+  (let [original (task ctx key)]
+    (when-not (= :attention (:status original)) (rt/fail! "Only an Attention composition can be inspected" {:finding key}))
+    (if-let [lease (rt/claim-paths! ctx key (:paths original) :checking)]
+      (rt/with-claimed-paths ctx lease
+        (fn []
+          (let [inspection (recovery/inspect-composition! ctx original evidence-file)]
+            (rt/update! ctx update-in [:tasks key]
+              (fn [t] (-> t
+                          (update :composition-recovery-history (fnil conj []) {:original-task original :inspection inspection})
+                          (merge (select-keys (:validation inspection) [:base :candidate :tree :worktree :branch]))
+                          (assoc :composition-recovery inspection :status :repair :checks nil :review nil :feedback nil :ci nil
+                                 :publication-branch (or (:publication-branch original) (:branch original)))
+                          (dissoc :main-intent-id))))
+            (rt/event! ctx :composition-recovery-queued {:finding key :candidate (get-in inspection [:validation :candidate])
+                                                        :original-worktree-untouched true :pr (:pr original)})
+            inspection)))
+      (rt/fail! "Composition recovery is waiting for its actual paths" {:finding key :ownership-wait true}))))
+
+(def recovery-operations
+  {:recover-dependency {:inspection-key :inspected-authored :kind :inspected-source-dependency-resolution :recover #'recover-dependency!}
+   :recover-fresh-source {:inspection-key :fresh-source-validation :kind :fresh-source-validation :recover #'recover-fresh-source!}
+   :recover-composition {:inspection-key :composition-recovery :kind :owned-composition-conflict :recover #'recover-composition!}})
+
 (defn queue-recovery! [ctx operation key evidence-file]
-  (when-not (and (#{:recover-dependency :recover-fresh-source} operation)
+  (when-not (and (contains? recovery-operations operation)
                  (string? key) (not (str/blank? key)) (string? evidence-file))
-    (rt/fail! "Queue only a typed dependency or fresh-source recovery" {}))
+    (rt/fail! "Queue only a typed inspected recovery" {}))
   (let [state-dir (.toPath (io/file (rt/canonical (:state-dir ctx))))
         evidence (rt/canonical evidence-file)
         directory (io/file (:state-dir ctx) "operator-recovery-requests")]
@@ -285,11 +312,9 @@
       {:request id :path (str file) :native-state-written false})))
 
 (defn- recovery-request-applied? [ctx request]
-  (let [inspection (get (task ctx (:task-key request))
-                        (if (= :recover-dependency (:operation request)) :inspected-authored :fresh-source-validation))]
-    (and (#{:recover-dependency :recover-fresh-source} (:operation request))
-         (= (if (= :recover-dependency (:operation request)) :inspected-source-dependency-resolution :fresh-source-validation)
-            (:kind inspection))
+  (let [{:keys [inspection-key kind]} (get recovery-operations (:operation request))
+        inspection (get (task ctx (:task-key request)) inspection-key)]
+    (and kind (= kind (:kind inspection))
          (= (:evidence-file request) (:evidence-file inspection))
          (= (:evidence-sha256 request) (:evidence-sha256 inspection)))))
 
@@ -314,18 +339,18 @@
           (reset! request (rt/read-edn file))
           (when-not (and (= id (rt/digest (pr-str @request)))
                          (= #{:operation :task-key :evidence-file :evidence-sha256} (set (keys @request)))
-                         (#{:recover-dependency :recover-fresh-source} (:operation @request)))
+                         (contains? recovery-operations (:operation @request)))
             (rt/fail! "Recovery request identity or operation differs" {}))
           (reset! validated? true)
           (when-not (or (contains? occupied (:task-key @request))
-                        (and (= :recover-fresh-source (:operation @request))
+                        (and (#{:recover-fresh-source :recover-composition} (:operation @request))
                              (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"])))))
             (if (recovery-request-applied? ctx @request)
               (record! :applied {:observed-existing-native-queue true})
               (do
                 (when-not (= (:evidence-sha256 @request) (recovery/file-digest (:evidence-file @request)))
                   (rt/fail! "Queued recovery evidence changed" {}))
-                ((if (= :recover-dependency (:operation @request)) recover-dependency! recover-fresh-source!)
+                ((get-in recovery-operations [(:operation @request) :recover])
                  ctx (:task-key @request) (:evidence-file @request))
                 (record! :applied {:observed-existing-native-queue false}))))
           (catch Exception e
@@ -414,14 +439,17 @@
    (when-let [lease (rt/claim-paths! ctx key (:paths (task ctx key)) :implementing)]
      (prepare! ctx key lease)))
   ([ctx key lease]
-   (if (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
+   (if (or (= :queued (get-in (task ctx key) [:fresh-source-validation :stage]))
+           (= :queued (get-in (task ctx key) [:composition-recovery :stage])))
      (do
        (rt/with-claimed-paths ctx lease
          (fn []
-           (let [t (task ctx key) inspection (recovery/validate-fresh-queued! ctx t)]
+           (let [t (task ctx key) composition? (= :queued (get-in t [:composition-recovery :stage]))
+                 inspection (if composition? (recovery/validate-composition-queued! ctx t)
+                                (recovery/validate-fresh-queued! ctx t))]
              (prepare-base! ctx t)
              (when-let [validate (:before-implement ctx)] (validate ctx (task ctx key)))
-             (rt/update! ctx assoc-in [:tasks key :fresh-source-validation :stage] :continuing)
+             (rt/update! ctx assoc-in [:tasks key (if composition? :composition-recovery :fresh-source-validation) :stage] :continuing)
              (transition! ctx key :implementing)
              (rt/lease-phase! ctx lease :checking)
              (checks! ctx (task ctx key) (:commands inspection))

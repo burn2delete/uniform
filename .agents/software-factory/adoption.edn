@@ -1,0 +1,106 @@
+{:version 1,
+ :integration
+ {:pr "https://github.com/burn2delete/uniform/pull/1282",
+  :commit "e24b2da4be8b79960462b8f61b7134b71b17f30a",
+  :tree "06e8396bf423716b161a3b3b6894a6b51a9df37b",
+  :parent "643d75125f1b32a7756f80560ff6f3fbd5c5fbbb",
+  :candidate "4fd139568af7d0fe9d4db50b1469eea709860d98",
+  :verified true,
+  :reviewer "/root/adoption_inspection"},
+ :factory-002
+ {:consumer :recurring-factory-observer,
+  :exit 0,
+  :config
+  {:path
+   "/Users/matt/.codex/worktrees/9da8/uniform/tools/advance/config.edn",
+   :sha256
+   "45f8d70df67daaeaf3149d030a6f491883178735e9250a14549dcb9f49c8a96d"},
+  :source-files
+  {"tools/advance/deps.edn"
+   "539d98a6e8ce66cbcacbfbfdaf9937496811e9c391e04c4ffcbc1bd1a439f9d3",
+   "tools/advance/src/advance/main.clj"
+   "7db1d6b723a24c32a30d244d382a4ae9f2244d16c592a7b5a0d8480f02f6366a",
+   "tools/simplify/src/simplify/main.clj"
+   "accefbdc297c3fc9e0956d6b91197235b7d9ed3dd7789d402f3a0198feab35c7",
+   "tools/simplify/src/simplify/runtime.clj"
+   "29b98c75e1e12e7c6c8b4d603f5023b42dabfa07ca316750d70b852026d8da3d",
+   "tools/simplify/src/simplify/workflow.clj"
+   "33e85322d99b2ac06d8e1825c6c1eeba80a2891b67dc34c759c00d9c393ed1bc"},
+  :cwd "/Users/matt/.codex/worktrees/a3b6/uniform/tools/advance",
+  :command
+  ["clojure"
+   "-M:run"
+   "status-summary"
+   "/Users/matt/.codex/worktrees/9da8/uniform/tools/advance/config.edn"],
+  :state :adopted,
+  :liveness
+  {:processes :unverified,
+   :service :unverified,
+   :basis :recorded-local-state-only},
+  :state-snapshot
+  {:path
+   "/Users/matt/.codex/worktrees/9da8/uniform/target/validation/advance/state.edn",
+   :source-may-evolve-after-read true,
+   :later-source-sha256
+   "4d64c89a46acca052969eaf8c5b3ae10929547c6a443025c30228f638f43b06b",
+   :sha256
+   "9d88e1e63ece330e03fbad6ee9b730d10aa5606aae000abcc42c0767befd9c3e",
+   :attention-keys-match-later-source true,
+   :job-count 47,
+   :attention-count 18,
+   :task-count 20,
+   :independent-live-snapshot-corroboration
+   "/root/adoption_inspection verified the CLI state digest and all 18 Attention items against the owner state during its observation."},
+  :limits
+  ["Actual factory observer adopted the CLI; this does not prove controller/planner adoption or service health."
+   "No service restart, provider action, native state write, or effect349 replay occurred."],
+  :reviewer "/root/adoption_inspection",
+  :stderr {:bytes 0},
+  :implementation-commit "e24b2da4be8b79960462b8f61b7134b71b17f30a",
+  :stdout
+  {:path
+   "target/validation/software-factory/adopted-status-summary.edn",
+   :bytes 27841,
+   :sha256
+   "e2232b954da9f7934113e4cd20ea2a85712895b5b8385ed43367d8cfbc462ee4"},
+  :implementation-tree "06e8396bf423716b161a3b3b6894a6b51a9df37b"},
+ :factory-001
+ {:state :pending-normal-planner-use,
+  :main-landed true,
+  :owner-source "e24b2da4be8b79960462b8f61b7134b71b17f30a",
+  :blocker :ordinary-selection-not-yet-observed,
+  :normal-planner-cycle-observed false,
+  :effect349
+  {:id
+   "project-status/PVT_kwHOAAI-PM4BqGFx/I_kwDOTDHiVc8AAAABdLlDdQ/349",
+   :current-status :done,
+   :previous-status :restricted,
+   :reconciliation
+   {:kind :explicit-operator-current-status-resolution,
+    :at "2026-11-07T02:47:58.374931Z"}},
+  :nonclaim
+  "Do not classify the current effect as restricted after its original operator resolution; preserve prior refusal and do not replay it.",
+  :deployment
+  {:journal-note
+   "Applied receipt backup field is nil; the full digest-bound backup exists at the recorded path.",
+   :boundary-exit 0,
+   :backup
+   "target/validation/software-factory/deployment/backups/a1651812d16674516fcc61eadaa31387e0ab924200f04fe2692220a1ff09cabf",
+   :old-denials :preserved,
+   :plan-sha256
+   "a1651812d16674516fcc61eadaa31387e0ab924200f04fe2692220a1ff09cabf",
+   :helper-sha256
+   "9de074ed1261ca1b50340b2b8f1ab8f97ddf9a997a9335356b56704d6f09d0ed",
+   :launch-label "gui/501/com.burn2delete.uniform-advance",
+   :messages-to-owner 0,
+   :observed-pid 35920,
+   :handoff-sha256
+   "2bc735e98c80d5ed736ab7502356b0087f07e39e7e2ebc8d2e8abd0e7819756e",
+   :runtime "e24b2da4be8b79960462b8f61b7134b71b17f30a",
+   :start-count 1,
+   :state-preserved-sha256
+   "a7f3c106d20a46ab160ada7fd5e695fd41c9eebd70284093a3f684e27ce39045",
+   :independent-reviewer "/root/deployment_review",
+   :resume-at "2026-11-07T03:22:48.148153Z",
+   :forced-planner-calls 0}},
+ :recorded-at "2026-11-07T03:28:34.826662Z"}

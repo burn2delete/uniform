@@ -306,6 +306,33 @@ After a crash following an actual native queue, the exact recorded inspection
 is observed instead of replaying the queue. This interface requires its merged
 runtime implementation; it is not an unmerged launcher overlay.
 
+### An owned conflict while composing current Main
+
+An ordinary, nonrestricted `git merge --no-edit MAIN` conflict in an owned
+task path can use the same live inbox with operation `recover-composition`.
+This does not retry a denied command or edit the original conflicted worktree.
+Resolve the conflict in a separate owned, named worktree first. Its accepted
+commit must have ordered parents `[original-candidate MAIN]`; every change
+from Git's automatic conflict tree must be confined to the original conflict
+paths. Independent resolution acceptance binds the exact source and resolved
+base/commit/tree, parents, task key, conflict paths and empty findings.
+
+The controller-retained evidence has kind `:owned-composition-conflict`, the
+task key, original PR and entire task SHA, `:validation` with the resolved
+base/candidate/tree/worktree/branch, configured-toolset `:checks`, immutable
+`:resolution-acceptance` reference and `:original-conflict` snapshot. The
+snapshot binds original HEAD/MERGE_HEAD, conflict paths, full index SHA and
+all changed-file bytes and modes. Stale bytes, foreign resolution changes,
+refusals, unsettled effects and a shared API hold block continuation.
+
+Only the original controller archives the entire task in
+`:composition-recovery-history` and queues fresh native checks and passive
+review. It retains the current PR and publishes normally to that PR's original
+branch; the distinct resolved worktree keeps its own branch. Missing or changed
+PR identity fails closed instead of creating a replacement. Old conflicts,
+failed checks, unknown cleanup and refusal history remain preserved. New-head
+CI and normal Main integration are still required.
+
 Known-ended, nonrestricted semantic check failures return to repair with the
 failed source tuple and check result retained. The repair must preserve meaningful
 checks, including authenticity and provenance. Restricted or uncertain effects
