@@ -34,7 +34,7 @@ child, Bootstrap wiring/component, focused tests/CI registration and evidence.
 
 ## Public API, internal wiring and artifacts
 
-The planned child public API is:
+The implemented child public API is:
 
 ```clojure
 (function-definition-form defn-form?-var def-function-form?-var source-path form)
@@ -117,11 +117,60 @@ excluded and must not be rerun or credited.
 
 ## Status and unsupported boundaries
 
-This scope is documentation only; no body or CI command has moved yet and no
-new passing result is claimed. Open and maintain the draft PR before source
-implementation. Exact current-base integration remains with the designated
-integrator. This manual Source has no Main/Ready/controller/service/recovery
-or GraphQL role.
+The scope was published as draft PR #1348 before source implementation at
+commit `b4009385cf225368a7fdffa60d7352f02da12424`, tree
+`f3625adeec4150fe59e66f5adb2826b6707dcb7f`. All seven bodies now live in the
+child, with three public APIs and four private bridges. Original/body/adapter
+and complete source-byte receipt SHA256:
+`0f146ed537c7bb866e4d6c33f733e5a47fcd830b6cdaa38dda08413eb1c82b86`.
+The original receipt remains immutable. A separate reader-discarded lint
+annotation receipt has SHA256
+`b9cfd0ea09ca84bff39347a745de30d893a69f7a10ec4619078b75448789701e`.
+It records only the intentionally unused classifier source-path parameter
+and private Vars called through Bootstrap bridges; algorithms, signatures and
+contract data are unchanged. The validator/predicate adapters project their
+already-destructured fields to preserve the exact legacy argument lists;
+their old algorithms use only those fields. The table and normalizer preserve
+all additional definition data and source declarations.
+
+Twenty-two complete before/after source observations are equal. Ten genuine
+plans/reports are emitted and ten interpreted/compiled executions agree;
+twelve genuine malformed-source refusals retain exact source facts and
+diagnostics. Inputs cover both source extensions, defn/def-fn, plain and
+declared parameters/returns, explicit return wrappers, duplicate functions,
+duplicate/variadic parameters, empty bodies and malformed headers. Raw
+declarations, normalized tables, macro/module/plan/report data, source paths/
+hashes, deterministic IDs, helper calls/values/classes and failures survive.
+Baseline SHA256:
+`5c16ef7dc33626f3a41bae65b85f9942ae40f70a06462dcd00d6d75a573a15e2`;
+implementation SHA256:
+`0fefebe0d07963836b7f5b475693ff64cbdf8b8836574363fd8b51708107660f`.
+Both record the actual scope HEAD above and separate producer hashes, not a
+future clean commit.
+
+The source route directly exercises six table/classifier/header bodies.
+An additional direct pure native header-validator control consumes the genuine
+original module forms and records its own result. Together these cover all
+seven bodies. That private helper control is not Stage2 source admission or
+emission-context execution; no private source factory, authenticated builder,
+Reader replacement or pin change is invoked. Its distinct control kind is
+retained in each observation. Route-local nonclaims do not establish a global
+absence of other source routes.
+
+Focused tests pass 9 tests and 174 assertions. Earlier Runtime Stage0 and
+namespace-parser regressions pass 44 tests and 760 assertions. Language/
+ownership checks pass 48 tests and 1202 assertions. Cold loading verifies the
+three public/four private API declarations and arglists, with no aliases or
+Bootstrap, Resolution root, Diagnostics, Reader, Types or Checked Core loaded.
+Focused CI controls pass 2 tests and 169 assertions and prove the new command
+selects the whole new test namespace, including omission/wrong-namespace
+negative controls. Child, test and changed CI files lint with zero errors/
+warnings; diff checking passes. Documentation/roadmap validation, complete
+current-Main lint, final source publication/reviews and own CI/provider audit
+remain pending. No parent acceptance transfers.
+
+Exact current-base integration remains with the designated integrator. This
+manual Source has no Main/Ready/controller/service/recovery or GraphQL role.
 
 This bounded native table is not canonical C5 resolution, C6 verified Core,
 C7/L17 typing, source/plan authentication, a complete source-map/origin graph,

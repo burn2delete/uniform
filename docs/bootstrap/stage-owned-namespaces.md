@@ -186,6 +186,25 @@ increment requires the exact corrective parent and its own current-base
 acceptance; it does not establish canonical C5 resolution, authentication, cross-file graph or
 lexical legality, module-artifact publication, release or self-hosting support.
 
+The [native Stage0 function-table extraction](resolution-stage0-functions-evidence.md)
+moves seven complete classifier/header/validation/table bodies into
+`gravity.resolution.stage0-functions`. Its three public APIs classify native
+definitions, validate function records and build the existing normalized
+function table; four private bridges preserve seed header recognition,
+normalization, duplicate checks and source-header validation. Caller-owned
+native forms/module/source data plus explicit late owner Vars produce native
+records/tables with exact source declarations or unchanged failures. The child
+owns local L2-FUNCTION-PARAMS/L2-DUPLICATE-FUNCTION decisions and facts;
+Diagnostics retains construction and Bootstrap retains wiring/throw transport.
+The existing Resolution root's 55 APIs and Core/Types contracts are unchanged.
+Tests cover real paired-source plans/execution and malformed declarations,
+declaration retention, the distinct table/header callback order, source/opaque
+identity, exceptions and exact public/private adapters. The child depends only
+on core and imports no caller, Reader, resolver root or other compiler stage.
+Its pure private header control over genuine forms is separate from Stage2
+source admission; it confers no C5/Core/type, authentication, release or
+self-hosting authority.
+
 The [native Stage0 effect-policy extraction](effects-stage0-policy-evidence.md)
 moves the complete classifier, inference, capability projection and module
 guard bodies into `gravity.effects`. Four explicit APIs consume existing

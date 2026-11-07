@@ -30,6 +30,7 @@
             [gravity.types]
             [gravity.effects]
             [gravity.resolution]
+            [gravity.resolution.stage0-functions]
             [gravity.macro-run-storage :as macro-run-storage]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
