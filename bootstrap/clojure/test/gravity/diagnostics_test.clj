@@ -80,7 +80,7 @@
     (is (empty? (ns-aliases 'gravity.diagnostics)))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/diagnostic))))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/fail!))))
-    (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
+    (is (= #{'diagnostic 'fail! 'fail-at-node! 'stable-id 'diagnostic-record
              'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
              'native-context-valid? 'native-primary-valid? 'validate-native!
              'native-fixture-diagnostics 'native-artifact-base 'native-capability-proof
@@ -94,20 +94,21 @@
       (is (= 'gravity.diagnostics (:namespace contract)))
       (is (= :stage0-diagnostic-carriers-and-record-data
              (:contract-boundary contract)))
-      (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
+      (is (= #{'diagnostic 'fail! 'fail-at-node! 'stable-id 'diagnostic-record
                'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
                'native-context-valid? 'native-primary-valid? 'validate-native!
                'native-fixture-diagnostics 'native-artifact-base 'native-capability-proof
                'native-failure! 'native-validate-source-overrides! 'native-source-artifact 'native-file-artifact}
              (set (keys (:public-api contract)))))
-      (is (= [:native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
+      (is (= [:trusted-late-failure-var :producer-selected-analyzer-stage :node-span-remediation-and-caller-data
+              :native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
               :native-compiler-metadata :native-c15-rule-id-order :rule-id :human-message :structured-data :explicit-span-and-identity-operations
               :native-seed-diagnostic-fields :source-invocation :canonical-request-digest
               :original-eleven-c15-fields :private-candidate :complete-digest-request
               :trusted-native-source-module-configuration-and-c14-parent
               :trusted-zero-argument-operation-suppliers]
              (:artifact-inputs contract)))
-      (is (= [:native-phase-and-primary-predicates :native-record-validation-result
+      (is (= [:stage0-node-carrier-callback-result :native-phase-and-primary-predicates :native-record-validation-result
               :native-source-overrides :native-c15-catalog :stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
               :resolved-request-data :private-c15-binding :source-owned-rejection
               :native-c15-fixture-diagnostics-artifact-and-capability-data
@@ -126,7 +127,7 @@
 (deftest complete-stage-api-retains-explicit-metadata-and-native-boundaries
   (let [publics (ns-publics 'gravity.diagnostics)
         contract (:gravity/namespace-contract (meta #'diagnostics/diagnostic))]
-    (is (= 19 (count publics)))
+    (is (= 20 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name operation] publics]
       (is (= contract (:gravity/namespace-contract (meta operation))))

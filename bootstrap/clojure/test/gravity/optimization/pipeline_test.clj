@@ -23,7 +23,12 @@
   (is (= #{'selection 'rewrite 'restore 'output-id 'extend-evidence 'translated-record
            'native-source-overrides 'native-source-overrides-artifact
            'native-diagnostic-catalog 'native-artifact-base 'native-validate!
-           'native-capability-proof 'native-source-artifact 'native-file-artifact}
+           'native-capability-proof 'native-source-artifact 'native-file-artifact
+           'native-stage0-check-elision-proof-present? 'validate-native-stage0-check-elision!
+           'native-performance-required-claim-fields 'native-performance-present?
+           'native-performance-normalize-claim 'native-performance-missing-claim-fields
+           'native-performance-failure! 'native-performance-target-fingerprint
+           'validate-native-performance-claim!}
          (set (keys (ns-publics 'gravity.optimization)))))
   (doseq [[name operation] (ns-publics 'gravity.optimization)]
     (let [contract (:gravity/namespace-contract (meta operation))]

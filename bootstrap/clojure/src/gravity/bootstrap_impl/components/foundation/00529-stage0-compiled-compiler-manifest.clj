@@ -1,65 +1,38 @@
 
 
-(defn stage0-compiled-compiler-manifest
-  [module]
-  {:profile (:profile module)
-   :target (:target module)
-   :source-effects (:effects module)
-   :source-capabilities (:capabilities module)
-   :metadata (:metadata module)})
+(defn stage0-compiled-compiler-manifest [module]
+  (gravity.compiler-pass-manifest/native-stage0-compiler-manifest
+    module))
 
-(defn stage0-compiled-compiler-suite
-  [module]
-  (get-in module [:metadata :compiler :compiled-gate] {}))
+(defn stage0-compiled-compiler-suite [module]
+  (gravity.compiler-pass-manifest/native-stage0-compiler-suite module))
 
-(defn stage0-compiled-compiler-suite-present?
-  [module]
-  (contains? (get-in module [:metadata :compiler] {}) :compiled-gate))
+(defn stage0-compiled-compiler-suite-present? [module]
+  (gravity.compiler-pass-manifest/native-stage0-compiler-suite-present?
+    module))
 
-(defn validate-stage0-compiled-pass-contract!
-  [module manifest contract]
-  (let [source-path (:source-path module)
-        missing-fields (compiler-pass-missing-fields
-                        contract
-                        compiler-pass-contract-required-fields)]
-    (if (seq missing-fields)
-      (compiler-pass-fail!
-       "C1-PASS-CONTRACT" source-path manifest contract
-       {:missing-fields missing-fields
-        :remediation
-        "Expose the compiled executable pass contract before claiming compiler architecture coverage."})
-      (let [durable-drops (set/intersection compiler-pass-durable-facts
-                                            (set (:invalidates contract)))
-            replacements (set (concat (:regenerates contract)
-                                      (:replacement-evidence contract)
-                                      (:emits contract)))
-            missing-replacements (set/difference durable-drops
-                                                 replacements)]
-        (when (seq missing-replacements)
-          (compiler-pass-fail!
-           "C1-EVIDENCE-DROP" source-path manifest contract
-           {:missing-fields (vec missing-replacements)
-            :remediation
-            "Regenerate durable facts, emit replacement proof, keep runtime checks, or reject the transformation."}))))))
+(defn validate-stage0-compiled-pass-contract! [module
+                                               manifest
+                                               contract]
+  (gravity.compiler-pass-manifest/validate-native-stage0-pass-contract!
+    {:missing-fields #'compiler-pass-missing-fields,
+     :required-fields #'compiler-pass-contract-required-fields,
+     :durable-facts #'compiler-pass-durable-facts,
+     :intersection #'set/intersection,
+     :difference #'set/difference,
+     :fail! #'compiler-pass-fail!}
+    module
+    manifest
+    contract))
 
-(defn validate-stage0-compiled-mir!
-  [module manifest mir-operation]
-  (when (= :target-specific (:family mir-operation))
-    (mir-fail!
-     "C11-TARGET-LEAK"
-     (:source-path module)
-     {:mir-module {:profile (:profile module)
-                   :target-request (:target module)
-                   :module :stage0-compiled-core-app}}
-     mir-operation
-     {:missing-fields [:target-independent-opcode]
-      :remediation
-      "Keep generic MIR target-independent; move target opcodes behind verified target lowering."})))
+(defn validate-stage0-compiled-mir! [module manifest mir-operation]
+  (gravity.mir/validate-native-stage0-mir-operation!
+    #'mir-fail!
+    module
+    manifest
+    mir-operation))
 
-(defn stage0-compiled-target-proof-present?
-  [record]
-  (or (perf-present? (:proof-id record))
-      (perf-present? (:proof record))
-      (perf-present? (:certificate record))
-      (perf-present? (:certificate-id record))
-      (perf-present? (:translation-validation record))))
+(defn stage0-compiled-target-proof-present? [record]
+  (gravity.lowering/native-stage0-target-proof-present?
+    #'perf-present?
+    record))
