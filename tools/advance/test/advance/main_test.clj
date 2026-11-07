@@ -2,7 +2,7 @@
   (:require [advance.main :as main]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is]]
             [simplify.main :as base]
             [simplify.runtime :as rt])
   (:import [java.nio.file Files]))
@@ -229,7 +229,7 @@
             parsed (edn/read-string output)]
         (is (= :running (get-in parsed [:state :recorded-status])))
         (is (= (rt/digest raw-state) (get-in parsed [:state :sha256])))))
-    (with-redefs [base/dispatch! (fn [ctx command args]
+    (with-redefs [base/dispatch! (fn [_ctx command args]
                                    (is (= "status" command))
                                    (is (= [] args))
                                    :raw-status-delegated)]

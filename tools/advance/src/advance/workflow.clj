@@ -161,7 +161,7 @@
   (let [numbers (keep #(get-in % [:issue :number]) tasks)]
     (select-keys (or settings {}) numbers)))
 
-(defn- history-path [worktree digest]
+(defn- history-path [digest]
   (str "target/validation/advance/selection-history/" digest ".edn"))
 
 (defn- ensure-history-path! [worktree path]
@@ -229,7 +229,7 @@
         envelope {:base base :tree tree :tasks tasks :effects effects :settings settings}
         serialized (snapshot-text envelope)
         digest (rt/digest serialized)
-        path (history-path worktree digest)
+        path (history-path digest)
         file (ensure-history-path! worktree path)]
      (if (.exists file)
        (when-not (= serialized (slurp file))
