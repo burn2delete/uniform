@@ -1,13 +1,29 @@
 (ns gravity.lowering
-  "Native C14 reconstruction, artifact pipelines and backend document checks; authority remains with existing owners."
+  "Native Stage0 instruction lowering, C14 reconstruction and backend document checks; authority remains with existing owners."
   (:require [clojure.set :as set]))
 
 (def ^:private namespace-contract
   '{:regenerates
- [:native-reconstruction-records :native-c14-artifact-and-projection],
+ [:stage0-native-instructions :stage0-native-opcode-frequency-map :native-reconstruction-records :native-c14-artifact-and-projection],
  :authenticates-inputs? false,
  :public-api
- {assert-wasm-reconstruction!
+ {compile-native-expression
+  {:arglists ([operations module locals form]), :admission :none,
+   :required-operations [:compile-expression :compile-collection :compile-let :builtin-functions :fail!],
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-collection
+  {:arglists ([expression-var module locals form]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-let
+  {:arglists ([failure-var expression-var module locals bindings body]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  compile-native-function
+  {:arglists ([expression-var module {:keys [name params body] :as definition}]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  native-instruction-summary
+  {:arglists ([summary-var instruction]), :admission :none,
+   :contract-boundary :stage0-native-instruction-lowering},
+  assert-wasm-reconstruction!
   {:arglists
    ([require-strict-structure! fail! source-path expected raw]),
    :admission :none},
@@ -96,7 +112,9 @@
      raw]),
    :admission :none}},
  :supported
- [:existing-llvm-c-wasm-reconstruction-bodies
+ [:existing-stage0-native-expression-collection-let-function-and-summary-bodies
+  :late-native-recursion-helper-catalog-and-failure-vars
+  :existing-llvm-c-wasm-reconstruction-bodies
   :existing-context-joins
   :unchanged-identity-and-provenance-fields
   :late-var-diagnostic-interposition
@@ -121,7 +139,7 @@
  :invalidates [],
  :legacy-status-labels-authoritative? false,
  :governing-contracts
- [D1
+ [L2 C6 BOOT1 D1
   D2
   D3
   D6
@@ -167,7 +185,9 @@
   :native-prefix-check-as-integrity
   :native-proof-or-conformance-labels-as-authority],
  :artifact-inputs
- [:caller-owned-optimized-mir-and-policy-data
+ [:trusted-stage0-native-module-local-scope-forms-and-function-data
+  :trusted-stage0-instruction-and-explicit-live-operation-vars
+  :caller-owned-optimized-mir-and-policy-data
   :expected-and-actual-c14-record-data
   :c11-c13-context-data
   :explicit-strict-comparison-and-diagnostic-operations
@@ -179,7 +199,8 @@
  :namespace gravity.lowering,
  :diagnostic-ownership
  {:stage
-  ["C14-MANIFEST"
+  ["L2-UNKNOWN-SYMBOL" "L2-UNKNOWN-CORE-FORM" "L2-LET-BINDING" "P4-HOST-REFLECTION"
+   "C14-MANIFEST"
    :exact-reconstruction-or-context-join-mismatch
    :existing-native-c14-ordered-structural-refusals
    "C14-INPUT"
@@ -207,7 +228,10 @@
    "B14-NEGATIVE"],
   :propagated ["C11-VERIFY" :strict-structure-mismatch],
   :existing-owner
-  [:canonical-c11-c13-admission
+  [:stage0-source-function-header-and-whole-plan-admission
+   :stage0-native-diagnostic-construction-and-publication
+   :stage0-plan-identity-and-execution
+   :canonical-c11-c13-admission
    :target-legality
    :diagnostic-publication
    :source-verification
@@ -215,7 +239,10 @@
    :native-backend-failure-payload-assembly
    :native-backend-selected-failure-operation]},
  :artifact-outputs
- [:raw-llvm-c-wasm-c14-reconstruction-data
+ [:stage0-native-expression-instructions
+  :stage0-native-function-binding-and-instructions
+  :stage0-native-opcode-frequency-map
+  :raw-llvm-c-wasm-c14-reconstruction-data
   :exact-reconstruction-or-refusal
   :native-c14-artifact-or-refusal
   :native-c14-diagnostics-and-capability-projection
@@ -223,11 +250,13 @@
   :legacy-structural-completion-or-refusal
   :legacy-native-backend-coverage-record],
  :consumer-component-paths
- ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00209-native-lowering-source-overrides.clj"
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00554-invoke-stage0-builtin.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00555-compile-stage0-expr.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00209-native-lowering-source-overrides.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00210-native-lowering-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00211-native-lowering-file-artifact.clj"],
  :issues-certificates? false,
- :contract-boundary :native-lowering-reconstruction-and-document-data}
+ :contract-boundary :native-lowering-reconstruction-document-data-and-stage0-instructions}
 )
 
 (defn llvm-record
@@ -915,5 +944,153 @@
      :diagnostics-covered?
      (= (set (native-backend-port operations :diagnostic-ids)) diagnostics)
      :status :complete}))
+(defn compile-native-collection
+  [expression-var module locals form]
+  (cond
+    (vector? form)
+    {:op :vector-literal
+     :items (mapv #((deref expression-var) module locals %) form)}
+
+    (map? form)
+    {:op :map-literal
+     :entries (mapv (fn [[k v]]
+                      {:key ((deref expression-var) module locals k)
+                       :value ((deref expression-var) module locals v)})
+                    (sort-by (fn [[k v]] (pr-str [k v])) form))}
+
+    (set? form)
+    {:op :set-literal
+     :items (mapv #((deref expression-var) module locals %)
+                  (sort-by pr-str form))}
+
+    :else
+    {:op :literal :value form}))
+
+(defn compile-native-let
+  [failure-var expression-var module locals bindings body]
+  (when-not (and (vector? bindings) (even? (count bindings)))
+    ((deref failure-var) "L2-LET-BINDING"
+           "let requires an even binding vector"
+           {:source-span {:source (:source-path module)}
+            :bindings bindings
+            :remediation "Use pairs of local names and expressions in let."}))
+  (loop [scope locals
+         compiled []
+         pairs (partition 2 bindings)]
+    (if-let [[name expr] (first pairs)]
+      (do
+        (when-not (symbol? name)
+          ((deref failure-var) "L2-LET-BINDING"
+                 "let binding name must be a symbol"
+                 {:source-span {:source (:source-path module)}
+                  :binding name
+                  :remediation "Bind symbols in stage0 let forms."}))
+        (recur (conj scope name)
+               (conj compiled {:name name
+                               :expr ((deref expression-var) module scope expr)})
+               (rest pairs)))
+      {:op :let
+       :bindings compiled
+       :body (mapv #((deref expression-var) module scope %) body)})))(defn compile-native-expression
+  [operations module locals form]
+  (cond
+    (symbol? form)
+    (if (contains? locals form)
+      {:op :local :name form}
+      ((deref (:fail! operations)) "L2-UNKNOWN-SYMBOL"
+             "stage0 cannot resolve symbol"
+             {:source-span {:source (:source-path module)}
+              :symbol form
+              :remediation "Define the symbol or stay within the stage0 subset."}))
+
+    (seq? form)
+    (case (first form)
+      println {:op :println
+               :effect :io/write
+               :capability :io/stdout
+               :args (mapv #((deref (:compile-expression operations)) module locals %) (rest form))}
+      do {:op :do
+          :body (mapv #((deref (:compile-expression operations)) module locals %) (rest form))}
+      if (let [[_ test then else] form]
+           {:op :if
+            :test ((deref (:compile-expression operations)) module locals test)
+            :then ((deref (:compile-expression operations)) module locals then)
+            :else ((deref (:compile-expression operations)) module locals else)})
+      let (let [[_ bindings & body] form]
+            ((deref (:compile-let operations)) module locals bindings body))
+      quote {:op :quote :value (second form)}
+      host-reflect ((deref (:fail! operations)) "P4-HOST-REFLECTION"
+                          "host reflection is not implemented in stage0"
+                          {:source-span {:source (:source-path module)}
+                           :remediation "Remove host reflection from the stage0 executable subset."})
+      (let [callee (first form)
+            args (mapv #((deref (:compile-expression operations)) module locals %) (rest form))]
+        (cond
+          (contains? (deref (:builtin-functions operations)) callee)
+          {:op :builtin-call :function callee :args args}
+
+          (contains? (:function-table module) callee)
+          {:op :function-call :function callee :args args}
+
+          :else
+          ((deref (:fail! operations)) "L2-UNKNOWN-CORE-FORM"
+                 "stage0 cannot execute this form"
+                 {:source-span {:source (:source-path module)}
+                  :operator callee
+                  :remediation "Use defn, println, do, if, let, quote, supported core builtins, or local function calls in the stage0 hosted subset."}))))
+
+    (or (vector? form) (map? form) (set? form))
+    ((deref (:compile-collection operations)) module locals form)
+
+    :else
+    {:op :literal :value form}))
+
+(defn compile-native-function
+  [expression-var module {:keys [name params body] :as definition}]
+  (assoc definition
+         :binding {:name name
+                   :kind :function
+                   :namespace (:module module)
+                   :profile (:profile module)
+                   :target (:target module)
+                   :visibility (if (seq (:exports module))
+                                 (if (contains? (set (:exports module)) name)
+                                   :public
+                                   :private)
+                                 :stage0-local)
+                   :effects (:effects module)
+                   :capabilities (:capabilities module)}
+         :instructions (mapv #((deref expression-var) module (set params) %) body)))
+
+(defn native-instruction-summary
+  [summary-var instruction]
+  (let [children
+        (case (:op instruction)
+          :println (:args instruction)
+          :do (:body instruction)
+          :if [(:test instruction) (:then instruction) (:else instruction)]
+          :let (concat (map :expr (:bindings instruction)) (:body instruction))
+          :loop (concat (map :expr (:bindings instruction))
+                        (:body instruction))
+          :recur (:args instruction)
+          :throw [(:value instruction)]
+          :builtin-call (:args instruction)
+          :function-call (:args instruction)
+          :compiler-module-call (:args instruction)
+          :vector-literal (:items instruction)
+          :set-literal (:items instruction)
+          :map-literal (mapcat (fn [{:keys [key value]}] [key value])
+                                (:entries instruction))
+          [])]
+    ;; A parent and child may share an opcode (for example nested builtin
+    ;; calls).  Add the parent fact instead of letting `merge` overwrite it;
+    ;; this makes the stage0 comparison describe every concrete instruction.
+    (merge-with +
+                {(:op instruction) 1}
+                (apply merge-with +
+                       (map (deref summary-var)
+                            (remove nil? children))))))
+
+
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

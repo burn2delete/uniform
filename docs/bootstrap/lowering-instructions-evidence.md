@@ -70,8 +70,73 @@ and the exact provider/CI audit are required before integration eligibility.
 
 ## Current status and unsupported boundaries
 
-This is the early draft scope. Implementation, source equivalence, local
-checks, independent acceptance, provider evidence and CI are not yet complete.
+The five bodies are now in the stage, with Bootstrap adapters at their original
+call sites. Seventeen earlier Lowering bodies are retained and the public API
+now contains 22 functions. The exact new arglists are:
+
+| API | Arguments |
+| --- | --- |
+| `compile-native-expression` | `[operations module locals form]` |
+| `compile-native-collection` | `[expression-var module locals form]` |
+| `compile-native-let` | `[failure-var expression-var module locals bindings body]` |
+| `compile-native-function` | `[expression-var module {:keys [name params body] :as definition}]` |
+| `native-instruction-summary` | `[summary-var instruction]` |
+
+The expression operation map contains only `:compile-expression`,
+`:compile-collection`, `:compile-let`, `:builtin-functions` and `:fail!`.
+Each original callable/catalog reference is read at its original use. Summary
+recursion selects one function per `map` invocation and retains it across that
+invocation's children; nested invocations select their own current root.
+
+Before extraction, six actual plans compiled and executed: hello and core-app
+in both extensions, plus a collection/let/local-call/conditional source in both
+extensions. Five invalid sources reached expression lowering and refused for
+unknown symbol, unknown form, odd let bindings, non-symbol let name and host
+reflection. All eleven complete observations, including plans, IDs, paths,
+source hashes, stdout, failures and call counts, matched after extraction.
+The baseline receipt SHA256 is
+`c6d375968822a8a4387810abded26b406b1a9e81e30ce36dcf65a81fc493e151`.
+The first extracted receipt SHA256 is
+`bebabe75133e6a8614aa351c8cfe7b130c3b870886f988c357b9129b07f379e9`.
+The original-body receipt SHA256 is
+`cac10d5d9ef77aa1d7e979c700afaef83ff26d15d9730b3e9b445f9d4883c387`.
+These are development observations, not migration evidence.
+
+The final source-observation receipt, after contract metadata correction,
+also matches all eleven baseline observations; SHA256
+`2658340f8c1b9181ef9eaa24f1287d466bac70ed187daf8ca91cec250b9ccbe4`.
+The conservation receipt SHA256
+`b0ab8f02ec6f21e95faf322e54eb1ce1609d36482f732877ebb793cd245ef573`
+binds 17 byte-identical earlier bodies, five complete port-substituted bodies,
+unchanged unrelated component text and 24 identical earlier CI vectors.
+One new whole-namespace command is contract 25, with the existing 2g heap and
+180-second process timeout. No workflow or runner configuration changes.
+
+Focused validation passes:
+
+- new instruction tests: 13 tests, 142 assertions;
+- earlier native backend tests: 12 tests, 105 assertions;
+- five native Lowering contract/reconstruction tests: 5 tests, 137 assertions;
+- affected package/build/Safety source regressions: 24 tests, 614 assertions;
+- language/ownership boundary: 48 tests, 1,202 assertions;
+- CI harness: 54 tests, 678 assertions;
+- cold Lowering load: 22 exact APIs and arglists, without Bootstrap/Diagnostics;
+- structural docs and full-language roadmap validation.
+
+The held sixth Lowering pipeline test was not invoked. Initial development
+runs exposed a contract arglist missing its parameter destructuring and test
+callback-capture mistakes. These were corrected without changing lowering
+behavior; the earlier logs remain historical evidence. Twenty generated check
+files were moved to a byte-preserving archive, recorded by SHA256
+`9003e88cd67548b16d001c86aacf4dc53dee461de4ba33e4f9d17b85f813d187`.
+
+This authored capture does not establish independent acceptance, current-Main
+composition, complete current-context lint, provider evidence or hosted CI.
+Those later observations belong to their exact commit/base/provider/run tuple
+and are maintained with the PR; acceptance does not transfer across tuples.
+The complete Stage0 pipeline is still not extracted: header admission,
+orchestration and execution retain the explicit owners listed above and receive
+no extraction credit from this change.
 The original ten-path writer lease governs implementation. This manually
 authored external source has no Main, Ready, controller, service or recovery
 role; final current-base preflight and integration remain with the designated
@@ -85,3 +150,14 @@ Core or MIR admission, target emission, native execution, new unsafe support,
 performance, migration, release, self-hosting or seed retirement. Held Reader,
 authenticated source/Core builders, private factories and source pins remain
 unchanged and uninvoked.
+
+Existing Stage0 limitations are retained explicitly: `if` does not enforce
+exact source arity, `quote` uses its second item without a shape guard, and
+map/set traversal uses native `pr-str` sorting rather than source ordering.
+The summary can count loop/recur/throw/compiler-module opcodes that this
+expression compiler does not emit. The builtin vocabulary includes
+`build-read-declared-input`, but this route supplies no corresponding usable
+declared-input service. Compatibility probes record these gaps without
+executing that operation. They do not grant L2/C6, effect-sensitive collection
+ordering, filesystem or runtime support. Function arity and builtin execution
+errors remain caller/executor-owned.

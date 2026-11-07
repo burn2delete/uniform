@@ -181,7 +181,7 @@
     (is (= [] @calls))))
 
 (deftest new-apis-declare-non-admitting-contracts
-  (is (= 17 (count (ns-publics 'gravity.lowering))))
+  (is (= 22 (count (ns-publics 'gravity.lowering))))
   (doseq [operation [#'lowering/native-backend-artifact-manifest #'lowering/validate-native-backends!
                      #'lowering/native-backends-coverage-report]]
     (let [contract (:gravity/namespace-contract (meta operation)) entry (get-in contract [:public-api (:name (meta operation))])]

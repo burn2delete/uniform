@@ -147,49 +147,8 @@
 
 (defn compile-stage0-collection
   [module locals form]
-  (cond
-    (vector? form)
-    {:op :vector-literal
-     :items (mapv #(compile-stage0-expr module locals %) form)}
-
-    (map? form)
-    {:op :map-literal
-     :entries (mapv (fn [[k v]]
-                      {:key (compile-stage0-expr module locals k)
-                       :value (compile-stage0-expr module locals v)})
-                    (sort-by (fn [[k v]] (pr-str [k v])) form))}
-
-    (set? form)
-    {:op :set-literal
-     :items (mapv #(compile-stage0-expr module locals %)
-                  (sort-by pr-str form))}
-
-    :else
-    {:op :literal :value form}))
+  (gravity.lowering/compile-native-collection #'compile-stage0-expr module locals form))
 
 (defn compile-stage0-let
   [module locals bindings body]
-  (when-not (and (vector? bindings) (even? (count bindings)))
-    (fail! "L2-LET-BINDING"
-           "let requires an even binding vector"
-           {:source-span {:source (:source-path module)}
-            :bindings bindings
-            :remediation "Use pairs of local names and expressions in let."}))
-  (loop [scope locals
-         compiled []
-         pairs (partition 2 bindings)]
-    (if-let [[name expr] (first pairs)]
-      (do
-        (when-not (symbol? name)
-          (fail! "L2-LET-BINDING"
-                 "let binding name must be a symbol"
-                 {:source-span {:source (:source-path module)}
-                  :binding name
-                  :remediation "Bind symbols in stage0 let forms."}))
-        (recur (conj scope name)
-               (conj compiled {:name name
-                               :expr (compile-stage0-expr module scope expr)})
-               (rest pairs)))
-      {:op :let
-       :bindings compiled
-       :body (mapv #(compile-stage0-expr module scope %) body)})))
+  (gravity.lowering/compile-native-let #'fail! #'compile-stage0-expr module locals bindings body))

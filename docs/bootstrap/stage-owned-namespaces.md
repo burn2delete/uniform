@@ -168,6 +168,21 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [Stage0 instruction extraction](lowering-instructions-evidence.md) moves
+the complete native expression, collection, let, function and opcode-summary
+bodies into `gravity.lowering`. Five explicit APIs consume trusted native
+module/scope/form/function/instruction data and live operation Vars, producing
+the original instruction maps, binding records and opcode counts. The stage
+owns existing unknown-symbol/form, host-reflection and let-shape decisions;
+Bootstrap retains diagnostic transport, function-header and whole-plan
+validation, source/plan identity, authentication and execution. Tests in
+`gravity.lowering.instructions-test` cover actual source plans and refusals,
+lexical and evaluation order, sorted map/set traversal, late recursive roots,
+failure selection, metadata and deterministic plan identity. These temporary
+instructions lack canonical node/fact verification and do not establish
+Core/MIR admission, C14/backend support, release or self-hosting. Dependency
+direction remains Bootstrap adapters to Lowering, without a reverse import.
+
 The [native Safety report extraction](safety-native-reports-evidence.md) adds
 `native-verifier-report`, `native-capability-proof` and
 `validate-native-report!` for trusted C9/inventory/outcome/evidence records and
