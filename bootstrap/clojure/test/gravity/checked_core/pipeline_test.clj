@@ -40,7 +40,7 @@
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 72 (count publics)))
+    (is (= 79 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -49,7 +49,7 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (= contract (:gravity/namespace-contract (meta (publics name))))))
-    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report}
+    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report zipper-operation}
            (set (keys (:private-implementation contract)))))
     (doseq [[name api] (:private-implementation contract)
             :let [v (ns-resolve 'gravity.checked-core name)]]
@@ -59,6 +59,110 @@
     (is (true? (.isDynamic ^clojure.lang.Var (seed-var '*sh07-core-execution-binding*))))
     (is (not (contains? (ns-aliases 'gravity.checked-core) 'b)))
     (is (= '[gravity.bootstrap] (get-in contract [:dependency-direction :forbids])))))
+
+(defn- zipper-operations []
+  (into {} (for [suffix ["digest-ref-shape?" "structure-kind" "canonical-identity"
+                         "strict-map-index" "canonical-sort-key" "strict-first-mismatch"
+                         "canonical-digest" "canonical-record" "host-fail!"
+                         "resolve-digest-references!" "canonical-identical?" "unique-resolved-values!"]]
+             [(keyword suffix) (seed-var (symbol (str "p15-s23-c6c10-" suffix)))])))
+
+(defn- zipper-fixture []
+  ;; Relative template data only: no artifact seal, source authentication or
+  ;; private Core/MIR factory is fabricated or invoked.
+  (let [digests (mapv #(str "sha256:" (apply str (repeat 64 %))) [\a \b])
+        raw {:kind :native-core-template-data
+             :source {:span {:source "zipper.gravity" :start {:line 1 :column 1}}
+                      :generated-origin [{:kind :fixture-expansion :id "origin-1"}]}
+             :metadata {:unsafe-island {:audit-id "fixture-audit"}
+                        :runtime-checked {:check-id "fixture-check"}
+                        :ai/human-review {:policy :required}}
+             :id {:digest-ref 0} :lookup {{:digest-ref 0} {:digest-ref 1}}
+             :members #{{:digest-ref 0} {:digest-ref 1}}
+             :nested [(list {:digest-ref 1}) {:ordinary {:digest-ref 0 :extra :semantic-data}}]}
+        sealed (b/p15-s23-c6c10-resolve-digest-references! source raw 2 nil digests)]
+    {:raw raw :sealed sealed :digests digests}))
+
+(deftest native-structural-comparison-retains-type-and-deterministic-identity
+  (let [ops (zipper-operations) value (array-map :b [2 3] :a #{:z :y})
+        reordered (array-map :a #{:y :z} :b [2 3])
+        report (core/strict-structure! source value reordered :exact-native-template ops)
+        calls (atom 0) sort-key @(:canonical-sort-key ops)
+        many (into {} (map #(vector (keyword (str "key-" %)) %) (range 64)))]
+    (is (= :passed (:status report)))
+    (is (= "sha256:47d0870e8d6ea4c344f3654f55c7cfef711d8039bf68a66148e025a311b8568b"
+           (:canonical-digest report)))
+    (is (true? (core/canonical-identical? source value reordered ops)))
+    (is (false? (core/canonical-identical? source 1.25M 1.250M ops)))
+    (is (= {:path [] :expected-kind :vector :actual-kind :list}
+           (core/strict-first-mismatch source [1] (list 1) [] ops)))
+    (is (= {:path [] :expected-kind :set :actual-kind :set :expected-count 1 :actual-count 1}
+           (core/strict-first-mismatch source #{[1]} #{(list 1)} [] ops)))
+    (is (nil? (core/strict-first-mismatch source many many []
+                                         (assoc ops :canonical-sort-key
+                                                (fn [form] (swap! calls inc) (sort-key form))))))
+    (is (= 64 @calls))
+    (doseq [[left right] [[{:path [0 1]} {:path (list 0 1)}]
+                         [{:a 1} {:b 1}] [1.25M 1.250M]]]
+      (let [error (caught #(core/strict-structure! source left right :exact-native-template ops))]
+        (is (= "C6-VERIFY" (:id (ex-data error))))
+        (is (= :exact-native-template (:missing-fact (ex-data error))))))))
+
+(deftest native-template-rehydration-preserves-references-and-provenance
+  (let [ops (zipper-operations) {:keys [raw sealed digests] :as data} (zipper-fixture)
+        before (pr-str data)
+        result (core/rehydrate-candidate-template! source raw sealed sealed digests ops)]
+    (is (= raw result))
+    (is (= before (pr-str data)))
+    (is (= (:source raw) (:source result)))
+    (is (= (:metadata raw) (:metadata result)))
+    (is (list? (first (:nested result))))
+    (is (true? (core/exact-digest-ref-present? raw ops)))
+    (is (false? (core/exact-digest-ref-present? sealed ops)))
+    (is (false? (core/exact-digest-ref-present? {:digest-ref 0 :extra :semantic-data} ops)))
+    (is (= (assoc raw :id "changed")
+           (core/rehydrate-candidate-template! source raw sealed (assoc sealed :id "changed") digests ops)))
+    (doseq [[input expected] [[{} :map] [[] :vector] [(list) :list] [#{} :set] [nil :scalar]]]
+      (is (= expected (core/structure-kind input))))))
+
+(deftest native-rehydration-rejects-real-map-set-and-reference-defects
+  (let [ops (zipper-operations) {:keys [digests]} (zipper-fixture)
+        reference {:digest-ref 0} digest (first digests)
+        cases [[{reference :old} {digest :old} {digest :old reference :new}
+                :collision-free-rehydrated-map-keys]
+               [#{reference} #{digest} #{digest reference}
+                :collision-free-rehydrated-set-items]]]
+    (doseq [[raw sealed candidate missing-fact] cases]
+      (let [error (caught #(core/rehydrate-candidate-template! source raw sealed candidate digests ops))]
+        (is (= "C6-VERIFY" (:id (ex-data error))))
+        (is (= missing-fact (:missing-fact (ex-data error))))))
+    (let [error (caught #(core/rehydrate-candidate-template! source {reference :old} {digest :old}
+                                                           {digest :old} ["not-a-digest"] ops))]
+      (is (= "C6-VERIFY" (:id (ex-data error))))
+      (is (= :exact-prior-resolved-digest-vector (:missing-fact (ex-data error)))))))
+
+(deftest native-zipper-selects-recursion-before-path-digest-evaluation
+  (let [events (atom []) recursive (clojure.lang.Var/create
+                                   (fn [& _] (swap! events conj :original) {:selected :original}))
+        digest (fn [& _]
+                 (swap! events conj :digest)
+                 (alter-var-root recursive (constantly (fn [& _] (swap! events conj :late) {:selected :late})))
+                 "fixture-key-digest")
+        result (core/strict-first-mismatch source {:key 1} {:key 2} []
+                                          (assoc (zipper-operations) :strict-first-mismatch recursive :canonical-digest digest))]
+    (is (= {:selected :original} result))
+    (is (= [:digest :original] @events))))
+
+(deftest native-zipper-retains-owner-exception-and-returning-refusal-semantics
+  (let [ops (zipper-operations) error (ex-info "canonical owner failure" {:identity :fixture})]
+    (is (identical? error (caught #(core/strict-map-index source {:key 1}
+                                                        (assoc ops :canonical-identity (fn [& _] (throw error)))))))
+    (let [calls (atom []) report (core/strict-structure! source [1] (list 1) :returned-refusal
+                                                       (assoc ops :host-fail! (fn [& args] (swap! calls conj args) false)))]
+      (is (= :passed (:status report)))
+      (is (= [["C6-VERIFY" source :returned-refusal
+               {:path [] :expected-kind :vector :actual-kind :list}]]
+             (mapv vec @calls))))))
 
 (deftest actual-current-source-plan-and-execution-retain-development-status
   (let [ops (operations) binding (b/sh07-core-current-binding!)
@@ -646,9 +750,12 @@
 
 (deftest every-stage-operation-and-compatibility-root-invalidates-receipts
   (let [private-stages (map #(ns-resolve 'gravity.checked-core %)
-                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report])
+                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report zipper-operation])
         vars (set (concat (vals (ns-publics 'gravity.checked-core)) private-stages
                          (map seed-var projection-compatibility-names) (filter var? (vals (operations)))
+                         (vals (zipper-operations))
+                         (map #(seed-var (symbol (str "p15-s23-c6c10-" %)))
+                              '[exact-digest-ref-present? strict-structure! rehydrate-candidate-template!])
                          (map seed-var '[checked-core-stage-operations sh07-core-source-path sh07-core-plan-identities
                                          sh07-core-build-binding! sh07-core-current-source-key sh07-core-current-binding!
                                          sh07-core-execute!])))]
@@ -695,7 +802,10 @@
 
 (deftest construction-roots-detect-the-new-runtime-inputs-before-owner-work
   (let [expected (set (concat (vals (ns-publics 'gravity.checked-core))
-                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report])
+                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream verification-report zipper-operation])
+                              (vals (zipper-operations))
+                              (map #(seed-var (symbol (str "p15-s23-c6c10-" %)))
+                                   '[exact-digest-ref-present? strict-structure! rehydrate-candidate-template!])
                               (map seed-var projection-compatibility-names)
                               (filter var? (vals (operations)))
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
