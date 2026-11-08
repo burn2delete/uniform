@@ -2128,6 +2128,26 @@
         false)
       false)))
 
+(defn sh07-b51-producer-decoration-byte-count [text]
+  ;; Four bytes is the UTF-8 encoding width of one Unicode scalar, not an
+  ;; allowance on the input or output. Measure each scalar independently.
+  (loop [index 0 bytes 0]
+    (if (= index (count text)) {:status :accepted :observed-after bytes}
+      (let [single (sh07-b51-producer-observe-decoration-bytes
+                    (subs text index (+ index 1)) 0 4)]
+        (if (= (get single :status) :accepted)
+          (recur (+ index 1) (+ bytes (get single :observed-after)))
+          (if (< (+ index 1) (count text))
+            (let [pair (sh07-b51-producer-observe-decoration-bytes
+                        (subs text index (+ index 2)) 0 4)]
+              (if (= (get pair :status) :accepted)
+                (recur (+ index 2) (+ bytes (get pair :observed-after)))
+                {:status :rejected :reason :invalid-unicode-scalar}))
+            {:status :rejected :reason :invalid-unicode-scalar}))))))
+
+(defn sh07-b51-producer-text-valid? [text]
+  (= (get (sh07-b51-producer-decoration-byte-count text) :status) :accepted))
+
 (defn sh07-b51-producer-digit-character [digit]
   (get [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9] digit))
 
@@ -2479,8 +2499,8 @@
                           {:status :rejected
                            :reason :unsupported-value-carrier})))))))))]
     (if (= (get result :status) :accepted)
-      (if (sh07-b51-producer-text-admitted? (get result :text) 32768)
-        result {:status :rejected :reason :scalar-byte-limit})
+      (if (sh07-b51-producer-text-valid? (get result :text))
+        result {:status :rejected :reason :invalid-unicode-scalar})
       result)))
 
 (defn sh07-b51-producer-insert-decoration [ordered candidate map-entry?]
@@ -2508,33 +2528,26 @@
   (loop [remaining records text open nodes 1 maximum-depth depth]
     (if (= (count remaining) 0)
       (let [complete (str text close)]
-        (if (if (<= nodes 4096)
-              (sh07-b51-producer-text-admitted? complete 262144) false)
-          {:status :accepted :text complete :nodes nodes
-           :maximum-depth maximum-depth}
-          {:status :rejected :reason :output-byte-limit}))
+        {:status :accepted :text complete :nodes nodes
+           :maximum-depth maximum-depth})
       (let [record (first remaining)
             next-text
             (str text (if (= text open) "" separator) (get record :text))]
-        (if (sh07-b51-producer-text-admitted? next-text 262144)
-          (recur (rest remaining) next-text
+        (recur (rest remaining) next-text
                  (+ nodes (get record :nodes))
                  (if (> (get record :maximum-depth) maximum-depth)
-                   (get record :maximum-depth) maximum-depth))
-          {:status :rejected :reason :output-byte-limit})))))
+                   (get record :maximum-depth) maximum-depth))))))
 
 (defn sh07-b51-producer-decoration-for-form
   [indexes form-id depth ancestry]
-  (if (> depth 96) {:status :rejected :reason :depth-limit}
-    (if (contains? ancestry form-id)
+  (if (contains? ancestry form-id)
       {:status :rejected :reason :cyclic-form}
       (let [form (sh07-b51-find-form indexes form-id)
             kind (get form :kind)
             children (get form :child-form-ids)]
         (if (map? form)
           (if (contains? #{:vector :list :map :set} kind)
-            (if (<= (count children) 512)
-              (let [decorated
+            (let [decorated
                     (loop [remaining children result []]
                       (if (= (count remaining) 0)
                         {:status :accepted :records result}
@@ -2627,12 +2640,11 @@
                           (if (= (get joined :status) :accepted)
                             (assoc joined :child-form-ids children) joined)))))
                   decorated))
-              {:status :rejected :reason :collection-width-limit})
             (let [scalar (sh07-b51-producer-scalar-decoration form)]
               (if (= (get scalar :status) :accepted)
                 (assoc scalar :nodes 1 :maximum-depth depth
                        :child-form-ids []) scalar)))
-          {:status :rejected :reason :form-missing})))))
+          {:status :rejected :reason :form-missing}))))
 
 (defn sh07-b51-producer-ordered-child-form-ids [indexes form]
   (let [decorated
