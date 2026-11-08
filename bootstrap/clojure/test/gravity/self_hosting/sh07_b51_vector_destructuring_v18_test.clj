@@ -623,14 +623,21 @@
 (defn- direct-source-runtime
   "Evaluate one closed Gravity helper family without the pin-gated compiler.
 
-  Checked-core's authored subset is Clojure-readable.  Predeclaring every
+  Checked-core and its split source modules are Clojure-readable. Predeclaring every
   function in the mechanically measured closure permits mutually recursive
   definitions while the only injected operations are the governed declared
   digest, canonical UTF-8 text comparator, and exact UTF-8 census builtins.
-  No producer or host materializer is supplied.
+  No host collection compiler or materializer is supplied.
   "
   [root-symbol]
-  (let [definitions (definitions-by-name @source-forms)
+  (let [definitions (definitions-by-name
+                    (concat
+                     @source-forms
+                     (mapcat read-gravity-source-forms
+                             (map #(str "bootstrap/gravity/src/gravity/sh07_b51/"
+                                        % ".gravity")
+                                  ["producer_a" "producer_b" "producer_c"
+                                   "producer_d" "root6_a" "root6_b" "root8"]))))
         closure (source-definition-closure definitions root-symbol)
         runtime-symbol (gensym "gravity.sh07.b51.r6-direct-")
         runtime-ns (create-ns runtime-symbol)]
@@ -13307,14 +13314,17 @@
             [["" "a" -1] ["same" "same" 0] ["z" "\u00E9" -1]
              [supplementary bmp-private 1]]]
       (is (= expected (compare-text left right)) [left right]))
-    ;; Comparator is ordering-only. Resource admission belongs solely to G20.
+    ;; Comparator is ordering-only and imposes no decoration allowance.
     (is (= 1 (compare-text (apply str (repeat 262145 "x")) "x")))
     (doseq [malformed [(String. (char-array [(char 0xd800)]))
                        (String. (char-array [(char 0xdc00)]))]]
       (is (thrown? IllegalArgumentException
                    (compare-text malformed "x"))))))
 
-(deftest sh07-b51-v18-attempt17-decoration-order-and-limits-are-exact
+;; Current source supersedes Attempt-17's quota assertions. Historical attempt
+;; artifacts and pinned migration identities are retained, not renewed by these
+;; development checks; changed source requires fresh independent acceptance.
+(deftest sh07-b51-v18-attempt17-decoration-order-and-measurements-are-exact
   (let [decorate bootstrap/p15-s23-sh07-canonical-decoration
         combine (deref (ns-resolve 'gravity.bootstrap
                                    'p15-s23-sh07-combine-decorations))
@@ -13333,10 +13343,7 @@
         depth97 (vector depth96)
         exact-output (apply str (repeat 262144 "a"))
         over-output (str exact-output "a")]
-    (is (= {:maximum-nodes 4096 :maximum-depth 96
-            :maximum-collection-width 512 :maximum-scalar-bytes 32768
-            :maximum-output-bytes 262144}
-           bootstrap/p15-s23-sh07-canonical-decoration-limits))
+
     (is (= "{a [2 1], z #{alpha beta}}"
            (:text (decorate "attempt17-nested" nested-map))))
     (is (= "#{alpha beta}"
@@ -13358,19 +13365,19 @@
     (is (= [:decorated 4096]
            ((juxt :status :node-occurrences)
             (decorate "attempt17-node-exact" exact-node-tree))))
-    (is (= :node-count-limit
-           (:reason (decorate "attempt17-node-over" over-node-tree))))
+    (is (= :decorated
+           (:status (decorate "attempt17-node-over" over-node-tree))))
     (is (= :decorated (:status (decorate "attempt17-depth-exact" depth96))))
-    (is (= :depth-limit (:reason (decorate "attempt17-depth-over" depth97))))
+    (is (= :decorated (:status (decorate "attempt17-depth-over" depth97))))
     (is (= :decorated
            (:status (decorate "attempt17-width-exact" (vec (range 512))))))
-    (is (= :collection-width-limit
-           (:reason (decorate "attempt17-width-over" (vec (range 513))))))
+    (is (= :decorated
+           (:status (decorate "attempt17-width-over" (vec (range 513))))))
     (is (= :decorated
            (:status (decorate "attempt17-scalar-exact"
                               (apply str (repeat 32766 "a"))))))
-    (is (= :scalar-byte-limit
-           (:reason (decorate "attempt17-scalar-over"
+    (is (= :decorated
+           (:status (decorate "attempt17-scalar-over"
                               (apply str (repeat 32767 "a"))))))
     (let [multibyte-at-limit
           (str (apply str (repeat 8191 "\uD83D\uDE00")) "aa")
@@ -13378,8 +13385,8 @@
       (is (= :decorated
              (:status (decorate "attempt17-multibyte-at-limit"
                                 multibyte-at-limit))))
-      (is (= :scalar-byte-limit
-             (:reason (decorate "attempt17-multibyte-over"
+      (is (= :decorated
+             (:status (decorate "attempt17-multibyte-over"
                                 multibyte-over)))))
     (let [integer-at-limit
           (java.math.BigInteger.
@@ -13390,15 +13397,15 @@
       (is (= :decorated
              (:status (decorate "attempt17-integer-at-limit"
                                 integer-at-limit))))
-      (is (= :scalar-byte-limit
-             (:reason (decorate "attempt17-integer-over"
+      (is (= :decorated
+             (:status (decorate "attempt17-integer-over"
                                 integer-over)))))
     (is (= :decorated
-           (:status (combine 0 4096 "" "" ""
+           (:status (combine 0 "" "" ""
                              [{:text exact-output :node-occurrences 0
                                :maximum-depth 0}]))))
-    (is (= :output-byte-limit
-           (:reason (combine 0 4096 "" "" ""
+    (is (= :decorated
+           (:status (combine 0 "" "" ""
                              [{:text over-output :node-occurrences 0
                                :maximum-depth 0}]))))
     (is (= 5 (:node-occurrences
@@ -13425,7 +13432,7 @@
                                     :collision-b 2}))))))))
 
 (deftest sh07-b51-v18-attempt17-unordered-failures-are-commutative-and-wrapped
-  (let [bad-prefix (apply str (repeat 32767 "x"))
+  (let [bad-prefix (String. (char-array [(char 0xd800)]))
         bad-left (str bad-prefix "a") bad-right (str bad-prefix "b")
         permutations [[bad-left bad-right] [bad-right bad-left]]
         host-results
@@ -13482,20 +13489,86 @@
                gravity)
             value)))
     (is (= :decorated (:status direct-scalar-exact)))
-    (is (= {:status :failed :reason :scalar-byte-limit}
-           direct-scalar-over))
+    (is (= :decorated (:status direct-scalar-over)))
     (is (= :decorated (:status direct-multibyte-exact)))
-    (is (= {:status :failed :reason :scalar-byte-limit}
-           direct-multibyte-over))
+    (is (= :decorated (:status direct-multibyte-over)))
     (is (= :decorated (:status direct-output-exact)))
-    (is (= {:status :failed :reason :output-byte-limit}
-           direct-output-over))
+    (is (= :decorated (:status direct-output-over)))
     (is (= {:status :failed :reason :unordered-decoration-failure}
            gravity-failed))
     (is (= {:status :rejected :reason :unordered-decoration-failure}
            caller-failed))
     (is (not= (:status gravity-failed) (:status caller-failed)))
     (is (= (:reason gravity-failed) (:reason caller-failed)))))
+
+(deftest sh07-b51-v18-canonical-decoration-form-preservation
+  (let [producer (direct-source-runtime 'sh07-b51-producer-decoration-for-form)
+        root6 (direct-source-runtime 'sh07-b51-r6-canonical-decoration)
+        decorate-form
+        (fn [forms root]
+          ((:invoke producer) 'sh07-b51-producer-decoration-for-form
+           [{:forms {:by-primary forms}} root 0 #{}]))
+        wide (vec (range 513))
+        many (vec (repeat 512 (vec (repeat 8 0))))
+        deep (nth (iterate vector 0) 97)
+        long-text (apply str (repeat 262145 "x"))]
+    (doseq [value [wide many deep long-text]]
+      (let [host (bootstrap/p15-s23-sh07-canonical-decoration "quota-removal" value)
+            gravity ((:invoke root6) 'sh07-b51-r6-canonical-decoration
+                     [value 0 1 #{}])]
+        (is (= :decorated (:status host) (:status gravity)))
+        (is (= (:text host) (:text gravity)))
+        (is (= (alength (.getBytes ^String (:text host) java.nio.charset.StandardCharsets/UTF_8))
+               (:output-utf8-bytes host)))))
+    (doseq [[forms root expected-nodes]
+            [[{0 {:kind :vector :child-form-ids (vec (repeat 513 1))}
+               1 {:kind :integer :value 0}} 0 514]
+             [{0 {:kind :vector :child-form-ids (vec (repeat 512 1))}
+               1 {:kind :vector :child-form-ids (vec (repeat 8 2))}
+               2 {:kind :integer :value 0}} 0 4609]
+             [(into {97 {:kind :integer :value 0}}
+                    (map (fn [n] [n {:kind :vector :child-form-ids [(inc n)]}])
+                         (range 97))) 0 98]
+             [{0 {:kind :string :value long-text}} 0 1]
+             [{0 {:kind :string :value (apply str (repeat 8192 "\uD83D\uDE00"))}}
+              0 1]]]
+      (let [record (decorate-form forms root)]
+        (is (= :accepted (:status record)))
+        (is (= expected-nodes (:nodes record)))))
+    (is (= :cyclic-form
+           (:reason (decorate-form {0 {:kind :vector :child-form-ids [0]}} 0))))
+    (is (= :map-width
+           (:reason (decorate-form {0 {:kind :map :child-form-ids [1]}
+                                    1 {:kind :integer :value 0}} 0))))
+    (doseq [text [(String. (char-array [(char 0xd800)]))
+                  (String. (char-array [(char 0xdc00)]))]]
+      (is (= :rejected (:status (decorate-form {0 {:kind :string :value text}} 0)))))))
+
+;; Exercise current source with explicit authenticated development provenance.
+;; The default pinned reader and its historical C2-HASH nonpass are unchanged;
+;; this semantic fixture confers no migration or seed-retirement authority.
+(deftest sh07-b51-v18-canonical-decoration-authenticated-c2-composition
+  (let [wide (vec (range 513))
+        source-path "target/decoration-wide.gravity"
+        reader-path (str (.resolve @root
+                          "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}}
+        artifact (bootstrap/compiler-c2-reader-source-artifact
+                  source-path (pr-str wide)
+                  (bootstrap/reader-project-context-for-source source-path)
+                  nil nil reader-path invocation)
+          carrier {:artifact :gravity/sh07-oracle-c2-carrier-v1
+                   :c2-reader-artifact artifact
+                   :root-adapted-form-id (first (:top-level-form-ids artifact))
+                   :decimal-replay-evidence {}}]
+      (is (= :decorated
+             (:status (bootstrap/p15-s23-sh07-canonical-decoration
+                       "quota-removal" nil carrier))))
+      (is (= :source-integrity-mismatch
+             (:reason (bootstrap/p15-s23-sh07-canonical-decoration
+                       "quota-removal" nil
+                       (assoc-in carrier [:c2-reader-artifact :artifact-id] (sha \a))))))))
 
 (def ^:private g19-zero-key
   {:kind :decimal :sign 1 :coefficient [48] :decimal-power 0})
