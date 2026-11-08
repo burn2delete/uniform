@@ -70,6 +70,8 @@
                                (swap! calls conj :review)
                                (assoc (select-keys (flow/task c "reviewed") [:base :candidate :tree])
                                       :verdict "approved" :summary "Required evidence supplied" :findings []))]
+      ;; campaign! makes this transition before submitting prepare! to its pool.
+      (flow/transition! ctx "reviewed" :implementing)
       (flow/prepare! ctx "reviewed"))
     (let [t (flow/task ctx "reviewed")]
       (is (= [(first (get-in task [:checks :commands])) review-extra-check :review :publish] @calls))
@@ -133,6 +135,58 @@
                       codex/job! (fn [& _] (throw (AssertionError. "A stale queue dispatched a model")))]
           (is (thrown? clojure.lang.ExceptionInfo (flow/prepare! ctx "reviewed"))))
         (is (= before @(:state ctx)))))))
+
+(deftest scheduler-review-checks-resume-only-the-exact-precheck-failure
+  (doseq [mutation [nil :different-error :restricted-error :feedback :candidate :checks :review-job :refusal :missing-origin :wrong-origin :inspection :continuing]]
+    (let [{:keys [ctx task job evidence] :as f} (held-review-fixture!)
+          calls (atom [])
+          failure (ex-info "The native review candidate changed after its inspection was queued" {:writer-ended? true})]
+      (write-review-evidence! f)
+      (flow/recover-review-checks! ctx "reviewed" evidence)
+      (with-redefs [gh/status! (fn [& _]) gh/comment! (fn [& _])
+                    flow/publish! (fn [c t] (swap! calls conj :publish) (flow/task! c (:key t) :status :ci))
+                    codex/command! (fn [_ _ _ argv] (swap! calls conj argv) {:exitCode 0})
+                    codex/job! (fn [c _ _ mode _ _ _]
+                                 (is (= :read mode))
+                                 (swap! calls conj :review)
+                                 (assoc (select-keys (flow/task c "reviewed") [:base :candidate :tree])
+                                        :verdict "approved" :findings []))]
+        ;; Reproduce the old campaign transition and its ordinary precheck failure.
+        (flow/transition! ctx "reviewed" :implementing)
+        (flow/failure! ctx "reviewed" failure)
+        (case mutation
+          :different-error (flow/task! ctx "reviewed" :error {:message "Different failure" :details {:writer-ended? true}})
+          :restricted-error (rt/update! ctx assoc-in [:tasks "reviewed" :error :details :restricted] true)
+          :feedback (flow/task! ctx "reviewed" :feedback {:message "Unrelated feedback"})
+          :candidate (flow/task! ctx "reviewed" :candidate (apply str (repeat 40 "0")))
+          :checks (rt/update! ctx assoc-in [:tasks "reviewed" :checks :commands] [review-extra-check])
+          :review-job (rt/update! ctx assoc-in [:jobs "review-1" :turn] "changed-review-turn")
+          :refusal (rt/update! ctx assoc-in [:restricted-commands (rt/digest (pr-str review-extra-check))] {:denied true})
+          :inspection (rt/update! ctx assoc-in [:tasks "reviewed" :review-check-recovery :commands] [review-extra-check])
+          :continuing (rt/update! ctx assoc-in [:tasks "reviewed" :review-check-recovery :stage] :continuing)
+          nil)
+        ;; A distinct receipt binds the entire failed task and its immutable origin.
+        (let [evidence (str (io/file (:state-dir ctx) "precheck-evidence.edn"))]
+          (write-review-evidence! (assoc f :evidence evidence))
+          (rt/write-edn! evidence (assoc (rt/read-edn evidence) :precheck-original-task-sha256 (rt/digest (pr-str task))))
+        (case mutation
+          :missing-origin (rt/write-edn! evidence (dissoc (rt/read-edn evidence) :precheck-original-task-sha256))
+          :wrong-origin (rt/write-edn! evidence (assoc (rt/read-edn evidence) :precheck-original-task-sha256 "wrong"))
+          nil)
+        (let [failed-task (flow/task ctx "reviewed") before @(:state ctx)]
+          (if mutation
+            (do
+              (is (thrown? clojure.lang.ExceptionInfo (flow/recover-review-checks! ctx "reviewed" evidence)) (name mutation))
+              (is (= before @(:state ctx))))
+            (do
+              (flow/recover-review-checks! ctx "reviewed" evidence)
+              (flow/transition! ctx "reviewed" :implementing)
+              (flow/prepare! ctx "reviewed")
+              (is (= [(first (get-in task [:checks :commands])) review-extra-check :review :publish] @calls))
+              (is (= :ci (:status (flow/task ctx "reviewed"))))
+              (is (= [task failed-task] (mapv :original-task (:review-check-recovery-history (flow/task ctx "reviewed")))))))))
+        (when-not (= mutation :review-job) (is (= job (get-in @(:state ctx) [:jobs "review-1"])))
+        (when mutation (is (empty? @calls) "No rejected continuation runs a check or model")))))))
 
 (deftest live-review-check-request-waits-for-a-shared-api-hold
   (let [{:keys [ctx task evidence] :as f} (held-review-fixture!)
