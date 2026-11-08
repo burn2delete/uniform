@@ -11,8 +11,7 @@
                 forms)
           forms-by-id (into {} (map (juxt :form-id identity)) adapted-forms)
           root-id (:root-adapted-form-id carrier)
-          replays (:decimal-replay-evidence carrier)
-          limits p15-s23-sh07-canonical-decoration-limits]
+          replays (:decimal-replay-evidence carrier)]
       (when-not
        (and (= (:artifact-id artifact) (c2-reader-artifact-id artifact))
             (= (count adapted-forms) (count forms-by-id))
@@ -54,27 +53,17 @@
                                          {:reason
                                           :unsupported-decimal-readable-spelling})))
                        (let [text (p15-s23-sh07-o-decimal-decoration
-                                   key replay-evidence)
-                             observation
-                             (p15-s23-sh07-observe-utf8-byte-count
-                              text 0 (:maximum-scalar-bytes limits))]
-                         (when-not (= :accepted (:status observation))
-                           (throw (ex-info "decimal scalar G20 rejection"
-                                           {:reason :scalar-byte-limit})))
+                                   key replay-evidence)]
                          {:text text
                           :output-utf8-bytes
-                          (:observed-after observation)}))
+                          (p15-s23-sh07-o-text-bytes text)}))
                      (p15-s23-sh07-o-scalar-text (:value form)))
                    text (:text rendered)]
                {:status :decorated :text text :node-occurrences 1
                 :maximum-depth depth
                 :output-utf8-bytes (:output-utf8-bytes rendered)}))
-           (decorate-form [form-id depth node-budget active]
-             (if (<= node-budget 0)
-               (p15-s23-sh07-decoration-failed :node-count-limit)
-               (if (> depth (:maximum-depth limits))
-                 (p15-s23-sh07-decoration-failed :depth-limit)
-                 (let [form (get forms-by-id form-id)
+           (decorate-form [form-id depth active]
+             (let [form (get forms-by-id form-id)
                        collection-kind (or (:collection-kind form)
                                            (when (contains? #{:vector :list
                                                               :set :map}
@@ -88,14 +77,10 @@
                        (decorate-scalar form depth)
                        (if (contains? active form-id)
                          (p15-s23-sh07-decoration-failed :cyclic-value)
-                         (if (> (count child-ids)
-                                (:maximum-collection-width limits))
-                           (p15-s23-sh07-decoration-failed
-                            :collection-width-limit)
-                           (let [next-active (conj active form-id)
+                         (let [next-active (conj active form-id)
                                  decorated
                                  (mapv #(decorate-form
-                                         % (inc depth) (dec node-budget)
+                                         % (inc depth)
                                          next-active)
                                        child-ids)
                                  failed? (some #(not= :decorated (:status %))
@@ -111,10 +96,10 @@
                                (case collection-kind
                                  :vector
                                  (p15-s23-sh07-combine-decorations
-                                  depth node-budget "[" " " "]" decorated)
+                                  depth "[" " " "]" decorated)
                                  :list
                                  (p15-s23-sh07-combine-decorations
-                                  depth node-budget "(" " " ")" decorated)
+                                  depth "(" " " ")" decorated)
                                  :set
                                  (let [ordered
                                        (p15-s23-sh07-stable-order-by
@@ -127,7 +112,7 @@
                                      (p15-s23-sh07-decoration-failed
                                       :source-integrity-mismatch)
                                      (p15-s23-sh07-combine-decorations
-                                      depth node-budget "#{" " " "}" ordered)))
+                                      depth "#{" " " "}" ordered)))
                                  :map
                                  (if (odd? (count decorated))
                                    (p15-s23-sh07-decoration-failed
@@ -167,7 +152,7 @@
                                        (p15-s23-sh07-decoration-failed
                                         :source-integrity-mismatch)
                                        (p15-s23-sh07-combine-decorations
-                                        depth node-budget "{" ", " "}"
+                                        depth "{" ", " "}"
                                         (mapv
                                          (fn [entry]
                                            {:text
@@ -186,8 +171,8 @@
                                                   (:key-result entry))
                                                  (:maximum-depth
                                                   (:value-result entry)))})
-                                         ordered))))))))))))))))]
-        (decorate-form root-id 0 (:maximum-nodes limits) #{})))
+                                         ordered)))))))))))))]
+        (decorate-form root-id 0 #{})))
     (catch clojure.lang.ExceptionInfo error
       (p15-s23-sh07-decoration-failed
        (or (:reason (ex-data error)) :contained-decoration-failure)))
@@ -195,10 +180,10 @@
       (p15-s23-sh07-decoration-failed :contained-decoration-failure))))
 
 (defn- p15-s23-sh07-probe-child
-  [source-path child depth active node-budget decimal-occurrences]
+  [source-path child depth active decimal-occurrences]
   (try
     (p15-s23-sh07-canonical-decoration
-     source-path child depth (p15-s23-sh07-active-copy active) node-budget
+     source-path child depth (p15-s23-sh07-active-copy active)
      decimal-occurrences)
     (catch clojure.lang.ExceptionInfo error
       (p15-s23-sh07-decoration-failed

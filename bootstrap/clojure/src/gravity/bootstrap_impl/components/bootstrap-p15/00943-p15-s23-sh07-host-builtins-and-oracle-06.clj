@@ -1,4 +1,14 @@
 
+(defn- p15-s23-sh07-o-text-bytes [text]
+  (loop [index 0 bytes 0]
+    (if (= index (.length ^String text)) bytes
+      (let [[scalar next-index] (p15-s23-sh07-next-scalar text index)]
+        (recur next-index
+               (+ bytes (cond (<= scalar 127) 1
+                              (<= scalar 2047) 2
+                              (<= scalar 65535) 3
+                              :else 4)))))))
+
 (defn- p15-s23-sh07-o-scalar-kind
   [value]
   (cond
@@ -29,22 +39,14 @@
   []
   {:builder (StringBuilder.) :bytes (volatile! 0)})
 
-(defn- p15-s23-sh07-o-append-scalar-fragment!
-  [writer fragment]
-  (let [observation
-        (p15-s23-sh07-observe-utf8-byte-count
-         fragment @(:bytes writer) 32768)]
-    (when-not (= :accepted (:status observation))
-      (throw
-       (ex-info "source oracle scalar exceeded its G20 boundary"
-                {:reason
-                 (if (= :invalid-unicode-scalar-sequence
-                        (:reason observation))
-                   :invalid-unicode-scalar :scalar-byte-limit)})))
-    ;; G20 admission is prospective: allocation into the output builder occurs
-    ;; only after the exact observation accepts this fragment.
+(defn- p15-s23-sh07-o-append-scalar-fragment! [writer fragment]
+  (let [bytes (try
+                (p15-s23-sh07-o-text-bytes fragment)
+                (catch IllegalArgumentException error
+                  (throw (ex-info "source oracle scalar has invalid Unicode"
+                                  {:reason :invalid-unicode-scalar} error))))]
     (.append ^StringBuilder (:builder writer) ^String fragment)
-    (vreset! (:bytes writer) (:observed-after observation))
+    (vswap! (:bytes writer) + bytes)
     writer))
 
 (defn- p15-s23-sh07-o-finish-scalar
@@ -58,12 +60,11 @@
         negative? (neg? (.signum integer))
         magnitude (.abs integer)
         ten (java.math.BigInteger/valueOf 10)
-        writer (p15-s23-sh07-o-scalar-writer)
-        initial-count (if negative? 1 0)]
+        writer (p15-s23-sh07-o-scalar-writer)]
     (if (zero? (.signum magnitude))
       (do (p15-s23-sh07-o-append-scalar-fragment! writer "0")
           (p15-s23-sh07-o-finish-scalar writer))
-      (loop [remaining magnitude digits () digit-count initial-count]
+      (loop [remaining magnitude digits ()]
         (if (zero? (.signum remaining))
           (do
             (when negative?
@@ -72,17 +73,9 @@
               (p15-s23-sh07-o-append-scalar-fragment!
                writer (str digit)))
             (p15-s23-sh07-o-finish-scalar writer))
-          (let [admission
-                (p15-s23-sh07-observe-utf8-byte-count
-                 "0" digit-count 32768)
-                _ (when-not (= :accepted (:status admission))
-                    (throw
-                     (ex-info "integer exceeded prospective scalar boundary"
-                              {:reason :scalar-byte-limit})))
-                digit (.intValue (.remainder remaining ten))]
+          (let [digit (.intValue (.remainder remaining ten))]
             (recur (.divide remaining ten)
-                   (conj digits (.charAt "0123456789" digit))
-                   (:observed-after admission))))))))
+                   (conj digits (.charAt "0123456789" digit)))))))))
 
 (defn- p15-s23-sh07-o-append-hex4!
   [writer code]
