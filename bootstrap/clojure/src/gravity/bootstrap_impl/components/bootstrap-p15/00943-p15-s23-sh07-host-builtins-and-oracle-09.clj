@@ -3,31 +3,20 @@
   ([source-path value]
    (p15-s23-sh07-canonical-decoration
     source-path value 0 (java.util.IdentityHashMap.)
-    (:maximum-nodes p15-s23-sh07-canonical-decoration-limits) []))
+    []))
   ([source-path value decimal-occurrences]
    (if (p15-s23-sh07-o-c2-carrier? decimal-occurrences)
      (p15-s23-sh07-o-c2-decoration decimal-occurrences)
      (p15-s23-sh07-canonical-decoration
       source-path value 0 (java.util.IdentityHashMap.)
-      (:maximum-nodes p15-s23-sh07-canonical-decoration-limits)
       decimal-occurrences)))
   ([source-path value depth ^java.util.IdentityHashMap active]
    (p15-s23-sh07-canonical-decoration
     source-path value depth active
-    (:maximum-nodes p15-s23-sh07-canonical-decoration-limits) []))
-  ([source-path value depth ^java.util.IdentityHashMap active node-budget]
-   (p15-s23-sh07-canonical-decoration
-    source-path value depth active node-budget []))
-  ([source-path value depth ^java.util.IdentityHashMap active node-budget
+    []))
+  ([source-path value depth ^java.util.IdentityHashMap active
     decimal-occurrences]
-   (let [{:keys [maximum-depth maximum-collection-width
-                 maximum-scalar-bytes]}
-         p15-s23-sh07-canonical-decoration-limits]
-     (if (<= node-budget 0)
-       (p15-s23-sh07-decoration-failed :node-count-limit)
-       (if (> depth maximum-depth)
-       (p15-s23-sh07-decoration-failed :depth-limit)
-       (let [host-decimal? (instance? java.math.BigDecimal value)
+     (let [host-decimal? (instance? java.math.BigDecimal value)
              kind
              (try
                ;; A host decimal does not identify a source occurrence.  G19
@@ -59,43 +48,37 @@
                   :contained-decoration-failure)))
              (if (.containsKey active value)
                (p15-s23-sh07-decoration-failed :cyclic-value)
-               (let [width (count value)]
-                 (if (> width maximum-collection-width)
-                   (p15-s23-sh07-decoration-failed
-                    :collection-width-limit)
-                   (let [next-active (p15-s23-sh07-active-copy active)]
+               (let [next-active (p15-s23-sh07-active-copy active)]
                      (.put next-active value Boolean/TRUE)
                      (case kind
                        :vector
-                       (loop [remaining (vec value) decorations [] used 1]
+                       (loop [remaining (vec value) decorations []]
                          (if (empty? remaining)
                            (p15-s23-sh07-combine-decorations
-                            depth node-budget "[" " " "]" decorations)
+                            depth "[" " " "]" decorations)
                            (let [decorated
                                  (p15-s23-sh07-probe-child
                                   source-path (first remaining)
                                   (inc depth) next-active
-                                  (- node-budget used) decimal-occurrences)]
+                                  decimal-occurrences)]
                              (if (= :decorated (:status decorated))
                                (recur (rest remaining)
-                                      (conj decorations decorated)
-                                      (+ used (:node-occurrences decorated)))
+                                      (conj decorations decorated))
                                decorated))))
 
                        :list
-                       (loop [remaining (seq value) decorations [] used 1]
+                       (loop [remaining (seq value) decorations []]
                          (if (nil? remaining)
                            (p15-s23-sh07-combine-decorations
-                            depth node-budget "(" " " ")" decorations)
+                            depth "(" " " ")" decorations)
                            (let [decorated
                                  (p15-s23-sh07-probe-child
                                  source-path (first remaining)
                                   (inc depth) next-active
-                                  (- node-budget used) decimal-occurrences)]
+                                  decimal-occurrences)]
                              (if (= :decorated (:status decorated))
                                (recur (next remaining)
-                                      (conj decorations decorated)
-                                      (+ used (:node-occurrences decorated)))
+                                      (conj decorations decorated))
                                decorated))))
 
                        :set
@@ -103,7 +86,7 @@
                              (mapv
                               #(p15-s23-sh07-probe-child
                                 source-path % (inc depth) next-active
-                                (dec node-budget) decimal-occurrences)
+                                decimal-occurrences)
                               (vec value))
                              any-failed?
                              (reduce
@@ -126,7 +109,7 @@
                                (p15-s23-sh07-decoration-failed
                                 :source-integrity-mismatch)
                                (p15-s23-sh07-combine-decorations
-                                depth node-budget "#{" " " "}" ordered)))))
+                                depth "#{" " " "}" ordered)))))
 
                        :map
                        (let [results
@@ -135,12 +118,12 @@
                                 {:key-result
                                  (p15-s23-sh07-probe-child
                                   source-path (key entry)
-                                  (inc depth) next-active (dec node-budget)
+                                  (inc depth) next-active
                                   decimal-occurrences)
                                  :value-result
                                  (p15-s23-sh07-probe-child
                                   source-path (val entry)
-                                  (inc depth) next-active (dec node-budget)
+                                  (inc depth) next-active
                                   decimal-occurrences)
                                  :key (key entry)})
                               (vec value))
@@ -192,9 +175,6 @@
                                               (p15-s23-sh07-combine-decorations
                                                (min (:maximum-depth key-result)
                                                     (:maximum-depth value-result))
-                                               (+ 1
-                                                  (:node-occurrences key-result)
-                                                  (:node-occurrences value-result))
                                                "" " " ""
                                                [key-result value-result])]
                                           (if (= :decorated (:status pair))
@@ -208,5 +188,5 @@
                                                    entries))]
                                    failed
                                    (p15-s23-sh07-combine-decorations
-                                    depth node-budget "{" ", " "}"
-                                    entries))))))))))))))))))))
+                                    depth "{" ", " "}"
+                                    entries)))))))))))))))
