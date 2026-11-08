@@ -493,14 +493,34 @@
                          (.startsWith (.toPath file) (.toPath (io/file (rt/canonical (:state-dir ctx))))))
                     "Review check evidence must be retained by this controller")
         receipt (rt/read-edn file) classification (:operator-classification receipt)
+        snapshot task
+        precheck? (= {:message "The native review candidate changed after its inspection was queued"
+                       :details {:writer-ended? true}} (:error task))
+        original (:original-task (last (:review-check-recovery-history task)))
+        prior-receipt (when precheck?
+                        (let [prior (:review-check-recovery task)]
+                          (require! (= (:evidence-sha256 prior) (file-digest (:evidence-file prior)))
+                                    "The original review inspection evidence changed")
+                          (rt/read-edn (:evidence-file prior))))
+        _ (when precheck?
+            (require! (and (= [:attention :implementing :queued]
+                              [(:status task) (:resume-status task) (get-in task [:review-check-recovery :stage])])
+                           (= (:review-check-recovery task) (:inspection (last (:review-check-recovery-history task))))
+                           (= (:precheck-original-task-sha256 receipt) (:original-task-sha256 prior-receipt)
+                              (rt/digest (pr-str original)))
+                           (= (dissoc task :status :resume-status :error :review-check-recovery :review-check-recovery-history)
+                              (dissoc original :status :resume-status :error :review-check-recovery :review-check-recovery-history)))
+                      "Precheck continuation needs its exact untouched original review task"))
+        task (if precheck? original task)
         review (:review task) job-id (:job review) job (get-in @(:state ctx) [:jobs job-id])
         tuple (select-keys task [:base :candidate :tree])
         additional (:checks receipt)
         commands (vec (distinct (concat (get-in ctx [:config :checks]) (get-in task [:checks :commands]) additional)))
         repo (:worktree task)]
     (require! (and (= :review-check-evidence (:kind receipt)) (= (:key task) (:task-key receipt))
-                   (= (:original-task-sha256 receipt) (rt/digest (pr-str task)))
+                   (= (:original-task-sha256 receipt) (rt/digest (pr-str snapshot)))
                    (= (:review-job-sha256 receipt) (rt/digest (pr-str job)))
+                   (or (not precheck?) (= (:review-job-sha256 prior-receipt) (rt/digest (pr-str job))))
                    (= :review-check-evidence (:kind classification)) (= :controller-operator (:inspector classification))
                    (= (:review-sha256 classification) (rt/digest (pr-str review)))
                    (true? (:no-unresolved-authority classification))
@@ -554,7 +574,7 @@
 (defn validate-review-checks-queued! [ctx task]
   (let [inspection (:review-check-recovery task)
         original (:original-task (last (:review-check-recovery-history task)))]
-    (require! (and (= :repair (:status task))
+    (require! (and (#{:repair :implementing} (:status task))
                    (= (dissoc task :status :review-check-recovery :review-check-recovery-history)
                       (dissoc original :status :review-check-recovery :review-check-recovery-history)))
               "The native review candidate changed after its inspection was queued")
