@@ -983,7 +983,7 @@
                        "--namespace" "gravity.cli.launcher-test"
                        "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
              ["syntax-regression" 600
-              (command "2g" "-M:dev-test" "--progress"
+              (command "2g" "-M:dev-test"
                        "--namespace" "gravity.syntax.pipeline-test"
                        "--namespace" "gravity.syntax.owner-calls-test"
                        "--namespace" "gravity.bootstrap-compatibility.c3-test"
