@@ -72,6 +72,17 @@ L19 actual ABI and wire-representation lowering criterion (Open): Derive require
 <!-- lower-interop-source-abi:end -->
 
 
+
+<!-- performance-contract-source-target-layout-and-boundaries:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract target-layout-and-boundaries criterion (Open). Sources: [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md).
+
+Produce actual target-derived layout/alignment/padding/packing/alias/ownership/address/ABI/cache/device records consumed by Backends/debuggers/serializers/safety. Fixed C/foreign/kernel-driver/public ABI, serialized/persisted/network and hardware port/register boundaries require genuine compatible representation or generated adapters before change. Account for target trap behavior, atomic/vector requirements, safe fallback, initialized padding and supported unaligned access. Exercise accepted/rejected selected layouts and host/device mismatches; address/width metadata, layout flags and generic noalias cannot establish alignment, access safety or unobservable identity. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-target-layout-and-boundaries:end -->
+
+
 - [ ] `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers` lower/3: Select explicit providers
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -104,6 +115,17 @@ Apply the [complete concurrency source criteria](../legality-workflow/plan.md#co
 
 Complete concurrency target-preservation criterion (Open): Lower actual checked synchronization, ownership/task lifetime, atomic order/scope/fences and runtime-check/unsafe/proof facts into supported target operations with original source/generated/proof origins. Refuse lost or weakened ordering, unsupported target representation, implicit host/runtime fallback and stale facts. Changed representation, alias, control, provider or target assumptions require affected invalidation and recheck; an explicitly permitted equivalent provider still needs actual equivalence and admitted profile support. Emit real lowered operations and positive/refusal artifacts for the existing backend owners; record copying is not preservation proof.
 <!-- concurrency-source-lower:end -->
+
+
+
+<!-- performance-contract-source-lowered-assumption-preservation:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract lowered-assumption-preservation criterion (Open). Sources: [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md), [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md), [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md).
+
+Preserve or genuinely revalidate each erased-check assumption through target lowering, especially width/alignment/order/exception/numeric and device representation changes. Consume actual exact-subject proof/checker and selected target ABI/layout/intrinsic facts; retain the check or reject when unsupported. Exercise actual selected before/after target products and non-dominating, changed-width/alignment/order, lost source/generated mapping or unsupported fallback refusals. An optimization report, backend feature label or preserved:true field does not establish emitted target safety. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-lowered-assumption-preservation:end -->
 
 
 - [ ] `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` lower/5: Integrate target emission
