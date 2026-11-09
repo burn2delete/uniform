@@ -9,10 +9,12 @@
 
 (def ^:private source-relative-path
   "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+(def ^:private c14-relative-path
+  "language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity")
 
 ;; The moving source may grow, but this shape gate still admits one explicit
 ;; C13 public surface.  Keep this list synchronized with the source contract:
-;; the final three names are the evidence-boundary exports added by C13.
+;; the final four names are the evidence-boundary exports added by C13.
 (def ^:private expected-export-names
   '[c13-mir-optimization-contract
     c13-optimization-pass-contract
@@ -32,6 +34,7 @@
     sh16-optimization-policy
     sh16-optimize
     sh16-verify
+    sh16-c13-build-literal-bool-translation-validation
     sh16-c13-evidence-input-valid?
     sh16-build-c13-evidence-boundary
     sh16-verify-c13-evidence-boundary])
@@ -471,6 +474,19 @@
   []
   @parsed-source-cache)
 
+(defn- source-forms-for
+  "Read a second moving source only as data for a cross-stage API check."
+  [relative-path]
+  (let [snapshot (read-source-snapshot
+                  (safe-contained-source-path @root relative-path))]
+    (read-forms (strict-utf8 (:bytes snapshot)))))
+
+(defn- contains-qualified-call?
+  [forms qualified-symbol]
+  (boolean
+   (some #(and (seq? %) (= qualified-symbol (first %)))
+         (tree-seq coll? seq forms))))
+
 (def ^:private non-authority-note
   "This moving-source shape check is non-authoritative: it does not compile, verify, lower, or execute C13.")
 
@@ -598,3 +614,25 @@
                   defn-forms))
       (is (= 'gravity.compiler.c13-mir-optimization-passes
              (second ns-form))))))
+
+(deftest sh07-c13-c14-cross-stage-export-preflight
+  (testing
+    "C14's qualified DATA consumer is explicitly exported by C13."
+    (let [c13-ns (first (:forms (parse-shape)))
+          c14-forms (source-forms-for c14-relative-path)
+          c14-ns (first c14-forms)
+          requires (unique-namespace-clause c14-ns :requires)
+          c13-require
+          (some #(when (and (vector? %)
+                            (= 'gravity.compiler.c13-mir-optimization-passes (first %))
+                            (= :as (second %))
+                            (= 'c13 (nth % 2 nil)))
+                 %)
+                (rest requires))
+          consumer 'sh16-c13-build-literal-bool-translation-validation]
+      (is (= 'gravity.compiler.c13-mir-optimization-passes (second c13-ns)))
+      (is (some #(= consumer %) (exports-vector c13-ns)))
+      (is (some? c13-require))
+      (is (contains-qualified-call?
+           c14-forms
+           (symbol "c13" (name consumer)))))))
