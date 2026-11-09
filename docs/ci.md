@@ -6,6 +6,28 @@ GitHub-hosted checks replace routine laptop verification for pull
 requests and the exact clean integrated main commit. They do not confer
 compiler migration or release acceptance.
 
+### Focused CI control tests
+
+From the repository root, the CI control script accepts an explicit selection
+of fully qualified test Vars:
+
+```bash
+clojure -M tools/ci/run_test.clj --exact \
+  ci.run-test/stage-selection-follows-owned-downstream-closure
+```
+
+Multiple names follow the single `--exact` flag. The complete selection is
+validated before any test runs; malformed arguments, duplicate names, unknown
+Vars and non-test Vars fail. Selection resolves already loaded namespaces and
+does not load a namespace named by an argument. Selected tests retain their
+fixtures, reports and failure exit status. With no arguments, the existing
+complete CI control and lint-context suites run unchanged.
+
+Review the selected test bodies against the current operating restrictions.
+Selection grants no authority to execute a restricted operation. Loading this
+script without controlling its entrypoint still invokes its default suite;
+use the explicit CLI route for focused execution.
+
 ## Workflow matrix
 
 | Check | PR | Main/manual/weekly | Evidence and limits |
@@ -21,6 +43,7 @@ compiler migration or release acceptance.
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
+| public-release assessment | Never | Explicit dispatch of `public-release.yml` only | Existing P18 public subset proof with authentic public commands and pinned source checks. Read-only repository permissions; no publication. A failed proof remains a failed assessment. |
 
 ### Pull-request stage selection
 
@@ -64,6 +87,107 @@ Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
 snapshot repeatability controls from the static job; it never replaces the
 other static controls.
+
+### Explicit public release assessment
+
+The separate `public-release.yml` workflow runs the existing
+`gravity.bootstrap-test/p18-public-test-command-runs-current-public-subset`
+test in a fresh child process. Its existing setup builds the packaged JVM CLI;
+the test exercises five accepted programs through public check/run/compile and
+emitted execution, 32 rejected cases with stable diagnostics, source path and
+extension provenance, and rejection of a full-conformance overclaim. Dispatch
+this workflow explicitly for release assessment of the selected revision. It
+does not run on pull requests, pushes or schedules, and is separate from the
+ordinary `CI` workflow's manual source-prerelease publication. The underlying
+CI mode is `clojure -Srepro -M tools/ci/run.clj public-release`.
+
+This release proof reaches the default pinned SH03 reader through public
+`check`. Source drift may correctly fail with `C2-HASH`; a failed release
+proof does not make an ordinary semantic change invalid or authorize updating
+the pin. Ordinary contracts selections retain their existing commands and do
+not run this release proof. The current-reader development route and its limits
+remain documented in [development verification](development-verification.md).
+
+The child retains its 900-second host watchdog inside a 20-minute hosted job.
+The CI-only `ci.public-release-subset` adapter delegates the same exact test
+to the development runner. It redirects the test's three generated P18 proof
+files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
+markers to stderr. It also retains each returned accepted/rejected fixture
+record, including the returned `:out` and `:err` text, in a fresh unique
+per-invocation directory beneath that path. Each diagnostic record is explicitly
+non-authoritative. Its manifest entry carries the byte count and SHA-256 of the
+actual UTF-8 EDN record file. The manifest's own byte count and SHA-256 are
+emitted in its `:manifest-written` diagnostic marker and remain covered by the
+existing CI checksum and provenance outputs. These files are diagnostic
+observations of the existing P18 caller; they do not add proof authority or
+claim that a failed assessment is a successful release.
+
+After each successful record capture, the adapter writes another fresh,
+non-authoritative manifest with `:status :partial`. Each such checkpoint lists
+exactly the captured prefix at that point and is kept alongside earlier
+snapshots; it is not overwritten or deleted. The existing `finally` path still
+writes a distinct `:status :final` manifest on normal return or aggregate
+exception. `:status :final` describes finalizer execution, not a successful or
+complete assessment. A partial index likewise records only a valid returned
+prefix, not completion of the 37-case suite or release proof.
+
+Capture failures are emitted as diagnostic markers and disable later capture
+attempts for that invocation while preserving the wrapped function's original
+return value or exception. No record is overwritten or deleted. The adapter
+preserves public commands, results and the existing 60-second inner process
+watchdog. CI still rejects tracked source mutation; the normal artifact
+checksum manifest includes any generated proof or diagnostic files and retains
+logs, command receipts and checkout provenance after failure.
+An external hard kill may leave unfinished record or snapshot files because the
+adapter cannot run its `finally` block; it makes no fsync or crash-proof claim.
+Completed snapshots remain observations of their listed prefix; they do not
+establish that the remaining fixtures ran or that release proof succeeded.
+Markers include monotonic nanoseconds for intervals within that child JVM.
+The workflow propagates failure and has no release-publication job. A completed
+assessment is not a successful public proof: inspect its exit status and
+artifacts. Even a successful current bootstrap-hosted subset proof does not
+establish full-language, self-hosting or seedless-release acceptance.
+
+### Read retained public diagnostics
+
+The retained public-release upload can be inspected without replaying the
+assessment:
+
+```bash
+clojure -X ci.public-diagnostic-report/run! \
+  :artifact-dir '"/path/to/extracted-target-ci"'
+```
+
+`ci.public-diagnostic-report/report` is the programmatic entrypoint and
+`run!` accepts exactly one non-empty `:artifact-dir` option. The directory is
+the extracted upload root containing `SHA256SUMS`, checkout and run receipts,
+the child receipt, and `p18-public-test-artifacts/`; it is not a checkout to be
+replayed. The reader performs no network, provider, Git-source authentication,
+subprocess, runtime-Var resolution, public-test invocation, or file write.
+
+The report validates strict UTF-8 and one-form EDN inputs, rejects duplicate,
+absolute, traversal or symbolic-link paths, and requires `SHA256SUMS` to cover
+every regular file except itself with matching bytes and SHA-256. Producer
+marker paths beginning with `target/ci/` are mapped once into the extracted
+root. Mixed JVM/progress log text is ignored; only independent
+`ci-public-release-subset` marker forms are inspected. Full diagnostic record
+files remain the source of record. The report exposes their relative paths,
+byte/hash identities, fixture phase and ordinal, record keys, and nested
+`:out`/`:err` UTF-8 byte/hash identities without inlining command text or
+claiming redaction or raw process-wire completeness.
+
+Every available partial or final prefix manifest is checked against its real
+record files and identities. Missing indexes remain `:not-observed` or
+`:unindexed`; they are never reconstructed. A `:final` manifest describes
+finalizer execution only, not completion of the 37-case assessment or release
+proof. The child receipt's negative status, exit code and timeout remain in the
+diagnostic result, and a valid report command exits zero even when that
+assessment failed. Malformed, unsupported, tampered or contradictory artifact
+data fails clearly. The output is diagnostic-only and grants no release,
+admission, migration, self-hosting or seed-retirement authority. Hard kills may
+leave unfinished files; the reader makes no fsync or crash-proof claim.
+
+### Portable leaf selection
 
 The leaves jobs use the same verified pull-request path records. For regular
 source or test changes, `tools/ci/run.clj` follows the reviewed `:require`

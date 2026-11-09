@@ -3,7 +3,9 @@
             [clojure.edn :as edn]
             [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is run-tests]]))
+            [clojure.test :as test :refer [deftest is run-tests]]
+            [ci.public-diagnostic-report :as diagnostic-report]
+            [ci.public-release-subset :as public]))
 
 (binding [*command-line-args* nil] (load-file "tools/ci/run.clj"))
 (require '[ci.run :as ci])
@@ -11,6 +13,90 @@
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
 (binding [*command-line-args* nil] (load-file "tools/ci/lint_context_test.clj"))
+
+(def ^:private exact-selector "--exact")
+
+(defn- fully-qualified-test-name?
+  [value]
+  (and (string? value)
+       (= 2 (count (str/split value #"/" -1)))
+       (let [[namespace-name var-name] (str/split value #"/" -1)]
+         (and (re-matches #"[A-Za-z_][A-Za-z0-9_.-]*" namespace-name)
+              (re-matches #"[A-Za-z_*!?+<>=.$%-][A-Za-z0-9_*!?+<>=.$%-]*" var-name)))))
+
+(defn- exact-selection-error
+  [message data]
+  (throw (ex-info message (assoc data :selector exact-selector))))
+
+(defn- parse-exact-selection
+  "Validate the complete command line before resolving or running a test."
+  [args]
+  (let [args (vec args)]
+    (when-not (= exact-selector (first args))
+      (exact-selection-error "Exact CI selection must start with --exact" {:args args}))
+    (let [names (subvec args 1)]
+      (when (empty? names)
+        (exact-selection-error "--exact needs one or more fully qualified test Vars"
+                               {:args args}))
+      (when-not (every? fully-qualified-test-name? names)
+        (exact-selection-error "--exact accepts only fully qualified test Vars"
+                               {:args args :invalid (remove fully-qualified-test-name? names)}))
+      (when-not (= (count names) (count (distinct names)))
+        (exact-selection-error "--exact does not accept duplicate test Vars" {:args args}))
+      names)))
+
+(defn- resolve-loaded-test-vars
+  "Resolve only Vars in namespaces already loaded by this script."
+  [names]
+  (mapv (fn [qualified-name]
+          (let [[namespace-name var-name] (str/split qualified-name #"/" -1)
+                namespace-symbol (symbol namespace-name)
+                var-symbol (symbol var-name)
+                namespace-object (find-ns namespace-symbol)
+                value (when namespace-object (get (ns-interns namespace-object) var-symbol))]
+            (when-not namespace-object
+              (exact-selection-error "--exact names an unloaded namespace"
+                                     {:name qualified-name :namespace namespace-name}))
+            (when-not (and (var? value) (fn? (:test (meta value))))
+              (exact-selection-error "--exact names a missing or non-test Var"
+                                     {:name qualified-name :namespace namespace-name}))
+            value))
+        names))
+
+(defn- run-selected-tests!
+  "Run selected Vars with the same namespace fixture and report boundaries as run-tests."
+  [vars]
+  (binding [test/*report-counters* (ref test/*initial-report-counters*)]
+    (doseq [[namespace-object namespace-vars]
+            (sort-by (comp str key)
+                     (reduce (fn [groups value]
+                               (update groups (-> value meta :ns) (fnil conj []) value))
+                             {}
+                             vars))]
+      (test/do-report {:type :begin-test-ns :ns namespace-object})
+      (test/test-vars namespace-vars)
+      (test/do-report {:type :end-test-ns :ns namespace-object}))
+    (let [summary @test/*report-counters*]
+      (test/do-report (assoc summary :type :summary))
+      summary)))
+
+(defn- run-exact-selection!
+  [args]
+  (let [vars (try
+               (resolve-loaded-test-vars (parse-exact-selection args))
+               (catch clojure.lang.ExceptionInfo error
+                 (binding [*out* *err*]
+                   (println (str "Exact CI selection rejected: " (.getMessage error))))
+                 nil))]
+    (if vars
+      (run-selected-tests! vars)
+      {:test 0 :pass 0 :fail 1 :error 0})))
+
+(defn- run-command!
+  [args]
+  (if (seq args)
+    (run-exact-selection! args)
+    (run-tests 'ci.run-test 'ci.lint-context-test)))
 
 (defn fixture-tool!
   ([directory argv input allowed-exits]
@@ -401,6 +487,34 @@
     (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
     (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
 
+(deftest public-release-workflow-is-manual-read-only-pinned-and-provenanced
+  (let [workflow (slurp ".github/workflows/public-release.yml")
+        toolchain (slurp ".github/actions/clojure/action.yml")]
+    (is (str/includes? workflow "workflow_dispatch:"))
+    (doseq [event ["pull_request:" "push:" "schedule:"]]
+      (is (not (str/includes? workflow event)) event))
+    (is (str/includes? workflow "permissions:\n  contents: read"))
+    (is (not (re-find #"(?im)^\s*(contents|packages):\s*write\b" workflow)))
+    (is (not (re-find #"(?im)^\s*continue-on-error:\s*true\b" workflow)))
+    (is (not (re-find #"(?i)\bpublish(?:ing|ed)?\b" workflow)))
+    (is (re-find #"actions/checkout@[0-9a-f]{40}" workflow))
+    (is (re-find #"actions/upload-artifact@[0-9a-f]{40}" workflow))
+    (is (str/includes? workflow "uses: ./.github/actions/clojure"))
+    (is (re-find #"actions/setup-java@[0-9a-f]{40}" toolchain))
+    (is (re-find #"DeLaGuardo/setup-clojure@[0-9a-f]{40}" toolchain))
+    (is (str/includes? workflow "fetch-depth: 0"))
+    (is (str/includes? workflow "persist-credentials: false"))
+    (is (str/includes? workflow "timeout-minutes: 20"))
+    (is (str/includes? workflow
+                       "clojure -Srepro -M tools/ci/run.clj public-release"))
+    (is (re-find #"(?s)Reject tracked source mutation\s+if: always\(\)\s+run: git diff --exit-code HEAD"
+                 workflow))
+    (is (str/includes? workflow "git rev-parse HEAD 'HEAD^{tree}'"))
+    (is (str/includes? workflow "target/ci/SHA256SUMS"))
+    (is (str/includes? workflow "actions/upload-artifact@"))
+    (is (str/includes? workflow "if: always()"))
+    (is (str/includes? workflow "path: target/ci/"))))
+
 (deftest leaf-runner-selection-is-fail-closed-in-leaves-job
   (let [workflow (slurp ".github/workflows/ci.yml")
         leaves (second (re-find #"(?s)\n  leaves:\n(.*?)(?=\n  snapshot:)" workflow))]
@@ -459,12 +573,455 @@
                     source-vars))
        #{}))))
 
+(def expected-contract-command-ids
+  ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
+   "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
+   "c-native-validation" "runtime-native-validation" "effects-native-validation"
+   "types-native-validation"])
+
+(def ^:private public-adapter-events (atom []))
+(def ^:private public-adapter-throw? (atom false))
+(def ^:private public-adapter-failure (atom nil))
+(def ^:private public-adapter-artifact-dir "original-p18-artifact-dir")
+
+(defn- public-adapter-current-artifact-dir []
+  (let [value public-adapter-artifact-dir]
+    (if (instance? clojure.lang.IDeref value) @value value)))
+
+(defn- public-adapter-record! [phase args]
+  (swap! public-adapter-events conj [phase (public-adapter-current-artifact-dir) (vec args)]))
+
+(defn- public-adapter-shell-run [& args]
+  (public-adapter-record! :shell-run args)
+  {:exit 0})
+
+(defn- public-adapter-t02-package [& args]
+  (public-adapter-record! :t02-package args)
+  :t02-return)
+
+(defn- public-adapter-t04-sweep [& args]
+  (public-adapter-record! :t04-sweep args)
+  (if @public-adapter-throw?
+    (throw @public-adapter-failure)
+    :t04-return))
+
+(defn- public-adapter-accepted-record [& args]
+  (public-adapter-record! :accepted-fixture args)
+  :accepted-return)
+
+(defn- public-adapter-rejected-record [& args]
+  (public-adapter-record! :rejected-fixture args)
+  :rejected-return)
+
+(defn- public-adapter-capture-runner [argv]
+  (swap! public-adapter-events conj [:runner (public-adapter-current-artifact-dir) argv])
+  :runner-return)
+
+(defn- public-adapter-exercising-runner [argv]
+  (swap! public-adapter-events conj [:runner (public-adapter-current-artifact-dir) argv])
+  (let [shell (public-adapter-shell-run ["gravity" "test"])
+        t02 (public-adapter-t02-package {:fixture :package})
+        t04 (public-adapter-t04-sweep {:fixture :sweep})
+        accepted (public-adapter-accepted-record {:fixture :accepted :command ["ok"]})
+        rejected (public-adapter-rejected-record {:fixture :rejected :command ["bad"]})]
+    (swap! public-adapter-events conj [:returns shell t02 t04 accepted rejected])
+    0))
+
+(defn- public-adapter-var [name]
+  (or (ns-resolve 'ci.public-release-subset (symbol name))
+      (throw (ex-info "Expected public adapter Var is not loaded" {:name name}))))
+
+(defn- public-adapter-runtime [runner]
+  {:runner runner
+   :artifact-dir #'public-adapter-artifact-dir
+   :shell-run #'public-adapter-shell-run
+   :t02-package #'public-adapter-t02-package
+   :t04-sweep #'public-adapter-t04-sweep
+   :accepted-record #'public-adapter-accepted-record
+   :rejected-record #'public-adapter-rejected-record})
+
+(defn- public-adapter-error-writer [flushes]
+  (proxy [java.io.StringWriter] []
+    (flush []
+      (swap! flushes inc)
+      (proxy-super flush))))
+
+(defn- public-adapter-artifact-snapshot []
+  (let [root (io/file "target/ci/p18-public-test-artifacts")]
+    (if (.isDirectory root)
+      (into {}
+            (map (fn [file] [(.getCanonicalPath ^java.io.File file) file]))
+            (filter #(.isFile ^java.io.File %)
+                    (file-seq root)))
+      {})))
+
+(defn- public-adapter-new-files [before]
+  (let [after (public-adapter-artifact-snapshot)]
+    (->> after
+         (remove (fn [[path _]] (contains? before path)))
+         (into {}))))
+
+(defn- public-adapter-new-files-between [before after]
+  (into {}
+        (remove (fn [[path _]] (contains? before path)))
+        after))
+
+(defn- public-adapter-file-payload [^java.io.File file]
+  (let [text (slurp file)]
+    {:path (.getCanonicalPath file)
+     :text text
+     :value (try
+              (edn/read-string text)
+              (catch Throwable _ ::not-edn))}))
+
+(defn- public-adapter-nested-contains? [value expected]
+  (or (= value expected)
+      (cond
+        (map? value) (some #(public-adapter-nested-contains? % expected) value)
+        (coll? value) (some #(public-adapter-nested-contains? % expected) value)
+        :else false)))
+
+(defn- public-adapter-payloads [files]
+  (mapv (comp public-adapter-file-payload val) files))
+
+(defn- public-adapter-manifest-payload? [{:keys [value]}]
+  (and (map? value)
+       (= "gravity/ci-public-release-diagnostic-v1" (:schema value))
+       (= :diagnostic (:authority value))
+       (false? (:authoritative? value))
+       (sequential? (:records value))))
+
+(defn- public-adapter-record-payload? [{:keys [value]}]
+  (and (map? value)
+       (= "gravity/ci-public-release-diagnostic-v1" (:schema value))
+       (= :diagnostic (:authority value))
+       (false? (:authoritative? value))
+       (contains? value :record)))
+
+(defn- public-adapter-sha256-file [^java.io.File file]
+  (let [digest (doto (java.security.MessageDigest/getInstance "SHA-256")
+                 (.update (java.nio.file.Files/readAllBytes (.toPath file))))]
+    (apply str (map #(format "%02x" (bit-and (int %) 0xff))
+                    (.digest digest)))))
+
+(defn- public-adapter-file-for-path [files path]
+  (let [canonical-path (.getCanonicalPath (io/file path))]
+    (some (fn [[candidate file]]
+            (when (= canonical-path candidate) file))
+          files)))
+
+(defn- public-adapter-payload-contains? [payloads expected]
+  (some (fn [{:keys [text value]}]
+          (or (str/includes? text (str expected))
+              (public-adapter-nested-contains? value expected)))
+        payloads))
+
+(defn- public-adapter-diagnostic-payload? [{:keys [value]}]
+  (and (map? value)
+       (= "gravity/ci-public-release-diagnostic-v1" (:schema value))
+       (= :diagnostic (:authority value))
+       (false? (:authoritative? value))))
+
+(defn- public-adapter-diagnostic-runner
+  ([accepted rejected]
+   (public-adapter-diagnostic-runner accepted rejected nil))
+  ([accepted rejected snapshots]
+   (fn [argv]
+     (let [accepted-result (public-adapter-accepted-record accepted)
+           _after-one (when snapshots
+                        (swap! snapshots conj (public-adapter-artifact-snapshot)))
+           rejected-result (public-adapter-rejected-record rejected)
+           _after-two (when snapshots
+                        (swap! snapshots conj (public-adapter-artifact-snapshot)))
+           sweep-result (public-adapter-t04-sweep {:fixture "later-sweep"})]
+       {:argv (vec argv)
+        :accepted accepted-result
+        :rejected rejected-result
+        :sweep sweep-result}))))
+
+(def ^:private report-diagnostic-schema
+  "gravity/ci-public-release-diagnostic-v1")
+
+(defn- report-fixture-root! []
+  (let [parent (io/file "target/ci")]
+    (.mkdirs parent)
+    (.toFile
+     (java.nio.file.Files/createTempDirectory
+      (.toPath parent)
+      "public-diagnostic-report-"
+      (make-array java.nio.file.attribute.FileAttribute 0)))))
+
+(defn- report-fixture-write! [root relative content]
+  (let [file (io/file root relative)]
+    (when-let [parent (.getParentFile file)]
+      (.mkdirs parent))
+    (java.nio.file.Files/write
+     (.toPath file)
+     (.getBytes (str content) java.nio.charset.StandardCharsets/UTF_8)
+     (into-array java.nio.file.OpenOption
+                 [java.nio.file.StandardOpenOption/CREATE
+                  java.nio.file.StandardOpenOption/TRUNCATE_EXISTING
+                  java.nio.file.StandardOpenOption/WRITE]))
+    file))
+
+(defn- report-fixture-write-edn! [root relative value]
+  (report-fixture-write! root relative (str (pr-str value) "\n")))
+
+(defn- report-fixture-sha256-text [text]
+  (let [digest (doto (java.security.MessageDigest/getInstance "SHA-256")
+                 (.update (.getBytes (str text) java.nio.charset.StandardCharsets/UTF_8)))]
+    (apply str (map #(format "%02x" (bit-and (int %) 0xff))
+                    (.digest digest)))))
+
+(defn- report-fixture-output-identity [text]
+  (let [bytes (.getBytes (str text) java.nio.charset.StandardCharsets/UTF_8)]
+    {:utf8-bytes (alength bytes)
+     :sha256 (report-fixture-sha256-text text)}))
+
+(defn- report-fixture-checksum-path [root file]
+  (str "./"
+       (str/replace
+        (str (.relativize (.toPath root) (.toPath file)))
+        #"\\"
+        "/")))
+
+(defn- report-fixture-write-checksums! [root]
+  (let [checksum-path (.getCanonicalPath (io/file root "SHA256SUMS"))
+        lines (->> (file-seq root)
+                   (filter #(.isFile ^java.io.File %))
+                   (remove #(= checksum-path (.getCanonicalPath ^java.io.File %)))
+                   (map (fn [file]
+                          (str (public-adapter-sha256-file file)
+                               "  "
+                               (report-fixture-checksum-path root file))))
+                   sort)]
+    (report-fixture-write! root "SHA256SUMS" (str (str/join "\n" lines) "\n"))))
+
+(defn- report-fixture-snapshot [root]
+  (into {}
+        (map (fn [file]
+               [(.getCanonicalPath ^java.io.File file)
+                (vec (java.nio.file.Files/readAllBytes (.toPath file)))]))
+        (filter #(.isFile ^java.io.File %)
+                (file-seq root))))
+
+(defn- report-fixture-call-error [thunk]
+  (try
+    (thunk)
+    nil
+    (catch Throwable error
+      error)))
+
+(defn- report-fixture-logical-path [root file]
+  (str "target/ci/"
+       (str/replace
+        (str (.relativize (.toPath root) (.toPath file)))
+        #"\\"
+        "/")))
+
+(defn- report-fixture-record-metadata [root file phase ordinal]
+  {:path (report-fixture-logical-path root file)
+   :phase phase
+   :ordinal ordinal
+   :bytes (.length ^java.io.File file)
+   :sha256 (public-adapter-sha256-file file)})
+
+(defn- report-fixture-manifest [root directory status records]
+  {:schema report-diagnostic-schema
+   :authority :diagnostic
+   :authoritative? false
+   :status status
+   :directory (report-fixture-logical-path root directory)
+   :records records})
+
+(defn- report-fixture-marker-text [marker]
+  (let [tail (pr-str (dissoc marker :marker))]
+    (str "{:marker \"ci-public-release-subset\" " (subs tail 1))))
+
+(defn- report-fixture!
+  ([] (report-fixture! {}))
+  ([options]
+   (let [root (report-fixture-root!)
+         indexes? (get options :indexes? true)
+         final-index? (and indexes? (get options :final-index? true))
+         missing-result? (get options :missing-result? false)
+         assessment-status (get options :assessment-status :failed)
+         exit-code (get options :exit-code 1)
+         commit (apply str (repeat 40 "1"))
+         receipt-commit (get options :receipt-commit commit)
+         tree (apply str (repeat 40 "2"))
+         run-id (get options :run-id "424242")
+         run-attempt "3"
+         run-url (get options
+                      :run-url
+                      "https://github.com/burn2delete/uniform/actions/runs/424242")
+         directory (io/file root "p18-public-test-artifacts/run-synthetic")
+         accepted-relative "p18-public-test-artifacts/run-synthetic/accepted-fixture-0001-record.edn"
+         rejected-relative "p18-public-test-artifacts/run-synthetic/rejected-fixture-0002-record.edn"
+         partial-one-relative "p18-public-test-artifacts/run-synthetic/partial-manifest-0001.edn"
+         partial-two-relative "p18-public-test-artifacts/run-synthetic/partial-manifest-0002.edn"
+         final-relative "p18-public-test-artifacts/run-synthetic/manifest-0003.edn"
+         accepted-out (apply str (repeat 96 "accepted stdout \u03a9\u2713\n"))
+         accepted-err (apply str (repeat 96 "accepted stderr \u03bb\n"))
+         run-out (str accepted-out "run-only \u00e9\n")
+         run-err (str accepted-err "run stderr \u03b4\n")
+         compile-out (str accepted-out "compile-only \u03bb\n")
+         compile-err (str accepted-err "compile stderr \u03a9\n")
+         executable-out (str accepted-out "executable-only \u03c0\n")
+         executable-err (str accepted-err "executable stderr \u03b4\n")
+         rejected-out (apply str (repeat 96 "rejected stdout \u2713\n"))
+         rejected-err (apply str (repeat 96 "rejected stderr \u00e4\n"))
+         accepted (cond-> {:fixture "examples/\u03c0.gravity"
+                           :expected-stdout "accepted \u2713\n"
+                           :check-result {:exit 0 :out accepted-out :err accepted-err}
+                           :run-result {:exit 0 :out run-out :err run-err}
+                           :compile-result {:exit 0 :out compile-out :err compile-err}
+                           :executable-result {:exit 0
+                                               :out executable-out
+                                               :err executable-err}}
+                    missing-result? (dissoc :compile-result))
+         rejected {:fixture "fixtures/rejected/\u03bb.qst"
+                   :command :check
+                   :expected-diagnostic "P18REPORT"
+                   :result {:exit 1 :out rejected-out :err rejected-err}}
+         accepted-file (report-fixture-write-edn!
+                        root accepted-relative
+                        {:schema report-diagnostic-schema
+                         :authority :diagnostic
+                         :authoritative? false
+                         :phase :accepted-fixture
+                         :ordinal 1
+                         :record accepted})
+         rejected-file (report-fixture-write-edn!
+                        root rejected-relative
+                        {:schema report-diagnostic-schema
+                         :authority :diagnostic
+                         :authoritative? false
+                         :phase :rejected-fixture
+                         :ordinal 2
+                         :record rejected})
+         accepted-metadata (report-fixture-record-metadata root accepted-file
+                                                           :accepted-fixture
+                                                           1)
+         rejected-metadata (report-fixture-record-metadata root rejected-file
+                                                           :rejected-fixture
+                                                           2)
+         partial-one (report-fixture-manifest root directory :partial [accepted-metadata])
+         partial-two (report-fixture-manifest root directory :partial
+                                              [accepted-metadata rejected-metadata])
+         final (report-fixture-manifest root directory :final
+                                        [accepted-metadata rejected-metadata])
+         partial-one-file (when indexes?
+                            (report-fixture-write-edn! root partial-one-relative partial-one))
+         partial-two-file (when indexes?
+                            (report-fixture-write-edn! root partial-two-relative partial-two))
+         final-file (when final-index?
+                      (report-fixture-write-edn! root final-relative final))
+         receipt {:id "public-release-subset"
+                  :argv ["clojure" "-X:dev-test" "ci.public-release-subset/run!"]
+                  :timeout-seconds 900
+                  :started-ms 1700000000000
+                  :status assessment-status
+                  :commit receipt-commit
+                  :run-id run-id
+                  :run-attempt run-attempt
+                  :stdin-path nil
+                  :finished-ms 1700000004321
+                  :exit-code exit-code}
+         marker (fn [phase edge monotonic-ns data]
+                  (merge {:marker "ci-public-release-subset"
+                          :phase phase
+                          :edge edge
+                          :monotonic-ns monotonic-ns}
+                         data))
+         markers (vec
+                  (concat
+                   [(marker :runtime-resolution :enter 1 {})
+                    (marker :runtime-resolution :return 2 {})
+                    (marker :accepted-fixture :enter 3
+                            {:fixture (:fixture accepted)})
+                    (marker :accepted-fixture :return 4
+                            {:fixture (:fixture accepted)})
+                    (marker :accepted-fixture :diagnostic-captured 5
+                            accepted-metadata)
+                    (marker :rejected-fixture :enter 6
+                            {:fixture (:fixture rejected)})
+                    (marker :rejected-fixture :return 7
+                            {:fixture (:fixture rejected)})
+                    (marker :rejected-fixture :diagnostic-captured 8
+                            rejected-metadata)]
+                   (when indexes?
+                     (concat
+                      [(marker :diagnostic-capture :manifest-written 9
+                               {:path (report-fixture-logical-path root partial-one-file)
+                                :status :partial
+                                :bytes (.length ^java.io.File partial-one-file)
+                                :sha256 (public-adapter-sha256-file partial-one-file)})
+                       (marker :diagnostic-capture :manifest-written 10
+                               {:path (report-fixture-logical-path root partial-two-file)
+                                :status :partial
+                                :bytes (.length ^java.io.File partial-two-file)
+                                :sha256 (public-adapter-sha256-file partial-two-file)})]
+                      (when final-index?
+                        [(marker :diagnostic-capture :manifest-written 11
+                                 {:path (report-fixture-logical-path root final-file)
+                                  :status :final
+                                  :bytes (.length ^java.io.File final-file)
+                                  :sha256 (public-adapter-sha256-file final-file)})])))))]
+     (report-fixture-write! root "checkout.txt" (str commit "\n" tree "\n"))
+     (report-fixture-write! root "run-url.txt" (str run-url "\n"))
+     (report-fixture-write-edn! root "public-release-subset.edn" receipt)
+     (report-fixture-write!
+      root
+      "public-release-subset.log"
+      (str "CI command public-release-subset started\n"
+           (str/join "\n" (map report-fixture-marker-text markers))
+           "\nCI command public-release-subset finished "
+           (name assessment-status) " exit " exit-code "\n"))
+     (report-fixture-write-checksums! root)
+     {:root root
+      :accepted accepted
+      :rejected rejected
+      :accepted-out accepted-out
+      :accepted-err accepted-err
+      :run-out run-out
+      :run-err run-err
+      :compile-out compile-out
+      :compile-err compile-err
+      :executable-out executable-out
+      :executable-err executable-err
+      :rejected-out rejected-out
+      :rejected-err rejected-err
+      :accepted-relative accepted-relative
+      :rejected-relative rejected-relative
+      :partial-one-relative partial-one-relative
+      :partial-two-relative partial-two-relative
+      :final-relative final-relative
+      :accepted-file accepted-file
+      :rejected-file rejected-file
+      :partial-one-file partial-one-file
+      :partial-two-file partial-two-file
+      :final-file final-file
+      :commit commit
+      :tree tree
+      :run-id run-id
+      :run-attempt run-attempt
+      :run-url run-url})))
+
+(defn- report-record-for-phase [report phase]
+  (some #(when (= phase (:phase %)) %) (:records report)))
+
+(defn- report-read-one-form [text]
+  (with-open [reader (java.io.PushbackReader.
+                      (java.io.StringReader. (str text)))]
+    (binding [*read-eval* false]
+      [(read {:eof ::report-eof} reader)
+       (read {:eof ::report-eof} reader)])))
+
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
-    (is (= ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
-            "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
-            "c-native-validation" "runtime-native-validation" "effects-native-validation"
-            "types-native-validation"] (mapv first commands)))
+    (is (= expected-contract-command-ids
+           (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
                  [["tooling-native-validation" "gravity.tooling.pipeline-test"
@@ -481,6 +1038,835 @@
         (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
         (is (empty? (macro-selected-vars
                      (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))))
+
+(deftest public-release-command-is-separate-from-ordinary-contracts
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        selections [nil
+                    {:kind :full :reason :non-pull-request :paths []}
+                    {:kind :full :reason :unknown-or-cross-stage-path
+                     :paths ["unknown/new-owner.clj"]}
+                    {:kind :full :reason :path-discovery-failed
+                     :paths [] :selection-error "discovery failed"}
+                    {:kind :docs-only :reason :known-documentation-only
+                     :paths ["README.md"]}
+                    (ci/stage-selection
+                     (mapv change ["tools/advance/README.md"
+                                   "tools/advance/src/advance/main.clj"
+                                   "tools/advance/test/advance/main_test.clj"]))
+                    (ci/stage-selection [(change "tools/ci/lint.clj")])]
+        stage-paths ["bootstrap/clojure/src/gravity/reader.clj"
+                     "language/compiler/src/gravity/macro.gravity"
+                     "bootstrap/clojure/src/gravity/resolution.clj"
+                     "language/compiler/src/gravity/checked_core.gravity"]
+        public-command (fn [selection]
+                         (let [commands (vec (ci/commands-for-selection "public-release" selection))]
+                           (is (= ["public-release-subset"] (mapv first commands)))
+                           (is (= [["public-release-subset" 900
+                                    (ci/command "2g" "-X:dev-test"
+                                                "ci.public-release-subset/run!")]]
+                                  commands))))]
+    (is (not (contains? ci/semantic-modes "public-release")))
+    (is (not-any? #(str/starts-with? % "public-release=")
+                  (ci/selection-output-lines nil)))
+    (is (not (str/includes? (slurp ".github/workflows/ci.yml") "public-release")))
+    (doseq [selection selections]
+      (is (= expected-contract-command-ids
+             (mapv first (ci/commands-for-selection "contracts" selection))))
+      (public-command selection))
+    (doseq [path stage-paths]
+      (let [selection (ci/stage-selection [(change path)])]
+        (is (= :selected (:kind selection)) path)
+        (is (= :affected-stage (:reason selection)) path)
+        (is (= expected-contract-command-ids
+               (mapv first (ci/commands-for-selection "contracts" selection))) path)
+        (public-command selection)))))
+
+(deftest contracts-omit-public-subset-for-narrow-exclusions
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        docs-only {:kind :docs-only :reason :known-documentation-only
+                   :paths ["README.md"]}
+        advance (ci/stage-selection
+                 (mapv change ["tools/advance/README.md"
+                               "tools/advance/src/advance/main.clj"
+                               "tools/advance/test/advance/main_test.clj"]))
+        lint-tooling (ci/stage-selection [(change "tools/ci/lint.clj")])]
+    (doseq [[label expected-kind selection]
+            [["docs-only" :docs-only docs-only]
+             ["advance-status-only" :selected advance]
+             ["lint-tooling-only" :selected lint-tooling]]]
+      (is (= expected-kind (:kind selection)) label)
+      (is (contains? #{:known-documentation-only :advance-status-only :lint-tooling-only}
+                     (:reason selection)) label)
+      (is (= expected-contract-command-ids
+             (mapv first (ci/commands-for-selection "contracts" selection))) label)
+      (is (not-any? #(= "public-release-subset" (first %))
+                    (ci/commands-for-selection "contracts" selection)) label))))
+
+(deftest public-adapter-defers-runtime-resolution-and-delegates-exact-argv-once
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        resolver (public-adapter-var "resolve-runtime-vars")
+        exit-var (public-adapter-var "exit!")
+        resolver-calls (atom 0)
+        exits (atom [])
+        runner-results (with-redefs-fn
+                         {#'public-adapter-artifact-dir "original-p18-artifact-dir"
+                          resolver (fn [] (swap! resolver-calls inc) {})
+                          (public-adapter-var "run-with-runtime!") (fn [_] 0)
+                          exit-var (fn [code] (swap! exits conj code))}
+                         (fn [] [(public/run! nil) (public/run! {}) (public/run!)]))]
+    (is (= [0 0 0] runner-results))
+    (is (= [0 0 0] @exits))
+    (is (= 3 @resolver-calls))
+    (reset! public-adapter-events [])
+    (let [result (run-with-runtime (public-adapter-runtime
+                                    #'public-adapter-capture-runner))]
+      (is (= :runner-return result))
+      (is (= [[:runner "target/ci/p18-public-test-artifacts"
+               ["--progress"
+                "--namespace" "gravity.bootstrap-test"
+                "--exact" "p18-public-test-command-runs-current-public-subset"]]]
+             @public-adapter-events)))))
+
+(deftest public-adapter-isolates-artifacts-and-restores-on-return-or-throw
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        original-vars [#'public-adapter-artifact-dir
+                       #'public-adapter-shell-run
+                       #'public-adapter-t02-package
+                       #'public-adapter-t04-sweep
+                       #'public-adapter-accepted-record
+                       #'public-adapter-rejected-record]
+        originals (mapv var-get original-vars)
+        flushes (atom 0)
+        writer (public-adapter-error-writer flushes)
+        assert-monotonic-markers!
+        (fn [output]
+          (let [markers (->> (str/split-lines (str output))
+                             (remove str/blank?)
+                             (mapv edn/read-string))]
+            (is (seq markers))
+            (is (every? #(integer? (:monotonic-ns %)) markers))
+            (when (seq markers)
+              (is (apply <= (mapv :monotonic-ns markers))))))]
+    (reset! public-adapter-events [])
+    (reset! public-adapter-throw? false)
+    (let [result (binding [*err* writer]
+                   (run-with-runtime (public-adapter-runtime
+                                      #'public-adapter-exercising-runner)))]
+      (is (= 0 result))
+      (is (some #(and (= :runner (first %))
+                      (= "target/ci/p18-public-test-artifacts" (second %)))
+                @public-adapter-events))
+      (is (some #(= [:returns {:exit 0} :t02-return :t04-return
+                     :accepted-return :rejected-return]
+                    %)
+                @public-adapter-events))
+      (is (= "original-p18-artifact-dir" (public-adapter-current-artifact-dir)))
+      (is (= originals (mapv var-get original-vars)))
+      (is (pos? @flushes))
+      (doseq [phase [:p18-shell-run :t02-package :t04-sweep
+                     :accepted-fixture :rejected-fixture]]
+        (is (str/includes? (str writer) (str ":phase " phase)) phase))
+      (is (str/includes? (str writer) ":edge :return"))
+      (assert-monotonic-markers! writer))
+    (let [failure (ex-info "fixture wrapper failure" {:phase :t04})
+          throw-flushes (atom 0)
+          throw-writer (public-adapter-error-writer throw-flushes)]
+      (reset! public-adapter-events [])
+      (reset! public-adapter-failure failure)
+      (reset! public-adapter-throw? true)
+      (let [caught (try
+                     (binding [*err* throw-writer]
+                       (run-with-runtime (public-adapter-runtime
+                                          #'public-adapter-exercising-runner)))
+                     nil
+                     (catch Throwable error error))]
+        (is (identical? failure caught))
+        (is (= "original-p18-artifact-dir" (public-adapter-current-artifact-dir)))
+        (is (= originals (mapv var-get original-vars)))
+        (is (pos? @throw-flushes))
+        (is (str/includes? (str throw-writer) ":phase :t04-sweep"))
+        (is (str/includes? (str throw-writer) ":edge :throw"))
+        (assert-monotonic-markers! throw-writer)))
+    (reset! public-adapter-throw? false)))
+
+(deftest public-adapter-rejects-unknown-options-before-heavy-load-and-propagates-nonzero-exit
+  (let [resolver (public-adapter-var "resolve-runtime-vars")
+        run-with-runtime (public-adapter-var "run-with-runtime!")
+        exit-var (public-adapter-var "exit!")
+        resolver-calls (atom 0)
+        exits (atom [])
+        unknown-error (try
+                        (with-redefs-fn
+                          {resolver (fn [] (swap! resolver-calls inc) {})}
+                          (fn [] (public/run! {:unexpected-option true})))
+                        nil
+                        (catch Throwable error error))
+        nonmap-error (try
+                       (with-redefs-fn
+                         {resolver (fn [] (swap! resolver-calls inc) {})}
+                         (fn [] (public/run! [:unexpected-option])))
+                       nil
+                       (catch Throwable error error))]
+    (is (instance? clojure.lang.ExceptionInfo unknown-error))
+    (is (instance? clojure.lang.ExceptionInfo nonmap-error))
+    (is (zero? @resolver-calls))
+    (let [result (with-redefs-fn
+                   {resolver (fn [] (swap! resolver-calls inc) {:runtime :fake})
+                    run-with-runtime (fn [_] 9)
+                    exit-var (fn [code] (swap! exits conj code))}
+                   (fn [] (public/run! {})))]
+      (is (= 9 result))
+      (is (= [9] @exits))
+      (is (= 1 @resolver-calls)))
+    (let [invalid-error (with-redefs-fn
+                          {resolver (fn [] {:runtime :fake})
+                           run-with-runtime (fn [_] :not-an-exit)
+                           exit-var (fn [code] (swap! exits conj code))}
+                          (fn []
+                            (try
+                              (public/run! {})
+                              nil
+                              (catch Throwable error error))))]
+      (is (instance? clojure.lang.ExceptionInfo invalid-error))
+      (is (= [9] @exits)))))
+
+(deftest public-adapter-retains-fixture-results-before-later-sweep-throw
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        accepted-out (str "h\u00e9llo \u2713\ncheck \u03a9\ncompile \u03bb\n"
+                          (apply str (repeat 64 "accepted stdout \u03a9\n")))
+        accepted-err (str "stdout \u03a9\nstderr \u03bb\n"
+                          (apply str (repeat 64 "accepted stderr \u03bb\n")))
+        rejected-out (apply str (repeat 64 "rejected stdout \u2713\n"))
+        rejected-err (apply str (repeat 64 "rejected stderr \u00e9\n"))
+        accepted {:fixture "examples/\u03c0.gravity"
+                  :expected-stdout "h\u00e9llo \u2713\n"
+                  :check-result {:exit 0 :out accepted-out :err accepted-err}
+                  :run-result {:exit 0 :out accepted-out :err accepted-err}
+                  :compile-result {:exit 0 :out accepted-out :err accepted-err}
+                  :executable-result {:exit 0 :out accepted-out :err accepted-err}}
+        rejected {:fixture "bootstrap/clojure/fixtures/rejected/\u03bb.qst"
+                  :command :check
+                  :expected-diagnostic "P18\u0394"
+                  :result {:exit 1 :out rejected-out :err rejected-err}}
+        failure (ex-info "later public sweep failed" {:phase :t04-sweep})
+        originals (mapv var-get [#'public-adapter-shell-run
+                                 #'public-adapter-t02-package
+                                 #'public-adapter-t04-sweep
+                                 #'public-adapter-accepted-record
+                                 #'public-adapter-rejected-record])
+        before (public-adapter-artifact-snapshot)
+        snapshots (atom [])
+        caught (with-redefs-fn
+                 {#'public-adapter-shell-run (fn [& _] {:exit 0})
+                  #'public-adapter-t02-package (fn [& _] :t02-return)
+                  #'public-adapter-t04-sweep (fn [& _] (throw failure))
+                  #'public-adapter-accepted-record identity
+                  #'public-adapter-rejected-record identity}
+                 (fn []
+                   (binding [*print-length* 1
+                             *print-level* 1]
+                     (try
+                       (run-with-runtime
+                        (public-adapter-runtime
+                         (public-adapter-diagnostic-runner accepted rejected snapshots)))
+                       nil
+                       (catch Throwable error error)))))
+        files (public-adapter-new-files before)
+        payloads (public-adapter-payloads files)
+        [after-one after-two] @snapshots
+        first-files (public-adapter-new-files-between before after-one)
+        second-files (public-adapter-new-files-between after-one after-two)
+        first-manifests (filter public-adapter-manifest-payload?
+                                (public-adapter-payloads first-files))
+        second-manifests (filter public-adapter-manifest-payload?
+                                 (public-adapter-payloads second-files))]
+    (is (identical? failure caught))
+    (is (= originals (mapv var-get [#'public-adapter-shell-run
+                                    #'public-adapter-t02-package
+                                    #'public-adapter-t04-sweep
+                                    #'public-adapter-accepted-record
+                                    #'public-adapter-rejected-record])))
+    (is (= public/public-test-argv
+           ["--progress" "--namespace" "gravity.bootstrap-test"
+            "--exact" "p18-public-test-command-runs-current-public-subset"]))
+    (is (= 2 (count @snapshots)))
+    (is (= 1 (count first-manifests)))
+    (is (= 1 (count second-manifests)))
+    (is (= :partial (:status (:value (first first-manifests)))))
+    (is (= :partial (:status (:value (first second-manifests)))))
+    (is (= [:accepted-fixture]
+           (mapv :phase (get-in (first first-manifests) [:value :records]))))
+    (is (= [:accepted-fixture :rejected-fixture]
+           (mapv :phase (get-in (first second-manifests) [:value :records]))))
+    (is (seq files))
+    (is (some public-adapter-diagnostic-payload? payloads))
+    (is (public-adapter-payload-contains? payloads accepted))
+    (is (public-adapter-payload-contains? payloads rejected))
+    (is (public-adapter-payload-contains? payloads :accepted-fixture))
+    (is (public-adapter-payload-contains? payloads :rejected-fixture))
+    (doseq [value ["h\u00e9llo \u2713\n" accepted-out accepted-err
+                   rejected-out rejected-err 0 1]]
+      (is (public-adapter-payload-contains? payloads value) (pr-str value)))
+    (let [record-payloads (filter public-adapter-record-payload? payloads)
+          manifest-payloads (filter public-adapter-manifest-payload? payloads)]
+      (is (= 2 (count record-payloads)))
+      (is (some #(= accepted (get-in % [:value :record])) record-payloads))
+      (is (some #(= rejected (get-in % [:value :record])) record-payloads))
+      (is (seq manifest-payloads))
+      (doseq [{:keys [value]} manifest-payloads
+              {:keys [path bytes sha256]} (:records value)]
+        (let [file (public-adapter-file-for-path files path)]
+          (is (some? file) (str "manifest record path missing: " path))
+          (when file
+            (is (= bytes (.length ^java.io.File file)))
+            (is (= sha256 (public-adapter-sha256-file file)))))))))
+
+(deftest public-adapter-uses-fresh-diagnostic-files-for-each-invocation
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        accepted {:fixture "examples/repeat.gravity"
+                  :expected-stdout "repeat \u2713\n"
+                  :check-result {:exit 0 :out "check-1\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/repeat.qst"
+                  :command :check
+                  :expected-diagnostic "P18R"
+                  :result {:exit 1 :out "reject-1\n" :err "reject-err \u03a9\n"}}
+        invoke! (fn []
+                  (with-redefs-fn
+                    {#'public-adapter-shell-run (fn [& _] {:exit 0})
+                     #'public-adapter-t02-package (fn [& _] :t02-return)
+                     #'public-adapter-t04-sweep (fn [& _] :t04-return)
+                     #'public-adapter-accepted-record identity
+                     #'public-adapter-rejected-record identity}
+                    (fn []
+                      (run-with-runtime
+                       (public-adapter-runtime
+                        (public-adapter-diagnostic-runner accepted rejected))))))
+        before (public-adapter-artifact-snapshot)
+        first-result (invoke!)
+        after-first (public-adapter-artifact-snapshot)
+        first-files (public-adapter-new-files before)
+        first-text (into {} (map (fn [[path file]] [path (slurp file)])) first-files)
+        second-result (invoke!)
+        after-second (public-adapter-artifact-snapshot)
+        second-files (public-adapter-new-files after-first)
+        first-payloads (public-adapter-payloads first-files)
+        second-payloads (public-adapter-payloads second-files)
+        first-paths (set (keys first-files))
+        second-paths (set (keys second-files))]
+    (is (= first-result second-result))
+    (is (seq first-files))
+    (is (seq second-files))
+    (is (some public-adapter-diagnostic-payload? first-payloads))
+    (is (some public-adapter-diagnostic-payload? second-payloads))
+    (is (empty? (set/intersection first-paths second-paths)))
+    (is (= first-text
+           (into {} (map (fn [[path file]] [path (slurp file)]))
+                 (select-keys after-second first-paths))))
+    (is (public-adapter-payload-contains? first-payloads accepted))
+    (is (public-adapter-payload-contains? second-payloads accepted))
+    (is (public-adapter-payload-contains? first-payloads rejected))
+    (is (public-adapter-payload-contains? second-payloads rejected))
+    (doseq [payloads [first-payloads second-payloads]]
+      (is (some #(and (str/includes? (:text %) ":sha256")
+                      (re-find #"(?i)[0-9a-f]{64}" (:text %)))
+                payloads)))
+    (is (= (set (keys after-second))
+           (set (keys (public-adapter-artifact-snapshot)))))))
+
+(deftest public-adapter-writes-fresh-prefix-manifests-before-runner-progresses
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        accepted {:fixture "examples/prefix.gravity"
+                  :expected-stdout "prefix \u2713\n"
+                  :check-result {:exit 0 :out "check\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/prefix.qst"
+                  :command :check
+                  :expected-diagnostic "P18PREFIX"
+                  :result {:exit 1 :out "reject\n" :err "reject-err\n"}}
+        before (public-adapter-artifact-snapshot)
+        snapshots (atom [])
+        prefix-texts (atom [])
+        runner (fn [argv]
+                 (let [accepted-result (public-adapter-accepted-record accepted)
+                       after-one (public-adapter-artifact-snapshot)]
+                   (swap! snapshots conj after-one)
+                   (swap! prefix-texts conj
+                          (into {} (map (fn [[path file]] [path (slurp file)]))
+                                (public-adapter-new-files-between before after-one)))
+                   (let [rejected-result (public-adapter-rejected-record rejected)
+                         after-two (public-adapter-artifact-snapshot)
+                         sweep-result (public-adapter-t04-sweep {:fixture "after-prefix"})]
+                     (swap! snapshots conj after-two)
+                     (swap! prefix-texts conj
+                            (into {} (map (fn [[path file]] [path (slurp file)]))
+                                  (public-adapter-new-files-between before after-two)))
+                     {:argv (vec argv)
+                      :accepted accepted-result
+                      :rejected rejected-result
+                      :sweep sweep-result})))
+        result (with-redefs-fn
+                 {#'public-adapter-shell-run (fn [& _] {:exit 0})
+                  #'public-adapter-t02-package (fn [& _] :t02-return)
+                  #'public-adapter-t04-sweep (fn [& _] :t04-return)
+                  #'public-adapter-accepted-record identity
+                  #'public-adapter-rejected-record identity}
+                 (fn []
+                   (run-with-runtime (public-adapter-runtime runner))))
+        [after-one after-two] @snapshots
+        after-run (public-adapter-artifact-snapshot)
+        first-files (public-adapter-new-files-between before after-one)
+        second-files (public-adapter-new-files-between after-one after-two)
+        final-files (public-adapter-new-files-between after-two after-run)
+        first-payloads (public-adapter-payloads first-files)
+        second-payloads (public-adapter-payloads second-files)
+        final-payloads (public-adapter-payloads final-files)
+        first-manifests (filter public-adapter-manifest-payload? first-payloads)
+        second-manifests (filter public-adapter-manifest-payload? second-payloads)
+        final-manifests (filter public-adapter-manifest-payload? final-payloads)
+        first-paths (set (keys first-files))
+        second-paths (set (keys second-files))
+        final-paths (set (keys final-files))]
+    (is (= {:argv public/public-test-argv
+            :accepted accepted
+            :rejected rejected
+            :sweep :t04-return}
+           result))
+    (is (= 2 (count @snapshots)))
+    (is (= 1 (count first-manifests)))
+    (is (= 1 (count second-manifests)))
+    (is (seq final-manifests))
+    (is (= :partial (:status (:value (first first-manifests)))))
+    (is (= :partial (:status (:value (first second-manifests)))))
+    (is (some #(= :final (:status (:value %))) final-manifests))
+    (is (= [:accepted-fixture]
+           (mapv :phase (get-in (first first-manifests) [:value :records]))))
+    (is (= [:accepted-fixture :rejected-fixture]
+           (mapv :phase (get-in (first second-manifests) [:value :records]))))
+    (is (some #(= 2 (count (:records (:value %)))) final-manifests))
+    (is (empty? (set/intersection first-paths second-paths)))
+    (is (empty? (set/intersection first-paths final-paths)))
+    (is (empty? (set/intersection second-paths final-paths)))
+    (doseq [prefix @prefix-texts]
+      (is (= prefix
+             (into {} (map (fn [[path file]] [path (slurp file)]))
+                   (select-keys after-run (keys prefix))))))))
+
+(deftest public-adapter-capture-io-failure-is-visible-and-preserves-semantics
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        write-bytes-var (public-adapter-var "write-bytes!")
+        accepted {:fixture "examples/io-failure.gravity"
+                  :expected-stdout "done \u03bb\n"
+                  :check-result {:exit 0 :out "ok\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/io-failure.qst"
+                  :command :check
+                  :expected-diagnostic "P18IO"
+                  :result {:exit 1 :out "out \u03a9\n" :err "err \u2713\n"}}
+        calls (atom [])
+        attempts (atom 0)
+        original-argv public/public-test-argv
+        original-values (mapv var-get [#'public-adapter-shell-run
+                                       #'public-adapter-t02-package
+                                       #'public-adapter-t04-sweep
+                                       #'public-adapter-accepted-record
+                                       #'public-adapter-rejected-record])
+        writer (java.io.StringWriter.)
+        successful-result
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (swap! calls conj :t04) :t04-return)
+           #'public-adapter-accepted-record (fn [record] (swap! calls conj :accepted) record)
+           #'public-adapter-rejected-record (fn [record] (swap! calls conj :rejected) record)
+           write-bytes-var (fn [& _]
+                             (swap! attempts inc)
+                             (throw (ex-info "simulated diagnostic capture I/O failure"
+                                             {:attempt @attempts})))}
+          (fn []
+            (binding [*err* writer]
+              (run-with-runtime
+               (public-adapter-runtime
+                (public-adapter-diagnostic-runner accepted rejected))))))
+        thrown (ex-info "original sweep exception" {:phase :t04-sweep})
+        throw-writer (java.io.StringWriter.)
+        throw-attempts (atom 0)
+        caught
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (throw thrown))
+           #'public-adapter-accepted-record identity
+           #'public-adapter-rejected-record identity
+           write-bytes-var (fn [& _]
+                             (swap! throw-attempts inc)
+                             (throw (ex-info "simulated diagnostic capture I/O failure"
+                                             {:attempt @throw-attempts})))}
+          (fn []
+            (binding [*err* throw-writer]
+              (try
+                (run-with-runtime
+                 (public-adapter-runtime
+                  (public-adapter-diagnostic-runner accepted rejected)))
+                nil
+                (catch Throwable error error)))))]
+    (is (= {:argv public/public-test-argv
+            :accepted accepted
+            :rejected rejected
+            :sweep :t04-return}
+           successful-result))
+    (is (= [:accepted :rejected :t04] @calls))
+    (is (= 1 @attempts))
+    (is (re-find #"(?is)(capture|diagnostic).*(throw|fail|error)"
+                 (str writer)))
+    (is (identical? thrown caught))
+    (is (= 1 @throw-attempts))
+    (is (re-find #"(?is)(capture|diagnostic).*(throw|fail|error)"
+                 (str throw-writer)))
+    (is (= original-argv public/public-test-argv))
+    (is (= original-values
+           (mapv var-get [#'public-adapter-shell-run
+                          #'public-adapter-t02-package
+                          #'public-adapter-t04-sweep
+                          #'public-adapter-accepted-record
+                          #'public-adapter-rejected-record])))))
+
+(deftest public-adapter-manifest-io-failure-stops-later-capture-without-altering-results
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        write-bytes-var (public-adapter-var "write-bytes!")
+        original-write (var-get write-bytes-var)
+        accepted {:fixture "examples/manifest-io.gravity"
+                  :expected-stdout "manifest \u03bb\n"
+                  :check-result {:exit 0 :out "ok\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/manifest-io.qst"
+                  :command :check
+                  :expected-diagnostic "P18MANIFEST"
+                  :result {:exit 1 :out "out \u03a9\n" :err "err \u2713\n"}}
+        calls (atom [])
+        attempts (atom 0)
+        originals (mapv var-get [#'public-adapter-shell-run
+                                 #'public-adapter-t02-package
+                                 #'public-adapter-t04-sweep
+                                 #'public-adapter-accepted-record
+                                 #'public-adapter-rejected-record])
+        writer (java.io.StringWriter.)
+        successful-result
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (swap! calls conj :t04) :t04-return)
+           #'public-adapter-accepted-record (fn [record] (swap! calls conj :accepted) record)
+           #'public-adapter-rejected-record (fn [record] (swap! calls conj :rejected) record)
+           write-bytes-var (fn [path bytes]
+                             (if (= 2 (swap! attempts inc))
+                               (throw (ex-info "simulated diagnostic manifest I/O failure"
+                                               {:path (str path)}))
+                               (original-write path bytes)))}
+          (fn []
+            (binding [*err* writer]
+              (run-with-runtime
+               (public-adapter-runtime
+                (public-adapter-diagnostic-runner accepted rejected))))))
+        thrown (ex-info "original manifest sweep exception" {:phase :t04-sweep})
+        throw-attempts (atom 0)
+        throw-writer (java.io.StringWriter.)
+        caught
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (throw thrown))
+           #'public-adapter-accepted-record identity
+           #'public-adapter-rejected-record identity
+           write-bytes-var (fn [path bytes]
+                             (if (= 2 (swap! throw-attempts inc))
+                               (throw (ex-info "simulated diagnostic manifest I/O failure"
+                                               {:path (str path)}))
+                               (original-write path bytes)))}
+          (fn []
+            (binding [*err* throw-writer]
+              (try
+                (run-with-runtime
+                 (public-adapter-runtime
+                  (public-adapter-diagnostic-runner accepted rejected)))
+                nil
+                (catch Throwable error error)))))]
+    (is (= {:argv public/public-test-argv
+            :accepted accepted
+            :rejected rejected
+            :sweep :t04-return}
+           successful-result))
+    (is (= [:accepted :rejected :t04] @calls))
+    (is (= 2 @attempts))
+    (is (str/includes? (str writer) ":diagnostic-capture-failed"))
+    (is (str/includes? (str writer) ":diagnostic-capture-skipped"))
+    (is (str/includes? (str writer) "simulated diagnostic manifest I/O failure"))
+    (is (identical? thrown caught))
+    (is (= 2 @throw-attempts))
+    (is (str/includes? (str throw-writer) ":diagnostic-capture-failed"))
+    (is (str/includes? (str throw-writer) ":diagnostic-capture-skipped"))
+    (is (str/includes? (str throw-writer) "simulated diagnostic manifest I/O failure"))
+    (is (= public/public-test-argv
+           ["--progress" "--namespace" "gravity.bootstrap-test"
+            "--exact" "p18-public-test-command-runs-current-public-subset"]))
+    (is (= originals
+           (mapv var-get [#'public-adapter-shell-run
+                          #'public-adapter-t02-package
+                          #'public-adapter-t04-sweep
+                          #'public-adapter-accepted-record
+                          #'public-adapter-rejected-record])))))
+
+(deftest public-diagnostic-report-joins-valid-prefix-and-final-indexes
+  (let [{:keys [root accepted rejected accepted-out accepted-err run-out run-err
+                compile-out compile-err executable-out executable-err
+                rejected-out rejected-err accepted-relative rejected-relative
+                partial-one-relative partial-two-relative final-relative
+                accepted-file rejected-file partial-one-file partial-two-file final-file
+                commit tree run-id run-attempt run-url]}
+        (report-fixture!)
+        before (report-fixture-snapshot root)
+        report (diagnostic-report/report (str root))
+        after (report-fixture-snapshot root)
+        accepted-report (report-record-for-phase report :accepted-fixture)
+        rejected-report (report-record-for-phase report :rejected-fixture)
+        manifests (:manifests report)
+        observed (:observed report)]
+    (is (= before after) "report must not mutate the extracted artifact")
+    (is (= "gravity/ci-public-diagnostic-report-v1" (:schema report)))
+    (is (= :diagnostic (:authority report)))
+    (is (false? (:authoritative? report)))
+    (is (= {:commit commit
+            :tree tree
+            :run-id run-id
+            :run-url run-url
+            :attempt run-attempt}
+           (:recorded report)))
+    (is (= {:status :failed
+            :exit-code 1
+            :timeout-seconds 900
+            :elapsed-ms 4321}
+           (:assessment report)))
+    (is (= :final (:index-status report)))
+    (is (= {:entered 2
+            :return-markers 2
+            :captured 2
+            :indexed 2
+            :partial-manifests 2
+            :final-manifests 1}
+           observed))
+    (is (= 2 (count (:records report))))
+    (is (= #{:accepted-fixture :rejected-fixture}
+           (set (map :phase (:records report)))))
+    (is (= (:fixture accepted) (:fixture accepted-report)))
+    (is (= 1 (:ordinal accepted-report)))
+    (is (set/subset? #{:check-result :run-result :compile-result :executable-result}
+                     (set (:record-keys accepted-report))))
+    (is (not (contains? accepted-report :record)))
+    (is (= (:fixture rejected) (:fixture rejected-report)))
+    (is (= 2 (:ordinal rejected-report)))
+    (is (contains? (set (:record-keys rejected-report)) :result))
+    (is (= {:path accepted-relative
+            :bytes (.length ^java.io.File accepted-file)
+            :sha256 (public-adapter-sha256-file accepted-file)}
+           (:file accepted-report)))
+    (is (= {:path rejected-relative
+            :bytes (.length ^java.io.File rejected-file)
+            :sha256 (public-adapter-sha256-file rejected-file)}
+           (:file rejected-report)))
+    (doseq [[result-key out-text err-text]
+            [[:check-result accepted-out accepted-err]
+             [:run-result run-out run-err]
+             [:compile-result compile-out compile-err]
+             [:executable-result executable-out executable-err]]]
+      (let [result (get-in accepted-report [:results result-key])]
+        (is (= #{:exit :out :err} (set (keys result))) result-key)
+        (is (= 0 (:exit result)) result-key)
+        (doseq [[stream text] [[:out out-text] [:err err-text]]]
+          (let [identity (get result stream)]
+            (is (= #{:record-path :field-path :utf8-bytes :sha256}
+                   (set (keys identity)))
+                [result-key stream])
+            (is (= accepted-relative (:record-path identity))
+                [result-key stream])
+            (is (= [:record result-key stream] (:field-path identity))
+                [result-key stream])
+            (is (= (report-fixture-output-identity text)
+                   (select-keys identity [:utf8-bytes :sha256]))
+                [result-key stream])))))
+    (let [result (get-in rejected-report [:results :result])]
+      (is (= #{:exit :out :err} (set (keys result))))
+      (is (= 1 (:exit result)))
+      (doseq [[stream text] [[:out rejected-out] [:err rejected-err]]]
+        (let [identity (get result stream)]
+          (is (= #{:record-path :field-path :utf8-bytes :sha256}
+                 (set (keys identity))) stream)
+          (is (= rejected-relative (:record-path identity)) stream)
+          (is (= [:record :result stream] (:field-path identity)) stream)
+          (is (= (report-fixture-output-identity text)
+                 (select-keys identity [:utf8-bytes :sha256])) stream))))
+    (let [record-file-id (:file accepted-report)
+          stdout-id (get-in accepted-report [:results :check-result :out])]
+      (is (not= (:bytes record-file-id) (:utf8-bytes stdout-id)))
+      (is (not= (:sha256 record-file-id) (:sha256 stdout-id))))
+    (is (= #{:partial :final} (set (map :status manifests))))
+    (is (= [1 2 2] (sort (map :record-count manifests))))
+    (is (= #{partial-one-relative partial-two-relative final-relative}
+           (set (map :path manifests))))
+    (is (every? #(= #{:path :bytes :sha256} (set (keys (:file %)))) manifests))
+    (is (= {:path partial-one-relative
+            :bytes (.length ^java.io.File partial-one-file)
+            :sha256 (public-adapter-sha256-file partial-one-file)}
+           (:file (some #(when (= partial-one-relative (:path %)) %) manifests))))
+    (is (= {:path partial-two-relative
+            :bytes (.length ^java.io.File partial-two-file)
+            :sha256 (public-adapter-sha256-file partial-two-file)}
+           (:file (some #(when (= partial-two-relative (:path %)) %) manifests))))
+    (is (= {:path final-relative
+            :bytes (.length ^java.io.File final-file)
+            :sha256 (public-adapter-sha256-file final-file)}
+           (:file (some #(when (= final-relative (:path %)) %) manifests))))
+    (is (map? (:inputs report)))
+    (is (seq (get-in report [:inputs :files])))
+    (is (re-matches #"[0-9a-f]{64}"
+                    (get-in report [:inputs :checksums :file :sha256])))
+    (is (every? #(re-matches #"[0-9a-f]{64}" (:sha256 %))
+                (vals (get-in report [:inputs :files]))))
+    (is (contains? (set (:nonclaims report))
+                   :final-index-is-not-assessment-completion))
+    (is (contains? (set (:nonclaims report))
+                   :diagnostic-not-release-or-admission-authority))
+    (is (= before (report-fixture-snapshot root)))))
+
+(deftest public-diagnostic-report-retains-timeout-and-absent-index-state
+  (let [{:keys [root]} (report-fixture! {:indexes? false
+                                         :assessment-status :timeout
+                                         :exit-code 124})
+        report (diagnostic-report/report (str root))
+        observed (:observed report)]
+    (is (= :timeout (:status (:assessment report))))
+    (is (= 124 (:exit-code (:assessment report))))
+    (is (= 900 (:timeout-seconds (:assessment report))))
+    (is (= :not-observed (:index-status report)))
+    (is (empty? (:manifests report)))
+    (is (= 2 (:entered observed)))
+    (is (= 2 (:return-markers observed)))
+    (is (= 2 (:captured observed)))
+    (is (= :not-observed (:indexed observed)))
+    (is (= 0 (:partial-manifests observed)))
+    (is (= 0 (:final-manifests observed)))
+    (is (= 2 (count (:records report))))
+    (is (false? (:authoritative? report))))
+  (let [{:keys [root]} (report-fixture! {:final-index? false})
+        report (diagnostic-report/report (str root))
+        observed (:observed report)]
+    (is (= :partial (:index-status report)))
+    (is (= 2 (:indexed observed)))
+    (is (= 2 (:partial-manifests observed)))
+    (is (= 0 (:final-manifests observed)))
+    (is (= [:partial :partial] (mapv :status (:manifests report))))))
+
+(deftest public-diagnostic-report-run-validates-exact-options-and-emits-one-edn
+  (let [{:keys [root]} (report-fixture!)
+        invalid-options [nil
+                         {}
+                         {:artifact-dir ""}
+                         {:artifact-dir 42}
+                         {:artifact-dir (str root) :unexpected true}]]
+    (let [report-calls (atom 0)]
+      (with-redefs [diagnostic-report/report
+                    (fn [& _] (swap! report-calls inc) {})]
+        (doseq [options invalid-options]
+          (let [error (report-fixture-call-error
+                       #(diagnostic-report/run! options))]
+            (is (instance? Throwable error) (pr-str options)))))
+      (is (zero? @report-calls) "invalid options must be rejected before artifact I/O"))
+    (let [before (report-fixture-snapshot root)
+          output (with-out-str
+                   (diagnostic-report/run! {:artifact-dir (str root)}))
+          [value trailing] (report-read-one-form output)]
+      (is (map? value))
+      (is (= ::report-eof trailing))
+      (is (= (diagnostic-report/report (str root)) value))
+      (is (= before (report-fixture-snapshot root))))))
+
+(deftest public-diagnostic-report-rejects-tampered-confined-and-unsupported-inputs
+  (let [{:keys [root accepted-relative]} (report-fixture!)]
+    (report-fixture-write! root accepted-relative "tampered\n")
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"SHA256SUMS digest"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root]} (report-fixture!)
+        checksums (slurp (io/file root "SHA256SUMS"))]
+    (report-fixture-write! root "SHA256SUMS" (str checksums checksums))
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"duplicate paths"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root final-relative]} (report-fixture!)
+        manifest (edn/read-string (slurp (io/file root final-relative)))]
+    (report-fixture-write-edn!
+     root
+     final-relative
+     (assoc-in manifest [:records 0 :path] "../outside.edn"))
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"traversal"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root accepted-file]} (report-fixture!)
+        link (io/file root "p18-public-test-artifacts/run-synthetic/link.edn")]
+    (java.nio.file.Files/createSymbolicLink
+     (.toPath link)
+     (.toPath accepted-file)
+     (make-array java.nio.file.attribute.FileAttribute 0))
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"symbolic link"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root accepted-relative]} (report-fixture!)]
+    (report-fixture-write! root accepted-relative "{:malformed\n")
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Malformed EDN"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root accepted-relative]} (report-fixture!)
+        envelope (edn/read-string (slurp (io/file root accepted-relative)))]
+    (report-fixture-write-edn!
+     root
+     accepted-relative
+     (assoc envelope :schema "gravity/unsupported-diagnostic-v99"))
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Unsupported diagnostic record schema"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root]} (report-fixture! {:missing-result? true})]
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"missing a required result"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root final-relative]} (report-fixture!)
+        manifest (edn/read-string (slurp (io/file root final-relative)))
+        old-hash (get-in manifest [:records 0 :sha256])
+        wrong-hash (str (if (str/starts-with? old-hash "0") "1" "0")
+                        (subs old-hash 1))]
+    (report-fixture-write-edn!
+     root
+     final-relative
+     (assoc-in manifest [:records 0 :sha256] wrong-hash))
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"manifest record digest"
+                          (diagnostic-report/report (str root)))))
+  (let [{:keys [root partial-two-relative]} (report-fixture!)
+        manifest (edn/read-string (slurp (io/file root partial-two-relative)))]
+    (report-fixture-write-edn!
+     root
+     partial-two-relative
+     (assoc-in manifest [:records 1 :ordinal] 3))
+    (report-fixture-write-checksums! root)
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"contiguous returned prefix|ordinal"
+                          (diagnostic-report/report (str root))))))
+
+(deftest public-diagnostic-report-rejects-recorded-source-and-run-inconsistency
+  (let [wrong-commit (apply str (repeat 40 "f"))
+        {:keys [root]} (report-fixture! {:receipt-commit wrong-commit})
+        error (report-fixture-call-error
+               #(diagnostic-report/report (str root)))]
+    (is (instance? Throwable error))
+    (is (re-find #"commit disagrees" (.getMessage error))))
+  (let [{:keys [root]} (report-fixture!
+                        {:run-url "https://github.com/burn2delete/uniform/actions/runs/999999"})
+        error (report-fixture-call-error
+               #(diagnostic-report/report (str root)))]
+    (is (instance? Throwable error))
+    (is (re-find #"run-url.txt" (.getMessage error)))))
 
 (deftest contracts-include-the-complete-native-wasm-namespace
   (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 6)
@@ -1600,10 +2986,23 @@
         full {:kind :full :reason :path-discovery-failed :paths []}
         unknown {:kind :selected :paths ["src/new-owner.clj"]}
         docs-only {:kind :docs-only :paths ["README.md"]}]
-    (let [ordinary-commands (command-ids ordinary-reader)]
+    (let [ordinary-catalog (ci/commands-for-selection "bootstrap" ordinary-reader)
+          ordinary-commands (mapv first ordinary-catalog)]
       (is (some #{"reader-regression"} ordinary-commands))
       (is (some #{"syntax-regression"} ordinary-commands))
-      (is (not (has-input-controls? ordinary-reader))))
+      (is (not (has-input-controls? ordinary-reader)))
+      (let [[syntax-id syntax-timeout syntax-argv]
+            (some #(when (= "syntax-regression" (first %)) %) ordinary-catalog)]
+        (is (= "syntax-regression" syntax-id))
+        (is (= 600 syntax-timeout))
+        (is (= (ci/command "2g" "-M:dev-test"
+                           "--namespace" "gravity.syntax.pipeline-test"
+                           "--namespace" "gravity.syntax.owner-calls-test"
+                           "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")
+               syntax-argv))))
     (doseq [path boundary-paths]
       (is (ci/bootstrap-input-control-path? path) path)
       (is (has-input-controls? (selected-boundary path)) path))
@@ -1612,5 +3011,60 @@
     (is (has-input-controls? nil))
     (is (not (has-input-controls? docs-only)))))
 
-(let [result (run-tests 'ci.run-test 'ci.lint-context-test)]
+(deftest exact-selection-validates-all-names-before-running
+  (let [invoked (atom false)
+        selected-test "ci.run-test/bootstrap-selection-runs-historical-input-controls-only-at-boundary"
+        result (with-redefs [run-selected-tests!
+                             (fn [_]
+                               (reset! invoked true)
+                               {:test 1 :pass 1 :fail 0 :error 0})]
+                 (run-exact-selection! [exact-selector
+                                        selected-test
+                                        "ci.run-test/exact-selection-missing-test"]))]
+    (is (= {:test 0 :pass 0 :fail 1 :error 0} result))
+    (is (false? @invoked))))
+
+(deftest exact-selection-does-not-swallow-execution-ex-info
+  (let [selected-test "ci.run-test/bootstrap-selection-runs-historical-input-controls-only-at-boundary"]
+    (with-redefs [run-selected-tests!
+                  (fn [_] (throw (ex-info "selected test failed" {:phase :execution})))]
+      (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                            #"selected test failed"
+                            (run-exact-selection! [exact-selector selected-test]))))))
+
+(deftest exact-selection-preserves-fixtures-and-report-counters
+  (let [once-calls (atom 0)
+        each-calls (atom 0)
+        body-calls (atom 0)
+        fixture-ns (create-ns (symbol (str "ci.run-test.fixture-" (gensym))))
+        test-body (fn []
+                    (is (= 1 (swap! body-calls inc))))
+        test-var (intern fixture-ns 'fixture-test test-body)]
+    (try
+      (alter-meta! test-var assoc :test test-body)
+      (alter-meta! fixture-ns assoc
+                   :clojure.test/once-fixtures
+                   [(fn [f] (swap! once-calls inc) (f))]
+                   :clojure.test/each-fixtures
+                   [(fn [f] (swap! each-calls inc) (f))])
+      (let [result (run-selected-tests! [test-var])]
+        (is (= {:test 1 :pass 1 :fail 0 :error 0} result))
+        (is (= 1 @once-calls))
+        (is (= 1 @each-calls))
+        (is (= 1 @body-calls)))
+      (finally
+        (remove-ns (ns-name fixture-ns))))))
+
+(deftest no-argument-dispatch-keeps-full-suite-namespaces
+  (let [summary {:test 2 :pass 2 :fail 0 :error 0}
+        calls (atom [])]
+    (with-redefs [run-tests (fn [& namespaces]
+                              (swap! calls conj namespaces)
+                              summary)]
+      (is (= summary (run-command! nil)))
+      (is (= [['ci.run-test 'ci.lint-context-test]] @calls)))))
+
+(let [result (if (seq *command-line-args*)
+               (run-command! *command-line-args*)
+               (run-command! nil))]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

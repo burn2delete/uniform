@@ -382,6 +382,38 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Produce authentic operation-specific database authority and retain attenuation, revocation, phase/lifetime and provider scope. Review text and schema/query metadata do not issue grants; Runtime enforces them at use. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply scoped authentic grants, intersection/attenuation/revocation, phase/lifetime, secret and payload-bound review facts; prompts, graphs and evaluations do not create authority. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Produce genuine operation-specific fixture/live-service and compiler artifact/namespace/phase grants, attenuation/revocation/lifetime and trust facts. Fakes and package identity grant no live authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Produce authentic operation-specific key/redaction, process command/args/cwd/output, clock/random, terminal/signal and device/register/range/interrupt grants with attenuation, revocation and lifetime. Actual Runtime/provider enforces before the action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply authentic current key/random/provider/tool/host scopes with intersection, attenuation, revocation and lifetime. Package/provider identity or pure policy data grants no actual operation; Runtime enforces at the protected boundary. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply authentic current operation-specific grants with attenuation, revocation and lifetime. Visible CLI/REPL grants and package identity do not create host/network/shell/secret/model/database authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply authentic current operation-specific inspection, mutation, tool, provider, profiler and endpoint grants with scope/revocation/lifetime; views and session identity issue no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual current operation-specific compile-time/provider/profiler/device grants, policy scope and revocation/lifetime; performance, PGO or tuning metadata grants no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

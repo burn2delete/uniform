@@ -52,12 +52,7 @@
 ;; Producer and Root 6 carry separately authored Gravity implementations; no
 ;; generic Stage0/Stage2 collection compiler or sort primitive calls this
 ;; oracle.
-(def p15-s23-sh07-canonical-decoration-limits
-  {:maximum-nodes 4096
-   :maximum-depth 96
-   :maximum-collection-width 512
-   :maximum-scalar-bytes 32768
-   :maximum-output-bytes 262144})
+
 
 (defn- p15-s23-sh07-decoration-failed [reason]
   {:status :failed :reason reason})
@@ -81,47 +76,12 @@
 (declare p15-s23-sh07-canonical-decoration)
 
 (defn- p15-s23-sh07-combine-decorations
-  [depth node-budget open separator close decorations]
-  (let [node-count
-        (inc (reduce + 0 (map :node-occurrences decorations)))
-        maximum-depth
-        (reduce max depth (map :maximum-depth decorations))]
-    (if (> node-count node-budget)
-      (p15-s23-sh07-decoration-failed :node-count-limit)
-      (let [maximum-output-bytes
-            (:maximum-output-bytes
-             p15-s23-sh07-canonical-decoration-limits)
-            builder (StringBuilder.)
-            append!
-            (fn [bytes text]
-              (let [observation
-                    (p15-s23-sh07-observe-utf8-byte-count
-                     text bytes maximum-output-bytes)]
-                (if (not= :accepted (:status observation))
-                  nil
-                  (do (.append builder ^String text)
-                      (:observed-after observation)))))
-            first-bytes (append! 0 open)]
-        (if (nil? first-bytes)
-          (p15-s23-sh07-decoration-failed :output-byte-limit)
-          (loop [remaining decorations bytes first-bytes first? true]
-            (if (empty? remaining)
-              (if-let [complete-bytes (append! bytes close)]
-                {:status :decorated
-                 :text (.toString builder)
-                 :node-occurrences node-count
-                 :maximum-depth maximum-depth
-                 :output-utf8-bytes complete-bytes}
-                (p15-s23-sh07-decoration-failed :output-byte-limit))
-              (let [with-separator
-                    (if first? bytes (append! bytes separator))
-                    with-text
-                    (when with-separator
-                      (append! with-separator (:text (first remaining))))]
-                (if with-text
-                  (recur (rest remaining) with-text false)
-                  (p15-s23-sh07-decoration-failed
-                   :output-byte-limit))))))))))
+  [depth open separator close decorations]
+  (let [text (str open (clojure.string/join separator (map :text decorations)) close)]
+    {:status :decorated :text text
+     :node-occurrences (inc (reduce + 0 (map :node-occurrences decorations)))
+     :maximum-depth (reduce max depth (map :maximum-depth decorations))
+     :output-utf8-bytes (p15-s23-sh07-o-text-bytes text)}))
 
 (def ^:private p15-s23-sh07-o-c2-carrier-keys
   #{:artifact :c2-reader-artifact :root-adapted-form-id
