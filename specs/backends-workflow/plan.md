@@ -425,6 +425,30 @@ is not compiler completion, acceptance, integration, release or self-hosting.
 The first actual implementation increment remains Reader
 [contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Emit actual selected dialect/schema/parameter/transaction and migration products consumed by Query and callable Library adapters. Output generation and plan simulation do not imply provider execution or loss approval. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Emit real deployable workflow/AI graph/provider/schema/log artifacts from admitted semantics; generation does not establish recovery or provider results. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Emit actual selected target artifacts preserving volatile, order, source and target constraints or explicitly refuse unsupported lowering. Artifact labels or equal sampled results establish no hardware semantics. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Produce actual selected source-mapped JS/mobile/native artifacts and typed host boundaries. Library components do not imply a renderer for every target, provider support, app launch, signing or distribution. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual target-specific debug/source/ABI/runtime assumptions and supported device/counter features. Unsupported/optimized-away/unavailable facts remain explicit; no target or product adoption follows from a tooling view. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Preserve actual target feature/ABI/layout/volatile-order/intrinsic/numeric/proof assumptions and valid fallback or refuse unsupported emission. Target labels and optimizer metadata do not establish safe executable variants. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

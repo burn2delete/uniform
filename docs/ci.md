@@ -122,6 +122,15 @@ existing CI checksum and provenance outputs. These files are diagnostic
 observations of the existing P18 caller; they do not add proof authority or
 claim that a failed assessment is a successful release.
 
+After each successful record capture, the adapter writes another fresh,
+non-authoritative manifest with `:status :partial`. Each such checkpoint lists
+exactly the captured prefix at that point and is kept alongside earlier
+snapshots; it is not overwritten or deleted. The existing `finally` path still
+writes a distinct `:status :final` manifest on normal return or aggregate
+exception. `:status :final` describes finalizer execution, not a successful or
+complete assessment. A partial index likewise records only a valid returned
+prefix, not completion of the 37-case suite or release proof.
+
 Capture failures are emitted as diagnostic markers and disable later capture
 attempts for that invocation while preserving the wrapped function's original
 return value or exception. No record is overwritten or deleted. The adapter
@@ -129,11 +138,54 @@ preserves public commands, results and the existing 60-second inner process
 watchdog. CI still rejects tracked source mutation; the normal artifact
 checksum manifest includes any generated proof or diagnostic files and retains
 logs, command receipts and checkout provenance after failure.
+An external hard kill may leave unfinished record or snapshot files because the
+adapter cannot run its `finally` block; it makes no fsync or crash-proof claim.
+Completed snapshots remain observations of their listed prefix; they do not
+establish that the remaining fixtures ran or that release proof succeeded.
 Markers include monotonic nanoseconds for intervals within that child JVM.
 The workflow propagates failure and has no release-publication job. A completed
 assessment is not a successful public proof: inspect its exit status and
 artifacts. Even a successful current bootstrap-hosted subset proof does not
 establish full-language, self-hosting or seedless-release acceptance.
+
+### Read retained public diagnostics
+
+The retained public-release upload can be inspected without replaying the
+assessment:
+
+```bash
+clojure -X ci.public-diagnostic-report/run! \
+  :artifact-dir '"/path/to/extracted-target-ci"'
+```
+
+`ci.public-diagnostic-report/report` is the programmatic entrypoint and
+`run!` accepts exactly one non-empty `:artifact-dir` option. The directory is
+the extracted upload root containing `SHA256SUMS`, checkout and run receipts,
+the child receipt, and `p18-public-test-artifacts/`; it is not a checkout to be
+replayed. The reader performs no network, provider, Git-source authentication,
+subprocess, runtime-Var resolution, public-test invocation, or file write.
+
+The report validates strict UTF-8 and one-form EDN inputs, rejects duplicate,
+absolute, traversal or symbolic-link paths, and requires `SHA256SUMS` to cover
+every regular file except itself with matching bytes and SHA-256. Producer
+marker paths beginning with `target/ci/` are mapped once into the extracted
+root. Mixed JVM/progress log text is ignored; only independent
+`ci-public-release-subset` marker forms are inspected. Full diagnostic record
+files remain the source of record. The report exposes their relative paths,
+byte/hash identities, fixture phase and ordinal, record keys, and nested
+`:out`/`:err` UTF-8 byte/hash identities without inlining command text or
+claiming redaction or raw process-wire completeness.
+
+Every available partial or final prefix manifest is checked against its real
+record files and identities. Missing indexes remain `:not-observed` or
+`:unindexed`; they are never reconstructed. A `:final` manifest describes
+finalizer execution only, not completion of the 37-case assessment or release
+proof. The child receipt's negative status, exit code and timeout remain in the
+diagnostic result, and a valid report command exits zero even when that
+assessment failed. Malformed, unsupported, tampered or contradictory artifact
+data fails clearly. The output is diagnostic-only and grants no release,
+admission, migration, self-hosting or seed-retirement authority. Hard kills may
+leave unfinished files; the reader makes no fsync or crash-proof claim.
 
 ### Portable leaf selection
 
