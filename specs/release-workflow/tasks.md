@@ -252,6 +252,39 @@ Evidence baseline: [TEST12](../../docs/phase-14-testing-verification-and-conform
 
 Closing evidence: Implement and execute the Execute performance regression fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test12/ai-costs: Separate actual AI provider/model, tool, memory, human-review and replay costs/latencies instead of collapsing provider/tool latency into an opaque number. Concrete acceptance: Measure provider/model, tool, memory, human-review and replay cost/latency separately; reject an opaque collapsed total or identities not tied to actual observations. External costs do not impose compiler work quotas. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/device-counters: Declare device/counter source and reject counters unavailable on the declared target/device. Concrete acceptance: Collect a supported device counter with device and source identity, then request an unavailable/mismatched counter; reject the unsupported measurement rather than fabricating a sample. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/report: Emit benchmark manifest, raw measurements, summary/comparison reports, regression decision, semantic gate report and safety evidence links. Concrete acceptance: Remove raw samples, benchmark/environment/compiler/artifact identities, comparison/regression decision, semantic gate or safety links; reject an unrepeatable or misleading performance artifact. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test12/semantic-safety-gate: Accept performance only after semantic/correctness and safety gates; reject faster behavior violating precision, profile legality or replay policy and require safety evidence for check-elision gains. Concrete acceptance: Compare a genuine safe-equivalent speedup with a faster wrong-result/proofless-check-elision case; fail semantic/safety violations before accepting performance, regardless of threshold improvement. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.
 
+
+<!-- performance-contract-source-benchmark-manifests-and-statistics:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract benchmark-manifests-and-statistics criterion (Open). Sources: [PERF5](../../docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md), [PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md).
+
+Implement actual gated benchmark manifests for initial Core/numeric/dispatch/layout/FFI/concurrency/stdlib-IO/GPU/workflow-AI/compiler-macro/build-package families, with workload/seed/distribution, profile/target/metric/unit/warmup/sample/statistical method/environment/threshold/baseline policy. Capture real samples/summaries and hardware/features/OS-kernel/compiler-backend/runtime/memory/numeric/power-thermal/build/dependency fingerprints as relevant. Exercise actual selected correctness/safety-approved runs and noise/insufficient samples/missing metadata/incompatible fingerprint cases. Exploratory or single samples cannot gate release; benchmark wins do not prove correctness and held runs remain explicitly unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-benchmark-manifests-and-statistics:end -->
+
+
+
+<!-- performance-contract-source-regressions-baseline-and-governance:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract regressions-baseline-and-governance criterion (Open). Sources: [PERF5](../../docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md).
+
+Compare actual compatible fingerprints or genuine governance-approved normalization, classify no-regression/noise/environment/compiler/backend/runtime-provider/dependency/semantic-safety/baseline-invalid outcomes and enforce declared thresholds. Preserve real baseline id/source/compiler/backend/environment/samples/threshold/review owner/date/history and accountable reviewed updates; never replace a baseline to hide correctness/safety regression. Exercise genuine selected drift/noise/regression/update decisions and stale/unreviewed/unsafe changes, absent gate approval or false pass. Existing Governance owns change/normalization approval and measurement producers retain actual data; source planning grants no publication or review verdict. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-regressions-baseline-and-governance:end -->
+
+
+
+<!-- performance-contract-source-worst-case-latency-evidence:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract worst-case-latency-evidence criterion (Open). Sources: [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md).
+
+Consume actual declared static worst-case, bounded model/hardware timing, fixed-target empirical or hybrid evidence with source/path, clock/power/runtime provider/input workload and measurement-method identities. Compose real loop/recursion/allocation/blocking/lock/interrupt/preemption and runtime-check bounds, report proof/measurement limitations and enforce required failure mode. Exercise genuine selected valid and exceeded/missing/unbounded/wrong-fingerprint evidence and reject substituting averages/percentiles or a simulation label for a worst-case/physical bound. Target selection and actual device/native/proof/benchmark execution remain separate held work where restricted. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-worst-case-latency-evidence:end -->
+
+
 - [ ] `release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures` Execute profile compliance fixtures
 
 Status: Open

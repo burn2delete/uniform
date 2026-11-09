@@ -193,6 +193,41 @@ L19 complete foreign-boundary admission criterion (Open): At the original Auth a
 <!-- auth-interop-source-admission:end -->
 
 
+
+<!-- library-data-source-database-authority-and-effects:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database authority and effects criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Produce and validate the concrete database principal/package/deployment/provider/operation grant, phase/lifetime, intersection, attenuation and revocation facts consumed at connection/query/read/write/transaction/migration/schema-introspection/admin boundaries. Auth owns this grant decision and its authentic artifact; Effects owns static direct/latent admission and Runtime owns actual before-action enforcement in their existing tasks. Query policy, allow-read/allow-write helper names, reviewed AI text and artifact metadata cannot create a grant.
+
+Refusals and acceptance evidence: Exercise real accepted and refused grant decisions for each claimed operation and exact subject, including stale/revoked, wrong provider/operation/phase/lifetime and widened authority. An Auth decision alone is no executed database operation or Runtime enforcement result. Preserve source-bound grant diagnostics and all held provider actions. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-authority-and-effects:end -->
+
+
+
+<!-- library-workflow-ai-source-action-authority:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library action-authority criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md).
+
+Produce authentic model/tool/memory/service/workflow grants with principal/package/deployment/provider/toolset, phase/lifetime, intersection/attenuation/revocation, secret and required review/payload scope. Preserve independent read/write authority. Exercise actual accepted/refused grant decisions for stale/revoked/wrong-provider/action/phase/payload subjects. Prompt, graph, eval and review records create no capability; Runtime owns actual before-action enforcement and provider results. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-action-authority:end -->
+
+
+
+<!-- library-testing-meta-source-test-meta-authority:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-authority criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Produce authentic fixture/live-service and compiler-operation grants with exact principal/package/provider/artifact/namespace/phase, intersection/attenuation/revocation and lifetime. Distinguish fake replaced authority from live grants and read/write/register/proof/artifact compiler scopes. Exercise actual permitted and stale/revoked/wrong-scope/phase/artifact decisions. Compiler host or Runtime enforces before the operation; trusted package or test-runner identity cannot issue authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-authority:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

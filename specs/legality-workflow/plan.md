@@ -968,6 +968,30 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Retain each profile restriction, taint-to-trust boundary, resource ownership, source-schema constraint and operation authority. Codec physical limits do not create new compiler work quotas; a legal wrapper still needs actual runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve [Matt's scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis), actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Preserve actual profile, ownership/resource/taint/unsafe and generated-program rules. No mock, test runner or compiler plugin bypasses them; semantic constraints do not restore retired compiler quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve actual profile/no-runtime, ownership/resource/unsafe/taint and interrupt constraints. Reject hidden allocation, dynamic firmware assumptions and unchecked generated forms without restoring retired project quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep actual secret/resource/taint/unsafe and generated-program checks, sink-specific UI trust and profile rules. Secret-safe policy metadata is no proof of provider behavior or constant-time internals. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Parse/check genuine selected realtime latency/jitter/allocation/blocking/preemption/loop-recursion contracts and failure modes. Physical/program bounds retain meaning and retired project quotas do not return. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority
