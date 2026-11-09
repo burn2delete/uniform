@@ -101,4 +101,3 @@ this worker cannot accept or integrate its own increment. Release and self-host
 dependencies remain separate. Historical operator restrictions and observations remain in the evidence
 record. This API and its documentation confer no provider or integration
 authority.
-
