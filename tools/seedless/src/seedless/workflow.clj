@@ -274,20 +274,15 @@
         {:key key :page page :issue issue :child-count 0}))))
 
 (defn- admission-parent! [ctx root]
-  ;; Older deterministic fixtures have no Project record and already replace
-  ;; relation!/status! with local doubles. The real setup path always has the
-  ;; verified Project identity, which is required before continuation writes.
-  (if-not (map? (:project @(:state ctx)))
-    {:mode :direct :issue root :child-count nil}
-    (let [project (tracking-project ctx)
-          children (sub-issues! ctx root)]
-      (if (< (count children) github-sub-issue-limit)
-        {:mode :direct :issue root :child-count (count children)}
-        (if-let [index (existing-index-parent ctx root project children)]
-          {:mode :continuation :issue index
-           :child-count (get-in index [:sub_issues_summary :total])
-           :source :existing-index}
-          (assoc (continuation-page! ctx root) :mode :continuation))))))
+  (let [project (tracking-project ctx)
+        children (sub-issues! ctx root)]
+    (if (< (count children) github-sub-issue-limit)
+      {:mode :direct :issue root :child-count (count children)}
+      (if-let [index (existing-index-parent ctx root project children)]
+        {:mode :continuation :issue index
+         :child-count (get-in index [:sub_issues_summary :total])
+         :source :existing-index}
+        (assoc (continuation-page! ctx root) :mode :continuation)))))
 
 (defn- verify-sub-issue-readback! [ctx parent child]
   (let [children (sub-issues! ctx parent)]
@@ -339,8 +334,7 @@
              (swap! new-keys conj (:key slice))
              (record-admission-intent! ctx slice root (:issue parent))
              (gh/relation! ctx (:issue parent) "sub_issues" (:id issue))
-             (when (map? (:project @(:state ctx)))
-               (verify-sub-issue-readback! ctx (:issue parent) issue))
+             (verify-sub-issue-readback! ctx (:issue parent) issue)
              (update-admission-intent! ctx slice {:phase :relation-verified})
              (gh/status! ctx issue "Ready")
              (update-admission-intent! ctx slice {:phase :ready}))

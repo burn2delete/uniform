@@ -218,11 +218,14 @@
   (doseq [scenario [:normal :release-gap]]
     (harness scenario
              (fn [ctx events _ _]
-               (rt/update! ctx assoc :campaign-issue {:number 100 :id 100 :node_id "campaign"})
-               (with-redefs [gh/setup! (fn [& _]) gh/pages (fn [& _] [])
-                             gh/issue! (fn [& _] {:number 1 :id 1 :node_id "issue1"})
-                             gh/milestone! (fn [& _] {:number 1}) gh/relation! (fn [& _])]
-                 (w/campaign! ctx))
+               (let [children (atom [])]
+                 (rt/update! ctx assoc :campaign-issue {:number 100 :id 100 :node_id "campaign"}
+                             :project {:id "project-fixture" :number 4 :url "https://fixture/projects/4"})
+                 (with-redefs [gh/setup! (fn [& _]) gh/pages (fn [& _] @children)
+                               gh/issue! (fn [& _] {:number 1 :id 1 :node_id "issue1"})
+                               gh/milestone! (fn [& _] {:number 1})
+                               gh/relation! (fn [_ _ _ id] (swap! children conj {:id id}))]
+                   (w/campaign! ctx)))
                (is (= :done (:status (w/task ctx "a"))))
                (is (= 1 (count (filter #(= :merge (first %)) @events))))
                (is (= 1 (count (filter #(= [:check main/completion-check] %) @events))))
@@ -302,17 +305,20 @@
       (finally (delete-tree! (:root ctx))))))
 
 (deftest admission-refuses-an-unverified-project-before-remote-writes
-  (let [fixture (tracking-fixture [] {})
-        {:keys [ctx issue-calls issue! pages! relation! status! comment!]} fixture]
-    (try
-      (rt/update! ctx assoc :project {:id "wrong" :number 4})
-      (with-redefs [gh/issue! issue! gh/pages pages! gh/relation! relation!
-                    gh/status! status! gh/comment! comment!
-                    gh/milestone! (fn [& _] {:number 1})]
-        (is (thrown-with-msg? Exception #"Project identity is required"
-                              (w/admit! ctx "main" [(slice "identity-child")]))))
-      (is (empty? @issue-calls))
-      (finally (delete-tree! (:root ctx))))))
+  (doseq [project [nil {:id "wrong" :number 4}]]
+    (let [fixture (tracking-fixture [] {})
+          {:keys [ctx issue-calls issue! pages! relation! status! comment!]} fixture]
+      (try
+        (if project
+          (rt/update! ctx assoc :project project)
+          (rt/update! ctx dissoc :project))
+        (with-redefs [gh/issue! issue! gh/pages pages! gh/relation! relation!
+                      gh/status! status! gh/comment! comment!
+                      gh/milestone! (fn [& _] {:number 1})]
+          (is (thrown-with-msg? Exception #"Project identity is required"
+                                (w/admit! ctx "main" [(slice "identity-child")]))))
+        (is (empty? @issue-calls))
+        (finally (delete-tree! (:root ctx)))))))
 
 (deftest early-draft-checks-review-and-real-merge
   (harness :normal
