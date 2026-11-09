@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.4.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
+Version: 1.5.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -119,3 +119,26 @@ incremental migration debt, not a global development stop. Real protocol, schema
 wire and diagnostic identifiers with compatibility meaning are distinct; preserve
 them unless their owning contract explicitly approves a versioned migration.
 Do not rename restricted work to evade a classifier or transfer its restrictions.
+
+## Native local-model library APIs
+
+Matt's 2026-11-04 decision allows scoped native local-model APIs when
+reconciling STD13's restrictive AI-export requirement with its explicit native
+local-model availability condition.
+
+The native condition permits local-model declaration/provider/call APIs through
+explicitly declared local providers and their actual capability contracts.
+An actual call retains its declared AI effect, provider/model identity,
+input/output schemas, applicable policy, taint/secret, failure, replay/audit and
+ordinary native safety/runtime requirements. Pure data declarations retain
+their own effect and authority conditions. Provider availability or a network
+grant alone establishes none of these premises.
+
+This condition grants no unrestricted native agent/tool surface or selected
+provider. Existing AI, workflow-integrated distributed, enabled hosted, Core,
+constrained-profile, meta and formal rules retain their distinct scope.
+All existing execution holds remain; this decision authorizes no compiler,
+native, model/provider/tool or other held operation. Actual implementation,
+independent source review, current-source authentication and `main` integration
+remain separate. Canonical STD13 wording clarification is separate follow-up
+work; the frozen 95bd author interpretation is preserved as historical scope.
