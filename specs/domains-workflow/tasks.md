@@ -350,7 +350,7 @@ Evidence: actual positive and negative products, expected/actual owning diagnost
 Historical projected paragraph (unchanged):
 <!-- domains-math-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared
 numeric semantics and checked justification for transformations. Remaining
 finite tasks, all open: implement numeric-mode/domain checking; implement EFIR
@@ -718,7 +718,7 @@ Criterion `domain/streaming-materialization`: Enforce declared streaming/materia
 Historical projected paragraph (unchanged):
 <!-- domains-query-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: real parameterized queries return validated rows and respect declared
 transaction/provider semantics. Remaining tasks, all open: implement relational
 IR and typed parameters; lower to a declared provider; connect row/schema and
@@ -785,7 +785,7 @@ Decision criterion `interface/domain/execute-crdt-merge-update` (Open): Execute 
 Historical projected paragraph (unchanged):
 <!-- domains-workflow-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: a workflow executes and replays without repeating recorded external
 effects. Remaining tasks, all open: implement graph validation/lowering;
 implement event-log schema and durable transitions; connect retry/compensation/
@@ -2415,7 +2415,7 @@ D2 support-triage fixture refinement (Open; existing domain/support-agent-integr
 Historical projected paragraph (unchanged):
 <!-- domains-ai-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: the declared AI workflow executes through schema, capability, taint
 and human-review boundaries. Remaining tasks, all open: implement declaration
 lowering; connect model/tool/memory providers with explicit policies; implement
@@ -2488,7 +2488,7 @@ Decision criterion `interface/domain/lower-accepted-gpu-kernel` (Open): Lower th
 Historical projected paragraph (unchanged):
 <!-- domains-gpu-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: kernels execute on the adopted target with validated memory/barrier
 behavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU
 IR/checking; lower kernel and host dispatch; execute numeric/result and illegal
@@ -2556,7 +2556,7 @@ Criterion `domain/web-ticket-integration`: Render/update the declared ticket-lis
 Historical projected paragraph (unchanged):
 <!-- domains-ui-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: an actual UI artifact renders, handles typed events and enforces
 capabilities through the adopted adapter. Remaining tasks, all open: lock UI
 IR/state/event contract; implement lowering and rendering adapter; connect
