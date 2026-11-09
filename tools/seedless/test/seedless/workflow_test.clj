@@ -56,6 +56,50 @@
   (rt/update! ctx assoc-in [:tasks (:key s)]
               (assoc s :description s :status :ready :issue {:number 1 :id 1 :node_id "issue1"})))
 
+(defn tracking-fixture [root-children page-children]
+  (let [ctx (context)
+        root {:number 1170 :id 6208414806 :node_id "campaign-node"
+              :html_url "https://github.com/fixture/repo/issues/1170"
+              :body "Uniform Seedless campaign"}
+        project {:id "PVT_fixture" :number 4
+                 :url "https://github.com/users/fixture/projects/4"}
+        relations (atom (merge {1170 (vec root-children)} page-children))
+        issue-calls (atom [])
+        relation-calls (atom [])
+        status-calls (atom [])
+        comment-calls (atom [])
+        issue! (fn [_ key title body _ _]
+                 (swap! issue-calls conj [key title body])
+                 (if (str/starts-with? key "campaign-continuation/")
+                   {:number 200 :id 6208415000 :node_id "continuation-node"
+                    :html_url "https://github.com/fixture/repo/issues/200"
+                    :body body :sub_issues_summary {:total 0}}
+                   {:number 1413 :id 6277271583 :node_id "child-node"
+                    :html_url "https://github.com/fixture/repo/issues/1413"
+                    :body body}))
+        pages! (fn [_ endpoint]
+                 (if-let [number (second (re-find #"/issues/([0-9]+)/sub_issues" endpoint))]
+                   (vec (get @relations (Long/parseLong number) []))
+                   []))
+        relation! (fn [_ parent endpoint id]
+                    (swap! relation-calls conj [(:number parent) endpoint id])
+                    (swap! relations update (:number parent) (fnil conj []) {:id id}))
+        status! (fn [_ issue status]
+                  (swap! status-calls conj [(:number issue) status]))
+        comment! (fn [_ issue key body]
+                   (swap! comment-calls conj [(:number issue) key body]))]
+    (rt/update! ctx assoc :campaign-issue root :project project)
+    {:ctx ctx :root root :project project :relations relations
+     :issue-calls issue-calls :relation-calls relation-calls
+     :status-calls status-calls :comment-calls comment-calls
+     :issue! issue! :pages! pages! :relation! relation!
+     :status! status! :comment! comment!}))
+
+(defn continuation-marker-for [page]
+  (str "<!-- uniform-seedless:campaign-continuation/"
+       (rt/digest (pr-str [nil nil 1170 "campaign-node" "PVT_fixture" 4 page]))
+       " -->"))
+
 (defn harness [scenario operation]
   (let [ctx (repository! (context)) original rt/command
         events (atom []) phases (atom {}) prs (atom {}) next-pr (atom 0)
@@ -184,6 +228,91 @@
                (is (= 1 (count (filter #(= [:check main/completion-check] %) @events))))
                (is (= (if (= scenario :normal) :complete :attention) (:status @(:state ctx))))
                (is (= (if (= scenario :normal) :passed :failed) (get-in @(:state ctx) [:completion :result])))))))
+
+(deftest admission-creates-a-linked-continuation-after-the-provider-boundary
+  (let [root-children (mapv #(hash-map :id (+ 1000 %)) (range 100))
+        fixture (tracking-fixture root-children {})
+        {:keys [ctx relations issue-calls relation-calls status-calls comment-calls
+                issue! pages! relation! status! comment!]} fixture]
+    (try
+      (with-redefs [gh/issue! issue! gh/pages pages! gh/relation! relation!
+                    gh/status! status! gh/comment! comment!
+                    gh/milestone! (fn [& _] {:number 1})]
+        (w/admit! ctx "main" [(slice "continuation-child")])
+        (is (= 100 (count (get @relations 1170)))
+            "The full campaign issue keeps its original direct children")
+        (is (= [[200 "sub_issues" 6277271583]] @relation-calls))
+        (is (= [200 1413] (mapv first @status-calls)))
+        (is (= 1 (count @comment-calls)))
+        (is (= :ready (get-in @(:state ctx) [:admission-intents
+                                               "admission/continuation-child" :phase])))
+        (is (= :ready (get-in @(:state ctx) [:campaign-continuations 0 :status])))
+        (is (str/includes? (nth (first @issue-calls) 2) "Campaign issue: #1170"))
+        (is (str/includes? (nth (first @issue-calls) 2) "Project: #4")))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest admission-reuses-an-exact-continuation-index-with-capacity
+  (let [index {:number 200 :id 6208415000 :node_id "continuation-node"
+               :html_url "https://github.com/fixture/repo/issues/200"
+               :body (str "Stage: CONTINUATION\n"
+                          "Campaign issue: #1170 https://github.com/fixture/repo/issues/1170\n"
+                          "Project: #4 https://github.com/users/fixture/projects/4 (PVT_fixture)\n"
+                          "Continuation page: 1\n"
+                          (continuation-marker-for 1))
+               :sub_issues_summary {:total 1}}
+        root-children (into [index] (map #(hash-map :id (+ 1000 %)) (range 99)))
+        fixture (tracking-fixture root-children {200 [{:id 6208415001}]})
+        {:keys [ctx issue-calls relation-calls status-calls
+                issue! pages! relation! status! comment!]} fixture]
+    (try
+      (with-redefs [gh/issue! issue! gh/pages pages! gh/relation! relation!
+                    gh/status! status! gh/comment! comment!
+                    gh/milestone! (fn [& _] {:number 1})]
+        (w/admit! ctx "main" [(slice "indexed-child")])
+        (is (not-any? #(str/starts-with? (first %) "campaign-continuation/") @issue-calls))
+        (is (= [[200 "sub_issues" 6277271583]] @relation-calls))
+        (is (= [1413] (mapv first @status-calls)))
+        (is (nil? (:campaign-continuations @(:state ctx)))
+            "Reusing a verified page does not create a duplicate page record"))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest admission-preserves-a-partial-relation-and-does-not-replay-it
+  (let [fixture (tracking-fixture [] {})
+        {:keys [ctx issue-calls relation-calls status-calls
+                issue! pages! status! comment!]} fixture]
+    (try
+      (with-redefs [gh/issue! issue! gh/pages pages!
+                    gh/relation! (fn [_ parent endpoint id]
+                                   (swap! relation-calls conj [(:number parent) endpoint id]))
+                    gh/status! status! gh/comment! comment!
+                    gh/milestone! (fn [& _] {:number 1})]
+        (is (thrown-with-msg? Exception #"no verified readback"
+                              (w/admit! ctx "main" [(slice "readback-child")])))
+        (is (= :ready (get-in @(:state ctx) [:tasks "readback-child" :status])))
+        (is (= :relation-pending
+               (get-in @(:state ctx) [:admission-intents
+                                       "admission/readback-child" :phase])))
+        (is (empty? @status-calls))
+        ;; The durable task identity makes a later ordinary admission pass a
+        ;; no-op; inspected reconciliation, not replay, owns the relation.
+        (w/admit! ctx "main" [(slice "readback-child")])
+        (is (= 1 (count @issue-calls)))
+        (is (= 1 (count @relation-calls)))
+        (is (empty? @status-calls)))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest admission-refuses-an-unverified-project-before-remote-writes
+  (let [fixture (tracking-fixture [] {})
+        {:keys [ctx issue-calls issue! pages! relation! status! comment!]} fixture]
+    (try
+      (rt/update! ctx assoc :project {:id "wrong" :number 4})
+      (with-redefs [gh/issue! issue! gh/pages pages! gh/relation! relation!
+                    gh/status! status! gh/comment! comment!
+                    gh/milestone! (fn [& _] {:number 1})]
+        (is (thrown-with-msg? Exception #"Project identity is required"
+                              (w/admit! ctx "main" [(slice "identity-child")]))))
+      (is (empty? @issue-calls))
+      (finally (delete-tree! (:root ctx))))))
 
 (deftest early-draft-checks-review-and-real-merge
   (harness :normal
