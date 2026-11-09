@@ -148,6 +148,45 @@ assessment is not a successful public proof: inspect its exit status and
 artifacts. Even a successful current bootstrap-hosted subset proof does not
 establish full-language, self-hosting or seedless-release acceptance.
 
+### Read retained public diagnostics
+
+The retained public-release upload can be inspected without replaying the
+assessment:
+
+```bash
+clojure -X ci.public-diagnostic-report/run! \
+  :artifact-dir '"/path/to/extracted-target-ci"'
+```
+
+`ci.public-diagnostic-report/report` is the programmatic entrypoint and
+`run!` accepts exactly one non-empty `:artifact-dir` option. The directory is
+the extracted upload root containing `SHA256SUMS`, checkout and run receipts,
+the child receipt, and `p18-public-test-artifacts/`; it is not a checkout to be
+replayed. The reader performs no network, provider, Git-source authentication,
+subprocess, runtime-Var resolution, public-test invocation, or file write.
+
+The report validates strict UTF-8 and one-form EDN inputs, rejects duplicate,
+absolute, traversal or symbolic-link paths, and requires `SHA256SUMS` to cover
+every regular file except itself with matching bytes and SHA-256. Producer
+marker paths beginning with `target/ci/` are mapped once into the extracted
+root. Mixed JVM/progress log text is ignored; only independent
+`ci-public-release-subset` marker forms are inspected. Full diagnostic record
+files remain the source of record. The report exposes their relative paths,
+byte/hash identities, fixture phase and ordinal, record keys, and nested
+`:out`/`:err` UTF-8 byte/hash identities without inlining command text or
+claiming redaction or raw process-wire completeness.
+
+Every available partial or final prefix manifest is checked against its real
+record files and identities. Missing indexes remain `:not-observed` or
+`:unindexed`; they are never reconstructed. A `:final` manifest describes
+finalizer execution only, not completion of the 37-case assessment or release
+proof. The child receipt's negative status, exit code and timeout remain in the
+diagnostic result, and a valid report command exits zero even when that
+assessment failed. Malformed, unsupported, tampered or contradictory artifact
+data fails clearly. The output is diagnostic-only and grants no release,
+admission, migration, self-hosting or seed-retirement authority. Hard kills may
+leave unfinished files; the reader makes no fsync or crash-proof claim.
+
 ### Portable leaf selection
 
 The leaves jobs use the same verified pull-request path records. For regular
