@@ -61,6 +61,24 @@ Complete macro provider criterion (Open): Validate and deterministically select 
 <!-- macro-source-provider:end -->
 
 
+
+<!-- auth-alternative-types-source-provider:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete type-provider declaration and selection criterion (Open): Validate the actual selected versioned :type-system provider declaration with its supported profiles, language facets, type features, fact/proof schemas, solver dependencies, build effects, capabilities, conformance suites and known restrictions before dependent use. Preserve L15 deterministic source/package/workspace/profile/compiler-default selection and ambiguity refusal; bind the real selected provider/version/schema identity in typed Core metadata and package locks. The refinement-provider example is illustrative, not default profile support or an IR grant. Reject missing/incompatible declarations, unsupported namespace/profile/feature selections, inconsistent metadata/locks and authority inferred from a provider label. Required evidence: genuine declaration/selection and consuming-artifact joins with accepted and missing/ambiguous/incompatible-provider refusals; a flag or provider inventory does not execute a checker or establish soundness.
+<!-- auth-alternative-types-source-provider:end -->
+
+
+
+<!-- auth-interop-source-provider:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign provider selection criterion (Open): Bind every claimed boundary to its real typed declared provider, actual version/ABI/protocol/schema/runtime and profile/target support under the existing deterministic selection rules. Preserve ten boundary families and authentic source/package/lock identities; a provider name or generated import is not installation, execution, authority or safety evidence. Reject missing/ambiguous/incompatible or unsupported providers before affected admitted use. Required evidence: genuine boundary/provider selection and support/refusal records with the exact source/version/target subject; pure schema data lowering to portable Core needs no universal host service or native provider.
+<!-- auth-interop-source-provider:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open
@@ -123,6 +141,93 @@ Complete L12 secret boundary criterion (Open): Derive and enforce actual effect/
 <!-- compile-time-source-secrets:end -->
 
 
+
+<!-- auth-error-source-policy:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 authentic denial/error boundary criterion (Open): Preserve actual capability denial, policy denial and required human-review denial as their declared typed/audited failures with principal, action, effect, capability, provider, scope, source/generated and applicable policy identity. Check authority before the actual action; a caught error, Result/Option wrapper, panic path or handler cannot issue a grant, suppress required audit or convert denied behavior into successful nil/absence. Required evidence: actual allowed/denied/revoked or missing-grant selected-boundary fixtures and typed denial/audit products consumed by Runtime/AI, with existing action restrictions unchanged and no new ordinary-work approval gate.
+<!-- auth-error-source-policy:end -->
+
+
+<!-- auth-library-source-grants:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual library authority criterion (Open): Require authentic in-scope capability/provider authority at each real effectful library action under its declared phase, lifetime, attenuation/revocation and policy. An explicit capability value, a declared provider context or expressly permitted hosted convenience path still records the concrete effect; ambient globals and a library classification do not supply authority. Require the declared :compiler/read-ir effect and authentic C17 read scope under :compiler/ir-transform for IR inspection; a read-only scope cannot authorize rewriting without the real write scope/effect. Emit L13-CAPABILITY and required audit without externally visible action on denial. Required evidence: allowed/denied/expired/revoked/wrong-phase selected action cases and exact principal/action/export/provider/source records; all held execution stays unrun.
+<!-- auth-library-source-grants:end -->
+
+
+<!-- library-service-source-operation-grants:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service operation-grants criterion (Open): Produce authentic operation-specific provider/selection/grant/phase/lifetime decisions for scheduler, filesystem roots/operations, network hosts/ports/protocols/listen and declared compiler-tooling services. STD8 and STD9 forbid ambient file/standard-stream/host-path or network authority; another module's expressly permitted convenience context cannot broaden those contracts. Preserve attenuation, revocation, scope and provider compatibility across handle transfer, redirects, tasks, tools and callbacks, with actual service gates consuming the decisions. Human-review capability or review-request records do not issue the required approval. Reject undeclared, widened, wrong-phase, expired/revoked and incompatible provider/grant use. Evidence: authentic admission/denial/selection artifacts and actual consuming-boundary denial fixtures with root/endpoint/source identities; grant metadata alone is no service execution or external permission.
+<!-- library-service-source-operation-grants:end -->
+
+
+
+<!-- auth-facet-source-grants:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet authority criterion (Open): Check authentic scoped capabilities and allowed build/compiler/runtime actions at their real facet invocation and artifact boundaries. Compiler inspection/transformation requires the declared read-ir/write-ir effect and C17 ir-transform capability with its actual read/write artifact/namespace/phase/package scope; read access grants no write. File generation declares build/write-artifact, while solver/synthesizer/model/package-tool calls declare matching effects and grants. A facet, package identity, prompt, signature, trust label or supplied manifest does not confer authority. Reject missing/wrong-phase/expired/revoked/out-of-scope authority without the external action and retain exact principal/action/source/provider/audit identity. Required evidence: real allowed/denied selected actions and L14-CAPABILITY/L14-BUILD-EFFECT products; held executions remain unrun.
+<!-- auth-facet-source-grants:end -->
+
+
+
+<!-- auth-alternative-types-source-grants:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual typed-capability and checker-authority criterion (Open): Preserve capability values as ordinary typed values with authentic authority metadata, exporting claimed linear/affine use facts for L15 checks. Check actual selected checker/solver/compiler build effects and real phase/artifact/namespace/package/lifetime scopes before actions; a read-IR scope under :compiler/ir-transform grants no write. A fact schema, proof provider, package or soundness label neither supplies grants nor erases runtime capability requirements. Reject missing/expired/revoked/wrong-scope authority and capability-erased function types before affected action. Required evidence: real typed authority/fact joins and allowed/denied L17-CAPABILITY-ERASURE or owning cases; pure checking requires no unrelated live service and every held solver/provider operation remains held.
+<!-- auth-alternative-types-source-grants:end -->
+
+
+
+<!-- auth-interop-source-admission:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete foreign-boundary admission criterion (Open): At the original Auth admission role, consume actual Types/Resolve/provider/profile/ownership/error/safety facts establishing the complete declared ABI/protocol boundary, then enforce authentic concrete effect grants, operation scope, phase/lifetime and package/deployment narrowing before actions. Preserve full type/memory/thread/version/safety/support contracts rather than infer authority from a foreign symbol, manifest, shim or wrapper. Auth does not replace inference, wrapper proof, Runtime normalization or profile legality. Reject incomplete/wrong-scope/ungranted/stale/unsupported boundaries and hidden host authority. Required evidence: actual allowed/denied declaration-to-policy-to-hook joins and no action after denial; held native/provider/callback/device/service operations remain held.
+<!-- auth-interop-source-admission:end -->
+
+
+
+<!-- library-data-source-database-authority-and-effects:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database authority and effects criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Produce and validate the concrete database principal/package/deployment/provider/operation grant, phase/lifetime, intersection, attenuation and revocation facts consumed at connection/query/read/write/transaction/migration/schema-introspection/admin boundaries. Auth owns this grant decision and its authentic artifact; Effects owns static direct/latent admission and Runtime owns actual before-action enforcement in their existing tasks. Query policy, allow-read/allow-write helper names, reviewed AI text and artifact metadata cannot create a grant.
+
+Refusals and acceptance evidence: Exercise real accepted and refused grant decisions for each claimed operation and exact subject, including stale/revoked, wrong provider/operation/phase/lifetime and widened authority. An Auth decision alone is no executed database operation or Runtime enforcement result. Preserve source-bound grant diagnostics and all held provider actions. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-authority-and-effects:end -->
+
+
+
+<!-- library-workflow-ai-source-action-authority:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library action-authority criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md).
+
+Produce authentic model/tool/memory/service/workflow grants with principal/package/deployment/provider/toolset, phase/lifetime, intersection/attenuation/revocation, secret and required review/payload scope. Preserve independent read/write authority. Exercise actual accepted/refused grant decisions for stale/revoked/wrong-provider/action/phase/payload subjects. Prompt, graph, eval and review records create no capability; Runtime owns actual before-action enforcement and provider results. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-action-authority:end -->
+
+
+
+<!-- library-testing-meta-source-test-meta-authority:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-authority criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Produce authentic fixture/live-service and compiler-operation grants with exact principal/package/provider/artifact/namespace/phase, intersection/attenuation/revocation and lifetime. Distinguish fake replaced authority from live grants and read/write/register/proof/artifact compiler scopes. Exercise actual permitted and stale/revoked/wrong-scope/phase/artifact decisions. Compiler host or Runtime enforces before the operation; trusted package or test-runner identity cannot issue authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-authority:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open
@@ -174,6 +279,15 @@ Apply the [complete provider and capability source criteria](plan.md#complete-pr
 Complete L15/SAFE10/R11 conformance criterion (Open): Join actual declared/selected provider, grant/scope/value, gate, startup, primitive/service, redaction and consumer results. Exercise five-order selection and ambiguity, all source capability/scope families, separate build/runtime authority, declared versus forbidden ambient contexts, non-expanding attenuation, supported revocation/static-lifetime substitutes, secret/export failures, real provider isolation and deterministic denials under deterministic policy. Demonstrate actual safe replacement of one math provider and one memory or IO provider, consuming their owning implementations and required proof/check/conformance results rather than declared safe flags. Cover the seventeen R11 action families and all thirty-one diagnostic meanings: eleven L15, ten SAFE10 and ten R11. Retain requested effect/capability, selected/missing provider, grant/scope/phase/profile/target, denied policy layer, source/generated/manifest/principal/action/artifact identities, redaction/audit status, remediation and nearest valid provider/grant where applicable. Produce real accepted/refused matrices, suite outputs and named residual trust assumptions. Existing Release suites run their own exact subjects; records, mocks and historical finite receipts do not establish whole-source, live provider or implementation acceptance.
 <!-- authority-source-conformance:end -->
 
+
+
+
+<!-- auth-alternative-types-source-claims:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 complete selected-provider soundness-claim criterion (Open): Admit only the provider's actual declared and supported soundness meaning: :reference-equivalent accepts/rejects the same L5 programs up to diagnostic precision; :strict-extension accepts an L5 subset with stronger facts; :conservative-extension accepts all L5 plus additional annotated safe programs; :gradual inserts checked partial-type boundaries; :domain-specific stays within declared facet/namespace boundaries and lowers to ordinary typed Core. Do not substitute host terminology for these five meanings. Bind each claimed safe profile to its actual supporting theorem, proof, test-suite or audit artifact and real L5 accepted/rejected comparison products from their owners. Reject missing/wrong-subject/stale/unsupported evidence, weaker guarantees under the same profile and asserted safe/compatible statuses. Required evidence: exact provider/claim/profile/source/corpus/evidence/verdict records and counterexamples, with missing or held results Open. Auth owns admission/conformance reporting, while the checker, corpus harness and proof/safety owners supply actual results; no universal whole Formal or ordinary per-run approval gate is added.
+<!-- auth-alternative-types-source-claims:end -->
 
 <!-- auth-implementation-tasks:end -->
 

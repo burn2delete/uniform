@@ -180,6 +180,97 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Provide early schemas/maps then consume actual eight L7 and applicable B1/B14/P12/DOM19 owning failures with full current source/generated context. Rendering and catalogs do not prove detection, and later error examples cannot be first record-constructor inputs.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Preserve all seven L8 failure meanings with actual method/receiver/implementation/profile/host/tool/source/generated subjects. Requested codes/catalogs are separate from executed detection and source-preserving specialization.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early record/origin contracts precede seven actual L8 failure families; later selected runtime/interface/specialization subjects retain source diagnostics. Catalogs/rendering/status flags do not detect incompatibility or hidden behavior.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve seven actual L9 failure meanings with source spans/generated-origin chains and typed payload/function/handler/profile/check/host/schema/policy context. Detection and real failure records remain distinct from cataloging/rendering requested labels.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Preserve nine actual owning L13 failures and all required namespace/symbol/profile/target/declared-contract/caller-effect/capability/remediation fields with source/generated provenance. A diagnostic catalog proves no API behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Transport genuine eleven-family L14 failures with facet/version/profile/source/generated/effect/grant/rule identity. Privacy records retain witness/value id, public schema, reveal reason when present and erasing edge under redaction; Diag does not invent a producer failure or disclose private contents.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Preserve all ten genuine L17 diagnostic meanings and provider/version/profile/span/generated/type/effect/grant/proof/rule context. Actual checker and consumer failures supply records; source/macro/facet maps and gradual blame/failure provenance survive transport and redaction.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). All eleven L19 diagnostic meanings retain ten actual context fields, foreign/source/generated origins and wrapper/migration remediation. Real owning failures supply the carrier; a diagnostic catalog or map-preserved label proves no checker, parity or source-map result.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Carry every B4-B14 diagnostic identity and its distinct owning source/generated/IR/domain/host/world/ABI/async/kernel/clock/workflow/query/platform/artifact/fixture context through success and rejected partial outputs. Common emission cannot suppress upstream failures; independent metadata faults must remain observable even when values agree. Redaction preserves refusal meaning.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Preserve individual STD10001-STD10008 and STD11001-STD11008 meanings plus owning Schema/domain diagnostic identities and source/schema/path/provider context. Redact secrets and retain expected/actual failures at the true boundary. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Preserve individual STD12001-STD12008 and STD13001-STD13008 plus owning AI/Workflow/Profile/Runtime ids, missing facts, source/agent/step/provider/review/replay context and redaction. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Retain each STD14001-STD14008/STD15001-STD15008 and owning TEST/C17/SAFE12 diagnostic meaning, structured expected/actual fields, source/generated context and secret redaction. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve individual STD16001-STD16008 and STD17001-STD17008 plus owning profile/Runtime/safety meanings, expected/actual facts, source origins and redaction. Missing working-directory/alignment example facts retain their errors. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Preserve STD18001-STD18013, STD19001-STD19008, STD20001-STD20008 and owning domain/governance meanings with source/generated/call context, expected/observed facts and secret redaction; compare structured diagnostics against actual compatibility baselines. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual stable structured rule/command/session errors, source/manifest facts, explanations and redaction. CLI owns T1 exit presentation; tool-service diagnostics retain their own T2/T3/T4 meanings. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply genuine codes/spans/manifest and generated origins and preserve compiler/CLI/editor agreement. Redaction, failure-stage and stale/unsupported context remain explicit in actual structured exports. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Preserve complete PERF1-PERF10 and applicable D6/D8/D9 meanings, canonical source/IR/pass/claim/proof/target/fingerprint/guard/metric/policy context and expected/observed failures without conflating missing proof and missing measurements. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

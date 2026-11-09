@@ -1,5 +1,6 @@
 (ns c6-public-report-test
-  (:require [clojure.test :refer [deftest is run-tests]]))
+  (:require [clojure.test :refer [deftest is run-tests]]
+            [gravity.checked-core]))
 
 (binding [*ns* *ns*] (load-file "tools/c6_reader_policy_test.clj"))
 (def controls (find-ns 'c6-reader-policy-test))

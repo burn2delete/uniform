@@ -6,6 +6,13 @@
 (def kinds ["implementation" "adoption" "seed-removal" "rebuild" "equivalence" "release"])
 (def workstreams ["compiler" "runtime" "build"])
 (def texts (s/array-of s/text))
+(def dependencies
+  (assoc texts :description
+         "Exact slice keys from existing or same-plan slices; use prose in proposal/evidence instead."))
+(def stack-parent
+  {:type "string"
+   :description
+   "Empty string for a standalone slice, otherwise exactly one key from dependencies; never prose, a branch, or a PR."})
 (def slice
   (s/object-of
    {:key s/text :title s/text :stage {:type "string" :enum stages}
@@ -14,8 +21,8 @@
     :evidence s/text :seed-paths texts :uniform-paths texts :consumer s/text
     :proposal s/text :preserve s/text :positive s/text :negative s/text
     :residual-host-boundary s/text
-    :paths (assoc texts :minItems 1) :dependencies texts
-    :stack-on {:type "string"}}))
+    :paths (assoc texts :minItems 1) :dependencies dependencies
+    :stack-on stack-parent}))
 (def plan
   (s/object-of {:coverage (assoc texts :minItems 1)
                 :source-closure (assoc texts :minItems 1)

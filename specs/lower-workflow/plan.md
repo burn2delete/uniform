@@ -153,6 +153,59 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Use actual verified raw or selected transformed decisions and real layout/check/proof/source maps for selected target eligibility/emission or refusal. Early ABI rules precede source checking, later program layouts/output follow and no universal optimizer gate is added.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Produce actual stable selected method layouts and direct/vtable/dictionary/host/C-ABI/Wasm/HDL artifacts where governing profiles allow them. Source protocols remain semantic authority; early ABI interfaces precede final actual checked layouts/emission.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early method ABI/layout/service support precedes source checking; later admitted verified input yields actual selected interface artifacts/bytes/readback or refusal, preserving protocol semantics and source diagnostics.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Use real verified admitted input and selected profile/runtime/error contracts to emit actual exception/Result/trap/panic/workflow/AI failure artifacts or refusal. Early ABI/service rules precede callers; actual target products preserve source errors and authority.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Derive actual concrete layout/ABI from authentic common typed-Core representation/ownership/resource facts and current target assumptions. An alternative checker cannot replace layout contracts without exported facts. Early type/ABI contracts, final layouts and actual runtime calls remain separate products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual target ABI/wire/type/layout and foreign allocator/null/error/thread/wrapper assumptions reach lowering with authentic source/provider/profile/target identity. Early ABI rules and independent preliminary types precede concrete layouts; future Runtime traces are no initial layout contract, and held native/backend actions stay held.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Actual selected family feature/ABI/layout/provider/helper/schema/verifier interfaces precede construction, then real verified MIR or required domain input/current proofs precede actual lowering and legal fallback. Preserve source/effects/grants/safety/audit/numeric/order into C/Wasm/managed/MLIR/GPU/HDL/graph/query/mobile outputs and common emission. Optional MLIR/Opt and unselected families are not universal prerequisites; real selected claims still require their actual products.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Consume actual selected layout/ABI/register facts and preserve volatile/order/proof/source constraints through lowering. Address/width metadata alone proves no alignment, target compatibility or safe register access. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual selected target layout/ABI/feature/intrinsic/fallback facts and preserve erased-check assumptions through emitted width/alignment/order/exception/numeric changes; revalidate, keep checks or reject rather than trust metadata. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

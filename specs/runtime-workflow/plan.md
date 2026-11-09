@@ -143,6 +143,326 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Earlier actual validator/resource/error/session/recording contracts precede compiling their callers. Later selected Core or emitted-program execution proves once-only/false/non-returning guards, validation, ownership and replay behavior. Keep interpreter/compiled paths distinct and all held actions restricted.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Select actual declared checked dispatch/reflection/host services and normalize actual foreign null/exception/resource behavior before safe core entry. Types boundary records do not execute conversion; no held native/provider action is enabled.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early actual host wrapper/normalization/ABI/service/error/session contracts precede Types and callers; later admitted selected Core or emitted programs produce real call/null/exception/resource/tool traces. All held actions remain restricted.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Restore the five exact earlier panic/check/foreign/workflow/AI predicates to their same three Open Runtime tasks, totaling 6,269 bytes. Early real service/error/cleanup/wrapper contracts precede callers; later actual selected execution/normalization/durable replay products establish behavior, without renewing earlier reviews or enabling held actions.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The unchanged Runtime3 concurrency predicate owns actual scheduler/atomic/channel/actor execution; Runtime2 performs genuine deterministic close/cancel/failure cleanup, Runtime4 records choices and real IO/network results for no-repeat replay, and Runtime5 enforces actual service authority and redacts observations. Provider startup remains Runtime2. Library owns callable filesystem/network semantics over these genuine admitted services; a manifest, fake or supplied execution trace cannot prove the selected live service.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Runtime supplies actual chosen representation/provider storage, retention/borrow/copy/stream, allocation/failure, persistent shared-value lifetimes and explicit cleanup behavior. Vector-rest and Map-keys Lists own copied spines and borrow no input backing storage; List-to-Set temporary/output storage has the declared independent lifetimes. GC, native capacity or old work counters cannot replace these facts.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual selected allocator/provider/representation/link/cleanup and hosted Unicode/numeric/resource products for the claimed behavior. Explicit providers and real deterministic close/lifetimes replace neither source type/effect checking nor independent proofs; no whole runtime gates first portable declarations.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Retain actual selected service, provider, FFI ownership/error/ABI and execution boundaries for facets that require them. A portable Core-only facet needs no invented host runtime or native binary. Agent/model/tool/IO/FFI manifests do not execute services, grant authority or accept a live provider.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Actually execute selected permitted inserted gradual/cast checks with expected type, declared failure, blame and source/provider identity. An unchecked cast stays unsafe; recorded runtime-checked does not execute a check. Source-only analysis needs no unrelated live runtime/provider or native artifact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source criteria
+
+Read complete [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md)
+and the selected L3/L5/L6/L9/L10/L12/L13/L15/L18, safety/profile/ABI/runtime/schema/
+package and compatibility contracts. Existing [task authorities](tasks.md#implementation-tasks)
+keep all editable outcomes. The criterion keys below join source requirements
+within those tasks, not new tasks or completion credit. Restore two published
+Expand predicates exactly; retain the three current directional/error predicates.
+Current source/interface entailment, implementation acceptance and independent
+review remain unassessed or pending. All execution restrictions remain.
+
+| Criterion | Existing task | Source requirement |
+| --- | --- | --- |
+| `declarations` | `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | L19 complete foreign declaration and boundary-schema criterion (Open) |
+| `provider` | `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection` | L19 actual foreign provider selection criterion (Open) |
+| `admission` | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | L19 complete foreign-boundary admission criterion (Open) |
+| `bindings` | `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` | L19 actual foreign import and symbol boundary criterion (Open) |
+| `mappings` | `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | L19 complete directional type-mapping criterion (Open) |
+| `facts` | `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` | L19 complete interop artifact and fact-export criterion (Open) |
+| `verify` | `types/current-evidence-and-remaining-work/types5-integrate-typed-core` | L19 actual common typed-boundary verification criterion (Open) |
+| `effects` | `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | L19 actual foreign and generated-binding effect admission criterion (Open) |
+| `generate` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L19 complete schema-binding and scoped-shim generation criterion (Open) |
+| `compile-time` | `expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects` | L19 actual schema-import and binding-generation action criterion (Open) |
+| `wrappers` | `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | L19 complete safe foreign-wrapper criterion (Open) |
+| `ownership` | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` | L19 complete foreign ownership and pointer-fact criterion (Open) |
+| `profiles` | `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | L19 complete interop profile-legality criterion (Open) |
+| `handoff` | `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` | L19 actual checked interop obligation handoff criterion (Open) |
+| `abi` | `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` | L19 actual ABI and wire-representation lowering criterion (Open) |
+| `execute` | `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | L19 actual foreign conversion, call and cleanup criterion (Open) |
+| `hosts` | `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` | L19 complete hosted bridge behavior criterion (Open) |
+| `replay` | `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` | L19 actual process/network/service and migration execution criterion (Open) |
+| `locks` | `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution` | L19 actual boundary identity and compatibility-lock criterion (Open) |
+| `cache` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | L19 actual interop regeneration and drift-cache criterion (Open) |
+| `reproducibility` | `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` | L19 actual versioned binding and artifact reproducibility criterion (Open) |
+| `diagnostics` | `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` | L19 complete interop diagnostic carrier criterion (Open) |
+| `origins` | `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` | L19 actual foreign/schema/generated source mapping criterion (Open) |
+| `library` | `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` | L19 actual standard foreign resource and safe-wrapper API criterion (Open) |
+| `adapters` | `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` | L19 actual schema and service adapter API criterion (Open) |
+| `parity` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L19 complete incumbent compatibility and migration evidence criterion (Open) |
+| `finite-emit-scoped-migration-shim` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Restore exact earlier finite predicate; historical scope unchanged. |
+| `finite-generate-schema-binding` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Restore exact earlier finite predicate; historical scope unchanged. |
+| `mapping-existing` | `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | Preserve the complete existing criterion bytes and owner. |
+| `failure-existing` | `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Preserve the complete existing criterion bytes and owner. |
+| `error-contract-existing` | `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | Preserve the complete existing criterion bytes and owner. |
+
+
+The preserved census contains 114 facets, 78 occurrences and six original owner
+obligations. Read complete section preambles, lists, examples and following
+conditions rather than treat names/links as coverage. Source custody and selected
+historical witnesses do not confer aggregate adoption or whole-source acceptance.
+The source proposal keeps original Auth foreign admission, Types conversion,
+Expand schema/shim generation, Runtime failure normalization and Legality wrapper
+roles. Related producers supply their real results; none inherits another's
+inference, grant, proof, action or independent acceptance responsibility.
+
+### Ten families and explicit complete declarations
+
+| Boundary family | Required declared interface and actual evidence |
+| --- | --- |
+| Native ABI | C/C++/Rust/Swift/Zig/platform library ABI, explicit types/ownership/error/thread/layout/safety and selected provider support |
+| Managed host | JVM/CLR/BEAM/Python/Ruby/similar runtime version, object/root/lifetime/thread/dynamic/error and profile contracts |
+| JavaScript/TypeScript | Browser/Node/edge/UI host object/null/promise/schema and declared runtime/profile contracts |
+| WebAssembly | Module/import/export/memory/component types, representation, ownership/error and selected support |
+| Schema | GraphQL/OpenAPI/SQL/Protobuf/Avro/JSON Schema/binary source, codecs/validators, nullability, provenance and drift |
+| Process | Actual CLI/subprocess protocol, arguments/status/signal/error/ownership/thread/blocking and authority |
+| Network | Actual service/RPC/queue/stream/workflow protocol/schema/error/replay/audit and authority |
+| Hardware | MMIO/driver/register/interrupt/DMA/device-tree memory/order/ownership/profile contracts without adopting a device |
+| AI | Actual model/tool/prompt/embedding/memory/evaluation typed effect/authority/privacy/provider contracts |
+| Package | Incumbent package/build identities, versions, compatibility, source provenance and permitted actions |
+
+Every boundary has a typed declaration and actual provider, and is usable only
+in supported profiles. Keep all thirteen declaration fields: foreign language/
+protocol; link/symbol/method/endpoint/schema/import identity; ABI/wire protocol;
+type mapping; effects; capabilities; ownership; null/init; error/exception;
+thread/blocking; safety; profiles/targets; version/compatibility. The requirements
+also retain memory behavior, authentic source and actual provider identity.
+Incomplete declarations in safe namespaces reject. Resolving a symbol/import or
+loading a schema is not invoking a provider, issuing a grant or proving safety.
+The strlen and db/query examples illustrate contracts rather than install a
+library or supply capabilities. Foreign support never changes the repository's
+Clojure-only temporary bootstrap/tooling and Gravity/Uniform destination boundary.
+
+### Directional values, wrappers, ownership and real failures
+
+Six mapping families retain their direction and declared representation: numeric;
+string; Option; Result; collection; linear resource. String may become an owned
+UTF-8 buffer, borrowed slice or distinct JVM/JS/Python host string. Option may
+be nullable/tagged/optional; Result may use an error code plus out parameter,
+exception, rejected promise, tagged response or schema union. Collections may
+be owned arrays, slices, host lists/arrays, repeated fields or typed buffers;
+linear handles name their release. Loss needs an explicit conversion; fallible
+mapping returns Result or the declared L9 boundary error. Declared Option
+absence stays legal and actual errors/grant denials cannot become absence.
+Types owns actual mapping/type/dataflow facts; Runtime owns actual conversion,
+normalization, calls and cleanup. Default bidirectionality or assigned round-trip
+status is not their evidence.
+
+Retain seven ownership modes: Gravity-owned/foreign-borrowed; foreign-owned/
+Gravity-borrowed; transfers in both directions; shared immutable; synchronized/
+atomic shared mutable; named foreign-release handles. Foreign pointers carry
+nullability, initialization, lifetime, allocator identity, aliasing and thread
+affinity; they are not ordinary safe references. Unrepresentable facts keep the
+boundary unsafe. Actual release/transfer, borrow intervals, failure cleanup,
+concurrency/blocking and thread rules require genuine owner results, not host
+GC, a function name or process exit. L19 does not waive the wider L10/L18 rules.
+
+Unsafe foreign calls become safe only through actual wrapper invariants proved
+or checked. Preserve visible unsafe operation/reason/source/profile/effect/grant,
+pre/postconditions, no-retain/ownership/layout assumptions, safe boundary, owner,
+audit/evidence and re-review trigger. The safe-strlen example needs actual
+non-null/null-termination/within-buffer/no-retention obligations, not copied
+INTEROP-STRLEN or passed-audit labels. Target-specific layouts remain explicit
+and changed ABI/CString layout invalidates affected evidence. Safe Gravity keeps
+its governing safety outcomes; explicit unsafe is no safe proof.
+
+Foreign exceptions, panics, error codes/errno, rejected promises, signals and
+process exit statuses translate into declared typed Gravity errors before safe
+entry. Unexpected or undeclared null cannot enter a non-null type; declared
+absence is separate. Preserve eight L9 FFI error fields and actual failure
+resource behavior. An untranslated foreign failure remains unsafe. Host runtime
+conveniences cannot silently become source semantics.
+
+### Real schema generation, host bridges and scoped migration
+
+Schema binding generation retains nine fields: source digest/version; generated
+types/codecs; field nullability; error/status map; runtime effects/capabilities;
+changed-schema compatibility; diagnostic provenance. Schema loading/generation
+is a real L12 compile-time effect with authentic source/read/build grants.
+Available checked P precedes invocation and generated Q receives ordinary
+checks. The example schema/read label creates no grant. Generated bindings retain
+foreign/schema provenance and never masquerade as handwritten source. Build
+versions/locks artifacts and compares actual repeated generation under its
+reproducibility contract; flags establish neither equality nor drift checks.
+
+Hosted bridges retain runtime version, reflection/dynamic use, object lifetime/
+rooting, threading, exception translation, performance/allocation and non-hosted
+missing-feature behavior. Their measured boundary artifacts permit incremental
+replacement; they do not make the host runtime portable Gravity. Actual roots,
+null/error translation, supported runtime and deterministic resource behavior
+require genuine service results. A fixed JVM/JS/Wasm adapter map implements none
+of those operations on its own.
+
+Seven illustrative shims remain distinct: C-header extern/initial wrappers;
+selected Java classes; TypeScript schemas/codecs; Python-model provider tools;
+SQL query types/migration checks; GraphQL operations/response validators; Rust
+ABI-safe native exports. Each names incumbent source, target namespace,
+preserved/emulated/narrowed/rejected behavior, effects/grants, safety, generated
+files, parity tests, owner and stability. Shims remain temporary unless promoted.
+Original Expand generation and normal checking remain the owner; existing
+conditional Evolution change/stabilization decisions govern actual stable
+changes or promotion without a per-run approval or fresh migration-proof gate.
+No host language becomes a new seed/tooling implementation language.
+
+Compatibility requires actual golden comparison, directional type round trips,
+error translation, ownership transfer, release, concurrency/blocking, performance
+envelopes where replacement is sensitive and unsupported-profile rejection.
+At least one real incumbent-language/schema parity report remains necessary;
+all eight evidence families bind actual provider/schema versions, target manifests
+and locks. Actual owner cases and oracles precede applicable independently
+executed Release language/compiler/profile/runtime/safety/library results.
+Projected reports, one equal example and a status collector do not prove parity,
+complete interoperability or unrestricted safety. Held/unavailable execution
+remains explicit work and does not disappear from coverage.
+
+### Profile, artifacts, diagnostics and current implementation scope
+
+Core has no foreign boundaries except schema data lowering to portable typed
+Core. Hosted/native retain their declared distinct services; kernel/firmware
+require modeled allocation/blocking/interrupt/MMIO. Hardware uses descriptions/
+maps/buses/external modules. Distributed/AI retain actual service/tool/model/
+schema/network replay/audit. These are eight named profiles; workflow is a
+distributed facet/target/artifact, not another profile. Reject host leakage and
+unsupported representations before backend/runtime-only failure. Native/host/
+Wasm/JS/backend claims keep actual target evidence and current restrictions.
+
+All ten artifact families keep real producing owners and exact source/provider/
+schema/runtime/ABI/profile/target/lock identities. Eleven L19 diagnostics retain
+ten actual context fields: boundary id, foreign source, profile, span/manifest,
+provider, type map, ownership, effects, capabilities and safe-wrapper/migration
+remediation. Generated origins, redaction and source maps remain real artifacts.
+Changed source/schema/ABI/layout/runtime inputs invalidate affected binding,
+wrapper/fact/proof/error/origin/parity products before actual regeneration/reuse.
+
+Current bounded source inspection covers the selected
+[interop recorder](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00086-record-interop-call.clj),
+its ordinary call checker and thirteen compatibility specifications, the
+interop conformance collector and its typed-artifact emission caller, and the
+selected fixed host-adapter manifest with its managed-artifact construction
+caller. Inspected files at the author base are byte-identical to actual main
+`bf1cb9b60bb719488afadd73680fb30a0fe40ec1`. The ordinary call checker checks
+argument nodes and declared outer effects/capabilities before projection.
+The recorder projects supplied arguments/defaults and assigns complete/passed/
+reproducible/translation/enforcement flags. The
+[collector](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00105-l17-required-alternative-type-families.clj)
+counts nineteen tokens from record/status presence; the
+[typed-artifact caller](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-10.clj)
+places that result in the artifact and its emission catalogue lists the field.
+The [host manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00291-host-interop-adapter-manifest.clj)
+emits four fixed adapter maps and complete status; the
+[managed-artifact constructor](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00292-managed-runtime-source-artifact.clj)
+calls that helper, nests its result, and invokes structural validation and
+capability-summary construction. These bounded carrier/collection paths do not
+establish actual foreign conversion, ABI call, wrapper proof, resource release,
+error translation, schema drift comparison or incumbent parity. Other called
+helpers, runtime/backend implementations and their executed results remain
+unassessed. No compiler, adapter or helper is executed by this source inspection;
+no whole absence or whole implementation is inferred.
+
+Complete L19 selected-result staging belongs in the existing dependency
+representation. This text-only proposal changes no shared route, future binding,
+task identity/status or historical review. Original unique dependency predicates
+still require current-source reconciliation; declarations are not silently
+restored wholesale. Whole-source/owner/task/interface entailment and independent
+acceptance remain pending. D1/C1/C5/C6 ordering remains a separate decision.
+Hermetic inputs follow Matt's recorded L12 selection and the separately reviewed
+L6 clarification in this author lineage; actual source binding and main
+integration remain separate. Preserve accounting removal, real semantic/host/
+platform/external-account restrictions and every held action. No held compiler,
+provider/plugin/C7/C12/native/callback/device/probe/replay/migration/private-store/
+signing or product-publication operation is performed. The human-authorized
+review/integration coordination exception does not renew the stopped cluster
+handoff or denied advisory reviewer wake. No aggregate adoption, main merge or
+implementation acceptance is claimed. Reader contract coverage remains the first
+actual implementation increment.
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Expose real selected embedder/managed/JS/async-component/host-device/workflow/database/mobile helper, ABI, ownership/rooting/drop/cancel/error/order/replay contracts before checking, then actual linked/permitted behavior where claimed. GC/host promises/logging/default schedulers cannot replace deterministic cleanup, typed completion/backpressure, normalized failure or grants. Preserve native/callback/device/provider/replay/migration/private-store restrictions and no-runtime paths.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume actual grants and static decisions before provider actions; enforce denial, normalized errors and resource cleanup. Replay consumes recorded exact schema/query/provider/policy subjects. Driver availability or recording a policy establishes no execution. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual selected service/provider/tool/memory/scheduler/state/log/error/cleanup products with before-action enforcement and recorded replay. Manifest completeness is no execution. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Provide actual permitted fixture/service resources, effects, cleanup and denied-before-action observations. Fake/recorded/live scopes stay explicit and unavailable services remain unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Provide actual permitted services and device/FFI boundaries, redacted provider/error and cleanup observations, authentic before-action denials and recorded activity products. Simulation/recorded/live scopes remain explicit and unavailable operations unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Implement actual permitted typed crypto-provider/UI adapter boundaries, before-action enforcement, lifetime/cleanup, redaction and Gravity error/source mapping. Fakes and static acceptance are no live operation or mounted UI result. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual permitted interactive evaluation, ledger, replay, cleanup and hot-load decisions. Source/session metadata or injected complete rows are no execution; current authority precedes every protected action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual permitted debug/interactive/process/replay and source-linked measurement/provider observations with before-action enforcement and cleanup. Static records and target descriptors are no live frames, samples or device activity. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual permitted bounded memory/scheduler/GC/lock/interrupt/provider and source-linked measurement observations, explicit target support and cleanup; average throughput or fixed reports prove no runtime bound. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

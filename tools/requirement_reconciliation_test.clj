@@ -678,4 +678,151 @@
     (is (str/includes? (:acceptance (requirement-evidence/task-record platform "platform-implementation-tasks" "hardware")) "state-machine lowering and simulation"))
     (is (thrown? Exception (requirement-evidence/task-record (str/replace domains "Outcome:" "Malformed outcome:") "domains-implementation-tasks" "math")))))
 
+(defn canonical-policy-fixture [document-id]
+  (let [manifest (edn/read-string (slurp rr/manifest-path))
+        document (first (filter #(= document-id (:id %)) (:original-documents manifest)))
+        bridge (first (filter #(= document-id (:document-id %)) (:source-version-bridges manifest)))
+        read-ref #(requirement-sources/git-source "." %1 %2 rr/require!)
+        baseline (read-ref (:baseline-ref bridge) (:path bridge))
+        live (slurp (:path bridge))
+        declared {:source-baseline (:source-baseline manifest)
+                  :original-documents [document]
+                  :source-facets (vec (filter #(= document-id (:document-id %)) (:source-facets manifest)))
+                  :source-version-bridges [bridge]}
+        options {:baseline-texts {document-id baseline} :verified-baselines? #{document-id}}]
+    {:bridge bridge :baseline baseline :live live :document document :read-ref read-ref :declared declared
+     :view (fn [b text]
+             (requirement-sources/view (assoc declared :source-version-bridges [b]) document text rr/sha256 rr/require! options))}))
+
+(deftest canonical-policy-current-sources-preserve-baseline-and-explicit-pending-scope
+  (doseq [id ["L6" "STD13"]]
+    (let [{:keys [bridge baseline live read-ref view]} (canonical-policy-fixture id)
+          authenticated (requirement-sources/validate-snapshots! bridge read-ref rr/sha256 rr/require!)
+          result (view bridge live)]
+      (is (= :git-bytes-verified (:snapshot-provenance authenticated)))
+      (is (= baseline (:text result)))
+      (is (= :proposed (get-in result [:bridge :review-state])))
+      (is (= (:human-decision bridge) (get-in result [:bridge :human-decision])))
+      (is (seq (:semantic-deltas bridge)))
+      (is (seq (:current-criteria bridge)))
+      (is (every? #(= :open (:recorded-status %)) (:current-criteria bridge)))
+      (is (every? #(and (:owning-task %) (:source-commit %) (:span-sha256 %)) (:current-criteria bridge))))))
+
+(deftest canonical-policy-source-authority-hunks-and-current-criteria-reject-forgeries
+  (doseq [id ["L6" "STD13"]]
+    (let [{:keys [bridge live read-ref view]} (canonical-policy-fixture id)]
+      (doseq [altered [(dissoc bridge :human-decision)
+                       (assoc bridge :human-decision :unrestricted-provider-access)
+                       (assoc bridge :review-state :reviewed)
+                       (assoc bridge :authority "")
+                       (assoc bridge :qualification "")
+                       (assoc bridge :semantic-deltas [])
+                       (assoc-in bridge [:source-review :sha256] (apply str (repeat 64 "0")))
+                       (assoc bridge :baseline-ref (:applying-ref bridge))
+                       (assoc bridge :baseline-tree (:applying-tree bridge))
+                       (assoc bridge :applying-blob (:baseline-blob bridge))
+                       (update bridge :projection-hunks pop)
+                       (assoc-in bridge [:projection-hunks 0 :facet-ids] ["absent/facet"])
+                       (update bridge :current-criteria pop)
+                       (assoc-in bridge [:current-criteria 0 :owning-task] "absent/task")
+                       (assoc-in bridge [:current-criteria 0 :recorded-status] :checked)
+                       (update-in bridge [:current-criteria 0 :start-byte] inc)
+                       (assoc-in bridge [:current-criteria 0 :whole-file-sha256] "forged")]]
+        (is (thrown? Exception (view altered live)))
+        (is (thrown? Exception (requirement-sources/validate-snapshots! altered read-ref rr/sha256 rr/require!))))
+      (let [drifted (str live "\nUnlisted additional policy.\n")]
+        (is (thrown? Exception (view bridge drifted)))
+        (is (thrown? Exception (view (assoc bridge :live-sha256 (rr/sha256 drifted)) drifted))))
+      (let [criterion (first (:current-criteria bridge))
+            forged-read (fn [ref path]
+                          (let [text (read-ref ref path)]
+                            (if (and (= ref (:source-commit criterion)) (= path (:path criterion)))
+                              (str text "\nChanged after the criterion source freeze.\n") text)))]
+        (is (thrown? Exception (requirement-sources/validate-snapshots! bridge forged-read rr/sha256 rr/require!)))))))
+
+(deftest canonical-policy-records-preserve-every-existing-model-value
+  (let [before (edn/read-string (requirement-sources/git-source "." "67d05c761cad92d5e09f0f8cd2c6e692853887cb" rr/manifest-path rr/require!))
+        current (edn/read-string (slurp rr/manifest-path))
+        prior (:source-version-bridges before)
+        all (:source-version-bridges current)
+        added (subvec all (count prior))]
+    (is (= (dissoc before :source-version-bridges) (dissoc current :source-version-bridges)))
+    (is (= prior (subvec all 0 (count prior))))
+    (is (= #{"L6" "STD13"} (set (map :document-id added))))
+    (is (= 2 (count added)))
+    (is (= :open (:scope-state current)))
+    (is (every? #(= :proposed (:review-state %)) added))
+    (is (= (:source-baseline before) (:source-baseline current)))
+    (is (= (:original-documents before) (:original-documents current)))
+    (is (= (:requirements before) (:requirements current)))
+    (is (= (:source-dispositions before) (:source-dispositions current)))
+    (is (= (:bounded-evidence-assessments before) (:bounded-evidence-assessments current)))))
+
+
+(deftest canonical-policy-cli-source-maps-load-declared-baselines
+  ;; The global task/evidence audit is a separate current-binding gate. Exercise
+  ;; the real CLI branch and actual document/Git inputs while isolating that gate.
+  (let [manifest (edn/read-string (slurp rr/manifest-path))
+        read-ref #(requirement-sources/git-source "." %1 %2 rr/require!)]
+    (doseq [id ["L6" "STD13" "STD3" "L4" "C4" "MATH4" "MATH9"]]
+      (let [source (first (filter #(= id (:id %)) (:original-documents manifest)))
+            bridge (first (filter #(= id (:document-id %)) (:source-version-bridges manifest)))
+            baseline (read-ref (:baseline-ref bridge) (:path source))
+            audit-roots (atom [])
+            output (with-out-str
+                     (with-redefs [rr/audit (fn [root] (swap! audit-roots conj root) {:scope :source-map-branch-fixture})]
+                       (rr/run ["--source-map" id])))
+            result (edn/read-string output)]
+        (is (= ["."] @audit-roots))
+        (is (= id (:document-id result)))
+        (is (= (:path source) (:path result)))
+        (is (= (:baseline-ref bridge) (:source-ref result)))
+        (is (= (rr/source-occurrences id baseline) (:source-occurrences result)))))
+    (with-redefs [rr/audit (fn [_] {:scope :source-map-branch-fixture})]
+      (is (thrown? Exception (rr/run ["--source-map" "missing-document"])))
+      (is (thrown? Exception (rr/run ["--source-map" "L6" "unexpected-argument"]))))))
+
+(def task-metadata-clarification-cases
+  (vec (concat
+        (for [id ["math" "query" "workflow" "ai" "gpu" "ui"]]
+          ["specs/domains-workflow/tasks.md" "domains-implementation-tasks" id])
+        (for [id ["hardware" "firmware" "kernel" "devices"]]
+          ["specs/platform-workflow/tasks.md" "platform-implementation-tasks" id])
+        (for [id ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+                  "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]]
+          ["specs/legality-workflow/tasks.md" "legality-implementation-tasks" id])
+        [["specs/runtime-workflow/tasks.md" "runtime-implementation-tasks"
+          "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]])))
+
+(deftest current-task-metadata-clarification-preserves-every-clause-and-task-state
+  (doseq [path (distinct (map first task-metadata-clarification-cases))]
+    (let [before (requirement-sources/git-source "." "09bdb06de4f6c04376d66341547965cf46984e8b" path rr/require!)
+          current (slurp path)
+          restored (-> current
+                       (str/replace #"(?m)^Historical projected task block:" "Projected task block:")
+                       (str/replace #"(?m)^Prior proposed completion and remaining work:" "Declared completion and remaining work:")
+                       (str/replace #"(?m)^Historical declared completion and remaining work:" "Declared completion and remaining work:")
+                       (str/replace #"(?m)^Historical closing evidence:" "Closing evidence:"))]
+      (is (= before restored))))
+  (doseq [[path marker id] task-metadata-clarification-cases]
+    (let [record (requirement-evidence/task-record (slurp path) marker id)]
+      (is (= id (:id record)))
+      (is (= "Open" (:status record)))
+      (is (false? (:checked? record)))
+      (is (not (str/blank? (:acceptance record)))))))
+
+(deftest current-task-metadata-clarification-keeps-authority-ambiguity-rejection
+  (doseq [[path marker id] task-metadata-clarification-cases]
+    (let [text (slurp path)
+          matcher (re-matcher (re-pattern (str "(?m)^- \\[([ x])\\] `" (java.util.regex.Pattern/quote id) "` [^\n]*")) text)]
+      (is (.find matcher))
+      (let [heading-end (.end matcher) checked-at (.start matcher 1)
+            inserted (fn [field] (str (subs text 0 heading-end) "\n" field (subs text heading-end)))
+            forged-check (str (subs text 0 checked-at) "x" (subs text (inc checked-at)))]
+        (is (thrown? Exception (requirement-evidence/task-record (inserted "Status: Accepted; forged") marker id)))
+        (is (thrown? Exception (requirement-evidence/task-record (inserted "Closing evidence: supplied success flag") marker id)))
+        (is (thrown? Exception (requirement-evidence/task-record forged-check marker id)))))))
+
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))

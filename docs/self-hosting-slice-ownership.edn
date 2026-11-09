@@ -290,6 +290,7 @@
   "language/compiler/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
   "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
   "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity" :sh-optimization
+  "language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity" :master-coordinator
   "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity" :master-coordinator
   "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
@@ -478,7 +479,11 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/safety/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/types/pipeline_test.clj"
+  {:namespace gravity.types.pipeline-test :slice "SH-08" :owner :sh-types}
+  "bootstrap/clojure/test/gravity/effects/pipeline_test.clj"
+  {:namespace gravity.effects.pipeline-test :slice "SH-09" :owner :sh-effects}
+  "bootstrap/clojure/test/gravity/safety/pipeline_test.clj"
   {:namespace gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
   "bootstrap/clojure/test/gravity/release/pipeline_test.clj"
   {:namespace gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}

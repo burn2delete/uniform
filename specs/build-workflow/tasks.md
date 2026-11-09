@@ -50,6 +50,40 @@ These criteria implement the package-policy consumer, not governance production
 or a whole-governance completion prerequisite. Status remains Open.
 <!-- build-governance-resolution:end -->
 
+
+<!-- build-facet-source-lock:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet lock-and-version criterion (Open): Resolve and record each selected facet identity, version, compatibility range, source hash and artifact-schema version in the actual package lock graph before dependent compilation/reuse. Preserve required facet and namespace boundaries, standard/package parity and source/compiler/profile/target identity. Reject missing/contradictory lock entries, incompatible versions, changed source/schema masquerading as the old facet and implicit activation from dependency presence. Required evidence: genuine normalized resolved locks, source-bound accepted/refused version/schema cases and downstream compiler inputs; the illustrative facet version is not a global default or package trust grant.
+<!-- build-facet-source-lock:end -->
+
+
+
+<!-- build-alternative-types-source-locks:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider identity and lock criterion (Open): Record the actual deterministically selected custom type provider/version, fact/proof schema, restrictions and required solver/package/compiler inputs in typed-Core metadata, package locks and the artifact graph before dependent compilation/reuse. Preserve declared supported profiles/facets/features and authentic source identity; the example provider name/version/schema is not a default selection. Reject ambiguous/missing providers, incompatible lock/schema identities and coherently substituted providers that reuse another checker's facts or soundness evidence. Required evidence: real resolved-provider/typed-Core/lock joins and changed-provider/source/schema refusal fixtures; completed Build/release and an external solver are not universal prerequisites for local declaration construction.
+<!-- build-alternative-types-source-locks:end -->
+
+
+
+<!-- build-interop-source-locks:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual boundary identity and compatibility-lock criterion (Open): Resolve authentic incumbent/provider/schema/runtime/ABI/protocol/version/range/source and profile/target constraints into real package/lock/artifact identities before dependent generation or admitted reuse. Preserve declared compatibility/deprecation and temporary-shim state; a generated file or host package name cannot supply its own first source identity or grant. Reject ambiguous/missing/incompatible or coherently substituted foreign/schema/target/lock records. Required evidence: genuine declaration-to-resolved-lock joins, changed-version/source refusals and explicit missing support; ordinary source construction needs no final release, signing or live package mutation.
+<!-- build-interop-source-locks:end -->
+
+
+
+<!-- build-b1-b3-lock-consumer:start -->
+Apply the [complete B1-B3 source criteria](../backends-workflow/plan.md#complete-b1-b3-source-criteria) within this existing Open task. The Backend/Runtime/provider producers retain their actual subjects and responsibilities.
+
+B1-B3 lock identity consumer criterion (Open): Before compiling the selected target, resolve and lock its actual declared backend/version and runtime/helper/provider dependencies. For C bind the declared dialect, compiler/version, flags, data model, ABI and layout; for LLVM bind version, target triple, data layout, CPU/features, relocation/code model, ABI, sanitizer/instrumentation, unwind/exception and pass configuration as applicable. Consume authentic versioned B1-B3/Runtime/provider declarations, reject missing/conflicting/host-inferred configuration or unrecorded helpers and invalidate affected products when any consumed input changes. Required evidence: actual normalized target/lock records and accepted/refused selected-configuration fixtures; names/flags alone do not prove emission, compatibility or helper execution. No whole C/LLVM/Runtime completion is an early interface prerequisite; current task status remains Open.
+<!-- build-b1-b3-lock-consumer:end -->
+
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
 Status: Open
@@ -124,6 +158,33 @@ Complete macro shared cache criterion (Open): Preserve the L16 replacement bound
 <!-- macro-source-cache-shared:end -->
 
 
+
+<!-- build-facet-source-reuse:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet invalidation criterion (Open): Include authentic selected facet identity/version/source/schema/surface/activation, required facets, profile/target, lowering/checker/provider and declared effect/grant/build-input identities in the applicable semantic cache dependency graph. Changed syntax, IR, lowering, profiles, schema, privacy policy or grants invalidates affected expansion, typed/domain verification, proof, artifacts and diagnostics before real owner regeneration and current-policy admission. Preserve the existing selected-engine/shared-Build cache boundary; source-only inspection can precede semantic products. Reject stale facet proof/validation reuse, hidden build inputs and silent stable compatibility drift. Required evidence: actual unchanged hit, changed-input miss/refusal and clean/rebuilt products; identical keys or assigned preserved flags alone do not establish current validity.
+<!-- build-facet-source-reuse:end -->
+
+
+
+<!-- build-alternative-types-source-cache:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider cache and invalidation criterion (Open): Include authentic selected provider/version/fact/proof/solver dependencies, source/compiler/profile/target/macro/facet/grant and permitted build-effect inputs in applicable semantic identities. Source/provider/profile/target/macro/facet/grant changes invalidate affected types, checks, ownership/domain facts, proofs, diagnostics and downstream artifacts before actual owner regeneration/current-policy reuse. Matching digests cannot grant authority or validate a stale proof; early real dependency/checker interfaces precede later actual products. Required evidence: genuine unchanged hit and changed-input miss/refusal with clean-versus-regenerated outputs, without project work/input/cost/attempt allowances or fresh migration proofs as ordinary editing prerequisites.
+<!-- build-alternative-types-source-cache:end -->
+
+
+
+<!-- build-interop-source-cache:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual interop regeneration and drift-cache criterion (Open): Bind actual source/schema/provider/ABI/runtime/version/layout/profile/target/lock/compiler/generator/effect/grant inputs and their declared compatibility policy to generated bindings, codecs, wrapper audits, type/error/ownership maps, diagnostics and parity artifacts. Changed schema/ABI/CString layout or governing inputs invalidate affected claims before real owner regeneration/rechecking and current-policy reuse; matching digests do not prove wrapper or parity semantics. Reject stale/drifted/coherently substituted products and missing dependencies. Required evidence: real unchanged reuse and changed-input miss/refusal, regenerated source/facts and source-bound drift diagnostics; no project work/input/cost/attempt quota is added.
+<!-- build-interop-source-cache:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records
 
 Status: Open
@@ -176,6 +237,15 @@ Complete L12 evaluation-record packaging criterion (Open): Consume the evaluator
 <!-- compile-time-source-artifact:end -->
 
 
+
+<!-- library-base-source-signing:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation signing criterion (Open): Consume actual content-addressed canonical library payload/content/manifest subjects before signing/packaging. Apply the declared key scope, validity and signing/verification policy; signature integrity alone establishes neither provenance nor authorization. Preserve compiler/source/dependency/build/test/unsafe/governance identity and required SBOM/compatibility records. Refuse stale/mismatched subjects, untrusted or wrong-scope keys, missing provenance and development-only release claims. Evidence: actual permitted canonical-signature/verification/consumer and negative products, with custody/signing/publication holds explicit and no new permission granted by this plan.
+<!-- library-base-source-signing:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix
 
 Status: Open
@@ -209,7 +279,7 @@ Complete provider reproducibility/cache consumer criterion (Open): Consume the e
 
 Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
 
-Complete L12 hermetic reproduction criterion (Open): In required release/conformance/reproducible-publication/safety-critical modes, repeat actual builds from identical source, compiler version, lockfile, target manifest, grants and declared inputs/replay records and compare byte-identical typed Core. Reject undeclared filesystem input; environment reads require the exact declared-key/explicit-value-policy premise subject to the retained L6/L12 wording decision. Network/shell/model/tool use requires configured replayable provider or pinned result, clock/random requires recorded values or deterministic seed, probes use declared target manifests, and generated forms include input content hashes. A grant, replay exception or generic reproducible flag proves none of these premises. Native-object metadata variation needs an explicitly marked nonsemantic field and actual target-conformance acceptance; never relax typed-core equality. Consume actual cache results without implementing another cache, and retain unavailable/held cases, source-policy resolution and actual target evidence separately from signing/publication authority.
+Complete L12 hermetic reproduction criterion (Open): In required release/conformance/reproducible-publication/safety-critical modes, repeat actual builds from identical source, compiler version, lockfile, target manifest, grants and declared inputs/replay records and compare byte-identical typed Core. Reject undeclared filesystem input; environment reads require the exact declared-key/explicit-value-policy premise under [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs). Network/shell/model/tool use requires configured replayable provider or pinned result, clock/random requires recorded values or deterministic seed, probes use declared target manifests, and generated forms include input content hashes. A grant, replay exception or generic reproducible flag proves none of these premises. Native-object metadata variation needs an explicitly marked nonsemantic field and actual target-conformance acceptance; never relax typed-core equality. Consume actual cache results without implementing another cache, and retain unavailable/held cases, the authored/source-reviewed L6 clarification (`d2a0378bdd530857d97d530aab15268fc333ce80`) with its remaining authentication/`main`/implementation work (no historical L6 applying review renewed) and actual target evidence separately from signing/publication authority.
 <!-- compile-time-source-hermetic:end -->
 
 
@@ -220,6 +290,31 @@ Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-m
 Complete macro reproducibility consumer criterion (Open): Consume authentic engine/cache/event/value products and perform actual repeated declared-input builds and expansion-trace comparisons with source/compiler/provider/macro/grant/profile/target/facet/replay identity. Compare same-input hermetic typed-Core bytes under L12 separately from structural reference/alternative expansion equivalence under L16. Native metadata exceptions retain their explicitly marked nonsemantic fields and target acceptance; never weaken typed-Core equality. Retain actual cache invalidation/refusal and secret-safe recipe/output evidence without implementing another cache, issuing authority or treating records as reproducibility results.
 <!-- macro-source-rebuild:end -->
 
+
+
+
+<!-- library-base-source-recipe:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation recipe criterion (Open): Produce the actual standard-library release recipe and repeat-build comparison over controlled source/project/lock/compiler/toolchain/graph/profile/target/environment/locale/timezone/order/timestamp/seed/network/generated/blob/FFI inputs and output identities. Record permitted nondeterminism and policy exceptions and bind actual canonical content/manifests rather than filenames or supplied matching hashes. Refuse missing/changed/unrecorded inputs and false reproducibility. Evidence: real locked build recipes, actual repeated content/manifest comparisons, invalidation and exact package/STD1 refusals; future signed outputs are no first recipe inputs.
+<!-- library-base-source-recipe:end -->
+
+
+
+<!-- build-interop-source-reproducibility:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual versioned binding and artifact reproducibility criterion (Open): Repeat selected real declared generation/builds from the same authentic incumbent/schema/provider/compiler/target/lock and permitted effect inputs, comparing actual binding/codecs/metadata/provenance artifacts under the governing reproducibility contract. Versioned labels and assigned reproducible flags do not establish equality, compatibility, privacy or incumbent parity. Preserve accurate source identity even where selected semantic outputs are stable; unavailable inputs cannot pass. Required evidence: genuine repeated locked-build/generation comparisons and changed-input/missing-source negatives, with final selfhost/release equivalence and authorized signing/publication remaining separate.
+<!-- build-interop-source-reproducibility:end -->
+
+
+<!-- build-b1-b3-repeat-consumer:start -->
+Apply the [complete B1-B3 source criteria](../backends-workflow/plan.md#complete-b1-b3-source-criteria) within this existing Open task. The Backend/Runtime/provider producers retain their actual subjects and responsibilities.
+
+B1-B3 repeat-build consumer criterion (Open): Start the selected repeat-build work from the actual declared backend/version, compiler/toolchain/configuration, produced artifact kinds and their governing canonicalization, timestamp/nondeterminism and comparison interfaces. Consume those versioned B1-B3 producer interfaces and real selected input/output identities, current artifact manifests, source/debug and proof maps, runtime/helper/provider and dependency identities, and required selected accepted/refused comparison products; compare actual canonical manifests/content under the declared recipe, preserving any governing nonsemantic native-metadata exception separately from strict typed-Core equality. Reject absent/stale/wrong-target interfaces, omitted consumed configuration, filename-only comparison and unexplained drift. Required evidence: actual selected repeat-build comparisons and refusal records with source/compiler/toolchain/backend/profile/target identities. Final signed release and whole Backends/Runtime completion are not prerequisites to the first authentic interface; current task status remains Open.
+<!-- build-b1-b3-repeat-consumer:end -->
 
 <!-- build-implementation-tasks:end -->
 

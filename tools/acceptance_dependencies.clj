@@ -109,12 +109,45 @@
 
 (defn strongly-connected [graph]
   (validate-graph graph)
-  (let [closure (into {} (map (fn [id] [id (reachable graph id)]) (keys graph)))]
-    (loop [remaining (set (keys graph)) components []]
-      (if-let [id (first (sort remaining))]
-        (let [component (set (filter #(and ((closure id) %) ((closure %) id)) remaining))]
-          (recur (reduce disj remaining component) (conj components (vec (sort component)))))
-        components))))
+  (let [;; Iterative DFS records finishing order without a transitive-closure
+        ;; table or a host call stack proportional to dependency depth.
+        finish-order
+        (loop [roots (seq (keys graph)) seen #{} order []]
+          (if-let [root (first roots)]
+            (if (contains? seen root)
+              (recur (next roots) seen order)
+              (let [[seen order]
+                    (loop [pending [[root false]] seen seen order order]
+                      (if-let [[node finishing?] (peek pending)]
+                        (cond
+                          finishing? (recur (pop pending) seen (conj order node))
+                          (contains? seen node) (recur (pop pending) seen order)
+                          :else (recur (into (conj (pop pending) [node true])
+                                             (map #(vector % false) (get graph node)))
+                                       (conj seen node) order))
+                        [seen order]))]
+                (recur (next roots) seen order)))
+            order))
+        reversed (reduce
+                  (fn [reversed [from dependencies]]
+                    (reduce #(update %1 %2 conj from) reversed dependencies))
+                  (zipmap (keys graph) (repeat #{})) graph)
+        components
+        (loop [roots (rseq finish-order) seen #{} components []]
+          (if-let [root (first roots)]
+            (if (contains? seen root)
+              (recur (next roots) seen components)
+              (let [[seen component]
+                    (loop [pending [root] seen seen component []]
+                      (if-let [node (peek pending)]
+                        (if (contains? seen node)
+                          (recur (pop pending) seen component)
+                          (recur (into (pop pending) (get reversed node))
+                                 (conj seen node) (conj component node)))
+                        [seen (vec (sort component))]))]
+                (recur (next roots) seen (conj components component))))
+            components))]
+    (vec (sort-by first components))))
 
 (defn cycles [graph]
   (filterv (fn [component]
@@ -176,7 +209,11 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+  #{"backend-interface"
+    "pass-evidence"
+    "backend-conformance"
+    "query"
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
     "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"
@@ -261,6 +298,9 @@
     "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
     "devices"
     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
@@ -504,15 +544,21 @@
                        (requirement-sources/git-blob-id historical))
                     "Platform historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        current-source-successor
+        (first (filter #(= path (:path %)) requirement-sources/current-source-transition-contracts))
+        current-source-ref (or (:applying-ref current-source-successor)
+                               (:current-source-ref transition) (:applying-ref transition))
         current-source (read-ref current-source-ref path)
-        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+        _ (require! (= (or (:applying-tree current-source-successor)
+                           (:current-source-tree transition) (:applying-tree transition))
                        (requirement-sources/git-commit-tree "." current-source-ref require!))
                     "Platform current composition source commit/tree changed")
-        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+        _ (require! (= (or (:applying-blob current-source-successor)
+                           (:current-source-blob transition) (:applying-blob transition))
                        (requirement-sources/git-blob-id current-source))
                     "Platform current composition source blob changed")
-        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+        _ (require! (= (or (:live-sha256 current-source-successor)
+                           (:current-source-sha256 transition) (:live-sha256 transition))
                        (sha256 current-source))
                     "Platform current composition source bytes changed")
         current (read-text path)]
@@ -632,15 +678,32 @@
                        (requirement-sources/git-blob-id historical))
                     "Stdlib historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        ;; The historical PR564 bridge remains immutable, but this path now
+        ;; has an authenticated current-source successor in the STD7-STD9
+        ;; frame. Use that successor for current row comparison while keeping
+        ;; the old current-source identity in the bridge as history.
+        current-source-successor
+        (first (filter #(= path (:path %))
+                       requirement-sources/current-source-transition-contracts))
+        _ (require! current-source-successor
+                    (str "Missing current Stdlib source successor: " path))
+        current-source-ref (or (:applying-ref current-source-successor)
+                               (:current-source-ref transition)
+                               (:applying-ref transition))
         current-source (read-ref current-source-ref path)
-        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+        _ (require! (= (or (:applying-tree current-source-successor)
+                           (:current-source-tree transition)
+                           (:applying-tree transition))
                        (requirement-sources/git-commit-tree "." current-source-ref require!))
                     "Stdlib current composition source commit/tree changed")
-        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+        _ (require! (= (or (:applying-blob current-source-successor)
+                           (:current-source-blob transition)
+                           (:applying-blob transition))
                        (requirement-sources/git-blob-id current-source))
                     "Stdlib current composition source blob changed")
-        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+        _ (require! (= (or (:live-sha256 current-source-successor)
+                           (:current-source-sha256 transition)
+                           (:live-sha256 transition))
                        (sha256 current-source))
                     "Stdlib current composition source bytes changed")
         current (read-text path)]
@@ -670,6 +733,36 @@
      :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
+
+(def current-source-transition-contracts
+  requirement-sources/current-source-transition-contracts)
+
+(defn current-source-transition-view
+  "Authenticate the bounded current-source proposal without changing any
+  historical/applying pin or granting implementation authority."
+  [transitions read-text]
+  (let [expected current-source-transition-contracts
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (require! (and (vector? transitions)
+                   (= (set (map :path transitions))
+                      (set (map :path expected)))
+                   (= (count transitions) (count expected)))
+              "Current source transition population changed")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (require! (= actual contract)
+                  (str "Current source transition contract changed: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (requirement-sources/git-source "." ref source-path require!))
+         read-text sha256 require!)))
+    {:kind requirement-sources/current-source-transition-kind
+     :paths (vec (sort (keys (by-path transitions))))
+     :review-state :pending-independent-source-version-review
+     :authority :current-source-interface-only
+     :implementation-acceptance :unassessed}))
 
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
@@ -1111,6 +1204,54 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        routing (:stable-task-routing-keys crosswalk)
+        _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
+        ;; Reject inconsistent captured metadata before the remaining source checks.
+        ;; Live bodies and their authenticated transition paths are still checked below.
+        _ (doseq [row tasks]
+            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (source-text (:source row)))]
+              (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
+                        "Task status/ID differs from actual authority")
+              (when (:checked row)
+                (require! (str/includes? (source-text (:source row)) "Accepted;")
+                          "Checked task lacks explicit accepted status"))))
+        _ (doseq [r requirements]
+            (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
+                      "SH criterion changed original completion prerequisites")
+            (require! (= (:shared-completion-rule r)
+                         (when (<= 3 (Long/parseLong (subs (:milestone r) 3))) (:id shared-rule)))
+                      "Changed shared completion applicability")
+            (require! (or (seq (:task-references r)) (= :missing-task-authority (:coverage r)))
+                      "Unmapped SH criterion without explicit gap")
+            (doseq [t (:task-references r)]
+              (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
+        sequence (:sh07-sequence crosswalk)
+        _ (require-population! (set (map #(format "SH07-C%02d" %) (range 1 19))) (map :id sequence) "SH07 sequence")
+        _ (require! (= 18 (count sequence)) "Duplicate SH07 sequence row")
+        _ (doseq [r sequence]
+            (let [[_ id _ _ declaration] (re-matches #"\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|"
+                                                    (source-text (:source r)))]
+              (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
+                        "SH07 sequence metadata differs from original source")))
+        readiness-source-version (:implementation-readiness-source-version crosswalk)
+        current-source-transition-input-paths
+        (set (map :path (:current-source-transitions readiness-source-version)))
+        ;; Complete-file current-source contracts authenticate the checked-out
+        ;; source itself. Keep injected read functions for the surrounding
+        ;; read-only drift fixtures, but do not let a navigation-only fixture
+        ;; masquerade as a new current-source frame.
+        current-source-read
+        (fn [path]
+          (if (current-source-transition-input-paths path)
+            (slurp path)
+            (read-text path)))
+        ;; Preserve current-source authentication before the remaining live reads.
+        current-source-transition
+        (when (contains? readiness-source-version :current-source-transitions)
+          (current-source-transition-view
+           (:current-source-transitions readiness-source-version)
+           current-source-read))
+        current-source-transition-paths (set (:paths current-source-transition))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1121,8 +1262,6 @@
         (when (seq stdlib-tasks)
           (stdlib-task-transition-view stdlib-task-source-transition
                                        stdlib-tasks snapshots read-text))
-        routing (:stable-task-routing-keys crosswalk)
-        _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
         _ (doseq [[component rows] (:task-authorities crosswalk)]
             (require-population! (set (map :id rows)) (get routing component) (str component " fixed routing key"))
             (require-population! (set (map :id rows))
@@ -1133,13 +1272,7 @@
                                (= (:path (:source row)) (:path platform-task-source-transition)))
                           (and (= "stdlib" (:component row))
                                (= (:path (:source row)) (:path stdlib-task-source-transition))))
-              (current-task-body! (:source row) snapshots read-text))
-            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (source-text (:source row)))]
-              (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
-                        "Task status/ID differs from actual authority")
-              (when (:checked row)
-                (require! (str/includes? (source-text (:source row)) "Accepted;")
-                          "Checked task lacks explicit accepted status"))))
+              (current-task-body! (:source row) snapshots read-text)))
         future (future-task-view (:future-task-authorities crosswalk) task-map snapshots read-text)
         finish (finish-line-view (:finish-line-sources crosswalk)
                  (into task-map (for [rows (vals (:future-task-authorities crosswalk)) row rows] [(:id row) row])) snapshots read-text)
@@ -1147,16 +1280,7 @@
             (source-bound! (:acceptance-source r) snapshots read-text)
             (source-bound! (:context-source r) snapshots read-text)
             (when-let [history (get-in r [:historical-completion :evidence-source])]
-              (source-bound! history snapshots read-text))
-            (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
-                      "SH criterion changed original completion prerequisites")
-            (require! (= (:shared-completion-rule r)
-                         (when (<= 3 (Long/parseLong (subs (:milestone r) 3))) (:id shared-rule)))
-                      "Changed shared completion applicability")
-            (require! (or (seq (:task-references r)) (= :missing-task-authority (:coverage r)))
-                      "Unmapped SH criterion without explicit gap")
-            (doseq [t (:task-references r)]
-              (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
+              (source-bound! history snapshots read-text)))
         historical-source-applicability
         (into (sorted-map)
               (for [[path digest] (:source-digests crosswalk)
@@ -1171,7 +1295,8 @@
         ;; report drift separately; current task/acceptance inputs stay exact.
         _ (doseq [[path digest] (:source-digests crosswalk)
                   :when (not (or (navigation-source-path? path)
-                                 (historical-sh-source-path? path)))]
+                                 (historical-sh-source-path? path)
+                                 (contains? current-source-transition-paths path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -1191,15 +1316,8 @@
                               [(str "facet:" (:id r) ":" (:id t))
                                {:state :unassessed :scope :selected-acceptance-facet
                                 :task-id (:id t) :criterion (:id r)}]))
-        sequence (:sh07-sequence crosswalk)
-        _ (require-population! (set (map #(format "SH07-C%02d" %) (range 1 19))) (map :id sequence) "SH07 sequence")
-        _ (require! (= 18 (count sequence)) "Duplicate SH07 sequence row")
         _ (doseq [r sequence]
-            (source-bound! (:source r) snapshots read-text)
-            (let [[_ id _ _ declaration] (re-matches #"\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|"
-                                                    (source-text (:source r)))]
-              (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
-                        "SH07 sequence metadata differs from original source")))
+            (source-bound! (:source r) snapshots read-text))
         sequence-nodes (into {} (for [r sequence] [(:id r) {:state :unassessed :scope :original-implementation-sequence}]))
         composition-nodes (into {} (for [[id _] task-map]
                                       [(str "task:" id "/composition")
@@ -1248,19 +1366,21 @@
                      (for [t (:task-references r)]
                        {:from (:id r) :to (str "facet:" (:id r) ":" (:id t))
                         :kind :requires-selected-execution-and-review :source (source-ref (:acceptance-source r))}))) requirements)))
-        adjacency (typed-adjacency nodes edges conditions)]
-    (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
+        adjacency (typed-adjacency nodes edges conditions)
+        graph-cycles (cycles adjacency)]
+    (require! (empty? graph-cycles) "SH/task current acceptance cycle")
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :future-task-dependencies (:dependency-review future)
      :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :current-source-transitions current-source-transition
      :platform-task-source-transition platform-transition
      :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
-     :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)
+     :adjacency adjacency :cycles graph-cycles :frontier (advisory-frontier nodes edges conditions)
      :incidence (into (sorted-map) (map (fn [r] [(:id r) (mapv :id (:task-references r))]) requirements))
      :limits [:task-interface-is-not-execution :selected-facet-not-whole-task
               :historical-acceptance-does-not-set-current-state :semantic-edge-review-pending

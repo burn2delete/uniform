@@ -13,7 +13,6 @@
      source-path :b4-final-artifact-integrity artifact)
     (let [raw-bytes (get-in artifact [:raw-wasm :bytes])]
       (when (and (vector? raw-bytes)
-                 (<= (count raw-bytes) p15-s23-b4-wasm-max-module-bytes)
                  (every? #(and (integer? %) (<= 0 % 255)) raw-bytes))
         (let [observed (str "sha256:"
                             (sha256-bytes-hex

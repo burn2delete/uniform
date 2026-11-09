@@ -247,6 +247,81 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Expose real structural, typed/coverage, effect/resource/validation, checked-decision, MIR and target products with equivalent observable boundaries across fused passes. Reuse actual proof checking and preserve all artifacts/diagnostics/invalidation; no supplied checked flag replaces an operation.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Expose structural source contracts, tentative typed selection, actual effects/admission and later interface/runtime products as distinct stage boundaries, preserving equivalent fused-pass observability and actual invalidated facts.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Expose real structural, tentative typed, inferred-effect, admitted-dispatch, verified MIR, target/interface and runtime boundaries. pass-evidence supplies early actual checker interfaces and later exact-subject proofs, not a universal future Formal gate.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Expose actual structural error control, typed source-error potential, admitted effects/profile/grants, checked Core/MIR and later target/runtime/workflow/AI failure products as distinct observable boundaries. Preserve all artifacts, diagnostics and invalidation across equivalent fused passes.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Supply real declared artifact/namespace/phase/package scoped compiler API and verifier contracts. Read-only scopes under :compiler/ir-transform do not authorize rewriting, and library facades cannot bypass normal output verification.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Keep actual versioned registration/callback policy and declared Core/domain outputs separate from each domain's real implementation. The existing domain task routes all ten L14 initial facets, preserves full versioned source/typed/effect/grant/privacy payloads and invokes actual owning verification before later consumers. C17/C12 reviews do not accept whole L14 and no held callback runs.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Expose real versioned selected-checker/typed-Core/fact/proof/verifier interfaces through ordinary stage contracts and check actual outputs before consumption. C17 applies when the provider uses that plugin path; type providers acquire no mandatory plugin loading or hidden compiler privilege. Preserve unresolved source-stage ordering and every callback/C7/C12 hold.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Ordinary source/pipeline/verifier interfaces preserve complete foreign/schema/generated type/effect/grant/profile/resource/unsafe/provenance contracts. A plugin applies only when selected; no universal callback/plugin or new unsafe host facility follows. Existing C7/C12 and native/callback holds remain.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Preserve actual verified selected MIR/domain/anchor and current correlated type/effect/grant/profile/ownership/safety/proof inputs at family handoffs. MLIR dialect/verifier success, target attributes and manifest flags cannot establish source facts. Optional pipelines and later conformance packs do not become first schema inputs; preserve current source-order issues and C12/plugin restrictions.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Expose authentic versioned pipeline/pass/plugin contexts, output verifiers, preserved/invalidated/regenerated facts and real checker/proof products. Library wrappers create no second engine or hidden state authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual current versioned stage/fact/origin products for semantic lint/REPL queries and normal checked evaluation. Absent later facts are reported honestly; source-only services require only applicable inputs. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current versioned stage/fact/origin/input/output and verifier/preservation products. Source-only views require only applicable inputs, and tools cannot invent later facts or authorize compiler mutation. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply genuine risk/evidence policy and scoped checker/translation-validation interfaces, including existing C18 minimum scope; Opt invokes actual verifiers and consumes results without creating a second checker. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

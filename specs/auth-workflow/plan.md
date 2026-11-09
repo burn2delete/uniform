@@ -164,7 +164,7 @@ Build grants and runtime grants remain separate. Compile-time providers support
 replay or explicitly declare non-replayability. Release/conformance/safety-critical
 builds need the specified recorded exception before otherwise non-replayable use;
 that replay exception grants no effect authority and cannot waive the exact
-L6/L12 hermetic premises or their recorded environment-wording issue. Runtime
+L12 hermetic premises selected by [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs). Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed. Runtime
 initialization checks actual required providers before user code unless its
 compatible fallback is declared. Emitted gate metadata cannot replace that check
 or actual no-action-after-denial behavior.
@@ -310,6 +310,109 @@ Existing task bodies/statuses, source criteria, frozen review scopes and actual 
 Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Keep actual filesystem/network/model/tool/random and mutation grants separate from guard type success and declared effect sets. Early grant/gate interfaces precede operation; no pattern shape or Boolean result issues authority.
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Use actual guard action and inferred requirements for real scoped grant checks independently of effect allowance and type/shape success. Early gates precede actions and later traces follow, with no held provider/model/replay permission.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Issue/check authentic selected grants separately from method effect/type success and provider declaration. Reflection, FFI and AI/tool dispatch retain actual required authority; a schema or runtime/profile label is not a grant.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Truthful provider/service declarations and actual call requirements precede authentic separate grant checking; later runtime usage must agree and no type/effect/provider label grants authority.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve actual typed/audited capability/policy/human-review denial with principal/action/grant/provider/source identity. Authority is checked before action; catch/Result/panic paths cannot issue grants or convert denial into nil/absence.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Check authentic scoped library/provider/compiler authority and deny before action. IR inspection declares :compiler/read-ir and a read scope under :compiler/ir-transform; a read-only scope cannot authorize write.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). Supply authentic selected-provider and operation-specific grants for task/scheduler, filesystem roots/operations and network hosts/ports/protocols/listen under phase/lifetime/attenuation/revocation and deployment policy. STD8/STD9 grant no ambient path/stream/network authority. Preserve separate required review and actual restrictions; decisions precede real Runtime operation gates without a blanket whole-Auth completion prerequisite.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply authentic declared provider and operation-specific grant/phase/lifetime decisions. API or prompt/data values do not confer authority. Actual permitted effects and host/provider/signing actions remain separate from schema/type development and actual restrictions persist.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check authentic action/phase/artifact/namespace/package scopes and actual provider authority separately from effects. C17 read-IR scope grants no write; facet/package/prompt/signature labels confer no privilege. Retain every held action.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Validate actual selected type-provider declarations/identity/feature/profile/schema/solver restrictions and preserve deterministic L15 choice. Actual checker/corpus/profile/proof owners supply soundness evidence; Auth admits and reports claims, with real scoped grants and exported linear/affine capability facts. The five L17 claim meanings remain exact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Auth retains original foreign-boundary admission and real provider/phase/scope/grant checks, consuming actual complete Types/Resolve/profile/resource/wrapper/error facts rather than replacing those owners. Declaration, import, shim or wrapper names grant no authority.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual selected host/global/import/device/database/model/tool/provider identity, source effects, grants, trust/taint and human-review policy distinct from backend availability or OS permission. Foreign schemas, package names and prompt/tool output issue no authority. Imported certificate compatibility/trust and actual operation gates remain required for affected claims; no held action becomes enabled.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Produce authentic operation-specific database authority and retain attenuation, revocation, phase/lifetime and provider scope. Review text and schema/query metadata do not issue grants; Runtime enforces them at use. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply scoped authentic grants, intersection/attenuation/revocation, phase/lifetime, secret and payload-bound review facts; prompts, graphs and evaluations do not create authority. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Produce genuine operation-specific fixture/live-service and compiler artifact/namespace/phase grants, attenuation/revocation/lifetime and trust facts. Fakes and package identity grant no live authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Produce authentic operation-specific key/redaction, process command/args/cwd/output, clock/random, terminal/signal and device/register/range/interrupt grants with attenuation, revocation and lifetime. Actual Runtime/provider enforces before the action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Supply authentic current key/random/provider/tool/host scopes with intersection, attenuation, revocation and lifetime. Package/provider identity or pure policy data grants no actual operation; Runtime enforces at the protected boundary. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply authentic current operation-specific grants with attenuation, revocation and lifetime. Visible CLI/REPL grants and package identity do not create host/network/shell/secret/model/database authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply authentic current operation-specific inspection, mutation, tool, provider, profiler and endpoint grants with scope/revocation/lifetime; views and session identity issue no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual current operation-specific compile-time/provider/profiler/device grants, policy scope and revocation/lifetime; performance, PGO or tuning metadata grants no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
 ## Historical task-authority-transfer plan
 

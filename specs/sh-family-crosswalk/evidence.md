@@ -696,3 +696,444 @@ This continuation claims no compiler/runtime/native/C7 execution, complete L7
 implementation, migration or release authority, public admission,
 self-hosting, or integration. Independent review and coordinator integration
 remain pending.
+
+## PR767 protocol and Effects current-source continuation
+
+This continuation accounts for the unique PR767 protocol slice after the
+accepted pattern/Core/Types work. The dependency/source-control commits are
+`bc8639e09c` and `fa1866623a`; the protocol owner/source proposal is
+`0aff3e592e`, and the later refinement is `b7499ce860`. Their useful value is
+preserved selectively: the dependency view retains 2,011 joins, 139 routes,
+99 current parent consumers and 40 future records; the protocol view retains
+the L8 method/effect/dispatch/profile/host/tool criteria, five explicit owner
+joins, sixteen source criteria, and the two selected hosted C7 source files.
+The generated maps from those historical commits are not treated as current
+source authority.
+
+The source composition is a normal merge of current main
+`2c5742ea00c0840ad4be842d971de9652ba8457f` (tree
+`11320981c4126366c518b39b07c7a35354202ae2`) with the accepted continuation
+history. The clean source/test checkpoint before generated readiness metadata
+is `e79416eb004ffd8107fe5c664c5b5f5e7fe54e9f` (tree
+`274ee7a1b9f713ebcd6586d6891caf3e4bc28810`); the current-source successor
+precedence and the compact protocol source/tamper controls are part of this
+checkpoint. The readiness map is regenerated only after this checkpoint and
+binds current files to their actual commit/tree/blob bytes; its 50 unchanged,
+89 changed and 10 added task-body comparison counts are conservation data,
+not implementation or migration authority.
+
+The bounded protocol control executes `source-view` against the current
+successor and checks predecessor bridge/projection hashes, current task/plan/
+specification and criterion byte spans, future-task row identity/body hashes,
+owner joins, selected source-file hashes, and fail-closed rejection of a
+removed or forged protocol successor. The pinned current-main comparison lint
+also passes with zero unchanged warnings and zero blocking diagnostics. It is
+source/data integrity evidence only. The historical PR767 source frames remain historical; all task rows,
+implementation, compiler, runtime, migration, release, self-hosting and
+public-admission states remain open, pending or unassessed. No native/C,
+compiler migration, held route or restricted operation was executed.
+
+
+## Original selected-result dependency rows: current source binding
+
+The normal composition `9ef3622060652f339fa75b73fefa4963db272a10` retains ordered parents `f989a01024d4ef0f595b7bf685e0fbf17648469b` and `0f4dbda97c69fc67dad7eb8824702ae44959607b`. It adds exactly the fourteen original independently reviewed dependency rows; removing them restores the entire prior document. Every start-result list remains empty. The separate document transition authenticates its current Git tree/blob, complete UTF-8 span and digest and preserves the complete previous transition. The earlier source census and all historical pins, statuses and evidence remain unchanged.
+
+The derived crosswalk changes only that current transition and its pending review metadata. All 535 normalized source payloads, 149 captured current task records, future records, SH requirement dispositions, finish-line sources and narrow accepted evidence remain identical. These are observed source populations, not implementation completion units. The fourteen rows add 361 selected-result joins; current parent routes increase from 104 to 118, and the coarse feedback groups join into one group of 138 members. Existing typed execution acyclicity, independent producer interfaces and later actual-result/acceptance boundaries remain mandatory.
+
+Final pure Source checks: dependency suite 28 tests/6958 assertions and crosswalk suite 80 tests/65048 assertions, both with zero failures/errors; both current-source checks pass. Pinned lint has zero errors/warnings and the identical pre-existing informational redundant-string finding at acceptance_dependencies_test.clj:197. Canonical documentation, roadmap structure, 185-workstream governance and six/eleven language-boundary checks pass at their unchanged input scope. Earlier failed observations remain preserved; they are not relabeled as passing checks.
+
+This is source/interface provenance awaiting independent current-tuple review and Main integration. No newer 240-spec source proposal is adopted here. No task status, implementation, provider execution, migration, release, seed retirement, T002/T003/T005 closure or full 240-spec verification is granted.
+
+## Reviewed 240-spec source composition: explicit current bindings
+
+The source checkpoint is `1615d7a37b7c35d8ad4dabf7d719e906e75277c6`, tree
+`2fe775403b016510a7828389bcbb8c1bd710c1b9`. This continuation binds its
+42 reviewed source files through explicit commit/tree/blob, complete UTF-8
+span and file digest contracts. Twenty-two existing paths receive complete
+predecessor-preserving successors and twenty additional paths receive explicit
+bindings; six unchanged earlier transitions remain. The resulting current
+table has 48 paths. The 31 STD7-STD9 criterion predicates and sole owners
+remain byte-exact, with separate current locators and complete old joins.
+
+The complete predecessor frame and crosswalk are authenticated at
+`5a8791e36dd7816b686bd9a1b07bc238ef2d0df4`, tree
+`7327dff1b1c1d6416ef8b22b6b937d93e3af4764`. Reversing only the declared
+transition, criterion-join and future-observation additions restores the
+whole previous frame. All 535 prior normalized evidence payloads remain
+byte-exact; 41 distinct current payloads are added without relabeling old
+subjects. The complete old mapping review is retained with its original
+fingerprint. Current mapping review remains pending.
+
+The 149 ordinary and 40 future task observations preserve every identity,
+route and checked state. Current future observations are separate from the
+unchanged historical error/protocol tables. Platform current-source lookup
+now uses the same explicit successor precedence as the existing Stdlib
+lookup while retaining the historical ordinary Platform rows. All 180 SH
+requirement dispositions, narrow Reader evidence, conflicts, finish-line
+sources and the rollup remain unchanged. Newly located source clauses carry
+source-inspection-only and unassessed-current-applicability qualifications.
+
+Before freeze, the dependency suite passes 28 tests/7199 assertions, the seven
+focused historical/current crosswalk controls pass 6331 assertions, and the
+source-history guards pass five tests/79 assertions. The complete crosswalk
+run ended with one failure in 80 tests/65130 assertions: an older review
+comparison selected the new review layer. That comparison now selects the
+complete preserved predecessor; its focused regression passes one test/26
+assertions. Exact committed-source checks are recorded separately. Earlier
+failed preparations and the interrupted first crosswalk run (terminal 130)
+remain nonpasses, with their original observations preserved.
+
+These are source provenance and conservation results awaiting independent
+review and Main integration. They grant no task completion, current
+implementation acceptance, provider/native execution, migration, release,
+seed retirement, T002/T003/T005 closure or full 240-spec verification.
+
+## B1-B3 Build consumer source version
+
+The two bounded original-PR #767 gaps now have precise criteria in the same existing Build lock and repeat-build tasks. Content subject `9f6f43f93725e65b93464f62b922bcd16f2f17d9`, tree `cc0fdb6f7ed6014b6a449e092a1461cf738c5bc6`, parent `0293c86cba25ecaf0e96cfcf827c029042c4ef2c`, retains every complete old task body as a unique prefix and every scalar task record/ID/state unchanged. Independent exact-content review `/tmp/uniform-build-b1-b3-consumers-independent-content-review.edn` (SHA-256 `d38d33499e03cf21cc279266e6c4414b13e0daa5eb2057b6c14a8c9d81dac35b`) accepts only those source criteria, preserving all actual execution and evidence conditions.
+
+This companion authenticates the complete previous frame and all 48 current-file transitions, adds one explicit Build file transition, and retains the earlier 31 library-IO predicates and 40 future observations unchanged. Build had no separate transition in the old 48, so no previous transition is invented. The current task-source model preserves the full old 21-bridge table and history, advances only the Build bridge and unchanged L12 criterion's file/span identity, and retains the complete prior requirement record.
+
+The current-task transition validator previously treated every older successor as new in the latest frame. A real next Build-only transition therefore falsely rejected the two paths first introduced in an earlier 19-to-21 transition. The fix authenticates preceding frames recursively and validates only changed/new bridges in their own latest transition, retaining all old nil/non-nil predecessors exactly. The real failing preflight remains recorded; no old pin was rewritten. Multi-frame, forged-predecessor, omitted-path, undeclared-new-path and authenticated-but-forged-history controls pass in the 10-test/100-assertion preflight. Source-frame/history/commit/scope controls pass 6 tests/96 assertions.
+
+All 576 old raw payload subjects remain byte-exact. The two new payload subjects are the amended Build task captures; their difference from whole canonical task bodies is terminal whitespace under the existing parser. The projection adds one source-inspection locator to the unchanged Backend plan for each of SH-23.1, SH-23.2, SH-26.1, SH-27.1, SH-27.6 and SH-28.1. Every old locator remains, every addition is explicitly unassessed source inspection, and removing only those six additions returns all 180 old requirement records exactly. No disposition, accepted evidence, Reader result, finish line, conflict or implementation state is promoted, and the rollup is byte-identical. Earlier private whole-record equality assertions are retained as nonpassing diagnostics; they exposed these additive locators rather than an acceptance change.
+
+The pending review fingerprint is `8c458da0bf1453a8091a0ba1337dc6eae98d85f2f5c3f3e92466b863098b4f30`. The complete previous current-source review at `f222c901f01af375bae81ce0d7c3857b8d5e84f8b1638305dc6ebaa1ead794dc` and all its older subjects are preserved. Preparation artifacts under `/tmp/uniform-build-b1-b3-consumers-` record the exact model/frame byte inverses and source subjects. Final committed checks, independent exact-successor review and actual Main integration remain separate work. Original route-sidecar bytes remain unrecovered, reproduced payloads remain qualified, T002/T003/T005 and the complete 240-source reconciliation remain open. No compiler, backend, provider, Reader/bootstrap, signing, publication or other held execution is performed or authorized by this source companion.
+
+
+## Qualified Auth/Crypto declarative request source successor
+
+The content commit `336b8a7697fe90c49a8eab050c3bc0fcdfc3cf62` changes only the selected Auth grant row in `docs/acceptance-dependencies.md`. Its source/interface inputs are **unadmitted declarative requests and policy/contract shapes**. Auth independently derives the actual scoped grant; Crypto must consume that genuine current grant before checked admission and protected action. Admitted descriptors, provider results, state/neutrality proofs and execution/refusal/audit traces cannot authorize their own first action. Imported verification, raw key/secret access and actual provider/custody enforcement keep their existing owners and grants. Start results remain empty; only selected Crypto interface composition is declared. Unselected outcomes stay Open.
+
+This companion authenticates the complete `070afe9e051c65efe456b01c7c223b6cfcf4c78f` predecessor frame/crosswalk and preserves all 49 prior transitions, 31 library-IO joins, 40 future observations, 578 historical raw subjects, IDs, task bodies and dispositions. The earlier document transition is retained in full as `:successor-of`; reversing the explicit frame edits recovers the prior frame bytes. The current mapping remains pending and retains the complete previous review at its original fingerprint. The archives below preserve both the producer-order qualification and the accepted qualified row verbatim. They accept only the stated source wording: exact companion review and Main integration remain separate. No grant, provider availability, key action, implementation result, semantic/global scope acceptance, migration, release or full-240 verification is supplied here. Reconciliation tasks T002–T006 remain open.
+
+Archive `auth-crypto-qualified-row`, SHA-256 `c3536334d4a147e9f49c3f2e871e42b5cc9e851107f3ffb8bc6845e36d23e8a1`:
+
+<!-- source-reference-review-archive:auth-crypto-qualified-row:start -->
+~~~~~~edn
+{:prior-proposal
+ {:path "/tmp/uniform-pr767-auth-crypto-phase-proposal.edn",
+  :sha256
+  "a278188056e169722b7c326f935476e1a8479cb5931a687e6b7020521c0d52d1"},
+ :prior-proposed-row
+ "| `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | none | `types/current-evidence-and-remaining-work/types5-integrate-typed-core`, `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects`, `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`, `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`, `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`, `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`, `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `schema`, `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers`, `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros`, `plugins`, `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination`, `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`, `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries`, `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality`, `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes`, `core/current-evidence-and-remaining-work/core4-verify-and-serialize`, `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss`, `types/current-evidence-and-remaining-work/types2-check-declared-abstractions`, `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit`, `crypto` | Selected L6 authority consumes actual typed source/phase/principal requirements, early direct/latent inferred action sets, profile compatibility, validated compatible provider declarations, normalized package/build/deployment configuration and runtime support descriptors. Map effect requirements to separately checked capability grants; never compare effect sets directly with capability sets or copy allowances as inference. Early inferred requirements precede grant-dependent final handler legality. Bind live/mock/fixture/replay-read/write/scheduler/tool scope, lifetime and provider, refuse ambient/widened authority, and preserve missing-capability tests as expected diagnostics rather than hidden grants. Runtime support metadata does not execute an action or manufacture authority. Additional concurrency authority binds actual scheduler/atomic/lock/channel/actor/provider requests to separate inferred effects, source/profile/principal/deployment and lifetime/revocation facts. Runtime5 supplies early actual sink/gate capability interfaces before action use; later actual denial/revocation/narrowing traces are evidence of enforcement, not prior grants. Neither runtime model selection, a message schema nor an unsafe label supplies authority or policy-required review; preserve allowed audit-only records without a new ordinary-development gate. Additional L15/SAFE10 grant derivation consumes actual source/namespace and function type/effect requirements, package and dependency requests/denials, workspace/profile, build/deployment invocation and provider scopes. Normalize requests first, then compute the actual eight-layer non-expanding intersection and category-specific operation scopes. Types preserve provider/scope/phase/lifetime/thread-safety/revocation; pure transport grants no later action. Required imported trust verification precedes provider use but never supplies authority. Preserve explicit ambient premises, attenuation, supported revocation/static lifetimes, secret read/export policy and actual failure/redaction decisions; supplied scope or safe flags do not prove them. Additional L12 grant/secret interface consumes real P source/function/namespace identity and actual requested effect/principal/provider/scope/phase facts. Early typed requests and destination/redaction contracts precede grant derivation and action; later evaluator/cache/plugin/diagnostic results witness secret-safe handling and denial. Requests, signed lockfiles, local profiles and provider configuration do not mint wider authority. Public code/diagnostics/keys/provenance exclude secrets; explicitly accepting private storage retains its own held policy boundary. Preserve actual external billing without project cost/fuel or mandatory replacement proof gates. Additional complete L3/C5 grant result consumes actual namespace/import capability requirements and package/build/deployment identities, then checks the real applicable grant intersection separately from effect allowance. Resolve supplies declared requested edges before validation and consumes the later verdict before checked use; no capability name or public module record issues authority. Reject unavailable or widened grants with real action-independent decisions, preserving held operations and seed/profile distinctions. Complete L2/C6 authority admission consumes actual candidate action/location/callee identity, inferred requirements and applicable principals/package/build/deployment scopes. Check the real grants for explicit mutation, calls, foreign/domain operations and generated code separately from effect allowance. Quote data, a var name, type success or an effect declaration cannot grant authority. Early gate/policy contracts precede this decision; real execution traces follow it without clearing held operations. Complete L7 authority checking consumes actual guard action/call and inferred requirement identities with the applicable principals and scopes. Check grants independently from effect allowance, type success and shape validation. Early gate interfaces precede admitted actions and later traces follow; a pattern, typed wrapper or Boolean guard cannot issue authority or authorize held model/tool/network/replay operations. Complete L8 Auth consumes actual method/call and dynamic/tool/host action requirements, principal/scope/phase and selected provider contract. Check actual grants separately from method type compatibility and effect allowance before admitted action; additional implementation capabilities remain caller-visible. A schema, provider, profile or mode label grants none. Conditional protected-domain authority composition consumes crypto's actual selected typed operation/value/provider/key-custody/reveal-policy request and boundary-contract products where that protected-domain operation is selected. These are the authentic pre-action inputs to Auth's independent scoped grant decision, not a future crypto execution, successful decrypt/sign/reveal, provider label or completed whole Crypto task. Pure grant normalization requires no live cryptographic action. Crypto then consumes the genuine current Auth grant before its own protected action, with later redacted execution/refusal/audit traces evidencing enforcement and never authorizing their own first call. Imported signature/provenance verification and raw key/secret access retain their existing actual verifying/custody/provider owners and authority; this interface issues none. Missing or stale selected protected-domain request/custody/policy inputs fail that affected grant/composition, while unselected protected-domain outcomes remain Open. |",
+ :Main :not-claimed,
+ :qualified-independent-review
+ {:path "/tmp/uniform-pr767-auth-crypto-phase-independent-review.edn",
+  :sha256
+  "172674bcc5af7f7bc544cee3bbc20397c3f070f22ede44a270243207d15f70bc",
+  :findings
+  [{:id :bounded-producer-order-qualification,
+    :severity :qualification,
+    :disposition :retain-explicit-residual,
+    :text
+    "The Crypto source contracts supply the requested pre-action fields and artifacts, but their admission/execution criteria consume Auth grants. The proposed row is semantically sound only when 'Crypto products' means selected declarative/interface inputs, not the later admitted operation descriptor, provider result, or audit evidence. The proposal states this distinction; retain it explicitly in any successor source composition."}]},
+ :prior-review-qualification :preserved-not-dismissed,
+ :native-claim :not-attempted,
+ :current-realized-interface :unassessed,
+ :independent-exact-successor-source-review :pending,
+ :producer-and-start-columns :unchanged-from-prior-proposal,
+ :prior-proposed-row-sha256
+ "33f9a062b3648fd258d5b169cd7328432a36e954817fc163c8b42d707b1dba7e",
+ :current-row
+ "| `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | none | `types/current-evidence-and-remaining-work/types5-integrate-typed-core`, `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects`, `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`, `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`, `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`, `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`, `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `schema`, `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers`, `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros`, `plugins`, `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination`, `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`, `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries`, `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality`, `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes`, `core/current-evidence-and-remaining-work/core4-verify-and-serialize`, `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss`, `types/current-evidence-and-remaining-work/types2-check-declared-abstractions`, `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | Selected L6 authority consumes actual typed source/phase/principal requirements, early direct/latent inferred action sets, profile compatibility, validated compatible provider declarations, normalized package/build/deployment configuration and runtime support descriptors. Map effect requirements to separately checked capability grants; never compare effect sets directly with capability sets or copy allowances as inference. Early inferred requirements precede grant-dependent final handler legality. Bind live/mock/fixture/replay-read/write/scheduler/tool scope, lifetime and provider, refuse ambient/widened authority, and preserve missing-capability tests as expected diagnostics rather than hidden grants. Runtime support metadata does not execute an action or manufacture authority. Additional concurrency authority binds actual scheduler/atomic/lock/channel/actor/provider requests to separate inferred effects, source/profile/principal/deployment and lifetime/revocation facts. Runtime5 supplies early actual sink/gate capability interfaces before action use; later actual denial/revocation/narrowing traces are evidence of enforcement, not prior grants. Neither runtime model selection, a message schema nor an unsafe label supplies authority or policy-required review; preserve allowed audit-only records without a new ordinary-development gate. Additional L15/SAFE10 grant derivation consumes actual source/namespace and function type/effect requirements, package and dependency requests/denials, workspace/profile, build/deployment invocation and provider scopes. Normalize requests first, then compute the actual eight-layer non-expanding intersection and category-specific operation scopes. Types preserve provider/scope/phase/lifetime/thread-safety/revocation; pure transport grants no later action. Required imported trust verification precedes provider use but never supplies authority. Preserve explicit ambient premises, attenuation, supported revocation/static lifetimes, secret read/export policy and actual failure/redaction decisions; supplied scope or safe flags do not prove them. Additional L12 grant/secret interface consumes real P source/function/namespace identity and actual requested effect/principal/provider/scope/phase facts. Early typed requests and destination/redaction contracts precede grant derivation and action; later evaluator/cache/plugin/diagnostic results witness secret-safe handling and denial. Requests, signed lockfiles, local profiles and provider configuration do not mint wider authority. Public code/diagnostics/keys/provenance exclude secrets; explicitly accepting private storage retains its own held policy boundary. Preserve actual external billing without project cost/fuel or mandatory replacement proof gates. Additional complete L3/C5 grant result consumes actual namespace/import capability requirements and package/build/deployment identities, then checks the real applicable grant intersection separately from effect allowance. Resolve supplies declared requested edges before validation and consumes the later verdict before checked use; no capability name or public module record issues authority. Reject unavailable or widened grants with real action-independent decisions, preserving held operations and seed/profile distinctions. Complete L2/C6 authority admission consumes actual candidate action/location/callee identity, inferred requirements and applicable principals/package/build/deployment scopes. Check the real grants for explicit mutation, calls, foreign/domain operations and generated code separately from effect allowance. Quote data, a var name, type success or an effect declaration cannot grant authority. Early gate/policy contracts precede this decision; real execution traces follow it without clearing held operations. Complete L7 authority checking consumes actual guard action/call and inferred requirement identities with the applicable principals and scopes. Check grants independently from effect allowance, type success and shape validation. Early gate interfaces precede admitted actions and later traces follow; a pattern, typed wrapper or Boolean guard cannot issue authority or authorize held model/tool/network/replay operations. Complete L8 Auth consumes actual method/call and dynamic/tool/host action requirements, principal/scope/phase and selected provider contract. Check actual grants separately from method type compatibility and effect allowance before admitted action; additional implementation capabilities remain caller-visible. A schema, provider, profile or mode label grants none. |",
+ :qualified-proposed-row-sha256
+ "d230cb329b2ebd7ef45f47f8fe4eb8d40c601199de22112d30b5414092714e21",
+ :provider-or-key-operation :none,
+ :full240-verification :not-claimed,
+ :source-path "docs/acceptance-dependencies.md",
+ :source-file-sha256
+ "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7",
+ :kind :qualified-auth-crypto-declarative-interface-row-preparation,
+ :qualified-proposed-row
+ "| `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | none | `types/current-evidence-and-remaining-work/types5-integrate-typed-core`, `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects`, `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection`, `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`, `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`, `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`, `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `schema`, `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers`, `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros`, `plugins`, `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination`, `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`, `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries`, `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality`, `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes`, `core/current-evidence-and-remaining-work/core4-verify-and-serialize`, `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss`, `types/current-evidence-and-remaining-work/types2-check-declared-abstractions`, `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit`, `crypto` | Selected L6 authority consumes actual typed source/phase/principal requirements, early direct/latent inferred action sets, profile compatibility, validated compatible provider declarations, normalized package/build/deployment configuration and runtime support descriptors. Map effect requirements to separately checked capability grants; never compare effect sets directly with capability sets or copy allowances as inference. Early inferred requirements precede grant-dependent final handler legality. Bind live/mock/fixture/replay-read/write/scheduler/tool scope, lifetime and provider, refuse ambient/widened authority, and preserve missing-capability tests as expected diagnostics rather than hidden grants. Runtime support metadata does not execute an action or manufacture authority. Additional concurrency authority binds actual scheduler/atomic/lock/channel/actor/provider requests to separate inferred effects, source/profile/principal/deployment and lifetime/revocation facts. Runtime5 supplies early actual sink/gate capability interfaces before action use; later actual denial/revocation/narrowing traces are evidence of enforcement, not prior grants. Neither runtime model selection, a message schema nor an unsafe label supplies authority or policy-required review; preserve allowed audit-only records without a new ordinary-development gate. Additional L15/SAFE10 grant derivation consumes actual source/namespace and function type/effect requirements, package and dependency requests/denials, workspace/profile, build/deployment invocation and provider scopes. Normalize requests first, then compute the actual eight-layer non-expanding intersection and category-specific operation scopes. Types preserve provider/scope/phase/lifetime/thread-safety/revocation; pure transport grants no later action. Required imported trust verification precedes provider use but never supplies authority. Preserve explicit ambient premises, attenuation, supported revocation/static lifetimes, secret read/export policy and actual failure/redaction decisions; supplied scope or safe flags do not prove them. Additional L12 grant/secret interface consumes real P source/function/namespace identity and actual requested effect/principal/provider/scope/phase facts. Early typed requests and destination/redaction contracts precede grant derivation and action; later evaluator/cache/plugin/diagnostic results witness secret-safe handling and denial. Requests, signed lockfiles, local profiles and provider configuration do not mint wider authority. Public code/diagnostics/keys/provenance exclude secrets; explicitly accepting private storage retains its own held policy boundary. Preserve actual external billing without project cost/fuel or mandatory replacement proof gates. Additional complete L3/C5 grant result consumes actual namespace/import capability requirements and package/build/deployment identities, then checks the real applicable grant intersection separately from effect allowance. Resolve supplies declared requested edges before validation and consumes the later verdict before checked use; no capability name or public module record issues authority. Reject unavailable or widened grants with real action-independent decisions, preserving held operations and seed/profile distinctions. Complete L2/C6 authority admission consumes actual candidate action/location/callee identity, inferred requirements and applicable principals/package/build/deployment scopes. Check the real grants for explicit mutation, calls, foreign/domain operations and generated code separately from effect allowance. Quote data, a var name, type success or an effect declaration cannot grant authority. Early gate/policy contracts precede this decision; real execution traces follow it without clearing held operations. Complete L7 authority checking consumes actual guard action/call and inferred requirement identities with the applicable principals and scopes. Check grants independently from effect allowance, type success and shape validation. Early gate interfaces precede admitted actions and later traces follow; a pattern, typed wrapper or Boolean guard cannot issue authority or authorize held model/tool/network/replay operations. Complete L8 Auth consumes actual method/call and dynamic/tool/host action requirements, principal/scope/phase and selected provider contract. Check actual grants separately from method type compatibility and effect allowance before admitted action; additional implementation capabilities remain caller-visible. A schema, provider, profile or mode label grants none. Conditional protected-domain grant composition consumes only the selected UNADMITTED declarative operation/value request and provider-capability, key-custody/participant, reveal/leakage and boundary-policy schema contracts supplied by Crypto's source/interface. These state requested facts; they certify no grant, admission, safety, provider availability or completed operation. Auth independently checks the actual principal/source/provider/scope/phase/lifetime requirements and grant intersection. Pure grant normalization needs no live cryptographic action or completed whole Crypto task. Crypto consumes the genuine current Auth grant before checked admission and protected action. An admitted protected-operation descriptor, provider execution result, state transition/neutrality proof and execution/refusal/audit trace are later products and MUST NOT be inputs authorizing their own first action. Imported signature/provenance verification, raw key/secret access and actual provider/custody enforcement retain their existing owners and require their own applicable grants; this declarative interface issues none. Missing or stale selected request/custody/policy inputs fail only the affected grant/composition; unselected protected-domain outcomes remain Open. |",
+ :repository-edit :none,
+ :whole-crypto-start-gate :none,
+ :required-order
+ [:selected-declarative-request-and-schema
+  :independent-auth-grant
+  :checked-protected-admission
+  :provider-action
+  :actual-execution-and-audit-results],
+ :subject "a580f666c0c8431f88ae987dae0f840e43fedfbb",
+ :only-clarification
+ :unadmitted-declarative-input-before-auth-grant-before-admission-and-action,
+ :current-row-sha256
+ "63dc20223faeba81d76fa6c86c6acb40f92a2f47dcd5f6634069f84fbd7cc9a0"}
+~~~~~~
+<!-- source-reference-review-archive:auth-crypto-qualified-row:end -->
+
+Archive `auth-crypto-source-order-qualification`, SHA-256 `172674bcc5af7f7bc544cee3bbc20397c3f070f22ede44a270243207d15f70bc`:
+
+<!-- source-reference-review-archive:auth-crypto-source-order-qualification:start -->
+~~~~~~edn
+{:kind :uniform-pr767-auth-crypto-phase-independent-review-v1
+ :reviewer :audit_892_current
+ :review-mode :read-only-immutable-git-and-source-contract-review
+ :proposal
+ {:path "/tmp/uniform-pr767-auth-crypto-phase-proposal.edn"
+  :sha256 "a278188056e169722b7c326f935476e1a8479cb5931a687e6b7020521c0d52d1"}
+ :scope
+ {:original
+  {:commit "cb4f7b45e61a294cedec57370b3f4e1419456858"
+   :tree "7648121fbc8937c56c0d8636dd1e90ba956add33"}
+  :current-source
+  {:commit "0293c86cba25ecaf0e96cfcf827c029042c4ef2c"
+   :tree "09f618374673feb5a2ac01d0d847e478e3bc01b9"
+   :domain-tasks-blob "052598b8a1e20984e3347b1fb55e0ccae1564a3a"
+   :domain-tasks-file-sha256 "95db9c16125a5b653c7b950a1a1786b5cfb46c753bc9120f5ae6402908ef430e"
+   :auth-tasks-blob "eacc8b08da24682cce054701f6f664ec4d91d247"
+   :auth-plan-blob "27746875730b17a1f3851548c64557a2febb5685"}
+  :published-main
+  {:commit "41aaea100091dc80067328e9b066f7378845eca3"
+   :tree "a89ce3e51273352d4479f68b28f3a8f5b7633727"
+   :parent "e1d81c973ea9219d174d336941af2d017295166f"
+   :domain-tasks-blob "0831a57f201cd974d81d1d8c6583eef4b7f45ecd"
+   :domain-tasks-file-sha256 "3294ee20a756529102efebcc745022cbb9f795be7ece97d2bdd691b9edb2f62c"
+   :dom15-blob "6fa0f9c649e48c1218a6f3b8d25f16c0a28e5650"
+   :dom15-file-sha256 "598430ff37be43934d9cbb959b15e5cb6582210c89276bd1fc078a1af5fcf3d6"
+   :auth-plan-blob "aaef141d94381b8bc5f38c17aaa330c617e50e6a"
+   :auth-tasks-blob "ad1f82fa6a0a0332df053c76dd8ec31125751ab"}}
+ :identity-verification
+ {:current-auth-row
+  {:file-sha256 "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"
+   :source-raw-present? true
+   :main-raw-present? true
+   :main-file-sha256 "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"
+   :main-raw-contains-crypto? false}
+  :current-crypto-row
+  {:file-sha256 "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"
+   :source-raw-present? true
+   :main-raw-present? true
+   :main-file-sha256 "64ba3cc0125237e9fd9de774bc2fe66eb4f420b011555510082bfc967ece52bb"
+   :raw-sha256 "e5ec6a6863bc0ae06c2c014c8a6a00efcb57fbab42aae3c84eeb8079fbbd3a93"
+   :raw-declares-start-none? true
+   :raw-consumes-auth-and-legality? true}
+  :original-auth-row
+  {:file-sha256 "ccc357a9441e1803824633ddaa86951e81e2cf2d6f65c082ec4bcfa58957d99f"
+   :source-raw-present? true
+   :main-raw-present? false
+   :original-raw-declared-crypto? true}
+  :source-clause-hashes
+  [{:id :auth-grant-intersection
+    :path "specs/auth-workflow/tasks.md"
+    :raw-sha256 "ea7919ab0e12de8e95707d012e65e9306b3daf053d98ba92d59a2e9448aa2565"
+    :exact-raw-in-main? true}
+   {:id :auth-crypto-ui-boundary
+    :path "specs/auth-workflow/plan.md"
+    :raw-sha256 "9cb6696ec33de0c118ec1d5f17f4a8a8a65aa0f06d9509d88eddf7256767f496"
+    :exact-raw-in-main? false}
+   {:id :protected-value-typing
+    :path "specs/domains-workflow/tasks.md"
+    :raw-sha256 "41f5b1b8d265527f88ab98a2037f2f93251d55c1b62a7c5e523902d669fcc3ad"
+    :exact-raw-in-main? true}
+   {:id :protected-disclosure-boundary
+    :path "specs/domains-workflow/tasks.md"
+    :raw-sha256 "0318e885df02b55ab71029538b443df33e8145bb32421facdb9f28526465ef24"
+    :exact-raw-in-main? true}
+   {:id :token-signing-integration
+    :path "specs/domains-workflow/tasks.md"
+    :raw-sha256 "e22c4604291ed7124d74c73e8d6323920a35bb4dfc469ce97eb7617e37b09f10"
+    :exact-raw-in-main? true}]}
+ :contract-review
+ {:dom15
+  {:path "docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md"
+   :lines "182-243"
+   :conserves
+   [:typed-protected-value-kind-and-scheme
+    :parameter-security-and-noise-state
+    :key-owner-custody-rotation-threshold
+    :allowed-operation-and-provider-capability
+    :leakage-labels
+    :explicit-boundary-operation-and-audit
+    :reveal-reason-participants-leakage-summary
+    :provider-manifest-and-test-vectors
+    :encrypted-input-and-reveal-policy
+    :signing-key-randomness-provider-redaction-policy]
+   :source-boundary? true
+   :implementation-acceptance? false}
+  :crypto-task
+  {:path "specs/domains-workflow/tasks.md"
+   :criteria
+   [{:id "domain/protected-value-typing"
+     :status "Open"
+     :output "typed protected-value report and positive/negative type fixtures"
+     :fields [:scheme :parameters :custody :participants/adversary :leakage]}
+    {:id "domain/protected-disclosure-boundary"
+     :status "Open"
+     :output "protected-boundary manifest and leakage/disclosure fixtures"
+     :fields [:operation :reveal-reason :participants :leakage-policy]}
+    {:id "domain/token-signing-integration"
+     :status "Open"
+     :output "signing provider/wrapper manifest, test vectors and redaction trace"
+     :fields [:key :randomness :provider :algorithm :secret-disclosure]}
+    {:id "interface/domain/check-protected-operation-state"
+     :status "Open"
+     :output "source-bound protected-operation admission descriptor and refusal diagnostics"
+     :phase :before-dispatch}
+    {:id "interface/domain/execute-protected-operation"
+     :status "Open"
+     :output "provider result and protected-state transition or neutrality proof"
+     :phase :after-admission}]
+   :all-implementation-acceptance? false
+   :criteria-depend-on-auth-grants? true
+   :no-whole-component-prerequisite? true}
+  :auth-order
+  {:path "specs/auth-workflow/plan.md"
+   :lines "38-75"
+   :declared-products-precede-grants? true
+   :later-trace-authorizes-first-action? false
+   :provider-label-or-manifest-mints-authority? false
+   :task-graph-cycles-prove-semantic-cycle? false}}
+ :semantic-assessment
+ {:question :does-crypto-supply-the-proposed-preaction-products
+  :answer :yes-at-source-contract-level-with-phase-qualification
+  :supported-products
+  [{:product :typed-operation-and-value-request
+    :source "DOM15 typed protected values; domain/protected-value-typing"
+    :support "scheme, parameters, value kind, allowed operations and leakage state are explicit before provider execution"}
+   {:product :provider-and-capability-request
+    :source "DOM15 provider manifest; domain/token-signing-integration"
+    :support "provider/algorithm, capability surface, key/randomness policy and wrapper evidence are declared inputs"}
+   {:product :custody-and-participant-contract
+    :source "DOM15 key custody/participant requirements; protected-value-typing"
+    :support "owner, custody, threshold/participant and adversary fields are part of typed source contracts"}
+   {:product :reveal-and-boundary-policy
+    :source "DOM15 boundary rules; domain/protected-disclosure-boundary"
+    :support "explicit operation, reveal reason, participants and leakage summary/policy precede public output"}]
+  :phase-order
+  {:preaction-interface "Auth may consume selected declarative request/value/provider/custody/reveal-policy and boundary products"
+   :auth-step "Auth computes its independent scoped grant/intersection and refuses missing, stale, widened or wrong-phase inputs"
+   :crypto-step "Crypto consumes the genuine Auth grant before its protected action"
+   :later-products "admission descriptor, provider execution result, state transition/neutrality proof and audit/refusal traces"
+   :start-results :none}
+  :bounded-residual
+  {:reason "Crypto's current criteria explicitly depend on Auth grant outputs for their checked admission/action path; no current implementation or owner record proves that a realized Crypto product is available upstream. The safe composition is therefore a source-level conditional interface only, not a realized descriptor or execution edge."
+   :required-preservation [:no-admitted-descriptor-as-auth-input
+                           :no-provider-result-as-auth-input
+                           :no-execution-or-audit-as-first-call-authority
+                           :no-whole-crypto-start-gate
+                           :unselected-crypto-remains-open]}}
+ :findings
+ [{:id :bounded-producer-order-qualification
+   :severity :qualification
+   :disposition :retain-explicit-residual
+   :text "The Crypto source contracts supply the requested pre-action fields and artifacts, but their admission/execution criteria consume Auth grants. The proposed row is semantically sound only when 'Crypto products' means selected declarative/interface inputs, not the later admitted operation descriptor, provider result, or audit evidence. The proposal states this distinction; retain it explicitly in any successor source composition."}]
+ :disposition :qualified-source-semantic-support-for-conditional-interface
+ :acceptance-scope
+ {:source-contracts :accepted-scoped
+  :conditional-edge :supported
+  :current-main-row :not-restored
+  :implementation-acceptance :unassessed
+  :provider-or-IR-execution :not-run}
+ :nonclaims
+ [:no-source-edit
+  :no-current-main-change
+  :no-implementation-acceptance
+  :no-auth-grant-or-crypto-action
+  :no-provider-or-IR-execution
+  :no-whole-crypto-acceptance
+  :no-full240-closure
+  :no-original767-closure
+  :no-closure-from-SCC-or-route-count]
+ :action :retain-bounded-proposal-and-route-independent-owner-review-before-any-source-or-main-change}
+~~~~~~
+<!-- source-reference-review-archive:auth-crypto-source-order-qualification:end -->
+
+Archive `auth-crypto-qualified-row-verdict`, SHA-256 `9bdb59a144fb15d373b0d8ea61f0e98f264d8621fbccdfa773354fe1ba94b389`:
+
+<!-- source-reference-review-archive:auth-crypto-qualified-row-verdict:start -->
+~~~~~~edn
+{:schema :uniform/pr767-auth-crypto-qualified-row-independent-verdict-v1
+ :reviewer :codex/review-892-bookend
+ :review-mode :independent-read-only-source-review
+ :reviewed-at "2026-11-06"
+ :proposal
+ {:path "/tmp/uniform-pr767-auth-crypto-qualified-row-preparation.edn"
+  :sha256 "c3536334d4a147e9f49c3f2e871e42b5cc9e851107f3ffb8bc6845e36d23e8a1"
+  :kind :qualified-auth-crypto-declarative-interface-row-preparation}
+ :prior-proposal
+ {:path "/tmp/uniform-pr767-auth-crypto-phase-proposal.edn"
+  :sha256 "a278188056e169722b7c326f935476e1a8479cb5931a687e6b7020521c0d52d1"}
+ :prior-independent-review
+ {:path "/tmp/uniform-pr767-auth-crypto-phase-independent-review.edn"
+  :sha256 "172674bcc5af7f7bc544cee3bbc20397c3f070f22ede44a270243207d15f70bc"
+  :disposition :qualified-source-semantic-support-for-conditional-interface
+  :findings
+  [{:id :bounded-producer-order-qualification
+    :severity :qualification
+    :disposition :retain-explicit-residual
+    :meaning
+    "Crypto products may be Auth inputs only when they are selected declarative/interface requests. An admitted operation descriptor, provider result, state proof, execution result or audit/refusal trace cannot authorize its own first action."}]}
+ :source-identity
+ {:commit "a580f666c0c8431f88ae987dae0f840e43fedfbb"
+  :tree "671ff47efcd9082ae48aea5036ad079e77abfeab"
+  :path "docs/acceptance-dependencies.md"
+  :git-blob "3d6d1f9043943e3737206113c7348547b2ecf1f2"
+  :file-sha256 "6043f3d57dabb552bd3adc1112fbde2ccc64e816af5943c40d90d2635ca42ad7"
+  :current-row-sha256 "63dc20223faeba81d76fa6c86c6acb40f92a2f47dcd5f6634069f84fbd7cc9a0"
+  :qualified-row-sha256 "d230cb329b2ebd7ef45f47f8fe4eb8d40c601199de22112d30b5414092714e21"
+  :current-row-present-at-source? true
+  :current-row-present-in-main? true
+  :main-current-row-contains-crypto? false}
+ :wording-delta
+ {:current-row-length 6531
+  :qualified-row-length 7808
+  :dependency-prefix-delta-bytes 10
+  :pre-existing-selected-body-unchanged? true
+  :qualified-extra-bytes 1269
+  :qualified-extra-is-conditional-interface? true
+  :qualified-extra-contains-unadmitted-declarative-input? true
+  :qualified-extra-requires-current-auth-grant-before-protected-action? true
+  :qualified-extra-preserves-unselected-open-outcomes? true
+  :qualified-extra-denies-provider-or-key-operation? true
+  :interpretation
+  "The source row's existing owner, dependency prefix and selected Auth body are unchanged. The only successor additions are the crypto dependency marker and the explicitly conditional protected-domain interface paragraph; the proposal is not source implementation."}
+ :phase-order
+ {:required-order
+  [:selected-declarative-request-and-schema
+   :independent-auth-grant
+   :checked-protected-admission
+   :provider-action
+   :actual-execution-and-audit-results]
+  :actual-source-level-interface
+  [:typed-operation-and-value-request
+   :provider-and-capability-request
+   :custody-and-participant-contract
+   :reveal-and-boundary-policy]
+  :auth-grant-independent? true
+  :crypto-consumes-genuine-current-auth-grant? true
+  :execution-or-audit-authorizes-first-call? false
+  :pure-grant-normalization-needs-live-crypto? false}
+ :source-verdict
+ {:decision :qualified-successor-wording-accepted-source-only
+  :findings []
+  :residual-qualification
+  "The prior bounded producer-order qualification remains binding. No realized Crypto interface, admitted descriptor, provider result, Auth grant, cryptographic execution, or whole-Crypto acceptance is established. Missing or stale selected inputs fail only the affected grant/composition; unselected Crypto remains Open."}
+ :nonclaims
+ [:not-source-implementation
+  :not-auth-grant-issuance
+  :not-crypto-admission
+  :not-provider-or-key-operation
+  :not-current-main-change
+  :not-whole-crypto-acceptance
+  :not-original-pr767-closure
+  :not-full240-verification
+  :not-global-graph-cycle-or-atomicity-closure
+  :not-release
+  :not-self-hosting
+  :not-migration]
+ :review-actions
+ {:source-edits 0
+  :tests-run 0
+  :provider-actions 0
+  :native-actions 0
+  :Main-actions 0
+  :worktrees-created 0}
+ :verification-commands
+ ["shasum -a 256 on supplied proposal and prior-review artifacts"
+  "git show -s and git rev-parse for source commit a580f666 and docs/acceptance-dependencies.md"
+  "git show a580f666:docs/acceptance-dependencies.md | awk to hash the exact current Auth row"
+  "read-only EDN comparison of current, prior and qualified row wording and required phase order"]}
+~~~~~~
+<!-- source-reference-review-archive:auth-crypto-qualified-row-verdict:end -->

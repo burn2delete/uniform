@@ -350,7 +350,7 @@ Evidence: actual positive and negative products, expected/actual owning diagnost
 Historical projected paragraph (unchanged):
 <!-- domains-math-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: [math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared
 numeric semantics and checked justification for transformations. Remaining
 finite tasks, all open: implement numeric-mode/domain checking; implement EFIR
@@ -718,7 +718,7 @@ Criterion `domain/streaming-materialization`: Enforce declared streaming/materia
 Historical projected paragraph (unchanged):
 <!-- domains-query-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: real parameterized queries return validated rows and respect declared
 transaction/provider semantics. Remaining tasks, all open: implement relational
 IR and typed parameters; lower to a declared provider; connect row/schema and
@@ -785,7 +785,7 @@ Decision criterion `interface/domain/execute-crdt-merge-update` (Open): Execute 
 Historical projected paragraph (unchanged):
 <!-- domains-workflow-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: a workflow executes and replays without repeating recorded external
 effects. Remaining tasks, all open: implement graph validation/lowering;
 implement event-log schema and durable transitions; connect retry/compensation/
@@ -805,6 +805,13 @@ fixture must converge after partition/heal, duplicate/reordered delivery,
 restart and migration, and reject invalid merge laws or hidden intent loss.
 Dependencies: Schema state/event versions, Runtime durable storage/replay and
 Auth grants. These criteria add no acceptance credit or provider selection.
+
+<!-- domains-error-source-workflow:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 durable workflow failure criterion (Open): Produce actual source-anchored failure/state contracts and durable records carrying step ID, input schema, output/error schema, retry policy, compensation policy, time, external-call results and replay ID. Preserve actual failure, retry and compensation behavior and consume recorded outcomes during required replay without silent live re-execution. Workflow failure cannot be substituted with an unrelated local exception or a replayable flag. Required evidence: actual durable typed failure/compensation artifacts, positive/refused missing/wrong/stale schema/policy/result/record cases and matching failure/compensation replay fixtures with L9-WORKFLOW-ERROR. Early state/event/schema contracts precede callers; actual selected Runtime execution follows, and held replay/provider actions remain unrun.
+<!-- domains-error-source-workflow:end -->
 
 - [ ] `ai` AI
 
@@ -2408,7 +2415,7 @@ D2 support-triage fixture refinement (Open; existing domain/support-agent-integr
 Historical projected paragraph (unchanged):
 <!-- domains-ai-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: the declared AI workflow executes through schema, capability, taint
 and human-review boundaries. Remaining tasks, all open: implement declaration
 lowering; connect model/tool/memory providers with explicit policies; implement
@@ -2421,6 +2428,21 @@ Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
 artifacts and explicit model identity, never a vendor SDK side path.
 
 SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions.
+
+<!-- domains-protocol-source-tools:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 schema/artifact tool-dispatch criterion (Open): Execute a selected admitted AI/tool dispatch only against the actual declared schema/artifact and validated request/response boundary with separate authentic capability grants and real effect/profile/runtime checks. Preserve selected tool/implementation identity, schema/version/source facts, validation dataflow and returned typed results/failures. Reject missing/weakened/stale or substituted schema/validation, absent grants and undeclared method/model/tool effects with L8-TOOL-DISPATCH and owning diagnostics. A tool name, schema-shaped payload, method table or AI profile does not validate data or grant authority. Required evidence: actual legal/illegal dispatch and validation fixtures plus source-linked artifacts; existing held tool/provider/replay actions remain unrun and ordinary declaration preparation does not require them.
+<!-- domains-protocol-source-tools:end -->
+
+
+<!-- domains-error-source-ai:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 structured AI/model/tool failure criterion (Open): Produce actual typed artifacts for model-provider failure, tool failure, schema validation failure, policy denial, prompt-injection defense trigger, human-review denial and evaluation/orchestration failure with required policy/audit/replay, source/generated, provider/tool/schema/review identities. Preserve the existing accounting disposition: actual external billing/account failures remain explicit while removed project work/cost/input quotas and their exhaustion refusals stay removed. Do not lose failures in free-text exceptions, weaken schemas, suppress policy evidence or turn denial into success/absence. Required evidence: actual positive/refused structured failure and validation/denial artifacts with L9-AI-ERROR; early schema/tool/policy interfaces precede actual selected runtime results without authorizing held model/tool/private-store/replay actions. Earlier pending independent facet acceptance for the mixed budget wording remains pending.
+<!-- domains-error-source-ai:end -->
 
 - [ ] `gpu` GPU
 
@@ -2466,7 +2488,7 @@ Decision criterion `interface/domain/lower-accepted-gpu-kernel` (Open): Lower th
 Historical projected paragraph (unchanged):
 <!-- domains-gpu-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: kernels execute on the adopted target with validated memory/barrier
 behavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU
 IR/checking; lower kernel and host dispatch; execute numeric/result and illegal
@@ -2534,7 +2556,7 @@ Criterion `domain/web-ticket-integration`: Render/update the declared ticket-lis
 Historical projected paragraph (unchanged):
 <!-- domains-ui-parent:end -->
 
-Projected task block:
+Historical projected task block:
 Outcome: an actual UI artifact renders, handles typed events and enforces
 capabilities through the adopted adapter. Remaining tasks, all open: lock UI
 IR/state/event contract; implement lowering and rendering adapter; connect

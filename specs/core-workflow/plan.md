@@ -143,7 +143,7 @@ Selected static inspection finds real hosted recursive form construction and som
 
 Use the [complete Core source criteria](#complete-core-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 59 consumers: thirteen missing Types/MIR/Opt/Lower routes and 46 existing routes. Preserve all 1,577 previous result joins, every previous input and 78 unaffected route meanings; 203 added inputs yield 1780 total joins across 137 routes, 97 current parents and forty unchanged future records. All fifteen Core criteria retain routes for nine existing tasks. Counts describe graph conservation, not semantic coverage or execution.
 
-The coarse cycles now contain 95 and 9 tasks. Earlier members remain; new producer routes expose existing feedback rather than proving an acyclic implementation. The source-stage, analysis, transformation and consumer subjects below resolve the declared order. Genuine D1/C1/C5/C6 representation ordering and L6/L12 environment wording remain explicit decisions.
+The coarse cycles now contain 95 and 9 tasks. Earlier members remain; new producer routes expose existing feedback rather than proving an acyclic implementation. The source-stage, analysis, transformation and consumer subjects below resolve the declared order. D1/C1/C5/C6 representation ordering remains an explicit decision. Hermetic input policy follows [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs); canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed.
 
 | Boundary | Real selected product and order |
 | --- | --- |
@@ -220,6 +220,136 @@ Owner positive/refusal fixtures cover every family and profile condition, real n
 Scoped static inspection finds hosted C6 retaining raw patterns and recursively lowered bodies, with general child/field/nonempty-binding verification rather than complete L7 semantic checking. Selected Gravity checked_core definitions build authentic quoted-symbol/map/guard/binding descriptors, reject duplicate bindings and explicitly defer nested guards, variable-width vectors and other leaves in that inspected path. Selected C7 definitions perform real Boolean domain subtraction, structural narrowing and Bool/Never guard handling with clause/source/invalidation records; some unsupported/partial cases remain explicit annotation/refusal paths. Guard evaluation labels and carried declarations are not actual effect legality or runtime proof. These selected ranges do not establish whole 11,346-line checked_core or 25,894-line C7 coverage, all fourteen families, fresh conformance, or absence of other real implementations. No semantic execution ran.
 
 The finite profile74 pattern-change review retains its exact earlier predicate/dependencies and existing Evolution producer; no receipt is renewed or consumed. Complete current L7 source/task/owner/interface entailment, implementation acceptance and integration remain pending/unassessed. Every writer reservation, C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction and stopped handoff remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs. Reader contract coverage remains the first actual implementation increment.
+
+## Pattern-matching producer and consumer order
+
+Use the [complete pattern-matching source criteria](#complete-pattern-matching-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 59 consumers: 57 existing routes and two missing existing-task routes, backend-conformance and query. Preserve all 1,893 prior joins and eighty unaffected route meanings; 118 new inputs yield 2,011 joins across 139 routes, 99 current parents and forty unchanged future records. The fourteen L7 criteria retain all twelve existing task routes. Counts establish conservation, not semantic acceptance or execution.
+
+The coarse cycles contain 97 and nine tasks: all earlier 95 main members plus backend-conformance/query, with the release/schema/governance set unchanged. The actual subjects below expose feedback rather than pretending the whole tasks can complete in one topological order. Initial construction uses real declared interfaces; actual selected products precede later composition, independent acceptance and release. Retain D1/C1/C5/C6 ordering; apply [Matt's declared/replayable-input decision](../../.specify/memory/constitution.md#hermetic-compile-time-inputs) while retaining ef88's historical canonical L6 follow-up (clarification authored and source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authentication, `main` integration and implementation remain separate; no historical L6 applying review is renewed).
+
+| Boundary | Actual selected product and order |
+| --- | --- |
+| Source and bindings | Actual expanded syntax, origins and constructor/schema/profile declarations precede real branch/guard lexical identities and duplicate/scope refusals. Available macro P precedes generated Q; Q receives ordinary resolution/checking. |
+| Structural candidate | Core1/2/3 preserve one scrutinee, ordered tests, bindings, once-only reached guards, true-body/false-next/non-returning control and maps. Core4 verifies and round-trips this actual candidate before inference; it does not claim later narrowing, coverage, effects or ownership. |
+| Narrowing and trusted shapes | Types1 derives independent preliminary scrutinee/branch/guard and domain facts. Authentic early schemas/validator/wrapper contracts precede Types2's actual validation dataflow; real trusted-closedness premises then support final narrowing/coverage. Actual runtime checks occur before matching the runtime value, not before every ordinary compile. |
+| Formal proof | The existing future Formal authority and compiler checker supply early claim/assumption/kernel/checker contracts. Real preliminary coverage/control/type/resource/schema facts precede an actual exact-source property proof or counterexample; checked required totality/partiality evidence precedes proof-dependent formal admission. A later complete checked program is not its first proof input. This selected P12/DOM19 interface adopts no wider Formal/ZK or cost-accounting requirement. |
+| Effects, authority and resources | Real direct/latent guard/branch/order summaries precede actual effect allowance and separate grant checks. Independently derived selected move/borrow/flow premises can feed guard admission; later combined flow/profile verdicts follow real inputs. Defaults, Bool and shape success authorize none of these checks. |
+| Checked decision | Core's later checked decision product joins genuine narrowing/coverage/guard/effect/resource/validation/profile facts and all seven artifacts/eight diagnostics. Types verifies its typed subject before effect legality; final checked export follows combined owner results. Later backend comparison proves claimed consumer behavior, not initial export availability. |
+| MIR and optional changes | Actual checked products create current MIR graph/tables; actual verification/readback precedes consumption. Invalidating transforms regenerate affected pattern/domain/guard/binding/type/effect/resource/schema/proof/origin facts and verify the changed subject with required preservation evidence. Valid verified raw MIR keeps its path. |
+| Targets and domains | Early actual ABI/operation/source-checker/anchor interfaces precede source checking. Later checked-Core/MIR anchors, actual layout/provider/check maps and emitted/unsupported target products follow real producers. Query/workflow/hardware/AI consumers preserve validated shapes and observable guard behavior without hidden host semantics or future target-output start gates. |
+| Backend conformance | The existing backend-conformance task supplies early real fixture/matrix/availability interfaces. Later actual MIR/domain/target bytes, metadata/refusals and selected runtime or semantic comparisons prove the representative L7 claim. B1/B14 metadata, exact diagnostics and recorded nondeterminism are distinct from value equality. Unavailable target execution is recorded, shared manifest/rejection checks still run and skips never become passes. |
+| Runtime and replay | Earlier real validator/resource/error/session/recording contracts permit compiler construction. Actual selected Core or compiled input precedes once-only/false/non-returning guard and validation/resource traces. Early recording obligations precede later events/replay; no universal native artifact or held model/provider/replay action is introduced. |
+| Tools and reuse | Source-only syntax/editor/docs/cache work needs no later absent facts. Claimed semantic services consume real current bindings, narrowing/coverage/decision/diagnostic products, while debug observations need the actual selected session/program. Changed premises invalidate affected consumers before genuine owner regeneration and reuse. |
+| Conformance and adoption | Owner accepted/refused fixtures precede independently executed language/compiler/backend harnesses; their final receipts cannot gate first constructors. The unchanged conditional Evolution predicate consumes affected-family/consumer evidence before stable pattern-semantic adoption, without a ceremony for unchanged-contract development. |
+
+### Required behavior and evidence scope
+
+Preserve all fourteen required families, seven artifact families and eight L7 diagnostics with actual pattern/branch/guard/scrutinee/type/source/generated/profile context. Test structural failure, once-only/true/false/non-Boolean/unknown/non-returning guards, real narrowing and lexical scope, total/default/missing/unreachable cases, formal proof requirements, unvalidated/validated external shapes and actual move/borrow/linear paths. Canonical-if-only List/nil joins do not widen match. Defaults do not hide required safety proof, and matching/schema links do not validate values. Unsupported required families and unavailable/held targets remain open work.
+
+Current task bodies/statuses, source criteria, forty future declarations and every finite review subject remain unchanged. The formal row is an existing future authority, not a new implementation task; the new Backend/Query routes likewise reuse existing tasks. Selected B1/B14/P12/DOM19 contexts do not establish those whole contracts. Whole source/owner/interface entailment, actual implementation, independent current acceptance and integration remain pending/unassessed. Reader contract coverage is still the first actual implementation increment. Preserve every C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction, writer reservation and stopped handoff. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Initial structural call/declaration candidates precede actual type/dispatch/effect/profile facts. Checked export preserves real selected method/mode/implementation and required runtime/schema/host contracts; do not require final target layouts for the first structural tree.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Construct and verify actual structural calls before preliminary inference; later checked export joins real compatible method, effect, grant, profile/resource and boundary facts.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source criteria
+
+Direct complete [L9](../../docs/phase-01-core-language/019-l9-error-handling-specification.md) review retains eight original owner obligations and full source conjunctions. Sixteen new criteria and five exact recovered Runtime predicates refine eighteen existing Open tasks in nine authorities. The earlier 534-byte Types outcome criterion and 1,032-byte conditional Evolution representation-change predicate remain unchanged: 23 criteria name nineteen tasks across ten authorities. No task or feature is created. The five restored predicates total 6,269 bytes and match the verified published source at 45fc1420cfe4373e5a20b1fcd80d46f87e4edb63. Their finite qualified review is preserved without renewal, new consumption or whole-L9/current implementation acceptance.
+
+| Existing task | Actual source outcome |
+| --- | --- |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | All eleven declared outcome families, typed constructors and no nil/denial/replay/policy conflation. |
+| `types/current-evidence-and-remaining-work/types1-solve-core-constraints` | Actual typed payload/handler/call/normal-result and Result/Option coverage premises. |
+| `core/current-evidence-and-remaining-work/core1-lower-core-forms` | Real source try/throw control, order, bindings, nonreturning and cleanup paths. |
+| `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` | Actual direct/latent/transitive thrown, handler-raised and residual requirements. |
+| `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | Actual effect/profile/handler admission and separate authentic grants. |
+| `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | All concrete throw/try/panic dispositions or owning rejection. |
+| `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | Real retained-check typed-failure/trap obligations without undefined behavior. |
+| `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | All eight FFI/host error fields and real boundary dataflow. |
+| `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | Actual typed/audited denial with no authority or nil-success bypass. |
+| `workflow` | Actual durable step/schema/retry/compensation/external-result/replay failure records. |
+| `ai` | Actual structured model/tool/schema/policy/defense/review failures and pending accounting facet. |
+| `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Actual recoverable callable Result/Option APIs and justified profile-specific throw. |
+| `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` | Real admitted profile error/panic/check target artifacts, metadata and readback. |
+| `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` | Actual selected typed error/handler/panic/check/cleanup runtime traces. |
+| `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` | Eight actual error-artifact families, seven diagnostics and current invalidation. |
+| `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses` | Real source-to-runtime/target/workflow/AI failure composition and owner fixtures. |
+| `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` | Restored exact earlier structured AI failure Runtime predicate (1,125 bytes). |
+| `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` | Restored exact earlier durable workflow failure Runtime predicate (1,111 bytes). |
+| `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` | Restored exact earlier defined check-failure Runtime predicate (995 bytes). |
+| `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` | Restored exact earlier profile panic/error Runtime predicate (1,229 bytes). |
+| `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Restored exact earlier foreign failure/nullable boundary Runtime predicate (1,809 bytes). |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Unchanged exact earlier Types distinct-outcome predicate (534 bytes). |
+| `evolution/change-review` | Unchanged conditional stable error-representation predicate (1,032 bytes). |
+
+
+### Distinct outcomes and actual source control
+
+Keep all eleven error families distinct: Option absence, Result recoverable error, typed throws, panic, assertion/contract failure, safety-check failure, capability denial, FFI errors, durable workflow retry/compensation, structured AI/model/tool/policy/evaluation failure and compiler diagnostics. Some/None and Ok/Err are typed data across applicable constrained profiles. Source nil remains its own L2 value; it is not implicit Option or host-null conversion. Capability denial cannot become absence, replay failure cannot become an unrelated local exception and AI failures cannot lose their policy records. Recoverable library APIs should use Result/Option unless an actual profile-specific reason justifies throw; do not turn that recommendation into a universal compiler throw ban.
+
+Core constructs real value-before-throw transfer and protected-before-source-ordered-typed-handler control, lexical identities, nonreturning behavior and required cleanup edges. A never-returning payload creates no additional normal outer throw. Types establishes actual payload, handler, normal-result and constructor/domain constraints, preserving L7 Result/Option exhaustiveness without widening canonical-if-only joins. Source-error potential and type coverage do not prove effect discharge, profile legality, authority, safety or runtime behavior. Ordinary try/catch is distinct from L6 resumable-effect continuation support; no new resume or multi-shot semantics is inferred.
+
+Effects derives actual direct/latent/transitive thrown, handler-raised and residual errors from current calls/control and exposes function error effects. Keep declaration allowances, conservative source potential, checked handling and actual selected execution distinct. Effects3 checks real allowance and handler/profile/provider/safety conditions with separate authentic Auth grants; a caught error or wrapper cannot issue authority or suppress required audit. Reject untyped/unknown/mismatched payloads, undeclared effects and missing required handling/propagation rather than assigning a complete/solved/error label.
+
+### Profile lowering and runtime failure behavior
+
+The active profile defines throw/try lowering to permitted host exceptions, explicit Result rewriting, panic, trap, workflow failure or rejection. Panic remains unrecoverable: hosted exception/task abort, native runtime handler, kernel trap/platform panic, firmware reset/halt, hardware runtime-panic rejection or permitted synthesis-time unreachable/trap artifact, distributed durable failure and AI policy/orchestration record. Stable APIs cannot use panic as ordinary control flow. Panic may be a library/runtime/profile path; L9 does not invent an extra Core primitive or universal source syntax.
+
+Actual retained bounds/initialization/numeric/capability/taint/replay checks require specified typed failures or profile/runtime/safety-mode-defined traps. Check failure is defined behavior, never target undefined behavior or proof of success. Preserve D8's proven-safe/runtime-checked/rejected/explicit audited unsafe outcomes and actual surviving checks. Legality supplies real check obligations, Lower actual selected target artifacts and Runtime actual triggered failures/cleanup; one owner's record cannot fabricate another owner's operation.
+
+FFI/host boundaries retain all eight error fields: return convention, errno/equivalent state, exceptions, nullability, ownership on failure, cleanup, panic/abort behavior and typed Gravity mapping. Declared nullable Option absence may become None; real errors or denials may not become absence. Actual conversion/normalization precedes safe/non-null core entry, preserving host/foreign identity, source, effects/grants, runtime and failure-resource obligations. Types boundary checking and Runtime execution remain separate. Early actual wrapper/error/ABI/service contracts precede callers; final emitted programs or executed failures cannot be their own first declaration input.
+
+### Durable workflow and structured AI failures
+
+Workflow failure records retain step ID, input schema, output/error schema, retry/compensation policies, time, external-call results and replay ID with actual source/generated origins. Domains owns the source-anchored durable failure/state contract; Runtime consumes/executes it and records/replays failure plus compensation under the governing replay rules. A replayable flag or local exception is not durable behavior, and recorded replay cannot silently repeat a live effect.
+
+AI failures retain actual model-provider, tool, schema-validation, policy-denial, prompt-defense, human-review and evaluation/orchestration subjects in typed policy/audit/replay artifacts. The original mixed budget-exhaustion facet and its existing policy proposal remain visible with independent facet acceptance pending. Current user policy preserves actual external billing/account failures and removes project work/cost/input quotas and exhaustion refusals. The exact recovered AI criterion already states this distinction. No project accounting, prospective allowance or model/tool execution authority is introduced.
+
+### Artifacts, conformance and existing implementation
+
+Preserve all eight L9 artifact families and seven diagnostic meanings with actual source/generated/binding/type/effect/grant/profile/runtime/target/provider/schema/check/replay/policy identities and changed-input invalidation. Each later owner product remains distinct: typed metadata cannot execute normalization, emit a target trap, persist a workflow record or perform a model/tool call. Source preparation and owner fixtures precede independent conformance. Required but unsupported or held Option/Result/try/throw/panic/check/host/FFI/workflow/AI cases remain work; table presence, equal output or a catalog cannot close complete L9.
+
+Scoped static inspection finds hosted C6 carrying try handlers and throw payloads with evaluation labels, and the selected hosted type-table builder emitting Dynamic returns/copied latent effects/fixed String throws. Selected Gravity C7 functions instead derive real source-bound direct typed throws, authenticate transfers and function ownership, seed exact atomic catch bindings, partition source errors through ordered handlers and build an acyclic local-call error graph with refusal paths. Their source-error coverage explicitly leaves effect/profile/handler/capability discharge pending. This is selected source inspection only, not fresh execution, a complete C7/Runtime review, general handler/profile/runtime support or proof that no other real implementation exists.
+
+Full current source/owner/interface entailment, independent review and implementation acceptance remain pending/unassessed. Earlier finite predicates/reviews and the policy facet's pending acceptance are preserved. Existing 2,128 result joins, 141 routes, 101 current parents, forty future declarations and 99-/nine-task coarse cycles retain their meanings; complete L9 selected-result staging remains to reconcile. Reader contract coverage remains the first actual implementation increment. Every writer reservation and actual C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Core retains ordinary left-to-right, eager, once-only evaluation, effects, transfers and explicit linear builder/scope/cleanup lowering. Inert stored payload laws do not erase explicitly requested traversal callbacks. Never prevents invocation/direct allocation while latent signature requirements and ordinary legality still apply.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Preserve actual once-only eager evaluation, effects/transfers, structured resource/region/cleanup flow, metadata origins and library-versus-special-form ownership. Never prevents invocation while ordinary source and latent signature legality remains.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Provide actual common evaluation/binding/control semantics and structural premises before selected checker inference, then consume genuine owner legality products for checked export. Alternative theories replace declared analysis machinery rather than core evaluation, and expected results cannot invent source facts.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Foreign values and errors enter safe Core only through their actual declared directional typed/check/wrapper boundaries; ordinary Core evaluation is unchanged. Preliminary structural candidates precede combined owner admission, while checked exports retain actual facts and unsafe obligations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Supply actual checked typed/effect/grant/profile/safety Core artifacts and source/diagnostic back edges for stable views and generated-program comparisons. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
 ## Historical task-authority-transfer plan
 

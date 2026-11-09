@@ -67,6 +67,31 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 match-effect summary criterion (Open): Infer actual guard and branch effects and observable order from current match/control/call and type facts; guard effects are part of match effects. Preserve structural-failure skipping, guard-after-bindings, true-body/false-continuation and non-returning transfers, alongside L6 conservative legality rather than confusing possible effects with the one runtime-selected branch. Do not erase filesystem/network/model/tool/random or mutation requirements from a typed guard. Required evidence: real branch effect summaries and ordered positive/refusal fixtures; declarations or a branch-effect field do not prove inference.
 <!-- effects-pattern-source-summary:end -->
 
+
+<!-- effects-protocol-source-effects:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 caller-visible method-effects criterion (Open): Propagate effects from the actually selected implementation, or the declared upper bound when no implementation is statically known, through real typed dispatch/call edges. Preserve latent and thrown effects and caller-visible capability requirements; reject implementation widening beyond what callers can see. Do not hide allocation, IO, FFI, network/database, model/tool calls, unsafe operations or reflection behind a method/dispatch table or declared pure label. Required evidence: actual implementation/upper-bound derivations and positive/refused known/unknown/dynamic/recursive call-site fixtures; an assigned complete dispatch status or copied node effect set does not prove propagation.
+<!-- effects-protocol-source-effects:end -->
+
+
+<!-- effects-error-source-effects:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 thrown-error propagation criterion (Open): Infer actual direct, latent and transitive error effects from typed throw/call/protected/handler edges, expose them in function contracts and preserve handler-raised and residual errors. Distinguish declared allowance, conservative source error potential, actual admitted handling and one selected runtime trace; declarations or a fixed String throws set are not body inference. Preserve required L6 conservative branch/handler behavior and original handled-label audit rather than erasing effects merely because C7 classifies a source catch. Required evidence: genuine function/call/handler derivations and accepted/refused hidden or undeclared throws and missing propagation fixtures with L9-THROW-EFFECT/UNHANDLED and owning C8 diagnostics.
+<!-- effects-error-source-effects:end -->
+
+
+<!-- library-base-source-callback-dispatch:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation callback-dispatch criterion (Open): Propagate explicitly accepted higher-order core callback and protocol implementation effects/capabilities through actual selected calls, retaining receiver/signature/capture/profile/target legality and declared dispatch. Pure recover examples stay pure; a file-reading callback cannot become legal Core by hiding behind a helper. Refuse missing/ambiguous instances, erased latent effects, undeclared reflective/open dispatch and host defaults. Evidence: actual typed function/protocol/callback admission and expected effect/profile refusals with ordinary values, effects and transfers preserved.
+<!-- library-base-source-callback-dispatch:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -111,6 +136,119 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 
 L7 guard-effect legality criterion (Open): Check actual inferred guard effects against the active context/profile and declared effect set, with capability grants enforced separately by Auth. Guard mutation that changes later pattern behavior requires the governing effect-order/profile permission; a Boolean result or matching shape grants none. Emit L7-GUARD-EFFECT for undeclared/forbidden actions and preserve the owning context and source. Required evidence: actual allowed/refused guard-action and mutation-order subjects, retaining normal/non-returning control and every real provider/replay execution restriction.
 <!-- effects-pattern-source-guard-legality:end -->
+
+
+<!-- effects-protocol-source-allowance:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 dispatch effect-admission criterion (Open): Check real selected-implementation or declared-upper-bound effects against actual call-site/context/profile allowances before dispatch is admitted. Expose every required capability for separate authentic Auth checking; a profile, protocol type, provider name or effect declaration grants no authority. Unsafe operations retain their explicit audited boundary. If the active profile cannot determine a safe implementation set, reject or use only the actually supported checked runtime provider with explicit effects/capabilities and surviving checks. Required evidence: admitted legal call sites and refused hidden allocation/IO/FFI/network/database/model/tool/unsafe/reflection or absent checked-provider conditions, preserving L8-METHOD-EFFECT/DYNAMIC-FORBIDDEN and owning effect diagnostics.
+<!-- effects-protocol-source-allowance:end -->
+
+
+<!-- effects-error-source-admission:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual error-admission criterion (Open): Check actual thrown/handler/residual error effects against function/namespace/profile/package/deployment/runtime/safety allowances and separate authentic grants before admitting the selected behavior. Typed source coverage is not permission to handle an effect or erase an escaping label. Keep ordinary typed try/catch distinct from separately declared L6 resumable-effect continuations; do not invent resume/multi-shot authority. Reject undeclared error effects, forbidden lowering/handler modes and missing required handled-or-propagated paths. Required evidence: actual accepted/refused effect/profile/authority outcomes and residual/audit records under L9 and governing L6/C8, with no runtime-only or backend-only legality substitution.
+<!-- effects-error-source-admission:end -->
+
+
+<!-- effects-library-source-effects:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual public library effect-admission criterion (Open): Admit each selected library call only after actual inferred body/latent/transitive requirements fit the caller's declared effect allowance and applicable profile/runtime/safety conditions, with Auth independently checking authentic capability grants. Preserve allocation, blocking, panic, nondeterminism, resource and provider requirements even behind pure-looking facade or target-specific implementation. Emit L13-EFFECT and owning legality diagnostics for real failures; a published class/signature, caught Result, permitted hosted convenience context or exported name cannot hide an effect or widen authority. Required evidence: actual accepted/refused call summaries, current context/profile/service premises and source-bound diagnostics, with the inherited Auth owner retained as grant context rather than inference/admission ownership.
+<!-- effects-library-source-effects:end -->
+
+
+<!-- library-service-source-service-effect-admission:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-effect-admission criterion (Open): Check direct and latent effects/capabilities of actual concurrency/IO/network calls and callbacks, including spawn/block/schedule/sleep/atomic/lock/message, stream/filesystem read/write/seek/metadata/watch/delete/execute-like operations and outbound/inbound/DNS/TLS/websocket/stream/listen. Admission preserves profile/context blocking restrictions, cancellation, callback/handler/schema/auth effect boundaries and generated source provenance. A capability value is data until use; a provider or callback type cannot erase the concrete action. Filesystem execute-like metadata grants no STD16 process/shell behavior. Reject undeclared effects, forbidden blocking and hidden ambient service use with source-bound owning errors. Evidence: actual checked accepted/rejected source and latent callback/handler cases, effect/grant/profile facts and STD7003/STD8001/STD9001 where applicable; runtime service enforcement remains a separate required consumer.
+<!-- library-service-source-service-effect-admission:end -->
+
+
+
+<!-- effects-facet-source-effects:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet effect-admission criterion (Open): Derive and preserve real runtime, build and compiler effects at each facet boundary, including generated wrappers, agent/tool/query composition, schema decoder allocation/decode and external solver/synthesizer/model/package-tool actions. Admit only when actual inferred requirements fit the caller allowance and applicable profile/service/safety rules, with Auth independently checking authentic grants. Compiler IR read/write and artifact generation remain explicit effects; declaring a facet or hiding an operation inside IR cannot widen authority or erase effects. Reject undeclared/hidden/transitive effects and incompatible caller context before affected action or backend lowering. Required evidence: actual accepted/refused summaries and source-bound L14/owning diagnostics, with pure source transport distinct from later effectful use.
+<!-- effects-facet-source-effects:end -->
+
+
+
+<!-- effects-alternative-types-source-effects:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual alternative-type function-effect admission criterion (Open): Preserve and verify real inferred/refined or explicitly declared function effects and capability requirements together with panic/error/allocation/resource behavior at the ordinary effect boundary. A selected checker that cannot model effects is limited to profiles/namespaces with explicit effects verifiable by the reference effect checker; it cannot erase performed or latent requirements. Admit only under actual caller allowances/profile/service/safety premises and separate authentic grants. Reject effect erasure, hidden checked-cast allocation/panic, declaration-only purity and an alternative theory bypassing reference legality. Required evidence: actual selected-provider/reference-effect products, accepted/refused calls and L17-EFFECT-ERASURE/owning diagnostics; Types exports facts and Effects retains its real legality owner.
+<!-- effects-alternative-types-source-effects:end -->
+
+
+
+<!-- effects-interop-source-effects:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign and generated-binding effect admission criterion (Open): Check performed/latent foreign ABI, host reflection/dynamic dispatch, process/network/hardware/model/tool/package and schema-generation effects under actual caller allowances/profile/service premises, with separate authentic grants. Schema loading and binding generation are L12 compile-time effects; emitted APIs retain their real runtime effects, allocation/blocking/panic/error behavior and capability requirements. Catching or translating failure, a safe-wrapper label and a migration shim erase no performed effect or authority. Reject missing/hidden effects and constrained-profile host leakage before affected use. Required evidence: actual admitted/refused source-to-generated/runtime effect records and L19-EFFECT/owning diagnostics; example db/query labels supply no granted database/network authority.
+<!-- effects-interop-source-effects:end -->
+
+
+
+<!-- library-data-source-effect-admission:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library static effect criterion (Open): infer and check actual direct and latent connection/read/write/transaction/migration/schema-introspection/admin, resource, allocation and relevant host effects against the selected profile and authentic operation-specific grant/provider facts. Keep query construction data distinct from performing IO; pure Core query/schema helpers confer no database IO. Preserve source/call/schema/provider diagnostics and refuse hidden or undeclared effects, wrong phase/profile and illegal latent use. Evidence requires actual accepted/refused checked programs and their real effect/grant joins. Auth owns grants and Runtime owns before-action enforcement; effect summaries prove neither provider execution nor runtime denial. All existing statuses and held execution restrictions persist.
+<!-- library-data-source-effect-admission:end -->
+
+
+
+<!-- library-workflow-ai-source-effect-admission:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library effect-admission criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Infer and check actual direct/latent workflow/service/clock/random/model/tool/memory/retrieval/generated-code effects, profile/phase and authentic grants. Pure Core graph/schema data is not execution and meta generation grants no live provider authority. Exercise real checked-program admission/refusal and precise source/agent/workflow/provider diagnostics for hidden effects, illegal latent use and wrong profile/phase. Static summaries prove neither Runtime enforcement nor replay; preserve selected L12 inputs, reviewed L6 and all held compiler routes. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-effect-admission:end -->
+
+
+
+<!-- library-testing-meta-source-test-meta-effects:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-effects criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md).
+
+Check actual test setup/body/teardown and meta direct/latent build/provider/compiler effects under the active target profile and phase, preserving declared mocks and real grants. Pure assertions or syntax data do not hide live services or mutation. Exercise checked-program positive/refusal for undeclared effects, illegal latent use, forbidden profile and phase capture. Keep selected L12 hermetic inputs distinct from pure constants; static admission proves neither actual service enforcement nor pass correctness. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-effects:end -->
+
+
+
+<!-- library-platform-hardware-source-platform-hardware-effects:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library platform-hardware-effects criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Check direct and latent platform/hardware effects and authentic grants for active profile/context, including handler callbacks, blocking/time/random/process, volatile operations, interrupt/DMA and generated forms. Static facts or device descriptions cannot hide live calls; unsafe declarations do not bypass profile/no-runtime or interrupt constraints. Exercise actual checked source positive/refusals for ambient access, forbidden profile/effects/handler behavior and missing scope with source diagnostics; static acceptance is no provider enforcement or physical run. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-platform-hardware-effects:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-ui-effect-admission criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Check direct/latent crypto/random/key/provider and UI event/command/navigation/host-service effects with actual grants, active profile, phase and generated checking. Pure crypto policy/digest/view data cannot conceal secret provider calls, host mutation or tool authority. Exercise real checked positive/refusal for missing scope, forbidden profile, undeclared callback/handler effect and secret-in-compile-time capture. Static admission establishes neither provider execution, constant-time proof nor mounted UI behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:end -->
+
 
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 

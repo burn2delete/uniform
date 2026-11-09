@@ -110,6 +110,48 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Construct, bind, verify and round-trip actual checked decision control and complete narrowing/coverage/effect/resource/validation/source tables before consumption. Reject stale/substituted products or reordered observable guards; future target/conformance results are later consumers.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Carry actual selected method/mode/implementation, effect/grant/profile/interface/host/schema/proof references through real graphs/tables, verification and serialization. Verify current owner references rather than complete-status labels.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Build/attach/verify/round-trip actual admitted method/mode/implementation, effect/resource/boundary/proof facts; valid raw MIR precedes optional specialization.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Carry actual error-control/typed-outcome/effect/profile/resource/check/host/schema/replay/policy facts through real graph construction, verification and round-trip. Runtime/target failure behavior needs actual producers, not complete/error flags.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Carry actual common selected-provider type/effect/grant/resource/profile/check/proof/source facts into verified MIR and downstream consumers. Missing or stale exports and unchecked casts cannot become safe optimization evidence; source/provider/facet/grant changes invalidate dependent subjects.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). MIR preserves actual admitted foreign ABI/provider/type/effect/grant/ownership/error/wrapper/source facts and required checks/proofs. Portable schema Core requires no foreign runtime or domain IR; actual selected target or foreign calls retain their own legality and lowering evidence.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Supply genuine versioned verified MIR/type/effect/source/proof facts; a stable inspection API cannot rewrite IR or turn metadata into verification. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

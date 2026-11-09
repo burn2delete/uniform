@@ -82,6 +82,77 @@ Complete runtime provider initialization criterion (Open): Before executing user
 <!-- authority-source-startup:end -->
 
 
+
+<!-- runtime-error-source-execute:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual error-path execution criterion (Open): Execute the selected admitted protected body, typed handler/propagation, throw, panic or safety-check failure path with actual typed values, source/generated identity and required resource cleanup. Preserve value-before-transfer, protected-before-selected-handler, nonreturning payload/body behavior and the active profile's specified failure/trap; a lowering record, stack-exception label or assigned complete status is not execution. Required evidence: actual selected interpreter or compiled-program results and ordered normal/error/panic/triggered-check/cleanup traces plus refused untyped/unhandled/illegal/missing-service cases. Early real service/error/cleanup contracts precede caller construction; an interpreter needs no universal native artifact and no held execution is enabled.
+<!-- runtime-error-source-execute:end -->
+
+
+<!-- runtime-error-source-finite-check:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/execute-defined-check-failure`: Give a retained runtime safety check a specified typed failure or profile-defined trap instead of undefined behavior. Accept: For each retained bounds/initialization/numeric/capability/taint/replay check, emit the specified typed failure or profile-defined trap according to runtime and safety mode, with its check and source identity. Reject: Reject an unspecified failure outcome or target undefined behavior substituted for the check's required failure path. Required outputs: Check-to-failure/trap table, triggered-check fixtures, typed failure records and matching profile/runtime/safety diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-check:end -->
+
+
+<!-- runtime-error-source-finite-panic:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/lower-panic`: Lower an unrecoverable panic according to the active profile, preserving source/artifact provenance when possible and rejecting panic as ordinary stable-API control flow. Accept: Emit the selected profile's panic lowering: hosted exception/task abort, native runtime handler, kernel trap/platform path, firmware reset/halt, hardware synthesis-time unreachable/trap artifact or runtime-panic rejection, distributed failure state and AI policy/orchestration record. Preserve source/artifact provenance when available and declare try/throw lowering or rejection. Reject: Reject panic as ordinary stable-API control flow, an unsupported lowering or an undeclared profile failure path; report L9-PANIC-PROFILE. Required outputs: Profile-specific panic/error lowering matrix, target failure artifacts, positive/negative fixtures and provenance-linked diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-panic:end -->
+
+
+<!-- library-service-source-resource-cleanup:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service resource-cleanup criterion (Open): Execute deterministic cleanup for task cancellation/timeout/failure, linear/scoped files, client/server/socket/body-stream resources and partially initialized provider operations under their declared ownership/lifecycle rules. with-open closes the actual handle exactly once; closed or transferred resources cannot be reused. Preserve ordered cleanup handlers, resource/failure and diagnostic context independently of process exit or managed finalization. Reject leaked, double-closed, post-close or unclosed failure paths and cancellation flags without real cleanup. Evidence: actual normal/failure/cancel/timeout/partial-init close/release traces, invalid lifetime refusals and STD7002/STD8004 or owning resource diagnostics, tied to provider/source/resource identities; Library's wrapper declaration does not execute Runtime cleanup.
+<!-- library-service-source-resource-cleanup:end -->
+
+
+
+<!-- library-base-source-cleanup-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation cleanup-runtime criterion (Open): Release real linear resources deterministically under the declared lifecycle, including ordinary success, recoverable failure, transfer and panic/unwind paths where supported. Preserve exactly-once consumption, ordered cleanup, original error/diagnostic context and host/native ownership rules independently of process exit or GC. Refuse double close, post-transfer use, hidden leak/finalizer policy and unverified callback/resource lifetime. Evidence: actual permitted linked Runtime cleanup traces and negative outcomes with exact provider/compiler/profile identities; a plan or static record is no execution receipt.
+<!-- library-base-source-cleanup-runtime:end -->
+
+
+
+<!-- runtime-alternative-types-source-runtime:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual inserted-runtime-check execution criterion (Open): Execute each selected checker-inserted permitted gradual/cast/runtime check against its actual value/expected type and profile/representation/allocation contract, yielding the declared accepted value or typed failure with source span, failure type and blame. Preserve relevant ownership/release/panic behavior and authentic provider/check identity; unchecked casts remain explicit unsafe and never a successful safe check or optimization proof. Reject missing/forged check records, unsupported runtime metadata and mismatched source/failure/blame obligations. Required evidence: real selected accept-json-style success and DecodeError/failure cases plus forbidden-profile/unchecked-cast refusals and actual execution traces. Source-only typing needs no universal live runtime or provider; records saying runtime-checked do not execute the check.
+<!-- runtime-alternative-types-source-runtime:end -->
+
+
+
+<!-- runtime-interop-source-hosts:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete hosted bridge behavior criterion (Open): Execute selected declared bridge runtime version/reflection-or-dynamic-dispatch/object-lifetime-rooting/threading/exception/performance-allocation/missing-feature contracts, preserving all seven host-declaration fields. Host runtime behavior remains behind an explicit boundary artifact measured and replaceable during migration, not part of portable Gravity. Actual null/error conversion and deterministic resource cleanup use their real owners; host GC alone cannot establish linear release. Reject unknown runtime versions, hidden reflection, unsafe roots/thread affinity, unmodeled failures and hosted behavior in unsupported profiles. Required evidence: actual selected host values/errors/roots/cleanup/source maps and non-hosted refusals; a fixed JVM/JS/Wasm adapter manifest does not execute a bridge or establish those results.
+<!-- runtime-interop-source-hosts:end -->
+
+
+
+<!-- library-platform-hardware-source-native-services-and-cleanup:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library native-services-and-cleanup criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md).
+
+Supply actual selected native/minimal-runtime platform services and host-delegation boundaries for explicit environment/arguments, distinct clocks/random providers, complete process policies, signals and terminal operations. Normalize provider failures into Gravity errors and retain redaction/provider/version/provenance. Exercise real permitted success/failure/cancellation/partial-initialization cleanup without hidden hosted services in firmware/kernel/hardware. A callable wrapper or recorded fake is not the actual service result; held native/provider execution stays unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-native-services-and-cleanup:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -147,6 +218,73 @@ Complete concurrency runtime behavior criterion (Open): Execute admitted structu
 <!-- concurrency-source-execution:end -->
 
 
+
+<!-- runtime-protocol-source-host:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 actual host dispatch normalization criterion (Open): At the selected foreign/host implementation boundary, execute the declared host type/nullability/exception/ownership/runtime contract and normalize actual returned nulls, exceptions and failure-resource behavior into the typed Gravity boundary before safe/non-null core consumption. Preserve method effects, runtime dependencies and real cleanup/lifetime obligations; GC/process exit cannot replace required resource behavior. Required evidence: actual permitted foreign-method values, declared Option absence, normalized typed failures and ordered resource traces, plus rejected undeclared null/exception/type/lifetime/runtime contracts under L8-HOST-DISPATCH. Types emits/checks boundary facts; Runtime owns real conversion/normalization, without adopting a new host class/callback facility or enabling held native/provider execution.
+<!-- runtime-protocol-source-host:end -->
+
+
+<!-- runtime-error-source-finite-foreign:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/normalize-foreign-failure`: Normalize a foreign/host call's error, exception, null and failure-resource behavior into an explicit typed Gravity boundary contract before entering safe/non-null source semantics. Accept: Before safe/non-null entry, convert nullable/undefined foreign values through the declared Option/Result, checked-wrapper or opaque-foreign-value contract; declared nullable Option absence may produce None without inventing an error. Separately translate foreign/host error returns, errno-like state, exceptions, panics, rejected promises, signals and exit statuses into declared typed Gravity error contracts. Do not convert a real error or capability denial into absence. Retain host/foreign type identity, ownership transfer on failure, cleanup, abort policy, runtime dependencies and exception/null contracts for hosted dispatch. Reject: Reject an unexpected or undeclared null, null crossing a non-null type, untranslated/untyped foreign failure and a missing mapping or failure-resource contract; report P4-EXCEPTION, L8-HOST-DISPATCH, L9-HOST-ERROR/L9-FFI-ERROR or L19-ERROR-MAP as applicable. Required outputs: Foreign/host dispatch and error-mapping artifacts, hosted conformance, failure-cleanup tests and diagnostics with host/runtime, source/generated origin, requested effect, grant, symbol and deployment policy when relevant. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-foreign:end -->
+
+
+<!-- library-base-source-allocation-runtime:start -->
+
+Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria) within this existing task. Preserve its status, partial evidence, prior predicates and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library foundation allocation-runtime criterion (Open): Execute the selected allocator/provider with actual family/version/profile/target, alignment/layout, initialization, ownership/lifetime, failure/blocking/sharing and deallocation contracts. Real current admitted requests and compatible provider bindings precede allocation, resize/reset and memory-view use. Reject hidden allocator substitution, invalid alignment/lifetime/region escape or unsupported runtime services. Evidence: actual provider allocation/value/failure and region/view cleanup products plus owning diagnostics; Library's typed allocation API and a provider descriptor do not establish Runtime execution.
+<!-- library-base-source-allocation-runtime:end -->
+
+
+
+<!-- runtime-interop-source-execute:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign conversion, call and cleanup criterion (Open): At each selected permitted boundary, execute actual declared directional value conversion/call/ownership transfer/borrow/release under real provider/ABI/layout/grant/profile/thread/blocking contracts. Preserve six pointer facts, seven ownership modes and named release behavior across success and failure, with actual synchronized sharing where claimed. Translate foreign exceptions, panics, error codes/errno, rejected promises, signals and process exits into declared Gravity errors before safe entry; unexpected or undeclared null cannot enter non-null types, while declared Option absence remains legal. Reject incomplete maps, wrong allocator/thread/ownership, unmodeled foreign failure and unsafe casts disguised safe. Required evidence: real values/errors/resource and concurrency traces and refusal fixtures; current native/callback/provider/device execution restrictions remain, so manifests and status flags do not close this task.
+<!-- runtime-interop-source-execute:end -->
+
+
+
+<!-- library-platform-hardware-source-hardware-runtime-boundaries:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library hardware-runtime-boundaries criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+At actual permitted device/FFI boundaries enforce target/device ownership/lifetime/alignment/volatile/order, interrupt constraints and DMA transfer/cache/completion/cleanup using genuine adapter and grant facts. Preserve source/provenance and genuine capability-target tags where required. Exercise permitted selected simulator/device scopes and invalid ownership/cache/lifetime/alignment cases with distinct evidence; simulation or typed metadata cannot claim unavailable physical operations, device support or Product integration. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-hardware-runtime-boundaries:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-ui-runtime-boundary:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-ui-runtime-boundary criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Supply actual permitted typed FFI/host-provider/UI adapter boundaries with authentic current operation scope, provider/adapter identity/version, ownership/resource/lifetime, failure/cleanup and redaction. Preserve Gravity error/source mapping, secret policy and selected target/schema/profile behavior. Exercise genuine permitted results and provider/adapter/key/grant mismatch, unauthorized secret access, malformed output and partial cleanup cases at the actual boundary. Fakes, typed wrapper names and static denial do not prove live before-action enforcement or constant-time internals; held signing/key/native/callback/provider/UI execution remains unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-ui-runtime-boundary:end -->
+
+
+
+<!-- performance-contract-source-realtime-runtime-and-preemption:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract realtime-runtime-and-preemption criterion (Open). Sources: [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md).
+
+Provide actual selected bounded allocation/provider, scheduler/GC, maximum wait/lock-hold, priority-inversion and interrupt/preemption behavior and evidence consumed by the declared deterministic path. Enforce authentic grants and source/runtime/profile/target context without hidden host services; isolate excluded nondeterministic services with actual noninterference evidence. Exercise real permitted selected service traces and unbounded pause/allocation/lock, unsupported provider, missing cleanup or unauthorized effects. Static latency manifests and mean throughput do not establish the runtime bound or authorize held native/device/provider sessions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-realtime-runtime-and-preemption:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
@@ -191,6 +329,75 @@ Complete provider workflow/AI consumer criterion (Open): Use actual selected pro
 <!-- authority-source-replay:end -->
 
 
+
+<!-- runtime-error-source-finite-ai:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/emit-ai-policy-failure`: Emit structured audit/policy evidence for AI/model/tool/schema/defense/review failure instead of losing it in exception text. Accept: Emit structured policy/audit artifacts for model-provider failure, tool failure, schema validation, policy denial, prompt-defense trigger and human-review denial, preserving source spans and generated-origin chains. Actual external account/billing errors may remain explicit; removed project quotas are not restored. Reject: Reject free-text-only or missing AI/tool failure evidence, omitted policy/schema/review identity and lost source/generated origins; report L9-AI-ERROR. Required outputs: Typed AI/tool failure record, policy/audit/replay links, validation/denial fixtures and source-bound diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-ai:end -->
+
+
+<!-- runtime-error-source-finite-workflow:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/emit-durable-workflow-failure`: Emit and replay a durable workflow failure record with its step/input/error identity, retry/compensation policy and external-result/replay provenance. Accept: Persist and replay a workflow failure with step ID, input and output/error schemas, retry/compensation policy, time, external-call results and replay ID; retain source/generated origins and exercise failure plus compensation replay. Reject: Reject workflow failure without durable record, missing required schema/policy/result/replay identity or live re-execution during recorded replay; report L9-WORKFLOW-ERROR. Required outputs: Durable typed failure and compensation records, replay equality/refusal fixtures and source/generated-origin diagnostic artifacts. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-workflow:end -->
+
+
+<!-- library-service-source-recorded-service-replay:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service recorded-service-replay criterion (Open): Record actual replay-relevant scheduling choices and service inputs/outputs/errors with task/step/event/schema/provider/authority identity; replay consumes the recorded results and deterministic choices without repeating recorded external effects. Filesystem/network workflow operations must be recorded, idempotent under the governing contract or activity-isolated; an idempotent label cannot authorize a live call inside a stricter recorded-output segment. Preserve typed timeout/retry/backpressure, cancellation/cleanup and genuine failure/idempotency policy. AI execution preserves tool/model authorization, required review, policy and eval-event order, separately qualifying superseded project budget passages and actual external account restrictions. Reject unrecorded required scheduler/IO/network nondeterminism, changed records and hidden live service reacquisition during replay. Evidence: actual permitted record/replay values, ordering/equality/failure/denial and no-repeat traces with STD7005/STD8007/STD9007 and applicable AI diagnostics; held replay/external actions remain unrun.
+<!-- library-service-source-recorded-service-replay:end -->
+
+
+
+<!-- runtime-interop-source-replay:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual process/network/service and migration execution criterion (Open): For selected distributed/AI/workflow/process/tool boundaries, execute declared typed protocol/schema/provider/effect/grant/error/ownership/threading behavior with genuine required replay/audit and no repeated external side effect in replay. Preserve actual status/signal/exit/promise/exception translation and schema-versioned migration compatibility. Source binding or shim generation alone authorizes no live service, subprocess, model/tool or store; unsupported or held requirements stay explicit. Required evidence: real selected input/output/error/release/replay/audit and denied/unsupported cases tied to provider/schema/target/lock identities without inventing a workflow profile or overriding actual restrictions.
+<!-- runtime-interop-source-replay:end -->
+
+
+
+<!-- library-data-source-replay-and-ai-database-calls:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library replay and ai database calls criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Actual distributed database/serialization boundary calls record decisions/results, satisfy their idempotency contract, or execute in an isolated workflow activity as governing sources require. AI query candidates execute only through constrained/reviewed policy and typed tools, with human review when configured. Preserve schema, query/parameters, provider, source, policy and required payload-bound review/replay identity.
+
+Refusals and acceptance evidence: Reject repeated external effects during replay, changed payload reuse, unrecorded IO and policy bypass. Human review does not itself confer database capability. Real first-run/replay/denial/schema-drift fixtures remain required, subject to existing execution restrictions. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-replay-and-ai-database-calls:end -->
+
+
+
+<!-- library-workflow-ai-source-durable-runtime:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library durable-runtime criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Execute actual selected scheduling/persistence/provider/model/tool/memory transitions only after authentic current grant, schema/taint/secret/profile/policy and required review. Return recorded outputs during replay or reject missing/incompatible records, preserving idempotency/compensation and exact state/log/version subjects. Exercise first-run/restart/replay, deny/expired/revoked/payload-change and no-action-after-denial cases. No fresh paid or non-idempotent effect is repeated without the governing explicit safe contract; mock/recorded/live results and held actions remain distinct. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-durable-runtime:end -->
+
+
+
+<!-- library-platform-hardware-source-recorded-platform-boundary:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library recorded-platform-boundary criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Consume actual activity/replay records for clock/random and isolated process/environment calls with exact operation, request/result/error, provider/version, schema, policy, source/workflow/target identities and redaction. Exercise genuine permitted record/replay consumption and missing/stale/wrong-subject records; ambient time/random/process/environment access during replay rejects without the live action. A fixed supplied value or declaration of replayability does not prove deterministic workflow replay, and held provider/replay work remains unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-recorded-platform-boundary:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -210,7 +417,7 @@ incorrect origin chain, and do not substitute compiler diagnostic emission for
 actual host-failure evidence. Closing evidence is an executed source-mapping
 fixture with runtime/version/symbol/origin/policy context and the P4-SOURCEMAP
 diagnostic; implementation acceptance remains open.
-Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation
+Historical closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation
 <!-- concurrency-source-enforcement:start -->
 
 Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
@@ -242,6 +449,55 @@ Criterion `runtime/deployment-provider-authority/decision-interface` (Open): Inp
 Complete R11 action/handle enforcement criterion (Open): At the actual service sink, deny absent matching authority and check requested effects/capabilities, provider presence/scope/policy and source/package/deployment constraints before each authority-bearing action. Cover filesystem, network, database, environment, process, shell, secrets, FFI, raw memory, devices, models, tools, memory writes, human-review actions, deployment, package mutation and observability sinks. Bind action/principal/agent, namespace/module/package, deployment/artifact/source or generated origin, effect/capability/provider, policy inputs, grant/denial, handle, redaction and audit status. Issue and use typed scoped handles with real grantor/recipient/allowed-effect/lifetime/provider-policy records and supported revocation; reject wider delegation, expired/revoked use, unsupported assumptions and ambient globals. Apply caller/callee dual-contract and deployment narrowing checks, declared error/panic behavior, policy-required audit and actual redaction, including separately authorized observation sinks. Produce real allow/deny/delegate/revoke and no-action-after-denial results; supplied grant tables, empty leak lists, unrevoked flags or coverage counts do not execute enforcement. Required review tokens/events remain distinct from authority to request review.
 <!-- authority-source-runtime:end -->
 
+
+
+
+<!-- library-service-source-actual-service-enforcement:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service actual-service-enforcement criterion (Open): Enforce accepted profile/effect/capability/package/deployment rules at the actual scheduler, filesystem, network and host-adapter service boundary before the denied action can occur. Preserve operation-specific roots/hosts/ports/protocols/listen, principal/package/deployment/source/artifact/provider identity, phase/lifetime, attenuation/revocation and declared policy. Require the selected compatible provider/delegation product; API metadata and a checked compile-time grant alone do not execute enforcement or create authority. Reject ambient access, widened/expired/revoked authority, forbidden blocking/profile behavior and unsupported service substitution. Evidence: real allowed/refused service-hook observations with no action after denial, caller/callee/deployment facts, stable Gravity errors and STD7003/STD7007/STD8001/STD8002/STD9001 or applicable owning diagnostics; actual native/provider/listener execution remains subject to existing restrictions.
+<!-- library-service-source-actual-service-enforcement:end -->
+
+
+
+<!-- library-service-source-service-observation:start -->
+
+Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria) within this existing Open task. Preserve prior predicates, historical evidence, ownership and actual restrictions; current whole-source/interface acceptance remains pending.
+
+Library service service-observation criterion (Open): Emit actual stable source/schema/context-linked service logs, traces, metrics, diagnostics and audit events without changing required program ordering, replay or safety. Mark and redact secrets in HTTP headers, credentials, URLs and bodies, including denial/host-error/retry/cancellation paths, while preserving useful diagnostic codes and source/generated origins. Preserve synchronization/scheduler/provider/path/endpoint/TLS/schema/policy and required-review/eval event links without logging secret captures or raw memory. Reject unredacted secrets, raw host errors substituted for Gravity diagnostics, missing context and observability that silently changes scheduler/replay semantics. Evidence: actual redacted service/error/audit/event products and negative leak/order/schema tests, STD9006 and required host delegation/error mapping records; a declared redaction policy does not prove actual output was redacted.
+<!-- library-service-source-service-observation:end -->
+
+
+
+<!-- library-data-source-runtime-enforcement:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library runtime enforcement criterion (Open): at the real selected provider boundary, consume the authentic current operation-specific grant and effect/profile/schema/provider decision before connection, query, write, commit, migration, introspection or admin action. Refuse stale/revoked/wrong-subject or missing grants before the denied action; no provider effect may occur after denial. Normalize permitted value/error/cleanup behavior and redact credentials, connection strings and sensitive parameters. Evidence requires real permitted/denied boundary observations, no-action-after-denial cases and source-bound diagnostics under existing availability and execution restrictions. Auth grant production, static Effects admission, callable Library adapters and distributed replay remain separate owning tasks. Metadata flags or a typed driver are no enforcement proof.
+<!-- library-data-source-runtime-enforcement:end -->
+
+
+
+<!-- library-workflow-ai-source-protected-runtime:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library protected-runtime criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Enforce authentic current action-specific grants, effect/profile/provider, schema/taint/secret and payload-bound review before protected model/tool/service/memory or write operations. Deny missing/expired/revoked/wrong-subject/changed-payload authority before action and normalize actual permitted values, errors, cleanup and redaction. Exercise real allowed/denied boundaries and no-action-after-denial for exact source/agent/tool/provider subjects. Distributed/AI replay retains its separate owner and actual log/state obligations; Library/Auth metadata is no enforcement proof. All held effects stay unrun. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-protected-runtime:end -->
+
+
+
+<!-- library-platform-hardware-source-deny-before-platform-action:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library deny-before-platform-action criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Check the actual attempted operation against current authentic scope before environment disclosure, process spawn, signal/terminal mutation, random/provider call or hardware access. Emit redacted source-bound request/decision/no-action observations for revoked, mismatched and missing grants, preserving underlying provider failures and cleanup where permitted. A boolean allow flag or rejected static source is not actual before-action enforcement; compiler admission and Runtime/provider evidence remain distinct. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-deny-before-platform-action:end -->
 
 <!-- runtime-implementation-tasks:end -->
 

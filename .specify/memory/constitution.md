@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.3.0 | Adopted: 2026-10-25 | Updated: 2026-11-03 | Change authority: Matt; integration coordinator: Deus (parent)
+Version: 1.5.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -15,6 +15,33 @@ Preserve Gravity semantics, compiler-stage boundaries, source provenance,
 effects/capabilities and safety evidence. Host behavior is not a language
 contract. Use positive and negative fixtures when the owning contract requires
 them. A passing structural check is not semantic conformance.
+
+## Hermetic compile-time inputs
+
+Matt's 2026-11-04 decision selects the detailed
+[L12 hermetic-input policy](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds)
+when reconciling the unconditional wording in
+[L6 Build Effects](../../docs/phase-01-core-language/016-l6-effect-system-specification.md#build-effects).
+Hermetic compile-time inputs may be declared and replayable:
+
+- Filesystem inputs are declared; environment keys and their value policies are explicit.
+- Network, shell/process, model and tool effects require a configured replayable provider or pinned result as well as their actual declared, scoped build authority.
+- Clock/random effects use recorded values or deterministic seeds; target probes use declared target manifests.
+- Generated forms carry input hashes. Identical declared semantic inputs require byte-identical typed Core under L12; native metadata exceptions do not weaken this equality.
+
+A grant or generic replay exception alone satisfies none of these input,
+phase, provider, policy or evidence requirements. Secret redaction and all
+existing execution restrictions remain. This decision enables no held action
+and supplies no implementation, independent review or release acceptance.
+Pure constant evaluation keeps its separate prohibition on these effects.
+
+Build and Expand apply this selection in their existing tasks. The ef88 checkpoint recorded a future canonical clarification. That
+clarification was authored and independently source-reviewed at
+`d2a0378bdd530857d97d530aab15268fc333ce80`, with L6 SHA-256
+`529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72`.
+Authenticated current-source succession, `main` integration and implementation
+evidence remain separate. No historical L6 applying source review is renewed. This record changes neither
+the canonical bytes nor their historical source/review identities.
 
 ## Autonomy without project accounting quotas
 
@@ -92,3 +119,26 @@ incremental migration debt, not a global development stop. Real protocol, schema
 wire and diagnostic identifiers with compatibility meaning are distinct; preserve
 them unless their owning contract explicitly approves a versioned migration.
 Do not rename restricted work to evade a classifier or transfer its restrictions.
+
+## Native local-model library APIs
+
+Matt's 2026-11-04 decision allows scoped native local-model APIs when
+reconciling STD13's restrictive AI-export requirement with its explicit native
+local-model availability condition.
+
+The native condition permits local-model declaration/provider/call APIs through
+explicitly declared local providers and their actual capability contracts.
+An actual call retains its declared AI effect, provider/model identity,
+input/output schemas, applicable policy, taint/secret, failure, replay/audit and
+ordinary native safety/runtime requirements. Pure data declarations retain
+their own effect and authority conditions. Provider availability or a network
+grant alone establishes none of these premises.
+
+This condition grants no unrestricted native agent/tool surface or selected
+provider. Existing AI, workflow-integrated distributed, enabled hosted, Core,
+constrained-profile, meta and formal rules retain their distinct scope.
+All existing execution holds remain; this decision authorizes no compiler,
+native, model/provider/tool or other held operation. Actual implementation,
+independent source review, current-source authentication and `main` integration
+remain separate. Canonical STD13 wording clarification is separate follow-up
+work; the frozen 95bd author interpretation is preserved as historical scope.

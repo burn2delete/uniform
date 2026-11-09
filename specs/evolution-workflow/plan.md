@@ -164,3 +164,77 @@ Existing task bodies/statuses, source criteria, frozen review scopes and actual 
 Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Retain the exact existing conditional pattern-semantic change producer and unchanged profile74 predicate. Update each affected pattern family and its Core/type/effect/ownership/schema/workflow/AI/formal/backend conformance consumers before stable adoption; ordinary unchanged-contract development gains no new ceremony.
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Keep the exact unchanged conditional pattern-semantic adoption producer and 977-byte predicate. Actual affected-family/consumer fixtures and required review precede stable adoption; ordinary unchanged-contract implementation gains no new ceremony or held action permission.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Retain the exact 1,011-byte conditional stable-protocol-change predicate and qualified profile74 scope. Stable changes consume affected type/effect/performance/ABI/host/library/AI/formal compatibility/conformance results; unchanged-contract development gains no new ceremony.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Keep the exact 1,011-byte conditional protocol-change producer and earlier typed-selection predicate; actual affected consumer compatibility/conformance precedes stable change without gating ordinary unchanged-contract development.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Retain the exact unchanged 1,032-byte stable-error-representation predicate and existing producer. Actual affected core/type/effect/profile/runtime/FFI/workflow/AI/library/diagnostic/test compatibility/conformance precedes stable representation change; unchanged-contract development gains no new ceremony.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Retain actual library admission, compatibility/deprecation/stabilization and unsafe/security policy ownership. Library assembles affected per-release records and profile-change events; a report or signature does not confer approval.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The existing distinct GOV9 audit and module-governance owners retain unsafe scheduler/lock/interrupt/atomic, filesystem adapter/listener/raw-socket/TLS review and revalidation. Library consumes actual current audit decisions at its safe wrapper; a generic security PASS does not establish unsafe audit, and ordinary declared-interface development gains no routine permission gate.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Reuse the existing distinct GOV9 unsafe-audit decision and GOV3 module admission. Current source/wrapper/target/profile/compiler assumption changes require applicable revalidation before stabilization/release. A GOV4 security PASS is no GOV9 audit, and ordinary implementation is not gated by a new permission ceremony.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Preserve the single existing conditional change-review authority for semantic/compatibility changes and actual policy decisions. Expand owns stable-facet migration products and checked feasible rewrites; Build owns actual locks. An early schema or version comparison is not final approval, while compatible ordinary local development acquires no new per-run permission gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing conditional change-review/stabilization owners consume affected old/new ABI/schema/type/error/resource/profile/target/lock and incumbent parity facts for actual stable changes or shim promotion. Keep compatibility/deprecation and temporary shim state explicit. This adds no task body, review renewal or ordinary per-run approval/migration-proof gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Keep independent exact-island unsafe audit and affected compatibility/stabilization decisions separate from library APIs, declared pass contracts and ordinary implementation tests. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Retain distinct exact-island source/owner/profile/target unsafe audits, hardware-specific waiver conditions and actual admission/stability decisions. Library declarations and compatible metadata do not perform security review. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep real GOV2 compatibility, GOV3 module admission, GOV8 lifecycle and distinct security/unsafe audits as their existing sole authorities. Library compatibility and signed manifests do not create approval, migration execution or a policy exception. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual distinct unsafe/security review and yank/advisory/governance records with exact conditions, evidence and missing/revalidation state. Registry and safety views cannot synthesize acceptance or change policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Own actual accountable baseline-update/normalization/security-impact decisions and preserved history. Benchmarks cannot approve their own regression waiver or hide a correctness/safety change. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

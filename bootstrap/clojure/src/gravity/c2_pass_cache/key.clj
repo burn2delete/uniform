@@ -72,7 +72,7 @@
                    {:observed target-binding}))
     (when-not (and (= :SH-03 (:slice boundary-binding))
                    (= :gravity-source (:owner boundary-binding))
-                   (= :gravity/sh03-to-c2-reader-products-v2
+                   (= :gravity/sh03-to-c2-reader-products-v3
                       (:adapter-contract boundary-binding))
                    (sha256-id? (:plan-binding-id boundary-binding))
                    (sha256-id?
@@ -85,7 +85,7 @@
                    (false? (:self-hosted? boundary-binding))
                    (= (:identity boundary-binding)
                       (canonical-content-id
-                       {:domain :gravity/c2-pass-cache-boundary-binding-v1
+                       {:domain :gravity/c2-pass-cache-boundary-binding-v2
                         :binding (dissoc boundary-binding :identity)})))
       (cache-fail! "C16-KEY"
                    "C2 cache boundary binding is incomplete or unsafe"

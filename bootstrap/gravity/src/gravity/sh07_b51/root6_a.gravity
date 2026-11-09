@@ -4001,12 +4001,8 @@
   (loop [remaining decorations text open nodes 1 maximum-depth depth]
     (if (= (count remaining) 0)
       (let [complete (str text close)]
-        (if (<= nodes 4096)
-          (if (sh07-b51-r6-output-text-within-bound? complete)
-            {:status :decorated :text complete :node-occurrences nodes
-             :maximum-depth maximum-depth}
-            {:status :failed :reason :output-byte-limit})
-          {:status :failed :reason :node-count-limit}))
+        {:status :decorated :text complete :node-occurrences nodes
+             :maximum-depth maximum-depth})
       (let [record (first remaining)
             next-text
             (str text (if (= text open) "" separator) (get record :text))]
@@ -4015,18 +4011,20 @@
                (if (> (get record :maximum-depth) maximum-depth)
                  (get record :maximum-depth) maximum-depth))))))
 
-(defn sh07-b51-r6-scalar-text-within-bound? [text]
+(defn sh07-b51-r6-decoration-text-valid? [text]
+  ;; Validate UTF-16 units using the existing strict scalar census. The
+  ;; per-scalar four-byte UTF-8 width never limits aggregate text size.
   (if (string? text)
-    (= (get (sh07-b51-r6-observe-scalar-bytes text 0 32768) :status)
-       :accepted)
-    false))
-
-(defn sh07-b51-r6-output-text-within-bound? [text]
-  (if (string? text)
-    (= (get (sh07-b51-r6-observe-scalar-bytes text 0 262144) :status)
-       :accepted)
-    false))
-
+    (loop [position 0]
+      (if (= position (count text)) true
+        (if (= (get (sh07-b51-r6-observe-scalar-bytes
+                      (subs text position (+ position 1)) 0 4) :status) :accepted)
+          (recur (+ position 1))
+          (if (< (+ position 1) (count text))
+            (if (= (get (sh07-b51-r6-observe-scalar-bytes
+                          (subs text position (+ position 2)) 0 4) :status) :accepted)
+              (recur (+ position 2)) false)
+            false)))) false))
 (defn sh07-b51-r6-decoration-ordered [value depth active decimal-records]
   (loop [remaining (vec value) result []]
     (if (= (count remaining) 0)
@@ -4035,7 +4033,7 @@
        (if (vector? value) "]" ")") result depth)
       (let [record
             (sh07-b51-r6-canonical-decoration-evidenced
-             (first remaining) (+ depth 1) 1 active decimal-records)]
+             (first remaining) (+ depth 1) active decimal-records)]
         (if (= (get record :status) :decorated)
           (recur (rest remaining) (conj result record)) record)))))
 
@@ -4047,7 +4045,7 @@
             (let [source (first remaining)
                   record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   source (+ depth 1) 1 active decimal-records)]
+                   source (+ depth 1) active decimal-records)]
               (recur (rest remaining)
                      (conj result {:source source :decoration record})
                      (if (= (get record :status) :decorated)
@@ -4096,10 +4094,10 @@
             (let [entry (first remaining)
                   key-record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   (first entry) (+ depth 1) 1 active decimal-records)
+                   (first entry) (+ depth 1) active decimal-records)
                   value-record
                   (sh07-b51-r6-canonical-decoration-evidenced
-                   (second entry) (+ depth 1) 1 active decimal-records)]
+                   (second entry) (+ depth 1) active decimal-records)]
               (recur
                (rest remaining)
                (conj result {:source-key (first entry)
@@ -4278,22 +4276,17 @@
                      :reason :unsupported-value-carrier})))))))))))
 
 (defn sh07-b51-r6-canonical-decoration-evidenced
-  [value depth nodes ancestry decimal-records]
+  [value depth ancestry decimal-records]
   ;; Authenticated Stage2 values are immutable reader value graphs.  Syntax
   ;; cycles are rejected earlier by their governed form/token ids; host object
   ;; identity is neither present nor semantic authority here.  Ancestry carries
-  ;; traversal-depth evidence only, while the exact depth bound closes malformed
-  ;; recursive input without equating equal sibling values.
-  (if (> depth 96) {:status :failed :reason :depth-limit}
-    (if (> nodes 4096) {:status :failed :reason :node-count-limit}
-      (let [collection?
+  ;; traversal evidence only; equal sibling values are not cycles.
+  (let [collection?
             (if (vector? value) true
               (if (seq? value) true
                 (if (map? value) true (set? value))))]
         (if collection?
-          (if (> (count value) 512)
-            {:status :failed :reason :collection-width-limit}
-            (let [active (conj (vec ancestry) :gravity/collection)]
+          (let [active (conj (vec ancestry) :gravity/collection)]
               (if (if (vector? value) true (seq? value))
                 (sh07-b51-r6-decoration-ordered
                  value depth active decimal-records)
@@ -4301,7 +4294,7 @@
                   (sh07-b51-r6-decoration-set
                    value depth active decimal-records)
                   (sh07-b51-r6-decoration-map
-                   value depth active decimal-records)))))
+                   value depth active decimal-records))))
           (let [decimal
                 (if (= (sh07-b51-r6-projected-kind value decimal-records)
                        :decimal)
@@ -4317,18 +4310,18 @@
                      :reason :unsupported-decimal-readable-spelling}))
                 text (get scalar :text)]
             (if (= (get scalar :status) :accepted)
-             (if (sh07-b51-r6-scalar-text-within-bound? text)
-              (if (sh07-b51-r6-output-text-within-bound? text)
-                {:status :decorated :text text :node-occurrences 1
+             (if (sh07-b51-r6-decoration-text-valid? text)
+              {:status :decorated :text text :node-occurrences 1
                  :maximum-depth depth}
-                {:status :failed :reason :source-integrity-mismatch})
-              {:status :failed :reason :scalar-byte-limit})
-             {:status :failed :reason (get scalar :reason)})))))))
+              {:status :failed :reason :invalid-unicode-scalar})
+             {:status :failed :reason (get scalar :reason)})))))
 
 (defn sh07-b51-r6-canonical-decoration
-  [value depth nodes ancestry]
+  [value depth _nodes ancestry]
+  ;; Retain the legacy call shape for split-module callers; node allowances
+  ;; are no longer consumed or propagated by decoration.
   (sh07-b51-r6-canonical-decoration-evidenced
-   value depth nodes ancestry []))
+   value depth ancestry []))
 
 (defn sh07-b51-r6-order-set-children
   [decimal-records values supplied-child-ids revision-id root-syntax-id path]
@@ -4339,7 +4332,7 @@
               {:records records :failed? failed?}
               (let [record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (first remaining) 1 1 #{} decimal-records)]
+                     (first remaining) 1 #{} decimal-records)]
                 (recur (rest remaining)
                        (conj records {:value (first remaining)
                                       :decoration record})
@@ -4382,10 +4375,10 @@
               (let [entry (first remaining)
                     key-record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (first entry) 1 1 #{} decimal-records)
+                     (first entry) 1 #{} decimal-records)
                     value-record
                     (sh07-b51-r6-canonical-decoration-evidenced
-                     (second entry) 1 1 #{} decimal-records)]
+                     (second entry) 1 #{} decimal-records)]
                 (recur
                  (rest remaining)
                  (conj records {:source-key (first entry)

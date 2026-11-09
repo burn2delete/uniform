@@ -891,6 +891,107 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Consume real narrowed/validated/control/effect facts for actual move/borrow/linear, layout/profile and required formal totality/partiality verdicts. Early policy/regime contracts and selected flow premises precede combined legality; defaults, Bool and shape success waive no proof or authority.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Derive concrete portable/hosted/native/constrained/distributed/AI/formal legality from actual selected facts. Preserve required constrained bounded-behavior or total-coverage proof without restoring compiler quotas; no runtime/backend-only check substitutes.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Expose early concrete policy/flow/layout/service contracts, then derive actual profile/resource verdicts from selected facts and governing proof; no hidden foreign runtime or work quota.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Expose actual profile throw/try/panic and safety-check failure obligations, ownership/cleanup and selected service/proof facts. A typed catch or retained failure check cannot legalize source-rejected behavior or introduce target undefined behavior.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Check actual library allocation/resource/safe-wrapper/profile facts with surviving invariants, proof/checks and audits. Separate unsafe namespaces and callable wrapper behavior remain library responsibilities.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
+## Concurrency and IO library source interface
+
+Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.md#complete-concurrency-and-io-library-source-criteria). The unchanged current concurrency profile, race/capture, classification and preservation predicates remain authoritative for actual safety analysis. Consume real scoped lifetime, ownership/synchronization/atomic target facts; no unsafe host race, escaped task, stale proof or invalid handle becomes safe from a library label. Distinct current GOV9 audits and safe wrappers precede acceptance of unsafe service internals.
+
+Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Current collections source interface
+
+Use the [complete current collections criteria](../stdlib-workflow/plan.md#complete-current-collections-source-criteria). Legality supplies actual profile, ownership/lifetime, bounds/check/proof, builder linearity, invalidation and safe-wrapper/audit verdicts before admitted collection operations. A family, bare type, schema, digest or actual result is no replacement proof; constraints concern actual representation and semantics, not removed project admission quotas.
+
+Existing task identities/statuses, historical evidence and actual restrictions remain. Current whole-source/interface acceptance is pending and no held operation is enabled.
+
+## Library foundation source interface
+
+Use the [complete library foundation criteria](../stdlib-workflow/plan.md#complete-library-foundation-source-criteria). Supply actual independent bounds/ownership/lifetime/region/initialization/linearity and wrapper precondition verdicts, with exact source/proof/audit facts valid through transformations. Reject safe UB and stale assumptions rather than trusting API metadata.
+
+Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check actual supported profiles and ordinary ownership/memory/safety obligations before backend lowering, including generated and domain outputs. Nine L14 named profiles preserve their distinct services and provenance; hardware uses explicit modeled constructs. Current project work/input quotas stay removed.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume authentic exported selected-provider ownership/borrow/region/linear/init/nullability/taint facts and applicable profile soundness evidence. Compatible delegated analysis need not duplicate machinery, but required properties retain actual checks/rejection/explicit unsafe boundaries. Gradual representation must be permitted and unchecked casts never prove safe optimization.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Legality preserves original wrapper-safety ownership, actual invariant proof/checks, seven ownership modes, six foreign pointer facts and eight-profile legality, including Core schema-only portability and Workflow as a distributed facet. Actual D8 outcomes and sufficient owner facts precede safe export; manifests or assigned audits cannot prove safety.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Profiles, resource/safety/ownership/taint and separate authority legality precede target use. Host null/errors/reflection, GPU host/device transfers, hardware fixed widths/CDC, replay side effects, SQL taint and mobile permission/lifecycle are real boundaries, not backend/runtime-only legalization. Preserve four safety outcomes, independent meaningful target/semantic bounds and accounting removal; no generic unsafe label waives hardware/review policy.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Retain each profile restriction, taint-to-trust boundary, resource ownership, source-schema constraint and operation authority. Codec physical limits do not create new compiler work quotas; a legal wrapper still needs actual runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve [Matt's scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis), actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Preserve actual profile, ownership/resource/taint/unsafe and generated-program rules. No mock, test runner or compiler plugin bypasses them; semantic constraints do not restore retired compiler quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Preserve actual profile/no-runtime, ownership/resource/unsafe/taint and interrupt constraints. Reject hidden allocation, dynamic firmware assumptions and unchecked generated forms without restoring retired project quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep actual secret/resource/taint/unsafe and generated-program checks, sink-specific UI trust and profile rules. Secret-safe policy metadata is no proof of provider behavior or constant-time internals. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Parse/check genuine selected realtime latency/jitter/allocation/blocking/preemption/loop-recursion contracts and failure modes. Physical/program bounds retain meaning and retired project quotas do not return. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority
