@@ -176,6 +176,14 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Supply actual selected target/device/map/ABI/clock/reset/interrupt/provider and conformance products. Four language target-conformance tasks remain distinct from Product adoption, hardware/firmware/OS/driver/application implementation and physical delivery; library descriptions select none of them. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual selected target/clock/power/stack/latency/preemption and simulation/live conditions where required. Realtime/profile declarations select no ISA, board, device or Product. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

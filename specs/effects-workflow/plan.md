@@ -452,6 +452,30 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Distinguish pure query/schema construction from actual direct/latent provider IO and check operation/profile/effect legality with authentic grants. Static admission does not establish Runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Check actual direct/latent service/model/tool/memory/workflow effects and phases; pure data or meta graph generation is distinct from executing effects. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Check actual test setup/body/teardown and meta direct/latent effects, active target profile and phase, declared replacements and authentic grants. Static summaries establish no execution or enforcement. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Check direct/latent platform and hardware effects, active profile and genuine grants, including handler callbacks, no-runtime and interrupt restrictions. Static admission establishes no live operation or physical safety. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Check actual crypto and UI handler/command/navigation direct/latent effects, active profile and grants. Pure digests, policy, component/view data and generated code confer no live authority or bypass. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual direct/latent source effects and profile admission before REPL evaluation or protected command calls. Static inspection, formatting and policy reports grant no service execution. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

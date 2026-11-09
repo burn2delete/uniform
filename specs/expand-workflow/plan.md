@@ -735,6 +735,18 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Schema/validator/codec/migration derivation preserves expanded source identity, classified refinements, source/path provenance and ordinary generated checking. Reflection-free source generation neither executes a provider nor grants compiler authority. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Preserve ordinary generated checking, hygiene/source/phase/provenance and recorded L12/L6 inputs. Meta generation grants no live provider call or compiler authority. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Ordinary generated checking, hygiene, safety/taint and source provenance apply to library macro helpers. General L12 replayable input rules and pure constants remain distinct. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

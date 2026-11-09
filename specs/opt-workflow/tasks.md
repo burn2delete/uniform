@@ -47,6 +47,94 @@ Apply the [complete protocol and dispatch source criteria](../types-workflow/pla
 L8 proved dispatch-specialization criterion (Open): Perform actual legal dispatch specialization using current implementation/type/profile/target facts and surviving governing proof. Preserve source diagnostics and fallback behavior, or prove that fallback unreachable for the exact subject before erasing it; refusal to transform preserves the original legal dispatch. Reject speculative closed-world assumptions, stale/missing proof, hidden effects/capabilities/unsafe checks or changed fallback/diagnostics. Preserve actual before/after identities, proof/checker assumptions, residual/fallback paths, source/generated mappings and affected fact invalidation/regeneration through verification. Benchmarks or a direct-call label do not prove semantic equivalence. Required evidence: specialized execution/artifact comparisons and negative proof/fallback/diagnostic/staleness fixtures under L8 and C13.
 <!-- opt-protocol-source-specialize:end -->
 
+
+<!-- performance-contract-source-specialization-keys-guards-and-maps:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract specialization-keys-guards-and-maps criterion (Open). Sources: [PERF3](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md).
+
+Implement actual type/const/literal/shape/schema/protocol/numeric/profile/target-feature/layout/provider/effect/proof specialization. Keys include every behavior-affecting fact and dependency; guards preserve generic behavior for every admitted input and run at the declared compile/link/dispatch/runtime stage before narrowed use. Emit genuine generic-to-specialized source/generated maps, variants/profile/target/effects/grants/proof state and selection decisions. Exercise valid selected specializations and missing/unstable key, late/overbroad guard, lost source map, illegal variant or false equivalence refusals; runtime guard cost remains visible unless truly erased/equivalent. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-specialization-keys-guards-and-maps:end -->
+
+
+
+<!-- performance-contract-source-partial-evaluation-and-invalidation:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract partial-evaluation-and-invalidation criterion (Open). Sources: [PERF3](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md).
+
+Partially evaluate actual pure or explicitly granted declared build-effect computation under the human L12 replayable-input policy, preserving separate pure-constant rules and genuine source/input/output provenance. Consume authentic source/macro/type/const/profile/target/features/layout/provider/numeric/build-effect/replay/proof/dependency invalidation products before reuse. Exercise actual eligible results and undeclared/ungranted/nonreplayable inputs, changed subjects and stale variants; cached records, fixed source flags or provider labels do not establish execution, replayability or unchanged behavior. Build owns graph inputs/cache enforcement rather than a duplicate optimizer cache authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-partial-evaluation-and-invalidation:end -->
+
+
+
+<!-- performance-contract-source-internal-layout-transformations:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract internal-layout-transformations criterion (Open). Sources: [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md).
+
+Implement actual field reorder/pack/padding, AoS/SoA, hot/cold split, inline/unboxed/tagged representation, cache-line/device packing/hardware-layout preparation only with authentic alias/ownership/address-identity, initialization and boundary facts. Preserve typed source field behavior, numeric/resource semantics and source/debug maps; layout-derived check erasure uses actual proof. Exercise real selected transformations and observable addresses, retained FFI pointers, unsafe offsets, absent serializer adapters or illegal boundary changes. Lower owns actual target ABI/layout products; no internal layout claim grants public repacking. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-internal-layout-transformations:end -->
+
+
+
+<!-- performance-contract-source-pgo-identity-staleness-and-privacy:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract pgo-identity-staleness-and-privacy criterion (Open). Sources: [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md).
+
+Consume real profile-data schema and source/typed artifact/MIR/compiler/profile/target/provider/workload identities with declared privacy/redaction/aggregation/retention/access policy. Preserve accepted/advisory/stale/rejected/required-missing states and exact-source/exact-MIR/advisory-similar/require-exact/ignore policy meanings; release defaults reject mismatched source or MIR unless policy explicitly accepts advisory data. Exercise actual selected identity/status/workload changes and raw secret/user/prompt/tool/customer data leakage. Anonymous blobs or an accepted flag do not establish matching current data or policy authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-pgo-identity-staleness-and-privacy:end -->
+
+
+
+<!-- performance-contract-source-pgo-transformations-and-reproduction:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract pgo-transformations-and-reproduction criterion (Open). Sources: [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md).
+
+Use genuine function/branch/path/allocation/type/protocol/shape/cache/lock/error/provider-frequency data to guide selected inlining, hot/cold/block/layout/specialization/variant/branch/dispatch/allocation/error-path decisions. Each actual transformation logs profile data, pass, expected benefit, preserved facts, invalidated proofs and outputs, preserves all semantic/safety/secret/profile constraints and is reproducible from exact data/compiler inputs. Exercise actual decisions and stale reuse, unlogged decisions, false evidence and nonreproducibility; measurements guide a lawful transformation but prove no semantic equivalence. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-pgo-transformations-and-reproduction:end -->
+
+
+
+<!-- performance-contract-source-autotuning-candidates-and-selection:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract autotuning-candidates-and-selection criterion (Open). Sources: [PERF7](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md).
+
+Declare candidate space/objective/constraints before real expansion; reject candidates lacking required type/effect/capability/profile/safety/math evidence before benchmarking. Compare actual admitted variants and bind selected candidate, target fingerprint, benchmark/constraint/certificate evidence, rejected alternatives and selection reason. Preserve source/MIR/compiler/backend/provider, benchmark inputs and random seeds where used; release uses genuine pinned or policy-permitted reproduced tuning. Exercise selected valid/slower lawful choices and invalid-before-measurement, absent comparison/certificate or unpinnable/nonreproducible selection refusals. A selection certificate name is no checked result or tuning run. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-autotuning-candidates-and-selection:end -->
+
+
+
+<!-- performance-contract-source-simd-lanes-bounds-and-math:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract simd-lanes-bounds-and-math criterion (Open). Sources: [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md).
+
+Implement actual selected vectorization with lane independence, legal aliasing, valid element size/lane bounds, alignment or supported safe unaligned access, target features, tail and mask semantics. Preserve loop dependencies/effects and explicit reduction associativity/numeric mode; strict floating reductions cannot reassociate without declared relaxation. Elementary-function vectorization needs matching certificates unless exactly equivalent in the selected mode. Exercise actual scalar/vector comparisons, all applicable tail forms and missing lane/alias/bounds/alignment/math proof, overlapping mutable slices, strict-mode or unsupported intrinsic cases; absent proof rejects or retains a profile-allowed genuine runtime guard. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-simd-lanes-bounds-and-math:end -->
+
+
+
+<!-- performance-contract-source-cache-order-and-intrinsic-products:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract cache-order-and-intrinsic-products criterion (Open). Sources: [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md), [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md).
+
+Produce genuine tiling/interchange/blocking/prefetch/hot-cold/layout/stream-store/alignment decisions and cache-shape evidence naming access/working set/stride/hotness/cache-line/prefetch/target/benchmark facts. Preserve volatile/MMIO/atomics/synchronization/capability/effect ordering and all source iteration behavior. Target intrinsic maps consume actual Lower/Backend operation/instruction/feature/numeric/alignment/order/fallback/proof products; unsupported no-fallback variants are guarded from execution. Exercise selected legal locality/intrinsic composition and effect reorder, wrong target, missing fallback, public layout mutation and unsupported cache claims. Target-independent Opt preparation is distinct from actual instruction emission. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-cache-order-and-intrinsic-products:end -->
+
+
 - [ ] `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` opt/3: Protect checks and anchors
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -86,6 +174,28 @@ L17 actual refinement-proof consumption criterion (Open): Use alternative type f
 <!-- opt-alternative-types-source-refinement:end -->
 
 
+
+<!-- performance-contract-source-check-class-proof-and-policy:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract check-class-proof-and-policy criterion (Open). Sources: [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md), [D8](../../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md), [D9](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md).
+
+Apply every canonical PERF10 elision-table row at its actual operation: bounds, overflow/explicit wrap-saturate, nonzero division, shift width, null/option match, initialization, region escape, borrow/alias, linear terminal flow, race, taint sink and capability/effect/unsafe-audit/replay/AI-review policy. Require the exact governing proof/operator/match/validation/replay/policy or workflow-gate artifact, current dominance and preserved assumptions. Emit actual erased/residual checks, proof/pass/profile/target/invalidation and source/generated context. Policy rows discharge only through equivalent policy evidence, never speed; partial proof keeps genuine narrower residual checks. Exercise each claimed positive and missing/non-dominating/false/stale proof, absent residual or policy bypass refusal; source flags and proof ids alone prove nothing. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-check-class-proof-and-policy:end -->
+
+
+
+<!-- performance-contract-source-performance-preservation-of-latency:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract performance-preservation-of-latency criterion (Open). Sources: [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md), [PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md).
+
+Preserve actual required latency, jitter, bounded allocation/blocking/runtime checks and target/preemption assumptions through optimization; reject average-speed wins introducing unpredictable/unbounded tail behavior. Keep genuine conditional bounded providers or isolated effects under the governing profile rather than declaring all IO universally forbidden. Exercise selected original/transformed deterministic paths and hidden runtime/check/dispatch cost, changed physical assumptions or lost bound evidence. Required latency failure rejects the build; optimization selection cannot downgrade the source contract. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-performance-preservation-of-latency:end -->
+
+
 - [ ] `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` opt/4: Verify and regenerate
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -109,6 +219,17 @@ L17 actual alternative-fact regeneration criterion (Open): Expose actual invalid
 <!-- opt-alternative-types-source-regeneration:end -->
 
 
+
+<!-- performance-contract-source-proof-invalidation-and-current-verification:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract proof-invalidation-and-current-verification criterion (Open). Sources: [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md), [PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md), [D9](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md).
+
+Reassess actual proof validity after control/data flow, layout, numeric, ownership/alias/profile/target/provider/backend assumption changes. Regenerate and check the required actual proof/facts, keep lawful residual checks or reject the no-check compilation mode; record invalidating pass and current verifier/counterexample products. Preserve the existing C18 affected-function translation-validation minimum and scoped checker owners; a stronger method is valid only when it establishes required scope. Exercise actual changed subjects and failed regeneration, reused wrong-subject proof, fabricated verifier success or missing source map; valid unoptimized MIR remains usable and no universal Formal completion gate is added. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-proof-invalidation-and-current-verification:end -->
+
+
 - [ ] `opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline` opt/5: Integrate reproducible pipeline
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -121,6 +242,39 @@ Apply the [complete optimization source criteria](plan.md#complete-optimization-
 
 C13 reproducibility/decision criterion compiler/c13/reproducible-pass-order compiler/c13/optimization-decision (Open): Choose deterministic pass order for the actual source/compiler/profile/target/features/package graph/build inputs and record pass order/versions, optimization level, source hashes, profile/target/features, provider set, random seeds when used, benchmark/autotuning inputs and proof artifacts. Nondeterministic search emits an actual replay record or rejects in hermetic builds; hidden ordering is refused. Every executed pass, including no-change, emits a stable explanatory decision binding pass/decision IDs, input/output MIR hashes, changed operations, reason, preserved/invalidated facts, used proofs, residual checks, benchmark references and actual verifier result. Size-threshold and passed example values do not impose project quotas or fabricate verification. Required outputs: deterministic pipeline manifest, decision log, analysis-cache and evidence-use records, verifier/invalidation products and actual changed/unchanged/replay/refusal/Opt-to-Lower consumer fixtures usable by diagnostics/conformance/self-hosting comparison. Reject unexplained source-visible changes, missing no-change records, nondeterministic/unreplayable inputs or false evidence with all applicable C13 diagnostics. Retain C13-CONTRACT/PRESERVE/INVALIDATE/PROOF/CHECK-ELISION/EFFECT/SAFETY/DOMAIN/NONDETERMINISM/VERIFY meanings and pass/decision/input-output-MIR/source-span-when-available/changed-ops/missing-fact/proof/profile/target/remediation context. These are future execution requirements, not present optimizer/verifier/proof/runtime/probe results or independent acceptance.
 <!-- opt-canonical-pipeline:end -->
+
+
+
+<!-- performance-contract-source-complete-claim-and-evidence:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract complete-claim-and-evidence criterion (Open). Sources: [PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md), [D8](../../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md), [D9](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md).
+
+Emit actual performance claim/contract, decisions and products naming source/compiler/backend/runtime/provider, profile/target/features, safety mode, input domain/distribution/shape/layout, objective, erased checks, proof assumptions, matching benchmark/harness and target fingerprint. Preserve source semantics, numeric/taint/secret/unsafe-audit, type/effect/ownership/capability/init/bounds/math/profile facts. Exercise genuine selected complete claims and missing context, hidden effects/authority/host work, unsafe shortcut or unsupported evidence refusals. Slower lawful code remains valid; benchmark/cost-model evidence cannot prove correctness or discharge a safety proof. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-complete-claim-and-evidence:end -->
+
+
+
+<!-- performance-contract-source-zero-cost-comparison:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract zero-cost-comparison criterion (Open). Sources: [PERF2](../../docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md), [PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md).
+
+For protocols/interfaces/generics/records/newtypes/iterators/collection views/patterns/macros/facets/higher-order/error/resource/numeric/library wrappers, identify the genuinely equivalent handwritten lower-level form and expected erased versus actual residual work. Compare actual before/after artifacts and publish specialization/dispatch behavior, allocation/boxing/alias/check/FFI/host/synchronization/closure/guard costs and proof/target/profile assumptions. Exercise genuine selected erasure and accurate residual reports; reject zero-cost based on source shape, small overhead, hidden residual operations or profile-illegal behavior. Work shared by the equivalent baseline may remain, but must be demonstrated, not asserted. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-zero-cost-comparison:end -->
+
+
+
+<!-- performance-contract-source-variant-guards-fallback-and-overhead:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract variant-guards-fallback-and-overhead criterion (Open). Sources: [PERF3](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md), [PERF7](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md).
+
+Emit and validate complete deterministic target/device/input-shape/alignment/domain/error/layout/provider/profile/PGO guards under the selected variant policy, with source maps and compatibility metadata. Refuse missing/unsafe/ambiguous overlapping guards and unsupported execution; if none matches, select a genuinely valid baseline. Measure/model actual runtime guard/branch/indirection/cache/code-size/warmup overhead or record genuine static dispatch erasure. Exercise matched/unmatched/overlap/fallback and wrong-target cases; do not call dynamic dispatch zero-cost or hide its real work behind a manifest. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-variant-guards-fallback-and-overhead:end -->
 
 <!-- opt-implementation-tasks:end -->
 
