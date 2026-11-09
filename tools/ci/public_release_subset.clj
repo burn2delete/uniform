@@ -152,6 +152,41 @@
                [java.nio.file.StandardOpenOption/WRITE
                 java.nio.file.StandardOpenOption/TRUNCATE_EXISTING])))
 
+(defn- write-manifest! [context prefix status]
+  (let [path* (atom nil)]
+    (try
+      (let [path (java.nio.file.Files/createTempFile
+                  (java.nio.file.Paths/get (:directory context)
+                                           (make-array String 0))
+                  prefix
+                  ".edn"
+                  (make-array java.nio.file.attribute.FileAttribute 0))]
+        (reset! path* path)
+        (let [envelope {:schema diagnostic-schema
+                        :authority :diagnostic
+                        :authoritative? false
+                        :status status
+                        :directory (:directory context)
+                        :records @(:records context)}
+              bytes (diagnostic-edn-bytes envelope)]
+          (write-bytes! path bytes)
+          (let [actual (java.nio.file.Files/readAllBytes path)]
+            (marker! :diagnostic-capture :manifest-written
+                     {:path (path-string path)
+                      :status status
+                      :bytes (alength actual)
+                      :sha256 (sha256-bytes actual)}))))
+      (catch Throwable error
+        (capture-failure! context :diagnostic-capture error
+                          (some-> @path* path-string))))))
+
+(defn- checkpoint-capture! [context]
+  (when (and (:enabled? context)
+             (nil? @(:failure context)))
+    (write-manifest! context
+                     "partial-manifest-"
+                     :partial)))
+
 (defn- capture-record! [context phase result]
   (if-not (:enabled? context)
     (capture-skipped! context phase)
@@ -183,7 +218,8 @@
                               :bytes (alength actual)
                               :sha256 (sha256-bytes actual)}]
                 (swap! (:records context) conj metadata)
-                (marker! phase :diagnostic-captured metadata))))
+                (marker! phase :diagnostic-captured metadata)
+                (checkpoint-capture! context))))
           (catch Throwable error
             (capture-failure! context phase error (some-> @path* path-string)))))))
   result)
@@ -191,30 +227,7 @@
 (defn- finalize-capture! [context]
   (when (and (:enabled? context)
              (nil? @(:failure context)))
-    (let [path* (atom nil)]
-      (try
-        (let [path (java.nio.file.Files/createTempFile
-                    (java.nio.file.Paths/get (:directory context)
-                                             (make-array String 0))
-                    "manifest-"
-                    ".edn"
-                    (make-array java.nio.file.attribute.FileAttribute 0))]
-          (reset! path* path)
-          (let [envelope {:schema diagnostic-schema
-                          :authority :diagnostic
-                          :authoritative? false
-                          :directory (:directory context)
-                          :records @(:records context)}
-                bytes (diagnostic-edn-bytes envelope)]
-            (write-bytes! path bytes)
-            (let [actual (java.nio.file.Files/readAllBytes path)]
-              (marker! :diagnostic-capture :manifest-written
-                       {:path (path-string path)
-                        :bytes (alength actual)
-                        :sha256 (sha256-bytes actual)}))))
-        (catch Throwable error
-          (capture-failure! context :diagnostic-capture error
-                            (some-> @path* path-string)))))))
+    (write-manifest! context "manifest-" :final)))
 
 (defn- traced
   ([phase original data-fn]

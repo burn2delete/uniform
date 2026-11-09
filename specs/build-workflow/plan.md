@@ -295,6 +295,38 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Track actual source-schema, codec/canonical policy, provider/dialect/version/features, generated inputs and output-affecting environment in invalidation and reproduction. Pure initial declarations do not wait for final provider/release evidence. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Track source/schema/version/graph/log/prompt/model/tool/provider/policy/eval/generated-program inputs in invalidation and reproduction; stale subjects invalidate matching acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Track source/compiler/API/plugin/package/grants/profile/target/policy, fixture/golden/generator and actual artifact inputs for invalidation/reproduction. Changed subjects invalidate stale evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Track actual source/compiler/package/target/map/provider/grant/policy and input/output artifacts; separate target facts from build/runtime host probes. Invalidate stale contexts and provider/schema/target-dependent evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Consume actual module/export stability, opt-in/visibility, compatibility/lifecycle and exact source/build/provenance/signature/SBOM records. Reject internal or unauthorized experimental imports; package metadata alone grants no stability or release approval. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual selected project/lock/target/service and artifact verification products for CLI routing and session identity. Current source roots, output paths and manifest hashes remain bound to their real subjects. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current source/dependency invalidation, target/artifact identities, package access/verification and provenance products. Dev-only data and fixed report hashes cannot satisfy release or package verification. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply authentic declared compile-time/profile-data/tuning inputs and all source/macro/type/const/profile/target/feature/layout/provider/numeric/effect/replay/proof/dependency invalidation products under the human L12 policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

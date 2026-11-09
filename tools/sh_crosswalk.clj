@@ -272,7 +272,8 @@
 (def pinned-evidence-hashes
   (merge predecessor-pinned-evidence-hashes
          (:additional-pinned-evidence-hashes readiness-source-version)
-         current-source-successor-evidence-hashes))
+         current-source-successor-evidence-hashes
+         (into {} (map (juxt :path :live-sha256) current-source-transition-contracts))))
 (defn- current-source-transition-for-path [path]
   (first (filter #(= path (:path %)) current-source-transition-contracts)))
 (defn current-source-commit
@@ -296,7 +297,8 @@
     preserved
     (if (contains? historical-task-transition-paths path)
       baseline
-      (or (when (contains? current-source-successor-paths path)
+      (or (:applying-ref (current-source-transition-for-path path))
+          (when (contains? current-source-successor-paths path)
             (:commit requirement-sources/current-source-successor-composition))
           (get applying-source-pins path)
           (when (contains? (set (:current-source-paths readiness-source-version)) path)
@@ -307,6 +309,8 @@
 (defn validate-current-source-transitions! [transitions]
   (let [expected (vec requirement-sources/current-source-transition-contracts)
         by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (requirement-sources/validate-source-composition-history!
+     readiness-source-version git-source sh-inventory/sha256 acceptance-dependencies/require!)
     (requirement-sources/validate-current-source-frame-history!
      (:current-source-frame-history readiness-source-version)
      (fn [ref source-path]
@@ -327,10 +331,11 @@
      acceptance-dependencies/require!)
     (requirement-sources/validate-source-successor-binding!
      (:source-successor-binding readiness-source-version)
-     transitions
+     requirement-sources/predecessor-current-source-transition-contracts
      (fn [ref source-path]
        (git-source ref source-path))
-     slurp sh-inventory/sha256 acceptance-dependencies/require!)
+     #(git-source (:commit requirement-sources/current-source-successor-composition) %)
+     sh-inventory/sha256 acceptance-dependencies/require!)
     (acceptance-dependencies/require!
      (and (vector? transitions)
           (= (count transitions) (count expected))
@@ -616,10 +621,10 @@
                :authority :component-implementation-ledger
                :source-commit (cond
                                 historical-row-source? baseline
-                                (contains? historical-task-transition-paths path)
-                                (:source-input-commit readiness-source-version)
                                 (contains? current-source-transition-paths path)
                                 (:applying-ref (current-source-transition-for-path path))
+                                (contains? historical-task-transition-paths path)
+                                (:source-input-commit readiness-source-version)
                                 :else (source-pin path))
                :file-sha256 (sh-inventory/sha256 source-text)
                :source (indexed-source-span path source-text source-index
@@ -965,7 +970,7 @@
          :qualification
          "Exact task-source and Governance routing successor, including the reviewed foundation/policy/L6 records and pending facet, alternative-type, interop and backend source inputs. The composed source successor binds 28 current transition paths and a 47-file reviewed-source census to the authenticated bc7 current checkpoint while retaining the old 4202/ff783 frame, all historical pins/digests and task statuses. Current source/routing, implementation, migration, release and whole-SH acceptance remain pending."))
 
-(def mapping-review
+(def source-composition-predecessor-mapping-review
   (assoc original-dependency-predecessor-mapping-review
          :input-fingerprint "dc7a6d91cd3b75e368170cbd039308983f57e65781986402a991ece56b891f49"
          :predecessor-input-fingerprint (:input-fingerprint original-dependency-predecessor-mapping-review)
@@ -976,6 +981,39 @@
           :prior-review-path "specs/sh-family-crosswalk/crosswalk.edn"
           :scope :original-fourteen-selected-result-routes}
          :qualification "The fourteen original selected-result dependency rows are normally composed with the reviewed f989 binder. Their separate whole-document transition preserves the complete previous transition and the unchanged earlier source census, pins, snapshots, task statuses and narrow evidence. Current source/routing review remains pending; typed execution acyclicity, implementation, migration, release and full-240 verification remain separate obligations."))
+
+(def source-consumer-predecessor-mapping-review
+  (assoc source-composition-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "f222c901f01af375bae81ce0d7c3857b8d5e84f8b1638305dc6ebaa1ead794dc"
+         :predecessor-input-fingerprint (:input-fingerprint source-composition-predecessor-mapping-review)
+         :predecessor-current-source-review source-composition-predecessor-mapping-review
+         :qualification "Explicit current-source successor only. The complete earlier review remains preserved with its original subject. Current source/routing review, semantic scope, implementation, migration, release and full-240 verification remain pending."))
+
+(def auth-crypto-predecessor-mapping-review
+  (assoc source-consumer-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "8c458da0bf1453a8091a0ba1337dc6eae98d85f2f5c3f3e92466b863098b4f30"
+         :predecessor-input-fingerprint (:input-fingerprint source-consumer-predecessor-mapping-review)
+         :predecessor-current-source-review source-consumer-predecessor-mapping-review
+         :qualification "Explicit Build-file source successor only. The complete previous current-source review, its original fingerprint and every older review remain preserved with their original subjects. New B1-B3 criteria and source/routing identity still require exact independent review; semantic scope, actual behavior, implementation, migration, release, Main integration and full240 verification are not accepted by this source projection."))
+
+(def published-main-helper-predecessor-mapping-review
+  (assoc auth-crypto-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884"
+         :predecessor-input-fingerprint (:input-fingerprint auth-crypto-predecessor-mapping-review)
+         :predecessor-current-source-review auth-crypto-predecessor-mapping-review
+         :qualification "Explicit Auth/Crypto document identity successor only. The selected row consumes unadmitted declarative operation/value requests and policy/contract shapes; Auth independently derives a scoped grant before Crypto checked admission and action. Admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. Every complete prior review retains its original subject, all49 old file transitions and578 raw payloads are preserved, and all task/requirement dispositions remain unchanged. Exact current source/routing review, implementation, semantic scope, migration, release, Main and full240 verification remain separate and unassessed."))
+
+(def mapping-review
+  (assoc published-main-helper-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint "23e2b4cc2145d1daa93f4f2be371a5cce80dd8504a1cf5b30976dcd32c8af257"
+         :predecessor-input-fingerprint (:input-fingerprint published-main-helper-predecessor-mapping-review)
+         :predecessor-current-source-review published-main-helper-predecessor-mapping-review
+         :dependency-helper-source-composition {:kind :published-main-dependency-helper-input-successor, :source-commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :published-main "7204d9b0b9c80011e637f8456deec558301127c1", :predecessor {:commit "e69bb936a350a052215a6bacbea5ae69f833254c", :path "tools/acceptance_dependencies.clj", :sha256 "9cc0e6e40807dd3d106e85ebe3fef7deaba152b71dd48df6d401f21d37d1bbe1"}, :current {:commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :path "tools/acceptance_dependencies.clj", :sha256 "7f83f33fcd777a8c7661d75ba25e0621b63875eab6a45fdeb242e3542773f8f4"}, :unchanged-source-view-replayed-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884", :scope :pending-input-identity-only, :implementation-acceptance :unassessed}
+         :qualification "Explicit published-Main dependency-helper input successor only. The source/routing view reproduces the complete prior Auth/Crypto fingerprint when supplied with the preserved predecessor helper bytes; the current helper is the clean source/Main hunk union at c0d6e098. The full c241 prior review remains nested with its original subject. Source records, all raw payloads, task bindings, source frames, scope holds and acceptance dispositions are unchanged. This pending identity successor neither accepts the 18 preserved stale-review errors nor confers semantic scope, implementation, migration, release, Main publication, self-hosting, seed retirement or full240 acceptance; the affected current checks and exact independent review remain required."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
@@ -1121,14 +1159,16 @@
                                  [region rows])))
         _ (let [current-successors [(get-in readiness-source-version [:error-refinement :future-task-source-successor :after])
                                      (get-in readiness-source-version [:protocol-refinement :future-task-source-successor :after])]
-                successors (if (some some? current-successors)
+                successors (if-let [current (:source-composition-future-task-records readiness-source-version)]
+                             [current]
+                             (if (some some? current-successors)
                              (do (when-not (every? some? current-successors)
                                    (throw (ex-info "Current protocol/error successors are incomplete" {})))
                                  current-successors)
                              (keep identity
                                    [(get-in readiness-source-version [:macro-refinement :future-task-source-successor :after])
                                     (:future-task-records readiness-source-version)
-                                    (get-in readiness-source-version [:future-dependency-refinement :task-records])]))
+                                    (get-in readiness-source-version [:future-dependency-refinement :task-records])])))
                 captured-successors (mapv #(into {} (map (juxt :id identity) %)) successors)
                 actual (into {} (for [row (mapcat val future-tasks)]
                                   [(:id row) (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
@@ -1217,12 +1257,17 @@
     {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
-     :source-snapshots (:source-snapshots readiness-source-version)
+     :source-snapshots
+     (merge (requirement-sources/source-composition-predecessor-snapshots
+             git-source sh-inventory/sha256 acceptance-dependencies/require!)
+            (:source-snapshots readiness-source-version))
      :implementation-readiness-source-version
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
                    :current-source-transitions :current-source-transition-history
                    :current-source-transition-successor-history :source-successor-binding
+                   :source-composition-transition-history
+                   :source-composition-future-task-records
                    :current-source-frame-history :library-io-criterion-joins
                    :current-source-library-io-criterion-joins
                    :task-comparisons :source-criteria
