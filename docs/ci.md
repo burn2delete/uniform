@@ -43,6 +43,7 @@ use the explicit CLI route for focused execution.
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
+| public-release assessment | Never | Explicit dispatch of `public-release.yml` only | Existing P18 public subset proof with authentic public commands and pinned source checks. Read-only repository permissions; no publication. A failed proof remains a failed assessment. |
 
 ### Pull-request stage selection
 
@@ -86,6 +87,42 @@ Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
 snapshot repeatability controls from the static job; it never replaces the
 other static controls.
+
+### Explicit public release assessment
+
+The separate `public-release.yml` workflow runs the existing
+`gravity.bootstrap-test/p18-public-test-command-runs-current-public-subset`
+test in a fresh child process. Its existing setup builds the packaged JVM CLI;
+the test exercises five accepted programs through public check/run/compile and
+emitted execution, 32 rejected cases with stable diagnostics, source path and
+extension provenance, and rejection of a full-conformance overclaim. Dispatch
+this workflow explicitly for release assessment of the selected revision. It
+does not run on pull requests, pushes or schedules, and is separate from the
+ordinary `CI` workflow's manual source-prerelease publication. The underlying
+CI mode is `clojure -Srepro -M tools/ci/run.clj public-release`.
+
+This release proof reaches the default pinned SH03 reader through public
+`check`. Source drift may correctly fail with `C2-HASH`; a failed release
+proof does not make an ordinary semantic change invalid or authorize updating
+the pin. Ordinary contracts selections retain their existing commands and do
+not run this release proof. The current-reader development route and its limits
+remain documented in [development verification](development-verification.md).
+
+The child retains its 900-second host watchdog inside a 20-minute hosted job.
+The CI-only `ci.public-release-subset` adapter delegates the same exact test
+to the development runner. It redirects the test's three generated P18 proof
+files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
+markers to stderr. It preserves public commands, results and the existing
+60-second inner process watchdog. CI still rejects tracked source mutation;
+the normal artifact checksum manifest includes any generated proof files and
+retains logs, command receipts and checkout provenance after failure.
+Markers include monotonic nanoseconds for intervals within that child JVM.
+The workflow propagates failure and has no release-publication job. A completed
+assessment is not a successful public proof: inspect its exit status and
+artifacts. Even a successful current bootstrap-hosted subset proof does not
+establish full-language, self-hosting or seedless-release acceptance.
+
+### Portable leaf selection
 
 The leaves jobs use the same verified pull-request path records. For regular
 source or test changes, `tools/ci/run.clj` follows the reviewed `:require`
