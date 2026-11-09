@@ -201,6 +201,51 @@ remains in inspection history.
 This preserves their history and queues new work; it does not turn the failure
 into success. Restricted actions cannot be retried or routed through this path.
 
+An ended Attention caused by the exact `Worker changed an unowned path` finding
+has one narrower recovery form. The original owner may include a
+`:scope-extension` in the inspection only after recording the exact retained
+task identity, every changed working file, the dirty-diff digest, raw per-file
+digests for every existing changed file, and an explicit deletion marker:
+
+```text
+{:evidence "Substantive original-owner inspection ..."
+ :scope-extension
+ {:task "slice-key"
+  :original-paths ["owned/file.clj"]
+  :base "..." :candidate "..." :tree "..."
+  :worktree "/absolute/retained/worktree"
+  :branch "codex/seedless-slice"
+  :original-error {:message "Worker changed an unowned path" ...}
+  :paths ["inventory/unowned.edn"]
+  :dirty-diff-sha256 "..."
+  :file-sha256 {"owned/file.clj" "..."
+                "inventory/unowned.edn" "..."}
+  :deleted-paths []
+  :non-file-paths []}}
+```
+
+The controller accepts only existing safe regular files that are still the
+complete observed unowned diff. Regular files are classified without following
+symlinks and their canonical path must remain inside the retained worktree;
+symlinks, paths that resolve outside the worktree, and other non-file paths are
+recorded in `:non-file-paths` and fail closed. Original directory paths cover
+their changed children; those children remain owned and cannot be reclassified.
+An owned deletion is retained in `:deleted-paths`, but an unowned deletion or
+non-file amendment path fails closed. The original Attention identity and known-ended,
+unrestricted error unchanged. The scope extension is authorized only by the
+original owner's trusted `retry` CLI invocation while it holds the controller
+lock and verifies the native state identity and the actual worktree root,
+common Git directory, branch, HEAD and tree. Inspection EDN is evidence, not an
+authority channel; self-attested coordinator authorization fields are rejected.
+It checks that native and shared-main effects are settled, acquires and releases
+a fresh checking lease for the full amended path set, preserves the complete
+prior task identity and evidence (excluding only recursive history journals) in
+native history, updates both task and description paths, invalidates old
+verification credit and queues ordinary repair. It does not edit, stage, commit,
+publish, replay or normalize the retained bytes. Stale snapshots, incomplete
+dirty-byte evidence, busy paths, restricted effects and untrusted authorization
+data fail closed.
+
 An uncertain GitHub effect is not automatically replayed. Inspect the actual
 external result, then record it using the inherited reconciliation format:
 
