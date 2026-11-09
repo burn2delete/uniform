@@ -590,6 +590,10 @@
      :reason :path-discovery-failed
      :selection-error (:selection-error selection)}))
 
+(defn public-conformance-command []
+  ["public-release-subset" 900
+   (command "2g" "-X:dev-test" "ci.public-release-subset/run!")])
+
 (defn contract-commands []
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
@@ -961,6 +965,7 @@
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
+    "public-release" [(public-conformance-command)]
     "bootstrap"
     (cond-> [["cold-bootstrap-load" 120
               (command "1g" "-M" "-e"
