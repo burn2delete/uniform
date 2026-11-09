@@ -645,6 +645,61 @@
       (swap! flushes inc)
       (proxy-super flush))))
 
+(defn- public-adapter-artifact-snapshot []
+  (let [root (io/file "target/ci/p18-public-test-artifacts")]
+    (if (.isDirectory root)
+      (into {}
+            (map (fn [file] [(.getCanonicalPath ^java.io.File file) file]))
+            (filter #(.isFile ^java.io.File %)
+                    (file-seq root)))
+      {})))
+
+(defn- public-adapter-new-files [before]
+  (let [after (public-adapter-artifact-snapshot)]
+    (->> after
+         (remove (fn [[path _]] (contains? before path)))
+         (into {}))))
+
+(defn- public-adapter-file-payload [^java.io.File file]
+  (let [text (slurp file)]
+    {:path (.getCanonicalPath file)
+     :text text
+     :value (try
+              (edn/read-string text)
+              (catch Throwable _ ::not-edn))}))
+
+(defn- public-adapter-nested-contains? [value expected]
+  (or (= value expected)
+      (cond
+        (map? value) (some #(public-adapter-nested-contains? % expected) value)
+        (coll? value) (some #(public-adapter-nested-contains? % expected) value)
+        :else false)))
+
+(defn- public-adapter-payloads [files]
+  (mapv (comp public-adapter-file-payload val) files))
+
+(defn- public-adapter-payload-contains? [payloads expected]
+  (some (fn [{:keys [text value]}]
+          (or (str/includes? text (str expected))
+              (public-adapter-nested-contains? value expected)))
+        payloads))
+
+(defn- public-adapter-diagnostic-payload? [{:keys [value]}]
+  (and (map? value)
+       (= "gravity/ci-public-release-diagnostic-v1" (:schema value))
+       (= :diagnostic (:authority value))
+       (false? (:authoritative? value))))
+
+(defn- public-adapter-diagnostic-runner [accepted rejected]
+  (fn [argv]
+    (let [accepted-result (public-adapter-accepted-record accepted)
+          rejected-result (public-adapter-rejected-record rejected)
+          sweep-result (public-adapter-t04-sweep {:fixture "later-sweep"})]
+      {:argv (vec argv)
+       :accepted accepted-result
+       :rejected rejected-result
+       :sweep sweep-result})))
+
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
     (is (= expected-contract-command-ids
@@ -858,6 +913,191 @@
                               (catch Throwable error error))))]
       (is (instance? clojure.lang.ExceptionInfo invalid-error))
       (is (= [9] @exits)))))
+
+(deftest public-adapter-retains-fixture-results-before-later-sweep-throw
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        accepted {:fixture "examples/\u03c0.gravity"
+                  :expected-stdout "h\u00e9llo \u2713\n"
+                  :check-result {:exit 0 :out "check \u03a9\n" :err ""}
+                  :run-result {:exit 0 :out "h\u00e9llo \u2713\n" :err ""}
+                  :compile-result {:exit 0 :out "compile \u03bb\n" :err ""}
+                  :executable-result {:exit 0 :out "h\u00e9llo \u2713\n" :err ""}}
+        rejected {:fixture "bootstrap/clojure/fixtures/rejected/\u03bb.qst"
+                  :command :check
+                  :expected-diagnostic "P18\u0394"
+                  :result {:exit 1 :out "stdout \u03a9\n" :err "stderr \u03bb\n"}}
+        failure (ex-info "later public sweep failed" {:phase :t04-sweep})
+        originals (mapv var-get [#'public-adapter-shell-run
+                                 #'public-adapter-t02-package
+                                 #'public-adapter-t04-sweep
+                                 #'public-adapter-accepted-record
+                                 #'public-adapter-rejected-record])
+        before (public-adapter-artifact-snapshot)
+        caught (with-redefs-fn
+                 {#'public-adapter-shell-run (fn [& _] {:exit 0})
+                  #'public-adapter-t02-package (fn [& _] :t02-return)
+                  #'public-adapter-t04-sweep (fn [& _] (throw failure))
+                  #'public-adapter-accepted-record identity
+                  #'public-adapter-rejected-record identity}
+                 (fn []
+                   (binding [*print-length* 1
+                             *print-level* 1]
+                     (try
+                       (run-with-runtime
+                        (public-adapter-runtime
+                         (public-adapter-diagnostic-runner accepted rejected)))
+                       nil
+                       (catch Throwable error error)))))
+        files (public-adapter-new-files before)
+        payloads (public-adapter-payloads files)]
+    (is (identical? failure caught))
+    (is (= originals (mapv var-get [#'public-adapter-shell-run
+                                    #'public-adapter-t02-package
+                                    #'public-adapter-t04-sweep
+                                    #'public-adapter-accepted-record
+                                    #'public-adapter-rejected-record])))
+    (is (= public/public-test-argv
+           ["--progress" "--namespace" "gravity.bootstrap-test"
+            "--exact" "p18-public-test-command-runs-current-public-subset"]))
+    (is (seq files))
+    (is (some public-adapter-diagnostic-payload? payloads))
+    (is (public-adapter-payload-contains? payloads accepted))
+    (is (public-adapter-payload-contains? payloads rejected))
+    (is (public-adapter-payload-contains? payloads :accepted-fixture))
+    (is (public-adapter-payload-contains? payloads :rejected-fixture))
+    (doseq [value ["h\u00e9llo \u2713\n" "check \u03a9\n" "compile \u03bb\n"
+                   "stdout \u03a9\n" "stderr \u03bb\n" 0 1]]
+      (is (public-adapter-payload-contains? payloads value) (pr-str value)))))
+
+(deftest public-adapter-uses-fresh-diagnostic-files-for-each-invocation
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        accepted {:fixture "examples/repeat.gravity"
+                  :expected-stdout "repeat \u2713\n"
+                  :check-result {:exit 0 :out "check-1\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/repeat.qst"
+                  :command :check
+                  :expected-diagnostic "P18R"
+                  :result {:exit 1 :out "reject-1\n" :err "reject-err \u03a9\n"}}
+        invoke! (fn []
+                  (with-redefs-fn
+                    {#'public-adapter-shell-run (fn [& _] {:exit 0})
+                     #'public-adapter-t02-package (fn [& _] :t02-return)
+                     #'public-adapter-t04-sweep (fn [& _] :t04-return)
+                     #'public-adapter-accepted-record identity
+                     #'public-adapter-rejected-record identity}
+                    (fn []
+                      (run-with-runtime
+                       (public-adapter-runtime
+                        (public-adapter-diagnostic-runner accepted rejected))))))
+        before (public-adapter-artifact-snapshot)
+        first-result (invoke!)
+        after-first (public-adapter-artifact-snapshot)
+        first-files (public-adapter-new-files before)
+        first-text (into {} (map (fn [[path file]] [path (slurp file)])) first-files)
+        second-result (invoke!)
+        after-second (public-adapter-artifact-snapshot)
+        second-files (public-adapter-new-files after-first)
+        first-payloads (public-adapter-payloads first-files)
+        second-payloads (public-adapter-payloads second-files)
+        first-paths (set (keys first-files))
+        second-paths (set (keys second-files))]
+    (is (= first-result second-result))
+    (is (seq first-files))
+    (is (seq second-files))
+    (is (some public-adapter-diagnostic-payload? first-payloads))
+    (is (some public-adapter-diagnostic-payload? second-payloads))
+    (is (empty? (set/intersection first-paths second-paths)))
+    (is (= first-text
+           (into {} (map (fn [[path file]] [path (slurp file)]))
+                 (select-keys after-second first-paths))))
+    (is (public-adapter-payload-contains? first-payloads accepted))
+    (is (public-adapter-payload-contains? second-payloads accepted))
+    (is (public-adapter-payload-contains? first-payloads rejected))
+    (is (public-adapter-payload-contains? second-payloads rejected))
+    (doseq [payloads [first-payloads second-payloads]]
+      (is (some #(and (str/includes? (:text %) ":sha256")
+                      (re-find #"(?i)[0-9a-f]{64}" (:text %)))
+                payloads)))
+    (is (= (set (keys after-second))
+           (set (keys (public-adapter-artifact-snapshot)))))))
+
+(deftest public-adapter-capture-io-failure-is-visible-and-preserves-semantics
+  (let [run-with-runtime (public-adapter-var "run-with-runtime!")
+        write-bytes-var (public-adapter-var "write-bytes!")
+        accepted {:fixture "examples/io-failure.gravity"
+                  :expected-stdout "done \u03bb\n"
+                  :check-result {:exit 0 :out "ok\n" :err ""}}
+        rejected {:fixture "fixtures/rejected/io-failure.qst"
+                  :command :check
+                  :expected-diagnostic "P18IO"
+                  :result {:exit 1 :out "out \u03a9\n" :err "err \u2713\n"}}
+        calls (atom [])
+        attempts (atom 0)
+        original-argv public/public-test-argv
+        original-values (mapv var-get [#'public-adapter-shell-run
+                                       #'public-adapter-t02-package
+                                       #'public-adapter-t04-sweep
+                                       #'public-adapter-accepted-record
+                                       #'public-adapter-rejected-record])
+        writer (java.io.StringWriter.)
+        successful-result
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (swap! calls conj :t04) :t04-return)
+           #'public-adapter-accepted-record (fn [record] (swap! calls conj :accepted) record)
+           #'public-adapter-rejected-record (fn [record] (swap! calls conj :rejected) record)
+           write-bytes-var (fn [& _]
+                             (swap! attempts inc)
+                             (throw (ex-info "simulated diagnostic capture I/O failure"
+                                             {:attempt @attempts})))}
+          (fn []
+            (binding [*err* writer]
+              (run-with-runtime
+               (public-adapter-runtime
+                (public-adapter-diagnostic-runner accepted rejected))))))
+        thrown (ex-info "original sweep exception" {:phase :t04-sweep})
+        throw-writer (java.io.StringWriter.)
+        throw-attempts (atom 0)
+        caught
+        (with-redefs-fn
+          {#'public-adapter-shell-run (fn [& _] {:exit 0})
+           #'public-adapter-t02-package (fn [& _] :t02-return)
+           #'public-adapter-t04-sweep (fn [& _] (throw thrown))
+           #'public-adapter-accepted-record identity
+           #'public-adapter-rejected-record identity
+           write-bytes-var (fn [& _]
+                             (swap! throw-attempts inc)
+                             (throw (ex-info "simulated diagnostic capture I/O failure"
+                                             {:attempt @throw-attempts})))}
+          (fn []
+            (binding [*err* throw-writer]
+              (try
+                (run-with-runtime
+                 (public-adapter-runtime
+                  (public-adapter-diagnostic-runner accepted rejected)))
+                nil
+                (catch Throwable error error)))))]
+    (is (= {:argv public/public-test-argv
+            :accepted accepted
+            :rejected rejected
+            :sweep :t04-return}
+           successful-result))
+    (is (= [:accepted :rejected :t04] @calls))
+    (is (= 1 @attempts))
+    (is (re-find #"(?is)(capture|diagnostic).*(throw|fail|error)"
+                 (str writer)))
+    (is (identical? thrown caught))
+    (is (= 1 @throw-attempts))
+    (is (re-find #"(?is)(capture|diagnostic).*(throw|fail|error)"
+                 (str throw-writer)))
+    (is (= original-argv public/public-test-argv))
+    (is (= original-values
+           (mapv var-get [#'public-adapter-shell-run
+                          #'public-adapter-t02-package
+                          #'public-adapter-t04-sweep
+                          #'public-adapter-accepted-record
+                          #'public-adapter-rejected-record])))))
 
 (deftest contracts-include-the-complete-native-wasm-namespace
   (let [[label timeout argv] (nth (ci/commands-for-selection "contracts" {:kind :full}) 6)
