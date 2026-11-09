@@ -25,6 +25,7 @@ clojure -M:run doctor config.edn
 clojure -M:run setup config.edn
 clojure -M:run run config.edn
 clojure -M:run status config.edn
+clojure -M:run status-summary config.edn
 clojure -M:run pause config.edn
 clojure -M:run resume config.edn
 ```
@@ -34,6 +35,32 @@ GitHub. `setup` creates/reuses only the identified Seedless Project, its views,
 labels and campaign issue; it starts no workers. `run` starts autonomous source
 implementation and GitHub writes, including normal merge commits. Installation
 and tests never launch the campaign, create schedules or install services.
+
+`status-summary` reads an existing native `:seedless/v1` state snapshot and local
+pause control before startup context is constructed. It performs no Git or
+provider probes, lock acquisition, controller registration, coordination import,
+event/state writes or service actions. A missing/malformed state, incompatible
+schema, mismatched configuration identity or malformed existing control fails
+closed. Raw `status` remains available with its existing startup behavior.
+
+The summary preserves the recorded identity, every task key/status and every
+Attention item, linked effect references, recorded model-job identities,
+restrictions and local control. State-file pointers and a digest identify the
+exact snapshot read; local control is a separate observation. Configuration
+identity is checked against the recorded fields without revalidating Git or
+remote identity. The output distinguishes an effect's current status from its
+retained refusal and settlement history. A completed effect does not erase an
+active restriction or grant permission to replay its original action.
+
+Omitted result and reconciliation payloads retain presence and content
+identities labelled `:edn-pr-str-utf8`: SHA-256 of the Clojure EDN value's
+`pr-str` serialization in UTF-8. These value identities are separate from the
+state-file digest, which hashes the original bytes read from disk.
+
+Recorded model jobs do not cover all native checks or other processes. These
+records establish neither service health, worker drain, idleness nor dispatch
+authority. State and control may change after they are read. The command takes
+no arguments after the config path and creates no state for an absent campaign.
 
 Paths resolve from the config file. State, prompt artifacts and redacted JSONL
 logs live under ignored `target/validation/seedless`; worker worktrees are
