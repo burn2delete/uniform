@@ -1,7 +1,7 @@
 (ns gravity.build.provider-configuration
   "Pure normalization of explicit decoded inputs for one selection context.
-  Local bootstrap carrier: specs/build-workflow/tasks.md, after the implementation
-  region. L15 owns layer order; PKG1/PKG6 own request/deny separation.
+  Local bootstrap carrier: docs/bootstrap/provider-configuration-development.md.
+  L15 owns layer order; PKG1/PKG6 own request/deny separation.
   This product supplies no selected provider, compatibility verdict or grant.")
 
 (def ^:private layers

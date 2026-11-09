@@ -355,3 +355,21 @@ at `/tmp/uniform-pr1173-main-f138-*-root-v1.log` and the focused development
 result at `/tmp/uniform-pr1173-main-f138-focused-dev-root-v1.log`.
 No independent acceptance, CI success, Main integration, parent completion,
 release or self-hosting authority is claimed by this continuation.
+
+### Local documentation boundary repair
+
+The seven errors above came from the new planning appendix changing the full
+bytes of a source-bound task file. The local carrier notes now live in
+[provider-configuration-development.md](../../docs/bootstrap/provider-configuration-development.md).
+The complete Build task file is restored byte-for-byte to Main f138; all 49
+existing current-source transitions remain unchanged. The normalizer's
+documentation link changed; its executable forms and focused fixtures did not.
+Historical task links and hashes above describe the original PR1173 source.
+
+The corrected composition passed the same acceptance-dependency suite:
+32 tests/7796 assertions, zero failures/errors. Its focused development tests
+passed 10 tests/147 assertions, the language boundary passed 6 tests/11
+assertions, and document validation passed 240 documents/19 indexes. The V2
+logs retain these results; V1 failures remain preserved. No checker was
+weakened and no captured-source hash was rebound. Independent acceptance,
+exact-head CI and Main integration remain pending.
