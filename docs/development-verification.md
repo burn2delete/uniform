@@ -131,15 +131,23 @@ once, and authenticated downstream passes consume the retained source.
 
 The frozen `docs/self-hosting-slice-backlog.md` wording that lists Symbol keys
 as unsupported describes its older checkpoint. Current temporary
-module-development code has a narrow Symbol-key increment: it accepts exact
-native Symbol keys only when authenticated C2 source/reference keys retain
-equality and form a complete source permutation; the existing source and
-reference-key checks remain in force. This does not widen the canonical
-typed-Gravity Map subset or establish module admission, checked Effects, full
-C14, native execution, self-hosting, migration or release support. Quoted Maps
-remain inert, and the surrounding map-key fences are unchanged. This note
-describes current development behavior; it does not update the frozen SH
-source input or renew migration authority.
+module-development code has a narrow authenticated key increment: it accepts
+exact native Symbol keys and ordinary call-shaped list-expression keys only
+when authenticated C2 source/reference keys retain equality and form a
+complete source permutation. Expression-key admission is structural; it does
+not evaluate a key in Clojure or whitelist a named callee. Ordinary Stage2
+call validation remains responsible for callee, arity, binding, effect,
+capability and safety legality. Vectors, Maps, Sets, forbidden special forms,
+and other unsupported key shapes remain rejected. The existing source,
+reference, child-link, occurrence, native-class and order checks remain in
+force. This does not widen the canonical typed-Gravity Map subset or establish
+module admission, checked Effects, full C14, native execution, self-hosting,
+migration or release support. Quoted Maps remain inert. The focused repair
+covers the current C11 shape `{(get token :value-id) token}` through a small
+current Reader/C5/Syntax route; the historical full SH17 result remains
+terminal failed evidence until a separate complete rerun. This note describes
+current development behavior; it does not update the frozen SH source input or
+renew migration authority.
 
 ## Focused runners and composition
 
