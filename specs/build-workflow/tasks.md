@@ -77,6 +77,13 @@ L19 actual boundary identity and compatibility-lock criterion (Open): Resolve au
 <!-- build-interop-source-locks:end -->
 
 
+
+<!-- build-b1-b3-lock-consumer:start -->
+Apply the [complete B1-B3 source criteria](../backends-workflow/plan.md#complete-b1-b3-source-criteria) within this existing Open task. The Backend/Runtime/provider producers retain their actual subjects and responsibilities.
+
+B1-B3 lock identity consumer criterion (Open): Before compiling the selected target, resolve and lock its actual declared backend/version and runtime/helper/provider dependencies. For C bind the declared dialect, compiler/version, flags, data model, ABI and layout; for LLVM bind version, target triple, data layout, CPU/features, relocation/code model, ABI, sanitizer/instrumentation, unwind/exception and pass configuration as applicable. Consume authentic versioned B1-B3/Runtime/provider declarations, reject missing/conflicting/host-inferred configuration or unrecorded helpers and invalidate affected products when any consumed input changes. Required evidence: actual normalized target/lock records and accepted/refused selected-configuration fixtures; names/flags alone do not prove emission, compatibility or helper execution. No whole C/LLVM/Runtime completion is an early interface prerequisite; current task status remains Open.
+<!-- build-b1-b3-lock-consumer:end -->
+
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
 Status: Open
@@ -301,6 +308,13 @@ Apply the [complete interoperability and migration source criteria](../runtime-w
 
 L19 actual versioned binding and artifact reproducibility criterion (Open): Repeat selected real declared generation/builds from the same authentic incumbent/schema/provider/compiler/target/lock and permitted effect inputs, comparing actual binding/codecs/metadata/provenance artifacts under the governing reproducibility contract. Versioned labels and assigned reproducible flags do not establish equality, compatibility, privacy or incumbent parity. Preserve accurate source identity even where selected semantic outputs are stable; unavailable inputs cannot pass. Required evidence: genuine repeated locked-build/generation comparisons and changed-input/missing-source negatives, with final selfhost/release equivalence and authorized signing/publication remaining separate.
 <!-- build-interop-source-reproducibility:end -->
+
+
+<!-- build-b1-b3-repeat-consumer:start -->
+Apply the [complete B1-B3 source criteria](../backends-workflow/plan.md#complete-b1-b3-source-criteria) within this existing Open task. The Backend/Runtime/provider producers retain their actual subjects and responsibilities.
+
+B1-B3 repeat-build consumer criterion (Open): Start the selected repeat-build work from the actual declared backend/version, compiler/toolchain/configuration, produced artifact kinds and their governing canonicalization, timestamp/nondeterminism and comparison interfaces. Consume those versioned B1-B3 producer interfaces and real selected input/output identities, current artifact manifests, source/debug and proof maps, runtime/helper/provider and dependency identities, and required selected accepted/refused comparison products; compare actual canonical manifests/content under the declared recipe, preserving any governing nonsemantic native-metadata exception separately from strict typed-Core equality. Reject absent/stale/wrong-target interfaces, omitted consumed configuration, filename-only comparison and unexplained drift. Required evidence: actual selected repeat-build comparisons and refusal records with source/compiler/toolchain/backend/profile/target identities. Final signed release and whole Backends/Runtime completion are not prerequisites to the first authentic interface; current task status remains Open.
+<!-- build-b1-b3-repeat-consumer:end -->
 
 <!-- build-implementation-tasks:end -->
 
