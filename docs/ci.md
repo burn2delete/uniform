@@ -112,10 +112,23 @@ The child retains its 900-second host watchdog inside a 20-minute hosted job.
 The CI-only `ci.public-release-subset` adapter delegates the same exact test
 to the development runner. It redirects the test's three generated P18 proof
 files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
-markers to stderr. It preserves public commands, results and the existing
-60-second inner process watchdog. CI still rejects tracked source mutation;
-the normal artifact checksum manifest includes any generated proof files and
-retains logs, command receipts and checkout provenance after failure.
+markers to stderr. It also retains each returned accepted/rejected fixture
+record, including the returned `:out` and `:err` text, in a fresh unique
+per-invocation directory beneath that path. Each diagnostic record is explicitly
+non-authoritative. Its manifest entry carries the byte count and SHA-256 of the
+actual UTF-8 EDN record file. The manifest's own byte count and SHA-256 are
+emitted in its `:manifest-written` diagnostic marker and remain covered by the
+existing CI checksum and provenance outputs. These files are diagnostic
+observations of the existing P18 caller; they do not add proof authority or
+claim that a failed assessment is a successful release.
+
+Capture failures are emitted as diagnostic markers and disable later capture
+attempts for that invocation while preserving the wrapped function's original
+return value or exception. No record is overwritten or deleted. The adapter
+preserves public commands, results and the existing 60-second inner process
+watchdog. CI still rejects tracked source mutation; the normal artifact
+checksum manifest includes any generated proof or diagnostic files and retains
+logs, command receipts and checkout provenance after failure.
 Markers include monotonic nanoseconds for intervals within that child JVM.
 The workflow propagates failure and has no release-publication job. A completed
 assessment is not a successful public proof: inspect its exit status and
