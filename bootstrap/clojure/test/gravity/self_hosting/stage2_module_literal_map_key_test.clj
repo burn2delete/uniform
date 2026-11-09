@@ -19,6 +19,15 @@
 (defn- definition [source]
   (merge (get-in source [:functions 'main]) {:source-path (:source-path source)
           :p15-s23-stage2-map-order (bootstrap/p15-s23-stage2-module-map-order source)}))
+(def ^:private current-reader-invocation
+  (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")]
+    {:reader-source-path (.getCanonicalPath (io/file reader))
+     :authenticated-envelope-options {:source :development-current}
+     :syntax-source-selection
+     {:schema :gravity/sh04-development-syntax-selection-v1
+      :source-path (.getCanonicalPath (io/file syntax))}
+     :macro-source-mode :development-current}))
 
 (deftest stage2-module-literal-map-key-fixture-parity
   (doseq [[family name] [["modules" "root"] ["modules" "leaf"] ["rejected" "private"]]]
@@ -70,6 +79,16 @@
       (is (= 2 (count index)))
       (is (= 2 (count (filter #(= 'leaf/identity (:symbol %))
                               (get-in caller [:request :references]))))))))
+  (let [key '(get token :value-id)
+        body {key (list 'leaf/identity :value)}
+        input (source body [key])
+        [caller syntax] ((ns-resolve 'gravity.self-hosting.stage2-module-map-call-test 'reference-input)
+                         input body)
+        index (bootstrap/p15-s23-stage2-module-map-reference-index caller syntax (definition input))]
+    ;; Expression keys retain the imported-reference census and source path;
+    ;; the ordinary get call is not evaluated while indexing the map.
+    (is (= [[0 1]] (vec (keys index))))
+    (is (= 'leaf/identity (:symbol (get index [0 1])))))
 
 (deftest stage2-module-literal-map-key-rejections-development-kernel
   (let [input (source {"a" :first "b" :second :tag :keyword} ["a" "b" :tag])
@@ -91,7 +110,7 @@
       (is (= "BOOT2006" (:id (diagnostic #(definition changed)))) label))
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (assoc-in input (conj records-path (key-index "b") :value) "a"))) [:facts :reason]))))
-  (doseq [key [0 [:key] {:key :value} '(str "computed")]]
+  (doseq [key [0 [:key] {:key :value} '(let [computed "computed"] computed)]]
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (source {key :value} []))) [:facts :reason]))))
   (let [keys ['entry 'choice 'other 'join]
@@ -113,6 +132,37 @@
   (let [quoted '(quote {0 (leaf/hidden :data) "key" :inert}) input (source quoted [])]
     (is (= {} (:p15-s23-stage2-map-order (definition input))))
     (is (= [] (bootstrap/p15-s23-stage2-module-call-sites (definition input)))))
+  (let [key '(get token :value-id)
+        input (source {key :value} [key])
+        records (get-in input records-path)
+        key-index (first (keep-indexed #(when (= key (:value %2)) %1) records))
+        value-id-index (first (keep-indexed #(when (= :value-id (:value %2)) %1) records))
+        key-record (get records key-index)
+        module (assoc (definition input)
+                      :p15-s23-sh07-callsite-path [0]
+                      :p15-s23-sh07-enclosing-function 'main)
+        emitter {:collection-rules {:map {:op :map-literal}}
+                 :call-rules {:builtin-functions #{'get} :builtin-op :builtin-call}
+                 :special-form-rules {}}
+        compiled (bootstrap/p15-s23-stage2-seed-compile-collection emitter module #{'token} {key :value})
+        changed-operator (assoc-in input (conj records-path key-index :value)
+                                    '(different token :value-id))
+        changed-operand (assoc-in input (conj records-path value-id-index :value) :other)
+        changed-kind (assoc-in input (conj records-path key-index :kind) :vector)
+        missing-child (assoc-in input (conj records-path key-index :children) [])
+        duplicate-child (assoc-in input (conj records-path key-index :children)
+                                  [(first (:children key-record)) (first (:children key-record))])]
+    ;; Structural authentication remains required after admitting ordinary
+    ;; expression-shaped keys; changing operator, operand, native kind, or
+    ;; child links remains a stable BOOT2006 rejection.
+    (is (= [key] (:host-keys (get (:p15-s23-stage2-map-order (definition input)) ['main [0]]))))
+    (is (= {:op :builtin-call :function 'get
+            :args [{:op :local :name 'token}
+                   {:op :literal :value :value-id}]}
+           (get-in compiled [:entries 0 :key])))
+    (doseq [changed [changed-operator changed-operand changed-kind missing-child duplicate-child]]
+      (is (= "BOOT2006" (:id (diagnostic #(definition changed)))))))
+
   (doseq [[value keys expected] [[{"a" '(recur) "z" '(throw)} ["z" "a"] "L2-THROW-ILLEGAL"]
                                 [{"a" '(throw) "z" '(recur)} ["z" "a"] "L2-RECUR-TARGET"]]]
     (let [body (list 'do value '(loop [x] x)) d (definition (source body keys))
@@ -120,50 +170,99 @@
       (is (= expected (:id original)))
       (is (= original (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites d)))))))
 
+(deftest stage2-module-expression-map-key-current-c11-fragment
+  ;; Focused genuine current Reader/C5/Syntax route for the exact C11 key
+  ;; shape; this is not the complete C11 dependency build or SH17 acceptance.
+  (let [text (str "(ns example.expression-map (:profile :meta) (:target :jvm)"
+                  " (:exports [main]) (:effects #{:memory/allocate})"
+                  " (:capabilities #{}) (:safety :safe))\n"
+                  "(defn main [token] {(get token :value-id) token})\n")
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        temporary (java.io.File/createTempFile "uniform-expression-map-" ".gravity")]
+    (try
+      (spit temporary text)
+      (let [source-path (.getCanonicalPath temporary)
+            artifact (bootstrap/compiler-c5-resolution-source-artifact
+                      source-path text inputs (:reader-source-path current-reader-invocation)
+                      current-reader-invocation)
+            selected (bootstrap/p15-s23-stage2-module-source artifact current-reader-invocation)
+            key '(get token :value-id)
+            row (get-in selected [:map-order ['main [0]]])]
+        (is (= :accepted (:status artifact)))
+        (is (= [key] (:host-keys row)))
+        (is (= [0] (:entry-order row)))
+        (is (some #(= key (:value %)) (get-in artifact [:sh05-macro-artifact
+                                                         :gravity-macro-boundary
+                                                         :authenticated-sh04-artifact
+                                                         :c2-reader-artifact
+                                                         :form-tree]))))
+      (finally
+        (.delete temporary)))))
+
 (deftest stage2-module-literal-map-key-seed-handoff-development-kernel
   ;; Genuine tiny C5 -> original fresh module-source -> original raw compiler.
   ;; This is the context handoff control, not public bundle/runtime evidence.
-  (let [p (fixture "modules" "leaf" ".gravity")
-        text (str "(ns example.literal-map-handoff (:profile :meta) (:target :jvm)"
+  (let [text (str "(ns example.literal-map-handoff (:profile :meta) (:target :jvm)"
                   " (:exports [main]) (:effects #{:memory/allocate}) (:capabilities #{}) (:safety :safe))\n"
                   "(defn main [] {:artifact :fixture :schema-version 1 :diagnostics [] :remediation {\"key\" :value}})\n")
-        artifact (bootstrap/compiler-c5-resolution-source-artifact p text)
-        selected (bootstrap/p15-s23-stage2-module-source artifact)
-        syntax (first (filter #(and (seq? (:form %)) (= 'main (second (:form %)))) (:syntax selected)))
-        actual (nth (nth (:form syntax) 2) 2)
-        seed (first (get-in selected [:functions 'main :body]))
-        row (get (:map-order selected) ['main [0]])
-        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! p :jvm))
-        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw emitter p text {} (:map-order selected))
-        compiled (get-in plan [:functions 'main :instructions 0])]
-    (is (= :accepted (:status artifact)))
-    (is (= (:artifact-id artifact) (:module-id selected)))
-    (is (= actual seed))
-    (is (not= (mapv first actual) (mapv first seed)))
-    (is (= (mapv first seed) (:host-keys row)))
-    (is (= [:artifact :schema-version :diagnostics :remediation]
-           (mapv #(get-in % [:key :value]) (:entries compiled))))
-    (is (= :map-literal (:op compiled)))
-    (is (= :map-source-order-mismatch
-           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
-                                {:p15-s23-stage2-map-order (:map-order selected)
-                                 :p15-s23-sh07-enclosing-function 'main}
-                                actual [0])) [:facts :reason])))))
+        ;; Current C4 authenticates bytes against the source path, so the
+        ;; synthetic handoff source gets its own real temporary path.
+        temporary (java.io.File/createTempFile "uniform-literal-map-handoff-" ".gravity")]
+    (try
+      (spit temporary text)
+      (let [p (.getCanonicalPath temporary)
+            artifact (bootstrap/compiler-c5-resolution-source-artifact
+                      p text {:artifact :gravity/sh06-module-inputs
+                              :schema-version 1 :module-artifacts []}
+                      (:reader-source-path current-reader-invocation)
+                      current-reader-invocation)
+            selected (bootstrap/p15-s23-stage2-module-source artifact current-reader-invocation)
+            syntax (first (filter #(and (seq? (:form %)) (= 'main (second (:form %)))) (:syntax selected)))
+            actual (nth (nth (:form syntax) 2) 2)
+            seed (first (get-in selected [:functions 'main :body]))
+            row (get (:map-order selected) ['main [0]])
+            emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! p :jvm))
+            plan (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw emitter p text {} (:map-order selected))
+            compiled (get-in plan [:functions 'main :instructions 0])]
+        (is (= :accepted (:status artifact)))
+        (is (= (:artifact-id artifact) (:module-id selected)))
+        (is (= actual seed))
+        (is (not= (mapv first actual) (mapv first seed)))
+        (is (= (mapv first seed) (:host-keys row)))
+        (is (= [:artifact :schema-version :diagnostics :remediation]
+               (mapv #(get-in % [:key :value]) (:entries compiled))))
+        (is (= :map-literal (:op compiled)))
+        (is (= :map-source-order-mismatch
+               (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-entries
+                                    {:p15-s23-stage2-map-order (:map-order selected)
+                                     :p15-s23-sh07-enclosing-function 'main}
+                                    actual [0])) [:facts :reason]))))
+      (finally
+        (.delete temporary)))))
 
 (deftest stage2-module-literal-map-key-authenticated-composition
   ;; Five G C5 attempts, genuine no-import leaf bundle and original public gates.
   (let [leaf-path (fixture "modules" "leaf" ".gravity") root-path (fixture "modules" "root" ".gravity")
         text (slurp root-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! root-path :jvm))
-        _ (println :literal-map-phase :leaf-c5) leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
+        _ (println :literal-map-phase :leaf-c5)
+        leaf (bootstrap/compiler-c5-resolution-source-artifact
+              leaf-path (slurp leaf-path) {:artifact :gravity/sh06-module-inputs
+                                           :schema-version 1 :module-artifacts []}
+              (:reader-source-path current-reader-invocation) current-reader-invocation)
         c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
-        _ (println :literal-map-phase :root-c5) caller (bootstrap/compiler-c5-resolution-file-artifact root-path c5-inputs)
+        _ (println :literal-map-phase :root-c5)
+        caller (bootstrap/compiler-c5-resolution-source-artifact
+                root-path text c5-inputs (:reader-source-path current-reader-invocation)
+                current-reader-invocation)
         _ (println :literal-map-phase :leaf-bundle)
         leaf-bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path)
-                     {:caller-resolution-artifact leaf :dependency-plans []})
+                     {:caller-resolution-artifact leaf :dependency-plans []}
+                     current-reader-invocation)
         independent (:plan (first (:modules leaf-bundle)))
         inputs {:caller-resolution-artifact caller :dependency-plans [independent]}
         _ (println :literal-map-phase :root-bundle)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter root-path text inputs)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter root-path text inputs
+                current-reader-invocation)
         root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle))) routes (:routes bundle)
         refs (into {} (map (juxt :syntax-id identity))
                    (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :references]))]
@@ -179,7 +278,10 @@
       (is (= (:symbol route) (:symbol (get refs (:reference-syntax-id route)))))
       (is (= (:artifact-id leaf) (:callee-module-id route) (get-in route [:origin :ordinary-module-artifact-id]))))
     (let [result (atom nil) _ (println :literal-map-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :literal-map-test} bundle 'main [])))]
+          output (with-out-str (reset! result
+                                       (bootstrap/p15-s23-stage2-module-execute-function
+                                        {:engine :literal-map-test} bundle 'main []
+                                        current-reader-invocation)))]
       (is (= [:z [:y] :a [:left :right] :string :keyword :smile :beam :escaped :provide-exact-versioned-request
               {:authority :non-authority :clojure-seed-boundary? true :self-hosted? false :release? false :public-authority? false}
               '(leaf/hidden {0 :inert "data" :quoted})] @result))
@@ -190,13 +292,18 @@
           changed (assoc-in bundle [:routes 0] changed-route)
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id bundle) (:modules bundle) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
-          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
-                                                                              {:engine :literal-map-test} forged 'main []))))]
+          failure (atom nil) output (with-out-str (reset! failure
+                                                          (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                                        {:engine :literal-map-test} forged 'main []
+                                                                        current-reader-invocation))))]
       (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash identity)))
       (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
       (is (= "" output)))
     (let [bad (fixture "rejected" "private" ".gravity")
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact bad c5-inputs))]
+          failure (diagnostic #(bootstrap/compiler-c5-resolution-source-artifact
+                                bad (slurp bad) c5-inputs
+                                (:reader-source-path current-reader-invocation)
+                                current-reader-invocation))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (= bad (get-in failure [:source-span :source]))))
     (doseq [[label changed expected]
@@ -204,13 +311,30 @@
                          (str/replace "(leaf/identity (do (println \"z\") :z))" "(leaf/identity :z :extra)")
                          (str/replace "(leaf/identity (do (println \"escaped-d\") :escaped))" "(leaf/identity :escaped :extra :extra)")) "L2-FUNCTION-ARITY"]
              [:numeric (str/replace-first text "{\"z\" " "{0 ") :map-source-distinct-literal-key-bijection]]]
-      (let [_ (println :literal-map-phase label) artifact (bootstrap/compiler-c5-resolution-source-artifact root-path changed c5-inputs)
-            failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
-                                                                                emitter root-path changed (assoc inputs :caller-resolution-artifact artifact)))))]
-        (is (not= text changed))
-        (is (= :accepted (:status artifact)))
-        (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
-        (is (= "" output))
-        (when (= label :arity)
-          (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
-          (is (= root-path (get-in @failure [:source-span :primary :source]))))))))
+      (let [_ (println :literal-map-phase label)
+            ;; Mutated negative inputs likewise need an authentic source path;
+            ;; current C4 must observe the changed bytes there.
+            temporary (java.io.File/createTempFile "uniform-literal-map-negative-" ".gravity")]
+        (try
+          (spit temporary changed)
+          (let [source-path (.getCanonicalPath temporary)
+                artifact (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path changed c5-inputs
+                          (:reader-source-path current-reader-invocation)
+                          current-reader-invocation)
+                failure (atom nil)
+                output (with-out-str
+                         (reset! failure
+                                 (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                               emitter source-path changed
+                                               (assoc inputs :caller-resolution-artifact artifact)
+                                               current-reader-invocation))))]
+            (is (not= text changed))
+            (is (= :accepted (:status artifact)))
+            (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
+            (is (= "" output))
+            (when (= label :arity)
+              (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
+              (is (= source-path (get-in @failure [:source-span :primary :source])))))
+          (finally
+            (.delete temporary)))))))
