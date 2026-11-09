@@ -20,6 +20,7 @@
              sh16-optimization-policy
              sh16-optimize
              sh16-verify
+             sh16-c13-build-literal-bool-translation-validation
              sh16-c13-evidence-input-valid?
              sh16-build-c13-evidence-boundary
              sh16-verify-c13-evidence-boundary])
