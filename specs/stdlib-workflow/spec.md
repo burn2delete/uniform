@@ -78,6 +78,16 @@ The [complete current collections criteria](plan.md#complete-current-collections
 
 The [complete library foundation criteria](plan.md#complete-library-foundation-source-criteria) add current STD1/STD2/STD4/STD5/STD6 callable API, profile, text/Unicode, numeric/proof, memory/resource and release obligations under existing owners. Eight existing Math/allocation/unsafe-audit predicates keep exact bytes and roles, including the separate future independent checker. Compiler unsafe boundaries, real provider execution and governed release consumption remain distinct. STD3 keeps its separate succession; STD7-STD20 and current whole-source/interface acceptance remain open.
 
+The [schema and database library source criteria](plan.md#complete-schema-and-database-library-source-criteria) refine callable STD10/STD11 behavior against existing Schema, Query, Backend, Auth, Effects and Runtime owners. Actual codecs, typed parameterized calls, canonical vectors, cleanup, migration, denial and replay evidence remain required. Generation, metadata and provider availability are distinct from execution; no task status or implementation acceptance changes.
+
+The [workflow and AI library source criteria](plan.md#complete-workflow-and-ai-library-source-criteria) refine callable STD12/STD13 behavior over existing Workflow, AI, Backend, Schema, Auth, Effects and Runtime owners. Actual typed events/state, activity isolation, replay/compensation/in-flight migration, provider/tool/memory/review, generated-code and eval results remain distinct from declaration artifacts. Task statuses, historical scopes, accounting removal and held actions persist.
+
+The [testing and meta library source criteria](plan.md#complete-testing-and-meta-library-source-criteria) refine callable STD14/STD15 behavior over existing compiler, test, Auth, Effects, Runtime and Governance producers. Actual structured failures, reproducible counterexamples, report/golden artifacts, stable IR views, scoped pass execution and seed/provenance evidence remain distinct from names or metadata. Task status, historical review and held actions persist.
+
+The [platform and hardware library source criteria](plan.md#complete-platform-and-hardware-library-source-criteria) refine callable STD16/STD17 behavior: explicit platform policies and target/host facts, actual MMIO/interrupt/DMA/clock safety, complete example context and profile-specific adapters. Existing Runtime, Platform, Auth, Effects, Lower/Backends, audit and independent suite owners keep their distinct products and evidence; no target or Product adoption follows. Tasks, historical evidence and held execution remain unchanged.
+
+The [crypto UI and stability library source criteria](plan.md#complete-crypto-ui-and-stability-library-source-criteria) refine callable STD18/STD19 crypto and component APIs and STD20 compatibility products over existing domain, schema, Runtime, Auth, Effects, Opt, Backend, Build, Governance and Release authorities. Genuine algorithm/lifecycle/hybrid/secret/side-channel, UI schema/trust/accessibility/adapter and old/new compatibility evidence remain distinct from manifests or labels. Tasks, historical evidence and execution holds persist.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

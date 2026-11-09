@@ -427,6 +427,489 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete schema and database library source criteria
+
+[STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md) govern this selected library refinement. STD10 and STD11 are the callable API scope; S1-S3 and DOM10-DOM11 supply explicit producer and boundary context, not whole-domain acceptance. All normative conditions, examples and profile qualifications remain. Source hashes and links are navigation and applicability evidence, not semantic coverage or implementation.
+
+### Existing task authority
+
+| Role | Existing sole owner |
+| --- | --- |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| facade | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| schema | [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| migration | [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| projection | [`schema/checked-consumer-projection`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| query | [`query`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| storage | [`storage`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| query_backend | [`backend-query`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| runtime | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| replay | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+Schema owns source definitions, validators and static projections; its existing migration and projection tasks own their checked outputs. Query owns domain semantics, Backends owns emitted plans, Runtime owns enforcement/replay, Auth owns grants, Effects owns static admission and Library owns callable adapters. Storage page/WAL/durability/recovery remains under Storage. No database transaction wrapper is assumed equivalent to language STM or storage durability. Historical equivalence/residual dispositions are preserved and require their own source-context review; this increment renews none.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports-and-contracts | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| schema-values-and-validation | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| decode-trust-and-serializer-policy | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| canonical-identity-and-byte-vectors | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| binary-streaming-and-profile-behavior | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| derivation-and-evolution-interfaces | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| boundary-schema-identity | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| database-resources-and-typed-queries | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| database-transaction-lifecycle | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| database-migration-execution | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| providers-profiles-and-redaction | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| database-authority-and-effects | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| replay-and-ai-database-calls | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| library-conformance-and-composed-examples | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effect-admission | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| runtime-enforcement | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+### STD10 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### STD11 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Expanded source-schema identity, classified refinements, validators/static type projections, serialization/canonical policy and actual validation/taint results. Callable public API execution consumes Schema products; it does not become a second editable Schema producer. |
+| [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Semantic diff, exact from/to compatibility and migration plan/admission/safety decisions. Checked plan generation is distinct from actual permitted apply/rollback execution. |
+| [`schema/checked-consumer-projection`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Source/schema-bound generated codecs/clients/ABI inputs and valid/invalid/refinement parity results. A generated codec name or target file does not establish executed consumer parity. |
+| [`backend-query`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`query`](../../specs/domains-workflow/tasks.md#implementation-tasks) | Dialect/query/schema/parameter/transaction plan and executable provider artifacts. Backend output generation precedes actual provider results; no whole-backend start gate. |
+| [`query`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Admitted typed query/row/dialect/taint/lineage/numeric/null semantics and actual selected execution results. Library exposes callable wrappers; Query owns the domain result and Runtime owns actual service enforcement. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Admitted operation-specific grant/effect/provider/policy subject and refusal conditions. Compile-time admission or review records cannot substitute for before-action runtime enforcement. |
+| [`storage`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Where storage internals are claimed: actual page/WAL/order/durability/recovery/corruption evidence. External database clients may keep an external engine as provider; client success is no storage-engine proof. |
+
+### Accepted and refused composition
+
+Actual User-schema and user-by-email examples retain source schema/row identity, prepared parameter separation, validated values, database authority, host error normalization and exact diagnostics. STD10001-STD10008 and STD11001-STD11008 retain their individual canonical meanings; Schema, serialization, canonical-data and domain diagnostics retain their schema/version/path/span/boundary/provider/effect/taint and remediation context. Test each applicable failure independently of any passed field. Cross-target canonical vectors, source/generated validator parity, transaction cleanup, capability denial, migration compatibility and replay are real required results where claimed. Availability never converts an unrun case to a pass.
+
+STD11 explicitly permits a schema artifact or declared row shape; its documented row example and row conformance retain their schema requirement. STD9 explicit byte/text-body policies remain contextual alternatives. Neither alternative makes unvalidated external values trusted or weakens the source schema at a boundary governed by S1/S2/STD10. Preserve actual length/layout/allocation/recursion/resource constraints from codec/provider/profile contracts without restoring arbitrary compiler input/work quotas.
+
+### Staging and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Initial signatures, schema/query declarations, profile/provider contracts and reference vectors permit isolated construction. Authentic current validation, source-schema/projection, compatibility, grant/effect and selected plan products precede their actual consumers. Real permitted provider, cleanup, replay and source-bound comparison results precede corresponding conformance and release claims. Whole Library, Runtime, Query or Backend completion is no first-interface prerequisite. This text edits no shared dependency declaration or future source binding; exact current stage reconciliation remains separate work.
+
+Existing receipts keep their original subjects and narrow scope. This increment performs no complete implementation audit or compiler/provider/API execution. All tasks remain Open. A manifest, record collector, generated name or one fixture proves no whole callable surface or composed domain outcome. Full-library/global entailment, independent review, current binding and main integration remain pending. Hermetic compile-time inputs follow the recorded L12 selection and reviewed L6 clarification; D1/C1/C5/C6 ordering remains separate. Reader contract-coverage reconciliation remains the first actual implementation increment.
+
+Preserve Clojure bootstrap/Gravity destination, accounting removal and actual ownership/review routing. No held compiler, Reader, Gravity, bootstrap, paired, provider, C12, native, callback, device, probe, replay, migration, private-store, signing or publication action is performed. The stopped public-contract-cluster handoff and denied reviewer wake remain held. The user-authorized review/integration coordination grants no implementation acceptance or main credit.
+
+## Complete workflow and AI library source criteria
+
+[STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P5](../../docs/phase-03-profile-system/050-p5-native-profile-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md) govern the selected callable APIs and profile/runtime context. The existing [AI parent](../domains-workflow/plan.md#ai-parent-composition), [Workflow parent](../domains-workflow/plan.md#query-workflow-gpu-and-ui-composition) and [B10 criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria) retain their broader contracts. All normative conditions, examples and profile qualifications remain. Hashes/links are applicability and navigation, not semantic coverage or execution.
+
+### Workflow/AI existing task authority
+
+| Role | Existing sole owner |
+| --- | --- |
+| ai | [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| ai-backend | [`backend-ai`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| evaluations | [`release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| facade | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| migration | [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| projection | [`schema/checked-consumer-projection`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| replay | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| schema | [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| workflow | [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| workflow-backend | [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+
+Library owns callable operations; Workflow owns durable source semantics, AI typed AI/policy/composed subjects, Backend deployable artifacts, Schema validation/migration/projection, Auth grants, Effects static admission and Runtime services/enforcement/replay. Independent Release evaluations consume their exact interfaces. No second engine, compiler or editable roadmap is introduced.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-definition | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-activity | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-events | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-reliability | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-replay | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-evolution | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-review | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-profile-adapter | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-provider | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-prompt | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-tool | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-agent | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-memory | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-policy | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-evaluation | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-workflow-generated-code | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-profile | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| action-authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| durable-runtime | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| library-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effect-admission | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| protected-runtime | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+### Workflow/AI STD12 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+
+### Workflow/AI STD13 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+
+### Workflow/AI producer and consumer interfaces
+
+| Producer | Consumer | Selected product and scope |
+| --- | --- | --- |
+| [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) | Actual checked typed source graph/state and effect/grant/retry/compensation/version semantics; Backend owns deployable emission. |
+| [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected deployable graph, provider, version and log contracts; generation and execution remain distinct. |
+| [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Admitted AI declaration/model/prompt/tool/memory/policy/eval/review products; Library is no second semantic authority. |
+| [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual typed validators, intended-sink trust and event/state serialization results; a schema name is no validated value. |
+| [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) | Checked exact previous/next schema compatibility/migration; admission does not apply an in-flight migration. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Authentic current action grant/review scope; Runtime enforces before effects. |
+| [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected provider/scheduler/state/log/error/cleanup products; Library exposes the usable typed boundary. |
+| [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual source-bound API/subject fixtures and required comparisons; independent Release execution remains separate. |
+
+### Workflow/AI accepted and refused composition
+
+Onboard-user emits actual graph, typed state/events, retry/idempotency and compensation; IO outside its required activity boundary rejects. Support-agent emits authentic linked model/prompt/tool/memory/policy/eval artifacts. Actual selected services, protected actions and replay require their own evidence. Preserve every STD12001-STD12008 and STD13001-STD13008 meaning and individual missing fact, expected/actual diagnostics, source/workflow/step/event/agent/model/tool/schema/provider/profile/taint/review/replay context and redaction; keep owning P9/P10/R7/R8 and AI/Workflow failures attached.
+
+Distinguish declaration, checked product, first execution, restart/replay, denial, cancellation, compensation and in-flight migration. Exercise missing/changed/incompatible logs, schemas or review payloads, stale evals, injection/secret failures and forbidden effects. Fixed graphs, mocks and one receipt retain their narrow subjects, never general durability, external retention/deletion or whole agent acceptance.
+
+### Workflow/AI source policy and profile decision
+
+Apply the existing [accounting-removal authority](../accounting-removal/spec.md) and [AI mixed source dispositions](../domains-workflow/plan.md#ai-mixed-accounting-source-disposition): retire synthetic compiler/project allowances, reservations, debits, cost proofs and quota-only refusals. Keep historical budget fields/API spellings visible with actual remove/retain/history classification; fake zero telemetry, sentinels or renamed allowances are not cleanup. Genuine external-account/provider limits and usage attribution, program retry/timeout/cancellation, concrete memory/format constraints and quality thresholds retain their own meaning. This source increment changes no public name or accounting implementation.
+
+Matt's [2026-11-04 scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis) explicitly selects the native local-provider condition. Actual local provider/capability, schema/effect/policy and ordinary native boundary contracts remain required; implementation, independent current source review and authentication are separate. Do not infer unrestricted native agents/tools or a selected provider. Core stays data-only; restricted profiles have no live APIs; meta artifacts undergo ordinary checking and formal work retains its modeled scope. All actual native/provider execution restrictions persist.
+
+### Workflow/AI staging and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Initial typed signatures, schemas, provider/profile and graph/log contracts permit bounded construction. Actual admitted semantics, authentic validation/grants/review, generated deployable graphs and selected Runtime products precede their callable consumers. Matching real replay/compensation/migration/eval and conformance precedes each corresponding claim. Whole components, live paid providers and final seedless release are no first-interface prerequisite. This text edits no shared route or source binding; exact dependency reconciliation remains separate.
+
+All tasks remain Open; historical receipts retain immutable scope. This increment executes no compiler, API, provider, tool, memory, callback, replay, migration or eval and expands no complete implementation audit. Source-owner/interface entailment, independent review, current binding and main integration remain pending. Hermetic inputs follow recorded L12 and reviewed L6; D1/C1/C5/C6 ordering stays separate. Reader contract-coverage reconciliation remains the first actual implementation increment.
+
+Preserve Clojure bootstrap/Gravity destination, accounting removal, existing ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation acceptance or main credit.
+
+## Complete testing and meta library source criteria
+
+[STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md) define the selected callable APIs and their supporting evidence and compiler interfaces. STD14/STD15 are this refinement's API scope; supporting suites and compiler contracts retain their broader owners. Normative list conditions, examples, profile qualifications and follow-on evidence requirements remain. Source hashes and navigation establish no semantic entailment or implementation.
+
+### Testing/meta existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| compiler-suite | [`release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| library-suite | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| meta | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| pass-evidence | [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| pipeline | [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| plugins | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| property-suite | [`release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| stage-comparison | [`release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| testing | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+Library owns actual test and meta APIs. Compiler-API/Pipeline/Syntax/Expand/Core/MIR/Opt retain their real artifact, transformation, verification and invalidation work. Auth produces scoped grants, Effects performs static admission, plugin host enforces actual contexts and Runtime supplies permitted fixture/service execution. Release owns independent suites and stage comparison; Governance owns distinct unsafe audit verdicts. One editable task authority remains for each outcome; no second compiler, fixture suite or roadmap is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| test-definition-and-assertion | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| fixtures-and-goldens | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| properties-and-fuzzing | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| diagnostic-assertion | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| mocks-and-live-authority | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| eval-and-performance-tests | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| suite-selection-and-reports | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-syntax-values | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-hygiene-and-resolution | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-macro-expansion | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-compile-time-values | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-stable-ir-views | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-pass-api | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-plugin-api | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-trust-and-self-hosting | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-profile-contract | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| test-meta-authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| test-meta-effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| plugin-context-enforcement | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| library-example-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+### Testing/meta STD14 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Testing/meta STD15 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Testing/meta producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual typed syntax/Core/MIR, phase/context, source/hygiene/effect/grant and generated-checking products; Library exposes APIs without redefining the pipeline. |
+| [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual pre-load compatibility, scoped context, registration/output verifier and trace products; callbacks and manifests are distinct from execution. |
+| [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual subject-bound proof/checker/verifier/invalidation evidence; declared pass fields alone prove no preservation. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | Authentic current scoped compiler grants; host denies before initialization or protected mutation. |
+| [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Usable typed fixture/mock/golden/assertion/report products; independent compiler preservation suite executes its own subjects. |
+| [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Real generator/seed/shrinker/counterexample and replay interfaces; API tests do not close an independent fuzz campaign. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual source-bound callable module/profile fixtures and reports; independent Library suite owns its run. |
+| [`release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler`](../../specs/release-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Matching declared-stage source/compiler/lockfile/target/output and accepted difference/TCB/provenance evidence for actual self-hosting claims. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Distinct exact-island/source/owner/profile/target audit verdict; a review name or signature is not its accepted evidence. |
+
+### Testing/meta accepted and refused products
+
+Compile the documented assoc-then-get property and when macro under their declared profiles. Actual test assertions retain expected/observed values and spans; property/fuzz failures retain seed/generator/shrinker and minimized inputs; goldens have hash/version/update history; diagnostic expectations match structured identities. Mocks declare their replacements and grant no ambient live effect. Meta calls retain syntax/hygiene/context/phase/origins, stable IR tiers, genuine grants, declared pass invariants/invalidation/proofs and verifier results.
+
+Preserve each STD14001-STD14008 and STD15001-STD15008 refusal meaning, expected/actual missing facts, source/generated/fixture/profile/target/compiler/runtime/package/plugin/pass/artifact/grant context and applicable owning TEST/C17/SAFE12 diagnostics. Exercise failure fields and missing/stale/wrong-subject evidence independently of value equality. A test name, metadata/status flag, report filename, compatibility hook or compiler capability spelling is no accepted behavior.
+
+### Testing/meta profile, authority and trust
+
+STD14 pure Core tests and profile-specific restricted-host/native/hosted/distributed/AI/meta/formal adapters keep their actual source conditions. A named harness, fake or live-test opt-in cannot bypass profile/effect/grant, redaction or held execution restrictions. STD15 Core syntax data, full meta APIs, capability-bearing hosted/native tooling, restricted dynamic evaluation, checked AI/distributed generated artifacts and formal stable/proof views remain distinct. Stable views do not permit unstable compiler mutation. Authentic read scope cannot grant write/register/proof or artifact emission.
+
+General compile-time inputs follow Matt's recorded L12 declared/replayable policy and separately reviewed L6 clarification; pure constant evaluation retains its separate prohibitions. Preserve the canonical scoped compiler/ir-transform requirement and actual compiler/read-ir effect; compatibility compiler/ir alias/scope equivalence remains unassessed. Generated forms and plugin outputs undergo ordinary checks; unsafe extensions require actual review/audit evidence. Seed assumptions and TCB claims remain visible, never inferred from Gravity source or a signed unrelated artifact.
+
+### Testing/meta stage order and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Initial source/export/signature/schema/pass-context and fixture/report contracts permit bounded development. Actual available eligible APIs, authentic compiler/grant/source products, verifier/invalidation and selected runtime/checker outcomes precede their consumers; matching real independent suites/audits/stage comparisons precede their respective acceptance and release claims. Whole compiler/bootstrap/library completion is no first declaration prerequisite. This text changes no shared route or future source binding; exact stage reconciliation remains separate.
+
+TEST2 focused development tests and affected composition do not require fresh bootstrap authority merely to test current source. Authoritative migration, stage advancement and release retain TEST13/BOOT provenance/equivalence/conformance and TCB evidence. This distinction revokes no explicit existing execution hold.
+
+All implementation tasks remain Open and historical receipts keep immutable scope. This source increment performs no complete implementation audit and executes no compiler, test API, fuzz run, plugin, provider, proof engine, bootstrap stage, callback or live fixture. Current source-owner/interface entailment, independent review, binding and main integration remain pending. Retired project accounting/allowances do not return; genuine format/layout/resource/provider/profile constraints, quality thresholds and requested test/replay semantics retain their own meaning. D1/C1/C5/C6 ordering stays separate. Reader contract-coverage reconciliation remains the first actual implementation increment.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation or main acceptance.
+
+## Complete platform and hardware library source criteria
+
+[STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md) define callable platform/hardware APIs and their selected profile, Runtime and safety interfaces. STD16/STD17 are this API refinement's scope; broader supporting contracts retain their existing owners. Preserve normative conditions, known/conditional facts, examples and their complete required context. A source hash or navigation link establishes no semantic entailment or implementation.
+
+### Platform/hardware existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| backend-emission | [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| devices | [`devices`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| firmware | [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| hardware | [`hardware`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| kernel | [`kernel`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| legality | [`legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`](../../specs/legality-workflow/tasks.md#implementation-tasks) |
+| library | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| library-suite | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| lower-layout | [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| lower-preservation | [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| resources | [`stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| runtime-boundary | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-enforcement | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-replay | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-services | [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+Stdlib owns the callable library behavior in the existing integrate-platform task, with export inventory and shared resource helpers retaining their existing tasks. Platform owns actual selected target/device schemas and conformance, Runtime owns services and before-action enforcement, Auth issues authentic scope, Effects checks source, Lower/Backends preserve actual layout/volatile/order, and Governance owns distinct audit verdicts. Platform's four target-conformance tasks and separate Product adoption and implementation tasks retain their scope; no target, ISA, device, OS, driver inventory or physical delivery is adopted by this library increment.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| target-and-host-facts | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| environment-and-arguments | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| clock-kinds | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| random-provider-kinds | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| process-policy-and-results | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| signal-terminal-cleanup | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| platform-profile-and-replay | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| registers-and-safe-mmio | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| interrupt-apis | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| dma-apis | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| clock-domain-and-timers | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| peripherals-and-hardware-artifacts | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| hardware-profile-and-capability-target | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| platform-hardware-effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| native-services-and-cleanup | [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| hardware-runtime-boundaries | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| deny-before-platform-action | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| recorded-platform-boundary | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| library-platform-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+### Platform/hardware STD16 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Platform/hardware STD17 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Platform/hardware producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`hardware`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected target/device, clock/reset/port/protocol, memory-map and conditional capability-layout/tag/temporal-assumption facts; no Product/ISA adoption from library metadata. |
+| [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected no/minimal-runtime, interrupt/stack/latency/static-resource/peripheral constraints; real physical limits are not retired project work quotas. |
+| [`kernel`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual declared kernel ABI, interrupt/user/device boundary and unsafe-audit/service contracts; no hosted assumptions or entire OS prerequisite for a bounded library call. |
+| [`devices`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual register/map/provider/device/ownership/interrupt/transfer products, including actual alignment rather than address-width inference. |
+| [`stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual scoped resources, ownership/concurrency and IO cleanup behavior consumed by process/terminal/DMA wrappers; filesystem APIs create no shell grant. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Current operation-specific grants and provider/device scope; actual denied requests perform no protected action. |
+| [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual checked source direct/latent effect, profile and grant products; no proof of provider execution or physical safety by static admission alone. |
+| [`runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual permitted services, normalized errors, redaction, failure and cleanup observations; declared adapter names are not results. |
+| [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual permitted typed FFI/device ownership/cache/completion results; simulation/live scopes and unavailable cases remain explicit. |
+| [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual recorded activity/platform observations with authentic subject/provider/schema/policy identities; no ambient read during replay. |
+| [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual target ABI, register size/alignment and representation facts supporting wrappers, without invented example defaults. |
+| [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) | [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) | Actual volatile/order/source/target and proof-preservation obligations through emitted artifacts; metadata cannot replace verifier/results. |
+| [`backend-emission`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected emitted artifact/source maps and volatile/order/target evidence; unsupported lowering rejects explicitly. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Distinct actual exact-island/source/owner/profile/target wrapper audit, including hardware-specific waiver conditions where applicable. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual callable module/profile/target fixtures and exact source/compiler/runtime/provider/device results; independent suite execution remains Release's task. |
+
+### Platform/hardware accepted and refused products
+
+Instantiate the documented run-tool and ready? examples only with genuine selected required process, target/device and register-map facts. The process illustration omits working-directory policy and the register illustration omits alignment; neither creates an implicit default or exempts its diagnostics. A real context may supply the required fact, otherwise the corresponding missing-policy/map case rejects. Preserve actual target versus build/runtime host distinctions, all clock/random kinds, redaction and complete process policies; register side effects, volatile/order, interrupts, DMA ownership/cache/completion and clock-domain synchronization are real checked behavior.
+
+Preserve every STD16001-STD16008 and STD17001-STD17008 refusal meaning and applicable P6/P7/P8/SAFE7/SAFE8/Runtime errors with expected/observed facts, source/call/generated origin and exact compiler/package/profile/target/device/provider/grant/adapter subjects. Independently exercise missing, stale, wrong-subject and unsupported cases; booleans, manifest fields or equal sampled values are no operational or safety proof. Unsafe islands require genuine exact audit records and checked safe-wrapper preconditions.
+
+### Platform/hardware profiles and evidence limits
+
+Keep static target values, hosted delegation or doubles, actual native capabilities, firmware/kernel no/minimal-runtime services, hardware descriptions, distributed activity/replay, AI typed tools/review, meta artifact inspection/generation and formal modeled assumptions distinct. A native local-model grant confers no process, tool or device authority. Preserve the actual human L12 declared/replayable input policy and separate pure-constant constraints. No live host/device access or dynamic runtime assumption follows from descriptions or compile-time API availability.
+
+On a genuine selected capability-hardware target preserve actual representation, bounds/provenance/permissions/tags across the relevant register/memory/DMA/FIFO/bus/port/debug paths and declared compartment entry/return/shared authority. Spatial safety is not temporal revocation; unmet stronger guarantees reject or require separate genuine proof. Source-supported hardware-specific audited waivers keep their exact scope; a generic unsafe flag, mutex, simulator or signature cannot replace them. No CHERI or target adoption is implied. Physical memory, clock/latency/power, stack and declared firmware bounds remain semantic constraints; removed compiler-work quotas and project allowances do not return.
+
+### Platform/hardware stage order and implementation disposition
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Define source/export/signature, complete process policy, target/device/map/clock/interrupt/DMA schemas and effect/grant interfaces first. Bounded implementations consume actually available matching selected producer artifacts and allowed fixtures; simulator development does not require physical device or full Product acceptance. Real permission, target facts, checks and required audit precede their protected consumer claims; actual live-target, suite, release and Product composition require their own evidence. Unselected targets and held actions remain explicit unresolved work, never silently inferred defaults. This source increment changes no shared route or source binding; exact stage reconciliation remains separate.
+
+All implementation tasks remain Open. Prior receipts retain their immutable narrow scope; this increment performs no complete implementation audit and executes no Gravity/compiler, platform API, simulator, process, signal, device, DMA, interrupt, proof engine, provider or replay. Actual current source-owner/interface entailment, independent source review, binding and Main integration remain pending. Reader contract-coverage reconciliation remains the first actual implementation increment. D1/C1/C5/C6 ordering stays separate.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human-authorized review/integration coordination grants no product execution or Main acceptance.
+
+## Complete crypto UI and stability library source criteria
+
+[STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md), [DOM15](../../docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md), [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md), [GOV3](../../docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md), [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md) govern callable crypto/UI exports and library stability. This refinement owns the STD18/STD19 facade behavior and STD20 library products; broader DOM6/DOM15/governance outcomes retain existing authorities. Preserve normative conditional facts, examples, profiles, security and compatibility obligations. Source hashes and navigation establish no semantic entailment or implementation.
+
+### Crypto/UI/stability existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| adapters | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| backend-js | [`backend-js`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| backend-mobile | [`backend-mobile`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| build-imports | [`build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| build-provenance | [`build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| crypto | [`crypto`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| distribution | [`release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| legality | [`legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`](../../specs/legality-workflow/tasks.md#implementation-tasks) |
+| library-suite | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| module-admission | [`evolution/library-admission`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| opt | [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| runtime-boundary | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-enforcement | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| schema | [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| schema-migration | [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| stabilization | [`evolution/stabilization-decision`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| ui | [`ui`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+
+Stdlib implements callable APIs and assembles actual library evidence. Domain crypto/UI own their real typed provider/component/end-to-end products; Runtime implements selected actual boundaries and enforcement, Auth grants scope and Effects checks source. Schema owns checked formats/migration, Opt genuine fact preservation, Backends emission, Build package imports/provenance and Governance distinct admission, audit, compatibility and lifecycle decisions. Release owns independent suites and distribution. No second provider engine, renderer, suite, task authority or editable roadmap is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| hashes-signatures-and-key-agreement | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| encryption-and-nonce-policy | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| typed-secrets-and-key-handles | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| crypto-randomness | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| constant-time-and-hazardous-primitives | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| algorithm-lifecycle | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| post-quantum-families | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| hybrid-key-establishment | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| migration-inventory | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| crypto-provider-and-profile | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| component-and-state-apis | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| events-commands-and-effects | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| rendering-and-lifecycle | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| routing-and-styling | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| accessibility-artifacts | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| target-adapters-and-generated-ui | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| snapshot-and-interaction-products | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| crypto-ui-effect-admission | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| crypto-ui-runtime-boundary | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| stability-levels-and-imports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| eight-dimension-compatibility | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| change-classification-and-release | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| library-crypto-ui-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+### Crypto/UI/stability STD18 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Crypto/UI/stability STD19 callable surface
+
+Use the canonical [Module Surface](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md#module-surface) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Library stability levels
+
+Use the canonical [Stability Levels](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md#stability-levels) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Library compatibility dimensions
+
+Use the canonical [Compatibility Dimensions](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md#compatibility-dimensions) with the existing implementation criteria and task mapping above. The governing source owns this definition.
+
+### Crypto/UI/stability producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`crypto`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected vetted provider/algorithm/key-custody/secret/constant-time/vector/audit products. Broader DOM15 WebAuthn/passkeys and private computation remain their own Open outcomes, not newly implied by STD18 wrappers. |
+| [`ui`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual domain component/event/route/taint/sink/source-map and selected browser fixture products. Generic library APIs neither replace DOM6 ticket-list integration nor adopt a frontend framework or all application targets. |
+| [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual typed key/signature/ciphertext/hash and UI prop/state/event/route schemas and checked serialization; declarations alone do not validate untrusted data. |
+| [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual compatible projection or explicit schema/migration-break products for crypto agility and UI persisted/wire state; inventory does not execute a private-store migration. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Genuine key/random/provider/tool/host and operation-specific grants with scope/lifetime/revocation; actual before-action denial and redaction remain Runtime/provider work. |
+| [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual permitted typed provider/UI adapter results, normalized errors, lifetime/cleanup and secret handling; live/fake/recorded and target scopes remain distinct. |
+| [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual preservation or invalidation/reverification of constant-time, secret, safety and proof facts across optimization; equal values or preserves flags are insufficient. |
+| [`backend-js`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`ui`](../../specs/domains-workflow/tasks.md#implementation-tasks) | Actual selected source-mapped bundle/declarations and checked host boundaries; TypeScript declarations do not validate untrusted runtime data. |
+| [`backend-mobile`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual declared mobile/UI artifacts with adapter/lifecycle/permission/target constraints; no device launch, signing or distribution is authorized. |
+| [`evolution/library-admission`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual accountable module/export owner, upstream contracts, metadata, profile fixtures, unsafe/security and release review decisions; library manifests cannot grant admission. |
+| [`evolution/stabilization-decision`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Exact baseline/surfaces/conformance/migration/deprecation and security-exception decisions; experimental, draft, stable, deprecated, removed and internal scopes remain explicit. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Distinct exact-island/wrapper/source/owner/profile/target security/unsafe/constant-time evidence with real conditions; proof filenames, signing or package identity do not replace it. |
+| [`build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual package/source opt-in and visibility/compatibility consumers reject internal or unauthorized experimental imports and expose lifecycle metadata. |
+| [`build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual exact source/build/conformance/release compatibility/provenance/signature/SBOM records; source reconciliation neither creates keys nor signs artifacts. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual library API and old/new profile/target fixtures with exact results and unavailable cases; independent suite execution retains Release's sole authority. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual scoped library compatibility/lifecycle/provider/audit/artifact products for the selected release; full-language/bootstrap/seed-retirement and independent release acceptance remain separate. |
+
+### Crypto/UI/stability accepted and refused products
+
+Compile seal and Counter with actual selected capabilities, policies, schemas and implemented adapters. Crypto calls bind explicit algorithm/mode/parameter/provider/key/nonce/random/output facts, typed secret handling, genuine vectors and applicable constant-time/unsafe audit. Preserve canonical lifecycle meanings and PQ/hybrid transcript/combiner/downgrade conditions; external algorithm news does not rewrite the normative policy. UI calls preserve checked props/state/events/commands, sink trust, route schemas, styles, accessibility and target lifecycle/unsupported features. Component artifacts feed actual existing snapshot/interaction consumers; host internals are no replacement.
+
+Preserve each STD18001-STD18013, STD19001-STD19008 and STD20001-STD20008 refusal meaning and applicable domain/schema/runtime/governance errors with expected/observed missing/stale/wrong-subject facts, exact source/generated/call/compiler/package/profile/target/provider/adapter/algorithm/parameter/schema/grant/policy context and secret redaction. Sample equality, provider signatures, metadata flags, manifests and report names establish no side-channel guarantee, live rendering, accepted migration or compatibility.
+
+### Crypto/UI/stability scope and trust
+
+Actual current source-owner/interface entailment remains pending independent review. Broader DOM15 passkeys, credential ceremonies, private computation/FHE/MPC and protected-value constraints remain separate Open source obligations; STD18 exports do not close them. DOM6 ticket-list, typed client/browser/source-map fixtures remain distinct from generic STD19 components. A library module cannot select a frontend framework, device/product target, algorithm provider or physical deployment. Pure Core data, native/hosted actual services, constrained firmware/kernel/hardware, recorded/activity-isolated distributed operations, checked AI tools, meta inspection and formal proofs keep their exact canonical conditions.
+
+Preserve the human L12 declared/replayable input policy and scoped native local-model decision without extending either to secret capture, unrestricted tools or host authority. Crypto lifecycle policy and per-export compatibility are genuine semantic constraints, not retired project accounting. STD20 covers source, behavior, effects, capabilities, profiles, diagnostics, artifacts and conformance, including safety/performance contracts. Package import enforcement, migration, governance decisions and signed provenance are real separate producer outcomes. The illustrative std-stability-policy entry is policy data, not an invented public API.
+
+### Crypto/UI/stability stage order and implementation disposition
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Define actual export/signature/stability, algorithm/provider/key/nonce/output policy, schema and component/event/route/adapter contracts first. Implement bounded calls against authentic available selected producer products and permitted fixtures; full crypto domain, whole UI/browser/product, stabilization and signed release are not initial declaration prerequisites. Applicable authority, generated checks and selected safety/audit/proof conditions precede their consuming claims. Exact independent suites, old/new compatibility, governance decisions and real provenance/signature/distribution evidence precede their acceptance/release claims. Never select providers, algorithms, live targets or user products by filling an evidence manifest. Exact shared stage reconciliation and source binding remain separate; no route is edited here.
+
+All implementation tasks remain Open and prior reviews keep their narrow historical scope. This source increment performs no complete implementation audit and executes no compiler/Gravity, crypto algorithm/provider/key/signing, private-store migration, UI/host callback/browser/device, replay, proof engine or publication. Independent current source acceptance, binding and Main integration remain pending. Reader contract-coverage reconciliation remains the first actual implementation increment; D1/C1/C5/C6 ordering stays separate.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no product execution or Main acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration
