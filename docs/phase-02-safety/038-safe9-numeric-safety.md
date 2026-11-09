@@ -21,8 +21,12 @@ proofs, relaxed modes, and optimization constraints.
 - Every numeric operation must declare or infer its numeric mode.
 - Integer overflow must be checked, wrapping, saturating, arbitrary precision,
   proof-erased, or explicitly unsafe.
-- Narrowing conversions must be protected by `:runtime-checked` or classified
-  as `:proven-safe`.
+- Checked narrowing conversions must be protected by `:runtime-checked` or
+  classified as `:proven-safe`.
+- Explicit wrapping or saturating integer narrowing is legal in safe code under
+  its declared width or bounds, numeric mode, type and profile requirements.
+  Safety is classified against that selected mode using the D8 outcomes; the
+  result does not claim exact representability of the original value.
 - Division by zero and invalid shift counts must be protected by
   `:runtime-checked`, classified as `:proven-safe`, or rejected as
   `:rejected`.
@@ -111,7 +115,14 @@ Conversions are classified:
 - Lossy approximate conversion.
 - Reinterpret cast.
 
-Implicit narrowing is rejected. Float-to-integer conversion must define NaN,
+Implicit narrowing is rejected. Explicit wrapping narrowing uses modular
+arithmetic at the named width; explicit saturating narrowing clamps to the
+declared type range. A conversion promising range preservation still requires
+its range check or representability proof. These explicit modes do not permit
+hidden target defaults, undefined behavior or unsafe unchecked conversion
+outside an audited unsafe island.
+
+Float-to-integer conversion must define NaN,
 infinity, out-of-range, and rounding behavior. Reinterpret casts are unsafe
 unless a representation proof is attached.
 
@@ -236,7 +247,11 @@ A conforming implementation must demonstrate:
 - Checked overflow, wrapping, saturating, arbitrary-precision, and proof-erased
   integer arithmetic.
 - Divide-by-zero and shift-count rejection or checking.
-- Checked narrowing conversion and rejection of implicit narrowing.
+- Checked and proof-backed range-preserving narrowing, explicitly selected
+  wrapping and saturating narrowing, and rejection of implicit narrowing.
+- Wrapping/saturating conversion results match their declared width or bounds
+  across supported targets; hidden target defaults and mode-changing lowering
+  are rejected.
 - Floating-point strict and relaxed mode tests.
 - NaN, infinity, signed-zero, and rounding tests.
 - Elementary-function domain and approximation evidence tests.

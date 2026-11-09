@@ -5680,3 +5680,38 @@ integration context outside this nine-path source-input identity; it is not
 silently substituted for the reviewed source successor. The report records
 status and provenance only and does not claim callable implementation or
 authority to merge.
+
+## Nine-file current criteria projection continuation
+
+The current-source frame observes the already-authored Diagnostics, Legality,
+Runtime, constitution 1.6, Compiler API, Domains, Lowering, Release and Build
+criteria. It authenticates nine successors within the existing 49-file
+population. All 40 future task identities, owners and checked states survive;
+29 file-metadata records change, with one Math synthesis body change. The
+complete predecessor frame and projection at
+`3fb71004364729f3616d09dd3e843ef6815cefd0` remain immutable history. All 578
+prior raw projection snapshots are retained, alongside 12 new snapshots.
+
+The current pending mapping fingerprint is
+`175e212e691f2609298556e8ec4335cbe4bc832b7cdbeaba4c8958c9370b2fed`.
+The previous review retains its original subject; this pending source identity
+update grants no new semantic or implementation acceptance. Independent cleanup
+source closing at `081026b580b1b835be145b33eb7a4c32c69bb6d5` is archived in
+the reconciliation evidence with its whole-contract and main nonclaims.
+
+The exact first implementation increment remains
+`reader/finite-remaining-work/contract-coverage-reconciliation` in the existing
+Reader task authority: bind full L1/C2 behavior to actual implementation and
+positive/negative fixtures or owned failing cases. No whole Build, self-hosting
+or release prerequisite is introduced for starting that increment. Existing
+execution restrictions still apply. Full-240 verification, remaining primary
+accountability, independent whole-candidate review and actual main integration
+remain open.
+
+## Settled numeric conversion planning continuation
+
+The Math plan now applies the recorded wrapping/saturating integer narrowing choice, with source mode, width/bounds and actual type/profile legality; range-preserving conversions still need their check or proof. Task criteria/statuses and the requirement model are unchanged. The existing 49-file projection updates one current Plan binding, preserves all 40 future task records and590 old raw snapshots, and retains the complete prior frame/projection/review. The pending source fingerprint is `99ac0053515633517c0e65331a4753e5e8b7db045be13aeb1e68589c017a1a3a`; source identity and conservation do not establish full240 or implementation readiness.
+
+Independent review now qualifies the earlier 3fb Math wording/conservation, 29b3 source interface, f7c1/68ac/45dd Runtime conservation and bad82/84b85 guidance/debug conservation only. Actual T004 and full current-criterion semantic acceptance remain separate. Three primary source proposals remain proposals, with complete conjunction, primary acceptance and global nonoverlap pending. The first verified reconciliation Main landing remains PR1291/ca14 at e94a6c8decada0c7189f2f43b850bbf7bf3bc9d7; later Source candidates have no integration credit from it. Root reports later unrelated Main activity separately; no new full hash or integration credit is inferred here.
+
+The exact first implementation increment remains `reader/finite-remaining-work/contract-coverage-reconciliation` in the existing Reader authority. Preserve adjacent accepted finite evidence and all actual restrictions; add no whole Build/self-hosting/release start gate. Full240 verification and integration of the remaining reconciliations remain open.

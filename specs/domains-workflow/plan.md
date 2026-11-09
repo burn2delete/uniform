@@ -457,13 +457,20 @@ suite/oracle/results. Their immutable source link in the parent is an explicit
 future task route; it is not an implemented local runner. Reconcile their exact
 interfaces and execute the required cases before claiming complete project testing.
 
-SAFE9 requires checked/proven narrowing and also names wrapping/saturating
-conversion classes; MATH1 requires explicit legal conversion semantics. Retain
-both requirements and their exact mode/profile/proof treatment in the selected
-increment. The inherited qualification is visible for contract/allocation
-review rather than silently selecting a new policy. Independent checked/proven
-numeric work can proceed. All restricted C12/provider/execution transactions
-remain with their existing owners; this reconciliation runs none of them.
+Matt's recorded [numeric conversion decision](../../.specify/memory/constitution.md#explicit-numeric-conversion-modes) settles the inherited SAFE9/MATH1/MATH7
+policy question. Safe code may use source-selected wrapping or saturating
+integer narrowing under declared width/bounds, resolved mode and actual
+type/profile legality. Wrapping uses modular arithmetic; saturation clamps to
+the declared range. Neither claims representability of the original value.
+Range-preserving narrowing still requires its range check or representability
+proof; implicit narrowing, hidden target defaults and safe target undefined
+behavior remain forbidden. Preserve float exceptional/rounding rules, D8 safety
+outcomes and audited unsafe boundaries. The existing Math numeric-conversion
+criterion supplies this implementation route; source-facet entailment, current
+evidence applicability and implementation acceptance remain Open/unassessed.
+The earlier unresolved-policy wording is retained as history in reconciliation
+evidence. All restricted C12/provider/execution transactions remain with their
+existing owners; this reconciliation runs none of them.
 
 ## Schema parent composition
 

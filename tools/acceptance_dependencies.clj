@@ -764,6 +764,25 @@
      :authority :current-source-interface-only
      :implementation-acceptance :unassessed}))
 
+(defn current-source-successor-view
+  "Authenticate the bounded Evolution current-source successor used by the
+  crosswalk. This is source provenance only; it grants no implementation
+  or acceptance authority."
+  [transition read-text]
+  (let [expected requirement-sources/evolution-current-source-transition]
+    (require! (= transition expected)
+              "Evolution current-source transition identity changed")
+    (requirement-sources/validate-current-source-transition!
+     transition expected
+     (fn [ref source-path]
+       (requirement-sources/git-source "." ref source-path require!))
+     read-text sha256 require!)
+    (select-keys transition
+                 [:kind :role :path :document-id :baseline-ref :baseline-tree
+                  :baseline-blob :baseline-sha256 :applying-ref :applying-tree
+                  :applying-blob :live-sha256 :authority :review-state
+                  :successor-of :qualification])))
+
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
   Task-ledger preambles are navigation layout, so their edits can shift a row;
@@ -1234,8 +1253,18 @@
               (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
                         "SH07 sequence metadata differs from original source")))
         readiness-source-version (:implementation-readiness-source-version crosswalk)
+        _ (when (contains? readiness-source-version :current-source-transitions)
+            (let [frame (edn/read-string (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"))
+                  fields [:reconciliation-source-binding :reconciliation-future-task-records]]
+              (requirement-sources/validate-reconciliation-source-history!
+               frame
+               (fn [ref source-path] (requirement-sources/git-source "." ref source-path require!))
+               sha256 require!)
+              (require! (= (select-keys frame fields) (select-keys readiness-source-version fields))
+                        "Projected reconciliation source metadata differs from its authenticated frame")))
         current-source-transition-input-paths
-        (set (map :path (:current-source-transitions readiness-source-version)))
+        (conj (set (map :path (:current-source-transitions readiness-source-version)))
+              (:path requirement-sources/evolution-current-source-transition))
         ;; Complete-file current-source contracts authenticate the checked-out
         ;; source itself. Keep injected read functions for the surrounding
         ;; read-only drift fixtures, but do not let a navigation-only fixture
@@ -1252,6 +1281,13 @@
            (:current-source-transitions readiness-source-version)
            current-source-read))
         current-source-transition-paths (set (:paths current-source-transition))
+        current-qualified-source-transition-paths
+        (conj current-source-transition-paths
+              (:path requirement-sources/evolution-current-source-transition))
+        evolution-current-source-transition
+        (current-source-successor-view
+         (:evolution-current-source-transition crosswalk)
+         current-source-read)
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1296,7 +1332,7 @@
         _ (doseq [[path digest] (:source-digests crosswalk)
                   :when (not (or (navigation-source-path? path)
                                  (historical-sh-source-path? path)
-                                 (contains? current-source-transition-paths path)))]
+                                 (contains? current-qualified-source-transition-paths path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -1375,6 +1411,7 @@
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
      :current-source-transitions current-source-transition
+     :evolution-current-source-transition evolution-current-source-transition
      :platform-task-source-transition platform-transition
      :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability

@@ -131,8 +131,18 @@ $speckit-converge Report the bounded outcome and remaining evidence.
 Name the feature directory explicitly. `.specify/feature.json` is ignored,
 checkout-local state; never commit it or infer another worker's active feature.
 Use `SPECIFY_FEATURE_DIRECTORY` as explicit context when useful. The preset
-preserves existing plans and reports missing spec/plan prerequisites. It does not
-create Git branches; coordinator ownership stays separate.
+preserves existing plans and reports missing spec/plan prerequisites. Its tasks
+override distinguishes an existing implementation ledger from a new artifact-only
+increment. Preserve canonical implementation IDs, marked authority regions,
+status, ownership and evidence history; refine the existing owning task instead
+of creating a parallel T001 checklist. The T001 sample applies to a new
+artifact-only ledger, not replacement of an existing implementation authority.
+Reconcile criteria with governing sources while retaining prior review subjects.
+Implementation rows name actual behavior/artifacts and the governing acceptance
+and refusal evidence; a manifest or assigned status alone does not establish
+execution or conformance. The preset does not create Git branches; coordinator
+ownership stays separate. The generated upstream core templates are retained
+reference text; Uniform commands read the project-local overrides for this flow.
 
 ## Safe maintenance and validation
 
@@ -196,10 +206,12 @@ never run it against live shared work to test a replacement.
 
 Old documents remain in place and feature artifacts link their owning sections.
 The pilot is a historical reference, not a living replacement language contract.
-New work gets its own bounded directory. Later adoption decisions for Deus:
-which future slices use Spec Kit, collision-free feature naming across workers,
-historical versus living spec persistence, CLI/dependency upgrade policy, and
-whether external CLI maintenance remains useful. Broader conversion, issue
+Select the existing owning feature directory for new implementation work. Add
+or split a spec only when a coherent outcome needs its own scope; do not create
+a second task authority for an outcome already owned. Remaining adoption
+decisions include collision-free naming for genuinely new features, historical
+versus living spec persistence, CLI/dependency upgrade policy, and whether
+external CLI maintenance remains useful. Broader conversion, issue
 integration and automated workflows were outside the initial adoption increment.
 The 2026-11-01 project-wide coverage decision above supersedes the exclusion of
 broader implementation-workflow coverage. Issue integration and automated
