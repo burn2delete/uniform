@@ -218,3 +218,23 @@ Current source/interface entailment and independent acceptance remain pending. P
 Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing conditional change-review/stabilization owners consume affected old/new ABI/schema/type/error/resource/profile/target/lock and incumbent parity facts for actual stable changes or shim promotion. Keep compatibility/deprecation and temporary shim state explicit. This adds no task body, review renewal or ordinary per-run approval/migration-proof gate.
 
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Keep independent exact-island unsafe audit and affected compatibility/stabilization decisions separate from library APIs, declared pass contracts and ordinary implementation tests. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Retain distinct exact-island source/owner/profile/target unsafe audits, hardware-specific waiver conditions and actual admission/stability decisions. Library declarations and compatible metadata do not perform security review. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep real GOV2 compatibility, GOV3 module admission, GOV8 lifecycle and distinct security/unsafe audits as their existing sole authorities. Library compatibility and signed manifests do not create approval, migration execution or a policy exception. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual distinct unsafe/security review and yank/advisory/governance records with exact conditions, evidence and missing/revalidation state. Registry and safety views cannot synthesize acceptance or change policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Own actual accountable baseline-update/normalization/security-impact decisions and preserved history. Benchmarks cannot approve their own regression waiver or hide a correctness/safety change. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

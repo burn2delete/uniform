@@ -197,6 +197,59 @@ L19 actual foreign and generated-binding effect admission criterion (Open): Chec
 <!-- effects-interop-source-effects:end -->
 
 
+
+<!-- library-data-source-effect-admission:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library static effect criterion (Open): infer and check actual direct and latent connection/read/write/transaction/migration/schema-introspection/admin, resource, allocation and relevant host effects against the selected profile and authentic operation-specific grant/provider facts. Keep query construction data distinct from performing IO; pure Core query/schema helpers confer no database IO. Preserve source/call/schema/provider diagnostics and refuse hidden or undeclared effects, wrong phase/profile and illegal latent use. Evidence requires actual accepted/refused checked programs and their real effect/grant joins. Auth owns grants and Runtime owns before-action enforcement; effect summaries prove neither provider execution nor runtime denial. All existing statuses and held execution restrictions persist.
+<!-- library-data-source-effect-admission:end -->
+
+
+
+<!-- library-workflow-ai-source-effect-admission:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library effect-admission criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Infer and check actual direct/latent workflow/service/clock/random/model/tool/memory/retrieval/generated-code effects, profile/phase and authentic grants. Pure Core graph/schema data is not execution and meta generation grants no live provider authority. Exercise real checked-program admission/refusal and precise source/agent/workflow/provider diagnostics for hidden effects, illegal latent use and wrong profile/phase. Static summaries prove neither Runtime enforcement nor replay; preserve selected L12 inputs, reviewed L6 and all held compiler routes. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-effect-admission:end -->
+
+
+
+<!-- library-testing-meta-source-test-meta-effects:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-effects criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md).
+
+Check actual test setup/body/teardown and meta direct/latent build/provider/compiler effects under the active target profile and phase, preserving declared mocks and real grants. Pure assertions or syntax data do not hide live services or mutation. Exercise checked-program positive/refusal for undeclared effects, illegal latent use, forbidden profile and phase capture. Keep selected L12 hermetic inputs distinct from pure constants; static admission proves neither actual service enforcement nor pass correctness. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-effects:end -->
+
+
+
+<!-- library-platform-hardware-source-platform-hardware-effects:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library platform-hardware-effects criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Check direct and latent platform/hardware effects and authentic grants for active profile/context, including handler callbacks, blocking/time/random/process, volatile operations, interrupt/DMA and generated forms. Static facts or device descriptions cannot hide live calls; unsafe declarations do not bypass profile/no-runtime or interrupt constraints. Exercise actual checked source positive/refusals for ambient access, forbidden profile/effects/handler behavior and missing scope with source diagnostics; static acceptance is no provider enforcement or physical run. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-platform-hardware-effects:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-ui-effect-admission criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Check direct/latent crypto/random/key/provider and UI event/command/navigation/host-service effects with actual grants, active profile, phase and generated checking. Pure crypto policy/digest/view data cannot conceal secret provider calls, host mutation or tool authority. Exercise real checked positive/refusal for missing scope, forbidden profile, undeclared callback/handler effect and secret-in-compile-time capture. Static admission establishes neither provider execution, constant-time proof nor mounted UI behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-ui-effect-admission:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

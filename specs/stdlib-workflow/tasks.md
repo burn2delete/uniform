@@ -96,6 +96,74 @@ Library foundation module criterion (Open): Bind every required module and expor
 <!-- library-base-source-module:end -->
 
 
+
+<!-- library-data-source-callable-exports-and-contracts:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library callable exports and contracts criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md).
+
+Required behavior: Bind gravity.schema and gravity.db exports to actual callable definitions, supported formats/providers/profiles, type/schema or permitted explicit row-shape contracts, effects/grants, allocation/resources, failure, replay and stability metadata. Include the complete named module surfaces, not just compiler-reachable helpers.
+
+Refusals and acceptance evidence: Missing exports, host-only compatibility names, false availability or declaration-only implementations remain Open. Evidence requires actual accepted/refused import and call results bound to exact source/export/profile/provider/target identities. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-callable-exports-and-contracts:end -->
+
+
+
+<!-- library-workflow-ai-source-callable-inventory:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library callable-inventory criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Bind every named gravity.workflow/gravity.ai export to an actual callable implementation or explicit remaining work, with type/schema/effect/grant, profile/provider, resource/failure/replay, compatibility and artifact contracts. Preserve source names with explicit accounting remove/retain/history dispositions; catalogue names or compatibility helpers prove no availability. Evidence: actual accepted/refused import/call results and matching module/profile metadata for exact source/compiler/provider/target subjects. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-callable-inventory:end -->
+
+
+
+<!-- library-testing-meta-source-callable-exports:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library callable-exports criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Bind all named gravity.test and gravity.meta exports to actual callable implementations or explicit remaining work, with exact namespace/export/version, input/output, profile/target, effects/grants, failure, artifact and stability contracts. Named hooks, compatibility spellings and a module inventory are no callable export proof. Evidence: accepted/refused imports and real calls plus matching module/API-tier/profile manifests for exact source/compiler/runtime/provider/target subjects. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-callable-exports:end -->
+
+
+
+<!-- library-platform-hardware-source-callable-exports:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library callable-exports criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Bind every named gravity.platform and gravity.hardware export to actual callable behavior or explicit remaining work, with namespace/version, input/output, profile/target/device/provider, effects/grants, errors, artifact and stability contract. Preserve full module surfaces, not only an inventory. Evidence: accepted/refused imports and real selected calls plus exact compiler/runtime/provider/target manifests; a static p16 summary, simulator name or API label is no implementation result. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-callable-exports:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-callable-exports:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library callable-exports criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Bind the full named gravity.crypto and gravity.ui surfaces to actual callable implementations or explicit remaining work, with exact namespace/version, signatures, profile/target/provider/adapter, effects/grants, allocation/error, artifacts and per-export stability. STD20 defines policy, not an invented callable API. Exercise accepted/refused imports and actual calls with matching manifests; catalogues, lifecycle strings and target labels prove no callable behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-callable-exports:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-stability-levels-and-imports:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library stability-levels-and-imports criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV3](../../docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md), [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md).
+
+Expose every actual module/export stability entry: experimental explicit source/package opt-in with isolation from stable consumers; draft changes with release notes/fixture updates; stable compatibility protection; deprecated support/diagnostics for governed window; removed only through compatibility/migration/historical contexts; internal unavailable to user imports. Exercise accepted and denied import/opt-in/isolation/removed/internal cases through actual Build/package consumers, with missing-level and misleading-stable refusals. STD20's illustrative policy form is a record example, not a new API or stability approval. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-stability-levels-and-imports:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -554,6 +622,83 @@ Library foundation inequality criterion (Open): Implement binary not= as Bool co
 <!-- library-base-source-inequality:end -->
 
 
+
+<!-- library-testing-meta-source-test-definition-and-assertion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-definition-and-assertion criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Implement deftest/testing/is/are/throws?/diagnostic?/test-var over real test definitions and structured assertions. Each test declares profile, target constraints, effects, capabilities, fixtures and expected artifacts; assertions retain actual expected/observed values and stable source spans. Exercise passing and deliberate failing value/error cases, malformed metadata and source identity. A prose message or supplied pass flag is insufficient; portable and profile-specific semantics stay distinct. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-definition-and-assertion:end -->
+
+
+
+<!-- library-testing-meta-source-fixtures-and-goldens:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library fixtures-and-goldens criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Implement fixture/with-fixture/temp-resource/golden/golden-update/artifact-fixture with actual setup/body/teardown and resource cleanup on success, failure, cancellation and partial initialization. Hash/version golden artifacts and record explicit reviewable updates. Exercise deterministic source/artifact comparisons and missing/stale/unrecorded golden changes, cleanup failures and resource leaks. Updating an expected output cannot silently turn a regression into conformance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-fixtures-and-goldens:end -->
+
+
+
+<!-- library-testing-meta-source-properties-and-fuzzing:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library properties-and-fuzzing criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Implement defproperty/for-all/gen/shrink/seed/counterexample and deffuzz/fuzz-input/corpus/minimize/coverage-guided APIs. Preserve actual generator and seed, shrinking/minimization strategy, original failing subject and minimized counterexample or crash reproducer. Exercise reproducible failures and replay from exact seed/generator/compiler/profile/target, including the documented assoc-then-get property. Refuse missing seed/minimized-input artifacts; a fuzz corpus or counterexample label is no executed test result. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-properties-and-fuzzing:end -->
+
+
+
+<!-- library-testing-meta-source-diagnostic-assertion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library diagnostic-assertion criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Match actual diagnostic id, span class, active profile and remediation category, retaining target, source/generated origin and expected/actual context where required. Exercise deliberate wrong-id/span/profile/remediation and missing-source cases independently of result equality. Free-form text matching alone rejects; distinguish reader syntax errors from semantic errors and keep structured diagnostic goldens tied to exact compiler and fixture subjects. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-diagnostic-assertion:end -->
+
+
+
+<!-- library-testing-meta-source-mocks-and-live-authority:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library mocks-and-live-authority criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md).
+
+Implement fake-capability/mock-effect/record-calls/expect-call with explicit replaced effect/capability, active target profile and fixture grants. A fake intercepts only its declared behavior and creates no live authority. Live time/random/file/network/database/model/hardware/host tests require actual capabilities and secret redaction, never ambient services. Exercise fake call observations, undeclared replacement and denied live access before effects; mock/recorded/live scopes remain distinct and held service operations remain unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-mocks-and-live-authority:end -->
+
+
+
+<!-- library-testing-meta-source-eval-and-performance-tests:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library eval-and-performance-tests criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Expose eval-case/dataset/metric/threshold/probe and benchmark assertions with actual model identity, prompt version, dataset, metric, threshold, target/profile/compiler/runtime and benchmark settings. Consume the owning AI and performance subject/oracle products. Exercise actual callable scoring/measurement and stale/missing/wrong-subject reports; source/API generation is not an eval or benchmark run. Quality/performance thresholds and real provider restrictions remain distinct from retired project work allowances. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-eval-and-performance-tests:end -->
+
+
+
+<!-- library-testing-meta-source-suite-selection-and-reports:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library suite-selection-and-reports criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md).
+
+Implement conformance-suite, profile-suite, backend-suite, stdlib-suite, report, test-report, junit, json-report, coverage-report and evidence-pack APIs as actual packageable artifacts. Select by profile, target, module, diagnostic id and artifact type; preserve source/package/compiler/runtime/target, seed, fixture and artifact hashes, results and unavailable/failed/unrun cases. Support seed/self-hosted compiler, runtime and package consumers with precise subjects. Exercise actual report generation/consumption and malformed/missing provenance; a coverage file or test runner hook does not accept a suite, bootstrap stage or release. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-suite-selection-and-reports:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` Complete resource/concurrency/IO/network APIs
 
 Status: Open
@@ -818,6 +963,609 @@ L19 actual schema and service adapter API criterion (Open): Provide selected rea
 <!-- stdlib-interop-source-adapters:end -->
 
 
+
+<!-- library-data-source-schema-values-and-validation:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library schema values and validation criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md).
+
+Required behavior: Expose schema/field/optional/required/default/refine/enum/union/record, validate/explain/valid?/coerce/schema-path/validation-error over actual source-schema products. Preserve required/optional/default/invariant/version and classified refinement behavior, expanded source identity, source spans and stable failing schema paths. Execute coerce only under a declared checked conversion policy; its name cannot supply unspecified host coercion.
+
+Refusals and acceptance evidence: Reject weakened source constraints, invalid values, missing schema/boundary identity and lost paths. Actual valid/invalid/refinement/recursive and documented User-schema results consume Schema-produced manifests, validators and static projections; Library does not take over their production. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-schema-values-and-validation:end -->
+
+
+
+<!-- library-data-source-decode-trust-and-serializer-policy:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library decode trust and serializer policy criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md).
+
+Required behavior: Run real encode/decode/json/edn/binary/stream codecs under schema/version, format, field/unknown-field, duplicate-key, numeric/string/byte/variant, trust and canonicalization policies. Preserve required-field, precision, encoding, length and recursion checks. External and authenticated-but-unvalidated values stay tainted until validation for the intended schema and sink succeeds. Polymorphic decoding requires its finite admitted type set; lossy conversion needs explicit compatible policy.
+
+Refusals and acceptance evidence: Reject decode-without-validation, silent loss, unsafe polymorphism, sink trust inferred from transport authentication and false round trips. Evidence is actual bytes/values, invalid-field/encoding/numeric cases, declared conversions and schema/path/trust diagnostics, not supplied validated flags. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-decode-trust-and-serializer-policy:end -->
+
+
+
+<!-- library-data-source-canonical-identity-and-byte-vectors:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library canonical identity and byte vectors criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md).
+
+Required behavior: Expose canonical encoding using actual schema hash/version, type tags, canonical encoded map-key/set-value ordering, numeric/string/binary/metadata policies and all supported scalar/container/variant families. Keep absent versus none, widths, NaN/infinity/signed-zero/decimal/timezone and normalization rules explicit. Equal admitted semantic values produce equal bytes under the same policy across supported targets.
+
+Refusals and acceptance evidence: Reject host iteration, identity, locale, timezone, target layout and noncanonical hash/signature inputs. Actual cross-target reference vectors, edge cases, replay/manifest bytes and refused out-of-domain values precede canonical claims; no signing operation is enabled by these notes. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-canonical-identity-and-byte-vectors:end -->
+
+
+
+<!-- library-data-source-binary-streaming-and-profile-behavior:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library binary, streaming and profile behavior criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md).
+
+Required behavior: Real binary and streaming codecs preserve declared endian/alignment/length/unknown-field, storage/allocation/lifetime and failure policy. Hardware receives compile-time static/fixed-layout helpers; firmware/kernel codecs expose physical length/allocation limits; core gets pure schema/validator/canonical/derivation support; native, hosted, distributed, AI, meta and formal behavior retains each source-specific condition.
+
+Refusals and acceptance evidence: Reject ambient service/reflection/allocation, unsupported profile claims, hidden layout, weakened bounds and reflection-only derivation in forbidden profiles. Actual accepted/refused profile examples, streaming teardown and binary vectors establish declared behavior. Semantic codec limits do not reinstate compiler work quotas. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-binary-streaming-and-profile-behavior:end -->
+
+
+
+<!-- library-data-source-derivation-and-evolution-interfaces:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library derivation and evolution interfaces criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md).
+
+Required behavior: Expose derive-schema/validator/codec/migration, schema-version/migration/compatible?/diff-schema/upgrade/downgrade and artifact APIs over authentic Schema derivation, semantic-diff and migration outputs. Preserve from/to identity, direction, rejected weakening, compatibility policy and generated consumer constraint/path parity.
+
+Refusals and acceptance evidence: Reject an artifact name or textual diff substituted for source validation or migration admission. Schema and its two existing future tasks retain producer ownership. Actual source/generated accepted/refused parity and checked evolution/upgrade/downgrade results are required for callable library acceptance. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-derivation-and-evolution-interfaces:end -->
+
+
+
+<!-- library-data-source-boundary-schema-identity:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library boundary schema identity criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md).
+
+Required behavior: Carry actual schema/version/validator/codec identity across the required AI prompts/structured outputs/tool arguments/results/eval data, workflow events/state, package/compiler artifacts, HTTP and database boundaries. Preserve source-schema projection and intended sink validation. Keep STD9 explicit byte/text body policies and STD11 explicitly declared row shapes as their authorized contextual alternatives.
+
+Refusals and acceptance evidence: Do not silently replace those alternatives with a universal new schema requirement, or use them to label unvalidated values trusted. Evidence must show actual consumer reuse/parity and rejection at each claimed boundary; one shared schema declaration does not prove all consumers executed. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-boundary-schema-identity:end -->
+
+
+
+<!-- library-data-source-database-resources-and-typed-queries:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database resources and typed queries criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Execute connect/with-connection/close/pool/provider/capability and query/execute/prepare/param/query-dsl/select/insert/update/delete/returning over the admitted provider and real Query/backend results. Preserve declared connection/pool lifetime, effects/grants and parameter/taint separation. typed-row/row-schema/decode-row/row-path/row-error checks actual results against the schema artifact or explicitly declared row shape allowed by STD11.
+
+Refusals and acceptance evidence: Reject ambient credentials, string interpolation, invalid/untyped rows, hidden host behavior, leaked resources and provider plans presented as result execution. Exercise the hosted user-by-email example with actual parameter binding, decoded row values, failures, false/nil/null and exact schema/path/provider identities. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-resources-and-typed-queries:end -->
+
+
+
+<!-- library-data-source-database-transaction-lifecycle:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database transaction lifecycle criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Execute transaction/commit/rollback/savepoint/isolation/retry-transaction using the selected provider's declared isolation, retry, rollback and idempotency assumptions. Preserve effectful success, early return, error, cancellation and connection teardown behavior, actual retry scope and typed provider failures.
+
+Refusals and acceptance evidence: Reject omitted isolation/rollback policy, unsafe retry, incomplete cleanup and simulated commits. Actual commit/rollback/savepoint/retry/isolation/failure observations are required. A database transaction wrapper does not prove language STM, storage-engine WAL durability or whole Query support; any existing central equivalence disposition still needs explicit source-context review. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-transaction-lifecycle:end -->
+
+
+
+<!-- library-data-source-database-migration-execution:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database migration execution criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Expose defmigration/apply-migration/rollback-migration/migration-plan/migration-proof over checked Schema compatibility/migration products and the selected dialect/provider. Preserve from/to schemas, reversibility or declared forward-only behavior, data movement/backfill, data-loss/safety/review policy and deployment ordering. Actual write/admin authority is checked at execution.
+
+Refusals and acceptance evidence: Reject missing/wrong source versions or policy, unreviewed destructive changes where review is required, missing authority and generation presented as execution. Schema's existing migration task owns diff/plan admission products; real permitted library/provider apply/rollback and plan-validation fixtures must prove execution separately. Existing migration restrictions remain effective. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-migration-execution:end -->
+
+
+
+<!-- library-data-source-providers-profiles-and-redaction:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library providers, profiles and redaction criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Serializer and database host delegation preserve provider/version/features/dialect/format and error mapping artifacts. Database core exposes data/schema helpers, hardware/firmware/kernel no standard DB IO, native/hosted explicit providers, distributed workflow-safe boundaries, AI policy/tool constraints, meta schema/code generation and formal modeled or constrained provider semantics. Redact credentials, connection strings and sensitive parameters in all required diagnostics/artifacts.
+
+Refusals and acceptance evidence: Reject driver availability used as portable semantics, unsupported feature claims, ambient credential use, raw host errors and secret leakage. Actual allowed/refused provider/profile/diagnostic/redaction products establish the selected claim; no provider, private store or external service is executed here. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-providers-profiles-and-redaction:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-definition:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-definition criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md).
+
+Implement defworkflow/workflow/input/output/version and graph/state/event/activity artifact APIs over authentic checked Workflow and Backend products. Return actual typed node/edge/input/output/state/effect, source/generated-origin and version identities; graph generation is not execution. Compile onboard-user into genuine graph/event/retry/idempotency/compensation artifacts and reject missing or contradictory graph/schema/state contracts. Workflow retains source semantics and backend-workflow deployable graph emission. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-definition:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-activity:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-activity criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement step/activity/recorded-step/side-effect/child-workflow/state operations over selected Runtime adapters, distinguishing deterministic replay computation from effectful activities. Preserve typed schemas, direct/latent effects, grants, idempotency, retry/timeout/cancel, failure and required compensation. Exercise real selected step outcomes and capability use; reject clock/random/network/file/database/model/tool behavior bypassing the required boundary. Onboard-user must reject IO outside the required activity; a step label or supplied result is insufficient. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-activity:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-events:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-events criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement sleep/timer/signal/await-signal/race/all/choice/loop-step, child workflows and external/review events with typed schema/state, source, ordering, cancellation and recorded decision identities. Record winning choices, timer firings, external payloads and outstanding work as governing replay policy requires. Exercise first-run/replay, failure/cancel/late/malformed event cases; reject untyped events, hidden scheduling/nondeterminism and invalid transitions. Actual callback execution remains held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-events:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-reliability:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-reliability criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement retry/timeout/idempotency-key/compensate/saga/checkpoint over actual durable semantics. Preserve declared scope/backoff, cancellation, guarded once-only effect identity, timeout/failure mapping, persisted checkpoints and required compensation for irreversible or partially reversible effects. Exercise success/failure/retry/timeout/cancel/restart/partial rollback and compensation failure; reject missing required idempotency or compensation and repeated effects. The example max-three and requested program retry policy are semantics, not development work or attempt quotas. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-reliability:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-replay:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-replay criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement record-event/replay/event-log/deterministic?/replay-fixture against actual schema/versioned Runtime logs and outcomes. Preserve workflow/step/event, provider, input/output digest, schema, error/retry, capability and source origins. Exercise genuine restart/replay and missing/changed/reordered/incompatible record refusals; deterministic replay cannot issue fresh nondeterministic external effects. A replay-policy or deterministic flag is no replay evidence; mock, recorded and live subjects remain distinct. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-replay:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-evolution:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-evolution criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Expose workflow-version/state and adapter compatibility over checked Schema migration products and actual Workflow/Runtime state/log transitions. Preserve exact previous/next code/schema/event identities, replay policy and admitted migration. Exercise accepted in-flight migration or deterministic rejection, restart and replay with actual state/log subjects. Generating a plan is distinct from applying it; migration, private-store and replay actions remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-evolution:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-review:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-review criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md).
+
+Implement human-review-step/policy/event as typed durable operations consuming AI review/policy and authentic action grants. Preserve payload/action, reviewer and decision scope, expiry/revocation, denial/timeout and recorded replay identity. Exercise grant/deny/expired/revoked/changed-payload and pause/resume cases through actual selected adapters. Review cannot create capability or authorize a changed action; held UI/provider operations remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-review:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-profile-adapter:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-profile-adapter criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Expose actual runtime-adapter/activity/event-schema behavior and version/replay compatibility for declared providers. Distributed has the durable surface; AI consumes it where durability is required; hosted development and native embedded runtimes need their explicit runtime contracts. Core is data-only, kernel/firmware/hardware lack standard durable execution, meta generates graphs and formal verifies modeled schemas/effects/compensation. Exercise each claimed profile/provider and expected denial, stable logs and normalized Gravity errors; no selected engine or live authority is inferred. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-profile-adapter:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-provider:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-provider criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement provider/model/capability/manifest APIs over admitted AI contracts and actual selected Runtime calls. Preserve provider/model/version, input/output schemas, prompt/parameters/request/result/failure/fallback/drift, taint, policy and replay identities. Apply current accounting-removal dispositions to historical budget wording while retaining genuine account/provider limits and attributable usage. Exercise real selected value/error/refusal/fallback/change and output validation; deny missing/wrong grants before invocation. A network grant, provider declaration or supplied response is no model-call result. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-provider:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-prompt:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-prompt criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement prompt/system/developer/user/context/structured-output/refusal APIs with source-visible authority partitions, rendered message hashes, taint, intended-sink schema validation and refusal/repair policy. Preserve the approved sanitizer OR delimiter alternative without elevating data to instruction authority. Exercise actual rendering, structured/refused/partial/invalid output, injection and secret/no-store cases. Retrieved/model/tool text creates no authority; a prompt or validated flag is no validation result. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-prompt:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-tool:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-tool criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement tool/schema/capability/call/result APIs using actual typed IO, grant intersection, effects, side-effect class, provider, idempotency/retry/timeout, secret/taint, review and replay contracts. Bind actual calls/results to agent/package/deployment/action subjects. Exercise accepted/refused invocation, invalid input/output, out-of-toolset requests, unsafe retries, missing review and changed payload. Manifests/review cannot create authority; actual tool execution retains all held restrictions. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-tool:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-agent:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-agent criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement defagent/agent/run-agent/state/event and classify the preserved agent-budget spelling under the existing accounting-removal authority. Bind actual model/prompt/tool/memory/policy/eval/workflow contracts and source/agent attribution; retired synthetic allowance behavior stays removed while genuine account/provider policy and usage remain distinct. Compile support-agent to authentic linked artifacts; exercise real selected lifecycle/value/failure, missing policy/eval/dependency and invalid grant cases. A manifest or arbitrary cutoff proves no behavior or safety; no second agent runtime is introduced. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-agent:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-memory:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-memory criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement memory/retrieve/remember/embed/partition/policy APIs through actual admitted store/embedding providers, schema/taint and independent read/write grants. Preserve tenant/partition, retention/deletion/privacy/secret, embedding identity/dimension, source/index lineage, retrieval IDs/scores and replay contracts. Exercise permitted/denied read/write/retrieval, partition/retention, selected deletion/re-embedding and refusal cases. Reject fresh retrieval during recorded replay and ungranted cross-tenant access. A mock store proves no external retention/deletion result; private-store/provider actions remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-memory:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-policy:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-policy criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Expose policy-check/human-review-required?/redact/taint-source over deterministic layered AI policy and authentic grant/deny/review products. Preserve deny precedence, action/payload binding, reviewer/expiry/revocation/timeout/replay and redaction. Exercise actual permitted/denied protected paths, prompt/tool/model authority injection and secret leaks. No decision record replaces sink enforcement. Remove artificial project allowances without weakening genuine external-account/service/host restrictions; held write/destructive/shell/deployment/package/secret effects stay held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-policy:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-evaluation:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-evaluation criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Implement eval/dataset/metric/threshold/probe/report APIs with exact dataset schema/version/provenance/split, metric direction/aggregation/threshold/confidence-or-variance, model/prompt/provider/tool/memory/policy/runtime subjects and changed-artifact comparisons. Release-marked agents need matching required eval/defense reports. Exercise actual callable scoring/report and missing/stale/incompatible-report refusal. Release execute-agent-and-workflow-evaluations owns its independent actual suite; Library exposes APIs and AI supplies subject/oracle contracts. A hook, sample score or report label is no run; quality thresholds are not project work quotas. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-evaluation:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-workflow-generated-code:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-workflow-generated-code criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Implement agent-workflow/human-review-step/record-model-call/record-tool-call using the same STD12 graph/state/log and authentic provider/memory/review products. Generated code/configuration retains model/prompt/generator origins and passes ordinary compiler, safety, profile and package checks before use. Exercise selected real first-run/replay, missing-model/tool-record and generated-invalid-code/provenance cases. No permissive compiler, hidden live replay call or SDK-only path is accepted; producer owners and all held execution routes remain. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-workflow-generated-code:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-profile:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-profile criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P5](../../docs/phase-03-profile-system/050-p5-native-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Enforce full AI, workflow-integrated distributed and explicitly enabled hosted development rules. Core has data/schema helpers only; kernel/firmware/hardware and unrestricted formal have no live model API, and meta artifacts undergo downstream checks. Preserve STD13's specific native local-model/provider condition with actual records/capability gates and ordinary native boundary legality, without broad native agent/tool authority. Matt's [2026-11-04 scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis) explicitly selects this condition. Actual provider/profile/authority evidence, implementation and independent current source acceptance remain required. Exercise actual profile/provider admission/refusal; wider native claims remain unassessed and native/provider execution held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-profile:end -->
+
+
+
+<!-- library-testing-meta-source-meta-syntax-values:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-syntax-values criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement syntax, quote-syntax, syntax?, syntax-value, syntax-span, syntax-meta and with-syntax-meta as actual typed syntax APIs preserving required source spans, hygiene marks, namespace context, metadata, phase, profile and generated origins. Metadata transformations cannot silently erase safety-critical context or forge provenance. Exercise real syntax inspection/transformation and span/hygiene/context/phase-loss refusals; ordinary immutable Core syntax data grants no compiler mutation or dynamic evaluation authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-syntax-values:end -->
+
+
+
+<!-- library-testing-meta-source-meta-hygiene-and-resolution:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-hygiene-and-resolution criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement gensym/bind/resolve/namespace-context/hygiene-mark/fresh-name over the owning Syntax/Resolve/Expand products. Preserve legitimate lexical identity, explicit marked capture and source trails; reject unexpected capture of user, privileged, capability, provider, secret or compiler bindings. Exercise actual hygienic and permitted explicit capture cases with matching policy/grants and exact macro definition/call/generated-origin diagnostics. A fresh-name string alone does not establish hygiene. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-hygiene-and-resolution:end -->
+
+
+
+<!-- library-testing-meta-source-meta-macro-expansion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-macro-expansion criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement defmacro/macroexpand/syntax-case/syntax-match/emit/diagnose over the ordinary expansion and generated-program route. Preserve metadata, hygiene, source/provenance, taint, effects/capabilities and safety declarations; all generated forms undergo normal type/effect/capability/memory/profile/safety/package checks. Compile the documented when macro and exercise valid expansion, invalid generated forms and undeclared unsafe/capture/taint loss. A library hook or alternative engine has no privileged bypass; generated unsafe islands require their real SAFE6/audit conditions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-macro-expansion:end -->
+
+
+
+<!-- library-testing-meta-source-meta-compile-time-values:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-compile-time-values criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement const/compile-time/eval-ct/ct-capability/phase with actual phase, profile, effects and authentic compile-time grants. Preserve pure constant evaluation's separate prohibitions and the recorded L12 declared/replayable-input policy plus reviewed L6 clarification for general compile-time execution. Runtime handles, capabilities and deployment-only secrets cannot be captured. Exercise actual eligible results and undeclared/ungranted/nonreplayable-input, phase/profile and runtime-authority refusals. Dynamic evaluation is unavailable in kernel/firmware/hardware; this does not invent a blanket prohibition on permitted static compiler transformations. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-compile-time-values:end -->
+
+
+
+<!-- library-testing-meta-source-meta-stable-ir-views:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-stable-ir-views criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Implement inspect-core/inspect-mir/mir-node/mir-effect/mir-type/source-map as actual stable public IR views, distinctly versioned from unstable internals. Require the actual L6 compiler/read-ir effect and scoped compiler/ir-transform authority for artifact kind, namespace, phase and package. Read-MIR never grants write-MIR; metadata or package identity creates no grant. Exercise permitted reads and wrong-scope/phase/internal-mutation denials. Compatibility compiler/ir spelling does not establish canonical alias/scope equivalence; actual compiler access remains held where restricted. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-stable-ir-views:end -->
+
+
+
+<!-- library-testing-meta-source-meta-pass-api:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-pass-api criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Expose defpass/analysis/transform/preserves/invalidates/pass-artifact over actual declared input/output IR, required facts, preserved invariants, invalidated analyses, regeneration and proof obligations. Actual allowed transformed output passes its owning verifier before consumption; stale analyses/proofs are invalidated and recomputed as required. Exercise genuine selected before/after products and missing contract, lost fact, unsound transform and stale reuse refusals. Compiler-API owns execution contexts and pass evidence, not a second library pass engine; a preserves field or verifier flag proves no invariant. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-pass-api:end -->
+
+
+
+<!-- library-testing-meta-source-meta-plugin-api:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-plugin-api criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Expose defplugin/plugin-capability/compiler-hook/plugin-manifest using real package identity, API/compiler version compatibility, trust, effects/grants, supported passes/artifacts, signing metadata and conformance. Check compatibility/policy before code initialization; reject hidden mutation, ungranted build effects, opaque domain/facet payloads and invalid outputs. Library APIs consume the existing plugin host and verifier products; named callbacks or signed identity do not establish execution or grants. Keep signing/package publication and plugin/C12/callback execution restrictions effective. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-plugin-api:end -->
+
+
+
+<!-- library-testing-meta-source-meta-trust-and-self-hosting:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-trust-and-self-hosting criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md).
+
+Expose actual macro/plugin-to-generated-compiler provenance and keep seed assumptions, trusted inputs, unsafe audit records and TCB deltas visible in self-hosting API/artifacts. Preserve compiler/API tier/version and authentic source/input/output/pass identities. Exercise missing/wrong/stale provenance/audit and hidden seed assumptions; consume applicable stage/rebuild/conformance/equivalence evidence rather than inferring self-hosting from Gravity source or meta API use. Final stage acceptance is not a first ordinary meta declaration prerequisite. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-trust-and-self-hosting:end -->
+
+
+
+<!-- library-testing-meta-source-meta-profile-contract:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-profile-contract criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Enforce full meta syntax/macro/IR/pass/plugin APIs, ordinary immutable Core syntax data, explicitly capability-bearing hosted/native compiler tooling, restricted dynamic CT evaluation, policy-checked distributed/AI artifact generation and formal stable views/proof hooks without unstable mutation. Exercise real accepted/refused profile examples and actual API tier/compiler compatibility. Named native tooling is no release-target adoption or permission to execute held compiler/plugin/native/provider actions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-profile-contract:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-hashes-signatures-and-key-agreement:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library hashes-signatures-and-key-agreement criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement hash/digest/hmac/mac/verify-mac/hash-policy; keypair/public-key/sign/verify/signature/ml-dsa/slh-dsa/signature-policy/signature-lifecycle; derive-key/key-exchange/ml-kem/kdf/hkdf/password-hash/salt using explicit algorithm, mode, provider, key type, nonce/IV policy, randomness and output format as applicable to the operation. Exercise actual selected algorithm/parameter test vectors, success/failure and mismatched key/provider/format cases; no opaque default, provider-chosen algorithm, forged verify flag or missing boundary evidence is accepted. Actual signing/key/provider actions remain held. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-hashes-signatures-and-key-agreement:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-encryption-and-nonce-policy:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library encryption-and-nonce-policy criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement encrypt/decrypt/aead-encrypt/aead-decrypt/nonce/associated-data/ciphertext under actual selected algorithm/provider/key and nonce/IV policy, binding authenticated data and output schema. Exercise accepted vectors, wrong key/AAD, authentication failure, nonce reuse and absent random/provider refusals without exposing secret data or treating failed authentication as plaintext. The seal example obtains genuine randomness/provider authority and nonce/output policy from its selected capability and algorithm policy; omissions do not license implicit provider defaults. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-encryption-and-nonce-policy:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-typed-secrets-and-key-handles:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library typed-secrets-and-key-handles criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [DOM15](../../docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md).
+
+Implement secret/with-secret/zeroize/key-handle/redact-secret/secret-scope with typed secret labels, explicit custody and restricted lifetime, memory, copying, retention and serialization. Preserve scope teardown/zeroization guarantees actually supplied by the selected provider/target and reject unsupported guarantees rather than claiming them from a flag. Exercise real allowed secret handling and denied log/prompt/trace/diagnostic/test-report/package serialization or copy/retention paths. Key handles, signatures and public metadata never expose raw secret material or grant key access. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-typed-secrets-and-key-handles:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-randomness:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-randomness criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement crypto-random/random-bytes/random-provider/entropy-source with actual declared cryptographic provider, entropy availability, capability and policy. Distinguish deterministic PRNG/test seed from cryptographic randomness and retain genuine provider errors. Exercise selected vectors/delegation and unavailable entropy, wrong-kind, missing grant or unsupported restricted-profile provider cases. Deterministic test bytes do not establish secure live randomness or replay-safe key access. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-randomness:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-constant-time-and-hazardous-primitives:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library constant-time-and-hazardous-primitives criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [DOM15](../../docs/phase-09-domain-specific-computing-coverage/138-dom15-security-and-cryptography-domain-specification.md).
+
+Implement constant-time=/ct-select/ct-copy/constant-time-proof and high-level approved constructions; isolate hazardous low-level primitives behind approved wrappers. Reject custom algorithms by default unless actual governing policy allows audited experimental use. Preserve secret-dependent branch/access/timing/diagnostic restrictions and require applicable actual analysis, external verification or audit evidence for selected sensitive/formal operations. Exercise real vectors and secret-branch/access/leak/unsafe-wrapper refusals. Equal sampled results, a constant-time annotation or proof filename proves no side-channel property; Opt owns actual preservation/reverification. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-constant-time-and-hazardous-primitives:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-algorithm-lifecycle:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library algorithm-lifecycle criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement algorithm-policy/provider-policy/allowed-algorithm?/algorithm-lifecycle/crypto-artifact with machine-readable stable algorithm identities, parameter sets, provider policy, output schema, lifecycle and migration guidance. Preserve approved, transitional with required migration/hybrid evidence, deprecated read/verify-only, audited experimental, reserved future and forbidden with only explicit recovery-policy read-only exceptions. Exercise every active profile/lifecycle combination and absent/ambiguous/stale/inconsistent policy, generic default/secure and undeclared parameter refusals. A provider string or comment is not lifecycle authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-algorithm-lifecycle:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-post-quantum-families:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library post-quantum-families criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Expose actual ML-KEM, ML-DSA and SLH-DSA family/parameter/provider/serialization contracts with key-generation, serialization, success/failure, redaction and policy test vectors. Preserve FN-DSA/FALCON/HQC as future or experimental until an actual governing algorithm-policy upgrade; default use rejects and any permitted experimental use requires explicit audited policy. Bind vectors and conformance to the declared family and exact provider/parameters. Named families are not implemented algorithms, provider selection or permission to update the canonical lifecycle from external current events. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-post-quantum-families:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-hybrid-key-establishment:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library hybrid-key-establishment criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Implement hybrid-key-exchange with declared classical component and post-quantum KEM, approved KDF combiner, both public keys and ciphertexts, transcript context, provider identities and error paths bound before deriving application keys. Preserve explicit failure and downgrade policy. Exercise actual selected success vectors and component substitution, transcript omission, partial failure, downgrade, wrong provider/parameter/combiner refusals; two algorithm labels or independently passing component samples do not establish a bound hybrid protocol. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-hybrid-key-establishment:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-migration-inventory:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library migration-inventory criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Implement migration-inventory over every algorithm-bearing source/generated-code, package/SBOM/provider, serialized key/certificate/signature/ciphertext/transcript/protocol, persisted database/wire schema and test/interop/formal/audit surface. Record replacement target, lifecycle deadline, compatibility mode, verification evidence and old-artifact read-only/re-sign/re-encrypt/unrecoverable disposition. Exercise complete selected inventories and omitted/wrong/stale surface/evidence refusals. Crypto-agile replacement preserves application schemas unless policy explicitly records a deliberate migration break; inventory publication performs no private-store migration, key rotation or signing. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-migration-inventory:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-crypto-provider-and-profile:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library crypto-provider-and-profile criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md).
+
+Preserve Core pure hashing/digest/constant-time comparison/policy without secret provider, constrained firmware/kernel, capability-bearing native, recorded hosted delegation, distributed replay-safe or activity-isolated randomness/time/key access, policy-approved AI tools, meta policy inspection without secret exposure and selected formal proofs. Host providers record identity/version, relevant FIPS or policy mode, target, supported parameters, side-channel claims and Gravity error mapping. Exercise actual selected permitted/unsupported/provider-mismatch and hidden allocation cases with exact proof/audit scope; no unspecified universal FIPS requirement or native/provider execution grant is invented. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-crypto-provider-and-profile:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-component-and-state-apis:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library component-and-state-apis criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement defcomponent/component/props/state/view/slot/fragment and signal/atom-state/derived/reducer/store/state-schema with actual props, state, emitted events, handled commands, effects and target availability. Boundary-crossing persistence/workflow/AI/network state has genuine STD10 schema/serialization/taint facts. Exercise Counter component definitions and real selected state/event/view products, missing metadata, untyped external state and invalid boundary refusals. Component data or TypeScript declarations alone do not validate untrusted runtime input or imply a shared renderer for every target. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-component-and-state-apis:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-events-commands-and-effects:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library events-commands-and-effects criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement event/on/emit/command/dispatch/effect-handler/event-contract with typed untrusted input, declared handler effects and actual capabilities. Preserve schema validation before trusted UI/HTML/URL/CSS/script/storage/network sinks and authenticated command/handler context. Exercise valid selected interactions and malformed event, undeclared effect, missing grant and unsafe sink refusals; the Counter click event is a checked event contract, not an unchecked privileged host callback. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-events-commands-and-effects:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-rendering-and-lifecycle:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library rendering-and-lifecycle criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Implement render/hydrate/mount/unmount/portal/view-tree/render-artifact with distinct escaped text, trusted markup, binary media and target-native views. Enforce actual trust/escaping policy and selected adapter lifecycle/hooks/resource cleanup, including failure/partial initialization. Exercise accepted text/trusted/native products and tainted markup, missing adapter, invalid lifecycle or false target support refusals. Core pure view trees, rendered artifacts and live mounted UI retain distinct scopes; no generic renderer or physical app run follows from a view descriptor. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-rendering-and-lifecycle:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-routing-and-styling:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library routing-and-styling criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement route/router/navigate/link/route-param/route-schema with parameter schemas and declared navigation effects. Implement style/class/theme-token/layout/media-query/target-style with deterministic tokens or explicit target-delegation records. Exercise valid selected routes/styles and missing/wrong parameter schemas, hidden navigation effect, unsafe style/URL sink and absent/mismatched delegation refusals. Preserve actual source/target/adapter/schema identities rather than accepting unchecked browser globals or host-framework internals. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-routing-and-styling:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-accessibility-artifacts:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library accessibility-artifacts criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Implement label/role/focus/keyboard/announce/accessibility-tree and preserve supported-target accessibility metadata in actual component artifacts. Exercise interactive elements with usable labels/roles, focus and keyboard/announcement/tree products and missing required label/metadata or unsupported target cases. Formal invariant checks and live accessibility interactions require their actual evidence; an accessibility field or snapshot name alone proves no behavior. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-accessibility-artifacts:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-target-adapters-and-generated-ui:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library target-adapters-and-generated-ui criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [DOM6](../../docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
+
+Implement web-adapter/desktop-adapter/mobile-adapter/terminal-adapter/native-view with explicit target, host services, lifecycle hooks and unsupported features. Preserve hosted web/managed/dev adapters, native where implemented, schema-backed distributed dashboards, policy-checked schema-bound AI tools/actions, Core data/views, constrained firmware/kernel capability adapters, conditional backend-supported static hardware display, meta generation and formal invariant verification. Generated UI undergoes ordinary compiler/profile/safety/schema/policy checks. Exercise selected valid adapters and absent/unsupported features, ambient browser globals, untyped imports, generated bypass or false all-target claims; Backend JS/mobile and Runtime own actual emitted and running products. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-target-adapters-and-generated-ui:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-snapshot-and-interaction-products:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library snapshot-and-interaction-products criterion (Open). Sources: [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md).
+
+Produce actual component prop/state/event/command/accessibility/render, route/schema, style/delegation and adapter artifacts consumable by existing STD14 snapshot and interaction APIs. Tests consume those artifacts rather than raw host internals. Exercise real selected Counter/example snapshots and interactions, mismatched component/schema/adapter/source provenance and missing required artifacts. UI library fixture implementation remains distinct from independent UI/domain/browser/Release suite runs and application/product acceptance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-snapshot-and-interaction-products:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 
 Status: Open
@@ -866,6 +1614,228 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation audit-consumption criterion (Open): Consume the existing evolution/security-review task's distinct GOV9 unsafe-audit verdict for each exact island/source/owner/profile/target/wrapper and applicable GOV4 security decision, keeping those decisions separate. Revalidate relevant changed assumptions and preserve invalid-precondition and specialist memory/concurrency/FFI/backend evidence in package/release provenance. Deny stabilization/release with stale/missing audit or unenforced wrapper conditions. Evidence: actual accepted/refused audit-consumer cases and GOV9001-GOV9008, without performing the independent review here or gating ordinary API implementation.
 <!-- library-base-source-audit-consumption:end -->
+
+
+
+<!-- library-data-source-library-conformance-and-composed-examples:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library conformance and composed examples criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Consume actual callable API/profile examples, validator/codec/canonical vectors, schema trust/compatibility/projection products, parameterized query/typed row/transaction/provider results and applicable independent checker/harness outputs for exact compiler/runtime/provider/target subjects. Retain STD10001-STD10008, STD11001-STD11008 and owning Schema/Query errors at their actual boundaries. Compose User-schema, user-by-email and applicable domain migration/query examples.
+
+Refusals and acceptance evidence: Reject static p16 completeness summaries, manifests, mocked providers or a single narrow receipt promoted to whole library/domain acceptance. Storage page/WAL/crash-recovery remains the storage task; its unavailability cannot disappear or be credited by a database-client fixture. Required held or unavailable cases stay Open. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-library-conformance-and-composed-examples:end -->
+
+
+
+<!-- library-workflow-ai-source-library-conformance:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library conformance criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Consume actual callable exports/profiles/adapters, graph/state/log/schema, provider/prompt/tool/memory/policy/review/eval/generated-program and applicable independent checker products for exact source/compiler/runtime/provider/target subjects. Preserve STD12001-STD12008 and STD13001-STD13008 meanings and owning AI/Workflow/Profile/Runtime diagnostics with source and redaction. Compile onboard-user/support-agent and exercise genuine selected accepted/refused replay/compensation/migration/injection/schema/grant/review paths. Independent Release/TEST7/TEST8 execution remains separate; catalogues, mocks, fixed graphs or one receipt do not accept whole surfaces. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-library-conformance:end -->
+
+
+
+<!-- library-testing-meta-source-library-example-conformance:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library example conformance criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Compose actual callable test/meta exports and profile examples, structured assertion failures, property/fuzz reproduction, golden updates, diagnostic matching, mock/live denial, stable IR views, generated checking, pass invalidation, plugin compatibility/output and seed provenance results. Preserve individual STD14001-STD14008 and STD15001-STD15008 refusal meanings with source/compiler/package/profile/target/runtime/fixture/plugin/pass/grant context and actual expected/observed products. Compile assoc-then-get and when under their declared profiles and exercise forbidden-profile cases. Existing independent Release/testing/Governance authorities retain suite execution, audit and exact acceptance; no mock, scaffold or one receipt accepts complete library, compiler or self-hosting. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-library-example-conformance:end -->
+
+
+
+<!-- library-platform-hardware-source-target-and-host-facts:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library target-and-host-facts criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement target/target-triple/arch/os/abi/features/runtime-profile from authentic compiler/package target artifacts, and separately host/host-os/host-arch/host-feature/host-delegation under actual effects/grants. Distinguish compilation target, build host, runtime host, container, workflow, browser, embedded board and kernel facts. Exercise cross-compilation with differing facts, explicit permitted runtime query and rejected implicit probing or wrong-subject substitution; retain source-bound target/host diagnostics and provider provenance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-target-and-host-facts:end -->
+
+
+
+<!-- library-platform-hardware-source-environment-and-arguments:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library environment-and-arguments criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement env/get-env/with-env/argv/program-name/redact-env using actual key allowlists, scoped authority and environment/argument redaction policy. No build-host environment is ambient target data. Exercise allowed keys and arguments, missing/revoked grant, forbidden key, absent redaction and restoration/cleanup after with-env failure. Emit redacted observations and authentic provider/version/error artifacts without leaking secret values. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-environment-and-arguments:end -->
+
+
+
+<!-- library-platform-hardware-source-clock-kinds:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library clock-kinds criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement wall-clock/monotonic-clock/cpu-clock/sleep/deadline/recorded-time with explicit wall, monotonic, CPU, compile-time and replay-recorded semantics and selected provider. Exercise actual allowed values/deadlines and wrong clock-kind or profile cases; do not substitute host wall time for monotonic, compilation or recorded facts. Preserve declared provider resolution and actual source/runtime/target identity; a supplied timestamp is no live or replay observation. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-clock-kinds:end -->
+
+
+
+<!-- library-platform-hardware-source-random-provider-kinds:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library random-provider-kinds criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement prng/seed/random-bytes/crypto-random/deterministic-random with explicit deterministic PRNG, cryptographic provider, test seed or host randomness identity and applicable grants. Exercise seeded reproducibility, explicit crypto-provider delegation and ambiguous/mismatched-kind refusals. Cryptographic random requirements remain STD18's real provider/safety contract, not a claim that any host bytes or deterministic test seed are cryptographically suitable. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-random-provider-kinds:end -->
+
+
+
+<!-- library-platform-hardware-source-process-policy-and-results:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library process-policy-and-results criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement spawn/exec/wait/kill/exit-code/stdio-policy/process-capability with explicit command, arguments, environment policy, IO policy, timeout, working-directory policy and actual authority. Reject missing policy independently, unchecked shell assembly and out-of-scope commands/args/cwd/output. Exercise real selected spawn/result/wait/kill/failure and redacted argument/environment observations through the owning permitted Runtime adapter. The run-tool illustration does not define a cwd default: an accepted instantiated fixture supplies genuine complete policy; its omitted policy is a refusal unless an authentic selected context supplies it. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-process-policy-and-results:end -->
+
+
+
+<!-- library-platform-hardware-source-signal-terminal-cleanup:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library signal-terminal-cleanup criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [R3](../../docs/phase-08-runtime-architecture/114-r3-minimal-native-runtime-design.md).
+
+Implement signal-handler/with-signal/terminal-size/tty?/terminal-mode with declared support, resources, effects/grants and deterministic restoration/cleanup on success, failure, cancellation and partial initialization. Exercise actual selected signal/terminal adapter behavior and unsupported-target, missing-capability and leaked-resource refusals with normalized Gravity errors. Hosted delegation retains provider/version/error mapping and auditable privileged adapter records; no live signal/terminal action is authorized by this criterion. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-signal-terminal-cleanup:end -->
+
+
+
+<!-- library-platform-hardware-source-platform-profile-and-replay:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library platform-profile-and-replay criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md).
+
+Implement platform-capability/host-policy/target-manifest/runtime-adapter and preserve the full profile matrix: Core and hardware static target facts; target-specific capability-bearing firmware/kernel; capability-bearing native; recorded hosted delegation; distributed recorded time/random and activity-isolated process/environment; AI typed tools with human-review policy; meta target/build artifacts; formal modeled facts or explicit assumptions. Exercise allowed selected calls and forbidden profile/ambient replay reads with real source-bound results. Native local-model permission does not grant process or tool authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-platform-profile-and-replay:end -->
+
+
+
+<!-- library-platform-hardware-source-registers-and-safe-mmio:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library registers-and-safe-mmio criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md).
+
+Implement register/read-reg/write-reg/modify-reg/field/bit/access-mode/reset-value and mmio-region/mmio-capability/volatile-read/volatile-write/memory-barrier from actual target/device metadata. Require address, width, alignment, access mode, volatile policy, known reset value and side-effect semantics; safe wrappers prove/check size, alignment, access, ordering and authority, otherwise retain an explicit audited unsafe island. Exercise genuine selected reads/writes/side effects and absent width/alignment, unaligned, unsupported, nonvolatile, unauthorized or invalid-order refusals. The example's address/width does not prove alignment; accepted instantiation needs genuine target/map/layout facts, not invented defaults. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-registers-and-safe-mmio:end -->
+
+
+
+<!-- library-platform-hardware-source-interrupt-apis:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library interrupt-apis criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+Implement interrupt/handler/enable-interrupt/disable-interrupt/critical-section/interrupt-table using declared signature, priority, reentrancy, resource use, effects and selected stack/latency/scheduler constraints. Preserve shared-state and cleanup rules, including interrupt acknowledgement and partial failure. Exercise actual permitted handlers and forbidden effects, reentrancy/resource/race or missed-cleanup refusals; library definitions consume real profile/device evidence and do not substitute runtime locks for hardware protocol. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-interrupt-apis:end -->
+
+
+
+<!-- library-platform-hardware-source-dma-apis:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library dma-apis criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [SAFE7](../../docs/phase-02-safety/036-safe7-ffi-safety.md), [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md).
+
+Implement dma-buffer/dma-map/dma-submit/dma-complete/dma-unmap/cache-policy with actual buffer ownership transfer, lifetime, alignment, pinning where required, cache coherence, synchronization, completion and unmap/cleanup products. Exercise valid selected transfers and premature reuse/free/unmap, stale mapping, wrong-device authority, incoherent cache or absent completion refusals. Conditional capability-bearing paths preserve genuine target tags/provenance; a map descriptor or completed flag proves neither transfer nor lifetime safety. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-dma-apis:end -->
+
+
+
+<!-- library-platform-hardware-source-clock-domain-and-timers:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library clock-domain-and-timers criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Implement clock/timer/delay-cycles/deadline/clock-domain/sync-domain with actual clock source, bound and power policy. Require checked synchronizer/handshake/FIFO adapters or applicable synchronization proof for every crossing, retaining actual source/target clock evidence and any canonical hardware-specific audited waiver conditions. Exercise permitted timer/busy-wait behavior and missing bounds/clock/power or unsafe crossings. Runtime unsafe markers and generic locks do not constitute a hardware waiver or CDC proof; real physical timing/resource constraints survive removed project accounting. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-clock-domain-and-timers:end -->
+
+
+
+<!-- library-platform-hardware-source-peripherals-and-hardware-artifacts:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library peripherals-and-hardware-artifacts criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Implement peripheral/pin/gpio/uart/spi/i2c/device-tree plus memory-map/register-spec/firmware-manifest/hardware-proof from selected real target/device/schema/ABI products. Emit source-bound register and interrupt tables, layout/volatile/order and declared evidence interfaces; retain reset values when known. Exercise actual selected API-to-artifact composition and absent/mismatched target/device/maps/provider refusals. A manifest or hardware-proof filename is no protocol proof, physical run, selected ISA, driver product or fabrication claim. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-peripherals-and-hardware-artifacts:end -->
+
+
+
+<!-- library-platform-hardware-source-hardware-profile-and-capability-target:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library hardware-profile-and-capability-target criterion (Open). Sources: [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md), [P6](../../docs/phase-03-profile-system/051-p6-firmware-profile-specification.md), [P7](../../docs/phase-03-profile-system/052-p7-kernel-profile-specification.md), [P8](../../docs/phase-03-profile-system/053-p8-hardware-profile-specification.md).
+
+Keep hardware register/state-machine/static-memory helpers, bounded firmware MMIO/interrupt/DMA/peripherals, kernel audited drivers, explicitly granted native simulator/device adapters, hosted doubles/readers, Core/distributed/AI data or genuinely mediated tools, meta descriptions and formal modeled verification distinct. Firmware rejects hidden heap/reflection/dynamic eval/unbounded recursion/ambient host assumptions. Where genuine selected capability hardware applies, preserve pointer bounds/provenance/permissions/tags across actual register/memory/DMA/FIFO/bus/port/debug paths, explicit compartments/call-gates/return/shared-memory authority, and separate temporal assumptions. No integer round-trip, spatial bound or simulator observation proves temporal revocation or live-device safety; reject stronger unmet guarantees or require genuine separate proof. No CHERI, ISA, board or Product is selected here. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-hardware-profile-and-capability-target:end -->
+
+
+
+<!-- library-platform-hardware-source-library-platform-conformance:start -->
+
+Apply the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Platform/hardware library conformance criterion (Open). Sources: [STD16](../../docs/phase-16-standard-library/226-std16-platform-and-os-library-specification.md), [STD17](../../docs/phase-16-standard-library/227-std17-hardware-and-firmware-library-specification.md).
+
+Compose actual callable API/profile examples, complete process and target/host/clock/random cases, register maps/interrupt tables, MMIO volatile/order preservation, DMA ownership/coherence, CDC and genuine unsafe-audit products for exact source/compiler/runtime/provider/target/device subjects. Preserve each STD16001-STD16008 and STD17001-STD17008 meaning at its actual boundary with expected/observed source-bound positives and refusals. Compile run-tool/ready? under genuine selected complete policy/map/profile conditions and separately refuse missing example facts. Compare simulator with live-target artifact semantics where live hardware is unavailable, retaining explicit unavailable physical cases. Independent Release suites and Governance audits remain separate; no module inventory, simulator report or narrow receipt accepts whole Platform, hardware, library or Product. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-platform-hardware-source-library-platform-conformance:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-eight-dimension-compatibility:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library eight-dimension-compatibility criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md).
+
+Assemble exact baseline/current source, behavior, effect, capability, profile, diagnostic, artifact and conformance comparisons, preserving actual source API/arity/macro/type/protocol, results/errors/order/equality/hash/resource lifetime/replay/side effects, effect renames/narrowing, authority shape, delegation, ids/spans/fields/remediation, schema/content-addressing/provenance/signing/metadata, fixtures/negatives/benchmarks/release-gate changes. Include safety guarantees and performance contracts. Run actual old/new subject fixtures through their owning producers; refuse silent drift, omitted profile/target/artifact scope and compatibility inferred only from compiling source or a manifest. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-eight-dimension-compatibility:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-change-classification-and-release:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library change-classification-and-release criterion (Open). Sources: [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md), [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md), [GOV3](../../docs/phase-17-governance-and-evolution/233-gov3-standard-library-governance.md), [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md).
+
+Consume actual classified additive-compatible, already-invalid safety-compatible tightening, draft-break with notes/fixtures/downstream scan, stable-break with impact/migration/conformance/governance, deprecation, scheduled removal or explicit security-emergency records. Treat profile removal/narrowing and safety/capability/schema tightening by real source/artifact impact; stable-breaking changes retain actual approved migration/deprecation path. Keep deprecated tests until approved removal and structured replacement/rationale plus warning/error/removal schedules visible to compiler/docs/package/migration tools. Bind per-release compatibility, profile/diagnostic/artifact deltas and signed source/build/conformance/release provenance to exact subjects. Existing Governance owns decisions, Build actual records and Release distribution/acceptance; a signature or policy classification is no implementation or release grant. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-change-classification-and-release:end -->
+
+
+
+<!-- library-crypto-ui-stability-source-library-crypto-ui-conformance:start -->
+
+Apply the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Crypto/UI/stability library conformance criterion (Open). Sources: [STD18](../../docs/phase-16-standard-library/228-std18-cryptography-library-specification.md), [STD19](../../docs/phase-16-standard-library/229-std19-ui-and-application-library-specification.md), [STD20](../../docs/phase-16-standard-library/230-std20-standard-library-stability-policy.md).
+
+Compose real callable crypto/UI exports, selected vectors/lifecycles/PQ/hybrid/migration/redaction/constant-time audit, Counter/component/route/style/accessibility/adapter/snapshot/interaction and stability/old-new/opt-in/internal/deprecation products for exact source/compiler/runtime/provider/profile/target/schema/adapter/algorithm/parameter/policy subjects. Preserve every STD18001-STD18013, STD19001-STD19008 and STD20001-STD20008 refusal meaning with expected/observed facts at actual boundaries. Compile seal/Counter only under actual required capability/policy/adapter contexts. Independent Release/domain/crypto/UI/Formal/Governance evidence retains its scope; no catalogue, narrow receipt or mock accepts full library, domain, self-hosted compiler or project. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-crypto-ui-stability-source-library-crypto-ui-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

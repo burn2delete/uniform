@@ -431,6 +431,38 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume actual grants and static decisions before provider actions; enforce denial, normalized errors and resource cleanup. Replay consumes recorded exact schema/query/provider/policy subjects. Driver availability or recording a policy establishes no execution. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual selected service/provider/tool/memory/scheduler/state/log/error/cleanup products with before-action enforcement and recorded replay. Manifest completeness is no execution. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Provide actual permitted fixture/service resources, effects, cleanup and denied-before-action observations. Fake/recorded/live scopes stay explicit and unavailable services remain unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Platform and hardware library source interface
+
+Use the [platform and hardware library source criteria](../stdlib-workflow/plan.md#complete-platform-and-hardware-library-source-criteria). Provide actual permitted services and device/FFI boundaries, redacted provider/error and cleanup observations, authentic before-action denials and recorded activity products. Simulation/recorded/live scopes remain explicit and unavailable operations unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Crypto UI and stability library source interface
+
+Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Implement actual permitted typed crypto-provider/UI adapter boundaries, before-action enforcement, lifetime/cleanup, redaction and Gravity error/source mapping. Fakes and static acceptance are no live operation or mounted UI result. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Command and source service interface
+
+Use the [command and source service source criteria](../tools-workflow/plan.md#complete-command-and-source-service-criteria). Supply actual permitted interactive evaluation, ledger, replay, cleanup and hot-load decisions. Source/session metadata or injected complete rows are no execution; current authority precedes every protected action. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Specialist tool service interface
+
+Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual permitted debug/interactive/process/replay and source-linked measurement/provider observations with before-action enforcement and cleanup. Static records and target descriptors are no live frames, samples or device activity. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual permitted bounded memory/scheduler/GC/lock/interrupt/provider and source-linked measurement observations, explicit target support and cleanup; average throughput or fixed reports prove no runtime bound. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration
