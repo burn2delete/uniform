@@ -112,10 +112,36 @@ The child retains its 900-second host watchdog inside a 20-minute hosted job.
 The CI-only `ci.public-release-subset` adapter delegates the same exact test
 to the development runner. It redirects the test's three generated P18 proof
 files to `target/ci/p18-public-test-artifacts` and emits phase and fixture
-markers to stderr. It preserves public commands, results and the existing
-60-second inner process watchdog. CI still rejects tracked source mutation;
-the normal artifact checksum manifest includes any generated proof files and
-retains logs, command receipts and checkout provenance after failure.
+markers to stderr. It also retains each returned accepted/rejected fixture
+record, including the returned `:out` and `:err` text, in a fresh unique
+per-invocation directory beneath that path. Each diagnostic record is explicitly
+non-authoritative. Its manifest entry carries the byte count and SHA-256 of the
+actual UTF-8 EDN record file. The manifest's own byte count and SHA-256 are
+emitted in its `:manifest-written` diagnostic marker and remain covered by the
+existing CI checksum and provenance outputs. These files are diagnostic
+observations of the existing P18 caller; they do not add proof authority or
+claim that a failed assessment is a successful release.
+
+After each successful record capture, the adapter writes another fresh,
+non-authoritative manifest with `:status :partial`. Each such checkpoint lists
+exactly the captured prefix at that point and is kept alongside earlier
+snapshots; it is not overwritten or deleted. The existing `finally` path still
+writes a distinct `:status :final` manifest on normal return or aggregate
+exception. `:status :final` describes finalizer execution, not a successful or
+complete assessment. A partial index likewise records only a valid returned
+prefix, not completion of the 37-case suite or release proof.
+
+Capture failures are emitted as diagnostic markers and disable later capture
+attempts for that invocation while preserving the wrapped function's original
+return value or exception. No record is overwritten or deleted. The adapter
+preserves public commands, results and the existing 60-second inner process
+watchdog. CI still rejects tracked source mutation; the normal artifact
+checksum manifest includes any generated proof or diagnostic files and retains
+logs, command receipts and checkout provenance after failure.
+An external hard kill may leave unfinished record or snapshot files because the
+adapter cannot run its `finally` block; it makes no fsync or crash-proof claim.
+Completed snapshots remain observations of their listed prefix; they do not
+establish that the remaining fixtures ran or that release proof succeeded.
 Markers include monotonic nanoseconds for intervals within that child JVM.
 The workflow propagates failure and has no release-publication job. A completed
 assessment is not a successful public proof: inspect its exit status and
