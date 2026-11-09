@@ -785,14 +785,14 @@
            (conj result node)))))))
 
 (defn c11-if-count
-  [nodes count]
+  [nodes if-count]
   (if (= (count nodes) 0)
-    count
+    if-count
     (c11-if-count
      (rest nodes)
      (if (= (get (first nodes) :source-operation) :if)
-       (+ count 1)
-       count))))
+       (+ if-count 1)
+       if-count))))
 
 (defn c11-find-if-node
   [nodes]
