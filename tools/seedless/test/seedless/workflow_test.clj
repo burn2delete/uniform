@@ -245,6 +245,42 @@
         (is (empty? @calls)))
       (finally (delete-tree! (:root ctx))))))
 
+(deftest every-unsettled-retained-effect-stays-held-after-restriction-disappears
+  (doseq [status [:unexpected :not-applied nil]]
+    (let [ctx (warm-project! (repository! (context))) calls (atom [])
+          task {:key "held" :status :ready :issue {:number 1254 :node_id "issue-1254"}
+                :paths ["module.clj"] :dependencies [] :stack-on ""
+                :effect-ids ["e1"]}]
+      (try
+        (rt/update! ctx assoc :tasks {"held" task}
+                    :effects (if (nil? status) {} {"e1" {:status status}}))
+        (with-redefs [rt/shared-restriction (fn [& _] nil)
+                      gh/status! (fn [& _] (swap! calls conj :status))]
+          (let [error (try (w/transition! ctx "held" :implementing)
+                           nil
+                           (catch Exception e e))]
+            (is (instance? Exception error))
+            (is (true? (:restricted (ex-data error))))
+            (is (= :held-task (:project-tracking (ex-data error))))
+            (is (= :ready (:status (w/task ctx "held"))))
+            (is (empty? @calls))))
+        (finally (delete-tree! (:root ctx)))))))
+
+(deftest verified-done-retained-effect-does-not-stay-held
+  (let [ctx (warm-project! (repository! (context))) calls (atom [])
+        task {:key "done" :status :ready :issue {:number 1255 :node_id "issue-1255"}
+              :paths ["module.clj"] :dependencies [] :stack-on ""
+              :effect-ids ["e1"]}]
+    (try
+      (rt/update! ctx assoc :tasks {"done" task}
+                  :effects {"e1" {:status :done :result {:verified true}}})
+      (with-redefs [rt/shared-restriction (fn [& _] nil)
+                    gh/status! (fn [& _] (swap! calls conj :status))]
+        (w/transition! ctx "done" :implementing)
+        (is (= :implementing (:status (w/task ctx "done"))))
+        (is (= [:status] @calls)))
+      (finally (delete-tree! (:root ctx))))))
+
 (defn add-task! [ctx s]
   (rt/update! ctx assoc-in [:tasks (:key s)]
               (assoc s :description s :status :ready :issue {:number 1 :id 1 :node_id "issue1"})))

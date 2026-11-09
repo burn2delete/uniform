@@ -248,8 +248,14 @@
         ids (retained-task-effect-ids ctx t)
         held (keep (fn [id]
                      (let [effect (get-in @(:state ctx) [:effects id])]
+                       ;; Every retained effect other than a verified completion
+                       ;; keeps its task held.  Unknown and legacy statuses are
+                       ;; not proof that the external write settled; allowing
+                       ;; them through after a shared restriction disappears
+                       ;; would promote an uncertain task and issue another
+                       ;; Project write.
                        (when (or (nil? effect)
-                                 (#{:pending :uncertain :restricted} (:status effect)))
+                                 (not= :done (:status effect)))
                          {:effect id :effect-status (or (:status effect) :unknown)})))
                    ids)]
     (when (seq held)
