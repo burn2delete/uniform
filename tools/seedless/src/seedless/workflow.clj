@@ -126,29 +126,226 @@
                              ["seedless:campaign"] nil)]
         (rt/update! ctx assoc :campaign-issue issue) issue)))
 
+(def ^:private github-sub-issue-limit
+  ;; This is the GitHub relationship limit, not a Seedless work or admission
+  ;; quota. Work continues through linked continuation pages after the
+  ;; provider boundary is reached.
+  100)
+
+(defn- tracking-project [ctx]
+  (let [project (:project @(:state ctx))]
+    (when-not (and (map? project)
+                   (string? (:id project))
+                   (pos-int? (:number project))
+                   (string? (:url project)))
+      (rt/fail! "Project identity is required for continuation tracking"
+                {:project project :tracking :continuation}))
+    project))
+
+(defn- issue-url [issue]
+  (or (:html_url issue) (:url issue)))
+
+(defn- sub-issues! [ctx issue]
+  (let [number (:number issue)
+        children (when (pos-int? number)
+                   (gh/pages ctx (gh/repo-path ctx (str "issues/" number "/sub_issues"))))]
+    (when-not (vector? children)
+      (rt/fail! "GitHub returned invalid sub-issue relationship evidence"
+                {:issue number :children children :tracking :continuation}))
+    children))
+
+(defn- continuation-key [ctx root project page]
+  (str "campaign-continuation/"
+       (rt/digest
+        (pr-str [(get-in ctx [:config :repository])
+                 (get-in ctx [:config :campaign])
+                 (:number root) (:node_id root)
+                 (:id project) (:number project) page]))))
+
+(defn- continuation-marker-key [body]
+  (second (re-find #"<!-- uniform-seedless:(campaign-continuation/[^ ]+) -->" (or body ""))))
+
+(defn- continuation-page-number [body]
+  (some-> (second (re-find #"(?m)^Continuation page:\s*([0-9]+)\s*$" (or body "")))
+          Long/parseLong))
+
+(defn- continuation-provenance? [ctx root project issue]
+  (let [body (or (:body issue) "") root-url (issue-url root)
+        page (continuation-page-number body)
+        marker (continuation-marker-key body)
+        expected (when page (continuation-key ctx root project page))]
+    (and (map? issue)
+         (pos-int? (:number issue))
+         (string? (:node_id issue))
+         (not= "closed" (some-> (:state issue) str str/lower-case))
+         (string? root-url)
+         (= expected marker)
+         (str/includes? body (str "Campaign issue: #" (:number root)))
+         (str/includes? body root-url)
+         (str/includes? body (str "Project: #" (:number project)))
+         (str/includes? body (:id project))
+         (str/includes? body (:url project))
+         (str/includes? body "Continuation page:"))))
+
+(defn- continuation-capacity [issue]
+  (let [total (get-in issue [:sub_issues_summary :total])]
+    (when (and (integer? total) (<= 0 total))
+      (- github-sub-issue-limit total))))
+
+(defn- continuation-records [ctx]
+  (let [records (:campaign-continuations @(:state ctx))]
+    (cond
+      (vector? records) records
+      (map? records) [records]
+      (nil? records) []
+      :else (rt/fail! "Continuation records have invalid durable shape"
+                       {:records records :tracking :continuation}))))
+
+(defn- update-continuation! [ctx key f & args]
+  (rt/update! ctx update :campaign-continuations
+              (fn [records]
+                (mapv (fn [record]
+                        (if (= key (:key record))
+                          (apply f record args)
+                          record))
+                      (vec (or records []))))))
+
+(defn- continuation-body [root project page key]
+  (str "Stage: CONTINUATION; workstream: build; evidence scope: tracking.\n\n"
+       "This is a same-campaign continuation page for provider relationship "
+       "capacity. It is not a replacement campaign or a new work objective.\n\n"
+       "Campaign issue: #" (:number root) " " (issue-url root) "\n"
+       "Project: #" (:number project) " " (:url project) " (" (:id project) ")\n"
+       "Continuation page: " page "\n"
+       "New Seedless deliverables attach to this page only when the verified "
+       "direct-child relationship has room; the campaign's existing edges and "
+       "uncertain effects are preserved.\n\n"
+       (gh/marker key)))
+
+(defn- existing-index-parent [ctx root project children]
+  (some (fn [issue]
+          (when (and (continuation-provenance? ctx root project issue)
+                     (pos? (or (continuation-capacity issue) -1)))
+            issue))
+        children))
+
+(defn- continuation-page! [ctx root]
+  (let [project (tracking-project ctx)
+        records (continuation-records ctx)
+        unfinished (filter #(not= :ready (:status %)) records)]
+    (when (seq unfinished)
+      (rt/fail! "Continuation page needs inspected recovery before reuse"
+                {:tracking :continuation
+                 :records (mapv #(select-keys % [:key :page :status :issue]) unfinished)}))
+    (if-let [available (some (fn [record]
+                               (let [issue (:issue record)
+                                     children (sub-issues! ctx issue)]
+                                 (when-not (continuation-provenance? ctx root project issue)
+                                   (rt/fail! "Continuation page provenance does not match campaign Project"
+                                             {:tracking :continuation :record record}))
+                                 (when (< (count children) github-sub-issue-limit)
+                                   [issue (count children) record])))
+                             (sort-by :page records))]
+      (assoc (nth available 2) :issue (nth available 0)
+             :child-count (nth available 1))
+      (let [page (inc (long (or (some->> records (map :page) seq (apply max)) 0)))
+            key (continuation-key ctx root project page)
+            issue (gh/issue! ctx key
+                             (str "Uniform Seedless continuation page " page)
+                             (continuation-body root project page key)
+                             ["seedless:campaign"] nil)]
+        (when-not (continuation-provenance? ctx root project issue)
+          (rt/fail! "Created continuation page lacks exact campaign Project provenance"
+                    {:tracking :continuation :issue issue :page page}))
+        (rt/update! ctx update :campaign-continuations (fnil conj [])
+                    {:key key :page page :issue issue :status :created
+                     :root (select-keys root [:number :node_id :html_url :url])
+                     :project (select-keys project [:id :number :url])})
+        ;; The root cannot take another native sub-issue at this point. A
+        ;; durable root comment and the page body provide the two-way
+        ;; provenance link without changing any existing root edge.
+        (gh/comment! ctx root key
+                     (str "Continuation page #" (:number issue) " (" (issue-url issue)
+                          ") preserves campaign #" (:number root) " and Project #"
+                          (:number project) ". New deliverables attach to the continuation page, "
+                          "not directly to the full campaign issue."))
+        (gh/status! ctx issue "Ready")
+        (update-continuation! ctx key #(assoc % :status :ready))
+        {:key key :page page :issue issue :child-count 0}))))
+
+(defn- admission-parent! [ctx root]
+  (let [project (tracking-project ctx)
+        children (sub-issues! ctx root)]
+    (if (< (count children) github-sub-issue-limit)
+      {:mode :direct :issue root :child-count (count children)}
+      (if-let [index (existing-index-parent ctx root project children)]
+        {:mode :continuation :issue index
+         :child-count (get-in index [:sub_issues_summary :total])
+         :source :existing-index}
+        (assoc (continuation-page! ctx root) :mode :continuation)))))
+
+(defn- verify-sub-issue-readback! [ctx parent child]
+  (let [children (sub-issues! ctx parent)]
+    (when-not (some #(= (:id child) (:id %)) children)
+      (rt/fail! "Sub-issue relation has no verified readback"
+                {:tracking :sub-issue :parent (:number parent)
+                 :child (:id child) :children-count (count children)}))
+    true))
+
+(defn- admission-intent-key [slice]
+  (str "admission/" (:key slice)))
+
+(defn- record-admission-intent! [ctx slice root parent]
+  (let [key (admission-intent-key slice)]
+    (rt/update! ctx assoc-in [:admission-intents key]
+                {:slice (:key slice)
+                 :campaign (select-keys root [:number :node_id :html_url :url])
+                 :project (select-keys (:project @(:state ctx)) [:id :number :url])
+                 :parent (select-keys parent [:number :node_id :html_url :url])
+                 :phase :relation-pending
+                 :effect (str "sub_issues/" (:number parent) "/"
+                              (:id (:issue (task ctx (:key slice)))))})))
+
+(defn- update-admission-intent! [ctx slice updates]
+  (rt/update! ctx update-in [:admission-intents (admission-intent-key slice)] merge updates))
+
 (defn admit! [ctx base slices]
-  (doseq [slice slices :when (nil? (task ctx (:key slice)))]
-    (let [issue (gh/issue! ctx (:key slice) (:title slice)
-                           (str "Stage: " (:stage slice) "; workstream: " (:workstream slice)
-                                "; evidence scope: " (:kind slice) ".\n\n"
-                                (:proposal slice) "\n\nEvidence: " (:evidence slice)
-                                "\n\nClojure owners: " (pr-str (:seed-paths slice))
-                                "\nUniform successors: " (pr-str (:uniform-paths slice))
-                                "\nReal consumer: " (:consumer slice)
-                                "\nPreserves: " (:preserve slice)
-                                "\nAccepted case: " (:positive slice) "\nRejected case: " (:negative slice)
-                                "\nResidual host boundary: " (:residual-host-boundary slice)
-                                "\n\nPlanning base: `" base "`.\n\n- [ ] Early draft PR\n- [ ] Focused execution and rejection checks\n- [ ] Exact independent review\n- [ ] CI and current-main composition\n- [ ] Actual merge verified")
-                           [(str "seedless:" (:workstream slice)) (str "seedless:" (:kind slice))]
-                           (:number (gh/milestone! ctx (:stage slice))))]
-      (task! ctx (:key slice) :issue issue :status :ready :planning-base base :description slice)
-      (rt/update! ctx update-in [:tasks (:key slice)] merge slice)
-      (gh/relation! ctx (campaign-issue! ctx) "sub_issues" (:id issue))
-      (gh/status! ctx issue "Ready")))
-  ;; All issues exist before creating dependency links, including later siblings.
-  (doseq [slice slices dep (:dependencies slice)]
-    (gh/relation! ctx (:issue (task ctx (:key slice))) "dependencies/blocked_by"
-                  (:id (:issue (task ctx dep))))))
+  (let [new-keys (atom #{})
+        new-slices (filterv #(nil? (task ctx (:key %))) slices)]
+    (when (seq new-slices)
+      (let [root (campaign-issue! ctx)]
+        (doseq [slice new-slices]
+          (let [parent (admission-parent! ctx root)
+                issue (gh/issue! ctx (:key slice) (:title slice)
+                            (str "Stage: " (:stage slice) "; workstream: " (:workstream slice)
+                                 "; evidence scope: " (:kind slice) ".\n\n"
+                                 (:proposal slice) "\n\nEvidence: " (:evidence slice)
+                                 "\n\nClojure owners: " (pr-str (:seed-paths slice))
+                                 "\nUniform successors: " (pr-str (:uniform-paths slice))
+                                 "\nReal consumer: " (:consumer slice)
+                                 "\nPreserves: " (:preserve slice)
+                                 "\nAccepted case: " (:positive slice) "\nRejected case: " (:negative slice)
+                                 "\nResidual host boundary: " (:residual-host-boundary slice)
+                                 "\n\nPlanning base: `" base "`.\n\n- [ ] Early draft PR\n- [ ] Focused execution and rejection checks\n- [ ] Exact independent review\n- [ ] CI and current-main composition\n- [ ] Actual merge verified")
+                            [(str "seedless:" (:workstream slice)) (str "seedless:" (:kind slice))]
+                            (:number (gh/milestone! ctx (:stage slice))))]
+             (task! ctx (:key slice) :issue issue :status :ready :planning-base base :description slice)
+             (rt/update! ctx update-in [:tasks (:key slice)] merge slice)
+             (swap! new-keys conj (:key slice))
+             (record-admission-intent! ctx slice root (:issue parent))
+             (gh/relation! ctx (:issue parent) "sub_issues" (:id issue))
+             (verify-sub-issue-readback! ctx (:issue parent) issue)
+             (update-admission-intent! ctx slice {:phase :relation-verified})
+             (gh/status! ctx issue "Ready")
+             (update-admission-intent! ctx slice {:phase :ready}))
+        ;; Existing tasks deliberately stay out of this pass. Their prior
+        ;; uncertain relations require explicit inspected reconciliation rather
+        ;; than an admission retry.
+        (doseq [slice slices
+                :when (contains? @new-keys (:key slice))
+                dep (:dependencies slice)]
+          (gh/relation! ctx (:issue (task ctx (:key slice))) "dependencies/blocked_by"
+                        (:id (:issue (task ctx dep))))))))))
 
 (defn review! [ctx t scope]
   (assert-identity! ctx t)
