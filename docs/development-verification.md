@@ -46,8 +46,13 @@ clojure -M:packaged-gravity --version
 clojure -M:packaged-gravity run examples/core-app.gravity
 ```
 
-`bin/gravity` remains source-default and does not auto-select the packaged JAR.
-The explicit alias launches the current development package and preserves the
+`bin/gravity` does not auto-select the current development packaged JAR at
+`target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar`.
+Its frozen wrapper can still select the historical
+`target/phase-18/jvm-cli/gravity-jvm-cli.jar` when that file is present and
+`GRAVITY_BOOTSTRAP_ONLY` is not `1`. Use `clojure -M:gravity --version` to
+select the current source entrypoint explicitly.
+The explicit `:packaged-gravity` alias launches the current development package and preserves the
 accepted/rejected command checks, but it is bootstrap-hosted and is not a
 claim that the final Phase 18 seedless release or self-hosted compiler is
 complete. The byte-identical historical JAR and its Phase 18 evidence remain
