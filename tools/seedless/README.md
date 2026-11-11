@@ -118,6 +118,56 @@ sandboxed `command/exec`, not through its unsandboxed process runner.
 
 ## The replacement loop
 
+Before ordinary planning, the controller executes the existing current-source
+compiler route through `clojure -J-Xmx2g -M:compiler-probe`. The probe processes
+the existing six-owner frontend cohort and its genuine imports as complete
+current module sources: C5, canonical Core, fresh Core verification, and the
+existing current C7 function-type producer and verifier. It stops at the first
+failed handoff. The staged Linux LLVM target and broader required source inputs
+remain declared. This is a typed frontend prerequisite; the actual native build
+recipe, runtime, library, build, migration and release acceptance remain required
+separate boundaries. The historical SH25 catalog is navigation, not a complete
+executable native build graph.
+
+The result records source revision, source/dependency byte identities, selected
+route, terminal status, diagnostic, producer/consumer and existing owner/task.
+The ordinary sandbox check executor and durable effect records retain the run.
+Relevant changed bytes or route inputs invalidate an earlier observation;
+unchanged observations retain their original execution provenance. The effective
+probe watchdog and runtime configuration also participate in applicability.
+The probe has a separate two-hour host watchdog because a measured first full
+module frontend pass took 834 seconds before fresh verification and C7; ordinary
+candidate checks keep their existing twenty-minute watchdog. Missing or
+truncated output, unavailable execution prerequisites, unknown failure causes,
+timeouts and final-release refusal produce explicit blockers, not invented
+compiler repairs. The existing `self-host verify` completion gate remains
+separate.
+
+An actionable observation constrains ordinary planning and admission. Every
+proposed slice must link its `compiler-failure` to the observed work key and
+identify itself as its repair or a necessary prerequisite. The controller
+assigns stable work identities and binds the owner, full declared closure and
+target. It recognizes the same retained work key or PR marker before admission;
+an existing repair causes a wait instead of duplicate implementation. Path
+overlap requires an inspected scope disposition, not a candidate quota. An
+immutable candidate can coexist with an isolated successor; actual conflicting
+writers remain serialized by existing claims. Independent prerequisites may
+proceed through the existing dependency rules. A new task name does not clear
+a restriction or an ownership conflict. An existing unstarted task in this
+campaign can receive the observation under its exact key and unchanged owned
+paths, stage and dependencies, preserving its issue and history. Authored,
+interrupted or restricted work cannot be rebound this way. Prerequisite identity
+includes its existing task or numbered requirement, so distinct prerequisites
+can share a source file without becoming an artificial task quota.
+
+Before the first author starts, changed relevant inputs require a fresh probe.
+After focused candidate checks, the controller reruns the same compiler route.
+A repair enters review only when the original failure is gone and the same
+declared path advances to a later component or handoff, or a scoped pass. Its
+completed component prefix cannot shrink. Prerequisites retain their
+focused evidence without claiming the primary failure resolved. All results
+remain development evidence; a clean frontend run cannot close the campaign.
+
 1. Read existing contracts, the SH completion plan and actual source closure.
    Identify the Clojure owner, Uniform successor, actual consumer, preserved
    facts, accepted/rejected cases, dependencies and residual host boundary.

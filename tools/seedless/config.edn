@@ -20,6 +20,8 @@
  :check-timeout-ms 1200000
  :codex-command ["codex" "app-server" "--listen" "stdio://"]
  :check-executables #{"clojure"}
+ :compiler-observation-command ["clojure" "-J-Xmx2g" "-M:compiler-probe"]
+ :compiler-observation-timeout-ms 7200000
  :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]
  ;; Ordinary development does not run this release gate. An empty work audit does.
  :completion-checks [["clojure" "-M:gravity" "self-host" "verify"]]}

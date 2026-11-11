@@ -50,7 +50,8 @@
    :evidence "Existing hosted leaf still selected" :seed-paths ["module.clj"] :uniform-paths ["module.clj"]
    :consumer "Real compiler call" :proposal "Select the source-owned leaf" :preserve "Order and diagnostics"
    :positive "Actual caller with fallback disabled" :negative "Malformed input rejection"
-   :residual-host-boundary "Hosted runner remains" :paths ["module.clj"] :dependencies [] :stack-on ""})
+   :residual-host-boundary "Hosted runner remains" :paths ["module.clj"] :dependencies [] :stack-on ""
+   :compiler-failure "" :compiler-role "independent" :compiler-task "specs/bootstrap/tasks.md#SH-07"})
 
 (defn add-task! [ctx s]
   (rt/update! ctx assoc-in [:tasks (:key s)]
@@ -118,7 +119,7 @@
                          (= schema/plan output-schema)
                          (do (swap! events conj [:plan])
                              {:coverage ["module.clj"] :source-closure ["module.clj"] :target "Fixture target"
-                              :subset "Required fixture closure" :summary "Fixture audit" :blockers []
+                              :subset "Required fixture closure" :summary "Fixture audit" :blockers [] :candidate-dispositions []
                               :slices (if (w/task ctx "a") [] [(slice "a")])})
                          (= mode :write)
                          (let [phase (get (swap! phases update key (fnil inc 0)) key)
@@ -731,7 +732,7 @@
 (deftest planning-contracts-and-frozen-writer-ownership
   (let [ctx (context) p (slice "parent") child (assoc (slice "child") :status :ready :dependencies ["parent"] :stack-on "parent")
         plan {:coverage ["bootstrap/"] :source-closure ["module.clj"] :target "declared target" :subset "required closure"
-              :summary "Concrete work" :blockers [] :slices [p (dissoc child :status)]}]
+              :summary "Concrete work" :blockers [] :candidate-dispositions [] :slices [p (dissoc child :status)]}]
     (try
       (is (= plan (validation/validate! schema/plan plan)))
       (is (= plan (w/validate-plan! plan {})))
@@ -757,7 +758,7 @@
   (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
         p (slice "parent") child (assoc (slice "child") :dependencies ["parent"] :stack-on "Main branch")
         invalid {:coverage ["bootstrap/"] :source-closure ["module.clj"] :target "declared target"
-                 :subset "required closure" :summary "Concrete work" :blockers []
+                 :subset "required closure" :summary "Concrete work" :blockers [] :candidate-dispositions []
                  :slices [p child]}
         valid (assoc invalid :slices [p (assoc child :stack-on "parent")])
         prompts (atom []) admitted (atom 0) inspection (io/file (:root ctx) "planning-inspection.edn")]

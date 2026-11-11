@@ -21,12 +21,20 @@
     :evidence s/text :seed-paths texts :uniform-paths texts :consumer s/text
     :proposal s/text :preserve s/text :positive s/text :negative s/text
     :residual-host-boundary s/text
+    :compiler-failure {:type "string"
+                       :description "Observed failure work-key; empty only after a scoped path pass."}
+    :compiler-task (assoc s/text :description "Existing task or numbered milestone requirement owning this increment.")
+    :compiler-role {:type "string" :enum ["repair" "prerequisite" "independent"]}
     :paths (assoc texts :minItems 1) :dependencies dependencies
     :stack-on stack-parent}))
 (def plan
   (s/object-of {:coverage (assoc texts :minItems 1)
                 :source-closure (assoc texts :minItems 1)
                 :target s/text :subset s/text :summary s/text
+                :candidate-dispositions
+                (s/array-of (s/object-of {:candidate s/text
+                                          :disposition {:type "string" :enum ["wait" "independent-successor"]}
+                                          :reason s/text}))
                 :blockers texts :slices (s/array-of slice)}))
 (def implementation
   (s/object-of {:outcome {:type "string" :enum ["checkpoint" "ready" "needs_input" "restricted"]}
