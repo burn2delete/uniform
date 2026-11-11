@@ -198,6 +198,13 @@ completed component prefix cannot shrink. Prerequisites retain their
 focused evidence without claiming the primary failure resolved. All results
 remain development evidence; a clean frontend run cannot close the campaign.
 
+The selected mutual-recursion prerequisite promises removal of that first
+failure and a terminal result from the same complete source route. A later
+diagnostic at the same handoff needs authenticated source products and a traced
+later check to establish progress. A different diagnostic name, a timeout or a
+supplemental prefix run alone cannot establish that advance. Unfinished parts
+of the original implementation proposal remain explicitly pending.
+
 1. Read existing contracts, the SH completion plan and actual source closure.
    Identify the Clojure owner, Uniform successor, actual consumer, preserved
    facts, accepted/rejected cases, dependencies and residual host boundary.

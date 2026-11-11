@@ -84,9 +84,10 @@
   (#'gravity.self-hosting.sh02-authenticated-envelope-test/invoke-envelope
    function arguments))
 
-(deftest current-owner-has-an-acyclic-function-call-graph
-  ;; The complete owner must pass C7's structural recursion gate before body
-  ;; inference can inspect it. This is a seed-plan regression, not SH acceptance.
+(deftest current-owner-removes-mutual-recursion-and-retains-self-components
+  ;; This increment removes the three mutually recursive traversal groups.
+  ;; The original self-recursive helpers remain a later C7 prerequisite.
+  ;; This checks the complete owner seed plan, not authenticated type acceptance.
   (let [plan @(deref #'gravity.self-hosting.sh02-authenticated-envelope-test/envelope-plan)
         calls (fn [definition]
                 (loop [pending (vec (:instructions definition)) found #{}]
@@ -102,17 +103,27 @@
                          found))))))
         graph (into {} (map (fn [[name definition]] [name (calls definition)]))
                     (:functions plan))
-        recursive? (fn [start]
-                     (loop [pending (vec (get graph start)) seen #{}]
-                       (if (empty? pending)
-                         false
-                         (let [node (peek pending)]
-                           (cond
-                             (= start node) true
-                             (contains? seen node) (recur (pop pending) seen)
-                             :else (recur (into (pop pending) (get graph node))
-                                          (conj seen node)))))))]
-    (is (= [] (filterv recursive? (sort (keys graph)))))))
+        names (vec (sort (keys graph)))
+        reachable (into {}
+                        (map (fn [start]
+                               [start
+                                (loop [pending (vec (get graph start)) seen #{}]
+                                  (if (empty? pending)
+                                    seen
+                                    (let [node (peek pending)]
+                                      (if (contains? seen node)
+                                        (recur (pop pending) seen)
+                                        (recur (into (pop pending) (get graph node))
+                                               (conj seen node))))))]))
+                        names)
+        components (->> names
+                        (map (fn [start]
+                               (filterv #(and (contains? (get reachable start) %)
+                                              (contains? (get reachable %) start))
+                                        names)))
+                        (remove empty?) distinct sort vec)]
+    (is (= '[[ae-insert-ordinal] [ae-lowercase-hex?] [ae-sort-ordinals]]
+           components))))
 
 (deftest iterative-envelope-traversals-preserve-discovery-and-identity
   (let [refs (array-map {:digest-ref 2} [{:digest-ref 3} {:digest-ref 2}]

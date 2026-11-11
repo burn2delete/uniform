@@ -194,7 +194,7 @@
                      :record "docs/self-hosting-milestone-completion-plan.md"
                      :reason "Express the envelope's required deterministic identity and traversal operations through existing loop/recur behavior while preserving every complete source function, export, result and rejection contract. This removes the unsupported recursive call-graph prerequisite without reducing the declared compiler closure."
                      :progress {:command command
-                                :expected "The same full envelope source reaches C7 inference beyond mutual-recursion rejection; subsequent failures remain explicit."}}]}))
+                                :expected "Require the original mutual-recursion failure to disappear and record the next real C7 failure or later handoff from terminal execution of the same declared source closure."}}]}))
       observation)))
 
 (defn declared-inputs [cwd]
