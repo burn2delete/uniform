@@ -842,6 +842,133 @@
         (is (zero? @calls)))
       (finally (delete-tree! (:root ctx))))))
 
+(deftest duplicate-project-admission-holds-only-the-affected-task
+  (let [ctx (repository! (context)) repo (get-in ctx [:config :repo-dir]) base (rt/git ctx repo "rev-parse" "HEAD")
+        original-plan w/plan! plan-calls (atom 0) add-attempts (atom 0) prepared (atom []) statuses (atom [])]
+    (try
+      (with-redefs [w/fresh-main! (constantly base)
+                    w/worktree! (fn [& _] {:worktree repo :branch "codex/plan"})
+                    gh/setup! (fn [& _])
+                    w/campaign-issue! (fn [& _] {:number 100 :id 100 :node_id "campaign"})
+                    gh/pages (fn [& _] [])
+                    gh/comment! (fn [& _])
+                    gh/milestone! (fn [& _] {:number 1})
+                    gh/relation! (fn [& _])
+                    gh/issue! (fn [_ key & _]
+                                {:number 42 :id 42 :node_id (if (= key "blocked") "content-1" "other-content")})
+                    gh/status! (fn [context issue status]
+                                 (swap! statuses conj [(:node_id issue) status])
+                                 (when (= "content-1" (:node_id issue))
+                                   (rt/tracking-effect! context "project-status/project/content-1"
+                                                        (fn []
+                                                          (rt/effect! context "project-item/project/content-1"
+                                                                      (fn []
+                                                                        (swap! add-attempts inc)
+                                                                        (rt/fail! "Duplicate Project membership has no verified readback"
+                                                                                  {:project "project" :content "content-1"
+                                                                                   :duplicate true :restricted false})))))))
+                    w/job! (fn [_ role _ _ _]
+                             (when (= :plan role)
+                               {:coverage ["module.clj"] :source-closure ["module.clj"]
+                                :target "Fixture target" :subset "Required fixture closure"
+                                :summary "Fixture audit" :blockers [] :slices [(slice "blocked")]}))
+                    w/plan! (fn [context]
+                              (swap! plan-calls inc)
+                              (rt/update! context assoc-in [:tasks "other"]
+                                          (assoc (slice "other") :status :ready
+                                                 :issue {:number 43 :id 43 :node_id "other-content"}))
+                              (original-plan context))
+                    w/prepare! (fn [context key lease]
+                                 (swap! prepared conj key)
+                                 (rt/release-paths! context lease)
+                                 (rt/write-edn! (:control-file context) {:paused true}))]
+        (w/campaign! ctx))
+      (is (= :paused (:status @(:state ctx))))
+      (is (= 1 @plan-calls))
+      (is (= 1 @add-attempts))
+      (is (= ["other"] @prepared))
+      (is (not-any? #(= [:campaign "Attention"] %) @statuses))
+      (let [blocked (w/task ctx "blocked") hold (get-in @(:state ctx) [:planning :admission-hold])]
+        (is (= :attention (:status blocked)))
+        (is (= :ready (:resume-status blocked)))
+        (is (= "project-status/project/content-1/1" (get-in blocked [:error :details :effect])))
+        (is (= "project-item/project/content-1" (get-in blocked [:error :details :effect-id])))
+        (is (= :project-tracking-admission-uncertainty (:kind hold)))
+        (is (= "blocked" (:task hold)))
+        (is (= ["project-status/project/content-1/1" "project-item/project/content-1"] (:effect-ids hold)))
+        (is (= :uncertain (get-in @(:state ctx) [:effects "project-item/project/content-1" :status])))
+        (is (= :uncertain (get-in @(:state ctx) [:effects "project-status/project/content-1/1" :status]))))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest reconciled-ready-admission-reissues-only-the-status-write
+  (let [ctx (repository! (context)) statuses (atom []) graphql-calls (atom 0)
+        s (slice "existing") status-key "project-status/project/issue1"
+        old-status-id (str status-key "/4") member-id "project-item/project/issue1"]
+    (try
+      (add-task! ctx s)
+      (rt/update! ctx merge
+                  {:project {:id "project" :workflow {:id "field"
+                                                        :options [{:id "ready" :name "Ready"}]}}
+                   :tracking-sequence 4
+                   :tracking-intents {status-key old-status-id}
+                   :effects {old-status-id {:status :not-applied :result {:old true}}
+                             member-id {:status :done :result {:id "item-1"}}}})
+      (with-redefs [gh/status! (fn [context issue status]
+                                 (swap! statuses conj [(:node_id issue) status])
+                                 (transport/status! context issue status))
+                    transport/graphql (fn [& _]
+                                        (swap! graphql-calls inc)
+                                        {:updateProjectV2ItemFieldValue
+                                         {:projectV2Item {:id "item-1"}}})]
+        (w/admit! ctx "base" [s]))
+      (is (= [["issue1" "Ready"]] @statuses))
+      (is (= 1 @graphql-calls))
+      (is (= (str status-key "/5") (get-in @(:state ctx) [:tracking-intents status-key])))
+      (is (= :not-applied (get-in @(:state ctx) [:effects old-status-id :status])))
+      (is (= :done (get-in @(:state ctx) [:effects member-id :status])))
+      (is (= :done (get-in @(:state ctx) [:effects (str status-key "/5") :status])))
+      (finally (delete-tree! (:root ctx))))))
+
+(deftest ready-tracking-repair-requires-settled-child-and-reconciled-status
+  (doseq [[status child-status] [[:done :done] [:uncertain :done] [:not-applied :uncertain]
+                                  [:not-applied :pending]]]
+    (let [ctx (repository! (context)) statuses (atom []) s (slice "existing")
+          status-key "project-status/project/issue1" old-status-id (str status-key "/4")
+          member-id "project-item/project/issue1"]
+      (try
+        (add-task! ctx s)
+        (rt/update! ctx merge
+                    {:project {:id "project"}
+                     :tracking-sequence 4
+                     :tracking-intents {status-key old-status-id}
+                     :effects {old-status-id {:status status :result {:old true}}
+                               member-id {:status child-status :result {:id "item-1"}}}})
+        (with-redefs [gh/status! (fn [& _] (swap! statuses conj :unexpected))]
+          (w/admit! ctx "base" [s]))
+        (is (empty? @statuses))
+        (is (= old-status-id (get-in @(:state ctx) [:tracking-intents status-key])))
+        (is (= status (get-in @(:state ctx) [:effects old-status-id :status])))
+        (is (= child-status (get-in @(:state ctx) [:effects member-id :status])))
+        (finally (delete-tree! (:root ctx)))))))
+
+(deftest unknown-or-restricted-project-admission-still-fails-closed
+  (doseq [details [{:project "project" :content "content-1" :duplicate true
+                    :restricted true :effect-status :restricted}
+                   {:project "project" :content "content-1" :duplicate false
+                    :restricted false :effect-status :uncertain}]]
+    (let [ctx (repository! (context)) calls (atom 0)]
+      (try
+        (with-redefs [gh/setup! (fn [& _])
+                      w/campaign-issue! (fn [& _] {:number 100 :id 100 :node_id "campaign"})
+                      gh/status! (fn [& _])
+                      w/plan! (fn [_]
+                                (swap! calls inc)
+                                (throw (ex-info "Project admission failed" details)))]
+          (is (thrown? Exception (w/campaign! ctx))))
+        (is (= 1 @calls))
+        (is (nil? (get-in @(:state ctx) [:planning :admission-hold])))
+        (finally (delete-tree! (:root ctx)))))))
+
 (deftest configuration-keeps-canonical-gates-and-separate-controller-locks
   (let [ctx (repository! (context)) file (io/file (:root ctx) "config.edn")
         config (assoc (:config ctx) :state-dir (:state-dir ctx) :scope ["."])]

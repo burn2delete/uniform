@@ -126,6 +126,32 @@
                              ["seedless:campaign"] nil)]
         (rt/update! ctx assoc :campaign-issue issue) issue)))
 
+(defn- ready-tracking-repair [ctx task]
+  (let [project-id (get-in @(:state ctx) [:project :id])
+        node-id (get-in task [:issue :node_id])
+        status-key (when (and (string? project-id) (string? node-id))
+                     (str "project-status/" project-id "/" node-id))
+        status-effect-id (get-in @(:state ctx) [:tracking-intents status-key])
+        member-effect-id (when status-key (str "project-item/" project-id "/" node-id))
+        status-effect (get-in @(:state ctx) [:effects status-effect-id])
+        member-effect (get-in @(:state ctx) [:effects member-effect-id])]
+    (when (and (= :ready (:status task))
+               status-effect-id
+               (= :not-applied (:status status-effect))
+               (= :done (:status member-effect)))
+      {:status-key status-key
+       :status-effect-id status-effect-id
+       :member-effect-id member-effect-id
+       :task (:key task)})))
+
+(defn- repair-ready-tracking! [ctx task]
+  (when-let [repair (ready-tracking-repair ctx task)]
+    ;; The membership effect is already done, so status! reuses that result and
+    ;; creates only a successor tracking intent for the retained not-applied
+    ;; status write. Uncertain, pending and restricted effects do not match.
+    (gh/status! ctx (:issue task) "Ready")
+    (rt/event! ctx :ready-tracking-repair repair)))
+
 (defn admit! [ctx base slices]
   (doseq [slice slices :when (nil? (task ctx (:key slice)))]
     (let [issue (gh/issue! ctx (:key slice) (:title slice)
@@ -145,6 +171,12 @@
       (rt/update! ctx update-in [:tasks (:key slice)] merge slice)
       (gh/relation! ctx (campaign-issue! ctx) "sub_issues" (:id issue))
       (gh/status! ctx issue "Ready")))
+  ;; A prior admission may have persisted the native Ready task and completed
+  ;; the child membership while its outer status write was inspected as
+  ;; not-applied. Re-emit only that exact safe successor; all other retained
+  ;; effects stay fail-closed under the normal recovery rules.
+  (doseq [slice slices]
+    (repair-ready-tracking! ctx (task ctx (:key slice))))
   ;; All issues exist before creating dependency links, including later siblings.
   (doseq [slice slices dep (:dependencies slice)]
     (gh/relation! ctx (:issue (task ctx (:key slice))) "dependencies/blocked_by"
@@ -814,6 +846,7 @@
                       :round (:round planning)
                       :effect (:effect planning)
                       :validation-error (:validation-error planning)
+                      :admission-hold (:admission-hold planning)
                       :inspection (select-keys inspection [:evidence :outcome])})))
            last))
 
@@ -937,6 +970,61 @@
                  :unknown)
               effects))))
 
+(defn- project-tracking-effect-ids [error]
+  (let [{:keys [effect effect-id project content]} (ex-data error)]
+    (vec (distinct (remove nil?
+                           (concat [effect effect-id]
+                                   (when (and (string? project) (string? content))
+                                     [(str "project-item/" project "/" content)])))))))
+
+(defn- project-tracking-task-key [ctx content]
+  (some (fn [t]
+          (when (= content (get-in t [:issue :node_id]))
+            (:key t)))
+        (tasks ctx)))
+
+(defn- project-tracking-admission? [ctx error]
+  (let [details (ex-data error)
+        ids (project-tracking-effect-ids error)
+        key (project-tracking-task-key ctx (:content details))]
+    (and key
+         (true? (:duplicate details))
+         (false? (:restricted details))
+         (= :uncertain (:effect-status details))
+         (= 2 (count ids))
+         (every? #(= :uncertain (get-in @(:state ctx) [:effects % :status])) ids))))
+
+(defn- admission-error-with-child-effect [error]
+  (let [details (ex-data error)
+        ids (project-tracking-effect-ids error)]
+    (if (and (nil? (:effect-id details)) (= 2 (count ids)))
+      (ex-info (.getMessage error) (assoc details :effect-id (second ids)) error)
+      error)))
+
+(defn- project-tracking-admission-hold? [ctx]
+  (some? (get-in @(:state ctx) [:planning :admission-hold])))
+
+(defn- hold-project-tracking-admission! [ctx base error]
+  (let [error (admission-error-with-child-effect error)
+        details (ex-data error)
+        ids (project-tracking-effect-ids error)
+        key (project-tracking-task-key ctx (:content details))
+        planning (:planning @(:state ctx))]
+    (attention! ctx key error)
+    (let [hold {:kind :project-tracking-admission-uncertainty
+                :base base
+                :round (:round planning)
+                :task key
+                :effect-ids ids
+                :error {:message (.getMessage error)
+                        :details (rt/redact details)}}]
+      (rt/update! ctx #(-> %
+                           (assoc-in [:planning :admission-hold] hold)
+                           (assoc :last-discovery-key (discovery-key ctx base))))
+      (rt/event! ctx :admission-attention
+                 {:slice key :kind (:kind hold) :effect-ids ids
+                  :message (.getMessage error)}))))
+
 (defn- attention-error [error effect-status]
   (cond-> {:message (.getMessage error) :details (ex-data error)}
     effect-status (assoc-in [:details :effect-status] effect-status)))
@@ -1007,12 +1095,20 @@
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (let [base (fresh-main! ctx)
                     changed? (not= (discovery-key ctx base) (:last-discovery-key @(:state ctx)))
-                    plan (when changed? (plan! ctx))
+                    plan (when (and changed? (not (project-tracking-admission-hold? ctx)))
+                           (try
+                             (plan! ctx)
+                             (catch Exception e
+                               (if (project-tracking-admission? ctx e)
+                                 (hold-project-tracking-admission! ctx base e)
+                                 (throw e)))))
                     active? (some #(#{:ready :repair :ci :merge} (:status %)) (tasks ctx))]
                 (cond
                   ;; Discover isolated successors while immutable candidates await CI.
                   (and plan (some #(#{:ready :repair} (:status %)) (tasks ctx))) (recur)
                   (some #(#{:ci :merge} (:status %)) (tasks ctx))
+                  (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
+                  (project-tracking-admission-hold? ctx)
                   (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
                   (or active? (some #(not (terminal (:status %))) (tasks ctx))
                       (seq (get-in @(:state ctx) [:last-plan :blockers]))
