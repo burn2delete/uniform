@@ -156,14 +156,18 @@
                                   "\n\nPlanning base: `" base "`.\n\n- [ ] Early draft PR\n- [ ] Focused execution and rejection checks\n- [ ] Exact independent review\n- [ ] CI and current-main composition\n- [ ] Actual merge verified")
                              [(str "seedless:" (:workstream slice)) (str "seedless:" (:kind slice))]
                              (:number (gh/milestone! ctx (:stage slice))))]
-        (task! ctx (:key slice) :issue issue :status :ready :planning-base base :description slice)
-        (rt/update! ctx update-in [:tasks (:key slice)] merge slice)
-        (gh/relation! ctx (campaign-issue! ctx) "sub_issues" (:id issue))
-        (gh/status! ctx issue "Ready")))
+        (task! ctx (:key slice) :issue issue :status :ready :planning-base base :description slice
+               :admission-pending true)
+        (rt/update! ctx update-in [:tasks (:key slice)] merge slice)))
   ;; All issues exist before creating dependency links, including later siblings.
-    (doseq [slice slices dep (:dependencies slice)]
-      (gh/relation! ctx (:issue (task ctx (:key slice))) "dependencies/blocked_by"
-                    (:id (:issue (task ctx dep)))))))
+    (doseq [slice slices :let [t (task ctx (:key slice)) issue (:issue t)]]
+      (when (:admission-pending t)
+        (gh/relation! ctx (campaign-issue! ctx) "sub_issues" (:id issue)))
+      (doseq [dep (:dependencies slice)]
+        (gh/relation! ctx issue "dependencies/blocked_by" (:id (:issue (task ctx dep)))))
+      (when (:admission-pending t)
+        (gh/status! ctx issue "Ready")
+        (rt/update! ctx update-in [:tasks (:key slice)] dissoc :admission-pending)))))
 
 (defn review! [ctx t scope]
   (assert-identity! ctx t)
@@ -870,6 +874,17 @@
    :message (.getMessage error)
    :details (select-keys (ex-data error) [:path :expected :actual :dependency :slice])})
 
+(defn- resume-selection! [cwd argv observation selection]
+  ;; Resume only the already-bound result of this pending plan. Rebinding raw
+  ;; proposal names would mistake its partially admitted tasks for new work.
+  (doseq [slice (:slices selection) :when argv]
+    (when-not (and (compiler/current? cwd observation argv)
+                   (= (:input-id observation) (get-in slice [:compiler-observation :input-id]))
+                   (compiler/selected? (assoc slice :compiler-observation observation)))
+      (rt/fail! "Compiler observation changed before admission resumed"
+                {:slice (:key slice) :compiler-observation-stale true})))
+  selection)
+
 (defn plan! [ctx]
   (let [pending (:planning @(:state ctx))
         base (or (:base pending) (fresh-main! ctx))
@@ -884,7 +899,8 @@
                                                    (mapcat #(remove nil? [(:filename %) (:previous_filename %)])
                                                            (gh/pages ctx (gh/repo-path ctx (str "pulls/" (:number pr) "/files")))))))))
                            (gh/pages ctx (gh/repo-path ctx "pulls?state=open"))))
-        planning {:base base :round n :worktree wt :effect id :open-prs open-prs}
+        planning (cond-> {:base base :round n :worktree wt :effect id :open-prs open-prs}
+                   (:selection pending) (assoc :selection (:selection pending)))
         feedback (latest-planning-feedback ctx)
         _ (rt/update! ctx assoc :planning planning)
         observation (compiler-observation! ctx (:worktree wt) base)
@@ -926,11 +942,15 @@
         output (try
                  (validation/validate! schema/plan output)
                  (validate-plan! output (:tasks @(:state ctx)))
-                 (let [bound (if (= :blocked (:status observation)) output
-                                 (compiler/bind-selection! (:worktree wt)
-                                                           (get-in ctx [:config :compiler-observation-command])
-                                                           observation output (:tasks @(:state ctx)) open-prs))]
-                   (validate-plan! bound (:tasks @(:state ctx))))
+                 (let [argv (get-in ctx [:config :compiler-observation-command])
+                       bound (if-let [selection (:selection pending)]
+                               (resume-selection! (:worktree wt) argv observation selection)
+                               (if (= :blocked (:status observation)) output
+                                   (compiler/bind-selection! (:worktree wt) argv
+                                                             observation output (:tasks @(:state ctx)) open-prs)))]
+                   (validate-plan! bound (:tasks @(:state ctx)))
+                   (rt/update! ctx assoc-in [:planning :selection] bound)
+                   bound)
                  (catch clojure.lang.ExceptionInfo error
                    ;; Preserve the completed model result while making the local
                    ;; validation failure available to inspected next planning.
@@ -976,6 +996,7 @@
 
 (defn eligible? [ctx t occupied]
   (and (#{:ready :repair} (:status t))
+       (not (:admission-pending t))
        ;; Preserve existing authored candidates, but do not drain an old
        ;; unrelated ready queue before the first compiler-informed selection.
        (or (nil? (get-in ctx [:config :compiler-observation-command]))

@@ -37,6 +37,17 @@
       (rt/fail! "Compiler probe must return exactly one EDN observation" {}))
     value))
 
+(defn- read-result [result]
+  ;; The JVM's shared /tmp perfdata instrumentation can warn before -main.
+  ;; This exact lock warning changes no compiler result. Every other preamble,
+  ;; extra EDN value, trailing warning or error remains a protocol failure.
+  (loop [remaining (or (:stdout result) "") warnings []]
+    (if-let [[_ warning rest-output]
+             (re-matches #"(?s)(\[[0-9]+\.[0-9]+s\]\[warning\]\[perf,memops\] Cannot use file /tmp/hsperfdata_[A-Za-z0-9_.-]+/[0-9]+ because it is locked by another process \(errno = 11\)\r?\n)(.*)"
+                         remaining)]
+      (recur rest-output (conj warnings warning))
+      {:value (read-one remaining) :warnings warnings})))
+
 (defn blocked [reason result]
   {:status :blocked :reason reason
    :terminal {:status (if (#{124 137 143} (:exitCode result)) :timeout :unavailable)
@@ -105,6 +116,68 @@
     nil)
   observation)
 
+(def envelope-source "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
+(def c7-source "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
+(def envelope-recursion-key "compiler/SH-08/authenticated-envelope-mutual-recursion")
+
+(defn- witnessed-mutual-components [subject]
+  (let [functions (into {} (map (juxt :function-syntax-id identity) (:functions subject)))]
+    (filterv (fn [component]
+               (let [ids (:function-syntax-ids component)]
+                 (and (= :mutually-recursive (:kind component))
+                      (vector? ids) (< 1 (count ids)) (= (count ids) (count (set ids)))
+                      (every? #(and (string? %) (not (str/blank? %)) (contains? functions %)) ids)
+                      (vector? (:function-core-node-ids component))
+                      (= (count ids) (count (:function-core-node-ids component)))
+                      (every? #(and (string? %) (not (str/blank? %))) (:function-core-node-ids component))
+                      (= (set (:function-core-node-ids component))
+                         (set (map #(get-in functions [% :function-core-node-id]) ids))))))
+             (:recursion-components subject))))
+
+(defn classify-observation
+  "Interpret only a source-traced compiler boundary. The collector validates
+  raw execution and current inputs before invoking this selection policy."
+  [cwd observation]
+  (let [{:keys [failure subject route position]} observation
+        component (get (:closure route) (:component position))
+        mutual (witnessed-mutual-components subject)]
+    (if (and (= :blocked (:status observation)) (= :unclassified (:kind failure))
+             (= :failed (get-in observation [:terminal :status]))
+             (integer? (get-in observation [:terminal :exit]))
+             (not (zero? (get-in observation [:terminal :exit])))
+             (= "C7-ANNOTATION" (:id failure))
+             (= :mutual-recursion-unsupported (get-in failure [:diagnostic :reason]))
+             (= :rejected (get-in failure [:diagnostic :compiler-result-status]))
+             (= :function-types (:stage position))
+             (= :current-source-function-types (:stage route))
+             (= :complete-six-owner-typed-frontend-prerequisite (:scope route))
+             (= :meta (:frontend-profile route)) (= :jvm (:frontend-target route))
+             (every? (set (map :component-id (:closure route))) probe/cohort)
+             (= :authenticated-envelope (:component-id component))
+             (= envelope-source (:source failure) (:source-path subject) (:source-path component))
+             (re-matches #"[0-9a-f]{64}" (or (:source-sha256 subject) ""))
+             (= (:source-sha256 subject) (try (input-sha256 cwd envelope-source) (catch Exception _ nil)))
+             (re-matches #"sha256:[0-9a-f]{64}" (or (:core-artifact-id subject) ""))
+             (= :passed (:core-verification subject))
+             (seq mutual))
+      (-> observation
+          (assoc :status :actionable-failure)
+          (update :failure merge
+                  {:kind :language :work-key envelope-recursion-key
+                   :producer "Freshly verified SH07/B47 recursion products for the complete envelope source"
+                   :consumer "Current C7 sh08-ft-recursive-proof and function type construction"
+                   :owner {:milestone "SH-08" :task "SH-08.2" :paths [c7-source]
+                           :record "docs/self-hosting-milestone-completion-plan.md"}
+                   :reason "Current C7 rejects this complete compiler module because its verified call graph contains mutual recursion. The diagnostic's first component is not the actual mutual-recursion witness."
+                   :witness {:mutual-components mutual :core-artifact-id (:core-artifact-id subject)}
+                   :prerequisites
+                   [{:milestone "SH-02" :task "SH-02.3" :paths [envelope-source]
+                     :record "docs/self-hosting-milestone-completion-plan.md"
+                     :reason "Express the envelope's required deterministic identity and traversal operations through existing loop/recur behavior while preserving every complete source function, export, result and rejection contract. This removes the unsupported recursive call-graph prerequisite without reducing the declared compiler closure."
+                     :progress {:command command
+                                :expected "The same full envelope source reaches C7 inference beyond mutual-recursion rejection; subsequent failures remain explicit."}}]}))
+      observation)))
+
 (defn declared-inputs [cwd]
   (mapv (fn [path]
           {:path path :sha256 (try (input-sha256 cwd path) (catch Exception _ :unavailable))})
@@ -152,7 +225,7 @@
                          :restricted (= :restricted (get-in @(:state ctx) [:effects prior-effect :status]))}))
             (if (and (= fingerprint (:execution-fingerprint previous))
                      (or (= :blocked (:status previous)) (current? cwd previous argv)))
-              previous
+              (or (get-in @(:state ctx) [:effects prior-effect :result]) previous)
               (rt/effect! ctx effect
                           #(let [result (try (execute! argv)
                                              (catch Exception e
@@ -166,12 +239,14 @@
                                (not (number? (:exitCode result))) (blocked "Compiler execution has no terminal status" result)
                                :else
                                (try
-                                 (let [observation (read-one (or (:stdout result) ""))]
+                                 (let [{observation :value warnings :warnings} (read-result result)]
                                    (when-not (= inputs (:inputs observation))
                                      (rt/fail! "Compiler observation omitted or changed declared source inputs" {}))
-                                   (if (= "P18T04007" (get-in observation [:failure :id]))
-                                     (blocked "Final-release refusal does not identify an implementation repair" result)
-                                     (validate-observation! cwd argv result observation)))
+                                   (assoc
+                                    (if (= "P18T04007" (get-in observation [:failure :id]))
+                                      (blocked "Final-release refusal does not identify an implementation repair" result)
+                                      (validate-observation! cwd argv result observation))
+                                    :execution result :execution-warnings warnings))
                                  (catch Exception e
                                    (blocked (str "Compiler execution prerequisite or observation unavailable: " (.getMessage e)) result)))))))
             (catch Exception e
@@ -181,7 +256,11 @@
           observed (merge {:source-revision base :inputs inputs :route (probe/route [])}
                           observed
                           {:execution-fingerprint fingerprint :execution-context execution
-                           :observation-effect (or (:effect observed) effect)})]
+                           :observation-effect (or (:effect observed) effect)})
+          observed (if (current? cwd observed argv)
+                     (validate-observation! cwd argv {:exitCode (get-in observed [:terminal :exit])}
+                                            (classify-observation cwd observed))
+                     observed)]
       (rt/update! ctx assoc :compiler-observation observed)
       observed)))
 

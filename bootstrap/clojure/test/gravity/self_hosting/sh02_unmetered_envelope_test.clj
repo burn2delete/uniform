@@ -79,3 +79,99 @@
                      (assoc-in input [:source-revision :logical-source-path] "bad\ud800")]]
       (is (map? (failure #(build invalid)))))
     (is (= 0 @calls))))
+
+(defn- invoke-current-envelope [function arguments]
+  (#'gravity.self-hosting.sh02-authenticated-envelope-test/invoke-envelope
+   function arguments))
+
+(deftest current-owner-has-an-acyclic-function-call-graph
+  ;; The complete owner must pass C7's structural recursion gate before body
+  ;; inference can inspect it. This is a seed-plan regression, not SH acceptance.
+  (let [plan @(deref #'gravity.self-hosting.sh02-authenticated-envelope-test/envelope-plan)
+        calls (fn [definition]
+                (loop [pending (vec (:instructions definition)) found #{}]
+                  (if (empty? pending)
+                    found
+                    (let [instruction (peek pending)]
+                      (recur
+                       (into (pop pending)
+                             (bootstrap/p15-s23-stage2-module-instruction-children
+                              instruction))
+                       (if (= :function-call (:op instruction))
+                         (conj found (:function instruction))
+                         found))))))
+        graph (into {} (map (fn [[name definition]] [name (calls definition)]))
+                    (:functions plan))
+        recursive? (fn [start]
+                     (loop [pending (vec (get graph start)) seen #{}]
+                       (if (empty? pending)
+                         false
+                         (let [node (peek pending)]
+                           (cond
+                             (= start node) true
+                             (contains? seen node) (recur (pop pending) seen)
+                             :else (recur (into (pop pending) (get graph node))
+                                          (conj seen node)))))))]
+    (is (= [] (filterv recursive? (sort (keys graph)))))))
+
+(deftest iterative-envelope-traversals-preserve-discovery-and-identity
+  (let [refs (array-map {:digest-ref 2} [{:digest-ref 3} {:digest-ref 2}]
+                        :later (list {:digest-ref 4}
+                                     {:nested {:digest-ref 5}}))]
+    (is (= [9 3 2 4 5]
+           (invoke-current-envelope 'ae-collect-digest-refs [refs [9 3]])))
+    (is (= [1 2 2 3 5 5]
+           (invoke-current-envelope 'ae-sort-ordinals [[5 2 1 5 2 3] []])))
+    (is (= [0 1 3 3 3 6]
+           (invoke-current-envelope 'ae-insert-ordinal [[1 3 3 6] 3 [0] false])))
+    (is (= [0 1 3 3 6]
+           (invoke-current-envelope 'ae-insert-ordinal [[1 3 3 6] 3 [0] true]))))
+  (doseq [[value expected]
+          [[nil [:nil]] [false [:boolean false]] [true [:boolean true]]
+           [-1 [:integer -1]] [17 [:integer 17]] ["17" [:string "17"]]
+           ['item [:symbol 'item]] [:item [:keyword :item]]
+           [\x [:character \x]] [1.5 [:unsupported-scalar 1.5]]
+           [{:digest-ref 0} [:digest-ref 0]]
+           [{:digest-ref -1} [:map #{[:entry [:keyword :digest-ref] [:integer -1]]}]]
+           [{:digest-ref 1 :other 2}
+            [:map #{[:entry [:keyword :digest-ref] [:integer 1]]
+                    [:entry [:keyword :other] [:integer 2]]}]]
+           [[] [:vector []]] ['() [:list []]] [#{} [:set #{}]] [{} [:map #{}]]
+           [[1 :item] [:vector [[:integer 1] [:keyword :item]]]]
+           ['(1 :item) [:list [[:integer 1] [:keyword :item]]]]
+           [#{1 :item} [:set #{[:integer 1] [:keyword :item]}]]]]
+    (is (= expected (invoke-current-envelope 'ae-digest-intern-key [value]))))
+  (is (= (invoke-current-envelope 'ae-digest-intern-key [(array-map :first 1 :last 2)])
+         (invoke-current-envelope 'ae-digest-intern-key [(array-map :last 2 :first 1)]))))
+
+(deftest iterative-envelope-traversals-reject-late-and-nested-physical-input
+  (doseq [value [(array-map :first [:valid] :last {:actual-path "/tmp/physical"})
+                 {[:key {:workspace-root "/tmp/physical"}] :value}
+                 [1 '(2 {:digest-ref 0})]
+                 {:logical-source-path "../outside"}
+                 {:file "physical.gravity"}]]
+    (is (false? (invoke-current-envelope 'ae-path-neutral-semantic-value? [value]))))
+  (doseq [value [{:digest-ref -1} {:digest-ref 0 :other :value}
+                 {:logical-source-path "compiler/source.gravity"}
+                 {:file (str "sha256:" (apply str (repeat 64 "a")))}]]
+    (is (true? (invoke-current-envelope 'ae-path-neutral-semantic-value? [value]))))
+  (is (true? (invoke-current-envelope 'ae-lowercase-hex? [(vec "0123456789abcdef")])))
+  (is (false? (invoke-current-envelope 'ae-lowercase-hex? [(vec "0123456789abcdefX")]))))
+
+(deftest iterative-envelope-traversals-use-data-depth-instead-of-call-depth
+  ;; This depth is an executable regression input, not an accepted-data quota.
+  (let [depth 512
+        nest (fn [value] (nth (iterate vector value) depth))
+        encoded (invoke-current-envelope 'ae-digest-intern-key [(nest :leaf)])]
+    (is (= [19]
+           (invoke-current-envelope 'ae-collect-digest-refs [(nest {:digest-ref 19}) []])))
+    (is (false? (invoke-current-envelope 'ae-path-neutral-semantic-value?
+                                        [(nest {:path "/tmp/physical"})])))
+    (is (true? (invoke-current-envelope 'ae-path-neutral-semantic-value? [(nest :leaf)])))
+    (is (= [:keyword :leaf]
+           (loop [value encoded remaining depth]
+             (if (zero? remaining)
+               value
+               (if (and (= :vector (first value)) (= 1 (count (second value))))
+                 (recur (first (second value)) (dec remaining))
+                 [:invalid-container remaining])))))))

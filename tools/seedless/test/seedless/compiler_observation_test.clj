@@ -1,5 +1,6 @@
 (ns seedless.compiler-observation-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is use-fixtures]]
             [gravity.compiler-probe :as probe]
@@ -46,6 +47,20 @@
   (assoc (fixture/slice "model-proposal-name") :kind "implementation"
          :compiler-failure failure-key :compiler-role "repair"))
 
+(defn recorded-envelope-fixture [ctx]
+  ;; The real historical SCC/diagnostic witness is retained. Only source/input
+  ;; transport identities are rebound to this small controller fixture; this is
+  ;; not a compilation or a current acceptance claim for the recorded module.
+  (let [cwd (get-in ctx [:config :repo-dir]) file (io/file cwd compiler/envelope-source)
+        _ (io/make-parents file)
+        _ (spit file "selector input identity fixture\n")
+        recorded (:observation (edn/read-string (slurp (io/resource "fixtures/compiler-envelope-mutual.edn"))))
+        observation (-> recorded
+                        (assoc :source-revision (rt/git ctx cwd "rev-parse" "HEAD")
+                               :inputs (compiler/declared-inputs cwd))
+                        (assoc-in [:subject :source-sha256] (compiler/input-sha256 cwd compiler/envelope-source)))]
+    (assoc observation :input-id (compiler/input-id observation))))
+
 (defn execute-result! [result]
   (let [response {:exitCode (get-in result [:terminal :exit]) :stdout (pr-str result) :stderr ""
                   :capture-truncated false}]
@@ -87,6 +102,91 @@
            (is (not (w/eligible? ctx (w/task ctx failure-key)
                                  [{:status :implementing :paths ["module.clj"]}])))))
       (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest recorded-mutual-recursion-needs-its-complete-current-subject-witness
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir]) raw (recorded-envelope-fixture ctx)]
+    (try
+      (let [selected (compiler/classify-observation cwd raw)]
+        (is (= :actionable-failure (:status selected)))
+        (is (= compiler/envelope-recursion-key (get-in selected [:failure :work-key])))
+        (is (= "SH-08.2" (get-in selected [:failure :owner :task])))
+        (is (= "SH-02.3" (get-in selected [:failure :prerequisites 0 :task])))
+        (is (= 3 (count (get-in selected [:failure :witness :mutual-components]))))
+        (is (= :self-recursive (get-in raw [:failure :diagnostic :diagnostic :recursive-component :kind])))
+        (is (= (get-in raw [:failure :diagnostic]) (get-in selected [:failure :diagnostic]))))
+      (doseq [invalid [(assoc-in raw [:subject :source-sha256] (apply str (repeat 64 "0")))
+                       (assoc-in raw [:subject :core-artifact-id] nil)
+                       (assoc-in raw [:subject :core-verification] :failed)
+                       (assoc-in raw [:subject :functions] [])
+                       (assoc-in raw [:subject :recursion-components] [])
+                       (update-in raw [:subject :recursion-components]
+                                  (fn [components] (mapv #(assoc % :function-core-node-ids ["unknown"]) components)))
+                       (assoc-in raw [:failure :diagnostic :reason] :another-cause)
+                       (assoc-in raw [:failure :id] "P18T04007")
+                       (assoc-in raw [:failure :kind] :environment)
+                       (assoc-in raw [:failure :source] "different.gravity")
+                       (assoc-in raw [:terminal :status] :timeout)
+                       (assoc-in raw [:route :closure] [(first (get-in raw [:route :closure]))])]]
+        (is (= :blocked (:status (compiler/classify-observation cwd invalid)))))
+      (spit (io/file cwd compiler/envelope-source) "changed source bytes\n")
+      (is (= :blocked (:status (compiler/classify-observation cwd raw))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest ordinary-planning-reinterprets-raw-current-evidence-without-reexecuting
+  (let [ctx (context) executions (atom 0)]
+    (try
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source]]
+        (let [raw (recorded-envelope-fixture ctx)
+              prerequisite (assoc (repair) :compiler-failure compiler/envelope-recursion-key
+                                  :compiler-role "prerequisite" :compiler-task "SH-02.3" :stage "SH-02"
+                                  :paths [compiler/envelope-source] :uniform-paths [compiler/envelope-source])]
+          (with-planner ctx #(do (swap! executions inc) raw) (constantly (plan [prerequisite])) []
+            #(do
+               (with-redefs [compiler/classify-observation (fn [_ observation] observation)]
+                 (is (empty? (:slices (w/plan! ctx)))))
+               (let [effect (get-in @(:state ctx) [:compiler-observation :observation-effect])
+                     selected (first (:slices (w/plan! ctx)))]
+                 (is (= "SH-02.3" (:compiler-task selected)))
+                 (is (= compiler/envelope-recursion-key (:compiler-failure selected)))
+                 (is (w/eligible? ctx (w/task ctx (:key selected)) []))
+                 (is (= 1 @executions))
+                 (is (= :blocked (get-in @(:state ctx) [:effects effect :result :status])))
+                 (is (= :actionable-failure (get-in @(:state ctx) [:compiler-observation :status])))
+                 (is (= (pr-str raw) (get-in @(:state ctx) [:compiler-observation :execution :stdout]))))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest only-the-observed-jvm-perfdata-lock-preamble-is-framed-as-a-warning
+  (let [warning "[0.001s][warning][perf,memops] Cannot use file /tmp/hsperfdata_agent/6 because it is locked by another process (errno = 11)\n"]
+    (doseq [scenario [:perfdata :other-warning :other-errno :trailing-warning :extra-value :truncated :resource-error]]
+      (let [ctx (context) planned (atom 0) captured (atom nil)]
+        (try
+          (with-planner ctx #(observation ctx failure-key)
+            (fn [_] (swap! planned inc) (plan [(repair)])) []
+            #(with-redefs [codex/command!
+                           (fn [& _]
+                             (let [edn (pr-str (observation ctx failure-key))
+                                   result {:exitCode (if (= :resource-error scenario) 137 1)
+                                           :capture-truncated (= :truncated scenario) :stderr ""
+                                           :stdout (case scenario
+                                                     :perfdata (str warning edn)
+                                                     :other-warning (str "[warning] unknown JVM condition\n" edn)
+                                                     :other-errno (str (str/replace warning "errno = 11" "errno = 13") edn)
+                                                     :trailing-warning (str edn "\n" warning)
+                                                     :extra-value (str warning edn "\n{}")
+                                                     :truncated (str warning edn)
+                                                     :resource-error "java.lang.OutOfMemoryError: Java heap space\n")}]
+                               (reset! captured result)
+                               (throw (ex-info "Sandboxed command failed" {:result result :writer-ended? true}))))]
+               (let [result (w/plan! ctx) observed (:compiler-observation @(:state ctx))]
+                 (is (= @captured (:execution observed)))
+                 (if (= scenario :perfdata)
+                   (do (is (= [warning] (:execution-warnings observed)))
+                       (is (= failure-key (:key (first (:slices result)))))
+                       (is (= 1 @planned)))
+                   (do (is (= :blocked (:status observed)))
+                       (is (empty? (:slices result)))
+                       (is (zero? @planned)))))))
+          (finally (fixture/delete-tree! (:root ctx))))))))
 
 (deftest existing-and-restricted-candidates-are-waited-for-not-renamed
   (doseq [source [:open-pr :retained-restriction]]
@@ -189,6 +289,73 @@
         #(is (thrown-with-msg? Exception #"same observed compiler repair" (w/plan! ctx))))
       (is (every? #(nil? (:compiler-observation (w/task ctx %))) keys))
       (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest interrupted-admission-resumes-the-same-bound-selection
+  (let [ctx (context) proposals (atom 0) issues (atom 0) relations (atom 0) statuses (atom [])
+        prerequisite (assoc (repair) :key "prerequisite-proposal" :compiler-role "prerequisite"
+                            :compiler-task "specs/bootstrap/tasks.md#SH-07-required-input")
+        response (plan [(assoc (repair) :dependencies ["prerequisite-proposal"]) prerequisite])]
+    (try
+      (with-planner ctx #(observation ctx failure-key)
+        (fn [_] (swap! proposals inc) response) []
+        #(with-redefs [gh/issue! (fn [& _] (let [id (swap! issues inc)] {:number id :id id}))
+                       gh/relation! (fn [& _]
+                                      (when (= 1 (swap! relations inc))
+                                        (throw (ex-info "Campaign relationship read unavailable" {}))))
+                       gh/status! (fn [_ issue status] (swap! statuses conj [(:number issue) status]))]
+           (is (thrown-with-msg? Exception #"Campaign relationship read unavailable" (w/plan! ctx)))
+           (is (= "model-proposal-name" (get-in @(:state ctx) [:effects "plan/1" :result :slices 0 :key])))
+           (is (= failure-key (:key (w/task ctx failure-key))))
+           (is (not (w/eligible? ctx (w/task ctx failure-key) [])))
+           (let [selected (:slices (w/plan! ctx))]
+             (is (= [failure-key] (mapv :key (filter (fn [slice] (= "repair" (:compiler-role slice))) selected)))))
+           (is (= 1 @proposals))
+           (is (= 2 @issues))
+           (is (= [[1 "Ready"] [2 "Ready"]] @statuses))
+           (is (= 2 (count (w/tasks ctx))))
+           (is (every? (fn [task] (not (:admission-pending task))) (w/tasks ctx)))
+           (is (nil? (:planning @(:state ctx))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest interrupted-admission-keeps-the-original-uncertain-effect-held
+  (let [ctx (context) proposals (atom 0) issues (atom 0) mutations (atom 0)
+        effect "sub_issues/100/1"]
+    (try
+      (with-planner ctx #(observation ctx failure-key)
+        (fn [_] (swap! proposals inc) (plan [(repair)])) []
+        #(with-redefs [gh/issue! (fn [& _] (swap! issues inc) {:number 1 :id 1})
+                       gh/relation! (fn [& _]
+                                      (rt/effect! ctx effect
+                                                  (fn [] (swap! mutations inc)
+                                                    (throw (ex-info "Relationship outcome unavailable" {})))))]
+           (is (thrown-with-msg? Exception #"Relationship outcome unavailable" (w/plan! ctx)))
+           (is (= :uncertain (get-in @(:state ctx) [:effects effect :status])))
+           (is (not (w/eligible? ctx (w/task ctx failure-key) [])))
+           (is (thrown-with-msg? Exception #"needs reconciliation" (w/plan! ctx)))
+           (is (= [1 1 1] [@proposals @issues @mutations]))
+           (is (= :uncertain (get-in @(:state ctx) [:effects effect :status])))
+           (is (:planning @(:state ctx)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest retained-bound-selection-still-checks-current-evidence-and-task-ownership
+  (doseq [change [:source :restriction]]
+    (let [ctx (context) mutations (atom 0)]
+      (try
+        (with-planner ctx #(observation ctx failure-key) (constantly (plan [(repair)])) []
+          #(with-redefs [gh/relation! (fn [& _] (swap! mutations inc)
+                                        (throw (ex-info "Relationship read unavailable" {})))]
+             (is (thrown-with-msg? Exception #"Relationship read unavailable" (w/plan! ctx)))
+             (case change
+               :source (spit (io/file (get-in ctx [:config :repo-dir]) "module.clj") "(ns changed)\n")
+               :restriction (w/task! ctx failure-key :status :attention :error {:details {:restricted true}}))
+             (is (thrown-with-msg? Exception
+                                   (if (= change :source) #"changed before admission resumed"
+                                       #"changed before evidence binding")
+                                   (w/plan! ctx)))
+             (is (= 1 @mutations))
+             (is (not (w/eligible? ctx (w/task ctx failure-key) [])))
+             (is (:admission-pending (w/task ctx failure-key)))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
 
 (deftest binding-an-existing-task-does-not-change-ownership-or-erase-a-refusal
   (doseq [change [:paths :restriction :candidate]]

@@ -143,6 +143,19 @@ timeouts and final-release refusal produce explicit blockers, not invented
 compiler repairs. The existing `self-host verify` completion gate remains
 separate.
 
+Selection interprets the validated raw result, including when an unchanged
+durable result is reused. The first source-traced case is the complete envelope
+module's `C7-ANNOTATION` / `:mutual-recursion-unsupported` failure. It requires
+passed fresh Core verification and genuine multi-function recursion components
+whose IDs join the recorded function products. The owning language requirement
+is SH-08.2; expressing the envelope's deterministic identity and traversals with
+existing `loop`/`recur` behavior is an SH-02.3 prerequisite. A diagnostic's first
+reported component alone cannot establish that cause. The raw execution stays
+available after interpretation, and no historical source hash is promoted into
+a current acceptance pin. The specific observed JVM perfdata lock warning may
+precede the EDN result; its exact text and raw output are retained. Other
+preambles, extra values, trailing output and truncation remain blockers.
+
 An actionable observation constrains ordinary planning and admission. Every
 proposed slice must link its `compiler-failure` to the observed work key and
 identify itself as its repair or a necessary prerequisite. The controller
@@ -159,6 +172,13 @@ paths, stage and dependencies, preserving its issue and history. Authored,
 interrupted or restricted work cannot be rebound this way. Prerequisite identity
 includes its existing task or numbered requirement, so distinct prerequisites
 can share a source file without becoming an artificial task quota.
+
+The validated selection is retained before admission starts. An interrupted
+admission resumes those same task identities and issues after checking current
+evidence and ownership. New tasks remain ineligible while their campaign,
+dependency and Ready bookkeeping is pending. Original uncertain provider
+effects still require reconciliation; a resumed plan cannot replay them or
+rename its own partially admitted repair as new work.
 
 Before the first author starts, changed relevant inputs require a fresh probe.
 After focused candidate checks, the controller reruns the same compiler route.
