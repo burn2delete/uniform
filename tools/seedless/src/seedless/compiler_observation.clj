@@ -50,9 +50,28 @@
 
 (defn blocked [reason result]
   {:status :blocked :reason reason
-   :terminal {:status (if (#{124 137 143} (:exitCode result)) :timeout :unavailable)
+   :terminal {:status (case (:exitCode result) 124 :timeout (137 143) :terminated :unavailable)
               :exit (:exitCode result)}
    :execution result})
+
+(defn comment-summary
+  "Project identities and the observed boundary for a GitHub comment. The full
+  execution, source products and diagnostics remain in tasks and durable effects."
+  [observation]
+  (cond-> (select-keys observation [:source-revision :input-id :status :terminal :position
+                                    :reason :restricted :observation-effect])
+    (:route observation)
+    (assoc :route (select-keys (:route observation) [:command :stage :target :triple :scope :build-graph-status]))
+    (:subject observation)
+    (assoc :subject (select-keys (:subject observation) [:source-path :source-sha256 :core-artifact-id :core-verification]))
+    (:failure observation)
+    (assoc :failure
+           (cond-> (select-keys (:failure observation) [:id :kind :work-key :source :producer :consumer :owner :reason])
+             (get-in observation [:failure :diagnostic])
+             (assoc :diagnostic (select-keys (get-in observation [:failure :diagnostic])
+                                             [:id :reason :stage :compiler-result-status]))))
+    (:completed observation) (assoc :completed (mapv :component-id (:completed observation)))
+    (seq (:execution-warnings observation)) (assoc :execution-warning-count (count (:execution-warnings observation)))))
 
 (defn- completed-ids [observation]
   (mapv :component-id (:completed observation)))
@@ -225,7 +244,12 @@
                          :restricted (= :restricted (get-in @(:state ctx) [:effects prior-effect :status]))}))
             (if (and (= fingerprint (:execution-fingerprint previous))
                      (or (= :blocked (:status previous)) (current? cwd previous argv)))
-              (or (get-in @(:state ctx) [:effects prior-effect :result]) previous)
+              (let [cached (or (get-in @(:state ctx) [:effects prior-effect :result]) previous)]
+                (if (and (= :blocked (:status cached)) (nil? (:input-id cached)) (map? (:execution cached)))
+                  ;; Interpret a retained wrapper result without rewriting its
+                  ;; original effect or replaying the terminated process.
+                  (assoc cached :terminal (:terminal (blocked (:reason cached) (:execution cached))))
+                  cached))
               (rt/effect! ctx effect
                           #(let [result (try (execute! argv)
                                              (catch Exception e

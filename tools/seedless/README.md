@@ -156,6 +156,12 @@ a current acceptance pin. The specific observed JVM perfdata lock warning may
 precede the EDN result; its exact text and raw output are retained. Other
 preambles, extra values, trailing output and truncation remain blockers.
 
+Plan and acceptance comments carry the observation's source/input identities,
+terminal status, pipeline position, failure owner and source/Core product identities.
+Full execution output and compiler witnesses remain in the existing durable
+effects, task records and reviewer input; comments do not duplicate them for
+each parallel prerequisite.
+
 An actionable observation constrains ordinary planning and admission. Every
 proposed slice must link its `compiler-failure` to the observed work key and
 identify itself as its repair or a necessary prerequisite. The controller

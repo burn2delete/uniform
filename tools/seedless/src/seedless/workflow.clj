@@ -186,6 +186,11 @@
       (rt/fail! "Requested changes need concrete findings" {}))
     result))
 
+(defn- comment-compiler-evidence [record]
+  (reduce (fn [value field]
+            (cond-> value (get value field) (update field compiler/comment-summary)))
+          record [:compiler-observation :compiler-result]))
+
 (defn pr-base [ctx t]
   (let [parent (task ctx (:stack-on t))]
     (if (and parent (not= :done (:status parent))) (:branch parent) (get-in ctx [:config :base-branch]))))
@@ -378,7 +383,9 @@
         "changes_requested" (do (task! ctx key :feedback review) (transition! ctx key :repair) false)
         "approved" (do
                      (gh/comment! ctx (:issue t) (str "accepted/" (:candidate (task ctx key)))
-                                  (str "Exact candidate and checks: " (pr-str (select-keys (task ctx key) [:base :candidate :tree :checks :compiler-result :review]))))
+                                  (str "Exact candidate and checks: "
+                                       (pr-str (comment-compiler-evidence
+                                                (select-keys (task ctx key) [:base :candidate :tree :checks :compiler-result :review])))))
                      (let [info (shared/pr-info ctx (task ctx key))]
                        (assert-pr-identity! ctx (task ctx key)
                                             (pull-request-by-number! ctx (get-in t [:pr :number]))
@@ -958,7 +965,8 @@
                    (throw error)))]
     (admit! ctx base (:slices output))
     (gh/comment! ctx (campaign-issue! ctx) (str "plan/" n)
-                 (str "Audit base `" base "`.\n\n" (pr-str output)))
+                 (str "Audit base `" base "`.\n\n"
+                      (pr-str (update output :slices #(mapv comment-compiler-evidence %)))))
     (rt/update! ctx assoc :round n :planning nil :last-discovery-key discovery :last-plan (assoc output :base base))
     output))
 

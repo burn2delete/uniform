@@ -159,6 +159,98 @@
                  (is (= (pr-str raw) (get-in @(:state ctx) [:compiler-observation :execution :stdout]))))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
+(deftest planning-comments-project-large-evidence-without-limiting-independent-work
+  ;; This exercises comment transport with the historical full compiler witness.
+  ;; The second declared prerequisite is a controller fixture, not a new claim
+  ;; about the real module or its remaining requirements.
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir]) comment (atom nil) issues (atom 0)]
+    (try
+      (spit (io/file cwd "independent-input.clj") "independent transport fixture\n")
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source "independent-input.clj"]]
+        (let [raw (recorded-envelope-fixture ctx)
+              observed (update-in (compiler/classify-observation cwd raw) [:failure :prerequisites]
+                                  conj {:milestone "SH-02" :task "SH-02.fixture" :paths ["independent-input.clj"]})
+              slices (mapv (fn [[key task path]]
+                             (assoc (repair) :key key :compiler-failure compiler/envelope-recursion-key
+                                    :compiler-role "prerequisite" :compiler-task task :stage "SH-02"
+                                    :paths [path] :uniform-paths [path]))
+                           [["envelope-proposal" "SH-02.3" compiler/envelope-source]
+                            ["independent-proposal" "SH-02.fixture" "independent-input.clj"]])]
+          (with-planner ctx (constantly observed) (constantly (plan slices)) []
+            #(with-redefs [gh/issue! (fn [& _] (let [n (swap! issues inc)] {:number n :id n}))
+                           gh/comment! (fn [_ _ id body] (reset! comment {:id id :body body}))]
+               (let [output (w/plan! ctx)
+                     published (edn/read-string (second (str/split (:body @comment) #"\n\n" 2)))
+                     full (:compiler-observation @(:state ctx))
+                     disk (rt/read-edn (:state-file ctx))
+                     effect (:observation-effect full)]
+                 (is (= "plan/1" (:id @comment)))
+                 (is (= 2 @issues (count (:slices output)) (count (:slices published))))
+                 (is (= (dissoc output :slices) (dissoc published :slices)))
+                 (is (< (count (:body @comment)) (count (pr-str full))))
+                 (is (= 70 (count (get-in full [:subject :functions]))))
+                 (is (= (pr-str observed) (get-in full [:execution :stdout])))
+                 (is (= full (:compiler-observation disk)))
+                 (is (= (:execution full) (get-in disk [:effects effect :result :execution])))
+                 (doseq [[selected shown] (map vector (:slices output) (:slices published))]
+                   (let [summary (:compiler-observation shown) key (:key selected)]
+                     (is (= (dissoc selected :compiler-observation) (dissoc shown :compiler-observation)))
+                     (is (= (select-keys full [:source-revision :input-id :status :terminal :position])
+                            (select-keys summary [:source-revision :input-id :status :terminal :position])))
+                     (is (= compiler/command (get-in summary [:route :command])))
+                     (is (= :llvm-x86_64-linux (get-in summary [:route :target])))
+                     (is (= (select-keys (:subject full) [:source-path :source-sha256 :core-artifact-id :core-verification])
+                            (:subject summary)))
+                     (is (= compiler/envelope-recursion-key (get-in summary [:failure :work-key])))
+                     (is (= (get-in full [:failure :owner]) (get-in summary [:failure :owner])))
+                     (is (nil? (:execution summary)))
+                     (is (nil? (get-in summary [:subject :functions])))
+                     (is (= full (:compiler-observation selected)
+                            (get-in disk [:tasks key :compiler-observation])
+                            (get-in disk [:tasks key :description :compiler-observation])))
+                     (is (= selected (first (filter (fn [slice] (= key (:key slice)))
+                                                    (get-in disk [:last-plan :slices])))))
+                     (is (w/eligible? ctx (w/task ctx key) [])))))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest acceptance-comment-projects-evidence-while-review-retains-the-complete-result
+  ;; Stop at the real comment boundary: this covers payload composition and
+  ;; reviewer input without claiming provider delivery or compiler acceptance.
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        observed (recorded-envelope-fixture ctx)
+        full (assoc observed :execution {:exitCode 1 :stdout (pr-str observed) :stderr ""})
+        comment (atom nil) review-prompt (atom nil) key "comment-transport"]
+    (try
+      (fixture/add-task! ctx (assoc (fixture/slice key) :base "base" :candidate "candidate" :tree "tree"
+                                    :worktree cwd :compiler-result full
+                                    :checks {:result :passed :candidate "candidate" :tree "tree" :commands []}))
+      (with-redefs [w/assert-identity! (fn [& _]) w/assert-clean! (fn [& _]) gh/status! (fn [& _])
+                    w/job! (fn [_ role _ prompt _]
+                             (is (= :review role))
+                             (reset! review-prompt prompt)
+                             {:base "base" :candidate "candidate" :tree "tree" :evidence-scope "adoption"
+                              :verdict "approved" :findings []})
+                    gh/comment! (fn [_ _ id body]
+                                  (reset! comment {:id id :body body})
+                                  (throw (ex-info "Comment boundary captured" {})))
+                    gh/api (fn [& _] (throw (ex-info "Provider API is not part of comment transport coverage" {})))]
+        (is (thrown-with-msg? Exception #"Comment boundary captured" (w/accept! ctx key []))))
+      (let [published (edn/read-string (subs (:body @comment) (count "Exact candidate and checks: ")))
+            summary (:compiler-result published)]
+        (is (= "accepted/candidate" (:id @comment)))
+        (is (str/includes? @review-prompt (pr-str full)))
+        (is (= full (:compiler-result (w/task ctx key))
+               (get-in (rt/read-edn (:state-file ctx)) [:tasks key :compiler-result])))
+        (is (= {:base "base" :candidate "candidate" :tree "tree"}
+               (select-keys published [:base :candidate :tree])))
+        (is (= (select-keys full [:source-revision :input-id :status :terminal :position])
+               (select-keys summary [:source-revision :input-id :status :terminal :position])))
+        (is (= (get-in full [:subject :core-artifact-id]) (get-in summary [:subject :core-artifact-id])))
+        (is (= (get-in full [:subject :source-sha256]) (get-in summary [:subject :source-sha256])))
+        (is (nil? (:execution summary)))
+        (is (nil? (get-in summary [:subject :functions]))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
 (deftest the-actual-retained-prerequisite-keeps-its-original-task-key-and-ownership
   (let [ctx (context)
         recorded (:selected-prerequisite (edn/read-string (slurp (io/resource "fixtures/compiler-envelope-mutual.edn"))))]
@@ -575,6 +667,36 @@
       (is (zero? @models))
       (is (empty? (w/tasks ctx)))
       (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest watchdog-and-external-termination-remain-distinct-cached-blockers
+  (doseq [[exit status] [[124 :timeout] [137 :terminated] [143 :terminated]]]
+    (let [ctx (context) executions (atom 0) models (atom 0)
+          execution {:exitCode exit :stdout "" :stderr "Process ended without a compiler observation\n"
+                     :capture-truncated false}]
+      (try
+        (with-planner ctx #(observation ctx failure-key)
+          (fn [_] (swap! models inc) (plan [(repair)])) []
+          #(with-redefs [codex/command! (fn [& _] (swap! executions inc)
+                                          (throw (ex-info "Compiler process ended"
+                                                          {:result execution :writer-ended? true})))]
+             (let [first-plan (w/plan! ctx) observed (:compiler-observation @(:state ctx))]
+               (is (= :blocked (:status observed)))
+               (is (= {:status status :exit exit} (:terminal observed)))
+               (is (= execution (:execution observed)))
+               (is (seq (:blockers first-plan)))
+               (is (empty? (:slices first-plan)))
+               (is (nil? (:failure observed)))
+               ;; An earlier policy labelled every killed process a timeout.
+               ;; Retain that historical effect; reinterpret its actual exit.
+               (rt/update! ctx assoc-in [:effects (:observation-effect observed) :result :terminal :status] :timeout)
+               (rt/update! ctx assoc-in [:compiler-observation :terminal :status] :timeout)
+               (is (empty? (:slices (w/plan! ctx))))
+               (is (= observed (:compiler-observation @(:state ctx))))
+               (is (= :timeout (get-in @(:state ctx) [:effects (:observation-effect observed) :result :terminal :status]))))))
+        (is (= 1 @executions))
+        (is (zero? @models))
+        (is (empty? (w/tasks ctx)))
+        (finally (fixture/delete-tree! (:root ctx)))))))
 
 (deftest a-shared-execution-restriction-is-never-retried-or-converted-to-work
   (let [ctx (context) calls (atom 0) models (atom 0)]
