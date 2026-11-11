@@ -34,6 +34,10 @@
                           :producer "current core lowering" :consumer "compiler source consumer"
                           :owner {:milestone "SH-07" :task "specs/bootstrap/tasks.md#SH-07"
                                   :paths ["module.clj"]}
+                          :prerequisites [{:milestone "SH-07" :task "specs/bootstrap/tasks.md#SH-07-required-input"
+                                           :paths ["module.clj"]}
+                                          {:milestone "SH-19" :task "SH-19.1" :paths ["runtime.clj"]}
+                                          {:milestone "SH-19" :task "SH-19.2" :paths ["runtime.clj"]}]
                           :work-key key :reason "Required call form is rejected by its implementation"}
                 :terminal {:status :failed :exit 1}}]
     (assoc result :input-id (compiler/input-id result))))
@@ -153,6 +157,24 @@
                  (is (= :blocked (get-in @(:state ctx) [:effects effect :result :status])))
                  (is (= :actionable-failure (get-in @(:state ctx) [:compiler-observation :status])))
                  (is (= (pr-str raw) (get-in @(:state ctx) [:compiler-observation :execution :stdout]))))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest the-actual-retained-prerequisite-keeps-its-original-task-key-and-ownership
+  (let [ctx (context)
+        recorded (:selected-prerequisite (edn/read-string (slurp (io/resource "fixtures/compiler-envelope-mutual.edn"))))]
+    (try
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source]]
+        (let [raw (recorded-envelope-fixture ctx)
+              interpreted (compiler/classify-observation (get-in ctx [:config :repo-dir]) raw)
+              retained (merge (fixture/slice (:key recorded)) recorded)]
+          (is (compiler/selected? retained interpreted))
+          (fixture/add-task! ctx (assoc retained :compiler-observation interpreted))
+          (with-planner ctx (constantly raw) (constantly (plan [retained])) []
+            #(with-redefs [gh/issue! (fn [& _] (throw (ex-info "The retained issue must be preserved" {})))]
+               (let [selected (first (:slices (w/plan! ctx)))]
+                 (is (= (:key recorded) (:key selected)))
+                 (is (w/eligible? ctx (w/task ctx (:key selected)) []))
+                 (is (= 1 (count (w/tasks ctx)))))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest only-the-observed-jvm-perfdata-lock-preamble-is-framed-as-a-warning
@@ -393,6 +415,7 @@
 (deftest independent-prerequisites-keep-real-dependencies-and-stable-identities
   (let [ctx (context)
         prerequisite (assoc (repair) :key "dependency" :compiler-role "prerequisite"
+                            :compiler-task "SH-19.1" :stage "SH-19"
                             :paths ["runtime.clj"] :proposal "Supply the runtime operation required by this failed call")]
     (try
       (with-planner ctx #(observation ctx failure-key)
@@ -408,7 +431,7 @@
 
 (deftest distinct-existing-prerequisite-requirements-may-share-owned-files
   (let [ctx (context)
-        prerequisite (assoc (repair) :compiler-role "prerequisite" :paths ["runtime.clj"])]
+        prerequisite (assoc (repair) :compiler-role "prerequisite" :stage "SH-19" :paths ["runtime.clj"])]
     (try
       (with-planner ctx #(observation ctx failure-key)
         (constantly (plan [(assoc prerequisite :key "first" :compiler-task "SH-19.1")
@@ -419,6 +442,100 @@
            (is (not (w/eligible? ctx (w/task ctx (:key (second slices)))
                                  [(assoc (first slices) :status :implementing)])))))
       (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest prerequisite-ownership-cannot-be-forged-or-inherited-from-a-retained-task
+  (doseq [change [:task :stage :path :parent-scope :file-child] retained? [false true]]
+    (let [ctx (context) observed (observation ctx failure-key)
+          valid (assoc (repair) :key "retained-prerequisite" :compiler-role "prerequisite"
+                       :compiler-task "SH-19.1" :stage "SH-19" :paths ["runtime.clj"])
+          forged (case change
+                   :task (assoc valid :compiler-task "unrelated-requirement")
+                   :stage (assoc valid :stage "SH-02")
+                   :path (assoc valid :paths ["unrelated.clj"])
+                   :parent-scope (assoc valid :paths ["."])
+                   :file-child (assoc valid :paths ["runtime.clj/not-real"]))]
+      (try
+        (when retained? (fixture/add-task! ctx (assoc forged :compiler-observation observed)))
+        (with-planner ctx (constantly observed) (constantly (plan [forged])) []
+          #(is (thrown-with-msg? Exception #"declared task and implementation ownership" (w/plan! ctx))))
+        (is (not (w/eligible? ctx (assoc forged :status :ready :compiler-observation observed) [])))
+        (is (= (if retained? 1 0) (count (w/tasks ctx))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest current-prerequisite-declarations-gate-pending-admission-and-ready-dispatch
+  (let [ctx (context) mutations (atom 0)
+        prerequisite (assoc (repair) :compiler-role "prerequisite" :compiler-task "SH-19.1"
+                            :stage "SH-19" :paths ["runtime.clj"])]
+    (try
+      (with-planner ctx #(observation ctx failure-key) (constantly (plan [prerequisite])) []
+        #(with-redefs [gh/relation! (fn [& _] (swap! mutations inc)
+                                      (throw (ex-info "Relationship read unavailable" {})))]
+           (is (thrown-with-msg? Exception #"Relationship read unavailable" (w/plan! ctx)))
+           (let [key (:key (first (w/tasks ctx)))]
+             (with-redefs [compiler/classify-observation
+                           (fn [_ observed] (assoc-in observed [:failure :prerequisites] []))]
+               (is (thrown-with-msg? Exception #"changed before admission resumed" (w/plan! ctx))))
+             (is (= 1 @mutations))
+             (is (not (w/eligible? ctx (w/task ctx key) [])))
+             ;; Even a ready record from the earlier policy cannot bypass the
+             ;; current observation's requirement ownership for the same inputs.
+             (w/task! ctx key :admission-pending false)
+             (is (compiler/selected? (w/task ctx key)))
+             (is (not (w/eligible? ctx (w/task ctx key) []))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest changed-inputs-cannot-refresh-a-prerequisite-into-unowned-authoring
+  (doseq [change [:removed :different-file]]
+    (let [ctx (context) changed? (atom false) executions (atom 0) authors (atom 0)
+          prerequisite (assoc (repair) :compiler-role "prerequisite" :compiler-task "SH-19.1"
+                              :stage "SH-19" :paths ["runtime.clj"])
+          observed (fn []
+                     (swap! executions inc)
+                     (cond-> (observation ctx failure-key)
+                       @changed?
+                       (assoc-in [:failure :prerequisites]
+                                 (if (= :removed change) []
+                                     [{:milestone "SH-19" :task "SH-19.1" :paths ["different.clj"]}]))))]
+      (try
+        (with-planner ctx observed (constantly (plan [prerequisite])) []
+          #(let [selected (first (:slices (w/plan! ctx))) key (:key selected)]
+             (is (w/eligible? ctx (w/task ctx key) []))
+             (spit (io/file (get-in ctx [:config :repo-dir]) "module.clj") "(ns changed-before-author)\n")
+             (reset! changed? true)
+             (with-redefs [w/job! (fn [& _] (swap! authors inc)
+                                    (throw (ex-info "Author must not start" {})))]
+               (is (thrown-with-msg? Exception #"changed before authoring" (w/prepare! ctx key))))
+             (is (= 2 @executions))
+             (is (zero? @authors))
+             (is (= failure-key (get-in @(:state ctx) [:compiler-observation :failure :work-key])))
+             (is (not (compiler/selected? (w/task ctx key) (:compiler-observation @(:state ctx)))))
+             (is (empty? (:writers (rt/read-edn (:coordination-file ctx)))))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest ancillary-test-paths-cannot-rename-the-same-prerequisite
+  (let [first-ctx (context) second-ctx (context)
+        prerequisite (assoc (repair) :compiler-role "prerequisite" :compiler-task "SH-19.1"
+                            :stage "SH-19" :paths ["runtime.clj" "first_test.clj"])
+        successor (assoc prerequisite :key "another-proposal" :paths ["runtime.clj" "another_test.clj"])]
+    (try
+      (let [first-selection
+            (with-planner first-ctx #(observation first-ctx failure-key) (constantly (plan [prerequisite])) []
+              #(first (:slices (w/plan! first-ctx))))
+            second-selection
+            (with-planner second-ctx #(observation second-ctx failure-key) (constantly (plan [successor])) []
+              #(first (:slices (w/plan! second-ctx))))]
+        (is (= (:key first-selection) (:key second-selection)))
+        (w/task! first-ctx (:key first-selection) :status :ci :candidate "immutable-candidate")
+        (with-planner first-ctx #(observation first-ctx failure-key)
+          (constantly (assoc (plan [successor]) :candidate-dispositions
+                             [{:candidate (str "slice/" (:key first-selection))
+                               :disposition "independent-successor"
+                               :reason "A different test file still addresses the same declared prerequisite."}])) []
+          #(is (thrown-with-msg? Exception #"prerequisite has an existing candidate" (w/plan! first-ctx))))
+        (is (= 1 (count (w/tasks first-ctx)))))
+      (finally
+        (fixture/delete-tree! (:root first-ctx))
+        (fixture/delete-tree! (:root second-ctx))))))
 
 (deftest unrelated-selection-and-final-release-refusal-cannot-become-repairs
   (let [ctx (context) models (atom 0)]

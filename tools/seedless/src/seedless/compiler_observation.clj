@@ -300,6 +300,42 @@
   [:compiler-observation :compiler-failure :compiler-role :compiler-task
    :compiler-candidates :compiler-selection-reason])
 
+(defn- implementation-owner? [task owner]
+  ;; These source-grounded declarations name concrete files, not directories.
+  (and (= (:compiler-task task) (:task owner))
+       (= (:stage task) (:milestone owner))
+       (boolean (some (set (:paths owner)) (:paths task)))))
+
+(defn- prerequisite-owner [observation task]
+  (first (filter #(implementation-owner? task %) (get-in observation [:failure :prerequisites]))))
+
+(defn selected?
+  ([task] (selected? task (:compiler-observation task)))
+  ([task observation]
+   (case (:status observation)
+     :actionable-failure
+     (and (= (:compiler-failure task) (get-in observation [:failure :work-key]))
+          (case (:compiler-role task)
+            "repair" (implementation-owner? task (get-in observation [:failure :owner]))
+            "prerequisite" (some? (prerequisite-owner observation task))
+            false))
+     :scoped-pass (and (= "independent" (:compiler-role task)) (= "" (:compiler-failure task)))
+     false)))
+
+(defn- prerequisite-key [observation task]
+  (let [owner (prerequisite-owner observation task)]
+    (str (get-in observation [:failure :work-key]) "/prerequisite/"
+         (subs (rt/digest (pr-str [(:task owner) (:milestone owner) (sort (:paths owner))])) 0 16))))
+
+(defn- prerequisite-candidates [observation slice known open-prs]
+  (let [key (prerequisite-key observation slice)]
+    (concat
+     (filter #(or (= key (:key %))
+                  (and (= "prerequisite" (:compiler-role %))
+                       (= (:compiler-task slice) (:compiler-task %))
+                       (selected? % observation))) (vals known))
+     (filter #(str/includes? (or (:body %) "") (str "<!-- uniform-seedless:" key " -->")) open-prs))))
+
 (defn bind-selection!
   "Require compiler evidence links and assign stable work identities before admission."
   [cwd argv observation plan known open-prs]
@@ -321,8 +357,7 @@
                                        (:key slice)
                                        (case (:compiler-role slice)
                                          "repair" key
-                                         "prerequisite" (str key "/prerequisite/"
-                                                             (subs (rt/digest (pr-str [(:compiler-task slice) (:stage slice) (sort (:paths slice))])) 0 16))
+                                         "prerequisite" (prerequisite-key observation slice)
                                          (:key slice)))]) slices))]
         (when-not (= (count repairs) (count (set repairs)))
           (rt/fail! "Multiple tasks duplicate the same observed compiler repair" {}))
@@ -336,19 +371,18 @@
                      (not (rebindable? (get known (:key slice)) slice)))
             (rt/fail! "Existing task is authored, restricted, uncertain, or has different ownership; do not rename it"
                       {:slice (:key slice)}))
-          (when-not (if actionable?
-                      (and (= key (:compiler-failure slice))
-                           (#{"repair" "prerequisite"} (:compiler-role slice)))
-                      (and (= "independent" (:compiler-role slice))
-                           (= "" (:compiler-failure slice))))
-            (rt/fail! "Selected work must address the observed compiler failure or its prerequisite" {:slice (:key slice)}))
+          (when-not (selected? slice observation)
+            (rt/fail! "Selected work must address the observed compiler failure with its declared task and implementation ownership"
+                      {:slice (:key slice)}))
           (when (and (= "repair" (:compiler-role slice))
-                     (or (seq (remove #(and (= (:key %) (:key slice)) (rebindable? % slice)) candidates))
-                         (not= (get-in failure [:owner :milestone]) (:stage slice))
-                         (not= (get-in failure [:owner :task]) (:compiler-task slice))
-                         (not (rt/overlap? (:paths slice) (get-in failure [:owner :paths])))))
+                     (seq (remove #(and (= (:key %) (:key slice)) (rebindable? % slice)) candidates)))
             (rt/fail! "Observed repair has an existing candidate or a different implementation owner"
                       {:slice (:key slice) :candidates candidates}))
+          (when (and (= "prerequisite" (:compiler-role slice))
+                     (seq (remove #(and (= (:key %) (:key slice)) (rebindable? % slice))
+                                  (prerequisite-candidates observation slice known open-prs))))
+            (rt/fail! "Observed prerequisite has an existing candidate; preserve its task identity"
+                      {:slice (:key slice)}))
           (let [new-key (get key-map (:key slice))]
             (when (or (and (contains? known new-key)
                            (not (rebindable? (get known new-key) slice)))
@@ -388,11 +422,3 @@
 (defn dispatch-order [task]
   [(case (:compiler-role task) "repair" 0 "prerequisite" 1 2)
    (if (= :repair (:status task)) 0 1) (:key task)])
-
-(defn selected? [task]
-  (let [observation (:compiler-observation task)]
-    (case (:status observation)
-      :actionable-failure (and (#{"repair" "prerequisite"} (:compiler-role task))
-                               (= (:compiler-failure task) (get-in observation [:failure :work-key])))
-      :scoped-pass (and (= "independent" (:compiler-role task)) (= "" (:compiler-failure task)))
-      false)))

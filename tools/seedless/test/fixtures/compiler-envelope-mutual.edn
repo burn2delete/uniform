@@ -677,4 +677,15 @@
      :function-syntax-id
      "sha256:0cadcd86d82651ad36ffdb1b2b4f04a45b39f58f8fbf780bf9bed2e76c04d1bb",
      :function-core-node-id
-     "sha256:e2e40a5648cdd665483d1e5e9badd2085558f249263737cd8b2d786db169671f"}]}}}
+     "sha256:e2e40a5648cdd665483d1e5e9badd2085558f249263737cd8b2d786db169671f"}]}},
+ :selected-prerequisite
+ {:key
+  "compiler/SH-08/authenticated-envelope-mutual-recursion/prerequisite/2f70cf54d2a00eae",
+  :stage "SH-02",
+  :paths
+  ["language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
+   "bootstrap/clojure/test/gravity/self_hosting/sh02_unmetered_envelope_test.clj"],
+  :compiler-task "SH-02.3",
+  :compiler-role "prerequisite",
+  :compiler-failure
+  "compiler/SH-08/authenticated-envelope-mutual-recursion"}}

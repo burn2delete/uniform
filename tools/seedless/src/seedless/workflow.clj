@@ -503,8 +503,7 @@
                    (not (compiler/current? (:worktree t) before
                                            (get-in ctx [:config :compiler-observation-command]))))
           (let [current (compiler-observation! ctx (:worktree t) (:base t))]
-            (when (or (= :blocked (:status current))
-                      (not= (:compiler-failure t) (get-in current [:failure :work-key])))
+            (when-not (compiler/selected? t current)
               (rt/fail! "Compiler observation changed before authoring; select from the new result"
                         {:compiler-observation-stale true :compiler-result current
                          :restricted (:restricted current) :writer-ended? true :local-only true}))
@@ -880,7 +879,7 @@
   (doseq [slice (:slices selection) :when argv]
     (when-not (and (compiler/current? cwd observation argv)
                    (= (:input-id observation) (get-in slice [:compiler-observation :input-id]))
-                   (compiler/selected? (assoc slice :compiler-observation observation)))
+                   (compiler/selected? slice observation))
       (rt/fail! "Compiler observation changed before admission resumed"
                 {:slice (:key slice) :compiler-observation-stale true})))
   selection)
@@ -1000,7 +999,9 @@
        ;; Preserve existing authored candidates, but do not drain an old
        ;; unrelated ready queue before the first compiler-informed selection.
        (or (nil? (get-in ctx [:config :compiler-observation-command]))
-           (:candidate t) (compiler/selected? t))
+           (:candidate t)
+           (let [before (:compiler-observation t) current (:compiler-observation @(:state ctx))]
+             (compiler/selected? t (if (= (:inputs before) (:inputs current)) current before))))
        (every? (fn [key]
                  (let [dep (task ctx key)]
                    (or (and (= :done (:status dep)) (:merged dep))

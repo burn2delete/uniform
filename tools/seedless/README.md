@@ -170,8 +170,12 @@ a restriction or an ownership conflict. An existing unstarted task in this
 campaign can receive the observation under its exact key and unchanged owned
 paths, stage and dependencies, preserving its issue and history. Authored,
 interrupted or restricted work cannot be rebound this way. Prerequisite identity
-includes its existing task or numbered requirement, so distinct prerequisites
-can share a source file without becoming an artificial task quota.
+uses its declared existing task, milestone and implementation scope. Changing
+an ancillary test or documentation path cannot rename the same prerequisite;
+distinct declared prerequisites can still share a source file. Fresh admission,
+resumed admission and unauthored dispatch require that task, milestone and
+implementation-path relationship. Retained metadata cannot grant ownership
+absent from the current observation.
 
 The validated selection is retained before admission starts. An interrupted
 admission resumes those same task identities and issues after checking current
