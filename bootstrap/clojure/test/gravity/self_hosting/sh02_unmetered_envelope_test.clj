@@ -175,3 +175,14 @@
                (if (and (= :vector (first value)) (= 1 (count (second value))))
                  (recur (first (second value)) (dec remaining))
                  [:invalid-container remaining])))))))
+
+(deftest digest-request-search-preserves-present-missing-and-empty-results
+  (let [product (invoke-current-envelope 'authenticated-envelope-build-template [@descriptor])
+        requests (:digest-requests product)
+        last-request (last requests)
+        preimage (:preimage last-request)]
+    (is (= (:key last-request)
+           (invoke-current-envelope 'ae-request-key-for-preimage [requests preimage])))
+    (is (nil? (invoke-current-envelope 'ae-request-key-for-preimage
+                                      [requests [::missing-preimage]])))
+    (is (nil? (invoke-current-envelope 'ae-request-key-for-preimage [[] preimage])))))

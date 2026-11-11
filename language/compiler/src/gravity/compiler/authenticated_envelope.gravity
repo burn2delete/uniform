@@ -429,14 +429,14 @@
                     (recur next-pending results)))))))))))
 
 (defn ae-request-key-for-preimage [requests preimage]
-  (loop [requests requests preimage preimage]
-    (let [intern-key (ae-digest-intern-key preimage)]
+  (let [intern-key (ae-digest-intern-key preimage)]
+    (loop [requests requests]
       (if (= (count requests) 0)
         nil
         (if (= (ae-digest-intern-key (get (first requests) :preimage))
                intern-key)
           (get (first requests) :key)
-          (recur (rest requests) preimage))))))
+          (recur (rest requests)))))))
 
 (defn ae-add-digest-request [state preimage]
   (let [existing
