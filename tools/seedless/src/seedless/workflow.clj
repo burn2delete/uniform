@@ -368,14 +368,42 @@
                            #(gh/api ctx "PATCH" (gh/repo-path ctx (str "pulls/" (:number pr)))
                                     {:base (pr-base ctx (task ctx (:key t)))})))))
 
+(defn- ordinary-checks [ctx t commands]
+  (if-let [argv (and (:compiler-observation t) (get-in ctx [:config :compiler-observation-command]))]
+    (filterv #(not= argv %) commands)
+    commands))
+
+(defn- assert-compiler-result! [ctx t]
+  (let [before (:compiler-observation t) after (:compiler-result t)
+        argv (get-in ctx [:config :compiler-observation-command])]
+    (when (= :blocked (:status after))
+      (rt/fail! "Compiler rerun is blocked; no compiler advance is established"
+                {:compiler-observation-blocked true :compiler-result after
+                 :restricted (:restricted after) :writer-ended? true :local-only true}))
+    (when-not (and (#{:actionable-failure :scoped-pass} (:status after))
+                   (compiler/current? (:worktree t) after argv))
+      (rt/fail! "Acceptance needs current compiler execution evidence"
+                {:slice (:key t) :compiler-observation-stale true :writer-ended? true :local-only true}))
+    (rt/assert-authorized! ctx :check (codex/check-key ctx argv))
+    (when (and (compiler/advance-required? t)
+               (= (get-in before [:failure :work-key]) (get-in after [:failure :work-key])))
+      (rt/fail! "Compiler rerun still reaches the selected failure"
+                {:compiler-result after :result {:exitCode 1} :writer-ended? true}))
+    (when-not (if (compiler/advance-required? t)
+                (compiler/advanced? before after)
+                (compiler/nonregressing? before after))
+      (rt/fail! "Compiler rerun did not advance the declared path or regressed its completed prefix"
+                {:compiler-result after :result {:exitCode 1} :writer-ended? true}))))
+
 (defn accept! [ctx key proposed]
   (let [t (task ctx key)]
     (assert-identity! ctx t)
     (when-not (and (= :passed (get-in t [:checks :result]))
                    (= (:candidate t) (get-in t [:checks :candidate]))
                    (= (:tree t) (get-in t [:checks :tree]))
-                   (every? (set (get-in t [:checks :commands])) proposed))
+                   (every? (set (get-in t [:checks :commands])) (ordinary-checks ctx t proposed)))
       (rt/fail! "Acceptance needs the completed writer-phase checks" {:slice key}))
+    (when (:compiler-observation t) (assert-compiler-result! ctx t))
     (transition! ctx key :review)
     (let [review (review! ctx (task ctx key) (:kind t))]
       (task! ctx key :review review)
@@ -403,24 +431,13 @@
   (assert-identity! ctx (task ctx key))
   (rt/lease-phase! ctx lease :checking)
   (transition! ctx key :checking)
-  (try (shared/checks! ctx (task ctx key) proposed)
-       (when-let [before (:compiler-observation (task ctx key))]
-         (let [t (task ctx key)
-               after (compiler-observation! ctx (:worktree t) (:candidate t))]
-           (task! ctx key :compiler-result after)
-           (when (= :blocked (:status after))
-             (rt/fail! "Compiler rerun is blocked; no compiler advance is established"
-                       {:compiler-observation-blocked true :compiler-result after
-                        :restricted (:restricted after) :writer-ended? true :local-only true}))
-           (when (and (= "repair" (:compiler-role t))
-                      (= (get-in before [:failure :work-key]) (get-in after [:failure :work-key])))
-             (rt/fail! "Compiler rerun still reaches the selected failure"
-                       {:compiler-result after :result {:exitCode 1} :writer-ended? true}))
-           (when-not (if (= "repair" (:compiler-role t))
-                       (compiler/advanced? before after)
-                       (compiler/nonregressing? before after))
-             (rt/fail! "Compiler rerun did not advance the declared path or regressed its completed prefix"
-                       {:compiler-result after :result {:exitCode 1} :writer-ended? true}))))
+  (try (let [t (task ctx key)]
+         (shared/checks! (update-in ctx [:config :checks] #(ordinary-checks ctx t %))
+                         t (ordinary-checks ctx t proposed))
+         (when (:compiler-observation t)
+           (let [after (compiler-observation! ctx (:worktree t) (:candidate t))]
+             (task! ctx key :compiler-result after)
+             (assert-compiler-result! ctx (task ctx key)))))
        (catch Exception e
          (throw (ex-info (.getMessage e) (assoc (or (ex-data e) {}) :seedless-check true) e))))
   (assert-clean! ctx (:worktree (task ctx key))))

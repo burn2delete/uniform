@@ -51,19 +51,22 @@
   (assoc (fixture/slice "model-proposal-name") :kind "implementation"
          :compiler-failure failure-key :compiler-role "repair"))
 
-(defn recorded-envelope-fixture [ctx]
+(defn recorded-envelope-fixture
   ;; The real historical SCC/diagnostic witness is retained. Only source/input
   ;; transport identities are rebound to this small controller fixture; this is
   ;; not a compilation or a current acceptance claim for the recorded module.
-  (let [cwd (get-in ctx [:config :repo-dir]) file (io/file cwd compiler/envelope-source)
-        _ (io/make-parents file)
-        _ (spit file "selector input identity fixture\n")
-        recorded (:observation (edn/read-string (slurp (io/resource "fixtures/compiler-envelope-mutual.edn"))))
-        observation (-> recorded
-                        (assoc :source-revision (rt/git ctx cwd "rev-parse" "HEAD")
-                               :inputs (compiler/declared-inputs cwd))
-                        (assoc-in [:subject :source-sha256] (compiler/input-sha256 cwd compiler/envelope-source)))]
-    (assoc observation :input-id (compiler/input-id observation))))
+  ([ctx] (recorded-envelope-fixture ctx "fixtures/compiler-envelope-mutual.edn" "selector input identity fixture\n"))
+  ([ctx resource source]
+   (let [cwd (get-in ctx [:config :repo-dir]) file (io/file cwd compiler/envelope-source)
+         _ (io/make-parents file)
+         _ (spit file source)
+         _ (spit (io/file cwd compiler/c7-source) "selector producer identity fixture\n")
+         recorded (:observation (edn/read-string (slurp (io/resource resource))))
+         observation (-> recorded
+                         (assoc :source-revision (rt/git ctx cwd "rev-parse" "HEAD")
+                                :inputs (compiler/declared-inputs cwd))
+                         (assoc-in [:subject :source-sha256] (compiler/input-sha256 cwd compiler/envelope-source)))]
+     (assoc observation :input-id (compiler/input-id observation)))))
 
 (defn execute-result! [result]
   (let [response {:exitCode (get-in result [:terminal :exit]) :stdout (pr-str result) :stderr ""
@@ -157,6 +160,92 @@
                  (is (= :blocked (get-in @(:state ctx) [:effects effect :result :status])))
                  (is (= :actionable-failure (get-in @(:state ctx) [:compiler-observation :status])))
                  (is (= (pr-str raw) (get-in @(:state ctx) [:compiler-observation :execution :stdout]))))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest recorded-multiple-self-result-needs-the-authenticated-later-gate-witness
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])]
+    (try
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source compiler/c7-source]]
+        (let [raw-before (recorded-envelope-fixture ctx)
+              before (compiler/classify-observation cwd raw-before)
+              raw-after (recorded-envelope-fixture ctx "fixtures/compiler-envelope-multiple-self.edn" "changed envelope fixture\n")
+              after (compiler/classify-observation cwd raw-after)]
+          (is (= compiler/envelope-multiple-self-key (get-in after [:failure :work-key])))
+          (is (= "SH-08.2" (get-in after [:failure :owner :task])))
+          (is (= "SH-02.3" (get-in after [:failure :prerequisites 0 :task])))
+          (is (= 3 (count (get-in after [:failure :witness :self-components]))))
+          (is (= :no-mutual-components (get-in after [:failure :witness :passed-check])))
+          (is (= (:position before) (:position after)))
+          (is (compiler/advanced? before after))
+          (doseq [invalid [(assoc-in raw-after [:subject :source-sha256] (apply str (repeat 64 "0")))
+                           (assoc-in raw-after [:subject :core-artifact-id] nil)
+                           (assoc-in raw-after [:subject :core-verification] :failed)
+                           (assoc-in raw-after [:subject :functions] [])
+                           (assoc-in raw-after [:subject :recursion-components] [])
+                           (update-in raw-after [:subject :recursion-components] pop)
+                           (assoc-in raw-after [:subject :recursion-components 0 :kind] :mutually-recursive)
+                           (assoc-in raw-after [:subject :recursion-components 0 :function-core-node-ids] ["unknown"])
+                           (assoc-in raw-after [:failure :diagnostic :reason] :mutual-recursion-unsupported)
+                           (assoc-in raw-after [:failure :kind] :environment)
+                           (assoc-in raw-after [:terminal :status] :timeout)]]
+            (is (= :blocked (:status (compiler/classify-observation cwd invalid)))))
+          (doseq [invalid [(assoc-in after [:failure :work-key] "renamed-failure")
+                           (assoc-in after [:failure :diagnostic :reason] :another-reason)
+                           (assoc-in after [:subject :source-sha256] (get-in before [:subject :source-sha256]))
+                           (assoc-in after [:subject :core-artifact-id] (get-in before [:subject :core-artifact-id]))
+                           (update-in after [:subject :functions] pop)
+                           (assoc-in after [:failure :witness :consumer-source] nil)
+                           (assoc-in after [:failure :witness :consumer-source :sha256] (apply str (repeat 64 "0")))]]
+            (is (not (compiler/advanced? before invalid))))
+          (is (not (compiler/advanced? (update-in before [:failure :witness] dissoc :consumer-source) after)))
+          (spit (io/file cwd compiler/c7-source) "changed producer fixture\n")
+          (is (not (compiler/current? cwd raw-after compiler/command)))
+          (let [changed (assoc raw-after :inputs (compiler/declared-inputs cwd))
+                changed (assoc changed :input-id (compiler/input-id changed))]
+            (is (not (compiler/advanced? before (compiler/classify-observation cwd changed)))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest observed-prerequisite-check-advances-and-next-plan-waits-for-retained-work
+  ;; Historical real witnesses pass through the ordinary selector/check gates;
+  ;; rebound source identities and supplied command/provider effects are fixtures.
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])]
+    (try
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source compiler/c7-source]]
+        (let [raw (atom (recorded-envelope-fixture ctx))
+              prerequisite (assoc (repair) :compiler-failure compiler/envelope-recursion-key
+                                  :compiler-role "prerequisite" :compiler-task "SH-02.3" :stage "SH-02"
+                                  :paths [compiler/envelope-source] :uniform-paths [compiler/envelope-source])]
+          (with-planner ctx #(deref raw) (constantly (plan [prerequisite])) []
+            #(let [selected (first (:slices (w/plan! ctx))) key (:key selected)]
+               (w/task! ctx key :worktree cwd :candidate (:source-revision @raw))
+               (with-redefs [w/assert-identity! (fn [& _]) w/assert-clean! (fn [& _])
+                             rt/lease-phase! (fn [& _]) shared/checks! (fn [& _])]
+                 (is (thrown-with-msg? Exception #"still reaches the selected failure"
+                                       (w/check-candidate! ctx key [] nil)))
+                 (reset! raw (recorded-envelope-fixture ctx "fixtures/compiler-envelope-multiple-self.edn" "after traversal fixture\n"))
+                 (w/check-candidate! ctx key [] nil))
+               (let [after (:compiler-result (w/task ctx key))
+                     wait-dispositions [{:candidate (str "slice/" key) :disposition "wait" :reason "Preserve this selected candidate"}
+                                        {:candidate "pr/42" :disposition "wait" :reason "Remaining helper edits already exist; full-route validation is blocked"}]
+                     waiting (assoc (plan []) :candidate-dispositions wait-dispositions
+                                    :blockers ["Retained helper implementation exists; its full compiler execution timed out and needs validation."])
+                     retained {:number 42 :title "Retained wider envelope implementation"
+                               :body "The self-helper source edits are already authored; full-route validation remains blocked."}]
+                 (is (compiler/advanced? (:compiler-observation selected) after))
+                 (is (= compiler/envelope-multiple-self-key (get-in after [:failure :work-key])))
+                 (with-redefs [gh/pages (fn [_ endpoint] (if (str/includes? endpoint "/files")
+                                                           [{:filename compiler/envelope-source}] [retained]))
+                               w/job! (fn [& _] waiting)]
+                   (let [next-plan (w/plan! ctx)]
+                     (is (empty? (:slices next-plan)))
+                     (is (= wait-dispositions (:candidate-dispositions next-plan)))
+                     (is (some (fn [blocker] (str/includes? blocker "already"))
+                               [(get-in next-plan [:candidate-dispositions 1 :reason])])))
+                   (with-redefs [w/job! (fn [& _] (assoc waiting :slices [(assoc prerequisite :key "duplicate-self-helper-work"
+                                                                                 :compiler-failure compiler/envelope-multiple-self-key)]))]
+                     (is (thrown-with-msg? Exception #"Overlapping candidate scope"
+                                           (w/plan! ctx)))))
+                 (is (= [key] (mapv :key (w/tasks ctx)))))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest planning-comments-project-large-evidence-without-limiting-independent-work
@@ -763,6 +852,152 @@
              (is (true? (:restricted (:compiler-observation @(:state ctx))))))))
       (is (= 1 @calls))
       (is (= 1 @models))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest exact-probe-check-is-separate-from-passing-checks-through-acceptance
+  ;; Real check/review boundaries and isolated Git identity; the command
+  ;; executor supplies observations, so this is not compiler acceptance evidence.
+  (let [ctx (-> (context)
+                (assoc-in [:config :check-timeout-ms] 1200000)
+                (assoc-in [:config :compiler-observation-timeout-ms] 7200000))
+        before (observation ctx failure-key)
+        wt (w/worktree! ctx "probe-routing" (:source-revision before))
+        cwd (:worktree wt)
+        configured ["clojure" "-M:test" "configured-fixture"]
+        focused ["clojure" "-M:test" "focused-fixture"]
+        different-argv ["clojure" "-M:compiler-probe"]
+        ordinary (conj (get-in ctx [:config :checks]) configured focused different-argv)
+        ctx (update-in ctx [:config :checks] into [compiler/command configured])
+        proposed [compiler/command focused different-argv]
+        calls (atom []) reviews (atom 0) comment (atom nil)]
+    (try
+      (spit (io/file cwd "module.clj") "(ns fixture)\n(def changed true)\n")
+      (rt/git ctx cwd "add" "module.clj")
+      (rt/git ctx cwd "commit" "-m" "fixture compiler input change")
+      (let [candidate (rt/git ctx cwd "rev-parse" "HEAD") tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}")
+            after (assoc (observation (assoc-in ctx [:config :repo-dir] cwd) "compiler/SH-08/next")
+                         :position {:component 0 :stage :canonical-core})]
+        (fixture/add-task! ctx (merge (repair) wt {:key failure-key :base (:source-revision before)
+                                                   :candidate candidate :tree tree :compiler-observation before}))
+        (with-redefs [rt/lease-phase! (fn [& _]) gh/status! (fn [& _])
+                      codex/command! (fn [execution-context job _ argv]
+                                       (swap! calls conj {:argv argv :job job
+                                                          :timeout (get-in execution-context [:config :check-timeout-ms])})
+                                       (if (= compiler/command argv) (execute-result! after) {:exitCode 0}))
+                      w/job! (fn [_ role _ _ _]
+                               (is (= :review role))
+                               (swap! reviews inc)
+                               {:base (:source-revision before) :candidate candidate :tree tree
+                                :evidence-scope "implementation" :verdict "approved" :findings []})
+                      gh/comment! (fn [_ _ _ body]
+                                    (reset! comment body)
+                                    (throw (ex-info "Comment boundary captured" {})))]
+          (w/check-candidate! ctx failure-key proposed nil)
+          (let [checked (w/task ctx failure-key) checks (:checks checked) result (:compiler-result checked)]
+            (is (= ordinary (:commands checks)))
+            (is (= :passed (:result checks)))
+            (is (= {:status :failed :exit 1} (:terminal result)))
+            (is (= (pr-str after) (get-in result [:execution :stdout])))
+            (is (= (conj ordinary compiler/command) (mapv :argv @calls)))
+            (is (= (conj (vec (repeat (count ordinary) 1200000)) 7200000) (mapv :timeout @calls)))
+            (is (str/starts-with? (:job (last @calls)) "compiler-observation-"))
+            (doseq [[invalid-checks invalid-result message]
+                    [[(update checks :commands #(vec (remove #{focused} %))) result #"completed writer-phase checks"]
+                     [(assoc checks :candidate "different") result #"completed writer-phase checks"]
+                     [(assoc checks :tree "different") result #"completed writer-phase checks"]
+                     [checks nil #"current compiler execution evidence"]
+                     [checks (assoc result :input-id "stale") #"current compiler execution evidence"]
+                     [checks (assoc result :status :blocked) #"Compiler rerun is blocked"]]]
+              (w/task! ctx failure-key :checks invalid-checks :compiler-result invalid-result)
+              (is (thrown-with-msg? Exception message (w/accept! ctx failure-key proposed))))
+            (is (zero? @reviews))
+            (w/task! ctx failure-key :checks checks :compiler-result result)
+            (is (thrown-with-msg? Exception #"Comment boundary captured" (w/accept! ctx failure-key proposed)))
+            (is (= 1 @reviews))
+            (is (str/includes? @comment ":compiler-result"))
+            (is (= 1 (count (filter #(= compiler/command (:argv %)) @calls))))
+            (rt/record-denial! ctx :check (codex/check-key ctx compiler/command) {:reason "Inspected execution restriction"})
+            (is (true? (:restricted (ex-data (try (w/accept! ctx failure-key proposed)
+                                                  (catch Exception e e))))))
+            (is (= 1 @reviews)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest unlinked-probe-commands-keep-ordinary-check-and-acceptance-semantics
+  (doseq [source [:configured :proposed] outcome [:passed :failed]]
+    (let [ctx (-> (context)
+                  (assoc-in [:config :check-timeout-ms] 1200000)
+                  (assoc-in [:config :compiler-observation-timeout-ms] 7200000))
+          ctx (cond-> ctx (= source :configured) (update-in [:config :checks] conj compiler/command))
+          proposed (if (= source :proposed) [compiler/command] [])
+          base (:source-revision (observation ctx failure-key))
+          wt (w/worktree! ctx "retained-probe" base) calls (atom [])]
+      (try
+        (fixture/add-task! ctx (merge (fixture/slice "retained") wt
+                                      {:base base :candidate base
+                                       :tree (rt/git ctx (:worktree wt) "rev-parse" "HEAD^{tree}")}))
+        (with-redefs [rt/lease-phase! (fn [& _]) gh/status! (fn [& _])
+                      w/job! (fn [& _] (throw (ex-info "No reviewer should run for this check fixture" {})))
+                      codex/command! (fn [execution-context _ _ argv]
+                                       (swap! calls conj {:argv argv :timeout (get-in execution-context [:config :check-timeout-ms])})
+                                       (when (and (= compiler/command argv) (= :failed outcome))
+                                         (throw (ex-info "Ordinary probe check failed" {:result {:exitCode 1} :writer-ended? true})))
+                                       {:exitCode 0})]
+          (if (= :failed outcome)
+            (do (is (thrown-with-msg? Exception #"Ordinary probe check failed"
+                                      (w/check-candidate! ctx "retained" proposed nil)))
+                (is (thrown-with-msg? Exception #"completed writer-phase checks"
+                                      (w/accept! ctx "retained" proposed))))
+            (do (w/check-candidate! ctx "retained" proposed nil)
+                (is (some #{compiler/command} (get-in (w/task ctx "retained") [:checks :commands])))
+                (when (= source :proposed)
+                  (rt/update! ctx update-in [:tasks "retained" :checks :commands] #(vec (remove #{compiler/command} %)))
+                  (is (thrown-with-msg? Exception #"completed writer-phase checks"
+                                        (w/accept! ctx "retained" proposed))))))
+          (is (nil? (:compiler-result (w/task ctx "retained"))))
+          (is (= [{:argv compiler/command :timeout 1200000}]
+                 (filterv #(= compiler/command (:argv %)) @calls))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest composition-reruns-selected-compiler-evidence-after-filtered-checks
+  (let [ctx (context) repo (get-in ctx [:config :repo-dir]) before (observation ctx failure-key)
+        wt (w/worktree! ctx "probe-composition" (:source-revision before))
+        cwd (:worktree wt) executions (atom 0)]
+    (try
+      (fixture/add-task! ctx (merge (repair) wt {:key failure-key :base (:source-revision before)
+                                                 :candidate (:source-revision before)
+                                                 :tree (rt/git ctx cwd "rev-parse" "HEAD^{tree}")
+                                                 :compiler-observation before}))
+      (with-redefs [rt/lease-phase! (fn [& _]) gh/status! (fn [& _]) w/publish! (fn [& _])
+                    codex/command! (fn [_ _ _ argv]
+                                     (if (= compiler/command argv)
+                                       (do (swap! executions inc)
+                                           (execute-result! (assoc (observation (assoc-in ctx [:config :repo-dir] cwd)
+                                                                                "compiler/SH-08/next")
+                                                                   :position {:component 0 :stage :canonical-core})))
+                                       {:exitCode 0}))
+                    w/job! (fn [& _]
+                             (merge (select-keys (w/task ctx failure-key) [:base :candidate :tree])
+                                    {:evidence-scope "implementation" :verdict "approved" :findings []}))
+                    gh/comment! (fn [& _] (throw (ex-info "Composition acceptance comment captured" {})))]
+        (w/check-candidate! ctx failure-key [compiler/command] nil)
+        (let [checked (w/task ctx failure-key) first-result (:compiler-result checked)]
+          (is (not-any? #{compiler/command} (get-in checked [:checks :commands])))
+          (spit (io/file repo "module.clj") "(ns fixture)\n(def new-main-input true)\n")
+          (rt/git ctx repo "add" "module.clj")
+          (rt/git ctx repo "commit" "-m" "fixture main source change")
+          (let [base (rt/git ctx repo "rev-parse" "HEAD")]
+            (with-redefs [w/fresh-main! (constantly base)]
+              (is (thrown-with-msg? Exception #"Composition acceptance comment captured"
+                                    (w/compose! ctx checked base))))
+            (let [composed (w/task ctx failure-key) after (:compiler-result composed)]
+              (is (= 2 @executions))
+              (is (= before (:compiler-observation composed)))
+              (is (= base (:candidate composed) (:source-revision after)))
+              (is (= (get-in checked [:checks :commands]) (get-in composed [:checks :commands])))
+              (is (not= (:input-id first-result) (:input-id after)))
+              (is (compiler/current? cwd after compiler/command))
+              (is (= (:source-revision before)
+                     (get-in @(:state ctx) [:effects (:observation-effect first-result) :result :source-revision])))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest candidate-checks-require-the-observed-repair-to-advance

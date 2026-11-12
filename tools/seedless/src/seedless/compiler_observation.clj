@@ -92,11 +92,6 @@
              (and (position before) (position after)
                   (not (neg? (compare (position after) (position before)))))))))
 
-(defn advanced? [before after]
-  (and (nonregressing? before after)
-       (or (= :scoped-pass (:status after))
-           (pos? (compare (position after) (position before))))))
-
 (defn- validate-observation! [cwd argv result observation]
   (when-not (and (map? observation)
                  (#{:actionable-failure :blocked :scoped-pass} (:status observation))
@@ -138,63 +133,136 @@
 (def envelope-source "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def c7-source "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def envelope-recursion-key "compiler/SH-08/authenticated-envelope-mutual-recursion")
+(def envelope-multiple-self-key "compiler/SH-08/authenticated-envelope-multiple-self-components")
+(def ^:private envelope-self-functions #{'ae-lowercase-hex? 'ae-insert-ordinal 'ae-sort-ordinals})
 
-(defn- witnessed-mutual-components [subject]
-  (let [functions (into {} (map (juxt :function-syntax-id identity) (:functions subject)))]
-    (filterv (fn [component]
-               (let [ids (:function-syntax-ids component)]
-                 (and (= :mutually-recursive (:kind component))
-                      (vector? ids) (< 1 (count ids)) (= (count ids) (count (set ids)))
-                      (every? #(and (string? %) (not (str/blank? %)) (contains? functions %)) ids)
-                      (vector? (:function-core-node-ids component))
-                      (= (count ids) (count (:function-core-node-ids component)))
-                      (every? #(and (string? %) (not (str/blank? %))) (:function-core-node-ids component))
-                      (= (set (:function-core-node-ids component))
-                         (set (map #(get-in functions [% :function-core-node-id]) ids))))))
-             (:recursion-components subject))))
+(defn- function-inventory [subject]
+  (let [functions (:functions subject)]
+    (when (and (vector? functions) (seq functions)
+               (= (mapv :ordinal functions) (vec (range (count functions))))
+               (every? #(symbol? (:definition-name %)) functions)
+               (every? (fn [field]
+                         (and (= (count functions) (count (set (map field functions))))
+                              (every? #(re-matches #"sha256:[0-9a-f]{64}" (or (field %) "")) functions)))
+                       [:function-syntax-id :function-core-node-id])
+               (= (count functions) (count (set (map :definition-name functions)))))
+      (mapv #(select-keys % [:ordinal :definition-name]) functions))))
+
+(defn- witnessed-components [subject kind]
+  (if-not (function-inventory subject) []
+          (let [functions (into {} (map (juxt :function-syntax-id identity) (:functions subject)))]
+            (filterv (fn [component]
+                       (let [ids (:function-syntax-ids component)]
+                         (and (= kind (:kind component))
+                              (vector? ids) (if (= kind :self-recursive) (= 1 (count ids)) (< 1 (count ids)))
+                              (= (count ids) (count (set ids)))
+                              (every? #(contains? functions %) ids)
+                              (vector? (:function-core-node-ids component))
+                              (= (count ids) (count (:function-core-node-ids component)))
+                              (= (set (:function-core-node-ids component))
+                                 (set (map #(get-in functions [% :function-core-node-id]) ids))))))
+                     (:recursion-components subject)))))
+
+(defn- multiple-self-components [subject]
+  (let [components (witnessed-components subject :self-recursive)
+        names (into {} (map (juxt :function-syntax-id :definition-name) (:functions subject)))]
+    (when (and (= (:recursion-components subject) components)
+               (= (count envelope-self-functions) (count components))
+               (= envelope-self-functions (set (mapcat #(map names (:function-syntax-ids %)) components))))
+      components)))
+
+(defn- envelope-type-boundary? [{:keys [failure subject route position terminal]}]
+  (let [component (get (:closure route) (:component position))]
+    (and (= :failed (:status terminal)) (integer? (:exit terminal)) (not (zero? (:exit terminal)))
+         (= "C7-ANNOTATION" (:id failure))
+         (= :rejected (get-in failure [:diagnostic :compiler-result-status]))
+         (= :function-types (:stage position))
+         (= :current-source-function-types (:stage route))
+         (= :complete-six-owner-typed-frontend-prerequisite (:scope route))
+         (= :meta (:frontend-profile route)) (= :jvm (:frontend-target route))
+         (every? (set (map :component-id (:closure route))) probe/cohort)
+         (= :authenticated-envelope (:component-id component))
+         (= envelope-source (:source failure) (:source-path subject) (:source-path component))
+         (re-matches #"[0-9a-f]{64}" (or (:source-sha256 subject) ""))
+         (re-matches #"sha256:[0-9a-f]{64}" (or (:core-artifact-id subject) ""))
+         (= :passed (:core-verification subject))
+         (some? (function-inventory subject)))))
+
+(defn- recursion-gate-advanced? [before after]
+  ;; In unchanged sh08-ft-recursive-proof, the mutual-component rejection
+  ;; precedes the multiple-component check. These authenticated products prove
+  ;; that exact structural advance; they do not establish ordinary inference.
+  (and (= :actionable-failure (:status before) (:status after))
+       (= envelope-recursion-key (get-in before [:failure :work-key]))
+       (= envelope-multiple-self-key (get-in after [:failure :work-key]))
+       (= :mutual-recursion-unsupported (get-in before [:failure :diagnostic :reason]))
+       (= :multiple-recursive-components (get-in after [:failure :diagnostic :reason]))
+       (= (:position before) (:position after))
+       (envelope-type-boundary? before) (envelope-type-boundary? after)
+       (= c7-source (get-in before [:failure :witness :consumer-source :path]))
+       (re-matches #"[0-9a-f]{64}" (or (get-in before [:failure :witness :consumer-source :sha256]) ""))
+       (= (get-in before [:failure :witness :consumer-source])
+          (get-in after [:failure :witness :consumer-source]))
+       (seq (witnessed-components (:subject before) :mutually-recursive))
+       (seq (multiple-self-components (:subject after)))
+       (= (function-inventory (:subject before)) (function-inventory (:subject after)))
+       (not= (get-in before [:subject :source-sha256]) (get-in after [:subject :source-sha256]))
+       (not= (get-in before [:subject :core-artifact-id]) (get-in after [:subject :core-artifact-id]))))
+
+(defn advanced? [before after]
+  (and (nonregressing? before after)
+       (or (= :scoped-pass (:status after))
+           (pos? (compare (position after) (position before)))
+           (recursion-gate-advanced? before after))))
+
+(defn advance-required? [task]
+  (or (= "repair" (:compiler-role task))
+      (and (= "prerequisite" (:compiler-role task)) (= "SH-02.3" (:compiler-task task))
+           (#{envelope-recursion-key envelope-multiple-self-key}
+            (get-in task [:compiler-observation :failure :work-key])))))
 
 (defn classify-observation
   "Interpret only a source-traced compiler boundary. The collector validates
   raw execution and current inputs before invoking this selection policy."
   [cwd observation]
-  (let [{:keys [failure subject route position]} observation
-        component (get (:closure route) (:component position))
-        mutual (witnessed-mutual-components subject)]
+  (let [{:keys [failure subject]} observation
+        mutual (witnessed-components subject :mutually-recursive)
+        self (multiple-self-components subject)
+        reason (get-in failure [:diagnostic :reason])
+        boundary (cond (and (= :mutual-recursion-unsupported reason) (seq mutual)) :mutual
+                       (and (= :multiple-recursive-components reason) (seq self)) :multiple-self)
+        consumer-sha (when boundary (try (input-sha256 cwd c7-source) (catch Exception _ nil)))]
     (if (and (= :blocked (:status observation)) (= :unclassified (:kind failure))
-             (= :failed (get-in observation [:terminal :status]))
-             (integer? (get-in observation [:terminal :exit]))
-             (not (zero? (get-in observation [:terminal :exit])))
-             (= "C7-ANNOTATION" (:id failure))
-             (= :mutual-recursion-unsupported (get-in failure [:diagnostic :reason]))
-             (= :rejected (get-in failure [:diagnostic :compiler-result-status]))
-             (= :function-types (:stage position))
-             (= :current-source-function-types (:stage route))
-             (= :complete-six-owner-typed-frontend-prerequisite (:scope route))
-             (= :meta (:frontend-profile route)) (= :jvm (:frontend-target route))
-             (every? (set (map :component-id (:closure route))) probe/cohort)
-             (= :authenticated-envelope (:component-id component))
-             (= envelope-source (:source failure) (:source-path subject) (:source-path component))
-             (re-matches #"[0-9a-f]{64}" (or (:source-sha256 subject) ""))
-             (= (:source-sha256 subject) (try (input-sha256 cwd envelope-source) (catch Exception _ nil)))
-             (re-matches #"sha256:[0-9a-f]{64}" (or (:core-artifact-id subject) ""))
-             (= :passed (:core-verification subject))
-             (seq mutual))
+             boundary (envelope-type-boundary? observation)
+             (string? consumer-sha)
+             (= (:source-sha256 subject) (try (input-sha256 cwd envelope-source) (catch Exception _ nil))))
       (-> observation
           (assoc :status :actionable-failure)
           (update :failure merge
-                  {:kind :language :work-key envelope-recursion-key
+                  {:kind :language :work-key (if (= :mutual boundary) envelope-recursion-key envelope-multiple-self-key)
                    :producer "Freshly verified SH07/B47 recursion products for the complete envelope source"
                    :consumer "Current C7 sh08-ft-recursive-proof and function type construction"
                    :owner {:milestone "SH-08" :task "SH-08.2" :paths [c7-source]
                            :record "docs/self-hosting-milestone-completion-plan.md"}
-                   :reason "Current C7 rejects this complete compiler module because its verified call graph contains mutual recursion. The diagnostic's first component is not the actual mutual-recursion witness."
-                   :witness {:mutual-components mutual :core-artifact-id (:core-artifact-id subject)}
+                   :reason (if (= :mutual boundary)
+                             "Current C7 rejects this complete compiler module because its verified call graph contains mutual recursion. The diagnostic's first component is not the actual mutual-recursion witness."
+                             "Current C7 passes its mutual-component guard, then rejects the three verified self-recursive components at its single-component structural check. Ordinary inference has not been established.")
+                   :witness (merge {:core-artifact-id (:core-artifact-id subject)
+                                    :consumer-source {:path c7-source :sha256 consumer-sha}
+                                    :source-function 'sh08-ft-recursive-proof}
+                                   (if (= :mutual boundary) {:mutual-components mutual}
+                                       {:self-components self :passed-check :no-mutual-components
+                                        :failed-check :single-recursive-component}))
                    :prerequisites
                    [{:milestone "SH-02" :task "SH-02.3" :paths [envelope-source]
                      :record "docs/self-hosting-milestone-completion-plan.md"
-                     :reason "Express the envelope's required deterministic identity and traversal operations through existing loop/recur behavior while preserving every complete source function, export, result and rejection contract. This removes the unsupported recursive call-graph prerequisite without reducing the declared compiler closure."
+                     :reason (if (= :mutual boundary)
+                               "Express the envelope's required deterministic identity and traversal operations through existing loop/recur behavior while preserving every complete source function, export, result and rejection contract. This removes the unsupported recursive call-graph prerequisite without reducing the declared compiler closure."
+                               "The remaining self-recursive helpers ae-lowercase-hex?, ae-insert-ordinal and ae-sort-ordinals can use existing loop/recur behavior while preserving their results and the complete source closure. Inspect retained candidates and already authored implementations before proposing any source work; an unverified candidate is not an absent implementation.")
                      :progress {:command command
-                                :expected "Require the original mutual-recursion failure to disappear and record the next real C7 failure or later handoff from terminal execution of the same declared source closure."}}]}))
+                                :expected (if (= :mutual boundary)
+                                            "Require the original mutual-recursion failure to disappear and record the next real C7 failure or later handoff from terminal execution of the same declared source closure."
+                                            "Require the multiple-recursive-components failure to disappear and record the next real C7 failure or later handoff from terminal execution of the same declared source closure.")}}]}))
       observation)))
 
 (defn declared-inputs [cwd]

@@ -156,6 +156,19 @@ a current acceptance pin. The specific observed JVM perfdata lock warning may
 precede the EDN result; its exact text and raw output are retained. Other
 preambles, extra values, trailing output and truncation remain blockers.
 
+The next observed envelope boundary is `:multiple-recursive-components`: fresh
+Core contains only the three self-recursive helpers `ae-lowercase-hex?`,
+`ae-insert-ordinal` and `ae-sort-ordinals`. C7 reaches this structural count check
+after its mutual-component guard; ordinary inference remains unestablished.
+The same-stage advance requires both authentic witnesses, identical complete
+route and function inventory, changed source/Core identities, and identical
+nonmissing C7 source byte identities recorded during classification. An older
+observation can receive that policy interpretation only against its original
+matching input checkout; current bytes cannot supply missing historical identity.
+The next failure remains owned by SH-08.2, with SH-02.3 as a source prerequisite.
+The planner must inspect retained implementations and their execution limits
+before proposing more work; unverified source is not missing source.
+
 Plan and acceptance comments carry the observation's source/input identities,
 terminal status, pipeline position, failure owner and source/Core product identities.
 Full execution output and compiler witnesses remain in the existing durable
@@ -192,10 +205,19 @@ rename its own partially admitted repair as new work.
 
 Before the first author starts, changed relevant inputs require a fresh probe.
 After focused candidate checks, the controller reruns the same compiler route.
+For an evidence-bound task, the exact probe command in configured or proposed
+checks runs once through the observation collector with its own watchdog. Its
+terminal result remains separate from passing ordinary checks. The retained
+baseline preserves this requirement through composition. Other commands and
+tasks without a compiler baseline keep ordinary check behavior. Acceptance of
+an evidence-bound task requires current permitted compiler evidence as well as
+the ordinary receipts.
 A repair enters review only when the original failure is gone and the same
-declared path advances to a later component or handoff, or a scoped pass. Its
-completed component prefix cannot shrink. Prerequisites retain their
-focused evidence without claiming the primary failure resolved. All results
+declared path advances to a later component or handoff, the specifically witnessed
+recursive-component check above, or a scoped pass. Its completed component
+prefix cannot shrink. The observed envelope prerequisites promise failure
+removal and must demonstrate that advance too. Other independent prerequisites
+retain focused evidence with no regression of the compiler path. All results
 remain development evidence; a clean frontend run cannot close the campaign.
 
 The selected mutual-recursion prerequisite promises removal of that first
