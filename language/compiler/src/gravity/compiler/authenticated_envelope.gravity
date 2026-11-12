@@ -119,13 +119,14 @@
     false))
 
 (defn ae-lowercase-hex? [characters]
-  (if (= (count characters) 0)
-    true
-    (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
-                     \a \b \c \d \e \f}
-                   (first characters))
-      (ae-lowercase-hex? (rest characters))
-      false)))
+  (loop [characters characters]
+    (if (= (count characters) 0)
+      true
+      (if (contains? #{\0 \1 \2 \3 \4 \5 \6 \7 \8 \9
+                       \a \b \c \d \e \f}
+                     (first characters))
+        (recur (rest characters))
+        false))))
 
 (defn ae-sha256-id? [value]
   (if (string? value)
@@ -262,24 +263,24 @@
     false))
 
 (defn ae-insert-ordinal [values value result inserted?]
-  (if (= (count values) 0)
-    (if inserted?
-      result
-      (conj result value))
-    (if inserted?
-      (ae-insert-ordinal
-       (rest values) value (conj result (first values)) true)
-      (if (< value (first values))
-        (ae-insert-ordinal values value (conj result value) true)
-        (ae-insert-ordinal
-         (rest values) value (conj result (first values)) false)))))
+  (loop [values values value value result result inserted? inserted?]
+    (if (= (count values) 0)
+      (if inserted?
+        result
+        (conj result value))
+      (if inserted?
+        (recur (rest values) value (conj result (first values)) true)
+        (if (< value (first values))
+          (recur values value (conj result value) true)
+          (recur (rest values) value (conj result (first values)) false))))))
 
 (defn ae-sort-ordinals [values result]
-  (if (= (count values) 0)
-    result
-    (ae-sort-ordinals
-     (rest values)
-     (ae-insert-ordinal result (first values) [] false))))
+  (loop [values values result result]
+    (if (= (count values) 0)
+      result
+      (recur
+       (rest values)
+       (ae-insert-ordinal result (first values) [] false)))))
 
 (defn ae-collect-ref-sequence [values result]
   (loop [values values result result]
