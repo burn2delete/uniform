@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - tools/seedless/**
+      - tools/gravity/compiler_probe.clj
       - tools/simplify/**
       - .github/workflows/seedless-harness.yml
       - .github/actions/clojure/**
@@ -11,6 +12,7 @@ on:
     branches: [main]
     paths:
       - tools/seedless/**
+      - tools/gravity/compiler_probe.clj
       - tools/simplify/**
       - .github/workflows/seedless-harness.yml
       - .github/actions/clojure/**

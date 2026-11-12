@@ -1,0 +1,691 @@
+{:scope :historical-compiler-observation-for-selector-regression,
+ :captured-at "2026-11-11T20:49:53Z",
+ :claim
+ "This recorded witness tests interpretation and transport; it is not a current-source compiler acceptance run.",
+ :execution-warnings
+ ["[0.001s][warning][perf,memops] Cannot use file /tmp/hsperfdata_agent/6 because it is locked by another process (errno = 11)\n"],
+ :observation
+ {:terminal {:status :failed, :exit 1},
+  :failure
+  {:id "C7-ANNOTATION",
+   :kind :unclassified,
+   :source
+   "language/compiler/src/gravity/compiler/authenticated_envelope.gravity",
+   :producer ":function-types",
+   :consumer "Current-source canonical Core",
+   :reason
+   "The terminal diagnostic needs a source-grounded owning implementation before dispatch.",
+   :diagnostic
+   {:remediation
+    "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types.",
+    :source-span nil,
+    :diagnostic
+    {:remediation
+     "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types.",
+     :constraint-id nil,
+     :source-span nil,
+     :diagnostic-id
+     "SH08-C7:C7-ANNOTATION:::mutual-recursion-unsupported",
+     :stage :type-checking,
+     :origin-chain nil,
+     :rule "C7-ANNOTATION",
+     :diagnostic-id-request
+     {:constraint-id nil,
+      :source-span nil,
+      :origin-chain nil,
+      :rule "C7-ANNOTATION",
+      :syntax-id nil,
+      :reason :mutual-recursion-unsupported,
+      :expected-type
+      :bounded-named-self-recursive-fixed-arity-positive-positional-literal-base,
+      :parameter-binding-id nil,
+      :binding-id nil,
+      :core-node-id nil,
+      :actual-type :mutual-recursion-unsupported,
+      :domain :gravity/sh08-function-type-diagnostic-v1,
+      :target :jvm,
+      :profile :meta,
+      :generated-origin nil},
+     :type-id :mutual-recursion-unsupported,
+     :syntax-id nil,
+     :reason :mutual-recursion-unsupported,
+     :expected-type
+     :bounded-named-self-recursive-fixed-arity-positive-positional-literal-base,
+     :recursive-component
+     {:function-core-node-ids
+      ["sha256:8fab37b22dee0be43f406e51c8bd2ef29f5d0b61830e252ba5231b2ce0324e00"],
+      :function-syntax-ids
+      ["sha256:d45a396eda370bd76688f0cb397d886d1e4cef4b1652ca8d8b160aebfbc71f0b"],
+      :internal-call-edge-ordinals [30],
+      :kind :self-recursive,
+      :ordinal 0},
+     :parameter-binding-id nil,
+     :binding-id nil,
+     :severity :error,
+     :core-node-id nil,
+     :actual-type :mutual-recursion-unsupported,
+     :artifact :gravity/c7-function-type-diagnostic,
+     :target :jvm,
+     :profile :meta,
+     :generated-origin nil},
+    :stage :type-checking,
+    :compiler-result-status :rejected,
+    :reason :mutual-recursion-unsupported,
+    :id "C7-ANNOTATION",
+    :class "clojure.lang.ExceptionInfo",
+    :message
+    "Current C7 did not accept the complete compiler module"}},
+  :completed [],
+  :route
+  {:stage :current-source-function-types,
+   :command ["clojure" "-J-Xmx2g" "-M:compiler-probe"],
+   :toolchain "LLVM 20.1.8",
+   :scope :complete-six-owner-typed-frontend-prerequisite,
+   :closure-basis
+   "docs/self-hosting-sh07-completion-plan.md: candidate-scope decision",
+   :frontend-target :jvm,
+   :abi :sysv-amd64,
+   :triple "x86_64-unknown-linux-gnu",
+   :execution-host
+   {:clojure "1.12.0",
+    :java "21.0.13",
+    :jvm-arguments
+    ["-XX:-OmitStackTraceInFastThrow"
+     "-Xmx2g"
+     "-Dclojure.basis=.cpcache/3686899763.basis"],
+    :max-heap-bytes 2147483648,
+    :os "Linux",
+    :architecture "amd64"},
+   :build-graph-status :actual-native-compiler-build-recipe-unresolved,
+   :target :llvm-x86_64-linux,
+   :frontend-profile :meta,
+   :remaining-boundary
+   :effects-ownership-safety-mir-native-runtime-library-build-rebuild-release,
+   :catalog
+   "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+   :closure
+   [{:category :compiler,
+     :component-id :authenticated-envelope,
+     :dependencies [],
+     :source-path
+     "language/compiler/src/gravity/compiler/authenticated_envelope.gravity",
+     :source-module gravity.compiler.authenticated-envelope,
+     :source-imports []}
+    {:category :reader,
+     :component-id :bootstrap-reader,
+     :dependencies [:surface-reader],
+     :source-path
+     "bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+     :source-module gravity.bootstrap.reader,
+     :source-imports []}
+    {:category :syntax,
+     :component-id :bootstrap-syntax,
+     :dependencies [:syntax-model],
+     :source-path
+     "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+     :source-module gravity.bootstrap.syntax,
+     :source-imports []}
+    {:category :macro,
+     :component-id :bootstrap-macro,
+     :dependencies [:macro-engine],
+     :source-path "language/compiler/src/gravity/macro.gravity",
+     :source-module gravity.macro,
+     :source-imports []}
+    {:category :analyzer,
+     :component-id :bootstrap-resolution,
+     :dependencies [:resolution-engine],
+     :source-path "language/compiler/src/gravity/resolution.gravity",
+     :source-module gravity.resolution,
+     :source-imports []}
+    {:category :checked-core,
+     :component-id :checked-core,
+     :dependencies [:core-lowering :authenticated-envelope],
+     :source-path "language/compiler/src/gravity/checked_core.gravity",
+     :source-module gravity.checked-core,
+     :source-imports []}]},
+  :source-revision "951872cf2ce6a969e7d7b3451c14452d58d820d5",
+  :inputs
+  [{:path "deps.edn",
+    :sha256
+    "4a0c5dfd86b545086c7f1829f92aff58b29494bb36341108ee874a208d7edcd3"}
+   {:path "AGENTS.md",
+    :sha256
+    "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+   {:path "bootstrap/clojure/src",
+    :sha256
+    "f76a0b1cea281f5d30cd73edd77b51f893d28f38b3f04f6084e1e85e990e646d"}
+   {:path "bootstrap/gravity",
+    :sha256
+    "0fb1179c5b6d5aedc6416c01b0a563fcb92c70969d658736eaf8f80c99ac620a"}
+   {:path "language/compiler/src",
+    :sha256
+    "aca76cdc453ac64fb6771262a258ca93c7140a4e1248b9604f48ccb7468058a2"}
+   {:path "language/runtime/src",
+    :sha256
+    "400a45d21591ddc5ca541da1684b1a8747e8575a5e532c76ebd88a50bcddaaa8"}
+   {:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-25/component_build_engine.gravity",
+    :sha256
+    "44e19927fc459c64b9afce99add624ad6d1c4af8a504a5fb9b9eb1344a853428"}
+   {:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity",
+    :sha256
+    "0b5733f8322ae255324065f57ded23a30d397ef57391239326e304f960469fa7"}
+   {:path "contracts",
+    :sha256
+    "44070c4dd978216524e28604d1d4aa81fdbd47b3a0a8581451b492ba841d8627"}
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188"}
+   {:path "docs/self-hosting-sh07-completion-plan.md",
+    :sha256
+    "dc43b208677945318effa93734449716785b27b5737256279b1c75a9195ae17e"}
+   {:path "docs/self-hosting-current-migration-cohort.md",
+    :sha256
+    "689b480e2854920d1f24520a590c0aff798307af0ef803591f49ef6421dda9a2"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_kernel_support.clj",
+    :sha256
+    "d469e8846b8ccac1e1d917a530989b898abc0323bf55759e216f8a517e619ec9"}
+   {:path "tools/gravity/compiler_probe.clj",
+    :sha256
+    "3a3653e59f9624b9b255db6e572481ae479ac3b67b42590af824a9ff79215724"}],
+  :status :blocked,
+  :position {:component 0, :stage :function-types},
+  :input-id
+  "a90007abba50e305d9635d46cc111b3d02a6bfdc4e5e0b918ce9fd09574b02c4",
+  :subject
+  {:source-path
+   "language/compiler/src/gravity/compiler/authenticated_envelope.gravity",
+   :source-sha256
+   "def0be3cab408079b0520539f2d572905da9c938e0b86017a80c462e8ba63656",
+   :core-artifact-id
+   "sha256:2eb9324483d921ab72a9c62b5a1ed36299021a4ba7a639b2b5bff4a998cf2a02",
+   :core-verification :passed,
+   :recursion-components
+   [{:function-core-node-ids
+     ["sha256:8fab37b22dee0be43f406e51c8bd2ef29f5d0b61830e252ba5231b2ce0324e00"],
+     :function-syntax-ids
+     ["sha256:d45a396eda370bd76688f0cb397d886d1e4cef4b1652ca8d8b160aebfbc71f0b"],
+     :internal-call-edge-ordinals [30],
+     :kind :self-recursive,
+     :ordinal 0}
+    {:function-core-node-ids
+     ["sha256:8b8751e8e71d10d1524d9b73aafc2b76cb8a900cd3e7aa304ab451c9ad66b362"],
+     :function-syntax-ids
+     ["sha256:ec14d790b6a39d4d95309bc6d441ed4fe7a281fbc82d57208641c99f4d57d7a7"],
+     :internal-call-edge-ordinals [134 138 142],
+     :kind :self-recursive,
+     :ordinal 1}
+    {:function-core-node-ids
+     ["sha256:90a2c6a1eb41f27c50e926846e49a5c858d4988efddc7f0b149784a205db1da8"],
+     :function-syntax-ids
+     ["sha256:67d19b50c4c045d98ca229ae54b8139b0c80feb09a40c2e6d1fdc38dcaf7c6b2"],
+     :internal-call-edge-ordinals [148],
+     :kind :self-recursive,
+     :ordinal 2}
+    {:function-core-node-ids
+     ["sha256:f74ef9726ee56231bc2e65f588ba3d40227e2bf255cb4ed8b4feb6a798444a91"
+      "sha256:80184bbcc536de67410bd100654f236388351bb3e71e0c26da800e49e17e2c05"
+      "sha256:305f838f95c003b7dfdd0025c1a625ecd10e64b342e3d1468486cf58ce6f1873"],
+     :function-syntax-ids
+     ["sha256:f642068d22dc067f19fc85e9de3303e944c9e07551646b5a5db9c8be0a676fa0"
+      "sha256:978683777349a3cb168a8dfa4ca157d61435b248540d19152ee2722db72d3b25"
+      "sha256:192192a96aea8bd47bddf09e725b3f72fc6092a64bad83e3ae2500512ddfc1c5"],
+     :internal-call-edge-ordinals [153 157 159 166 168 170 172],
+     :kind :mutually-recursive,
+     :ordinal 3}
+    {:function-core-node-ids
+     ["sha256:5f7eda179639cbbf5945cf97696d5a18be95d20f26f7e2d399c224066f7fc922"
+      "sha256:3c860730137062894addb0044d5f1d98ae1804391624c3fe04dab3d06f709371"
+      "sha256:0d33d73e5a6da64d17d7e84fd2e7fac72ea2c6c35f864d54c5d4d70d78f161cc"],
+     :function-syntax-ids
+     ["sha256:bb3dfc327e8ea72e6fa792546938c6a273cc8ecf92f8e63a2c7bbdc9d48abfe7"
+      "sha256:d13f8f66992eec3ebe81256a4734ebc3daf230027ccb30319e0eab4d192e4965"
+      "sha256:ede7e901b0d61f50e624d1489c9c2896567572db4a306453b500d3029cc179fb"],
+     :internal-call-edge-ordinals [177 183 185 196 199 201 204],
+     :kind :mutually-recursive,
+     :ordinal 4}
+    {:function-core-node-ids
+     ["sha256:cd2a32607c0d89ec0e6760f45cf69b3e3086f69b9927f4f7c86e42efc700a32e"
+      "sha256:71a2e48b5127497e8935d990fa0965e3f2dd40465b7bcf3b67bc3c6e6c98ae7c"
+      "sha256:096d386720d0977e18fa71d730158b2bb6553d7cd1dde9cb9f2c1d06f188f87a"],
+     :function-syntax-ids
+     ["sha256:882d6ffe28424b1bc6b68316f1ce00475b627165387ebd32c2c8630326c0ec36"
+      "sha256:387c35e87f69646acc111363a3aed5b3c13fffa51ddd59d56928396abc701586"
+      "sha256:87c84a7b3c7f1193c16113ad8d869d587463324af71c7d64d1b149d369626e86"],
+     :internal-call-edge-ordinals [253 254 259 264 266 268 270],
+     :kind :mutually-recursive,
+     :ordinal 5}],
+   :functions
+   [{:ordinal 0,
+     :definition-name ae-vector-contains?,
+     :function-syntax-id
+     "sha256:970ae9ee51add9ae4b8fb6e94d4c2d073e2bf8ba8e81b2a45a57cc3ba84d9979",
+     :function-core-node-id
+     "sha256:87aa0080009dea3a8b04b3b386ed0c68a5c064ce576116b0a18271cc629b6b5b"}
+    {:ordinal 1,
+     :definition-name ae-conj-unique,
+     :function-syntax-id
+     "sha256:fac924409d49321a7046ae54f68490694e2f9424d0e7ae1e9cd853c0f4e6d996",
+     :function-core-node-id
+     "sha256:04b492700f5b0b35ddf9978b5b47d7cfd578106371b0be4e0143b48a219ffec8"}
+    {:ordinal 2,
+     :definition-name ae-all-unique?,
+     :function-syntax-id
+     "sha256:b3b29cb5013a7160714696e2a0f1c63a0d9f1bb3398f64543f1ad553ce0aed4e",
+     :function-core-node-id
+     "sha256:57102fee44dc632e2e80c86685151344c93a79f9c485502d354256db4684190b"}
+    {:ordinal 3,
+     :definition-name ae-copy-vector,
+     :function-syntax-id
+     "sha256:b93167bbe9bdd2dff212169353d1db38313cd8858ea80433eff9af4064d57361",
+     :function-core-node-id
+     "sha256:1ee38ab4f6674e6a88e013eb671bd795dbc2c311dc1491daf8673b97fe959309"}
+    {:ordinal 4,
+     :definition-name ae-append,
+     :function-syntax-id
+     "sha256:46a5c706567ca432f9ef342ac0d77f580c349c663ba14c95f4841080e86db626",
+     :function-core-node-id
+     "sha256:e147c5e7c2b6765da3882e2160e8e1bb3197f849287ee034c806bca08729ddfd"}
+    {:ordinal 5,
+     :definition-name ae-exact-keys?,
+     :function-syntax-id
+     "sha256:ff0e8197df621d3656be360d619515d5854610479224a116847c34e981636af2",
+     :function-core-node-id
+     "sha256:69dd54b49bb9cf86c2c3de3dcedb7c789a82869a74167bda21c51a98d5d050fe"}
+    {:ordinal 6,
+     :definition-name ae-lowercase-hex?,
+     :function-syntax-id
+     "sha256:d45a396eda370bd76688f0cb397d886d1e4cef4b1652ca8d8b160aebfbc71f0b",
+     :function-core-node-id
+     "sha256:8fab37b22dee0be43f406e51c8bd2ef29f5d0b61830e252ba5231b2ce0324e00"}
+    {:ordinal 7,
+     :definition-name ae-sha256-id?,
+     :function-syntax-id
+     "sha256:d0c24efdde5ceb7aacc2dce3371f86286be0738ab0117788a22b870a7ff0c453",
+     :function-core-node-id
+     "sha256:16b8068d3fdbfe698f763a1686ff31550133cea393e7bbd1f5dd8c1569c9ba94"}
+    {:ordinal 8,
+     :definition-name ae-logical-path-characters-valid?,
+     :function-syntax-id
+     "sha256:6a0817d1ac20a0cb81b3c18b8a60b9b06b5bf35630f0fc6537461db5facc7f88",
+     :function-core-node-id
+     "sha256:814ec11869d30a21c397a7509234c384dc30c8b3e7facfce4e4dc1384ef759d7"}
+    {:ordinal 9,
+     :definition-name ae-logical-path-segment-valid?,
+     :function-syntax-id
+     "sha256:b7e54a4e28fb63aa2eab04727c5c3d87c2d59d78fa284e55d33b8937fff0c6c6",
+     :function-core-node-id
+     "sha256:7e7ffedd872580ebc9a99b74639a1f6dd67bf85c0e140c401e1fd8c6ebeb80df"}
+    {:ordinal 10,
+     :definition-name ae-logical-path-segments-valid?,
+     :function-syntax-id
+     "sha256:4497beb9caafe62420f316922d49894975e641e8b157124caa46701453fc0c62",
+     :function-core-node-id
+     "sha256:fc44c2d2ef63cf5f62c93b104a0061693bc15eee8ff8b8c2582f5c3ee576ad93"}
+    {:ordinal 11,
+     :definition-name ae-logical-source-path?,
+     :function-syntax-id
+     "sha256:7bcb7dc4638be8489215526b2738fed5994015df612609a57c5779777f3df3c3",
+     :function-core-node-id
+     "sha256:52292518977d674cc2c589b531bae74a56921ef1e5d1ba407f660005e8620c2d"}
+    {:ordinal 12,
+     :definition-name ae-reference-id-characters-valid?,
+     :function-syntax-id
+     "sha256:6d9b87c2933319e2d9505f29254c396b58d820a9170708f5b1197b188e66c3b5",
+     :function-core-node-id
+     "sha256:beb9c145a19f42f5784247967b719662f35e3d04c38ee3f615e2c5e350b9e179"}
+    {:ordinal 13,
+     :definition-name ae-drive-absolute-reference-id?,
+     :function-syntax-id
+     "sha256:cb8286cd6b9da360266c8685a85dac6e1617c04f9910b1058e58813ebba4bd36",
+     :function-core-node-id
+     "sha256:8e72fd1ec093382042e2e3cbf0899f34be07706bb0cc2311c6224ef200635c62"}
+    {:ordinal 14,
+     :definition-name ae-logical-reference-id?,
+     :function-syntax-id
+     "sha256:ca09a9e2f91ba72bd5b8dad7d720c755d7010b516f2a5332177cb1a87404b671",
+     :function-core-node-id
+     "sha256:03ceff75050eceb0cfcaebdb7dd9a6d5ba23f34fdf2b5cd33b50191ef658de7a"}
+    {:ordinal 15,
+     :definition-name ae-nonnegative-integer?,
+     :function-syntax-id
+     "sha256:57a5013f84c2a5f344c36ad5aa2ce3ccd49e774649dd07e6d4e8de96d24273f3",
+     :function-core-node-id
+     "sha256:078f8d1b79787499c312bf6fc056d9d688c989e60b9684c406943127914283b3"}
+    {:ordinal 16,
+     :definition-name ae-positive-integer?,
+     :function-syntax-id
+     "sha256:f9c26b6acceb54ab42f50223f5a6fd89ac0e1d569a487bec0605de2d4bd8ceff",
+     :function-core-node-id
+     "sha256:a2bdfec05597ada95de307faa4657e96e26f17dd7842e6e8f8a50f6cb2449507"}
+    {:ordinal 17,
+     :definition-name ae-keyword-vector?,
+     :function-syntax-id
+     "sha256:079774feb57f8206ae861693cc21887a91cd148fcc48fb2e387544768f1ef939",
+     :function-core-node-id
+     "sha256:ae67fa037f6325561f547e2422f289d8f5000dec7586a7d3914cf981f839ba93"}
+    {:ordinal 18,
+     :definition-name ae-sha256-vector?,
+     :function-syntax-id
+     "sha256:540ea3f4e48d9fa0c979569f8804ad2ad9818452e4783abb50bcdcb61f70c74b",
+     :function-core-node-id
+     "sha256:6ff86c0d523d780fd5a50602b90c3cd43318a12bc63fd7e90764776f1df62514"}
+    {:ordinal 19,
+     :definition-name ae-scalar-identity?,
+     :function-syntax-id
+     "sha256:1e85798433f5cac7119129afa7583b49e5dcc727ab7a1532411a92b349645de9",
+     :function-core-node-id
+     "sha256:bc0db2395b6fa05b394d1442a00829d1a71af3c07f1782aaf04c4665c8856ff1"}
+    {:ordinal 20,
+     :definition-name ae-exact-digest-ref?,
+     :function-syntax-id
+     "sha256:4a76fda7face8c1847579c59f8e78875b20cbfebc78b9c1f73a7e37ce9c8a80d",
+     :function-core-node-id
+     "sha256:48029500e22364794dc4a54375146286b65b7aecf6cf8ccfe8170abd0431e06d"}
+    {:ordinal 21,
+     :definition-name ae-insert-ordinal,
+     :function-syntax-id
+     "sha256:ec14d790b6a39d4d95309bc6d441ed4fe7a281fbc82d57208641c99f4d57d7a7",
+     :function-core-node-id
+     "sha256:8b8751e8e71d10d1524d9b73aafc2b76cb8a900cd3e7aa304ab451c9ad66b362"}
+    {:ordinal 22,
+     :definition-name ae-sort-ordinals,
+     :function-syntax-id
+     "sha256:67d19b50c4c045d98ca229ae54b8139b0c80feb09a40c2e6d1fdc38dcaf7c6b2",
+     :function-core-node-id
+     "sha256:90a2c6a1eb41f27c50e926846e49a5c858d4988efddc7f0b149784a205db1da8"}
+    {:ordinal 23,
+     :definition-name ae-collect-ref-sequence,
+     :function-syntax-id
+     "sha256:f642068d22dc067f19fc85e9de3303e944c9e07551646b5a5db9c8be0a676fa0",
+     :function-core-node-id
+     "sha256:f74ef9726ee56231bc2e65f588ba3d40227e2bf255cb4ed8b4feb6a798444a91"}
+    {:ordinal 24,
+     :definition-name ae-collect-ref-map,
+     :function-syntax-id
+     "sha256:978683777349a3cb168a8dfa4ca157d61435b248540d19152ee2722db72d3b25",
+     :function-core-node-id
+     "sha256:80184bbcc536de67410bd100654f236388351bb3e71e0c26da800e49e17e2c05"}
+    {:ordinal 25,
+     :definition-name ae-collect-digest-refs,
+     :function-syntax-id
+     "sha256:192192a96aea8bd47bddf09e725b3f72fc6092a64bad83e3ae2500512ddfc1c5",
+     :function-core-node-id
+     "sha256:305f838f95c003b7dfdd0025c1a625ecd10e64b342e3d1468486cf58ce6f1873"}
+    {:ordinal 26,
+     :definition-name ae-digest-ref,
+     :function-syntax-id
+     "sha256:da9304028300fd76989ff7d348f1fcde0b69b26450baabe3867016fde5aae79b",
+     :function-core-node-id
+     "sha256:0c407de5c20169f2e93ffb644efb0bc318bc3e5e6d69a525fb6d2da89fb84ca0"}
+    {:ordinal 27,
+     :definition-name ae-digest-intern-sequence,
+     :function-syntax-id
+     "sha256:bb3dfc327e8ea72e6fa792546938c6a273cc8ecf92f8e63a2c7bbdc9d48abfe7",
+     :function-core-node-id
+     "sha256:5f7eda179639cbbf5945cf97696d5a18be95d20f26f7e2d399c224066f7fc922"}
+    {:ordinal 28,
+     :definition-name ae-digest-intern-map-entries,
+     :function-syntax-id
+     "sha256:d13f8f66992eec3ebe81256a4734ebc3daf230027ccb30319e0eab4d192e4965",
+     :function-core-node-id
+     "sha256:3c860730137062894addb0044d5f1d98ae1804391624c3fe04dab3d06f709371"}
+    {:ordinal 29,
+     :definition-name ae-digest-intern-key,
+     :function-syntax-id
+     "sha256:ede7e901b0d61f50e624d1489c9c2896567572db4a306453b500d3029cc179fb",
+     :function-core-node-id
+     "sha256:0d33d73e5a6da64d17d7e84fd2e7fac72ea2c6c35f864d54c5d4d70d78f161cc"}
+    {:ordinal 30,
+     :definition-name ae-request-key-for-preimage,
+     :function-syntax-id
+     "sha256:17282e3b9821d9db331a136d5c4205d9d737487b9f03952d21844921d74fe287",
+     :function-core-node-id
+     "sha256:54c2faff082f4b190beb0c7ce6abdd3309fe1f6a0ef94411ced5bce2de999ce9"}
+    {:ordinal 31,
+     :definition-name ae-add-digest-request,
+     :function-syntax-id
+     "sha256:38d5ea2be7280bcfe3cbb95bb390d895c4661e5332e7de12dd022c137e1d6e29",
+     :function-core-node-id
+     "sha256:a0c14f5cc0648a96a5d86579d4f277f063ea39c415690f596f720bd1a56c9322"}
+    {:ordinal 32,
+     :definition-name ae-value-entry-count,
+     :function-syntax-id
+     "sha256:45a05f2c392461dfcff938bf6c632dcb97bd1ef4edfde9101e2a1bae9033e9e4",
+     :function-core-node-id
+     "sha256:078e0e8bb2baba66fb0b0f03f182360a36e016e44601e2f876c972d874a5674a"}
+    {:ordinal 33,
+     :definition-name ae-physical-semantic-key?,
+     :function-syntax-id
+     "sha256:19d3db05e3f4306e88e3dca8bb57dde78723843c92ec72e8ec0407fef116643f",
+     :function-core-node-id
+     "sha256:b2060b5b02af93920249d166e9706b3b41d18fd50292c732fdd3c12f5006de32"}
+    {:ordinal 34,
+     :definition-name ae-path-neutral-map?,
+     :function-syntax-id
+     "sha256:882d6ffe28424b1bc6b68316f1ce00475b627165387ebd32c2c8630326c0ec36",
+     :function-core-node-id
+     "sha256:cd2a32607c0d89ec0e6760f45cf69b3e3086f69b9927f4f7c86e42efc700a32e"}
+    {:ordinal 35,
+     :definition-name ae-path-neutral-sequence?,
+     :function-syntax-id
+     "sha256:387c35e87f69646acc111363a3aed5b3c13fffa51ddd59d56928396abc701586",
+     :function-core-node-id
+     "sha256:71a2e48b5127497e8935d990fa0965e3f2dd40465b7bcf3b67bc3c6e6c98ae7c"}
+    {:ordinal 36,
+     :definition-name ae-path-neutral-semantic-value?,
+     :function-syntax-id
+     "sha256:87c84a7b3c7f1193c16113ad8d869d587463324af71c7d64d1b149d369626e86",
+     :function-core-node-id
+     "sha256:096d386720d0977e18fa71d730158b2bb6553d7cd1dde9cb9f2c1d06f188f87a"}
+    {:ordinal 37,
+     :definition-name ae-source-revision-valid?,
+     :function-syntax-id
+     "sha256:68d993bb7201914312fd9474a46519cf349c08303b94f9f3d7a52676aa305689",
+     :function-core-node-id
+     "sha256:49a3a4601d04eeda595ba83bee3b61009e05742fe7bb866ed9c1d85ac4e91028"}
+    {:ordinal 38,
+     :definition-name ae-projection-contract-valid?,
+     :function-syntax-id
+     "sha256:7038b3969a23acab851ebbd7032a88953712d5e6e46bbbecf36c9b545dac6a82",
+     :function-core-node-id
+     "sha256:53756403a7505e08581d740a68fca3ee6d94c6cffcffdd185228033f5362e2c3"}
+    {:ordinal 39,
+     :definition-name ae-projection-valid?,
+     :function-syntax-id
+     "sha256:327b5adfdc092efe16f3e486e48d42afac7b4f8238c88ab218bc9b6ccedc2282",
+     :function-core-node-id
+     "sha256:a73a56bed950e80b7e5dce4089c041a8c7e1767e363a02c9deb5c0ebc4436ec6"}
+    {:ordinal 40,
+     :definition-name ae-projections-valid?,
+     :function-syntax-id
+     "sha256:cc04dfc500d503758556f79c990a2c358d4b75982be3ce91b8f03b22caf042bf",
+     :function-core-node-id
+     "sha256:aca52024ed813176bfa5509300921333c26fe4b086f0ddecb844c78aa3dea0d9"}
+    {:ordinal 41,
+     :definition-name ae-fact-disposition-valid?,
+     :function-syntax-id
+     "sha256:8c5fb03b505994860befa2ac45673fea9449fbb9d309cfb68b8765e9ff49aff0",
+     :function-core-node-id
+     "sha256:d31628cbd01b18a615c16a98f4e71f3e43936284eb5af3b940fdf87109d60545"}
+    {:ordinal 42,
+     :definition-name ae-fact-transition-valid?,
+     :function-syntax-id
+     "sha256:0432b0c55aaab60bb31fe214f93d36a7ec36255761db76029f2c7d2c0635fa38",
+     :function-core-node-id
+     "sha256:da4ec812bb37336fcdcf4bb59445e3bb770788a918d4a5e3a0e8a7a631794ddb"}
+    {:ordinal 43,
+     :definition-name ae-fact-transitions-valid?,
+     :function-syntax-id
+     "sha256:eec91b38736036a0bd5b8a8b858463d44adf537d92e97d937c230261117b6f0c",
+     :function-core-node-id
+     "sha256:e9091719af8080cddfdd5852665927b8780a97433be6c45f060df62b745eac1c"}
+    {:ordinal 44,
+     :definition-name ae-effect-capability-relation-valid?,
+     :function-syntax-id
+     "sha256:4f749e5dc8ad77248ffda1825d6ef2456a0197c6df8ca561c536eac39753acdc",
+     :function-core-node-id
+     "sha256:f8d7a748996575bca57ee00cf98adacc95bdf4ad11079ea4b4e6bdffae2c8fab"}
+    {:ordinal 45,
+     :definition-name ae-proof-composite-valid?,
+     :function-syntax-id
+     "sha256:7446229757f33aafa58e0a3e5c77afc14f28926c8004ced9bdaab90da4b308fc",
+     :function-core-node-id
+     "sha256:867f264a7f88d6c1bf6ac496623dcb9f68d8a8c30a01bcbce9000fcafe0c6598"}
+    {:ordinal 46,
+     :definition-name ae-names-for-disposition,
+     :function-syntax-id
+     "sha256:aaa4a8b60612d813b570b3b9c0d8a585e63e98596c12bcac8aaeee706ad97e2c",
+     :function-core-node-id
+     "sha256:b4ded4801dab4a1c7851641f54eeda53300357834450627f3cfba9dc75028c1a"}
+    {:ordinal 47,
+     :definition-name ae-preservation-valid?,
+     :function-syntax-id
+     "sha256:39f41032e6b5cc57e33602f649c416ac90545a86a359dd5ae8a8e13646a6f30f",
+     :function-core-node-id
+     "sha256:da2aa563272bd774ad764ddabec739da21f5db2e08b8e5feef6e271abef783dc"}
+    {:ordinal 48,
+     :definition-name ae-identity-subject-valid?,
+     :function-syntax-id
+     "sha256:e5bb98af8af46585736eaea3e5acf70d1c11afdc8f5a85b256cf544161d646d8",
+     :function-core-node-id
+     "sha256:42a4208211deb2902aa116e42b34783bce09a44806c38196384dbcf8814f5f82"}
+    {:ordinal 49,
+     :definition-name ae-identity-subjects-valid?,
+     :function-syntax-id
+     "sha256:ba7e9629024dd244b82b9ff978669a44f0d2f526851d0990f2c580094f6f166d",
+     :function-core-node-id
+     "sha256:a572ab2e327a2627d064561dd80e68b7f8d6c37b83df91e463a03621bd0c33bb"}
+    {:ordinal 50,
+     :definition-name ae-lineage-record-valid?,
+     :function-syntax-id
+     "sha256:cec6100bce074ac2cd5f11414001d82077be3f1743416a9934da3db152e292bd",
+     :function-core-node-id
+     "sha256:defec2973f9112acc181765a36abfc81040884cd59cf5fbdc3c5af45cb5199b7"}
+    {:ordinal 51,
+     :definition-name ae-lineage-valid?,
+     :function-syntax-id
+     "sha256:fd7252b1ee7fa5b7a8e8008f325f49df55e82c676c741cbcb8cfda56286a8d18",
+     :function-core-node-id
+     "sha256:542b20abc4bb027afd731b244c1f0ac560fbd4fcf6eda060fe8ef22b70909df2"}
+    {:ordinal 52,
+     :definition-name ae-reference-edge-valid?,
+     :function-syntax-id
+     "sha256:c923a240533811454f2e2cfba228e55544abc0e4775880361fa2d1f1f9c9e54c",
+     :function-core-node-id
+     "sha256:1dadd83ea94ac7f427fe8308b8ca2a721b9e9088ce2988ce836201d38722eb98"}
+    {:ordinal 53,
+     :definition-name ae-reference-edges-valid?,
+     :function-syntax-id
+     "sha256:819efcb11ffdf5856b39508e3f5a22c42cebc02d6795c1c60f6d40fa71ce2d14",
+     :function-core-node-id
+     "sha256:93a8522124fa37d2e4da1344db1a938309270a9e00fefcbdd086a6092e2a3a1d"}
+    {:ordinal 54,
+     :definition-name ae-scalar-identity-vector?,
+     :function-syntax-id
+     "sha256:898f8deef66d84c0627713565148f24b498d4de306df966dac97a32118d8a6be",
+     :function-core-node-id
+     "sha256:218ca662e79fc01e229a56f6ee7b29e8735906035e52285af161a92be17557a1"}
+    {:ordinal 55,
+     :definition-name ae-reference-neighbors,
+     :function-syntax-id
+     "sha256:02f618c8787ea4ca97ff3c093a20ad6d4585d4c2b927598235d76fefee23ca2b",
+     :function-core-node-id
+     "sha256:3679a1af6da343da18753fcde5466398fe600c4f7289a11a43d6ecdb42ce8b1e"}
+    {:ordinal 56,
+     :definition-name ae-reference-add-pending,
+     :function-syntax-id
+     "sha256:fba102146e3ea33cbe2db0a53702cef1dedce800ed33a5273968a5452e58825f",
+     :function-core-node-id
+     "sha256:ad59df8d923cdc66a8638be28dec9c88cfd4e8a28344f38afaaafe3ddac6e862"}
+    {:ordinal 57,
+     :definition-name ae-reference-graph-walk,
+     :function-syntax-id
+     "sha256:21a5565cf5a79b488c375b44ecfc9d01c1658642f491a68e69319abedd550dd9",
+     :function-core-node-id
+     "sha256:e0907aebdb0b6eb463e02cba78f80bab8dfe45b173729ad602d537bf5c481f20"}
+    {:ordinal 58,
+     :definition-name ae-reference-graph-validation,
+     :function-syntax-id
+     "sha256:e403ae966771ed23c54e8ad2c4170d4f57b614695088feb948f06170df2b9713",
+     :function-core-node-id
+     "sha256:caa055eb9bafcdc0cd9ea65ab73d0acc564e387fd0aa99288368fae1a251ae4a"}
+    {:ordinal 59,
+     :definition-name ae-reference-closure-valid?,
+     :function-syntax-id
+     "sha256:33c5978423edaed66dee3d4191ecaf5a6c6ff32215f437331a087b8850740538",
+     :function-core-node-id
+     "sha256:3c4b06a8b9e4cd12fbb24b79dc8f2b677a318cecda5ded175bc1ca05ca387ec7"}
+    {:ordinal 60,
+     :definition-name ae-actual-path-provenance-valid?,
+     :function-syntax-id
+     "sha256:688d27734f3feb51b6244237652b56a896e93e956c836bcb95eb068d3392ae73",
+     :function-core-node-id
+     "sha256:b2062137049fddcc6fabe0a1d279fd4f2570cfff3ddbe03f86c86a77713696f2"}
+    {:ordinal 61,
+     :definition-name ae-descriptor-shape-valid?,
+     :function-syntax-id
+     "sha256:e044b20dc6e5eecf77ae8eb8c34d747641480a985b0a00ea85c256e7da987bad",
+     :function-core-node-id
+     "sha256:82ab1ef4f7b90b938a5532a48be757287394b5271088ebf9e8c42e1ee5954475"}
+    {:ordinal 62,
+     :definition-name ae-descriptor-validation,
+     :function-syntax-id
+     "sha256:0a95ab5c11f0555344885a438ec62344b9c4062fb5a5e272497cc7e278e5ec9b",
+     :function-core-node-id
+     "sha256:b2b2304858fbec8da1280c160f3daeccceb4530ccfd48515e504a16842debb0f"}
+    {:ordinal 63,
+     :definition-name ae-rejection,
+     :function-syntax-id
+     "sha256:8a7c15f4173100373bb427d915d552e42c414e39faa2a28a051cab264f2156af",
+     :function-core-node-id
+     "sha256:49150b868da0fe37a1dae11f609a8fda89c2631e74abd46a3d7ebdca81a5a585"}
+    {:ordinal 64,
+     :definition-name ae-build-projection-bindings,
+     :function-syntax-id
+     "sha256:c93fbc99a642e151ef68f06dd54c95cb6f39529896608d3517dad35060d8fd53",
+     :function-core-node-id
+     "sha256:0a895c58c4fe993aca2daa46da7de26307534c074b17d36e2acc12e8bd4afe32"}
+    {:ordinal 65,
+     :definition-name ae-build-fact-transition-bindings,
+     :function-syntax-id
+     "sha256:a6633c4f80e1b6ea0f374a587ed7707269e7d5e5dbe505fdfc8dbe07890b9546",
+     :function-core-node-id
+     "sha256:99ac42c7f9b81d3b94e1dc93d634b9314d39c317c4cf1ca4b2fea927dcd658c8"}
+    {:ordinal 66,
+     :definition-name ae-build-identity-bindings,
+     :function-syntax-id
+     "sha256:f261f97fb12426aac45fc5f187ca4f7799a712eb0a2ecf1e5e643ecf3d81e968",
+     :function-core-node-id
+     "sha256:d7617b0d5f375774a3767bace4266d10687b04f22b7874c10c8fc4a4f055d47f"}
+    {:ordinal 67,
+     :definition-name ae-build-accepted-template,
+     :function-syntax-id
+     "sha256:6d86084b032e9c5aa32625df9289adfb1b6245ffd89d22e66804cbd7b50e8f40",
+     :function-core-node-id
+     "sha256:197a0c32184f522494ad86e179822aad691c6395978740bdb505acdfeee5ab52"}
+    {:ordinal 68,
+     :definition-name authenticated-envelope-build-template,
+     :function-syntax-id
+     "sha256:778ac42380451ba18751e465329d24ada172875b33fe05b4f719face9bbd4a53",
+     :function-core-node-id
+     "sha256:0416496976b926bf21e3b904ee612fc7edcd7ea9c40966e8347a0bd5748549b5"}
+    {:ordinal 69,
+     :definition-name authenticated-envelope-verify-template,
+     :function-syntax-id
+     "sha256:0cadcd86d82651ad36ffdb1b2b4f04a45b39f58f8fbf780bf9bed2e76c04d1bb",
+     :function-core-node-id
+     "sha256:e2e40a5648cdd665483d1e5e9badd2085558f249263737cd8b2d786db169671f"}]}},
+ :selected-prerequisite
+ {:key
+  "compiler/SH-08/authenticated-envelope-mutual-recursion/prerequisite/2f70cf54d2a00eae",
+  :stage "SH-02",
+  :paths
+  ["language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
+   "bootstrap/clojure/test/gravity/self_hosting/sh02_unmetered_envelope_test.clj"],
+  :compiler-task "SH-02.3",
+  :compiler-role "prerequisite",
+  :compiler-failure
+  "compiler/SH-08/authenticated-envelope-mutual-recursion"}}

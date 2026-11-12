@@ -114,6 +114,41 @@ establish typed, effect, lowering or runtime equivalence.
 The full historical SH-07 selector matrix and its limits are in the
 [reference archive](development-verification-reference.md#default-sh-07-workflow-three-boundaries).
 
+## Compiler feedback used by Seedless
+
+The ordinary Seedless planner observes the current compiler before choosing
+implementation work. Its development command is:
+
+```bash
+clojure -J-Xmx2g -M:compiler-probe
+```
+
+The command processes the complete six-owner frontend cohort selected in the
+[SH-07 completion plan](self-hosting-sh07-completion-plan.md): authenticated
+envelopes, reader, syntax, macro expansion, resolution and checked Core. It
+preserves actual module imports and executes current C5 resolution, canonical
+Core construction, fresh public SH-07 verification, and the existing
+authenticated B47 handoff to current C7 function typing. It stops at the first
+failed handoff and reports one EDN observation, with progress on stderr.
+There is no option to replace an owner with selected functions or supplied Core.
+
+The observation records the actual source bytes, complete declared input
+identities, selected Linux LLVM target, host configuration, terminal status,
+and completed module prefix. The SH-25 catalog supplies existing source
+locations; its optional backends are not treated as Linux build dependencies.
+The frontend run remains a prerequisite of the staged Linux LLVM candidate.
+Effects, ownership, safety, MIR, native emission, runtime, library, build,
+rebuild and release obligations remain open beyond this route.
+
+Seedless binds selected work to a current, source-attributed failure and an
+existing task or necessary prerequisite. Retained candidates, dependencies,
+active writers and recorded restrictions still constrain admission and
+dispatch. Unknown diagnostics, stale inputs, missing execution prerequisites,
+timeouts and final-release refusals produce explicit blockers; an empty work
+queue does not establish completion. See the
+[Seedless workflow](../tools/seedless/README.md) for selection, recovery and
+execution boundaries.
+
 ## Current-reader development
 
 The explicit current-reader route is for development and does not renew pinned

@@ -299,17 +299,36 @@
         (recur (rest map-keys) value with-value)))))
 
 (defn ae-collect-digest-refs [value result]
-  (if (ae-exact-digest-ref? value)
-    (ae-conj-unique result (get value :digest-ref))
-    (if (map? value)
-      (ae-collect-ref-map (keys value) value result)
-      (if (vector? value)
-        (ae-collect-ref-sequence value result)
-        (if (set? value)
-          (ae-collect-ref-sequence value result)
-          (if (seq? value)
-            (ae-collect-ref-sequence value result)
-            result))))))
+  ; The explicit stack retains depth-first, key-before-value discovery.
+  (loop [pending [value] result result]
+    (if (= (count pending) 0)
+      result
+      (let [last-index (- (count pending) 1)
+            value (get pending last-index)
+            pending (subvec pending 0 last-index)]
+        (if (ae-exact-digest-ref? value)
+          (recur pending (ae-conj-unique result (get value :digest-ref)))
+          (let [children
+                (if (map? value)
+                  (loop [map-keys (keys value) children []]
+                    (if (= (count map-keys) 0)
+                      children
+                      (let [map-key (first map-keys)]
+                        (recur (rest map-keys)
+                               (conj (conj children map-key)
+                                     (get value map-key))))))
+                  (if (vector? value)
+                    value
+                    (if (set? value)
+                      (vec value)
+                      (if (seq? value) (vec value) []))))
+                next-pending
+                (loop [index (- (count children) 1) next-pending pending]
+                  (if (< index 0)
+                    next-pending
+                    (recur (- index 1)
+                           (conj next-pending (get children index)))))]
+            (recur next-pending result)))))))
 
 (defn ae-digest-ref [ordinal]
   {:digest-ref ordinal})
@@ -335,44 +354,88 @@
                 (ae-digest-intern-key (get value map-key))]))))))
 
 (defn ae-digest-intern-key [value]
-  (if (= value nil)
-    [:nil]
-    (if (boolean? value)
-      [:boolean value]
-      (if (integer? value)
-        [:integer value]
-        (if (string? value)
-          [:string value]
-          (if (symbol? value)
-            [:symbol value]
-            (if (ae-exact-digest-ref? value)
-              [:digest-ref (get value :digest-ref)]
-              (if (map? value)
-                [:map
-                 (set
-                  (ae-digest-intern-map-entries
-                   (keys value) value []))]
-                (if (vector? value)
-                  [:vector (ae-digest-intern-sequence value [])]
-                  (if (set? value)
-                    [:set (set (ae-digest-intern-sequence value []))]
-                    (if (seq? value)
-                      [:list (ae-digest-intern-sequence value [])]
-                      (if (keyword? value)
-                        [:keyword value]
-                        (if (char? value)
-                          [:character value]
-                          [:unsupported-scalar value])))))))))))))
+  ; Postorder assembly keeps the existing tagged identity, including unordered
+  ; Map entries and Set members, without recursive compiler calls.
+  (loop [pending [[:visit value]] results []]
+    (if (= (count pending) 0)
+      (get results 0)
+      (let [last-index (- (count pending) 1)
+            task (get pending last-index)
+            pending (subvec pending 0 last-index)]
+        (if (= :assemble (get task 0))
+          (let [kind (get task 1)
+                child-count (get task 2)
+                first-child (- (count results) child-count)
+                children (subvec results first-child (count results))
+                results (subvec results 0 first-child)
+                members
+                (if (= kind :map)
+                  (loop [index 0 entries #{}]
+                    (if (= index child-count)
+                      entries
+                      (recur (+ index 2)
+                             (conj entries
+                                   [:entry (get children index)
+                                    (get children (+ index 1))]))))
+                  (if (= kind :set) (set children) children))]
+            (recur pending (conj results [kind members])))
+          (let [value (get task 1)
+                scalar
+                (if (= value nil)
+                  [:nil]
+                  (if (boolean? value)
+                    [:boolean value]
+                    (if (integer? value)
+                      [:integer value]
+                      (if (string? value)
+                        [:string value]
+                        (if (symbol? value)
+                          [:symbol value]
+                          (if (ae-exact-digest-ref? value)
+                            [:digest-ref (get value :digest-ref)]
+                            nil))))))]
+            (if (vector? scalar)
+              (recur pending (conj results scalar))
+              (let [kind (if (map? value) :map
+                            (if (vector? value) :vector
+                              (if (set? value) :set
+                                (if (seq? value) :list nil))))]
+                (if (= kind nil)
+                  (recur pending
+                         (conj results
+                               (if (keyword? value)
+                                 [:keyword value]
+                                 (if (char? value)
+                                   [:character value]
+                                   [:unsupported-scalar value]))))
+                  (let [children
+                        (if (= kind :map)
+                          (loop [map-keys (keys value) children []]
+                            (if (= (count map-keys) 0)
+                              children
+                              (let [map-key (first map-keys)]
+                                (recur (rest map-keys)
+                                       (conj (conj children map-key)
+                                             (get value map-key))))))
+                          (vec value))
+                        next-pending
+                        (loop [index (- (count children) 1)
+                               next-pending (conj pending [:assemble kind (count children)])]
+                          (if (< index 0)
+                            next-pending
+                            (recur (- index 1)
+                                   (conj next-pending [:visit (get children index)]))))]
+                    (recur next-pending results)))))))))))
 
 (defn ae-request-key-for-preimage [requests preimage]
-  (loop [requests requests preimage preimage]
-    (let [intern-key (ae-digest-intern-key preimage)]
+  (let [intern-key (ae-digest-intern-key preimage)]
+    (loop [requests requests]
       (if (= (count requests) 0)
         nil
         (if (= (ae-digest-intern-key (get (first requests) :preimage))
                intern-key)
           (get (first requests) :key)
-          (recur (rest requests) preimage))))))
+          (recur (rest requests)))))))
 
 (defn ae-add-digest-request [state preimage]
   (let [existing
@@ -451,17 +514,39 @@
         false))))
 
 (defn ae-path-neutral-semantic-value? [value]
-  (if (ae-exact-digest-ref? value)
-    false
-    (if (map? value)
-      (ae-path-neutral-map? (keys value) value)
-      (if (vector? value)
-        (ae-path-neutral-sequence? value)
-        (if (set? value)
-          (ae-path-neutral-sequence? value)
-          (if (seq? value)
-            (ae-path-neutral-sequence? value)
-            true))))))
+  (loop [pending [value]]
+    (if (= (count pending) 0)
+      true
+      (let [last-index (- (count pending) 1)
+            value (get pending last-index)
+            pending (subvec pending 0 last-index)]
+        (if (ae-exact-digest-ref? value)
+          false
+          (let [children
+                (if (map? value)
+                  (loop [map-keys (keys value) children []]
+                    (if (= (count map-keys) 0)
+                      children
+                      (let [map-key (first map-keys)
+                            map-value (get value map-key)]
+                        (if (ae-physical-semantic-key? map-key map-value)
+                          nil
+                          (recur (rest map-keys)
+                                 (conj (conj children map-key) map-value))))))
+                  (if (vector? value)
+                    value
+                    (if (set? value)
+                      (vec value)
+                      (if (seq? value) (vec value) []))))]
+            (if (= children nil)
+              false
+              (let [next-pending
+                    (loop [index (- (count children) 1) next-pending pending]
+                      (if (< index 0)
+                        next-pending
+                        (recur (- index 1)
+                               (conj next-pending (get children index)))))]
+                (recur next-pending)))))))))
 
 (defn ae-source-revision-valid? [revision]
   (if (ae-exact-keys?

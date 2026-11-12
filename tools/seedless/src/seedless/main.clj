@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
             [clojure.string :as str]
+            [seedless.compiler-observation :as compiler]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
             [simplify.main :as shared]
@@ -43,7 +44,11 @@
            :git-common-dir (rt/canonical (if (.isAbsolute common) common (io/file root (str common)))))))
 
 (defn config! [path]
-  (let [config (shared/config! path)]
+  (let [config (merge {:compiler-observation-command compiler/command
+                       :compiler-observation-timeout-ms 7200000} (shared/config! path))]
+    (when-not (and (= compiler/command (:compiler-observation-command config))
+                   (pos-int? (:compiler-observation-timeout-ms config)))
+      (rt/fail! "Seedless compiler feedback must use the declared current-source probe" {}))
     (when-not (and (string? (:objective config)) (not (str/blank? (:objective config)))
                    (vector? (:contracts config)) (seq (:contracts config))
                    (some #{completion-check} (:completion-checks config))

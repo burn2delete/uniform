@@ -118,6 +118,115 @@ sandboxed `command/exec`, not through its unsandboxed process runner.
 
 ## The replacement loop
 
+Before ordinary planning, the controller executes the existing current-source
+compiler route through `clojure -J-Xmx2g -M:compiler-probe`. The probe processes
+the existing six-owner frontend cohort and its genuine imports as complete
+current module sources: C5, canonical Core, fresh Core verification, and the
+existing current C7 function-type producer and verifier. It stops at the first
+failed handoff. The staged Linux LLVM target and broader required source inputs
+remain declared. This is a typed frontend prerequisite; the actual native build
+recipe, runtime, library, build, migration and release acceptance remain required
+separate boundaries. The historical SH25 catalog is navigation, not a complete
+executable native build graph.
+
+The result records source revision, source/dependency byte identities, selected
+route, terminal status, diagnostic, producer/consumer and existing owner/task.
+The ordinary sandbox check executor and durable effect records retain the run.
+Relevant changed bytes or route inputs invalidate an earlier observation;
+unchanged observations retain their original execution provenance. The effective
+probe watchdog and runtime configuration also participate in applicability.
+The probe has a separate two-hour host watchdog because a measured first full
+module frontend pass took 834 seconds before fresh verification and C7; ordinary
+candidate checks keep their existing twenty-minute watchdog. Missing or
+truncated output, unavailable execution prerequisites, unknown failure causes,
+timeouts and final-release refusal produce explicit blockers, not invented
+compiler repairs. The existing `self-host verify` completion gate remains
+separate.
+
+Selection interprets the validated raw result, including when an unchanged
+durable result is reused. The first source-traced case is the complete envelope
+module's `C7-ANNOTATION` / `:mutual-recursion-unsupported` failure. It requires
+passed fresh Core verification and genuine multi-function recursion components
+whose IDs join the recorded function products. The owning language requirement
+is SH-08.2; expressing the envelope's deterministic identity and traversals with
+existing `loop`/`recur` behavior is an SH-02.3 prerequisite. A diagnostic's first
+reported component alone cannot establish that cause. The raw execution stays
+available after interpretation, and no historical source hash is promoted into
+a current acceptance pin. The specific observed JVM perfdata lock warning may
+precede the EDN result; its exact text and raw output are retained. Other
+preambles, extra values, trailing output and truncation remain blockers.
+
+The next observed envelope boundary is `:multiple-recursive-components`: fresh
+Core contains only the three self-recursive helpers `ae-lowercase-hex?`,
+`ae-insert-ordinal` and `ae-sort-ordinals`. C7 reaches this structural count check
+after its mutual-component guard; ordinary inference remains unestablished.
+The same-stage advance requires both authentic witnesses, identical complete
+route and function inventory, changed source/Core identities, and identical
+nonmissing C7 source byte identities recorded during classification. An older
+observation can receive that policy interpretation only against its original
+matching input checkout; current bytes cannot supply missing historical identity.
+The next failure remains owned by SH-08.2, with SH-02.3 as a source prerequisite.
+The planner must inspect retained implementations and their execution limits
+before proposing more work; unverified source is not missing source.
+
+Plan and acceptance comments carry the observation's source/input identities,
+terminal status, pipeline position, failure owner and source/Core product identities.
+Full execution output and compiler witnesses remain in the existing durable
+effects, task records and reviewer input; comments do not duplicate them for
+each parallel prerequisite.
+
+An actionable observation constrains ordinary planning and admission. Every
+proposed slice must link its `compiler-failure` to the observed work key and
+identify itself as its repair or a necessary prerequisite. The controller
+assigns stable work identities and binds the owner, full declared closure and
+target. It recognizes the same retained work key or PR marker before admission;
+an existing repair causes a wait instead of duplicate implementation. Path
+overlap requires an inspected scope disposition, not a candidate quota. An
+immutable candidate can coexist with an isolated successor; actual conflicting
+writers remain serialized by existing claims. Independent prerequisites may
+proceed through the existing dependency rules. A new task name does not clear
+a restriction or an ownership conflict. An existing unstarted task in this
+campaign can receive the observation under its exact key and unchanged owned
+paths, stage and dependencies, preserving its issue and history. Authored,
+interrupted or restricted work cannot be rebound this way. Prerequisite identity
+uses its declared existing task, milestone and implementation scope. Changing
+an ancillary test or documentation path cannot rename the same prerequisite;
+distinct declared prerequisites can still share a source file. Fresh admission,
+resumed admission and unauthored dispatch require that task, milestone and
+implementation-path relationship. Retained metadata cannot grant ownership
+absent from the current observation.
+
+The validated selection is retained before admission starts. An interrupted
+admission resumes those same task identities and issues after checking current
+evidence and ownership. New tasks remain ineligible while their campaign,
+dependency and Ready bookkeeping is pending. Original uncertain provider
+effects still require reconciliation; a resumed plan cannot replay them or
+rename its own partially admitted repair as new work.
+
+Before the first author starts, changed relevant inputs require a fresh probe.
+After focused candidate checks, the controller reruns the same compiler route.
+For an evidence-bound task, the exact probe command in configured or proposed
+checks runs once through the observation collector with its own watchdog. Its
+terminal result remains separate from passing ordinary checks. The retained
+baseline preserves this requirement through composition. Other commands and
+tasks without a compiler baseline keep ordinary check behavior. Acceptance of
+an evidence-bound task requires current permitted compiler evidence as well as
+the ordinary receipts.
+A repair enters review only when the original failure is gone and the same
+declared path advances to a later component or handoff, the specifically witnessed
+recursive-component check above, or a scoped pass. Its completed component
+prefix cannot shrink. The observed envelope prerequisites promise failure
+removal and must demonstrate that advance too. Other independent prerequisites
+retain focused evidence with no regression of the compiler path. All results
+remain development evidence; a clean frontend run cannot close the campaign.
+
+The selected mutual-recursion prerequisite promises removal of that first
+failure and a terminal result from the same complete source route. A later
+diagnostic at the same handoff needs authenticated source products and a traced
+later check to establish progress. A different diagnostic name, a timeout or a
+supplemental prefix run alone cannot establish that advance. Unfinished parts
+of the original implementation proposal remain explicitly pending.
+
 1. Read existing contracts, the SH completion plan and actual source closure.
    Identify the Clojure owner, Uniform successor, actual consumer, preserved
    facts, accepted/rejected cases, dependencies and residual host boundary.

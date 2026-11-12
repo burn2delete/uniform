@@ -6,6 +6,10 @@
   :packaged-gravity
   {:main-opts ["-m" "gravity.cli.packaged-launcher"]}
 
+  :compiler-probe
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.compiler-probe"]}
+
   :test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting-test-runner"]}
