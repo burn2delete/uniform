@@ -13,6 +13,55 @@
 
 (use-fixtures :each fixture/no-github-network)
 
+(deftest early-draft-ci-phase-needs-actual-checks-and-review-before-retry
+  (let [identity {:base "base" :candidate "candidate" :tree "tree"}
+        checked {:candidate "candidate" :tree "tree" :result :passed :commands [["clojure" "fixture-check.clj"]]}
+        approved (assoc identity :verdict "approved")]
+    (doseq [[change expected]
+            [[{} :repair]
+             [{:checks checked} :repair]
+             [{:checks checked :review (assoc approved :tree "stale")} :repair]
+             [{:checks (assoc checked :candidate "stale") :review approved} :repair]
+             [{:checks (assoc checked :result :failed) :review approved} :repair]
+             [{:checks (dissoc checked :commands) :review approved} :repair]
+             [{:checks checked :review approved} :ci]
+             [{:checks checked :review approved :resume-status :repair} :repair]
+             [{:merge-verification {:verified true}} :finalizing]
+             [{:merged "actual-merge"} :ci]]]
+      (let [ctx (fixture/context)
+            task (merge identity {:key "ordinary" :status :attention :resume-status :ci
+                                  :error {:message "Implementation requires attention" :details {:restricted false}}} change)]
+        (rt/update! ctx assoc-in [:tasks (:key task)] task)
+        (with-redefs [rt/command (fn [& _] (throw (AssertionError. "Retry cannot replay authoring, checks, or provider calls")))]
+          (main/retry! ctx (:key task)))
+        (is (= expected (:status (flow/task ctx (:key task)))))
+        (is (= (:error task) (:error (flow/task ctx (:key task)))))
+        (is (= (:error task) (:feedback (flow/task ctx (:key task)))))))))
+
+(deftest ordinary-retry-guidance-is-hashed-data-and-never-clears-restrictions
+  (let [ctx (fixture/context) key "ordinary"
+        original {:key key :status :attention :resume-status :ci :base "base" :candidate "candidate" :tree "tree"
+                  :error {:message "Implementation requires attention" :details {:restricted false}}}
+        path (str (io/file (:state-dir ctx) "retirement-guidance.edn"))
+        guidance {:summary "The proposed projection check was retired on Main; repair the owned plan and retain its failed check."
+                  :retirement {:commit "69831d09bc2007844265968b265c493cf064bdf9" :pr 670}}
+        _ (spit path (pr-str guidance))]
+    (rt/update! ctx assoc-in [:tasks key] original)
+    (main/retry! ctx key path)
+    (let [task (flow/task ctx key)]
+      (is (= :repair (:status task)))
+      (is (= (:error original) (:error task)))
+      (is (= (:error original) (dissoc (:feedback task) :operator-guidance)))
+      (is (= {:path (rt/canonical path) :value guidance :value-sha256 (rt/digest (pr-str guidance))}
+             (get-in task [:feedback :operator-guidance]))))
+    (doseq [held [(assoc-in original [:error :details :restricted] true)
+                  (assoc-in original [:error :details :effect] "uncertain-effect")]]
+      (rt/update! ctx assoc-in [:tasks key] held)
+      (rt/update! ctx assoc-in [:effects "uncertain-effect"] {:status :uncertain})
+      (let [before @(:state ctx)]
+        (is (thrown? Exception (main/retry! ctx key (str path ".missing"))))
+        (is (= before @(:state ctx)))))))
+
 (def finding {:key "remove-duplicate" :title "Remove duplicate work" :evidence "The same constant is repeated"
               :proposal "Keep the required value once" :preserve "Value remains one"
               :paths ["work.edn"] :dependencies [] :kind "duplication"})
@@ -199,6 +248,19 @@
                                          :result {:not-applied true :main (:base t)}})
               (main/dispatch! ctx "reconcile" [id result-file])
               (is (= :done (get-in @(:state ctx) [:effects id :prior :status])))
+              (doseq [[name content] [["missing-guidance.edn" nil]
+                                      ["malformed-guidance.edn" "{:summary"]
+                                      ["tagged-guidance.edn" "#unsupported/guidance {:summary \"data\"}"]]]
+                (let [path (str (io/file (:state-dir ctx) name))
+                      _ (when content (spit path content))
+                      before-state @(:state ctx)
+                      before-inspection (rt/main-merge-state ctx id)
+                      before-calls @calls]
+                  (is (thrown? Exception (main/dispatch! ctx "retry" [(:key t) path])))
+                  (is (= before-state @(:state ctx)) "Invalid guidance cannot persist a successor intent or change any native state")
+                  (is (= intent (flow/main-intent (flow/task ctx (:key t)))))
+                  (is (= before-inspection (rt/main-merge-state ctx id)))
+                  (is (= before-calls @calls) "Invalid guidance cannot issue a provider or check command")))
               (main/dispatch! ctx "retry" [(:key t)])
               (let [next-intent (flow/main-intent (flow/task ctx (:key t)))]
                 (is (not= id (:id next-intent)))
