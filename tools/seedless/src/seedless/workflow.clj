@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [seedless.compiler-diagnosis :as diagnosis]
             [seedless.compiler-observation :as compiler]
+            [seedless.diagnosis-recovery :as recovery]
             [seedless.github :as gh]
             [seedless.schema :as schema]
             [simplify.codex :as codex]
@@ -77,10 +78,19 @@
   (shared/assert-identity! ctx t))
 
 (defn job! [ctx role cwd prompt output-schema]
-  (codex/job! (cond-> ctx (get-in ctx [:config :models role])
-                      (assoc-in [:config :model] (get-in ctx [:config :models role])))
-              (next-job! ctx role) cwd (if (= role :implement) :write :read)
-              instructions prompt output-schema))
+  (let [job (next-job! ctx role)
+        effect (:model-effect ctx)]
+    (when effect (rt/update! ctx update-in [:effects effect] assoc :job job))
+    (try
+      (codex/job! (cond-> ctx (get-in ctx [:config :models role])
+                            (assoc-in [:config :model] (get-in ctx [:config :models role])))
+                  job cwd (if (= role :implement) :write :read) instructions prompt output-schema)
+      (catch Exception error
+        (when effect
+          (rt/update! ctx update-in [:effects effect] assoc :failure
+                      {:message (.getMessage error) :details (rt/redact (ex-data error))
+                       :restricted (boolean (:restricted (ex-data error)))}))
+        (throw error)))))
 
 (defn- project-status [status]
   (case status :ready "Ready" :implementing "Implementing" :checking "Implementing"
@@ -140,13 +150,11 @@
             effect (str "compiler-diagnosis/" key)
             previous (get-in @(:state ctx) [:diagnosis-intents observation-key])]
         (try
-          (when (#{:pending :uncertain :restricted} (get-in @(:state ctx) [:effects previous :status]))
-            (rt/fail! "Original compiler diagnosis needs inspection; changed context cannot replay it"
-                      {:effect previous :restricted (= :restricted (get-in @(:state ctx) [:effects previous :status]))}))
+          (recovery/assert-predecessor! ctx previous)
           (rt/update! ctx assoc-in [:diagnosis-intents observation-key] effect)
           (let [proposal
                 (rt/effect! ctx effect
-                            #(job! ctx :diagnose cwd
+                            #(job! (assoc ctx :model-effect effect) :diagnose cwd
                                    (str "Read-only source investigation of an unfamiliar compiler rejection. "
                                         "Permission to investigate does not authorize edits or establish compiler progress.\n"
                                         (pr-str context)
@@ -512,15 +520,13 @@
   [ctx key]
   (let [t (task ctx key)
         previous (:compiler-progress-intent t)
-        _ (when (#{:pending :uncertain :restricted} (get-in @(:state ctx) [:effects previous :status]))
-            (rt/fail! "Original progress assessment needs reconciliation; changed evidence cannot replay it"
-                      {:effect previous :restricted (= :restricted (get-in @(:state ctx) [:effects previous :status]))}))
+        _ (recovery/assert-predecessor! ctx previous)
         identity (select-keys t [:base :candidate :tree :checks :compiler-observation :compiler-result
                                  :compiler-progress-inspection])
         effect (str "compiler-progress/" (rt/digest (pr-str identity)))
         _ (task! ctx key :compiler-progress-intent effect)
         proposal (rt/effect! ctx effect
-                            #(job! ctx :review (:worktree t)
+                            #(job! (assoc ctx :model-effect effect) :review (:worktree t)
                                    (str "Independently assess compiler progress for this immutable candidate.\n"
                                         (pr-str identity)
                                         "\nReturn established only when the original obstruction was removed on the complete declared source population and unchanged compilation route. "

@@ -961,7 +961,8 @@
   (let [ctx (assoc (context) :config {:client-info {:name "uniform_seedless" :title "Uniform Seedless" :version "0.1.0"}})
         requests (atom [])]
     (try
-      (with-redefs [codex/open! (fn [& _] {}) codex/close! (fn [& _]) codex/send! (fn [& _])
+      (with-redefs [codex/open! (fn [context & _] {:ctx context :restricted (atom nil)})
+                    codex/close! (fn [& _]) codex/send! (fn [& _])
                     codex/request! (fn [_ method params] (swap! requests conj [method params])
                                      (case method "thread/start" {:thread {:id "thread"} :model "fixture-model"}
                                            "turn/start" {:turn {:id "turn"}} {}))

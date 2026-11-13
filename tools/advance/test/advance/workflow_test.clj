@@ -75,7 +75,7 @@
     (with-redefs [gh/pages (fn [& _] [{:filename "scope.clj" :previous_filename "old-scope.clj"
                                       :status "renamed"}])
                   coordination/claims (fn [_] [])
-                  codex/open! (fn [c job _] {:ctx c :job job :active-items (atom {})})
+                  codex/open! (fn [c job _] {:ctx c :job job :restricted (atom nil) :active-items (atom {})})
                   codex/close! (fn [& _] nil)
                   codex/send! (fn [& _] nil)
                   codex/request! (fn [_ method params]
@@ -234,7 +234,7 @@
     ;; transport is a deterministic response fixture; no model or tools run.
     (with-redefs [coordination/claims (fn [_] [])
                   rt/command (fn [& _] (throw (AssertionError. "No command replay")))
-                  codex/open! (fn [c job _] {:ctx c :job job})
+                  codex/open! (fn [c job _] {:ctx c :job job :restricted (atom nil)})
                   codex/close! (fn [& _] nil)
                   codex/send! (fn [& _] nil)
                   codex/request! (fn [_ method _]

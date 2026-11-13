@@ -26,7 +26,23 @@ clojure -M:run setup config.edn
 clojure -M:run run config.edn
 ```
 
-`doctor` checks connectivity without starting workers. `setup` creates or reuses
+`doctor` checks the actual configured app-server initialization, a harmless
+sandboxed Git command, a small Clojure expression and dependency resolution for
+configured `clojure [-J...] -M[:aliases]` checks. Dependency probes use
+`-Sforce -Spath` and reject undeclared-alias warnings, so a cached classpath
+cannot hide a missing configured alias. They do not invoke the configured main
+entrypoints. Unsupported launchers are reported explicitly rather than replaced.
+The existing sandbox roots, network-disabled policy and check watchdog remain
+in force.
+
+It reports tool, login, Git base-read, repository push-permission and Projects
+access separately. These read-only delivery checks do not prove a future write.
+Independent failures remain visible; failed startup skips dependent checks.
+The command starts no model turn or campaign, edits no repository source,
+mutates no GitHub content and does not reconcile prior uncertain operations.
+Inspect `doctor-check` and `doctor-blocked` events for the actual prerequisite.
+
+`setup` creates or reuses
 the Project, views, labels and campaign issue; it starts no agents. `run` starts
 autonomous implementation, issue/PR writes and normal squash merging.
 Coordinate the main writer with other active development before starting it.

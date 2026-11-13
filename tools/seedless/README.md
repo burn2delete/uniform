@@ -30,8 +30,26 @@ clojure -M:run pause config.edn
 clojure -M:run resume config.edn
 ```
 
-`doctor` checks existing connectivity without starting workers or writing to
-GitHub. `setup` creates/reuses only the identified Seedless Project, its views,
+`doctor` tests the configured app-server initialization and a harmless Git
+command through the existing sandbox transport. It then runs a small Clojure
+expression and resolves the dependencies of each configured compiler, check
+and completion alias with `-Sforce -Spath`, without invoking those entrypoints.
+Undeclared-alias warnings block readiness even when a classpath was cached. The
+existing workspace-write roots, network-disabled policy and check watchdog
+are unchanged. Version and login results remain separate from actual runtime
+and dependency results.
+
+The command also reads the configured Git base, GitHub login, repository push
+permission and Projects access. These read-only checks cannot prove a future
+push or merge; normal delivery still verifies its actual result. Independent
+blockers are reported together as `doctor-check` events. An initialization
+failure skips dependent commands, and readiness never clears or reconciles an
+existing diagnosis effect. It starts no model turn, campaign or schedule,
+edits no repository source, and writes nothing to GitHub. Missing supported
+runtime storage, cached dependencies or delivery authentication must be
+provided by the environment owner before those operations can succeed.
+
+`setup` creates/reuses only the identified Seedless Project, its views,
 labels and campaign issue; it starts no workers. `run` starts autonomous source
 implementation and GitHub writes, including normal merge commits. Installation
 and tests never launch the campaign, create schedules or install services.
@@ -390,6 +408,73 @@ evidence does not itself start another model turn. The original unknown-coverage
 remains in inspection history.
 This preserves their history and queues new work; it does not turn the failure
 into success. Restricted actions cannot be retried or routed through this path.
+
+An unrestricted diagnosis or source-progress assessment that failed during
+`initialize` can be reconciled as `:not-applied` without inventing a model result.
+Use the original native state and event log. The inspection must bind the
+effect, job, state identity and retained observation or immutable candidate;
+the job must have no thread, turn or output, and its complete trace must contain
+only the initialization request. The original failure, job, observation and
+inspection remain retained. An unqualified `:not-applied` record cannot resume
+model work through either `retry` or a changed discovery context.
+
+The existing reconciliation command accepts this inspected form:
+
+```clojure
+{:evidence "Inspected the original initialization failure and owned-process termination."
+ :outcome :not-applied
+ :result nil
+ :model-not-started
+ {:effect "compiler-diagnosis/recorded-id"
+  :job "diagnose-1"
+  :state-identity-sha256 "sha256-of-pr-str-native-state-identity"
+  :effect-sha256 "sha256-of-pr-str-original-effect"
+  :job-sha256 "sha256-of-pr-str-original-job"
+  :context {:kind :compiler-diagnosis}
+  :job-events-sha256 "sha256-of-pr-str-original-job-events"
+  :trace-complete true}}
+```
+
+Use the complete map returned by `seedless.diagnosis-recovery/operation-context`
+for `:context`, and `job-events` for the job's original parsed log entries.
+The hashes use `simplify.runtime/digest` on `pr-str` of those exact retained
+values. New jobs record their effect-to-job binding before startup and log
+`app-server-closed` only after their owned process and readers have ended. A
+matching closure must be the job's unique final event, after initialization.
+Progress recovery requires both before/after observations to retain nonempty
+input and source identities.
+
+Older native state can be inspected only when job/effect attribution is
+unambiguous. Without that closure event, also provide
+`:termination :inspected-foreground-return`, a nonempty
+`:termination-description`, and `:termination-evidence` containing exactly four
+original completed foreground artifacts, each as
+`{:role ROLE :path "/absolute/receipt" :sha256 "byte-sha256"}`:
+
+- `:runtime-receipt`: the EDN `:seedless/foreground-runtime-receipt-v1` diagnosis
+  receipt, including the original effect/job, controller/compiler identities,
+  initialization-only trace, absent thread/turn and successful driver return.
+- `:driver-exit`: the original foreground exit-code file containing `0`.
+- `:driver-stdout`: the original single EDN result with the same controller,
+  compiler input, native state directory and blocked, model-not-started result.
+- `:driver-finished`: the original finish timestamp matching the runtime receipt
+  and occurring after the last native job event.
+
+The validator checks these artifact contents against each other and the native
+entry and job trace. The operator must inspect the original driver and the
+cleanup code at that bound controller revision to establish that a natural
+foreground return followed synchronous owned-process cleanup; artifact parsing
+does not establish arbitrary program semantics. This historical receipt shape
+supports diagnosis recovery only. A missing PID, a boolean assertion or an
+unstructured hash-matching file is insufficient. The files must remain available
+and unchanged through recovery. An archived receipt alone cannot replace a
+missing native state or event log. A started, restricted, ambiguously terminated
+or mismatched operation remains held.
+
+After reconciliation, use `retry CONFIG audit INSPECTION` for the audit or
+`retry CONFIG SLICE-KEY INSPECTION` for its pending candidate. Recovery rechecks
+the binding and records the full inspection before reopening work; it neither
+starts a worker nor repairs an unavailable runtime.
 
 An uncertain GitHub effect is not automatically replayed. Inspect the actual
 external result, then record it using the inherited reconciliation format:

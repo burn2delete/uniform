@@ -1,6 +1,7 @@
 (ns simplify.main
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.github :as gh]
             [simplify.runtime :as rt]
@@ -80,17 +81,113 @@
               (try (.removeShutdownHook (Runtime/getRuntime) hook)
                    (catch IllegalStateException _ nil)))))))
 
-(defn doctor! [ctx]
-  (doseq [argv [["git" "--version"] ["gh" "--version"] ["codex" "--version"] ["codex" "login" "status"]]]
-    (rt/run! ctx (get-in ctx [:config :repo-dir]) argv))
-  (let [owner (gh/owner-info ctx)]
-    (gh/projects ctx (:id owner)))
-  (rt/event! ctx :doctor-ok {:repository (get-in ctx [:config :repository])
-                            :note "Read-only connectivity check; no worker started and no project content changed."}))
+(defn- dependency-command [argv]
+  ;; Inspect the exact configured CLI aliases without invoking their main-opts.
+  ;; Do not guess at another launcher or silently omit an unsupported command.
+  (let [[executable & arguments] argv
+        [jvm-options remaining] (split-with #(and (string? %) (str/starts-with? % "-J")) arguments)
+        mode (first remaining)]
+    (when-not (and (= "clojure" (.getName (io/file (or executable ""))))
+                   (string? mode) (re-matches #"-M(?::[^\s]+)?" mode))
+      (rt/fail! "Readiness cannot inspect this configured check's dependencies"
+                {:command argv :supported-launcher "clojure [-J...] -M[:aliases]"}))
+    ;; tools.deps only warns for undeclared aliases. Force resolution so a
+    ;; cached classpath cannot hide that warning from the readiness check.
+    (into [executable "-Sforce" "-Spath"] (concat jvm-options [mode]))))
 
-(defn reconcile! [ctx effect-id result-file]
+(defn- doctor-sandbox! [ctx record! skipped!]
+  (let [attempt (try {:result (let [result (codex/command! ctx "doctor-sandbox" (get-in ctx [:config :repo-dir]) ["git" "--version"])]
+                               (when (:capture-truncated result)
+                                 (rt/fail! "Sandbox readiness output is incomplete" {:result result :method "command/exec"}))
+                               result)}
+                     (catch Exception e {:error e}))
+        error (:error attempt)
+        details (when error (ex-data error))
+        initialized? (or (nil? error) (= "command/exec" (:method details)) (contains? details :result))
+        failure (when error {:message (.getMessage ^Exception error) :details (rt/redact details)})]
+    (record! (merge {:check :app-server-initialize :status (if initialized? :passed :blocked)}
+                    (when-not initialized? failure)))
+    (if initialized?
+      (record! (merge {:check :sandbox-command :status (if error :blocked :passed)}
+                      (select-keys attempt [:result]) failure))
+      (skipped! :sandbox-command :app-server-initialize))))
+
+(defn doctor! [ctx]
+  (let [{:keys [repo-dir repository remote base-branch checks completion-checks compiler-observation-command]}
+        (:config ctx)
+        results (atom [])
+        record! (fn [result]
+                  (swap! results conj result)
+                  (rt/event! ctx :doctor-check result)
+                  result)
+        check! (fn [id operation]
+                 (record! (try {:check id :status :passed :result (operation)}
+                               (catch Exception e
+                                 {:check id :status :blocked :message (.getMessage e)
+                                  :details (rt/redact (ex-data e))}))))
+        skipped! (fn [id prerequisite]
+                   (record! {:check id :status :skipped :prerequisite prerequisite}))
+        passed? #(= :passed (:status %))
+        configured (vec (distinct (concat (when compiler-observation-command [compiler-observation-command])
+                                          checks completion-checks)))]
+    (doseq [[id argv] [[:git-version ["git" "--version"]]
+                       [:github-cli-version ["gh" "--version"]]
+                       [:codex-version ["codex" "--version"]]
+                       [:codex-login ["codex" "login" "status"]]]]
+      (check! id #(rt/run! ctx repo-dir argv)))
+    (check! :git-remote
+            #(let [result (rt/git ctx repo-dir "ls-remote" "--exit-code" (or remote "origin")
+                                 (str "refs/heads/" (or base-branch "main")))]
+               (when (str/blank? result) (rt/fail! "Configured Git base is not readable" {}))
+               result))
+    (if (passed? (check! :github-login #(rt/run! ctx repo-dir ["gh" "auth" "status" "--hostname" "github.com"])))
+      (do
+        (check! :github-repository
+                #(let [result (gh/api ctx (gh/repo-path ctx nil))]
+                   (when-not (true? (get-in result [:permissions :push]))
+                     (rt/fail! "GitHub login lacks observed repository push permission"
+                               {:repository repository :permissions (:permissions result)}))
+                   {:repository (:full_name result) :push-permission true}))
+        (check! :github-projects
+                #(let [owner (gh/owner-info ctx)]
+                   {:owner (:id owner) :visible-projects (count (gh/projects ctx (:id owner)))})))
+      (do (skipped! :github-repository :github-login)
+          (skipped! :github-projects :github-login)))
+    (if (passed? (doctor-sandbox! ctx record! skipped!))
+      (let [dependency-probes (check! :configured-dependencies #(mapv dependency-command configured))]
+        (when (passed? dependency-probes)
+          (let [probes (vec (distinct (:result dependency-probes)))
+                executables (distinct (map first probes))]
+            (doseq [executable executables]
+              (let [runtime (check! [:clojure-runtime executable]
+                                    #(let [result (codex/command! ctx "doctor-clojure" repo-dir
+                                                                 [executable "-M" "-e" "(println :uniform/doctor-ready)"])]
+                                       (when-not (and (not (:capture-truncated result))
+                                                       (= ":uniform/doctor-ready" (str/trim (:stdout result))))
+                                         (rt/fail! "Clojure readiness expression did not return its complete result"
+                                                   {:result result}))
+                                       result))]
+                (doseq [argv (filter #(= executable (first %)) probes)]
+                  (if (passed? runtime)
+                    (check! [:clojure-dependencies argv]
+                            #(let [result (codex/command! ctx (str "doctor-dependencies-" (rt/digest (pr-str argv))) repo-dir argv)]
+                               (when (re-find #"(?m)^WARNING: Specified aliases are undeclared and are not being used:" (:stderr result))
+                                 (rt/fail! "Configured Clojure aliases are undeclared" {:command argv :result result}))
+                               (when (or (:capture-truncated result) (str/blank? (:stdout result)))
+                                 (rt/fail! "Clojure dependency classpath is unavailable or incomplete" {:result result}))
+                               result))
+                    (skipped! [:clojure-dependencies argv] [:clojure-runtime executable]))))))))
+      (skipped! :configured-dependencies :sandbox-command))
+    (let [report {:repository repository :status (if (every? passed? @results) :ready :blocked)
+                  :checks @results
+                  :note "Readiness only: no model turn, repository source edit, GitHub mutation or campaign started. Delivery writes still require their normal checks."}]
+      (if (= :ready (:status report))
+        (do (rt/event! ctx :doctor-ok report) report)
+        (do (rt/event! ctx :doctor-blocked report)
+            (rt/fail! "Readiness checks are blocked; inspect doctor-check events" report))))))
+
+(defn reconcile-result! [ctx effect-id result]
   (let [effect (get-in @(:state ctx) [:effects effect-id])
-        result (rt/read-edn result-file)
         main? (str/starts-with? effect-id "merge/")
         unapplied? (= :not-applied (:outcome result))
         inspection (when main?
@@ -111,8 +208,12 @@
     (rt/update! ctx assoc-in [:effects effect-id]
                 (cond-> {:status (if (and unapplied? (not main?)) :not-applied :done)
                          :result (:result result) :reconciliation (:evidence result) :prior effect :previous effect}
+                  (:model-not-started result) (assoc :inspection result)
                   inspection-digest (assoc :main-inspection-digest inspection-digest)))
     (rt/event! ctx :effect-reconciled {:effect effect-id :evidence (:evidence result)})))
+
+(defn reconcile! [ctx effect-id result-file]
+  (reconcile-result! ctx effect-id (rt/read-edn result-file)))
 
 (defn retry! [ctx key]
   (let [t (workflow/task ctx key)
