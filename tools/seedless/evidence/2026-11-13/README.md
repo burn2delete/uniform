@@ -22,8 +22,12 @@ commands. Other artifact paths named below refer to the retained scratch audit.
 The clean implementation revision exercised by the driver was
 `236cf3151913a9187add611f7028be5c4720eeba`, tree
 `87c2a372215f20b7d7718bd193dc4fc0c2e2d738`. The delivery commit adds this evidence
-archive. It remains a local review candidate: external publication was blocked
-as described below, and no PR was created.
+archive. At the original review checkpoint, publication was blocked as described
+below. The user subsequently authorized publication of the complete source and
+evidence package. The first published commit is
+`9c4a01b878ad59d192670cefb869bfaa5d8df735`; its tree exactly matches the reviewed
+local candidate `5189dc6a53ca4eae392b1d91ad84bfa27bf8cfc5`. This documentation-only
+followup records that authorization and preserves the original execution facts.
 
 | Verification on the frozen implementation | Result |
 | --- | --- |
@@ -64,7 +68,7 @@ Status: the fresh full compiler run, supplemental receiver replay and real produ
 
 No preserved compiler worktree or branch was edited during this audit or foreground validation.
 
-### Current external-publication blocker
+### Publication block at the archived checkpoint
 
 Normal Git push could not authenticate through the command-line environment.
 The subsequent GitHub tree-creation request for the complete 18-file candidate
@@ -75,9 +79,10 @@ that specific disclosure and destination. This rejection is separate from both
 the historical C7 blob interruption and the model-runtime initialization failure.
 
 No replacement upload, alternate transport, branch creation or PR creation was
-attempted after that rejection. The complete local candidate, exact execution
-receipts and review package remain available for inspection. Publication of this
-package requires explicit user confirmation in response to the approval block.
+attempted before the user explicitly confirmed publication in response to that
+rejection. After confirmation, the approved source/evidence tree was published
+unchanged to `codex/seedless-generic-diagnosis`. The complete local candidate,
+exact execution receipts and review package remain available for inspection.
 The archived evidence includes workspace paths and runtime diagnostics; the
 runtime receipt excludes credentials, full prompts and configuration contents.
 
@@ -127,7 +132,7 @@ A scratch observer delegated `gravity.runtime/execute-function-scoped` unchanged
 
 | Actual failing source fact | Value |
 | --- | --- |
-| Function |`ae-exact-keys?`, authenticated_envelope.gravity lines 116–119 |
+| Function |`ae-exact-keys?`, authenticated_envelope.gravity lines 116-119 |
 | Expression |`(keys value)` inside the selected `map?` then-branch |
 | Operator |Resolved public `gravity.core/keys` binding |
 | Call Core node |`sha256:22967db63913c2943a663442470599e52424c0bef0c67a8999eef75830b7e094` |
