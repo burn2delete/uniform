@@ -143,9 +143,12 @@ rebuild and release obligations remain open beyond this route.
 Seedless binds selected work to a current, source-attributed failure and an
 existing task or necessary prerequisite. Retained candidates, dependencies,
 active writers and recorded restrictions still constrain admission and
-dispatch. Unknown diagnostics, stale inputs, missing execution prerequisites,
-timeouts and final-release refusals produce explicit blockers; an empty work
-queue does not establish completion. See the
+dispatch. Complete current unfamiliar compiler rejections enter read-only
+source diagnosis; only validated ownership, source and requirement evidence can
+authorize a repair or prerequisite. An unfamiliar after-diagnostic can be
+investigated while its candidate remains unaccepted. Stale inputs, missing
+execution prerequisites, timeouts and final-release refusals retain explicit
+blockers; an empty work queue does not establish completion. See the
 [Seedless workflow](../tools/seedless/README.md) for selection, recovery and
 execution boundaries.
 

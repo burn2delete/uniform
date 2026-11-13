@@ -19,12 +19,13 @@
                        :summary text :findings (array-of text)}))
 
 (defn validate!
-  "Validate the exact JSON Schema subset used by our three output contracts."
+  "Validate the exact JSON Schema subset used by our structured output contracts."
   ([schema value] (validate! schema value []))
   ([schema value path]
    (let [valid-type? (case (:type schema)
                        "object" (map? value) "array" (vector? value)
-                       "string" (string? value) false)]
+                       "string" (string? value) "integer" (integer? value)
+                       "boolean" (boolean? value) false)]
      (when-not valid-type? (rt/fail! "Invalid structured output type" {:path path :expected (:type schema)}))
      (when (and (:enum schema) (not (some #{value} (:enum schema))))
        (rt/fail! "Invalid structured output enum" {:path path :value value}))
@@ -36,5 +37,8 @@
        "array" (do
                  (when (< (count value) (or (:minItems schema) 0)) (rt/fail! "Required output evidence is missing" {:path path}))
                  (doseq [[i item] (map-indexed vector value)] (validate! (:items schema) item (conj path i))))
-       "string" (when (and (:minLength schema) (str/blank? value)) (rt/fail! "Blank structured output" {:path path})))
+       "string" (when (and (:minLength schema) (str/blank? value)) (rt/fail! "Blank structured output" {:path path}))
+       "integer" (when (and (:minimum schema) (< value (:minimum schema)))
+                   (rt/fail! "Structured output integer is below its minimum" {:path path}))
+       "boolean" nil)
      value)))

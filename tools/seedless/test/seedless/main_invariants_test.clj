@@ -239,6 +239,109 @@
         (is (= (:error t) (get-in @(:state ctx) [:tasks key :history 0 :error])))
         (finally (fixture/delete-tree! (:root ctx)))))))
 
+(deftest inspected-pending-evidence-retry-preserves-the-immutable-candidate
+  (doseq [[status phase marker] [[:attention :acceptance-pending false]
+                               [:attention :checking true] [:attention :review true]
+                               [:acceptance-pending :ci false]]]
+    (let [ctx (lock-context) key "pending" id "compiler-progress/retained"
+          inspection {:evidence "Inspected the original read-only progress failure and retained candidate"
+                      :result {:outcome "pending" :missing-evidence ["Additional source inspection"]}}
+          t {:key key :status status :resume-status phase :pending-evidence-resume marker
+             :base "before" :candidate "retained-candidate" :tree "retained-tree"
+             :compiler-progress-intent id
+             :compiler-observation {:input-id "before-input"}
+             :compiler-result {:status :blocked :input-id "after-input"}
+             :checks {:candidate "retained-candidate" :tree "retained-tree" :commands [["clojure" "positive.clj"]]}
+             :compiler-investigation-planned "old-investigation"
+             :error (when (= :attention status)
+                      {:message "Read-only progress assessment failed" :details {:effect id}})}
+          file (io/file (:root ctx) "progress-inspection.edn")]
+      (try
+        (rt/update! ctx assoc :tasks {key t} :effects {id {:status :uncertain}})
+        (rt/write-edn! file inspection)
+        (let [before (rt/read-edn (:state-file ctx))]
+          (is (thrown-with-msg? Exception #"reconciliation" (main/retry! ctx key (str file))))
+          (is (= before (rt/read-edn (:state-file ctx)))))
+        (shared/reconcile! ctx id (str file))
+        ;; Dispatch must reload the reconciled record, as a fresh controller would.
+        (reset! (:state ctx) (assoc @(:state ctx) :tasks {}))
+        (main/dispatch! ctx "retry" [key (str file)])
+        (let [resumed (get-in (rt/read-edn (:state-file ctx)) [:tasks key])]
+          (is (= :acceptance-pending (:status resumed)))
+          (is (true? (:compiler-progress-resume resumed)))
+          (is (nil? (:compiler-investigation-planned resumed)))
+          (is (= (rt/digest (pr-str (:history resumed))) (:compiler-progress-inspection resumed)))
+          (is (= (select-keys t [:base :candidate :tree :compiler-observation :compiler-result :checks])
+                 (select-keys resumed [:base :candidate :tree :compiler-observation :compiler-result :checks])))
+          (is (= {:error (:error t) :inspection inspection} (last (:history resumed))))
+          (is (= inspection (:feedback resumed)))
+          (is (nil? (:acceptance resumed))))
+        (is (= :done (get-in @(:state ctx) [:effects id :status])))
+        (is (= :uncertain (get-in @(:state ctx) [:effects id :prior :status])))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest failed-diagnosis-audit-retry-needs-the-original-effect-settled
+  (doseq [[effect-status restricted]
+          [[:pending false] [:uncertain false] [:restricted false]
+           [:done true] [:not-applied false] [nil false]]]
+    (let [ctx (lock-context) id "compiler-diagnosis/failed"
+          blocker {:effect id :observation-key "observed-input" :restricted restricted
+                   :message "The read-only diagnosis did not yield a validated result"}
+          file (io/file (:root ctx) "diagnosis-inspection.edn")]
+      (try
+        (rt/update! ctx assoc :diagnosis-blocker blocker :last-discovery-key "retained-discovery"
+                    :effects (if effect-status {id {:status effect-status}} {}))
+        (rt/write-edn! file {:evidence "Inspected the failed read-only diagnosis"})
+        (let [before (rt/read-edn (:state-file ctx))]
+          (is (thrown? Exception (main/retry! ctx "audit" (str file))))
+          (is (= before (rt/read-edn (:state-file ctx)))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest pending-evidence-retry-keeps-unresolved-diagnosis-effects-held
+  (doseq [status [:pending :uncertain :restricted]]
+    (let [ctx (lock-context) id "compiler-diagnosis/retained"
+          file (io/file (:root ctx) "pending-inspection.edn")]
+      (try
+        (rt/update! ctx assoc :tasks {"pending" {:key "pending" :status :acceptance-pending
+                                               :candidate "retained-candidate"
+                                               :compiler-result {:diagnosis {:status :blocked :effect id}}}}
+                    :effects {id {:status status}})
+        (rt/write-edn! file {:evidence "Inspected the pending candidate; original effect is unresolved"})
+        (let [before (rt/read-edn (:state-file ctx))]
+          (is (thrown-with-msg? Exception #"reconciliation" (main/retry! ctx "pending" (str file))))
+          (is (= before (rt/read-edn (:state-file ctx)))))
+        (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest inspected-diagnosis-recovery-retains-history-and-reopens-discovery
+  (let [ctx (lock-context) id "compiler-diagnosis/failed"
+        blocker {:effect id :observation-key "observed-input" :restricted false
+                 :message "Read-only diagnosis provider failed"}
+        inspection {:evidence "Inspected the completed original diagnosis job and reconciled its result"
+                    :result {:outcome "blocked"}}
+        file (io/file (:root ctx) "diagnosis-inspection.edn")]
+    (try
+      (rt/update! ctx assoc :diagnosis-blocker blocker :last-discovery-key "retained-discovery"
+                  :diagnosis-intents {"observed-input" id} :effects {id {:status :uncertain}})
+      (rt/write-edn! file inspection)
+      (shared/reconcile! ctx id (str file))
+      (let [effect (get-in @(:state ctx) [:effects id])]
+        ;; A failed diagnosis is recoverable even after plan! cleared :planning.
+        (is (nil? (:planning @(:state ctx))))
+        (reset! (:state ctx) (dissoc @(:state ctx) :diagnosis-blocker))
+        (main/dispatch! ctx "retry" ["audit" (str file)])
+        (let [resumed (rt/read-edn (:state-file ctx))]
+          (is (nil? (:diagnosis-blocker resumed)))
+          (is (nil? (:last-discovery-key resumed)))
+          (is (= blocker (get-in resumed [:inspections 0 :diagnosis-blocker])))
+          (is (= inspection (get-in resumed [:inspections 0 :inspection])))
+          (is (= {"observed-input" id} (:diagnosis-intents resumed)))
+          (is (= effect (get-in resumed [:effects id])))
+          (is (empty? (:tasks resumed))))
+        (let [before (rt/read-edn (:state-file ctx))]
+          (is (thrown-with-msg? Exception #"No inspected planning" (main/retry! ctx "audit" (str file))))
+          (is (= before (rt/read-edn (:state-file ctx))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
 (def status-identity-keys
   [:repository :campaign :objective :contracts :completion-checks :repo-dir :remote
    :base-branch :worktree-root :checks :project-title :codex-command])
