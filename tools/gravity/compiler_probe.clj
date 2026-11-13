@@ -214,12 +214,12 @@
                                            :reason :missing-module-type-product :module module}))))
                     (:source-imports component))}))))
 
-(defn- require-type-result! [result expected]
+(defn- require-compiler-result! [result expected boundary]
   (when-not (= expected (:status result))
     (let [diagnostic (first (:diagnostics result))]
-      (throw (ex-info "Current C7 did not accept the complete compiler module"
+      (throw (ex-info (str boundary " did not accept the complete compiler module")
                       (merge diagnostic
-                             {:id (or (:rule diagnostic) (:id diagnostic) "COMPILER-PROBE-TYPES")
+                             {:id (or (:rule diagnostic) (:id diagnostic) "COMPILER-PROBE-REJECTION")
                               :compiler-result-status (:status result)
                               :diagnostic diagnostic}))))))
 
@@ -298,9 +298,11 @@
                                         path text
                                         (module-inputs component resolved)
                                         reader invocation)
+                        _ (require-compiler-result! resolution :accepted "Current C5")
                         _ (reset! stage :canonical-core)
                         _ (progress! {:component (:component-id component) :stage @stage :status :started})
-                        core (api 'sh07-core-from-resolution-artifact resolution invocation)]
+                        core (api 'sh07-core-from-resolution-artifact resolution invocation)
+                        _ (require-compiler-result! core :accepted "Current canonical Core")]
                     (when-not (and (= :accepted (:status resolution) (:status core))
                                    (= :passed (get-in core [:gravity-core-boundary :template-verification :status])
                                       (get-in core [:gravity-core-boundary :resolved-verification :status])))
@@ -323,11 +325,11 @@
                           _ (reset! stage :function-types)
                           _ (progress! {:component (:component-id component) :stage @stage :status :started})
                           typed (type-api 'invoke-c7 'sh08-function-type-core-artifact [request])]
-                      (require-type-result! typed :accepted)
+                      (require-compiler-result! typed :accepted "Current C7")
                       (reset! stage :type-verification)
                       (progress! {:component (:component-id component) :stage @stage :status :started})
-                      (require-type-result!
-                       (type-api 'invoke-c7 'sh08-verify-function-type-result [request typed]) :passed)
+                      (require-compiler-result!
+                       (type-api 'invoke-c7 'sh08-verify-function-type-result [request typed]) :passed "Current C7 verification")
                       (swap! type-requests assoc (:source-module component) request))
                     (swap! completed conj {:component-id (:component-id component)
                                            :source-path (:source-path component)
