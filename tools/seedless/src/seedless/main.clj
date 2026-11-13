@@ -443,6 +443,8 @@
                  (rt/redact (:result value)))
        :result-present (contains? value :result)
        :restricted (:restricted value)
+       :message (some-> (:message value) rt/redact)
+       :missing-evidence (some-> (:missing-evidence value) rt/redact)
        :effect-refs (task-effect-ids value)
        :error (or (task-error-summary (:error value))
                   (task-error-summary (:validation-error value)))
@@ -470,7 +472,7 @@
         restrictions (native-restrictions state)
         blockers (into {}
                        (map (fn [key] [key (blocker-summary state state-file state-digest key)])
-                            [:planning :completion :interruption]))]
+                            [:planning :completion :interruption :diagnosis-blocker]))]
     {:schema :seedless/v1
      :identity identity
      :state {:file state-file :sha256 state-digest
@@ -563,24 +565,38 @@
     (if (= "audit" key)
       (let [planning (:planning @(:state ctx))
             interruption (:interruption @(:state ctx))
-            effect (get-in @(:state ctx) [:effects (:effect planning)])]
+            diagnosis-blocker (:diagnosis-blocker @(:state ctx))
+            effect (get-in @(:state ctx) [:effects (:effect planning)])
+            diagnosis-effect (get-in @(:state ctx) [:effects (:effect diagnosis-blocker)])]
         (when (or (= :restricted (:status effect)) (get-in @(:state ctx) [:completion :restricted])
-                  (:restricted interruption))
+                  (:restricted interruption) (:restricted diagnosis-blocker)
+                  (= :restricted (:status diagnosis-effect)))
           (rt/fail! "Restricted planning/completion actions cannot be retried" {:restricted true}))
-        (when-not (or planning interruption (= :failed (get-in @(:state ctx) [:completion :result])))
+        (when (and diagnosis-blocker (not= :done (:status diagnosis-effect)))
+          (rt/fail! "Failed diagnosis effect needs reconciliation before retry"
+                    {:effect (:effect diagnosis-blocker)}))
+        (when-not (or planning interruption diagnosis-blocker
+                      (= :failed (get-in @(:state ctx) [:completion :result])))
           (rt/fail! "No inspected planning/completion failure is pending" {}))
-        (rt/update! ctx #(-> % (update :inspections (fnil conj []) {:planning planning :completion (:completion %) :interruption interruption :inspection inspection})
-                             (assoc :round (max (or (:round %) 0) (or (:round planning) 0)) :planning nil)
-                             (dissoc :completion :interruption))))
+        (rt/update! ctx #(cond-> (-> % (update :inspections (fnil conj [])
+                                              {:planning planning :completion (:completion %)
+                                               :interruption interruption :diagnosis-blocker diagnosis-blocker
+                                               :inspection inspection})
+                                     (assoc :round (max (or (:round %) 0) (or (:round planning) 0)) :planning nil)
+                                     (dissoc :completion :interruption))
+                          diagnosis-blocker (dissoc :diagnosis-blocker :last-discovery-key))))
       (let [task (workflow/task ctx key)]
-        (when-not (= :attention (:status task)) (rt/fail! "Only Attention work needs an inspected retry" {}))
+        (when-not (#{:attention :acceptance-pending} (:status task))
+          (rt/fail! "Only Attention or acceptance-pending work needs an inspected retry" {}))
         (when (get-in task [:error :details :restricted])
           (rt/fail! "Restricted work cannot be retried" {:restricted true}))
         (doseq [id (distinct (filter string?
                                      [(get-in task [:error :details :effect])
                                       (get-in task [:error :details :effect-id])
                                       (get-in task [:reporting-error :details :effect])
-                                      (get-in task [:reporting-error :details :effect-id])]))
+                                      (get-in task [:reporting-error :details :effect-id])
+                                      (:compiler-progress-intent task)
+                                      (get-in task [:compiler-result :diagnosis :effect])]))
                 :let [effect (get-in @(:state ctx) [:effects id])]
                 :when (not= :done (:status effect))]
           (rt/fail! "Failed task effect needs reconciliation before retry"
@@ -611,10 +627,23 @@
               (when (get-in @(:state ctx) [:effects next-id])
                 (rt/fail! "Inspected successor already has a retained effect; inspect that outcome" {:effect next-id :main-effect true}))
               (workflow/task! ctx key :merge-recovery (assoc (select-keys task [:base :candidate :tree]) :id next-id)))))
-        (rt/update! ctx update-in [:tasks key :history] (fnil conj []) {:error (:error task) :inspection inspection})
-        (workflow/task! ctx key :feedback inspection
-                        :status (if (or (:merged task) (:merge-recovery (workflow/task ctx key))
-                                        (#{:ci :merge} (:resume-status task))) :ci :repair))))))
+        (let [status (cond
+                       (or (:merged task) (:merge-recovery (workflow/task ctx key))) :ci
+                       (and (true? (get-in task [:error :details :compiler-repair-required]))
+                            (= (select-keys task [:base :candidate :tree])
+                               (select-keys (get-in task [:error :details]) [:base :candidate :tree]))) :repair
+                       (or (= :acceptance-pending (:status task))
+                           (= :acceptance-pending (:resume-status task))
+                           (true? (:pending-evidence-resume task))) :acceptance-pending
+                       (#{:ci :merge} (:resume-status task)) :ci
+                       :else :repair)]
+          (rt/update! ctx update-in [:tasks key :history] (fnil conj []) {:error (:error task) :inspection inspection})
+          (rt/update! ctx update-in [:tasks key]
+                      #(cond-> (assoc % :feedback inspection :status status)
+                         (= :repair status) (dissoc :pending-evidence-resume :compiler-progress-resume)
+                         (= :acceptance-pending status)
+                         (assoc :compiler-progress-resume true :compiler-investigation-planned nil
+                                :compiler-progress-inspection (rt/digest (pr-str (:history %)))))))))))
 
 (defn dispatch! [ctx command args]
   (case command

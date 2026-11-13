@@ -14,7 +14,7 @@ existing signed-in Codex CLI. It reuses `tools/simplify` through a local Clojure
 dependency; no API key is requested or provisioned. The shared app-server
 protocol baseline is documented in that tool's README. The installed Codex
 model default is used unless `:model` or role-specific `:models` entries are
-configured (`:plan`, `:implement`, `:review`). Actual model, thread, prompt,
+configured (`:diagnose`, `:plan`, `:implement`, `:review`). Actual model, thread, prompt,
 schema and tool events are retained in the local trace.
 
 From `tools/seedless`:
@@ -138,10 +138,84 @@ probe watchdog and runtime configuration also participate in applicability.
 The probe has a separate two-hour host watchdog because a measured first full
 module frontend pass took 834 seconds before fresh verification and C7; ordinary
 candidate checks keep their existing twenty-minute watchdog. Missing or
-truncated output, unavailable execution prerequisites, unknown failure causes,
-timeouts and final-release refusal produce explicit blockers, not invented
-compiler repairs. The existing `self-host verify` completion gate remains
-separate.
+truncated output, unavailable execution prerequisites, timeouts and final-release
+refusal produce explicit blockers. A complete, current, structured compiler
+rejection can enter the read-only diagnosis path below before an implementation
+owner is known. The existing `self-host verify` completion gate remains separate.
+
+### Unfamiliar compiler rejections
+
+`plan!` calls `diagnose!` for a previously unclassified compiler rejection before
+deciding whether to wait. This uses the existing Codex worker transport with
+read-only filesystem policy. The investigator receives the actual retained
+capture, producing stage, source span and source products, complete declared
+inputs and route, current ownership/requirement identities, and retained task
+and PR information. Returned C5, Core and C7 rejection records use the same
+structured result marker. An arbitrary exception or a diagnostic token without
+that evidence is not sufficient.
+
+Investigation, implementation admission and acceptance remain separate:
+
+| Boundary | Required evidence |
+| --- | --- |
+| Investigate | Complete normally terminated rejection capture, current declared source identities, authentic subject and route; no execution restriction. |
+| Admit a repair or prerequisite | Validated current producer/trigger file hashes and exact excerpts, an existing numbered SH requirement and registry owner, permitted paths, positive/negative check proposals, and explicit retained-candidate dispositions. |
+| Accept the candidate | Completed exact-candidate checks, comparable compiler executions, removal/preservation evidence where promised, independent source-specific progress assessment when needed, and ordinary exact-base/commit/tree review. CI, composition and release gates remain separate. |
+
+The investigator can return `repair`, `prerequisite`, `investigate`, `reuse` or
+`blocked`. Unresolved outcomes must name the missing evidence or capability.
+Repair/prerequisite outcomes become an interpreted observation and pass through
+the ordinary planner, stable work-key assignment, admission and writer claims.
+The original capture remains in `:diagnosis :raw-observation`. Source and
+ownership evidence are checked again at admission, resumed selection and
+unauthored dispatch. Proposed semantic checks become mandatory candidate checks.
+Interrupted admission retains its original selection and inspected candidate
+snapshot. Resuming checks fresh retained work and PR scope, including head/base
+identities, paths and body; a changed inspected candidate requires replanning.
+Partially admitted siblings keep their original task keys and issues.
+
+Diagnosis effects are keyed by observation, current ownership and relevant
+candidate/inspection context. The same unresolved observation does not start
+another investigator on an unchanged context. A source/candidate change or an
+explicit inspected recovery supplies a reason to reconsider. Original uncertain
+or restricted effects remain subject to the existing reconciliation rules;
+changing a task name or a candidate disposition does not retry them.
+
+### Candidates awaiting compiler progress evidence
+
+An unfamiliar after-diagnostic enters the same read-only diagnosis path. Its
+candidate, baseline, checks and complete after-observation remain retained.
+When progress is not established, the task stays `:acceptance-pending` (displayed
+as Review), with no accepted review or integration authority. A changed error
+message alone cannot establish progress.
+
+For same-stage movement, an independent read-only reviewer must join exact
+before/after revision and input identities, changed source witnesses at the
+original producer or trigger, removal of the original obstruction, preservation
+of preceding behavior, and completed positive and malformed-input rejection
+checks. This generic evidence assessment does not require adding a diagnostic
+name, function list or before/after pair to controller policy. Ordinary independent
+candidate review still follows it. Existing source-traced fast paths remain valid.
+
+If that reviewer requests additional semantic checks, `continue-pending!` runs
+new check commands through the existing sandbox executor and path claim on the
+same immutable candidate, retains prior check commands, and reassesses the changed
+evidence. It performs no authoring and does not repeat an unchanged unresolved
+assessment. Missing tools, restrictions or check failures retain their normal
+handling.
+If read-only assessment or ordinary candidate review fails, inspected recovery
+keeps the immutable candidate pending and resumes its evidence work. It does not
+turn that failure into an authoring request.
+If a current validated rerun instead proves that the selected obstruction still
+remains, inspected recovery returns the same retained task to source repair.
+
+Planning can investigate the pending candidate's next failure in an isolated
+worktree at its exact revision. A justified implementation successor must retain
+that candidate as its explicit stack dependency. It may be authored while the
+parent is unaccepted; it cannot integrate before the dependency is accepted and
+merged. Every pending frontier is considered before the campaign settles into
+Attention for a precise unresolved blocker. This changes no orchestration
+schedule and does not start a campaign during installation or tests.
 
 Selection interprets the validated raw result, including when an unchanged
 durable result is reused. The first source-traced case is the complete envelope
@@ -212,9 +286,10 @@ baseline preserves this requirement through composition. Other commands and
 tasks without a compiler baseline keep ordinary check behavior. Acceptance of
 an evidence-bound task requires current permitted compiler evidence as well as
 the ordinary receipts.
-A repair enters review only when the original failure is gone and the same
-declared path advances to a later component or handoff, the specifically witnessed
-recursive-component check above, or a scoped pass. Its completed component
+A repair enters ordinary candidate review only when the original failure is
+gone and the same declared path advances to a later component or handoff, a
+source-specific same-stage assessment establishes the advance, an existing
+witnessed fast path applies, or the scope passes. Its completed component
 prefix cannot shrink. The observed envelope prerequisites promise failure
 removal and must demonstrate that advance too. Other independent prerequisites
 retain focused evidence with no regression of the compiler path. All results
@@ -297,15 +372,21 @@ it. Interrupted controller cleanup signals only process objects owned by that
 invocation; it does not perform global or descendant process discovery. It
 records unknown descendant coverage and requires inspected recovery, without
 claiming that all children stopped. Restricted cleanup remains restricted.
-For a non-restricted Attention slice, record what was inspected in EDN:
+For a non-restricted Attention slice or a candidate awaiting compiler progress,
+record what was inspected and what new evidence justifies reconsideration in EDN:
 
 ```text
 {:evidence "Inspected the retained worktree and original job trace; ..."}
 clojure -M:run retry config.edn SLICE-KEY inspection.edn
 ```
 
-Use `audit` as the key for inspected non-restricted planning/completion or
-controller-interruption failures. The original unknown-coverage observation
+Use `audit` as the key for inspected non-restricted planning/completion,
+diagnosis or controller-interruption failures. A failed diagnosis's original
+effect must be reconciled before retry; a validated unresolved diagnosis has
+already completed its effect. Retrying a pending candidate preserves the
+candidate and resumes read-only assessment/checks, without queuing an author.
+The explicit inspection changes the assessment identity; unchanged unresolved
+evidence does not itself start another model turn. The original unknown-coverage observation
 remains in inspection history.
 This preserves their history and queues new work; it does not turn the failure
 into success. Restricted actions cannot be retried or routed through this path.
