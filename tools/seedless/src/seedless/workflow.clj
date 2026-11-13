@@ -1333,16 +1333,16 @@
        ;; unrelated ready queue before the first compiler-informed selection.
        (or (nil? (get-in ctx [:config :compiler-observation-command]))
            (:candidate t)
-           (let [before (:compiler-observation t) current (:compiler-observation @(:state ctx))]
-             (let [observation (if (= (:inputs before) (:inputs current)) current before)]
-               (and (compiler/selected? t observation)
-                    (or (nil? (:diagnosis observation))
-                        (try
-                          (diagnosis/validate-selection! (or (:worktree t)
-                                                            (:worktree (task ctx (:stack-on t)))
-                                                            (get-in ctx [:config :repo-dir])) observation t)
-                          true
-                          (catch Exception _ false)))))))
+           (let [before (:compiler-observation t) current (:compiler-observation @(:state ctx))
+                 observation (if (= (:inputs before) (:inputs current)) current before)]
+             (and (compiler/selected? t observation)
+                  (or (nil? (:diagnosis observation))
+                      (try
+                        (diagnosis/validate-selection! (or (:worktree t)
+                                                          (:worktree (task ctx (:stack-on t)))
+                                                          (get-in ctx [:config :repo-dir])) observation t)
+                        true
+                        (catch Exception _ false))))))
        (every? (fn [key]
                  (let [dep (task ctx key)]
                    (or (and (= :done (:status dep)) (:merged dep))

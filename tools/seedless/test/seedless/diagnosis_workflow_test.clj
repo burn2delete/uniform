@@ -65,10 +65,10 @@
                                    :diagnostic {:id id :reason reason
                                                 :compiler-result-status :rejected
                                                 :stage :type-checking
-                                                :source-span {:line-start 2 :line-end 2}}}))]
-    (let [value (assoc value :input-id (compiler/input-id value))]
-      (assoc value :execution {:exitCode 1 :stdout (pr-str value) :stderr ""
-                               :capture-truncated false}))))
+                                                :source-span {:line-start 2 :line-end 2}}}))
+        observation (assoc value :input-id (compiler/input-id value))]
+    (assoc observation :execution {:exitCode 1 :stdout (pr-str observation) :stderr ""
+                                  :capture-truncated false})))
 
 (defn reference [cwd path first-line last-line]
   {:path path :sha256 (compiler/input-sha256 cwd path)
