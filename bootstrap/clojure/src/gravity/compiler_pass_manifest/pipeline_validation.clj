@@ -55,5 +55,29 @@
       (when (seq missing-fields)
         (failures/compiler-pass-fail! "C1-MANIFEST" source-path manifest pipeline
                              {:missing-fields missing-fields
-                              :remediation "Emit a complete compiler pipeline manifest for diagnostics, caches, packages, and bootstrap comparison."}))))
+                              :remediation "Emit a complete compiler pipeline manifest for diagnostics, caches, packages, and bootstrap comparison."}))
+      ;; Compatibility references name declarations, not executed stage artifacts.
+      (let [fail-reference! (fn [field reason]
+                              (failures/compiler-pass-fail!
+                               "C1-MANIFEST" source-path manifest
+                               (assoc (select-keys pipeline [:artifact :profile :target])
+                                      :stage :pipeline-manifest)
+                               {:field field :reason reason
+                                :remediation "Match pipeline references to the selected suite stage order and declared pass identities."}))
+            stages (:stages pipeline)
+            references (:pass-contracts pipeline)]
+        (when-not (vector? stages)
+          (fail-reference! :stages :expected-vector))
+        (when-not (= stage-order stages)
+          (fail-reference! :stages :stage-order-mismatch))
+        (when-not (vector? references)
+          (fail-reference! :pass-contracts :expected-vector))
+        (let [reference-set (set references)
+              declared-passes (set (map :pass contracts))]
+          (when-not (= (count references) (count reference-set))
+            (fail-reference! :pass-contracts :duplicate-reference))
+          (when (seq (set/difference reference-set declared-passes))
+            (fail-reference! :pass-contracts :foreign-reference))
+          (when (seq (set/difference declared-passes reference-set))
+            (fail-reference! :pass-contracts :missing-reference))))))
   :complete)
