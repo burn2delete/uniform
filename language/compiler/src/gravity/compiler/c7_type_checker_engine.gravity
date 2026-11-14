@@ -2410,7 +2410,13 @@
      :generated-origin (get (get node :source) :generated-origin)
      :reason reason
      :remediation
-     "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types."}))
+     (if (= :map-keys-finite-keyword-map-type-required reason)
+       (if (= "C7-ANNOTATION" rule)
+         "Provide caller or local type evidence establishing the operand as a complete finite Map with Keyword keys."
+         (if (= "C7-TYPE-MISMATCH" rule)
+           "Pass a complete finite Map whose keys are Keywords to keys."
+           "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types."))
+       "Provide coherent B47 function, call, recursion, definition, binding, and lexical products with bounded first-order primitive types.")}))
 
 (defn sh08-ft-render-inference-diagnostics [diagnostics nodes module]
   (loop [remaining diagnostics values []]
@@ -11905,6 +11911,22 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
      :dispatch :direct-map-keys :applied-map-keys descriptor :effect-facts-source :audited-map-key-list-construction})))
 
+(defn sh08-mkeys-operand-diagnostic [reason call types binding module]
+  ; C7/C15: inference shortages and incompatible operands are source errors.
+  ; Other failures retain their existing diagnostic classification.
+  (if (= :map-keys-finite-keyword-map-type-required reason)
+    (if (sh08-mkeys-binding? binding module)
+      (let [argument (get types (first (get call :argument-node-ids)))
+            unresolved? (sh08-ft-unresolved-unary-argument? call types)]
+        (if (if unresolved? true
+              (= :accepted (get (sh08-lc-validate-types [argument]) :status)))
+          {:rule (if unresolved? "C7-ANNOTATION" "C7-TYPE-MISMATCH")
+           :expected :validated-complete-finite-keyword-key-map
+           :actual argument}
+          nil))
+      nil)
+    nil))
+
 (defn sh08-mkeys-derive [core node call edge nodes bindings types forms]
   (if (sh08-pmk-entry? node call nodes bindings types (get core :module))
     (sh08-pmk-derive core node call edge nodes bindings types forms)
@@ -11924,8 +11946,13 @@
                           (recur (+ index 1)) false)))) false) false) false)
           (assoc result :type (get (get result :descriptor) :result-type) :constraint (sh08-mkeys-constraint (get result :descriptor)))
           (sh08-sm-failure "C7-VERIFY" :map-keys-source-mismatch nil :original-unary-map-keys-call (get node :node-id))))
-      (sh08-sm-failure (if (= :map-keys-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH")
-               (get result :reason) nil :validated-complete-finite-keyword-key-map (get call :argument-node-ids))))))
+      (let [operand (sh08-mkeys-operand-diagnostic
+                      (get result :reason) call types
+                      (get bindings (get call :operator-binding-id)) (get core :module))]
+        (sh08-sm-failure
+          (get operand :rule (if (= :map-keys-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH"))
+          (get result :reason) nil :validated-complete-finite-keyword-key-map
+          (get operand :actual (get call :argument-node-ids))))))))
 
 (defn sh08-mkeys-entry? [node call nodes bindings types module]
   ; Routing only. Source and binding reconstruction remain in the owning checker.
@@ -23519,10 +23546,12 @@
                   (if (= :accepted (get checked :status))
                     (recur (rest remaining) (rest remaining-edges) next-bindings
                       constraints diagnostics)
-                    (let [issue {:call call :rule "C7-VERIFY"
+                    (let [operand (sh08-mkeys-operand-diagnostic
+                                    (get checked :reason) call type-table operator-binding module)
+                          issue {:call call :rule (get operand :rule "C7-VERIFY")
                                  :reason (get checked :reason)
-                                 :expected :fresh-map-keys-application
-                                 :actual :mismatched-application}]
+                                 :expected (get operand :expected :fresh-map-keys-application)
+                                 :actual (get operand :actual :mismatched-application)}]
                       ; L5/C7: later callers may establish this parameter type.
                       ; Retain the issue; the fixed point rechecks it from source.
                       (if (if (= :map-keys-finite-keyword-map-type-required (get checked :reason))

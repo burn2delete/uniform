@@ -43,7 +43,7 @@
     (is (= [:map-keys-finite-keyword-map-type-required]
            (mapv :reason (:diagnostics before))
            (mapv :reason (:diagnostics after))))
-    (is (= ["C7-VERIFY"] (mapv :rule (:diagnostics before))))
+    (is (= ["C7-ANNOTATION"] (mapv :rule (:diagnostics before))))
     (is (= 1 (count (:constraints before)) (count (:constraints after))))))
 
 (deftest known-invalid-map-keys-preserves-first-rejection
@@ -58,6 +58,79 @@
       (is (empty? (:constraints result)))
       (is (= [reason]
              (mapv :reason (:diagnostics result)))))))
+
+(deftest map-keys-diagnostics-distinguish-operand-errors-from-evidence-errors
+  ;; L5/C7/C15: classify the diagnosed failure without changing check order.
+  (let [derive (fn [{:keys [core node call edge nodes bindings types forms]}]
+                 (support/invoke-c7 'sh08-mkeys-derive
+                                   [core node call edge nodes bindings types forms]))
+        render (fn [input diagnostic]
+                 (first (support/invoke-c7 'sh08-ft-render-inference-diagnostics
+                                          [[diagnostic] (:nodes input) (:module input)])))
+        base (support/map-keys-input finite-map)
+        derived (derive base)
+        valid (update base :types assoc :operator (:descriptor derived) :call (:type derived))]
+    (is (= :accepted (:status derived)))
+    (is (empty? (:diagnostics (with-later-caller valid false []))))
+    (doseq [receiver [:gravity.type/string :gravity.type/integer
+                      (assoc finite-map :member-types
+                             [:gravity.type/string :gravity.type/integer])]]
+      (let [input (support/map-keys-input receiver)
+            result (with-later-caller input false)
+            diagnostic (first (:diagnostics result))]
+        (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+        (is (= :map-keys-finite-keyword-map-type-required (:reason diagnostic)))
+        (is (= :validated-complete-finite-keyword-key-map (:expected diagnostic)))
+        (is (= receiver (:actual diagnostic)))
+        (is (= (select-keys diagnostic [:rule :reason :expected :actual])
+               (select-keys (derive input) [:rule :reason :expected :actual])))
+        (is (let [remediation (:remediation (render input diagnostic))]
+              (and (string? remediation) (seq remediation))))
+        (is (nil? (:observed-parameter result)))
+        (is (empty? (:constraints result)))))
+    (doseq [receiver [nil :gravity.type/unknown]]
+      (let [input (support/map-keys-input receiver)
+            result (with-later-caller input false [])
+            diagnostic (first (:diagnostics result))]
+        (is (= "C7-ANNOTATION" (:rule diagnostic)))
+        (is (= :map-keys-finite-keyword-map-type-required (:reason diagnostic)))
+        (is (= :validated-complete-finite-keyword-key-map (:expected diagnostic)))
+        (is (= receiver (:actual diagnostic)))
+        (is (= (select-keys diagnostic [:rule :reason :expected :actual])
+               (select-keys (derive input) [:rule :reason :expected :actual])))
+        (is (let [remediation (:remediation (render input diagnostic))]
+              (and (string? remediation) (seq remediation))))
+        (is (nil? (:observed-parameter result)))
+        (is (empty? (:constraints result)))))
+    (doseq [input [(assoc-in (support/map-keys-input :gravity.type/unknown)
+                            [:bindings :ordering-binding :namespace] 'other.core)
+                   (assoc-in valid [:nodes :call :source :form-id] nil)
+                   (assoc-in valid [:edge :classification] :local-function)
+                   (support/map-keys-input
+                    (assoc finite-map :member-types [:gravity.type/keyword]))
+                   (support/map-keys-input
+                    (assoc finite-map :member-types
+                           [:gravity.type/keyword :gravity.type/unknown]))]]
+      (let [result (with-later-caller input false)
+            diagnostic (first (:diagnostics result))]
+        (is (= "C7-VERIFY" (:rule diagnostic)))
+        (is (= :fresh-map-keys-application (:expected diagnostic)))
+        (is (= :mismatched-application (:actual diagnostic)))
+        (is (nil? (:observed-parameter result)))
+        (is (empty? (:constraints result)))))
+    ;; The owner diagnoses missing/wrong operand types before complete edge
+    ;; reconstruction. Mixed-invalid inputs still reject; once the operand is
+    ;; established, the same corrupt edge must fail the source check.
+    (doseq [receiver [:gravity.type/unknown :gravity.type/string]]
+      (let [input (assoc-in (support/map-keys-input receiver)
+                            [:edge :classification] :local-function)
+            result (with-later-caller input false [])
+            grounded (assoc-in input [:types :arg0] finite-map)]
+        (is (seq (:diagnostics result)))
+        (is (= :rejected (:status (derive input))))
+        (is (= "C7-VERIFY" (:rule (derive grounded))))
+        (is (= ["C7-VERIFY"]
+               (mapv :rule (:diagnostics (with-later-caller grounded false [])))))))))
 
 (deftest later-call-evidence-retains-conflicts-and-requires-a-witness
   (let [input (support/map-keys-input :gravity.type/unknown)

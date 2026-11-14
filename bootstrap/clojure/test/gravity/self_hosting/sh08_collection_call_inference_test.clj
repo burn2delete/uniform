@@ -48,8 +48,10 @@
                                              :gravity.type/keyword :gravity.type/bool]}]
             (is (= inferred-map
                    (get-in functions ['key-count :parameters 0 :type])
+                   (get-in functions ['forwarded-key-count :parameters 0 :type])
                    (get-in functions ['same-keys? :parameters 0 :type])))
             (is (= :gravity.type/integer (get-in functions ['key-count :return])
+                   (get-in functions ['forwarded-key-count :return])
                    (get-in functions ['main :return])))
             (is (= :gravity.type/bool (get-in functions ['same-keys? :return])))
             (is (= :passed (:status (support/invoke-c7
@@ -57,7 +59,22 @@
 
 (deftest invalid-collection-callers-current-source-composition
   (let [request (current-request (fixture "rejected" "collection-caller-string-key" ".gravity"))
-        result (support/invoke-c7 'sh08-function-type-core-artifact [request])]
+        result (support/invoke-c7 'sh08-function-type-core-artifact [request])
+        diagnostic (first (filter #(= :map-keys-finite-keyword-map-type-required (:reason %))
+                                  (:diagnostics result)))
+        node (first (filter #(= (:core-node-id diagnostic) (:node-id %))
+                            (get-in request [:canonical-core-artifact :nodes])))]
     (is (= :rejected (:status result)))
-    (is (some #(= :map-keys-finite-keyword-map-type-required (:reason %))
-              (:diagnostics result)))))
+    (is (= "C7-TYPE-MISMATCH" (:rule diagnostic)))
+    (is (= :validated-complete-finite-keyword-key-map (:expected-type diagnostic)))
+    (is (= {:kind :gravity.type/map :shape :literal
+            :member-types [:gravity.type/string :gravity.type/integer]}
+           (:actual-type diagnostic)))
+    (is (= [:meta :jvm] ((juxt :profile :target) diagnostic)))
+    (is (some? node))
+    (is (some? (:source-span diagnostic)))
+    (is (= (get-in node [:source :semantic-span]) (:source-span diagnostic)))
+    (is (= (get-in node [:source :syntax-id]) (:syntax-id diagnostic)))
+    (is (= (first (:resolved-binding-ids node)) (:binding-id diagnostic)))
+    (is (= (get-in node [:source :origin-chain]) (:origin-chain diagnostic)))
+    (is (= (get-in node [:source :generated-origin]) (:generated-origin diagnostic)))))

@@ -37,15 +37,15 @@ tests and the focused test catalog/CI entries. It changes no language contract.
 
 ## Completion criteria
 
-- Reproduce the caller-evidence failure against the unchanged base.
-- Pass the focused positive and negative kernels on the candidate.
-- Pass the accepted current Reader/C5/SH07/C7 source composition and independent
+- [x] Reproduce the caller-evidence failure against the unchanged base.
+- [x] Pass the focused positive and negative kernels on the candidate.
+- [ ] Pass the accepted current Reader/C5/SH07/C7 source composition and independent
   type-result verifier; reject the incompatible caller fixture.
-- Check adjacent inference cases and address any concrete defect in a separate
+- [x] Check adjacent inference cases and address any concrete defect in a separate
   commit with a failing regression first.
-- Pass the language-boundary gate, affected catalog tests, changed-file lint
+- [ ] Pass the language-boundary gate, affected catalog tests, changed-file lint
   and `git diff --check`.
-- Keep this draft's current source, verification results and next action saved
+- [x] Keep this draft's current source, verification results and next action saved
   in GitHub after each useful increment.
 
 ## Resume commands
@@ -60,18 +60,53 @@ clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 git diff --check
 ```
 
-## Verified checkpoint and next action
+## Diagnostic correction
+
+The second implementation increment distinguishes an ordinary invalid `keys`
+operand (`C7-TYPE-MISMATCH`) from missing operand type evidence
+(`C7-ANNOTATION`). Both the node and call-constraint routes use the same narrow
+classification. Concrete operand types and the required finite Keyword-key Map
+domain survive into the structured diagnostic, with actionable remediation.
+Existing source/evidence checks and inference deferral decisions retain their
+rejection behavior and ordering. This change classifies actionable operand
+errors on otherwise valid applications; it does not establish a new precedence
+between simultaneous source and operand errors. Mixed-invalid inputs remain
+rejected, and grounding their operand exposes the original source-verification
+failure. Malformed structured type descriptions also retain the existing
+node/call diagnostic distinction.
+
+The accepted source fixture now forwards its Map through an intermediate
+`forwarded-key-count` helper before `key-count` uses it. The rejected fixture
+checks the actual String-key Map type and source/provenance fields in the final
+diagnostic.
+
+## Verification checkpoints and next action
 
 The published source tree passes a fresh kernel run: 7 tests, 68 assertions,
 zero failures and zero errors. Independent read-only review found no blocking
 correctness issue in the preserved source delta.
 
-Next: distinguish ordinary `keys` operand type errors and missing inference
-evidence from compiler artifact verification failures, and exercise caller
-evidence flowing through an intermediate helper. The current positive and
-negative composition checks, baseline reproduction and remaining gates are
-still in progress. Keep each implementation and verification checkpoint on
-the same draft PR.
+An isolated unchanged-base reproduction establishes the original behavior:
+the same caller yields one constraint and a concrete Map parameter when
+visited first, but zero constraints and no parameter type after the unresolved
+`keys` call. The ordering and conflicting-caller tests produced five expected
+assertion failures. The whole baseline test invocation also produced errors
+from direct tests of the newly introduced helper, which does not exist on the
+base; those errors are not evidence for the inference bug.
+
+The diagnostic regression first failed with 15 expected assertions and zero
+errors against the first checkpoint. After the correction:
+
+- Focused kernels: 8 tests, 135 assertions, zero failures/errors.
+- CI command/catalog harness: 77 tests, 1,201 assertions, zero failures/errors.
+- Project test scope runner: 5 tests, 10 assertions, zero failures/errors.
+- `git diff --check`: passed.
+
+Next: finish the fresh complete source composition (both accepted extensions
+and the rejected String-key caller), language-boundary gate, changed-file lint
+and final independent review. These checks are in progress at this checkpoint;
+their results must be recorded before claiming this slice verified. Keep the
+implementation and verification checkpoints on the same draft PR.
 
 This is development evidence. No integration, release, native backend,
 self-hosting or seed-retirement claim is made. The temporary host remains
