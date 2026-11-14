@@ -26,3 +26,33 @@
         (p15-s23-c11-mir-validate-final-artifact!
          artifact checked-core context version)
         artifact)))))
+
+(def ^:private __gravity_bootstrap_lexical_119416_construct-current-scalar-mir
+  (let [opaque-c11-construction-token (nth __gravity_bootstrap_lexical_values_119416 0)]
+    (fn [checked-core context token]
+      (let [path (:source-path context)]
+        (when-not (identical? opaque-c11-construction-token token)
+          (p15-s23-c11-mir-fail! "C11-VERIFY" path {}
+            {:missing-fact :opaque-c11-constructor-entry}))
+        (let [selected (p15-s23-application-c11-family! path checked-core)
+              binding (p15-s23-application-c11-binding! path selected)
+              plan (:plan binding)
+              mir (p15-s23-application-c11-invoke!
+                   path plan (:builder-function selected) [checked-core])
+              report (p15-s23-application-c11-invoke!
+                      path plan (:verifier-function selected) [checked-core mir])]
+          (p15-s23-c11-mir-require!
+           (= :passed (:status report)) "C11-VERIFY" path checked-core
+           :application-actual-c11-verifier-passed)
+          ;; Validate the actual report only after the real verifier passed.
+          ;; This success-schema function never substitutes for verification.
+          (let [expected (p15-s23-application-c11-invoke!
+                          path plan 'sh12-branch-join-passed [checked-core mir])
+                expected (if (:flat? selected)
+                           (p15-s23-application-c11-invoke!
+                            path plan 'sh12-flat-bool-sequence-report [checked-core expected])
+                           expected)]
+            (p15-s23-c11-mir-require-strict-structure!
+             path expected report :application-actual-c11-verifier-report))
+          (p15-s23-application-recheck-c11! path (:metadata binding))
+          {:mir-module mir :verification report :source-binding (:metadata binding)})))))

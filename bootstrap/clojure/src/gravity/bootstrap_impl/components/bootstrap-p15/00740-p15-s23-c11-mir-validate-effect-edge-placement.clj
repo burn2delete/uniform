@@ -310,3 +310,100 @@
      "C11-MODULE" "<c11-core-policy>" {} :current-core-policy-binding-required)
     {:source-policy-binding-id (:source-policy-binding-id policy)
      :source-policy-hash (p15-s23-c11-mir-core-policy-hash policy version)}))
+
+;; Source-only application transport. These helpers select existing owners and
+;; check carrier/identity joins; language semantics remain in Uniform C6-C11.
+(declare sh03-reader-strict-source-text!)
+
+(defn- p15-s23-application-source-snapshot! [source-path]
+  (let [snapshot (c2-pass-cache/source-snapshot! source-path)]
+    {:path (:canonical-path snapshot)
+     :content-hash (:bytes-hash snapshot)
+     :byte-count (:byte-count snapshot)
+     :text (sh03-reader-strict-source-text!
+            source-path source-path (:bytes snapshot))}))
+
+(defn- p15-s23-application-request! [source-path policy]
+  (let [path (if (string? source-path) source-path "<compiler-application>")]
+    (p15-s23-c11-mir-require!
+     (and (string? source-path)
+          (p15-s23-c6c10-valid-unicode-string? source-path)
+          (qst-or-gravity-source? source-path))
+     "C11-MODULE" path {} :application-actual-source-path)
+    (p15-s23-c11-mir-require-trusted-carrier!
+     path :application-explicit-source-policy policy :reject)
+    (p15-s23-c11-mir-require!
+     (and (map? policy)
+          (= #{:profile :target :effects :capabilities :safety} (set (keys policy)))
+          (= :hosted (:profile policy)) (= :jvm (:target policy))
+          (= :safe (:safety policy)) (= #{} (:capabilities policy))
+          (contains? #{#{} #{:error/raise}} (:effects policy)))
+     "C11-MODULE" path {} :application-explicit-hosted-safe-jvm-policy))
+  nil)
+
+(defn- p15-s23-application-c11-family! [source-path checked-core]
+  (p15-s23-c11-mir-require-trusted-carrier!
+   source-path :application-fresh-checked-core checked-core :reject)
+  (let [root (peek (:core-nodes checked-core))
+        family (get-in checked-core [:scope :family])
+        bool? (and (= :gravity/bool (get-in root [:type :return]))
+                   (every? #{:gravity/bool} (get-in root [:type :params])))
+        flat? (and bool? (bool-branch-join/flat-sequence-source-family? checked-core))]
+    (p15-s23-c11-mir-require!
+     (or (= :checked-i64-add-v1 family) bool?)
+     "C11-MODULE" source-path checked-core :application-supported-scalar-family)
+    {:family (if flat? :closed-flat-bool-literal-sequence
+                 (if bool? :boolean-scalar family))
+     :builder-function (if flat? 'sh12-build-flat-bool-sequence-mir 'sh12-build-branch-join-mir)
+     :verifier-function (if flat? 'sh12-verify-flat-bool-sequence-mir 'sh12-verify-branch-join-mir)
+     :flat? flat?}))
+
+(defn- p15-s23-application-c11-binding! [source-path selected]
+  ;; Internal v2 here selects the existing current-source compilation transport;
+  ;; it does not admit this application under the public Bool-only v2 contract.
+  (let [binding (p15-s23-c11-mir-source-binding! source-path :jvm 2 :development-current)
+        plan (:plan binding)
+        functions (:functions plan)
+        required (:required-functions c11-source-contract/application-current-source-abi)
+        shapes (into {} (map (fn [[name _]] [name (select-keys (get functions name) [:arity :params])])) required)
+        snapshot (p15-s23-application-source-snapshot! (:source-path binding))]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path required shapes :application-current-c11-function-shapes)
+    (p15-s23-c11-mir-require!
+     (and (= (:source-content-hash binding) (:content-hash snapshot) (get-in plan [:source :sha256]))
+          (= (:source-byte-count binding) (:byte-count snapshot)))
+     "C11-VERIFY" source-path {} :application-current-c11-source-identity)
+    {:plan plan
+     :metadata
+     (merge (select-keys binding [:source-byte-count :source-content-hash
+                                 :plan-semantic-hash :functions-semantic-hash :source-mode])
+            (select-keys selected [:family :builder-function :verifier-function])
+            {:source-path (:path snapshot)
+             :builder-semantic-hash (p15-s23-c11-mir-digest (get functions (:builder-function selected)))
+             :verifier-semantic-hash (p15-s23-c11-mir-digest (get functions (:verifier-function selected)))
+             :function-shapes shapes})}))
+
+(defn- p15-s23-application-c11-result! [source-path boundary result]
+  (p15-s23-c11-mir-require-trusted-carrier! source-path boundary result :reject)
+  (when (= :rejected (:status result))
+    (let [diagnostic (first (:diagnostics result))]
+      (p15-s23-c11-mir-fail!
+       (or (:diagnostic-id diagnostic) "C11-VERIFY") source-path diagnostic
+       {:missing-fact (or (:missing-fact diagnostic) :application-current-c11-rejection)})))
+  result)
+
+(defn- p15-s23-application-c11-invoke! [source-path plan function arguments]
+  (p15-s23-application-c11-result!
+   source-path :application-current-c11-result
+   (p15-s23-stage2-runtime-execute-function
+    {:engine :gravity-compiler-application-c11 :compiler-artifact-plan? true}
+    plan function arguments)))
+
+(defn- p15-s23-application-recheck-c11! [source-path metadata]
+  (let [actual (p15-s23-application-source-snapshot! (:source-path metadata))]
+    (p15-s23-c11-mir-require-strict-structure!
+     source-path
+     {:path (:source-path metadata) :content-hash (:source-content-hash metadata)
+      :byte-count (:source-byte-count metadata)}
+     (dissoc actual :text) :application-stable-current-c11-source))
+  nil)

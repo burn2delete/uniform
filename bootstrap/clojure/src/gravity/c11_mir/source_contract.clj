@@ -115,3 +115,18 @@
    :builder-function (:builder-function flat-bool-source-contract)
    :verifier-function (:verifier-function flat-bool-source-contract)
    :required-functions (:required-functions flat-bool-source-contract)})
+
+(def application-current-source-abi
+  "Function shapes for source-only application composition, without pins.
+
+   This is not a new meaning for either historical public C11 interface.
+   The original opaque construction owner compiles the selected current bytes
+   and invokes these Uniform functions only after fresh Core construction."
+  {:source-relative-path (:source-relative-path v2-source-contract)
+   :required-functions
+   {'sh12-build-branch-join-mir {:arity 1 :params ['checked-core]}
+    'sh12-verify-branch-join-mir {:arity 2 :params ['checked-core 'mir]}
+    'sh12-branch-join-passed {:arity 2 :params ['checked-core 'mir]}
+    'sh12-build-flat-bool-sequence-mir {:arity 1 :params ['checked-core]}
+    'sh12-verify-flat-bool-sequence-mir {:arity 2 :params ['checked-core 'mir]}
+    'sh12-flat-bool-sequence-report {:arity 2 :params ['checked-core 'report]}}})

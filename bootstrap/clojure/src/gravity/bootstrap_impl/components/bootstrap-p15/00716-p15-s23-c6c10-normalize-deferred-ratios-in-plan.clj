@@ -168,8 +168,11 @@
      :co-canonical-source-path-and-text
      {:source-path source-path}))
   (when (some? source-policy-version)
-    (p15-s23-c6c10-source-program-contract source-policy-version)
-    (when-not (and (contains? #{2 3} source-policy-version)
+    ;; The source-only application selects current parents without claiming
+    ;; either historical public Boolean interface for its numeric Core.
+    (when-not (= :compiler-application source-policy-version)
+      (p15-s23-c6c10-source-program-contract source-policy-version))
+    (when-not (and (contains? #{2 3 :compiler-application} source-policy-version)
                    (string? reader-source-path)
                    (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
                       (.getCanonicalPath (java.io.File. reader-source-path))))
@@ -244,7 +247,7 @@
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
         parameter? (assoc :resolved-parameter resolved-parameter)
-        (contains? #{2 3} source-policy-version)
+        (contains? #{2 3 :compiler-application} source-policy-version)
         (assoc :source-policy-receipt
                (p15-s23-c6c10-current-reader-envelope-state!
                 source-path raw-front-end reader-source-path selected-reader-binding

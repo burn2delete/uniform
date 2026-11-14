@@ -177,15 +177,9 @@
        {:boundary boundary
         :contained-host-error (.getName (class error))}))))
 
-(defn p15-s23-c6c10-gravity-replay-verification!
-  [source-path source-binding envelope raw-result]
-  (let [report
-        (p15-s23-c6c10-invoke-pinned-source-function!
-         source-path source-binding p15-s23-c6c10-verifier-function
-         [envelope (:artifact-template raw-result)
-          (:digest-requests raw-result)]
-         :gravity-source-verifier)
-        expected-keys
+(defn- p15-s23-c6c10-validate-gravity-replay-report!
+  [source-path raw-result report]
+  (let [expected-keys
         #{:artifact-template :checks :diagnostics :digest-graph-root
           :digest-graph-roots :request-count :semantic-authority :status}]
     (p15-s23-c6c10-canonical-record source-path report)
@@ -220,6 +214,15 @@
       {:status (:status report)
        :request-count (:request-count report)}))
     report))
+
+(defn p15-s23-c6c10-gravity-replay-verification!
+  [source-path source-binding envelope raw-result]
+  (p15-s23-c6c10-validate-gravity-replay-report!
+   source-path raw-result
+   (p15-s23-c6c10-invoke-pinned-source-function!
+    source-path source-binding p15-s23-c6c10-verifier-function
+    [envelope (:artifact-template raw-result) (:digest-requests raw-result)]
+    :gravity-source-verifier)))
 
 (def p15-s23-c6c10-public-context-keys
   #{:kind :source-path :source-text :source-content-hash :requested-target})
