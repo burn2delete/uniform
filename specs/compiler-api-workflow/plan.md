@@ -393,3 +393,50 @@ new composition artifact to commits that actually contain them. Generated
 reports remain pending independent affected-composition review. Inspect the
 exact clean main-based candidate; governed integration requires independent
 review and coordinator action, separately from this source-only preparation.
+
+## Detailed trust-report coverage consistency
+
+Finding: `compiler.trust-report.detailed-coverage-consistency-v1`.
+Owner: existing `pass-evidence` task, which remains Open. This increment applies
+[C18 Trust Report](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#trust-report),
+[C18 diagnostics](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#diagnostics)
+and [C15 redaction/determinism](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#requirements)
+to the existing hosted manifest boundary.
+
+Coverage must come from detailed `:passes` records. Each record must be a map
+with a non-nil `:pass`, matching the existing registry presence rule without
+adding a new identity type restriction. Required identities come from the
+current suite's contracts; additional identified records are permitted. If
+`:covered-passes` is supplied, its identity set must equal the detailed set.
+Neither accepted reports nor their record order or evidence fields are rewritten.
+
+The validator and capability projection share `trust-report-failure` in
+`verification_validation.clj`. It returns payload-safe `C18-TRUST-REPORT` facts:
+`:malformed-record` with a record index when available, `:missing-pass` with
+missing identities in contract order, or `:summary-mismatch`. Malformed details
+precede missing coverage; missing coverage precedes summary disagreement.
+Existing risk/evidence checks still precede trust checks, and the constructor's
+existing earlier stage validators remain first. Diagnostics retain source and
+manifest profile/target context without copying malformed report payloads.
+The projection returns false for any report consistency failure. The existing
+artifact constructor validates before returning an artifact; no constructor or
+suite implementation change is required.
+
+Only the six user-declared paths are owned: the existing validator/projection,
+`bootstrap/clojure/test/gravity/compiler_pass_manifest/trust_report_test.clj`,
+and this feature's plan/tasks/evidence. Existing public arities, registry,
+risk/evidence minima, plugin boundaries and historical receipts stay intact.
+The new test namespace and helper describe behavior rather than planning IDs.
+No retained candidate implementation is imported. Controller composition and
+independent acceptance of shared paths remain separate from these local edits.
+
+Start needs only the declared suite/report interfaces. Local composition
+fixtures call the public validator, projection and actual artifact constructor
+with metadata overrides; no compiler pass or plugin callback is executed.
+Controller checks and independent acceptance are still required. Release,
+migration, self-hosting and seed retirement require their own evidence. This
+change validates declarations and authenticates no evidence. The existing
+D1/C1 ordering ambiguity is unaffected; no new semantic decision or missing
+implementation authority was identified within this scope. See the
+[attributed evidence](evidence.md#detailed-trust-report-coverage-consistency)
+for authored fixtures and separate unrun controller checks.
