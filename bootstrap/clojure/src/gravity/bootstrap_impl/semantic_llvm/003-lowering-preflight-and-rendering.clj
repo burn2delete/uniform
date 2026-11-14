@@ -1,5 +1,3 @@
-(def p15-s23-b3-llvm-max-bridge-operations 256)
-
 (defn p15-s23-b3-llvm-preflight!
   [artifact]
   (let [mir (:mir-module artifact)
@@ -34,15 +32,6 @@
        "B1-INPUT" (get-in artifact [:provenance :actual-paths :source])
        artifact {:missing-fact :verified-pure-c11-b1-input
                  :c11-mir-id (:mir-id artifact)}))
-    (when (> (count operations) p15-s23-b3-llvm-max-bridge-operations)
-      (p15-s23-b3-llvm-fail!
-       "B1-UNSUPPORTED"
-       (get-in artifact [:provenance :actual-paths :source])
-       artifact
-       {:missing-fact :bounded-c13-c14-b1-operation-count
-        :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
-        :observed-operation-count (count operations)
-        :c11-mir-id (:mir-id artifact)}))
     (when-let [operation
                (first (filter #(p15-s23-b3-llvm-operation-rejection
                                 operations %
