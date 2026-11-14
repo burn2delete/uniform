@@ -386,9 +386,14 @@
 (defn- p15-s23-application-c11-result! [source-path boundary result]
   (p15-s23-c11-mir-require-trusted-carrier! source-path boundary result :reject)
   (when (= :rejected (:status result))
-    (let [diagnostic (first (:diagnostics result))]
+    (let [diagnostic (first (:diagnostics result))
+          subject (assoc diagnostic
+                         :source-span (assoc (:source-span diagnostic)
+                                             :source source-path :file source-path)
+                         :function-id (:function diagnostic)
+                         :block-id (:block diagnostic))]
       (p15-s23-c11-mir-fail!
-       (or (:diagnostic-id diagnostic) "C11-VERIFY") source-path diagnostic
+       (or (:diagnostic-id diagnostic) "C11-VERIFY") source-path subject
        {:missing-fact (or (:missing-fact diagnostic) :application-current-c11-rejection)})))
   result)
 

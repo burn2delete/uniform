@@ -59,12 +59,21 @@
       (get-in data [:primary :span :file])
       (:source-path data)))
 
-(defn- assert-source-result [result path text module]
+(defn- record-rejection [label data]
+  (println "current-source-to-verified-mir rejection"
+           (pr-str {:case label :id (:id data) :missing-fact (:missing-fact data)
+                    :source (diagnostic-source data)})))
+
+(defn- assert-source-result [result path text module policy & [c11-functions]]
   (let [bytes (.getBytes ^String text StandardCharsets/UTF_8)
         expected-hash (sha256 bytes)
         core (:checked-core result)
         mir (:mir-module result)
-        report (:mir-verification result)]
+        report (:mir-verification result)
+        receipt (:source-policy-receipt result)
+        parameter? (seq (get-in (peek (:core-nodes core)) [:type :params]))
+        [mir-builder mir-verifier]
+        (or c11-functions '[sh12-build-branch-join-mir sh12-verify-branch-join-mir])]
     (is (= :accepted (:status result)))
     (is (= {:path path :content-hash expected-hash :byte-count (alength bytes)}
            (:source result)))
@@ -87,12 +96,44 @@
     (is (= (:module-id mir) (:mir-module-id report)))
     (is (= [] (:diagnostics core) (:diagnostics mir) (:diagnostics report)))
     (is (= {:interface :gravity/compiler-application :version 1}
-           (get-in result [:source-policy-receipt :source-interface])))
+           (:source-interface receipt)))
+    (is (= policy (:policy receipt)))
+    (is (= :passed (:envelope-verification receipt)))
+    (is (= :development-unadmitted (:admission-status receipt)))
+    (is (= :selected-current-source-host-seed (:verification-scope receipt)))
+    (is (false? (:self-hosted? receipt)))
+    (is (= #{:reader :syntax :expansion :resolution :expression :checked-core}
+           (set (keys (:owner-sources receipt)))))
+    (doseq [[owner binding] (:owner-sources receipt)]
+      (let [owner-bytes (Files/readAllBytes (.toPath (io/file (:source-path binding))))]
+        (is (= (sha256 owner-bytes) (:source-content-hash binding)) (str owner))
+        (is (= (alength owner-bytes) (:source-byte-count binding)) (str owner))))
+    (is (= (get-in receipt [:owner-sources :reader :source-content-hash])
+           (get-in receipt [:reader-plan-binding :source-content-hash])
+           (get-in receipt [:reader-source-revision :source-content-hash])))
+    (is (= (get-in receipt [:owner-sources :syntax :source-content-hash])
+           (get-in receipt [:syntax-owner :binding :source-content-hash])
+           (get-in receipt [:syntax-owner :source-revision :source-content-hash])))
+    (is (= (get-in receipt [:owner-sources :expression :source-content-hash])
+           (get-in receipt [:expression-binding :source-content-hash])))
+    (is (content-id? (get-in receipt [:syntax-owner :artifact-id])))
+    (is (= :accepted (get-in receipt [:syntax-owner :envelope :status])))
+    (doseq [key [:semantic-envelope-id :provenance-binding-id]]
+      (is (content-id? (get-in receipt [:syntax-owner :envelope key])) (str key)))
+    (if parameter?
+      (do
+        (doseq [key [:sh06-artifact-id :sh06-semantic-projection-id :projection-binding
+                     :root-syntax-id :function-syntax-id :function-scope-id]]
+          (is (content-id? (get-in receipt [:parameter-resolution key])) (str key)))
+        (is (false? (get-in receipt [:expression-binding :invoked?]))))
+      (do
+        (is (= {} (:parameter-resolution receipt)))
+        (is (true? (get-in receipt [:expression-binding :invoked?])))))
     (is (false? (:self-hosted? core)))
     (is (true? (:clojure-seed-boundary? core)))
     (doseq [[owner builder verifier]
             [[:c6-c10 'c6-c10-build-checked-core-template 'c6-c10-verify-checked-core-template]
-             [:c11 'sh12-build-branch-join-mir 'sh12-verify-branch-join-mir]]]
+             [:c11 mir-builder mir-verifier]]]
       (let [binding (get-in result [:compiler-bindings owner])
             owner-bytes (Files/readAllBytes (.toPath (io/file (:source-path binding))))]
         (is (= builder (:builder-function binding)))
@@ -105,10 +146,15 @@
     (println "current-source-to-verified-mir"
              (pr-str {:source expected-hash :path path :module module
                       :artifact (:artifact-id result) :checked-core (:artifact-id core)
-                      :mir-module (:module-id mir) :source-target (:source-target core)}))))
+                      :mir-module (:module-id mir) :source-target (:source-target core)
+                      :source-policy (:owner-metadata-content-id receipt)
+                      :syntax (get-in receipt [:syntax-owner :artifact-id])
+                      :resolution (get-in receipt [:parameter-resolution :sh06-artifact-id])
+                      :mir-report-scope (:scope report)}))))
 
 (deftest current-source-to-verified-mir
-  (doseq [[filename module parameters body names operand-order]
+  (let [compiler-identities (atom nil)]
+   (doseq [[filename module parameters body names operand-order]
           [["add.gravity" 'compiler.integration.add "left :- I64 right :- I64"
             "(+ left right)" '[left right] [0 1]]
            ["renamed-sum.qst" 'example.renamed.sum "augend :- I64 addend :- I64"
@@ -117,14 +163,30 @@
       (let [text (source-text module parameters body #{:error/raise})]
         (with-source-file filename text
           (fn [path]
-            (let [result (application/current-source-to-verified-mir path add-policy)
+            (let [result (if (= filename "add.gravity")
+                           (application/current-source-to-verified-mir path add-policy)
+                           (binding [*print-length* 1 *print-level* 1 *print-meta* true
+                                     *print-dup* true *print-readably* false
+                                     *print-namespace-maps* true]
+                             (application/current-source-to-verified-mir path add-policy)))
                   core (:checked-core result) mir (:mir-module result)
                   nodes (:core-nodes core) ids (mapv :node-id nodes)
                   add (nth nodes 4) root (peek nodes)
                   function (get-in mir [:functions 'main])
                   operations (get-in function [:blocks (:entry function) :instructions])
-                  guard (nth operations 2) token (:result guard)]
-              (assert-source-result result path text module)
+                  guard (nth operations 2) token (:result guard)
+                  identities (into {}
+                                   (map (fn [[owner value]]
+                                          [owner (select-keys value
+                                                   [:source-content-hash :plan-semantic-hash
+                                                    :functions-semantic-hash
+                                                    :builder-semantic-hash :verifier-semantic-hash])]))
+                                   (:compiler-bindings result))]
+              (assert-source-result result path text module add-policy)
+              (if-let [previous @compiler-identities]
+                (is (= previous identities)
+                    "Caller print bindings and source rename cannot change compiler identities")
+                (reset! compiler-identities identities))
               (is (= [:parameter :parameter :local :local :integer-add :function]
                      (mapv :source-operation nodes)))
               (is (= names (get-in root [:attributes :params])))
@@ -149,7 +211,7 @@
               (is (= [token (nth ids 2) (nth ids 3)] (:operands (nth operations 3))))
               (is (= 1 (count (:runtime-check-table mir))))
               (is (= (:op-id guard)
-                     (get-in mir [:data-flow-graph :definitions token :operation-id])))))))))
+                     (get-in mir [:data-flow-graph :definitions token :operation-id]))))))))))
   (let [text (source-text 'example.boolean.choice "enabled :- Bool"
                           "(if enabled true false)" #{})]
     (with-source-file "choice.gravity" text
@@ -157,13 +219,38 @@
         (let [result (application/current-source-to-verified-mir path bool-policy)
               core (:checked-core result) mir (:mir-module result)
               root (peek (:core-nodes core)) function (get-in mir [:functions 'main])]
-          (assert-source-result result path text 'example.boolean.choice)
+          (assert-source-result result path text 'example.boolean.choice bool-policy)
           (is (= [:gravity/bool] (get-in root [:type :params])))
           (is (= :gravity/bool (get-in root [:type :return]) (:returns function)))
           (is (= #{} (get-in root [:type :latent-effects]) (:latent-effects function)))
           (is (= '[enabled] (get-in root [:attributes :params])))
           (is (= 4 (count (:blocks function))))
           (is (empty? (:runtime-check-table mir))))))))
+
+(deftest current-source-flat-boolean-to-verified-mir
+  (let [module 'compiler.integration.boolean.sequence
+        text (source-text module "" "(do true false)" #{})]
+    (with-source-file "boolean-sequence.gravity" text
+      (fn [path]
+        (let [result (application/current-source-to-verified-mir path bool-policy)
+              core (:checked-core result) mir (:mir-module result)
+              root (peek (:core-nodes core)) function (get-in mir [:functions 'main])
+              operations (get-in function [:blocks (:entry function) :instructions])]
+          (assert-source-result result path text module bool-policy
+                                '[sh12-build-flat-bool-sequence-mir
+                                  sh12-verify-flat-bool-sequence-mir])
+          (is (= [:literal :literal :do :function] (mapv :source-operation (:core-nodes core))))
+          (is (= [] (get-in root [:type :params]) (:params function)))
+          (is (= :gravity/bool (get-in root [:type :return]) (:returns function)))
+          (is (= #{} (get-in root [:type :latent-effects]) (:latent-effects function)))
+          (is (= 1 (count (:blocks function))))
+          (is (= [:constant :constant :sequence :function-boundary] (mapv :opcode operations)))
+          (is (= [true false] (mapv #(get-in % [:constant-payload :value]) (take 2 operations))))
+          (is (every? #(= :proven-safe (:outcome %)) (vals (:safety-facts core))))
+          (is (empty? (:runtime-check-table mir)))
+          (is (= :closed-flat-bool-literal-sequence (get-in result [:mir-verification :scope])))
+          (is (some #{:same-block-definitions-uses-and-return-dominance}
+                    (get-in result [:mir-verification :checks]))))))))
 
 (deftest current-source-rejects-invalid-programs
   (doseq [[label text policy expected-rule]
@@ -178,6 +265,7 @@
       (with-source-file (str label ".gravity") text
         (fn [path]
           (let [data (failure #(application/current-source-to-verified-mir path policy))]
+            (record-rejection label data)
             (is (= expected-rule (:id data)) (pr-str data))
             (is (= path (diagnostic-source data)) (pr-str data))
             (when (= label "undeclared-raise")
@@ -186,15 +274,20 @@
 (deftest current-source-rejects-supplied-authority
   (with-source-file "explicit-policy.gravity" add-source
     (fn [path]
-      (doseq [policy (concat [nil {} (dissoc add-policy :effects)
-                             (assoc add-policy :target :js)]
-                            (for [key [:checked-core :mir-module :verifier-report :binding :token]]
-                              (assoc add-policy key {:status :accepted})))]
+      (doseq [[label policy]
+              (concat [["missing-policy" nil] ["empty-policy" {}]
+                       ["missing-policy-effects" (dissoc add-policy :effects)]
+                       ["unsupported-js-target" (assoc add-policy :target :js)]]
+                      (for [key [:checked-core :mir-module :verifier-report :binding :token]]
+                        [(str "supplied-" (name key))
+                         (assoc add-policy key {:status :accepted})]))]
         (let [data (failure #(application/current-source-to-verified-mir path policy))]
+          (record-rejection label data)
           (is (some? data) (pr-str policy))
           (is (string? (:id data)) (pr-str data))))
       (let [data (failure #(application/current-source-to-verified-mir
                             {:source-path path :checked-core {:status :accepted}} add-policy))]
+        (record-rejection "supplied-source-artifact" data)
         (is (some? data))
         (is (string? (:id data)))))))
 
@@ -229,8 +322,10 @@
                ["MIR report" 'sh12-verify-branch-join-mir
                 #(assoc % :checked-core-artifact-id (str "sha256:" (apply str (repeat 64 "0"))))]]]
         (testing label
-          (with-mutated-runtime-result function transform
-            #(application/current-source-to-verified-mir path add-policy)))))))
+          (let [data (with-mutated-runtime-result function transform
+                       #(application/current-source-to-verified-mir path add-policy))]
+            (record-rejection label data)
+            (is (= path (diagnostic-source data)) (pr-str data))))))))
 
 (deftest current-source-rejects-source-and-binding-substitution
   (with-source-file "substitution.gravity" add-source
@@ -255,9 +350,11 @@
                                                         envelope))
                                       envelope)))]
                     (failure #(application/current-source-to-verified-mir path add-policy)))]
+              (record-rejection (str "substitution-" (name kind)) data)
               (is @changed? "The genuine source envelope must be constructed first")
               (is (some? data) (str kind " substitution must be rejected"))
-              (is (string? (:id data)) (pr-str data)))))))))
+              (is (string? (:id data)) (pr-str data))
+              (is (= path (diagnostic-source data)) (pr-str data)))))))))
 
 (deftest current-source-keeps-the-increment-scope
   (doseq [[label text]
@@ -268,5 +365,6 @@
       (with-source-file (str label ".gravity") text
         (fn [path]
           (let [data (failure #(application/current-source-to-verified-mir path add-policy))]
+            (record-rejection label data)
             (is (some? data) (str label " is outside this increment"))
             (is (string? (:id data)) (pr-str data))))))))

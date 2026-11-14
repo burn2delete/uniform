@@ -100,6 +100,8 @@
       "Production source-only composition under the original C11 authority.
        No accepted artifact, report, binding, plan or token is a caller input."
       [source-path policy]
+      (binding [*print-length* nil *print-level* nil *print-meta* false
+                *print-dup* false *print-readably* true *print-namespace-maps* false]
       (p15-s23-application-request! source-path policy)
       (let [source (p15-s23-application-source-snapshot! source-path)
             path (:path source)
@@ -129,7 +131,7 @@
         (p15-s23-application-recheck-c11! path (:source-binding mir))
         (assoc result :artifact-id
                (p15-s23-c6c10-canonical-digest
-                path {:domain :gravity/compiler-application-v1 :artifact result}))))
+                path {:domain :gravity/compiler-application-v1 :artifact result})))))
 
     (defn p15-s23-stage2-c11-mir-artifact
       "Existing legacy arity remains v1. The explicit header selects only a built-in contract."

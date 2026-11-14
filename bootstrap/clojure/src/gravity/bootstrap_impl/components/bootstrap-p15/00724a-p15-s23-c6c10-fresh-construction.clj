@@ -187,7 +187,6 @@
         source-binding (p15-s23-c6c10-source-binding! source-path 2 :development-current)
         reader-path (get-in owner-sources [:reader :source-path])
         reader-binding (sh03-reader-current-binding! source-path reader-path)
-        expression (p15-s23-stage2-current-expression-development-binding! source-path)
         invocation {:reader-source-path reader-path
                     :authenticated-envelope-options {:source :development-current}
                     :syntax-source-selection
@@ -199,16 +198,20 @@
            (and (= (select-keys source-binding identity-keys)
                    (select-keys (:checked-core owner-sources) identity-keys))
                 (= (select-keys reader-binding identity-keys)
-                   (select-keys (:reader owner-sources) identity-keys))
-                (= (:source-content-hash expression)
-                   (get-in owner-sources [:expression :source-content-hash])))
+                   (select-keys (:reader owner-sources) identity-keys)))
             (p15-s23-c6c10-host-fail!
              "C6-VERIFY" source-path :current-application-selected-owner-bindings {}))
         products (fn []
-                   (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
-                     (p15-s23-c6c10-private-ingress-products
-                      source-path source-text reader-path :compiler-application
-                      (dissoc reader-binding :plan) invocation)))
+                   (let [ingress (p15-s23-c6c10-private-ingress-products
+                                  source-path source-text reader-path :compiler-application
+                                  (dissoc reader-binding :plan) invocation)
+                         expression (get-in ingress [:source-policy-receipt :expression-binding])]
+                     (when (and expression
+                                (not= (:source-content-hash expression)
+                                      (get-in owner-sources [:expression :source-content-hash])))
+                       (p15-s23-c6c10-host-fail!
+                        "C6-VERIFY" source-path :current-application-selected-expression-binding {}))
+                     ingress))
         ingress (products)
         observed-policy (select-keys (:authoritative-module ingress) policy-keys)
         _ (when-not (= (p15-s23-c6c10-canonical-identity source-path policy)
@@ -250,10 +253,9 @@
                            [:sh06-artifact-id :sh06-semantic-projection-id :projection-binding
                             :root-syntax-id :function-syntax-id :function-scope-id])
                          :expression-binding
-                         (assoc (p15-s23-c6c10-project-expression-owner-metadata
-                                 source-path (dissoc expression :plan))
-                                :invoked? (true? (get-in ingress
-                                                [:stage2-plan :compiler :expression-lowering-invoked?]))))]
+                         (or (get-in ingress [:source-policy-receipt :expression-binding])
+                             (assoc (:expression owner-sources)
+                                    :invoked? false :reason :parameter-seed-plan)))]
       (p15-s23-c6c10-require-trusted-carrier! source-path :compiler-application-source-policy receipt)
       (p15-s23-c6c10-recheck-application-owners! source-path owner-sources)
       {:artifact artifact :context context :source-policy-receipt receipt
