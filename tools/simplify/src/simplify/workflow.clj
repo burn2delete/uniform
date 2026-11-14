@@ -205,6 +205,9 @@
 (defn prepare-base! [ctx t]
   (assert-clean! ctx (:worktree t))
   (assert-identity! ctx t)
+  (when (and (:task-digest t) (not (:source-base t)))
+    ;; Preserve the selected authority before advancing the mutable merge base.
+    (task! ctx (:key t) :source-base (:base t)))
   (let [base (fresh-main! ctx)]
     (doseq [key (:dependencies t)
             :let [dependency (task ctx key)]]
@@ -266,6 +269,8 @@
             ;; stay immutable in history; only this explicit new phase is queued.
             (rt/update! ctx update-in [:tasks key]
               (fn [t] (-> t
+                          (cond-> (and (:task-digest t) (not (:source-base t)))
+                            (assoc :source-base (:base t)))
                           (update :fresh-source-validation-history (fnil conj []) {:original-task original :inspection inspection})
                           (merge (select-keys validation [:base :candidate :tree :worktree :branch]))
                           (assoc :fresh-source-validation inspection :status :repair :checks nil :review nil :feedback nil :ci nil
@@ -285,6 +290,8 @@
           (let [inspection (recovery/inspect-composition! ctx original evidence-file)]
             (rt/update! ctx update-in [:tasks key]
               (fn [t] (-> t
+                          (cond-> (and (:task-digest t) (not (:source-base t)))
+                            (assoc :source-base (:base t)))
                           (update :composition-recovery-history (fnil conj []) {:original-task original :inspection inspection})
                           (merge (select-keys (:validation inspection) [:base :candidate :tree :worktree :branch]))
                           (assoc :composition-recovery inspection :status :repair :checks nil :review nil :feedback nil :ci nil
