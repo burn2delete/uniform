@@ -171,7 +171,7 @@
   Historical references must continue through their separate legacy checks."
   [reference bridge {:keys [read-ref read-commit-tree read-current task-record sha256 require!]}]
   (let [{:keys [path marker id source-commit source-tree observed-status observed-checked?
-                source-record-sha256 criterion-source detailed-acceptance qualification]
+                source-record-sha256 criterion-source detailed-acceptance qualification bridge-marker]
          file-sha256 :sha256} reference]
     (require! (current-reference? reference) "Unknown current task reference view")
     (require! (and (string? path) (not (str/blank? path))
@@ -184,10 +184,15 @@
                    (digest? 64 file-sha256) (digest? 64 source-record-sha256)
                    (string? qualification) (not (str/blank? qualification))
                    (= :unassessed detailed-acceptance)
-                   (map? criterion-source) (digest? 64 (:sha256 criterion-source)))
+                   (map? criterion-source) (digest? 64 (:sha256 criterion-source))
+                   (or (nil? bridge-marker)
+                       (and bridge (string? bridge-marker) (not (str/blank? bridge-marker)))))
               "Current task reference lacks its explicit source and evidence qualification")
     (when bridge
-      (require! (= [path marker source-commit source-tree file-sha256]
+      ;; A file bridge preserves its historical primary region. A current
+      ;; reference may explicitly name another real region in those same
+      ;; pinned bytes; its task and criterion are independently bounded below.
+      (require! (= [path (or bridge-marker marker) source-commit source-tree file-sha256]
                    ((juxt :path :marker :current-ref :current-tree :current-sha256) bridge))
                 "Current task reference differs from its qualified current bridge"))
     (require! (ifn? read-commit-tree) "Current task reference lacks a commit-object reader")

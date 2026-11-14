@@ -1042,5 +1042,14 @@
       (is (= (remove-crypto edges) (remove-crypto (:typed-edges altered))))
       (is (nil? (get-in altered [:nodes selected-id]))))))
 
+(deftest current-reconciliation-projection-rejects-detached-or-forged-frame-metadata
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))]
+    (is (map? (dependencies/task-sh-view source slurp)))
+    (doseq [forged [(update source :implementation-readiness-source-version dissoc :reconciliation-source-binding)
+                    (update source :implementation-readiness-source-version dissoc :reconciliation-future-task-records)
+                    (assoc-in source [:implementation-readiness-source-version :reconciliation-source-binding :authority] :implementation)
+                    (update-in source [:implementation-readiness-source-version :reconciliation-future-task-records 0 :checked] not)]]
+      (is (thrown? Exception (dependencies/task-sh-view forged slurp))))))
+
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
