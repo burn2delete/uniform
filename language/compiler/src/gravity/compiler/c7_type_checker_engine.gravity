@@ -4355,10 +4355,16 @@
           (if (= :gravity.type/never (first child-types)) :gravity.type/never
             (sh08-ij-normal-type (get child-types 1) (get child-types 2))) :gravity.type/unknown)
         (if (contains? #{:alternatives :try} form) (if (= 0 (count child-types)) nominal (sh08-ft-loop-kernel-normal-join child-types))
-          (loop [remaining child-types]
-            (if (= 0 (count remaining)) nominal
+          ; A required child can become Never on a later inference pass. Defer
+          ; a normal result until its evaluated child types are established,
+          ; while retaining any independently established non-returning result.
+          (loop [remaining child-types result nominal]
+            (if (= 0 (count remaining)) result
               (if (= :gravity.type/never (first remaining)) :gravity.type/never
-                (recur (rest remaining)))))))) :gravity.type/unknown))
+                (recur (rest remaining)
+                  (if (= result :gravity.type/never) result
+                    (if (sh08-ft-unknown? (first remaining))
+                      :gravity.type/unknown result))))))))) :gravity.type/unknown))
 
 (defn sh08-ft-loop-kernel-failure [reason node expected actual]
   {:status :rejected
