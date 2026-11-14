@@ -45,6 +45,14 @@ use the explicit CLI route for focused execution.
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
 | public-release assessment | Never | Explicit dispatch of `public-release.yml` only | Existing P18 public subset proof with authentic public commands and pinned source checks. Read-only repository permissions; no publication. A failed proof remains a failed assessment. |
 
+### Ordinary CI artifact checksums
+
+Each ordinary CI checksum producer covers every regular artifact file beneath
+`target/ci/`, including nested `SHA256SUMS` files; only the root
+`./SHA256SUMS` manifest excludes itself. Historical artifacts retain the
+checksum scope used when they were produced. A ZIP archive has a separate byte
+identity, so its identity does not replace per-file checksum coverage.
+
 ### Pull-request stage selection
 
 The eight semantic matrix jobs remain present on every pull request: five
