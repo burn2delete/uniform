@@ -393,3 +393,33 @@ new composition artifact to commits that actually contain them. Generated
 reports remain pending independent affected-composition review. Inspect the
 exact clean main-based candidate; governed integration requires independent
 review and coordinator action, separately from this source-only preparation.
+
+## Explicit freshness in the proof-reuse compatibility carrier
+
+Finding `compiler.proof-reuse.explicit-fresh-status-v1` refines the existing
+[`pipeline`](tasks.md#implementation-tasks) stale-proof refusal requirement under
+[C16 proof reuse](../../docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md#proof-and-certificate-reuse)
+and [SAFE15 invalidation](../../docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md#invalidation).
+In the existing Clojure manifest validator, `:reuse :accepted` requires explicit
+`:status :fresh`. Missing, nil, stale and unknown status refuse with `C16-PROOF`,
+fixed reason `:accepted-proof-requires-fresh-status` and zero-based
+`:record-index`. Diagnostics never include the malformed status payload.
+The first offending record refuses in input order after existing cache-key and
+cache-entry checks. Other reuse dispositions retain their existing behavior.
+
+Change only that proof-reuse loop; preserve public arities, defaults, complete
+accepted records, provenance, diagnostic identity and surrounding validation.
+Use suite metadata overrides through the public validator and actual artifact
+constructor for the three accepted and five rejected fixtures recorded in
+[evidence](evidence.md#explicit-proof-reuse-freshness). Constructor refusals
+must return no artifact. Cache-entry producer validation and retained candidate
+implementations remain outside this increment; no open PR changes are adopted.
+
+Start requires only existing carrier interfaces. Composition requires actual
+proof/Build products and checker evidence; independent acceptance and release
+retain their separate dependencies. Declared `:fresh` is consistency metadata,
+not proof authentication, subject matching, invalidation analysis or checker
+execution. The D1 versus C1/C5/C6 pipeline-order ambiguity remains unresolved.
+Keep Pipeline Open. Controller-owned native checks and independent acceptance
+remain pending; this plan adds no quotas, execution grants or release,
+self-hosting or seed-retirement authority.
