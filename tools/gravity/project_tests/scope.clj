@@ -11,13 +11,15 @@
    ['gravity.reader.normal-dispatch-test
     'gravity.syntax.pipeline-test
     'gravity.resolution.pipeline-test
-    'gravity.c7-type-checker-test]
+    'gravity.c7-type-checker-test
+    'gravity.self-hosting.sh08-collection-call-inference-kernel-test]
 
    :compiler
    ['gravity.reader.composition-test
     'gravity.checked-core.pipeline-test
     'gravity.c8-effect-checker-test
-    'gravity.c11-mir-test]
+    'gravity.c11-mir-test
+    'gravity.self-hosting.sh08-collection-call-inference-test]
 
    :bootstrap
    ['gravity.bootstrap.rebuild.inputs-test

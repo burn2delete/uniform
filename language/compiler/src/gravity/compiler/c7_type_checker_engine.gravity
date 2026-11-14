@@ -23443,6 +23443,16 @@
         pair
         (sh08-ft-first-type-mismatch (rest pairs))))))
 
+(defn sh08-ft-unresolved-unary-argument? [call types]
+  (if (if (map? call) (map? types) false)
+    (let [arguments (get call :argument-node-ids)]
+      (if (sh08-sse-ids? arguments 1)
+        (let [type (get types (first arguments))]
+          (if (= nil type) true
+            (if (keyword? type) (= :gravity.type/unknown type) false)))
+        false))
+    false))
+
 (defn sh08-ft-call-constraints-with-context
   [calls edges nodes type-table binding-types function-types context]
   (loop [remaining calls remaining-edges edges next-bindings binding-types
@@ -23509,12 +23519,19 @@
                   (if (= :accepted (get checked :status))
                     (recur (rest remaining) (rest remaining-edges) next-bindings
                       constraints diagnostics)
-                    {:binding-types next-bindings :constraints constraints
-                     :diagnostics
-                     (conj diagnostics {:call call :rule "C7-VERIFY"
-                                        :reason (get checked :reason)
-                                        :expected :fresh-map-keys-application
-                                        :actual :mismatched-application})}))
+                    (let [issue {:call call :rule "C7-VERIFY"
+                                 :reason (get checked :reason)
+                                 :expected :fresh-map-keys-application
+                                 :actual :mismatched-application}]
+                      ; L5/C7: later callers may establish this parameter type.
+                      ; Retain the issue; the fixed point rechecks it from source.
+                      (if (if (= :map-keys-finite-keyword-map-type-required (get checked :reason))
+                            (if (sh08-mkeys-binding? operator-binding module)
+                              (sh08-ft-unresolved-unary-argument? call type-table) false) false)
+                        (recur (rest remaining) (rest remaining-edges) next-bindings
+                          constraints (conj diagnostics issue))
+                        {:binding-types next-bindings :constraints constraints
+                         :diagnostics (conj diagnostics issue)}))))
                 (let [imported (sh08-im-callee edge context)
                       callee (if (map? edge)
                                (get function-types (get edge :callee-function-syntax-id)) nil)
