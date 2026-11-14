@@ -21,6 +21,9 @@ The governing contracts are:
   and separate migration authority.
 
 Base: `9c89f5d90897ad2ffdb282419ce35c1f618a009a`, which integrates PR #1426.
+The implementation checkpoint is
+`9637e1a4b2aff7908f0ed7b6d74d4a45ea1026ff` in
+[PR #1427](https://github.com/burn2delete/uniform/pull/1427).
 
 ## Concrete failure
 
@@ -52,35 +55,56 @@ retain their existing policies. This increment does not claim to repair every
 possible provisional fact in those distinct paths. The existing monotone
 function-return and declared-return mismatch checks are unchanged.
 
-## Verification checkpoint
+## Reproduced failure and verification
 
 - The focused regression failed on the base: 4 tests, 44 assertions,
   17 failures and zero errors.
 - The same fresh kernel run passes on the candidate: 4 tests, 44 assertions,
   zero failures/errors.
-- The isolated current-source baseline probe is still running.
-- Paired `.gravity` and `.qst` accepted source composition is running through
-  the current Reader/C5/SH07/C7 verifier and C8 body-effect consumer/verifier.
-- Accepted-byte seed observations check the normal result and source-throw
-  payload. They are temporary single-source seed observations, not typed
-  lowering or a native/JVM ABI claim.
-- A rejected source fixture retains the concrete Keyword-versus-String declared
-  return mismatch and its source attribution.
-- Existing bottom/loop/throw, return-inference and nil-join regressions,
-  language-boundary, catalog/scope checks and changed-file lint remain pending
-  at this checkpoint.
+- The isolated baseline at the exact base completed the current Reader/C5/SH07
+  path and passed SH07 verification. C7 then rejected the valid example with
+  `C7-TYPE-MISMATCH` / `:function-result-type-mismatch`, expecting
+  `{:kind :gravity.type/nil-or :value-type :gravity.type/keyword}` and observing
+  `:gravity.type/keyword`. The diagnostic retained the actual `choose` source.
+- Existing bottom/loop/throw regressions passed: 4 tests, 58 assertions.
+- Existing nil-join and monotone-return regressions passed: 2 tests,
+  114 assertions.
+- Language-boundary passed: 6 tests, 11 assertions.
+- CI command/catalog harness passed: 77 tests, 1,201 assertions.
+- Project test scopes passed: 5 tests, 10 assertions.
+- Changed-file lint reported zero baseline warnings or blocking warnings/errors;
+  `git diff --check` passed.
+- Independent review found no blocking issue within the eager-expression scope.
+
+All passing test groups above report zero failures/errors. The reviewed and
+tested C7 source SHA-256 is
+`6e820c5a2de17d1b7bc8ef0bfc35233e63146139c84cce56a147e8911059b3a6`.
+
+The source suite checks paired `.gravity` and `.qst` accepted source through
+the current Reader/C5/SH07/C7 verifier and C8 body-effect consumer/verifier.
+It checks eager `do`, `let` and call arguments, a two-hop nonreturning helper,
+and an ordinary returning predecessor. The rejected source fixture checks the
+concrete Keyword-versus-String declared-return mismatch and its attribution.
+Accepted-byte seed observations check normal results and source-throw payloads;
+they are temporary single-source seed observations, not typed lowering or a
+native/JVM ABI claim.
+
+The PR description is the durable execution record for source composition,
+hosted CI and landing. Consult that record and the latest exact-head checks for
+their final results; the implementation note does not predict a running test's
+outcome or duplicate changing CI state.
 
 ## Completion criteria
 
-- [x] Reproduce the premature eager result with a failing semantic regression.
-- [x] Pass the focused regression without weakening return conflict checks.
-- [ ] Accept complete current source in both extensions and pass C7 verification.
-- [ ] Preserve source throw facts through C8 and its verifier.
-- [ ] Observe normal and throwing paths on the same accepted source bytes.
-- [ ] Reject the actual declared-return mismatch with stable source diagnostics.
-- [ ] Pass proportionate existing regressions, language-boundary, lint and CI.
-- [ ] Complete independent review and exact clean integration preflight.
-- [ ] Land the verified improvement on main, as authorized by the user.
+- Reproduce the premature eager result with a failing semantic regression.
+- Pass the focused regression without weakening return conflict checks.
+- Accept complete current source in both extensions and pass C7 verification.
+- Preserve source throw facts through C8 and its verifier.
+- Observe normal and throwing paths on the same accepted source bytes.
+- Reject the actual declared-return mismatch with stable source diagnostics.
+- Pass proportionate existing regressions, language-boundary, lint and CI.
+- Complete independent review and exact clean integration preflight.
+- Land the verified improvement on main, as authorized by the user.
 
 ## Reproduction and continuation
 
@@ -93,7 +117,8 @@ clojure -J-Xmx2g -M:dev-test --namespace gravity.project-tests.test-scope-runner
 git diff --check
 ```
 
-Next: record the running source and regression results, address any concrete
-failure, then inspect hosted CI and land after independent review and exact
-integration preflight. Save useful increments to the same draft PR. No release,
-self-hosting, seed-retirement or migration authority is claimed.
+On resumption, first inspect PR #1427 and current main. If it is already merged,
+do not replay it. Otherwise retain the exact tested source, use the PR's recorded
+results to avoid repeating completed checks, and address the earliest remaining
+failure before integration. Save useful increments to the same draft PR. No
+release, self-hosting, seed-retirement or migration authority is claimed.
