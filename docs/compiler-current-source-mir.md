@@ -135,11 +135,19 @@ Work is isolated on `codex/current-source-verified-mir`. Recorded checkpoints:
 | Initial production checkpoint | `e8a398d8c59a3179b6289c2a8d6b5ae37a3d1ad7` |
 | Production candidate for the evidence below | `ce7a37bbb54d9f66d5854e3829fb15ea02f7a9f1` |
 | Candidate plus isolated replay-test source selection | `5971348f638971376040912f0124dc0032522f4c` |
+| Recorded documentation checkpoint | `71b7397200cb9009852c3163ecfc2b0cbb8e164b` |
 
-The last checkpoint changes only the existing replay test's explicit current
-Reader selection (two inserted lines replacing one line). It does not change
-the production candidate or any historical owner pin. This document is an
-evidence checkpoint; pending results below are not reported as passes.
+The replay checkpoint changes only the existing test's explicit current Reader
+selection (two inserted lines replacing one line). The following checkpoint
+records documentation only. Neither changes the production candidate or any
+historical owner pin. This document is an evidence checkpoint; pending results
+below are not reported as passes.
+
+The last connected GitHub recheck found main still at
+`4023d7657c9bdca8329a7860c17f6d2f0b56148e`. The candidate's changed-file set has
+no intersection with the checked draft PRs #1419, #916, #911, #1369, #1372,
+#1197, #1207, #1420, and #1428. This is a file-ownership check, not an extension
+of any historical interface claim. Concurrent work remains intact.
 
 ### Source-backed baselines
 
@@ -186,21 +194,42 @@ clojure -J-Xmx2g -M:dev-test \
   --progress
 # 1 test, 20 assertions, 0 failures, 0 errors
 
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.compiler.application-test \
+  --exact current-source-rejects-tampered-handoffs \
+  --progress
+# 1 test, 16 assertions, 0 failures, 0 errors
+
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.compiler.application-test \
+  --exact current-source-rejects-source-and-binding-substitution \
+  --progress
+# 1 test, 12 assertions, 0 failures, 0 errors
+
 clojure -M:test \
   --namespace gravity.self-hosting.sh01-language-boundary-test
 # 6 tests, 11 assertions, 0 failures, 0 errors
 
 clojure -M tools/validate_gravity_docs.clj
 # validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders
+
+clojure -M tools/validate_full_language_roadmap.clj
+# exit 0; full-language roadmap structural claim validation passed
 ```
 
 The corresponding logs are `application-accepted-v2.log`,
 `application-flat-v2.log`, `application-authority.log`,
-`language-boundary-final.log`, and `docs-validation.log`. Documentation
-validation was recorded before this evidence expansion and needs its final
-rerun with the completed note. Logs are retained in the development evidence
-directory and summarized in the draft PR; temporary source paths below belong
-to these exact recorded runs.
+`application-tampered.log`, `application-substitution.log`,
+`language-boundary-final.log`, `docs-validation.log`, and
+`roadmap-validation.log`. Documentation validation was recorded before this
+evidence expansion and needs its final rerun with the completed note. The
+roadmap validator ran at `71b7397200cb9009852c3163ecfc2b0cbb8e164b`; its output
+explicitly identifies the coverage snapshot as dated 2026-08-08 and
+non-authoritative, with completion admission disabled. This pass establishes
+structural claim validation only, not new language coverage or completion.
+
+Logs are retained in the development evidence directory and summarized in the
+draft PR; temporary source paths below belong to these exact recorded runs.
 
 The main acceptance test creates fresh source files and calls the public API
 without importing SH12/SH13 test helpers. It checks the original I64 source,
@@ -217,6 +246,27 @@ map in place of a path. The first nine retain `C11-MODULE` and
 `C11-MODULE` and `:application-actual-source-path`. The 20 rejection assertions
 passed. Logged source attribution names the actual file for policy rejections
 and `<compiler-application>` for the non-path input.
+
+The tamper tests first execute the genuine owner, then alter one returned
+handoff value while calling the production API with its ordinary path and
+policy. The substitution tests similarly construct the genuine envelope
+before changing one source identity, compiler binding, or actual file. The
+following results are from completed selectors, with actual input-path
+attribution asserted for every row:
+
+| Rejected case | Diagnostic | Missing fact | Log |
+| --- | --- | --- | --- |
+| Altered Core type fact | `C6-VERIFY` | `:root-bound-gravity-artifact-template` | `application-tampered.log` |
+| Altered Core verifier report | `C6-VERIFY` | `:fresh-gravity-source-verifier-replay` | `application-tampered.log` |
+| Missing MIR guard-table evidence | `C11-SAFETY` | `:safety-outcome-or-runtime-check-fact` | `application-tampered.log` |
+| Altered MIR verifier's checked-Core identity | `C11-VERIFY` | `:application-actual-c11-verifier-report` | `application-tampered.log` |
+| Substituted source identity | `C6-ORIGIN` | `:source-content-front-end-plan-binding` | `application-substitution.log` |
+| Substituted compiler-builder binding | `C6-ORIGIN` | `:fresh-current-source-parent-and-binding-replay` | `application-substitution.log` |
+| Changed actual source bytes during construction | `C4-RETURN` | `nil` in the owned diagnostic | `application-substitution.log` |
+
+The source-byte case fails at an existing upstream owner during fresh parent
+construction. Its observed `C4-RETURN` is retained; it is not relabeled as an
+application identity error.
 
 ### Accepted artifact identities
 
@@ -237,6 +287,8 @@ checked-core: sha256:40fbe6722cba1f7038612de2f3be2a4f376234c8df02799813e0ec05c56
 application: sha256:d07b7567da432361f75aa742ba6a11f9ce97a60194ae5a0e8c11d83489e9d0d7
 mir-module: compiler.integration.add
 source-policy: sha256:b360e7acb16009fe46a3d03e17b3c49b3d89c01fa961c35ab5358311857ca8b5
+syntax: sha256:3dbbbf43716fd00c8d37636b5d87aba62b555edf451afce7a3f826748ebfdf3f
+resolution: sha256:b770b35b1fa6b09bb21fb9d5edfc474ac27b562b74351a94b5da1dd794703947
 source-target: :jvm
 ```
 
@@ -250,6 +302,8 @@ checked-core: sha256:cf310742e0ea8fb33df93dbb6618045cb1a0ddf5176e48220c44af9e32d
 application: sha256:2b335cb825df64fb82e955774b92e2273424c5a8cdd7522ffc853629272b4d7e
 mir-module: example.renamed.sum
 source-policy: sha256:da8428a0b5ca10128a4f32940be9332ccea322286e067638d17afbe28ac1548f
+syntax: sha256:ccb8222a2802abb0a68cce46c2e79893134a196ea137f49b638b25920340d64d
+resolution: sha256:4ff119b92dbbd1804764a7e719812c87b0a352e565c6534fddcec7ec4dc4faed
 source-target: :jvm
 ```
 
@@ -263,6 +317,8 @@ checked-core: sha256:f27e383b79f6660ab3341b4d61f506e86ab493909d0d37fd86ef663746a
 application: sha256:dff68b1756eb1e3bea55f7086abd97677780af10b9fbd5b6e34105761d779dd0
 mir-module: example.boolean.choice
 source-policy: sha256:383c585dfc120cf7e9bb37474ed900c12dd64724ae47de1ea9056c4cfb574fed
+syntax: sha256:1615a2d28dae7906568da1b839765b75245e708dd8c87cc10aac747612a90230
+resolution: sha256:b2dac4d27608b4f12811ba0c4ad13212313bf37794e5bb93710cb3ef740bc7fd
 source-target: :jvm
 ```
 
@@ -275,6 +331,8 @@ checked-core: sha256:41aec8fc59aa6e4ff4015e74ea9e3e9c8a332c3e968c1ffc4644fbc67f2
 application: sha256:efa73f280bad21fc8cf78ce9f124aec6011af3ecb77b6ffec65b58cfb3a94b83
 mir-module: compiler.integration.boolean.sequence
 source-policy: sha256:f0e2dec5f634ebbcd2037df1ac62f879c4091896a46b87396a648b58322944bd
+syntax: sha256:a5fa544026c4c8a32af1cf89e108710f4b9bdcacd611b919a253560845522350
+resolution: nil (no parameter-resolution artifact for this family)
 source-target: :jvm
 ```
 
@@ -290,14 +348,49 @@ sha256:a2a570f314f8d787a70c093574c64041acd019844dbea743096ac74c5f2415f7
 
 ### Existing replay prerequisite and remaining verification
 
-An additional existing regression,
-`gravity.self-hosting.sh12-branch-join-mir-test/sh12-current-c6-replay-distinguishes-projection-substitution-from-source`,
-failed on the unchanged base in an isolated baseline checkout. Its ingress
-used the historical default Reader binding while selecting current source.
+The initial affected-regression batch selected these three namespaces and
+eight exact tests, in the argument order below. Its `clojure` executable was
+`/workspace/scratch/bb81fa003696/resume-toolchain/runtime/bin/clojure`:
+
+```sh
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh12-checked-i64-add-producer-test \
+  --namespace gravity.self-hosting.sh13-mir-integer-add-bridge-test \
+  --namespace gravity.self-hosting.sh12-branch-join-mir-test \
+  --exact sh12-checked-i64-add-produces-original-bound-facts \
+  --exact sh12-checked-i64-add-rejects-undeclared-error-effect \
+  --exact sh12-checked-i64-add-replay-rejects-fact-and-check-substitution \
+  --exact sh12-checked-i64-add-rejects-original-body-and-mode-mismatches \
+  --exact sh13-checked-i64-add-original-producer-bridge \
+  --exact sh13-checked-i64-add-rejects-original-mir-and-upstream-tampering \
+  --exact sh12-current-reader-parent-products-feed-original-parameter-production \
+  --exact sh12-current-c6-replay-distinguishes-projection-substitution-from-source \
+  --progress
+# 8 tests, 219 assertions, 0 failures, 1 error
+```
+
+`source-mir-regressions.log` records seven completed passing selectors. The
+sole error was in the old definition of
+`sh12-current-c6-replay-distinguishes-projection-substitution-from-source`,
+whose ingress used the historical default Reader binding while selecting
+current source. The batch is recorded as an error, not an all-passing run.
+
+The same selector was reproduced in the isolated `uniform-source-mir-baseline`
+checkout at the unchanged base
+`4023d7657c9bdca8329a7860c17f6d2f0b56148e`:
+
+```sh
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh12-branch-join-mir-test \
+  --exact sh12-current-c6-replay-distinguishes-projection-substitution-from-source \
+  --progress
+# 1 test, 1 assertion, 0 failures, 1 error
+```
+
 `baseline-replay-current-selection.log` records `C2-HASH`, missing field
 `:exact-regular-pinned-sh03-reader-source`, expected Reader byte count
-`231576`, and actual byte count `246369`: 1 test, 1 assertion, 0 failures,
-1 error. This establishes that the failure predates the production adapter.
+`231576`, and actual byte count `246369`. This establishes that the error
+predates the production adapter.
 
 Commit `5971348f638971376040912f0124dc0032522f4c` selects the current Reader
 explicitly at that existing test's ingress call. This repairs the exact
@@ -305,15 +398,19 @@ current-source replay prerequisite without changing a historical pin,
 historical interface claim, the separate whole-runtime packet, or Uniform
 semantics. The repaired replay result is pending at this evidence checkpoint.
 
-Partial negative-test logs already record these owned rejections, each with
-the actual temporary input path. The full selectors are still running; these
-individual observations do not establish their final pass counts.
+Partial invalid-source and scope logs already record the following owned
+rejections, each with the actual temporary input path. The full selectors
+remain pending; these individual observations do not establish final pass
+counts. The two arithmetic scope observations are from an earlier partial
+run; `application-scope.log` is the separate final scope run.
 
 | Observed case | Diagnostic | Missing fact | Log |
 | --- | --- | --- | --- |
-| Altered Core type fact | `C6-VERIFY` | `:root-bound-gravity-artifact-template` | `application-tampered.log` |
-| Altered Core verifier report | `C6-VERIFY` | `:fresh-gravity-source-verifier-replay` | `application-tampered.log` |
-| Substituted source identity | `C6-ORIGIN` | `:source-content-front-end-plan-binding` | `application-substitution.log` |
+| Malformed source | `C2-DELIMITER` | `nil` in the owned diagnostic | `application-invalid.log` |
+| Wrong operand type | `C6-LOWERING-GAP` | `:bounded-two-i64-strict-order` | `application-invalid.log` |
+| Wrong addition arity | `C6-LOWERING-GAP` | `:bounded-two-i64-strict-order` | `application-invalid.log` |
+| Subtraction outside the application family | `C11-MODULE` | `:application-supported-scalar-family` | `application-rejections-v2.log` |
+| Multiplication outside the application family | `C11-MODULE` | `:application-supported-scalar-family` | `application-rejections-v2.log` |
 
 The following checks are implemented and running or queued; final results
 must be recorded before calling verification complete:
@@ -321,10 +418,8 @@ must be recorded before calling verification complete:
 | Test or gate | Required evidence still pending |
 | --- | --- |
 | `current-source-rejects-invalid-programs` | Malformed source (`C2-DELIMITER`), wrong operand type and arity (`C6-LOWERING-GAP`), and undeclared raise (`C8-UNDECLARED`), with original source attribution. |
-| `current-source-rejects-tampered-handoffs` | Altered Core type facts, altered Core verifier report, missing MIR guard evidence, and altered MIR report identity are rejected. |
-| `current-source-rejects-source-and-binding-substitution` | Substituted source binding, compiler binding, and source bytes are rejected. |
 | `current-source-keeps-the-increment-scope` | Subtraction, multiplication, and an extra function are rejected by this application scope. |
-| Existing source/MIR regressions | Original checked-I64 producer, Boolean branch/join, integer bridge, numeric endpoint/overflow, and repaired current-source replay results on the candidate. |
+| `sh12-current-c6-replay-distinguishes-projection-substitution-from-source` | Result after the isolated explicit current-Reader selection repair. The other seven affected selectors completed in the batch above. |
 | Final documentation validation | Completed evidence note remains ASCII and passes the documentation validator. |
 
 ## Next handoff
