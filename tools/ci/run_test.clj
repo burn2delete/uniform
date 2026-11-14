@@ -577,7 +577,7 @@
   ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
    "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
    "c-native-validation" "runtime-native-validation" "effects-native-validation"
-   "types-native-validation" "c7-set-equality-routing"])
+   "types-native-validation" "c7-collection-call-inference-kernels" "c7-set-equality-routing"])
 
 (def ^:private public-adapter-events (atom []))
 (def ^:private public-adapter-throw? (atom false))

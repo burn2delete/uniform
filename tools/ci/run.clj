@@ -613,6 +613,8 @@
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
    ["types-native-validation" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]
+   ["c7-collection-call-inference-kernels" 180
+    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-collection-call-inference-kernel-test")]
    ["c7-set-equality-routing" 180
     (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-set-equality-routing-test")]])
 

@@ -1,0 +1,21 @@
+(ns self-hosting.sh08.collection-caller-inference
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn key-count [value]
+  (count (keys value)))
+
+(defn forwarded-key-count [value]
+  (key-count value))
+
+(defn same-keys? [value]
+  (= (set (keys value)) #{:left :right}))
+
+(defn main []
+  (if (same-keys? {:left 1 :right false})
+    (forwarded-key-count {:left 2 :right true})
+    0))
