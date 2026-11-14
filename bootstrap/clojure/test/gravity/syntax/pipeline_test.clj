@@ -616,9 +616,10 @@
     (is (contains? c2 :registered-literal-projection))
     (is (= 10 (get-in c2 [:sh07-decimal-occurrence-projection :occurrence-count])))
     (is (true? (authentic? artifact)))
-    (is (= :complete (:status (proof artifact))))
-    (is (true? (:reader-products-authentic? (proof artifact))))
-    (is (true? (:syntax-verifier-current? (proof artifact))))
+    (let [fresh-proof (proof artifact)]
+      (is (= :complete (:status fresh-proof)))
+      (is (true? (:reader-products-authentic? fresh-proof)))
+      (is (true? (:syntax-verifier-current? fresh-proof))))
     (doseq [[label candidate] [[:occurrence-id occurrence-tampered]
                               [:projection-id projection-tampered]]]
       (testing (name label)
