@@ -577,7 +577,7 @@
   ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
    "tooling-native-validation" "ownership-native-validation" "wasm-native-validation"
    "c-native-validation" "runtime-native-validation" "effects-native-validation"
-   "types-native-validation"])
+   "types-native-validation" "c7-set-equality-routing"])
 
 (def ^:private public-adapter-events (atom []))
 (def ^:private public-adapter-throw? (atom false))
@@ -1915,6 +1915,20 @@
       (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
       (is (empty? (macro-selected-vars
                    (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
+
+(deftest contracts-include-the-complete-c7-set-equality-routing-namespace
+  (let [[label timeout argv] (last (ci/commands-for-selection "contracts" {:kind :full}))
+        namespace "gravity.self-hosting.sh08-set-equality-routing-test"
+        source-vars (binding [*read-eval* false]
+                      (source-deftest-names "bootstrap/clojure/test/gravity/self_hosting/sh08_set_equality_routing_test.clj"))]
+    (is (= "c7-set-equality-routing" label))
+    (is (= 180 timeout))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+    (is (seq source-vars))
+    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (macro-selected-vars
+                 (assoc argv (dec (count argv)) "gravity.types.pipeline-test") source-vars namespace)))))
 
 (deftest checked-core-cohort-includes-the-complete-native-mir-namespace
   (let [commands (ci/commands-for-selection "checked-core-runtime" {:kind :full})
