@@ -1,6 +1,6 @@
 ; W5 Wave3 stage-equivalence verifier.
 ;
-; This source is an executable, bounded, static-only verifier.  It compares
+; This source is an executable, static-only verifier.  It compares
 ; three declared stage records and their transition records, but it never runs
 ; a compiler, invokes a JVM/Clojure process, or infers native/LLVM evidence.
 ; The :jvm target below is only the stage2 seed harness target.  The candidate
@@ -110,9 +110,7 @@
 
 (defn w5-se-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 4096)
-      false)
+    (> (count value) 0)
     false))
 
 (defn w5-se-exact-keys? [value expected]
@@ -196,9 +194,7 @@
 
 (defn w5-se-source-spans-valid? [spans]
   (if (vector? spans)
-    (if (<= (count spans) 32)
-      (w5-se-source-spans-valid-from? spans 0)
-      false)
+    (w5-se-source-spans-valid-from? spans 0)
     false))
 
 (defn w5-se-target-valid? [target]
@@ -260,9 +256,10 @@
               (if (w5-sha256-id? (get stage :executable-id))
                 (if (w5-sha256-id? (get stage :artifact-id))
                   (if (w5-sha256-id? (get stage :output-artifact-id))
-                    (if (or (= nil (get stage :compiler-input-artifact-id))
-                            (w5-sha256-id?
-                             (get stage :compiler-input-artifact-id)))
+                    (if (if (= nil (get stage :compiler-input-artifact-id))
+                          true
+                          (w5-sha256-id?
+                           (get stage :compiler-input-artifact-id)))
                       (if (= :meta (get stage :profile))
                         (if (= w5-se-candidate-target (get stage :target))
                           (if (= :pending (get stage :execution-status))
@@ -480,9 +477,7 @@
 
 (defn w5-se-diagnostics-valid? [entries]
   (if (vector? entries)
-    (if (<= (count entries) 64)
-      (w5-se-diagnostics-valid-from? entries 0)
-      false)
+    (w5-se-diagnostics-valid-from? entries 0)
     false))
 
 (defn w5-se-span-without-path [span]
@@ -681,10 +676,8 @@
     (if (= ordinal (get operation :ordinal))
       (if (w5-se-member? w5-se-ir-opcodes (get operation :opcode))
         (if (vector? (get operation :operands))
-          (if (<= (count (get operation :operands)) 32)
-            (w5-se-ir-operands-valid-from?
-             (get operation :operands) ordinal 0)
-            false)
+          (w5-se-ir-operands-valid-from?
+           (get operation :operands) ordinal 0)
           false)
         false)
       false)
@@ -755,24 +748,22 @@
        value #{:normalized-operations :id-renaming :target-independent})
     (if (vector? (get value :normalized-operations))
       (if (> (count (get value :normalized-operations)) 0)
-        (if (<= (count (get value :normalized-operations)) 256)
-          (if (w5-se-ir-operations-valid-from?
-               (get value :normalized-operations) 0)
-            (if (vector? (get value :id-renaming))
-              (if (= (count (get value :id-renaming))
-                     (count (get value :normalized-operations)))
-                (if (w5-se-ir-renamings-valid-from?
-                     (get value :id-renaming)
-                     (count (get value :normalized-operations)) 0)
-                    (if (w5-se-unique-values?
-                         (w5-se-ir-originals (get value :id-renaming)))
-                      (if (w5-se-unique-values?
-                           (w5-se-ir-ordinals (get value :id-renaming)))
-                      (if (w5-se-ir-renaming-coverage?
-                           (get value :id-renaming) 0
-                           (count (get value :normalized-operations)))
-                        (= true (get value :target-independent))
-                        false)
+        (if (w5-se-ir-operations-valid-from?
+             (get value :normalized-operations) 0)
+          (if (vector? (get value :id-renaming))
+            (if (= (count (get value :id-renaming))
+                   (count (get value :normalized-operations)))
+              (if (w5-se-ir-renamings-valid-from?
+                   (get value :id-renaming)
+                   (count (get value :normalized-operations)) 0)
+                (if (w5-se-unique-values?
+                     (w5-se-ir-originals (get value :id-renaming)))
+                  (if (w5-se-unique-values?
+                       (w5-se-ir-ordinals (get value :id-renaming)))
+                    (if (w5-se-ir-renaming-coverage?
+                         (get value :id-renaming) 0
+                         (count (get value :normalized-operations)))
+                      (= true (get value :target-independent))
                       false)
                     false)
                   false)
@@ -841,13 +832,13 @@
                                (get product :left))
                             (w5-se-reviewed-value-valid?
                              (get product :right))
-                            false))))))))
+                            false)))))))
               false)
             false)
           false)
         false)
       false)
-    false)
+    false))
 
 (defn w5-se-products-valid-from? [products index]
   (if (= index (count products))
@@ -916,13 +907,14 @@
         right (get product :right)
         left-valid (w5-se-artifact-binds-stages? left request)
         right-valid (w5-se-artifact-binds-stages? right request)]
-    (if (and left-valid right-valid)
+    (if (if left-valid right-valid false)
       nil
       (if (= left right) :artifact :artifact-drift))))
 
 (defn w5-se-manifest-binding-reason [product request]
-  (if (and (w5-se-manifest-binds-stages? (get product :left) request)
-           (w5-se-manifest-binds-stages? (get product :right) request))
+  (if (if (w5-se-manifest-binds-stages? (get product :left) request)
+        (w5-se-manifest-binds-stages? (get product :right) request)
+        false)
     nil
     :manifest-drift))
 
@@ -981,9 +973,7 @@
 
 (defn w5-se-deltas-valid? [deltas]
   (if (vector? deltas)
-    (if (<= (count deltas) 16)
-      (w5-se-deltas-valid-from? deltas 0)
-      false)
+    (w5-se-deltas-valid-from? deltas 0)
     false))
 
 (defn w5-se-delta-binds-product? [delta product]
@@ -1167,19 +1157,19 @@
              :independent-verifier :performance-bound :provenance}))
 
 (defn w5-se-request-error-after-target [request]
-  (if (not (w5-se-stage-output-present? (get request :stage-a)))
+  (if (= false (w5-se-stage-output-present? (get request :stage-a)))
     :missing-stage-output
-    (if (not (w5-se-stage-output-present? (get request :stage-b)))
+    (if (= false (w5-se-stage-output-present? (get request :stage-b)))
       :missing-stage-output
-      (if (not (w5-se-stage-output-present? (get request :stage-c)))
+      (if (= false (w5-se-stage-output-present? (get request :stage-c)))
         :missing-stage-output
-        (if (not (w5-se-stage-valid? (get request :stage-a) :stage-a 0))
+        (if (= false (w5-se-stage-valid? (get request :stage-a) :stage-a 0))
           :lineage
-          (if (not (w5-se-stage-valid? (get request :stage-b) :stage-b 1))
+          (if (= false (w5-se-stage-valid? (get request :stage-b) :stage-b 1))
             :lineage
-            (if (not (w5-se-stage-valid? (get request :stage-c) :stage-c 2))
+            (if (= false (w5-se-stage-valid? (get request :stage-c) :stage-c 2))
               :lineage
-              (if (not (w5-se-transition-valid?
+              (if (= false (w5-se-transition-valid?
                         (get request :transition-a-b)
                         (get request :stage-a)
                         (get request :stage-b)
@@ -1187,7 +1177,7 @@
                         (get (get request :lock) :lock-id)
                         (get (get request :toolchain-a) :toolchain-id)))
                 :lineage
-                (if (not (w5-se-transition-valid?
+                (if (= false (w5-se-transition-valid?
                           (get request :transition-b-c)
                           (get request :stage-b)
                           (get request :stage-c)
@@ -1195,42 +1185,42 @@
                           (get (get request :lock) :lock-id)
                           (get (get request :toolchain-b) :toolchain-id)))
                   :lineage
-                  (if (not (w5-se-recipe-valid? (get request :recipe)))
+                  (if (= false (w5-se-recipe-valid? (get request :recipe)))
                     :recipe
-                    (if (not (w5-se-lock-valid? (get request :lock)))
+                    (if (= false (w5-se-lock-valid? (get request :lock)))
                       :lock
-                      (if (not (w5-se-environment-valid?
+                      (if (= false (w5-se-environment-valid?
                                 (get request :environment-a)))
                         :environment
-                        (if (not (w5-se-environment-valid?
+                        (if (= false (w5-se-environment-valid?
                                   (get request :environment-b)))
                           :environment
-                          (if (not (w5-se-environment-valid?
+                          (if (= false (w5-se-environment-valid?
                                     (get request :environment-c)))
                             :environment
-                            (if (not (w5-se-toolchain-valid?
+                            (if (= false (w5-se-toolchain-valid?
                                       (get request :toolchain-a)))
                               :toolchain
-                              (if (not (w5-se-toolchain-valid?
+                              (if (= false (w5-se-toolchain-valid?
                                         (get request :toolchain-b)))
                                 :toolchain
-                                (if (not (w5-se-toolchain-valid?
+                                (if (= false (w5-se-toolchain-valid?
                                           (get request :toolchain-c)))
                                   :toolchain
-                                  (if (not (w5-se-environments-coherent?
+                                  (if (= false (w5-se-environments-coherent?
                                             request))
                                     :environment
-                                    (if (not (w5-se-lock-coherent? request))
+                                    (if (= false (w5-se-lock-coherent? request))
                                       :lock
-                                      (if (not (w5-se-toolchains-coherent?
+                                      (if (= false (w5-se-toolchains-coherent?
                                                 request))
                                         :toolchain
-                                        (if (not (= w5-se-required-modes
+                                        (if (= false (= w5-se-required-modes
                                                     (get request :modes)))
                                           :request-shape
-                                          (if (not (w5-se-products-valid?
+                                          (if (= false (w5-se-products-valid?
                                                     (get request :products)))
-                                            (if (not
+                                            (if (= false
                                                  (w5-se-diagnostic-product-shape-valid?
                                                   (get request :products)))
                                               :diagnostic-evidence
@@ -1239,46 +1229,46 @@
                                                   (w5-se-products-stage-binding-reason
                                                    (get request :products)
                                                    request)]
-                                              (if (not (= nil stage-binding-reason))
+                                              (if (= false (= nil stage-binding-reason))
                                                 stage-binding-reason
-                                                (if (not
+                                                (if (= false
                                                      (w5-se-products-bind-transcripts?
                                                       (get request :products)
                                                       (get request :transcripts)))
-                                                  (if (not
+                                                  (if (= false
                                                        (w5-se-transcripts-valid?
                                                         (get request :transcripts)))
                                                     :diagnostic-evidence
                                                     :conformance-drift)
-                                                  (if (not
+                                                  (if (= false
                                                        (w5-se-performance-bound-valid?
                                                         (get request :performance-bound)))
                                                     :performance-bound
-                                                    (if (not
+                                                    (if (= false
                                                          (w5-se-deltas-valid?
                                                           (get request
                                                               :accepted-deltas)))
                                                     :unreviewed-delta
-                                                    (if (not
+                                                    (if (= false
                                                          (w5-se-deltas-bind-products?
                                                           (get request
                                                               :accepted-deltas)
                                                           (get request :products)))
                                                       :unreviewed-delta
-                                                      (if (not
+                                                      (if (= false
                                                            (w5-se-transcripts-valid?
                                                             (get request :transcripts)))
                                                         :diagnostic-evidence
-                                                        (if (not
+                                                        (if (= false
                                                              (w5-se-execution-valid?
                                                               (get request :execution)))
                                                           :runtime-output
-                                                          (if (not
+                                                          (if (= false
                                                                (w5-se-verifier-valid?
                                                                 (get request
                                                                     :independent-verifier)))
                                                             :producer-authority
-                                                            (if (not
+                                                            (if (= false
                                                                  (w5-se-provenance-valid?
                                                                   (get request
                                                                       :provenance)))
@@ -1391,27 +1381,21 @@
       (w5-se-first-failure-from? outcomes (+ index 1)))))
 
 (defn w5-se-diagnostic-rule [reason]
-  (if (or (= reason :request-shape) (= reason :target)
-          (= reason :lineage) (= reason :environment)
-          (= reason :lock) (= reason :toolchain)
-          (= reason :producer-authority))
+  (if (w5-se-member? [:request-shape :target :lineage :environment
+                     :lock :toolchain :producer-authority] reason)
     "BOOT7001"
-    (if (or (= reason :artifact) (= reason :artifact-drift)
-            (= reason :manifest-drift)
-            (= reason :ir-normalization-drift)
-            (= reason :artifact-shape))
+    (if (w5-se-member? [:artifact :artifact-drift :manifest-drift
+                       :ir-normalization-drift :artifact-shape] reason)
       "BOOT7002"
-        (if (or (= reason :diagnostic-drift)
-              (= reason :diagnostic-span-drift)
-              (= reason :diagnostic-shape)
-              (= reason :diagnostic-evidence))
+      (if (w5-se-member? [:diagnostic-drift :diagnostic-span-drift
+                         :diagnostic-shape :diagnostic-evidence] reason)
         "BOOT7003"
         (if (= reason :unreviewed-delta)
           "BOOT7004"
           (if (= reason :missing-stage-output)
             "BOOT7005"
-            (if (or (= reason :conformance-drift)
-                    (= reason :runtime-output-drift))
+            (if (w5-se-member? [:conformance-drift :runtime-output-drift]
+                               reason)
               "BOOT7006"
               (if (= reason :performance-bound)
                 "BOOT7007"
@@ -1512,8 +1496,12 @@
 (defn w5-se-identity-product [product]
   {:product-id (get product :product-id)
    :mode (get product :mode)
-   :left (get product :left)
-   :right (get product :right)
+   :left (if (= :diagnostic (get product :mode))
+           (w5-se-diagnostics-without-path (get product :left))
+           (get product :left))
+   :right (if (= :diagnostic (get product :mode))
+            (w5-se-diagnostics-without-path (get product :right))
+            (get product :right))
    :canonical-form (get product :canonical-form)
    :source-spans (w5-se-identity-spans (get product :source-spans))
    :evidence-status (get product :evidence-status)})
@@ -1531,6 +1519,24 @@
 (defn w5-se-identity-transcript [transcript]
   {:transcript-id (get transcript :transcript-id)
    :status (get transcript :status)})
+
+(defn w5-se-identity-toolchain [toolchain]
+  {:toolchain-id (get toolchain :toolchain-id)
+   :family (get toolchain :family)
+   :version (get toolchain :version)
+   :target (get toolchain :target)
+   :compiler-id (get toolchain :compiler-id)
+   :source-id (get toolchain :source-id)
+   :status (get toolchain :status)})
+
+(defn w5-se-identity-verifier [verifier]
+  {:verifier-id (get verifier :verifier-id)
+   :source-id (get verifier :source-id)
+   :executable-id (get verifier :executable-id)
+   :artifact-id (get verifier :artifact-id)
+   :independent? (get verifier :independent?)
+   :authority (get verifier :authority)
+   :status (get verifier :status)})
 
 (defn w5-se-identity-input [request]
   {:comparison-id (get request :comparison-id)
@@ -1551,9 +1557,9 @@
                    (get request :environment-b))
    :environment-c (w5-se-identity-environment
                    (get request :environment-c))
-   :toolchain-a (dissoc (get request :toolchain-a) :actual-path)
-   :toolchain-b (dissoc (get request :toolchain-b) :actual-path)
-   :toolchain-c (dissoc (get request :toolchain-c) :actual-path)
+   :toolchain-a (w5-se-identity-toolchain (get request :toolchain-a))
+   :toolchain-b (w5-se-identity-toolchain (get request :toolchain-b))
+   :toolchain-c (w5-se-identity-toolchain (get request :toolchain-c))
    :modes (get request :modes)
    :products (w5-se-identity-products (get request :products))
    :accepted-deltas (get request :accepted-deltas)
@@ -1565,7 +1571,7 @@
                  (w5-se-identity-transcript
                   (get (get request :transcripts) :rejected))}
    :independent-verifier
-   (dissoc (get request :independent-verifier) :actual-source-path)
+   (w5-se-identity-verifier (get request :independent-verifier))
    :execution (get request :execution)})
 
 (defn w5-se-pending-gaps []
@@ -1667,8 +1673,8 @@
           (let [failure (w5-se-first-failure-from? outcomes 0)]
             (w5-se-rejected
              request
-             (get (get failure :outcome) :reason))))
-      (w5-se-rejected request request-error)))))
+             (get (get failure :outcome) :reason)))))
+      (w5-se-rejected request request-error))))
 
 (defn w5-stage-equivalence-execute [request]
   (w5-stage-equivalence-compare request))
