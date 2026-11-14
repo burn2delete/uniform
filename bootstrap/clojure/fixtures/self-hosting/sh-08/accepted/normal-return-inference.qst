@@ -1,0 +1,37 @@
+(ns self-hosting.sh08.normal-return-inference
+  (:profile :meta)
+  (:target :jvm)
+  (:effects #{:error/throw})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [main]))
+
+(defn stop []
+  (throw "stop"))
+
+(defn relay-stop []
+  (stop))
+
+(defn discard [value :- String]
+  nil)
+
+(defn choose-do [flag :- Bool]
+  (if flag (do (relay-stop) nil) :ok))
+
+(defn choose-let [flag :- Bool]
+  (if flag (let [ignored (stop)] nil) :ok))
+
+(defn choose-argument [flag :- Bool]
+  (if flag (discard (stop)) :ok))
+
+(defn normal []
+  "ready")
+
+(defn normal-sequence []
+  (do (normal) :ready))
+
+(defn main []
+  (do (normal-sequence)
+      (choose-do false)
+      (choose-let false)
+      (choose-argument false)))
