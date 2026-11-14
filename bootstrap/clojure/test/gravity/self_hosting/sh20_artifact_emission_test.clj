@@ -127,10 +127,9 @@
     (is (= :gravity/canonical-edn-v1
            (:canonical-encoding policy)))
     (is (= #{:object :executable} (:artifact-kinds policy)))
-    (is (= 128 (:maximum-source-map-entries policy)))
-    (is (= 16 (:maximum-origin-entries policy)))
-    (is (= 128 (:maximum-dependencies policy)))
-    (is (= 256 (:maximum-dependency-edges policy)))
+    (doseq [field [:maximum-source-map-entries :maximum-origin-entries
+                   :maximum-dependencies :maximum-dependency-edges]]
+      (is (not (contains? policy field)) field))
     (is (contains? (:diagnostics policy) "B13-GRAPH"))
     (is (contains? (:diagnostics policy) "B13-CONFORMANCE"))
     (is (contains? (:diagnostics policy) "B13-VERIFY"))
@@ -273,7 +272,271 @@
   [bundle]
   (get-in bundle [:diagnostics 0 :rule]))
 
-(deftest sh20-validates-a-closed-bounded-topological-graph
+(defn- large-bundle-request
+  [function]
+  (let [base (request accepted-gravity-plan function)
+        origins (mapv (fn [index]
+                        {:kind :generated
+                         :generator (keyword "generator" (str "item-" index))
+                         :source-id (keyword "source" (str "item-" index))})
+                      (range 17))
+        source-map (mapv (fn [index]
+                           (-> (first (:source-map base))
+                               (assoc :target-offset (* index 4)
+                                      :mir-node-id (keyword "mir" (str "item-" index)))
+                               (assoc-in [:source-span :start-byte] (* index 4))
+                               (assoc-in [:source-span :end-byte]
+                                         (* (inc index) 4))))
+                         (range 130))
+        dependencies (mapv (fn [index]
+                             {:node-id (keyword "dependency" (str "item-" index))
+                              :artifact-id (keyword "artifact" (str "item-" index))
+                              :topological-ordinal (inc index)
+                              :content-hash
+                              (assoc (:content-hash base)
+                                     :digest (format "%064x" (inc index)))})
+                           (range 130))
+        ;; Root -> every dependency, then each dependency -> its predecessor.
+        ;; Every pair is unique, closed and strictly decreasing in ordinal.
+        pairs (concat
+               (map (fn [dependency]
+                      [(:artifact-node-id base) (:node-id dependency)])
+                    dependencies)
+               (map (fn [index]
+                      [(:node-id (dependencies index))
+                       (:node-id (dependencies (dec index)))])
+                    (range 1 130)))
+        edges (mapv (fn [index [from to]]
+                      {:edge-id (keyword "edge" (str "item-" index))
+                       :edge-ordinal index :from-node from :to-node to})
+                    (range) pairs)
+        references (mapv (fn [index]
+                           {:artifact-id (keyword "evidence" (str "item-" index))
+                            :content-hash (:content-hash (dependencies index))})
+                         (range 129))
+        keywords (mapv #(keyword "input" (str "item-" %)) (range 33))]
+    (cond-> (-> base
+                (assoc :source-map source-map :origin-chain origins
+                       :dependencies dependencies :dependency-edges edges
+                       :topological-ordinal 131)
+                (assoc-in [:source-map 129 :generated-origin-chain] origins)
+                (assoc-in [:evidence :safety :residual-checks] references)
+                (assoc-in [:evidence :safety :unsafe-audits] references)
+                (assoc-in [:target-metadata :runtime-providers] keywords)
+                (assoc-in [:target-metadata :target-features] keywords)
+                (assoc-in [:reproducibility :declared-environment]
+                          (into [:target :toolchain :compiler] keywords)))
+      (not (:release-grade base))
+      (assoc-in [:reproducibility :nondeterminism] keywords))))
+
+(deftest sh20-preserves-large-bundle-populations-and-exact-replay
+  ;; B13/PKG3/PKG7: preserve legality and complete path-neutral identities.
+  (doseq [function '[sh20-development-object-request
+                     sh20-release-executable-request]]
+    (testing (str function)
+      (let [request (large-bundle-request function)
+            bundle (build request)
+            identity (:identity-input bundle)
+            neutral-map (mapv #(update % :source-span dissoc :source)
+                              (:source-map request))]
+        (is (= :accepted (:status bundle)))
+        (is (empty? (:diagnostics bundle)))
+        (is (= 130 (count (get-in bundle [:source-map :entries]))))
+        (is (= 130 (count (get-in bundle [:dependency-graph :nodes]))))
+        (is (= 259 (count (get-in bundle [:dependency-graph :edges]))))
+        (is (= (:source-map request) (get-in bundle [:source-map :entries])))
+        (is (= neutral-map (:source-map identity)))
+        (is (= (:origin-chain request) (get-in bundle [:provenance :origin-chain])))
+        (is (= 17 (count (get-in identity [:source-map 129
+                                         :generated-origin-chain]))))
+        (is (= (:dependencies request) (:dependencies identity)
+               (get-in bundle [:dependency-graph :nodes])))
+        (is (= (:dependency-edges request) (:dependency-edges identity)
+               (get-in bundle [:dependency-graph :edges])))
+        (is (= 131 (:topological-ordinal identity)
+               (get-in bundle [:dependency-graph :topological-ordinal])))
+        (is (= (:evidence request) (:evidence identity)
+               (get-in bundle [:manifest :evidence])))
+        (is (= (:target-metadata request) (:target-metadata identity)
+               (get-in bundle [:manifest :runtime])))
+        (is (= (:reproducibility request) (:reproducibility identity)
+               (:reproducibility bundle)))
+        (is (= (:release-evidence request) (:release-evidence identity)
+               (:release-evidence bundle)))
+        (is (= bundle (edn/read-string (pr-str bundle))))
+        (is (= :passed
+               (:status (invoke-engine 'sh20-verify-bundle [request bundle]))))))))
+
+(deftest sh20-large-bundle-identity-is-path-neutral-and-binds-late-records
+  (let [request (large-bundle-request 'sh20-release-executable-request)
+        bundle (build request)
+        relocated (-> request
+                      (assoc :actual-source-path "/checkout-b/compiler/main.gravity"
+                             :actual-output-path "/checkout-b/target/gravity")
+                      (assoc-in [:source-span :source]
+                                "/checkout-b/compiler/main.gravity")
+                      (update :source-map
+                              #(mapv (fn [entry]
+                                       (assoc-in entry [:source-span :source]
+                                                 "/checkout-b/compiler/main.gravity"))
+                                     %)))
+        relocated-bundle (build relocated)]
+    (is (= :accepted (:status bundle) (:status relocated-bundle)))
+    (is (= (:identity-input bundle) (:identity-input relocated-bundle)))
+    (is (not= (:source-map bundle) (:source-map relocated-bundle)))
+    (is (not= (:provenance bundle) (:provenance relocated-bundle)))
+    (is (not (str/includes? (pr-str (:identity-input bundle)) "/checkout-a/")))
+    ;; Validly shaped changed hashes are detected by replay, not recomputed here.
+    (doseq [[label changed-request candidate field]
+            [[:stale-dependency-hash
+              (assoc-in request [:dependencies 129 :content-hash :digest]
+                        (get-in request [:content-hash :digest]))
+              bundle :dependency-graph]
+             [:stale-input-hash
+              (assoc-in request [:inputs :source :digest]
+                        (get-in request [:content-hash :digest]))
+              bundle :manifest]
+             [:late-source-substitution request
+              (assoc-in bundle [:source-map :entries 129 :mir-node-id] :mir/changed)
+              :source-map]
+             [:late-edge-substitution request
+              (assoc-in bundle [:dependency-graph :edges 258 :edge-id] :edge/changed)
+              :dependency-graph]]]
+      (testing (name label)
+        (let [verification (invoke-engine 'sh20-verify-bundle
+                                         [changed-request candidate])]
+          (is (= :rejected (:status verification)))
+          (is (= ["B13-VERIFY" :request-or-candidate-substitution field]
+                 ((juxt :rule :reason :field)
+                  (first (:diagnostics verification))))))))))
+
+(deftest sh20-large-populations-retain-semantic-refusals
+  (let [request (large-bundle-request 'sh20-release-executable-request)
+        dependencies (:dependencies request)
+        edges (:dependency-edges request)]
+    (doseq [[label invalid rule]
+            [[:late-malformed-span
+              (assoc-in request [:source-map 129 :source-span :end-byte] 0)
+              "B13-SOURCEMAP"]
+             [:late-nonmonotonic-offset
+              (assoc-in request [:source-map 129 :target-offset]
+                        (get-in request [:source-map 128 :target-offset]))
+              "B13-SOURCEMAP"]
+             [:late-malformed-origin
+              (assoc-in request [:source-map 129 :generated-origin-chain 16 :kind]
+                        :ambient-file) "B13-SOURCEMAP"]
+             [:late-duplicate-node
+              (assoc-in request [:dependencies 129 :node-id]
+                        (:node-id (dependencies 128))) "B13-GRAPH"]
+             [:late-duplicate-artifact
+              (assoc-in request [:dependencies 129 :artifact-id]
+                        (:artifact-id (dependencies 128))) "B13-GRAPH"]
+             [:late-invalid-dependency-ordinal
+              (assoc-in request [:dependencies 129 :topological-ordinal] "130")
+              "B13-GRAPH"]
+             [:late-malformed-dependency-hash
+              (assoc-in request [:dependencies 129 :content-hash :digest] "stale")
+              "B13-GRAPH"]
+             [:late-missing-node
+              (assoc-in request [:dependency-edges 258 :to-node] :dependency/missing)
+              "B13-GRAPH"]
+             [:late-invalid-edge-ordinal
+              (assoc-in request [:dependency-edges 258 :edge-ordinal] 257)
+              "B13-GRAPH"]
+             [:late-duplicate-edge-id
+              (assoc-in request [:dependency-edges 258 :edge-id]
+                        (:edge-id (edges 257))) "B13-GRAPH"]
+             [:late-duplicate-pair
+              (assoc-in request [:dependency-edges 258]
+                        (assoc (edges 257) :edge-id :edge/item-258 :edge-ordinal 258))
+              "B13-GRAPH"]
+             [:late-forward-edge
+              (-> request
+                  (assoc-in [:dependency-edges 258 :from-node]
+                            (:node-id (dependencies 128)))
+                  (assoc-in [:dependency-edges 258 :to-node]
+                            (:node-id (dependencies 129)))) "B13-GRAPH"]
+             [:late-cycle
+              (-> request
+                  (assoc-in [:dependency-edges 258 :from-node]
+                            (:node-id (dependencies 0)))
+                  (assoc-in [:dependency-edges 258 :to-node]
+                            (:node-id (dependencies 1)))) "B13-GRAPH"]
+             [:unreferenced-dependency
+              (assoc request :dependency-edges
+                     (mapv (fn [index edge] (assoc edge :edge-ordinal index))
+                           (range) (concat (subvec edges 0 129)
+                                           (subvec edges 130))))
+              "B13-GRAPH"]
+             [:late-malformed-check
+              (assoc-in request [:evidence :safety :residual-checks 128
+                                 :content-hash :canonical-input] false)
+              "B13-EVIDENCE"]
+             [:late-malformed-audit
+              (assoc-in request [:evidence :safety :unsafe-audits 128 :artifact-id]
+                        false) "B13-EVIDENCE"]
+             [:missing-release-evidence (assoc request :release-evidence nil)
+              "B13-RELEASE"]
+             [:development-evidence-as-release
+              (assoc (large-bundle-request 'sh20-development-object-request)
+                     :release-grade true) "B13-RELEASE"]]]
+      (testing (name label)
+        (let [bundle (build invalid)]
+          (is (= :rejected (:status bundle)))
+          (is (nil? (:identity-input bundle)))
+          (is (= [rule] (mapv :rule (:diagnostics bundle)))))))))
+
+(deftest sh20-keyword-vectors-retain-shape-domain-uniqueness-and-nonemptiness
+  (let [request (large-bundle-request 'sh20-development-object-request)]
+    (doseq [[key-path rule allow-empty]
+            [[[:target-metadata :runtime-providers] "B13-TARGET" false]
+             [[:target-metadata :target-features] "B13-TARGET" false]
+             [[:reproducibility :declared-environment] "B13-REPRODUCIBILITY" false]
+             [[:reproducibility :nondeterminism] "B13-REPRODUCIBILITY" true]]
+            invalid (cond-> [nil '(:input/item-0) [false]
+                              (assoc (get-in request key-path) 32 false)
+                              (assoc (get-in request key-path) 32
+                                     (first (get-in request key-path)))]
+                      (not allow-empty) (conj []))]
+      (testing (pr-str [key-path invalid])
+        (let [bundle (build (assoc-in request key-path invalid))]
+          (is (= :rejected (:status bundle)))
+          (is (= rule (diagnostic-rule bundle))))))))
+
+(deftest sh20-preserves-long-origin-chains-and-validates-late-entries
+  (let [base-request
+        (request accepted-gravity-plan 'sh20-release-executable-request)
+        origins
+        (mapv (fn [index]
+                {:kind :generated
+                 :generator (keyword "generator" (str "item-" index))
+                 :source-id (keyword "source" (str "item-" index))})
+              (range 17))
+        candidate
+        (-> base-request
+            (assoc :origin-chain origins)
+            (assoc-in [:source-map 0 :generated-origin-chain] origins))
+        bundle (build candidate)]
+    (is (= :accepted (:status bundle)))
+    (is (= origins (get-in bundle [:provenance :origin-chain])))
+    (is (= origins
+           (get-in bundle [:source-map :entries 0 :generated-origin-chain])))
+    (is (= origins
+           (get-in bundle [:identity-input :source-map 0
+                           :generated-origin-chain])))
+    (is (= bundle (build candidate)))
+    (is (= :passed
+           (:status
+            (invoke-engine 'sh20-verify-bundle [candidate bundle]))))
+    (doseq [[path rule]
+            [[[:origin-chain 16 :kind] "B13-SCHEMA"]
+             [[:source-map 0 :generated-origin-chain 16 :kind]
+              "B13-SOURCEMAP"]]]
+      (let [rejected (build (assoc-in candidate path :ambient-file))]
+        (is (= :rejected (:status rejected)))
+        (is (= rule (diagnostic-rule rejected)))))))
+
+(deftest sh20-validates-a-closed-topological-graph
   (let [request
         (request accepted-gravity-plan 'sh20-release-executable-request)
         dependencies (:dependencies request)
@@ -321,17 +584,7 @@
                  (map-indexed
                   (fn [index edge]
                     (assoc edge :edge-ordinal (inc index)))
-                  edges)))
-         (assoc request :dependencies
-                (mapv
-                 (fn [index]
-                   {:node-id (keyword (str "node-" index))
-                    :artifact-id (keyword (str "artifact-" index))
-                    :topological-ordinal (inc index)
-                    :content-hash (:content-hash first-dependency)})
-                 (range 129)))
-         (assoc request :dependency-edges
-                (vec (repeat 257 (first edges))))]]
+                  edges)))]]
     (doseq [candidate graph-cases]
       (let [bundle (build candidate)]
         (is (= :rejected (:status bundle)))
@@ -382,7 +635,6 @@
   (let [request
         (request accepted-gravity-plan 'sh20-release-executable-request)
         source-entry (first (:source-map request))
-        origin (first (:generated-origin-chain source-entry))
         malformed
         [[(assoc request :artifact-id false)
           "B13-SCHEMA"]
@@ -401,10 +653,6 @@
          [(assoc-in request [:source-map 0 :source-span :start-byte] 9)
           "B13-SOURCEMAP"]
          [(assoc request :source-map [source-entry source-entry])
-          "B13-SOURCEMAP"]
-         [(assoc-in request
-                    [:source-map 0 :generated-origin-chain]
-                    (vec (repeat 17 origin)))
           "B13-SOURCEMAP"]
          [(assoc-in request
                     [:source-map 0 :generated-origin-chain 0 :kind]
@@ -430,13 +678,9 @@
         (is (= :rejected (:status bundle)))
         (is (= rule (diagnostic-rule bundle)))))))
 
-(deftest sh20-bounds-source-maps-and-recomputes-with-precise-substitution
+(deftest sh20-recomputes-with-precise-substitution
   (let [request
         (request accepted-gravity-plan 'sh20-release-executable-request)
-        excessive-source-map
-        (build
-         (assoc request :source-map
-                (vec (repeat 129 (first (:source-map request))))))
         target-substitution
         (build
          (assoc-in request [:target-metadata :target] :linux-x86-64))
@@ -455,7 +699,6 @@
         (invoke-engine
          'sh20-verify-bundle [substituted-request valid-bundle])
         diagnostic (first (:diagnostics verification))]
-    (is (= "B13-SOURCEMAP" (diagnostic-rule excessive-source-map)))
     (is (= "B13-TARGET" (diagnostic-rule target-substitution)))
     (is (= "B13-HASH" (diagnostic-rule noncanonical-content)))
     (is (= :rejected (:status verification)))
