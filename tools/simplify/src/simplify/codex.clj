@@ -68,7 +68,11 @@
     (try
       (when @(:closed client) (rt/fail! "App-server is already closed" {:method method}))
       (send! client {:id id :method method :params params})
-      (let [result @response]
+      (let [startup-timeout (when (= "initialize" method) (get-in client [:ctx :config :check-timeout-ms]))
+            result (if (pos-int? startup-timeout) (deref response startup-timeout ::startup-timeout) @response)]
+        (when (= ::startup-timeout result)
+          (rt/fail! "App-server initialization exceeded the check watchdog"
+                    {:method method :timeout-ms startup-timeout :timed-out true}))
         (when-let [error (:error result)] (rt/fail! "App-server request failed" {:method method :error error}))
         (:result result))
       (finally (swap! (:pending client) dissoc id)))))
@@ -82,9 +86,28 @@
   (.waitFor ^Process (:process client))
   (when-let [processes (get-in client [:ctx :processes])] (swap! processes disj (:process client)))
   @(:reader client)
-  @(:stderr client))
+  @(:stderr client)
+  (rt/event! (:ctx client) :app-server-closed
+             {:job (:job client) :owned-process-ended true :exit (.exitValue ^Process (:process client))}))
 
 (defn check-key [ctx argv] (rt/digest (pr-str [(get-in ctx [:config :repository]) argv])))
+
+(defn initialize! [client]
+  (try
+    (let [result (request! client "initialize"
+                           {:clientInfo (or (get-in client [:ctx :config :client-info])
+                                            {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})]
+      (when @(:restricted client)
+        (rt/fail! "App-server initialization encountered a restricted request"
+                  {:method "initialize" :restricted true}))
+      (when-not (map? result)
+        (rt/fail! "App-server initialization returned a malformed result" {:method "initialize"}))
+      (send! client {:method "initialized" :params {}})
+      result)
+    (catch Exception e
+      (throw (ex-info (.getMessage e)
+                      (cond-> (assoc (or (ex-data e) {}) :method "initialize")
+                        @(:restricted client) (assoc :restricted true)) e)))))
 
 (defn validate-command-result! [ctx argv result]
   (let [output (str (:stderr result) "\n" (:stdout result))
@@ -104,13 +127,16 @@
   (rt/assert-authorized! ctx :check (check-key ctx argv))
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
-                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
-      (send! client {:method "initialized" :params {}})
+      (initialize! client)
       (let [response (request! client "command/exec"
                              {:command argv :cwd cwd :processId job-id :streamStdoutStderr true
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
                               :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})
+            _ (when-not (and (map? response) (integer? (:exitCode response))
+                             (every? #(or (nil? %) (string? %)) [(:stdout response) (:stderr response)]))
+                (rt/fail! "App-server command returned a malformed result"
+                          {:method "command/exec" :command argv :result response :writer-ended? false
+                           :restricted (boolean @(:restricted client))}))
             chunks @(:command-output client)
             stream (fn [name]
                      (with-open [out (ByteArrayOutputStream.)]
@@ -220,9 +246,7 @@
 (defn job! [ctx job-id cwd mode instructions prompt output-schema]
   (let [client (open! ctx job-id cwd)]
     (try
-      (request! client "initialize" {:clientInfo (or (get-in ctx [:config :client-info])
-                                                   {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"})})
-      (send! client {:method "initialized" :params {}})
+      (initialize! client)
       (let [model (get-in ctx [:config :model])
             started (request! client "thread/start"
                                     (cond-> {:cwd cwd :approvalPolicy "never" :sandbox (if (= mode :write) "workspace-write" "read-only")

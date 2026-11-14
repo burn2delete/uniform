@@ -3,6 +3,7 @@
             [clojure.edn :as edn]
             [clojure.string :as str]
             [seedless.compiler-observation :as compiler]
+            [seedless.diagnosis-recovery :as recovery]
             [seedless.github :as gh]
             [seedless.workflow :as workflow]
             [simplify.main :as shared]
@@ -557,6 +558,12 @@
          (rt/update! ctx assoc :status :attention)
          (throw e)))))
 
+(defn reconcile! [ctx id file]
+  (let [inspection (rt/read-edn file)]
+    (when (and (recovery/model-effect? id) (= :not-applied (:outcome inspection)))
+      (recovery/validate-not-started! ctx id (get-in @(:state ctx) [:effects id]) inspection))
+    (shared/reconcile-result! ctx id inspection)))
+
 (defn retry! [ctx key file]
   (let [inspection (rt/read-edn file)]
     (when-not (and (string? (:evidence inspection)) (not (str/blank? (:evidence inspection))))
@@ -572,9 +579,7 @@
                   (:restricted interruption) (:restricted diagnosis-blocker)
                   (= :restricted (:status diagnosis-effect)))
           (rt/fail! "Restricted planning/completion actions cannot be retried" {:restricted true}))
-        (when (and diagnosis-blocker (not= :done (:status diagnosis-effect)))
-          (rt/fail! "Failed diagnosis effect needs reconciliation before retry"
-                    {:effect (:effect diagnosis-blocker)}))
+        (when diagnosis-blocker (recovery/assert-settled! ctx (:effect diagnosis-blocker)))
         (when-not (or planning interruption diagnosis-blocker
                       (= :failed (get-in @(:state ctx) [:completion :result])))
           (rt/fail! "No inspected planning/completion failure is pending" {}))
@@ -599,8 +604,10 @@
                                       (get-in task [:compiler-result :diagnosis :effect])]))
                 :let [effect (get-in @(:state ctx) [:effects id])]
                 :when (not= :done (:status effect))]
-          (rt/fail! "Failed task effect needs reconciliation before retry"
-                    {:effect id :restricted (= :restricted (:status effect))}))
+          (if (recovery/model-effect? id)
+            (recovery/assert-settled! ctx id)
+            (rt/fail! "Failed task effect needs reconciliation before retry"
+                      {:effect id :restricted (= :restricted (:status effect))})))
         (when (:merged task)
           (let [tracking-key (str "project-status/" (get-in @(:state ctx) [:project :id]) "/" (get-in task [:issue :node_id]))
                 ids [(str "close/" key) (get-in @(:state ctx) [:tracking-intents tracking-key])]]
@@ -657,7 +664,7 @@
     "run" (run-campaign! ctx false)
     "resume" (run-campaign! ctx true)
     "retry" (with-current-lock ctx #(retry! ctx (first args) (second args)))
-    "reconcile" (with-current-lock ctx #(shared/reconcile! ctx (first args) (second args)))
+    "reconcile" (with-current-lock ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-lock ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-lock ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
                                                                         (:evidence (rt/read-edn (second args)))))

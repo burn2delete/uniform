@@ -412,6 +412,7 @@
   (let [fixture (fixture/context) {:keys [repo]} (git-fixture/repository! fixture)
         state-dir (fixture/temp-dir)
         config (merge main/defaults {:repo-dir repo :state-dir state-dir :campaign "CLI fixture"
+                                    :codex-command (java-command "-m" "simplify.fake-server" "initialize-exit")
                                     :worktree-root (str (io/file (:state-dir fixture) "workers"))})
         config-file (str (io/file state-dir "config.edn"))
         _ (rt/write-edn! config-file config)

@@ -5,9 +5,18 @@
 (defn emit! [value] (println (json/write-str value)) (flush))
 (defn -main [& [mode]]
   (doseq [line (line-seq (java.io.BufferedReader. *in*))]
-    (let [{:keys [id method]} (json/read-str line :key-fn keyword)]
+    (let [{:keys [id method params]} (json/read-str line :key-fn keyword)]
       (case method
-        "initialize" (emit! {:id id :result {}})
+        "initialize" (case mode
+                       "initialize-exit" (do (binding [*out* *err*] (println "Fixture state database cannot open") (flush))
+                                              (System/exit 17))
+                       "initialize-malformed" (emit! {:id id :result "malformed initialization"})
+                       "initialize-stall" (Thread/sleep 60000)
+                       "initialize-approval" (do (emit! {:id 100 :method "item/commandExecution/requestApproval" :params {}})
+                                                  (emit! {:id id :result {}}))
+                       "initialize-approval-error" (do (emit! {:id 100 :method "item/commandExecution/requestApproval" :params {}})
+                                                        (emit! {:id id :error {:message "Fixture approval declined"}}))
+                       (emit! {:id id :result {}}))
         "initialized" nil
         "thread/start" (emit! {:id id :result {:thread {:id "fixture-thread"} :model "fixture-no-inference"}})
         "turn/interrupt" (do (emit! {:id id :result {}})
@@ -31,8 +40,30 @@
             (emit! {:method "command/exec/outputDelta"
                     :params {:stream "stderr" :capReached (= mode "stream-capped")
                              :deltaBase64 (.encodeToString (java.util.Base64/getEncoder) (.getBytes output "UTF-8"))}})))
-          (emit! {:id id :result {:exitCode (if (#{"failed" "stream-cleanup" "stream-assertion"} mode) 1 0)
-                                 :stdout (if stream? "" "fixture command") :stderr ""}}))
+          (let [dependency-failed? (and (= "doctor-dependency-failure" mode) (some #{"-Spath"} (:command params)))
+                ;; The installed CLI warns on recomputation, but a cached
+                ;; classpath can return silently unless -Sforce is present.
+                undeclared? (and (= "doctor-undeclared-alias" mode)
+                                 (some #{"-M:missing-alias"} (:command params))
+                                 (some #{"-Sforce"} (:command params)))
+                doctor? (#{"doctor" "doctor-dependency-failure" "doctor-undeclared-alias"} mode)]
+            (when (= "command-malformed-approval" mode)
+              (emit! {:id 100 :method "item/commandExecution/requestApproval" :params {}}))
+            (emit! {:id id :result
+                    (case mode
+                      ("command-malformed" "command-malformed-approval") {}
+                      "command-nonmap" "malformed command"
+                      "command-exit-type" {:exitCode "zero"}
+                      "command-stdout-type" {:exitCode 0 :stdout 42}
+                      "command-stderr-type" {:exitCode 0 :stderr []}
+                      {:exitCode (if (or dependency-failed? (#{"failed" "stream-cleanup" "stream-assertion"} mode)) 1 0)
+                       :stdout (cond stream? ""
+                                     (and doctor? (= "-e" (nth (:command params) 2 nil))) ":uniform/doctor-ready\n"
+                                     doctor? "/fixture/resolved-classpath"
+                                     :else "fixture command")
+                       :stderr (cond dependency-failed? "Could not resolve fixture Maven dependency"
+                                     undeclared? "WARNING: Specified aliases are undeclared and are not being used: [:missing-alias]\n"
+                                     :else "")})})))
         "turn/start" (do
                        ;; Events may precede the request response.
                        (emit! {:method "item/completed" :params {:item {:type "agentMessage" :phase "commentary" :text "working"}}})
