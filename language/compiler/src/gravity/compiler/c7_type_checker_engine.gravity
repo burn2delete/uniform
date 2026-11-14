@@ -10382,10 +10382,12 @@
 (defn types-set-equality-data? [value]
   ; Validate complete native DATA before any structural equality or ID hashing.
   ; Metadata is inert but unsupported at this compiler evidence boundary.
-  (loop [pending [[value []]]]
-    (if (= 0 (count pending)) true
-      (let [frame (get pending (- (count pending) 1)) value (get frame 0)
-            ancestors (get frame 1) tail (subvec pending 0 (- (count pending) 1))
+  ; The internal [frame tail] stack keeps the same LIFO visit order without
+  ; copying the remaining pending frames for every native value.
+  (loop [pending [[value []] nil]]
+    (if (= nil pending) true
+      (let [frame (get pending 0) value (get frame 0)
+            ancestors (get frame 1) tail (get pending 1)
             header (bootstrap-native-carrier-header value) kind (get header 0)]
         (if (get header 1) false
           (if (contains? #{:nil :boolean :character :integer8 :integer16 :integer32 :integer64
@@ -10416,16 +10418,41 @@
                 (if (= nil items) false
                   (recur (loop [remaining items out tail]
                            (if (= 0 (count remaining)) out
-                             (recur (rest remaining) (conj out [(first remaining) next-ancestors]))))))))))))))
+                             (recur (rest remaining) [[(first remaining) next-ancestors] out])))))))))))))
 
 (defn types-set-equality-type? [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (sh08-ft-all-true? [(contains? #{:gravity.type/set :gravity.type/never} (get arguments 0))
           (contains? #{:gravity.type/set :gravity.type/never} (get arguments 1))]) false))
 
+(defn types-set-equality-routing-types? [call types]
+  ; Negative routing only. Admit both complete native inputs before reading
+  ; operand IDs or looking up types. Every possible true result still passes
+  ; the original complete source/product validation in the entry predicate.
+  (if (types-set-equality-data? [call types])
+    ; Comparator-backed maps and unusual native lookup keys retain the
+    ; original validation/lookup order; true here never grants acceptance.
+    (if (if (= :map (get (bootstrap-native-carrier-header call) 0))
+          (= :map (get (bootstrap-native-carrier-header types) 0)) false)
+      (let [args (get call :argument-node-ids)]
+        (if (if (vector? args) (= 2 (count args)) false)
+          (if (sh08-sse-ids? args 2)
+            (let [left (get types (get args 0))
+                  right (get types (get args 1))]
+              (if (if (keyword? left) (= :gravity.type/set left) false)
+                (if (keyword? right)
+                  (contains? #{:gravity.type/set :gravity.type/never} right) false)
+                (if (if (keyword? right) (= :gravity.type/set right) false)
+                  (if (keyword? left) (= :gravity.type/never left) false) false)))
+            true)
+          false))
+      true)
+    false))
+
 (defn
  types-set-equality-entry?
  [node call nodes bindings types module]
+ (if (types-set-equality-routing-types? call types)
  (if
   (types-set-equality-data? [node call nodes bindings types module])
   (if
@@ -10478,7 +10505,8 @@
       false))
     false)
    false)
-  false))
+  false)
+ false))
 
 
 (defn types-set-equality-header [core node call edge nodes bindings types module]
