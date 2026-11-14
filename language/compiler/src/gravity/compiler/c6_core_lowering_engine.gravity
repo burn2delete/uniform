@@ -9,6 +9,8 @@
              c6-set-mutation-execution-contract
              c6-sh07-authenticated-exception-entrypoint
              c6-sh07-independent-exception-verifier
+             c6-form->core-form
+             c6-eval-order
              build-c6-core-node
              build-c6-desugaring-trace
              verify-c6-set-mutation-execution-request
@@ -144,6 +146,91 @@
                         :backend-only-legality
                         :runtime-only-profile-availability
                         :unrecorded-macro-output]})
+
+; The classifier is intentionally a small source-owned leaf.  It mirrors the
+; current hosted C6 operation boundary without taking over the surrounding
+; lowering pass: compound forms retain their configured core-form head,
+; declared primitive calls retain their safety marker, and all other calls
+; remain calls until a later lowering rule handles them.
+(defn c6-core-form-symbol? [value]
+  (if (= value (quote quote))
+    true
+    (if (= value (quote if))
+      true
+      (if (= value (quote do))
+        true
+        (if (= value (quote let))
+          true
+          (if (= value (quote fn))
+            true
+            (if (= value (quote loop))
+              true
+              (if (= value (quote recur))
+                true
+                (if (= value (quote def))
+                  true
+                  (if (= value (quote var))
+                    true
+                    (if (= value (quote set!))
+                      true
+                      (if (= value (quote try))
+                        true
+                        (if (= value (quote throw))
+                          true
+                          (= value (quote match)))))))))))))))
+
+(defn c6-form->core-form [form]
+  (if (seq? form)
+    (let [head (first form)]
+      (if (c6-core-form-symbol? head)
+        head
+        (if (= head (quote unsafe))
+          :declared-primitive
+          :call)))
+    (if (symbol? form) :symbol :literal)))
+
+; Evaluation order is a source-owned C6 fact.  Keep the variable-length do
+; order construction in Uniform so the hosted caller does not decide it.
+(defn c6-evaluation-order-do [child-count]
+  (loop [remaining child-count index 0 result []]
+    (if (<= remaining 0)
+      result
+      (recur (- remaining 1)
+             (+ index 1)
+             (conj result [:expr index])))))
+
+(defn c6-eval-order [form child-count]
+  (if (= form (quote quote))
+    []
+    (if (= form (quote if))
+      [:condition :then-or-else]
+      (if (= form (quote do))
+        (c6-evaluation-order-do child-count)
+        (if (= form (quote let))
+          [:bindings-left-to-right :body-left-to-right]
+          (if (= form (quote fn))
+            [:call-arguments-left-to-right]
+            (if (= form (quote loop))
+              [:loop-bindings-left-to-right :body-left-to-right]
+              (if (= form (quote recur))
+                [:arguments-left-to-right]
+                (if (= form (quote def))
+                  [:initializer]
+                  (if (= form (quote var))
+                    []
+                    (if (= form (quote set!))
+                      [:value]
+                      (if (= form (quote try))
+                        [:body :matching-handler]
+                        (if (= form (quote throw))
+                          [:value]
+                          (if (= form (quote match))
+                            [:scrutinee :selected-clause]
+                            (if (= form :call)
+                              [:operator :arguments-left-to-right]
+                              (if (= form :declared-primitive)
+                                [:arguments-left-to-right]
+                                []))))))))))))))))
 
 (def c6-set-mutation-execution-contract
   {:artifact :gravity/c6-set-mutation-execution-contract
@@ -5990,36 +6077,43 @@
     (c6-sh07-exception-diagnostic
      request "C6-VERIFY" :entry-request-shape-invalid nil)))
 
+; These constructors are internal source-execution compatibility leaves.  Their
+; :gravity/c6-core-node and :gravity/c6-desugaring-trace records are not the
+; canonical C6 artifact interface, and they are not wired into the hosted C6
+; lowering path by this slice.
 (defn build-c6-core-node
   [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]
-  (quote {:artifact :gravity/c6-core-node
-          :node-id node-id
-          :form form
-          :children children
-          :source {:syntax-id syntax-id
-                   :span source-span
-                   :origin-chain origin-chain}
-          :binding-context binding-context
-          :profile profile
-          :target target
-          :metadata metadata
-          :facts facts
-          :generated? generated?
-          :contract c6-core-node-contract}))
+  {:artifact :gravity/c6-core-node
+   :node-id node-id
+   :form form
+   :children children
+   :source {:syntax-id syntax-id
+            :span source-span
+            :origin-chain origin-chain}
+   :binding-context binding-context
+   :profile profile
+   :target target
+   :metadata metadata
+   :facts facts
+   :generated? generated?
+   :contract c6-core-node-contract})
 
 (defn build-c6-desugaring-trace
   [surface-syntax surface-kind core-root introduced-forms preserved introduced-origin evaluation-order]
-  (quote {:artifact :gravity/c6-desugaring-trace
-          :surface-syntax surface-syntax
-          :surface-kind surface-kind
-          :core-root core-root
-          :introduced-forms introduced-forms
-          :preserved preserved
-          :introduced-origin introduced-origin
-          :evaluation-order evaluation-order
-          :diagnostics []
-          :contract c6-lowering-rule-contract}))
+  {:artifact :gravity/c6-desugaring-trace
+   :surface-syntax surface-syntax
+   :surface-kind surface-kind
+   :core-root core-root
+   :introduced-forms introduced-forms
+   :preserved preserved
+   :introduced-origin introduced-origin
+   :evaluation-order evaluation-order
+   :diagnostics []
+   :contract c6-lowering-rule-contract})
 
+; This verifier remains the original quoted stage1 template.  It is retained
+; as an unmigrated contract surface and must not be read as executable proof
+; or canonical acceptance of the internal constructor records above.
 (defn verify-c6-core-lowering [core-lowering-artifact]
   (quote {:status :stage1-source-owned
           :core-lowering-artifact core-lowering-artifact
