@@ -11,8 +11,10 @@
   (let [outer (#'runner/progress-state)
         output (java.io.StringWriter.)]
     (binding [*err* output]
-      (with-bindings {#'runner/*progress-state* outer}
-        (is (= 0 (runner/run-cli! ["--help"]))))
+      (with-redefs-fn {#'runner/progress-clock-ns
+                       (fn [] (throw (AssertionError. "disabled clock")))}
+        #(with-bindings {#'runner/*progress-state* outer}
+           (is (= 0 (runner/run-cli! ["--help"])))))
       (is (empty? (str output)))
       (is (.isEmpty ^java.util.ArrayList (:errors outer))))))
 
@@ -29,7 +31,11 @@
                                                         :namespace "gravity.self-hosting.sh06-unmetered-resolution-test"
                                                         :test-var "gravity.self-hosting.sh06-unmetered-resolution-test/digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"}}
                                          (runner/observe-resolution-digest-interval! :positive-resolve (fn [] :value)))))))
-    (is (= 2 (count (str/split-lines (str output)))))
+    (let [rows (mapv edn/read-string (str/split-lines (str output)))]
+      (is (= 2 (count rows)))
+      (is (every? #(= :gravity/development-test-progress-v2 (:schema %)) rows))
+      (is (= 0 (:elapsed-ns (first rows))))
+      (is (apply <= (map :elapsed-ns rows))))
     (is (.isEmpty ^java.util.ArrayList (:errors outer)))
     (is (.isEmpty ^java.util.ArrayList (:errors inner)))
     (is (= :return (:edge (edn/read-string (second (str/split-lines (str output)))))))))

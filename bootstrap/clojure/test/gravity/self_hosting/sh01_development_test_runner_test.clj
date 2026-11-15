@@ -660,3 +660,132 @@
         (is (str/includes? (slurp (str directory file-name))
                            (str "(deftest " test-name))))))
     (is (= 16 (reduce + (map count (vals c4-c18-test-names))))))
+
+(def ^:private macro-paired-namespace "gravity.macro.pipeline-test")
+(def ^:private macro-paired-test-var
+  "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output")
+
+(defn- progress-rows [writer]
+  (mapv edn/read-string
+        (remove str/blank? (str/split-lines (str writer)))))
+
+(deftest macro-paired-intervals-map-fixed-phases-and-run-once
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        intervals [:context :expand :construct :bootstrap-expand :verify :lineage :compare]
+        phases [:macro-paired-context :macro-paired-expand
+                :macro-paired-construct :macro-paired-bootstrap-expand
+                :macro-paired-verify :macro-paired-lineage :macro-paired-compare]
+        values (mapv (fn [_] (Object.)) intervals)
+        calls (atom [])]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context*
+                      {:state state :namespace macro-paired-namespace
+                       :test-var macro-paired-test-var}}
+        (let [results
+              (mapv (fn [[interval value]]
+                      (runner/observe-macro-paired-interval!
+                       interval
+                       (fn [] (swap! calls conj value) value)))
+                    (map vector intervals values))]
+          (is (every? true? (map identical? results values))))))
+    (is (= values @calls))
+    (let [rows (progress-rows output)]
+      (is (= (vec (mapcat #(vector % %) phases)) (mapv :phase rows)))
+      (is (= (vec (mapcat (constantly [:enter :return]) phases))
+             (mapv :edge rows)))
+      (is (every? #(= macro-paired-namespace (:namespace %)) rows))
+      (is (every? #(= macro-paired-test-var (:test-var %)) rows)))))
+
+(deftest macro-paired-selected-test-installs-the-scoped-context
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        value (Object.)
+        seen (atom nil)]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context* nil}
+        (is (identical?
+             value
+             (#'runner/observe-progress!
+              :test-var macro-paired-namespace macro-paired-test-var
+              (fn []
+                (reset! seen @#'runner/*progress-test-context*)
+                (runner/observe-macro-paired-interval!
+                 :context
+                 (fn [] value))))))))
+    (is (= {:state state :namespace macro-paired-namespace
+            :test-var macro-paired-test-var}
+           @seen))
+    (is (= [:test-var :macro-paired-context :macro-paired-context :test-var]
+           (mapv :phase (progress-rows output))))))
+
+(deftest macro-paired-intervals-guard-disabled-foreign-and-unknown-scopes
+  (let [state (#'runner/progress-state)
+        other-state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        value (Object.)
+        calls (atom 0)
+        invoke (fn [interval]
+                 (runner/observe-macro-paired-interval!
+                  interval (fn [] (swap! calls inc) value)))]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* nil
+                      #'runner/*progress-test-context*
+                      {:state state :namespace macro-paired-namespace
+                       :test-var macro-paired-test-var}}
+        (is (identical? value (invoke :context))))
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context*
+                      {:state state :namespace "gravity.foreign-test"
+                       :test-var macro-paired-test-var}}
+        (is (identical? value (invoke :expand))))
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context*
+                      {:state state :namespace macro-paired-namespace
+                       :test-var "gravity.macro.pipeline-test/foreign"}}
+        (is (identical? value (invoke :construct))))
+      (with-bindings {#'runner/*progress-state* other-state
+                      #'runner/*progress-test-context*
+                      {:state state :namespace macro-paired-namespace
+                       :test-var macro-paired-test-var}}
+        (is (identical? value (invoke :bootstrap-expand))))
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context*
+                      {:state state :namespace macro-paired-namespace
+                       :test-var macro-paired-test-var}}
+        (is (identical? value (invoke :unknown)))))
+    (is (= 5 @calls))
+    (is (empty? (progress-rows output)))))
+
+(deftest macro-paired-interval-preserves-return-and-exception-identity
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        value (Object.)
+        failure (ex-info "synthetic macro-paired failure" {:kind :fixture})
+        returns (atom 0)
+        throws (atom 0)
+        context {:state state :namespace macro-paired-namespace
+                 :test-var macro-paired-test-var}]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* state
+                      #'runner/*progress-test-context* context}
+        (is (identical?
+             value
+             (runner/observe-macro-paired-interval!
+              :compare (fn [] (swap! returns inc) value))))
+        (let [observed
+              (try
+                (runner/observe-macro-paired-interval!
+                 :compare (fn [] (swap! throws inc) (throw failure)))
+                nil
+                (catch Throwable error error))]
+          (is (identical? failure observed)))))
+    (is (= 1 @returns))
+    (is (= 1 @throws))
+    (is (= [:macro-paired-compare :macro-paired-compare
+            :macro-paired-compare :macro-paired-compare]
+           (mapv :phase (progress-rows output))))
+    (is (= [:enter :return :enter :throw]
+           (mapv :edge (progress-rows output))))))

@@ -84,10 +84,10 @@
                                           {:interface :gravity/compiler-application :version 1}
                                           {:interface :gravity/c6-c10 :version version})
                       :admission-status state :verification-scope :selected-current-source-host-seed
-                      :envelope-verification :passed :self-hosted? false})]
-        ;; Only owner-produced metadata crosses into the unchanged strict
-        ;; Core carrier. The full Reader envelope was verified unmodified.
-        (let [receipt
+                      :envelope-verification :passed :self-hosted? false})
+            ;; Only owner-produced metadata crosses into the unchanged strict
+            ;; Core carrier. The full Reader envelope was verified unmodified.
+            receipt
               (cond-> receipt
                 (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence)
                 application?
@@ -103,5 +103,5 @@
                         :envelope (select-keys (:syntax-envelope witness)
                                     [:artifact :schema-version :status :stage
                                      :semantic-envelope-id :provenance-binding-id])}))]
-          (p15-s23-c6c10-require-trusted-carrier! source-path :current-reader-policy-receipt receipt)
-          receipt)))))))
+        (p15-s23-c6c10-require-trusted-carrier! source-path :current-reader-policy-receipt receipt)
+        receipt))))))

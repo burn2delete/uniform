@@ -26,9 +26,14 @@
 (def ^:private ^:dynamic *progress-state* nil)
 (def ^:private ^:dynamic *progress-test-context* nil)
 
+(defn- progress-clock-ns []
+  (System/nanoTime))
+
 (defn- progress-state []
   {:errors (java.util.ArrayList.)
    :inspected (java.util.IdentityHashMap.)
+   :origin-ns (atom nil)
+   :last-elapsed-ns (atom nil)
    :interrupt? (boolean-array [(.isInterrupted (Thread/currentThread))])})
 
 (defn- retain-progress-error! [state error]
@@ -79,8 +84,24 @@
 
 (defn- emit-progress! [phase edge namespace test-var error]
   (try
-    (let [frame (cond-> {:schema :gravity/development-test-progress-v1
+    (let [now (progress-clock-ns)
+          origin-ns (:origin-ns *progress-state*)
+          ;; The first successful enabled observation is this invocation's
+          ;; runner-relative origin; elapsed values are not cross-run data.
+          elapsed-ns (if-let [origin @origin-ns]
+                       (unchecked-subtract (long now) (long origin))
+                       (do (reset! origin-ns now) 0))
+          last-elapsed-ns @(:last-elapsed-ns *progress-state*)
+          _ (when (or (neg? elapsed-ns)
+                      (and last-elapsed-ns (< elapsed-ns last-elapsed-ns)))
+              (throw (ex-info "Progress clock moved backwards"
+                              {:id "DEV-PROGRESS-CLOCK"
+                               :elapsed-ns elapsed-ns
+                               :last-elapsed-ns last-elapsed-ns})))
+          _ (reset! (:last-elapsed-ns *progress-state*) elapsed-ns)
+          frame (cond-> {:schema :gravity/development-test-progress-v2
                          :authority :non-authoritative :phase phase :edge edge
+                         :elapsed-ns elapsed-ns
                          :namespace namespace}
                   test-var (assoc :test-var test-var)
                   error (assoc :error-class (.getName (class error))))]
@@ -111,11 +132,17 @@
        (= "gravity.self-hosting.sh06-unmetered-resolution-test/actual-current-source-artifact-retains-authentication-and-roundtrip"
           test-var)))
 
+(defn- macro-paired-test? [namespace test-var]
+  (and (= "gravity.macro.pipeline-test" namespace)
+       (= "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+          test-var)))
+
 (defn- observe-progress! [phase namespace test-var body]
   (emit-progress! phase :enter namespace test-var nil)
   (let [outcome (try {:value (if (and (= :test-var phase)
                                       (or (resolution-digest-test? namespace test-var)
-                                          (resolution-current-artifact-test? namespace test-var)))
+                                          (resolution-current-artifact-test? namespace test-var)
+                                          (macro-paired-test? namespace test-var)))
                                (binding [*progress-test-context* {:state *progress-state*
                                                                   :namespace namespace :test-var test-var}]
                                  (body))
@@ -153,6 +180,24 @@
                   :serialization :resolution-current-artifact-serialization} interval))]
     (if (and *progress-state* (identical? *progress-state* (:state context)) phase
              (resolution-current-artifact-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
+
+(defn observe-macro-paired-interval!
+  "Seven fixed diagnostic intervals in one selected test; never execution authority.
+  Outside its original enabled test scope, execute body once without reporting."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:context :macro-paired-context
+                  :expand :macro-paired-expand
+                  :construct :macro-paired-construct
+                  :bootstrap-expand :macro-paired-bootstrap-expand
+                  :verify :macro-paired-verify
+                  :lineage :macro-paired-lineage
+                  :compare :macro-paired-compare} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (macro-paired-test? (:namespace context) (:test-var context)))
       (observe-progress! phase (:namespace context) (:test-var context) body)
       (body))))
 
