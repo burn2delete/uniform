@@ -26,9 +26,14 @@
 (def ^:private ^:dynamic *progress-state* nil)
 (def ^:private ^:dynamic *progress-test-context* nil)
 
+(defn- progress-clock-ns []
+  (System/nanoTime))
+
 (defn- progress-state []
   {:errors (java.util.ArrayList.)
    :inspected (java.util.IdentityHashMap.)
+   :origin-ns (atom nil)
+   :last-elapsed-ns (atom nil)
    :interrupt? (boolean-array [(.isInterrupted (Thread/currentThread))])})
 
 (defn- retain-progress-error! [state error]
@@ -79,8 +84,24 @@
 
 (defn- emit-progress! [phase edge namespace test-var error]
   (try
-    (let [frame (cond-> {:schema :gravity/development-test-progress-v1
+    (let [now (progress-clock-ns)
+          origin-ns (:origin-ns *progress-state*)
+          ;; The first successful enabled observation is this invocation's
+          ;; runner-relative origin; elapsed values are not cross-run data.
+          elapsed-ns (if-let [origin @origin-ns]
+                       (unchecked-subtract (long now) (long origin))
+                       (do (reset! origin-ns now) 0))
+          last-elapsed-ns @(:last-elapsed-ns *progress-state*)
+          _ (when (or (neg? elapsed-ns)
+                      (and last-elapsed-ns (< elapsed-ns last-elapsed-ns)))
+              (throw (ex-info "Progress clock moved backwards"
+                              {:id "DEV-PROGRESS-CLOCK"
+                               :elapsed-ns elapsed-ns
+                               :last-elapsed-ns last-elapsed-ns})))
+          _ (reset! (:last-elapsed-ns *progress-state*) elapsed-ns)
+          frame (cond-> {:schema :gravity/development-test-progress-v2
                          :authority :non-authoritative :phase phase :edge edge
+                         :elapsed-ns elapsed-ns
                          :namespace namespace}
                   test-var (assoc :test-var test-var)
                   error (assoc :error-class (.getName (class error))))]

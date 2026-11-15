@@ -1052,6 +1052,18 @@
    :edge edge
    :namespace namespace-name))
 
+(defn- macro-diagnostic-progress-v2-frame
+  [phase edge namespace-name test-var elapsed-ns]
+  (assoc (macro-diagnostic-progress-frame phase edge namespace-name test-var)
+         :schema :gravity/development-test-progress-v2
+         :elapsed-ns elapsed-ns))
+
+(defn- macro-diagnostic-namespace-progress-v2-frame
+  [phase edge namespace-name elapsed-ns]
+  (assoc (macro-diagnostic-namespace-progress-frame phase edge namespace-name)
+         :schema :gravity/development-test-progress-v2
+         :elapsed-ns elapsed-ns))
+
 (defn- macro-diagnostic-progress-frames
   [namespace-name test-var]
   (let [phases [:macro-paired-context
@@ -2207,6 +2219,7 @@
         (is (= :enter (:edge (first frames))))
         (is (= :namespace-load (:phase (second frames))))
         (is (= :return (:edge (second frames))))
+        (is (not (contains? (first frames) :elapsed-ns)))
         (is (not (contains? (first frames) :test-var)))
         (is (not (contains? (first frames) :error-class)))
         (is (= :macro-paired-context
@@ -2224,6 +2237,67 @@
         (is (not (macro-diagnostic-report-contains-key? report :descendant-pids)))
         (is (not (macro-diagnostic-report-contains-key? report :stdin-path)))
         (is (= before (report-fixture-snapshot root))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-preserves-v2-progress-elapsed-values
+  (let [namespace-name "gravity.macro.pipeline-test"
+        test-var "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+        frames [(macro-diagnostic-namespace-progress-v2-frame
+                 :namespace-load :enter namespace-name 0)
+                (macro-diagnostic-namespace-progress-v2-frame
+                 :namespace-load :return namespace-name 4)
+                (macro-diagnostic-progress-v2-frame
+                 :macro-paired-context :enter namespace-name test-var 9)
+                (macro-diagnostic-progress-v2-frame
+                 :macro-paired-context :return namespace-name test-var 17)]
+        fixture (macro-diagnostic-fixture!
+                 {:progress-by-id {"macro-pipeline-cohort" frames
+                                   "macro-receipt-controls" []
+                                   "macro-bootstrap-compatibility" []}})
+        root (:root fixture)]
+    (try
+      (let [report (diagnostic-report/macro-report (str root))
+            observed (macro-diagnostic-report-progress-frames report)]
+        (is (= [:gravity/development-test-progress-v2
+                :gravity/development-test-progress-v2
+                :gravity/development-test-progress-v2
+                :gravity/development-test-progress-v2]
+               (mapv :schema observed)))
+        (is (= [0 4 9 17] (mapv :elapsed-ns observed)))
+        (is (= [9 17]
+               (mapv :elapsed-ns
+                     (macro-diagnostic-report-paired-frames report))))
+        (is (= 4 (get-in report [:progress :total-frames])))
+        (is (= 2 (get-in report [:progress :macro-paired-count])))
+        (is (= (last observed) (get-in report [:progress :last-observed])))
+        (is (not (macro-diagnostic-report-contains-key? report :duration-ns))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-does-not-invent-v2-missing-return-duration-or-cause
+  (let [namespace-name "gravity.macro.pipeline-test"
+        test-var "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+        frames [(macro-diagnostic-namespace-progress-v2-frame
+                 :namespace-load :enter namespace-name 0)
+                (macro-diagnostic-progress-v2-frame
+                 :macro-paired-context :enter namespace-name test-var 13)]
+        fixture (macro-diagnostic-fixture!
+                 {:progress-by-id {"macro-pipeline-cohort" frames
+                                   "macro-receipt-controls" []
+                                   "macro-bootstrap-compatibility" []}})
+        root (:root fixture)]
+    (try
+      (let [report (diagnostic-report/macro-report (str root))
+            paired (macro-diagnostic-report-paired-frames report)]
+        (is (= 1 (count paired)))
+        (is (= :enter (:edge (last paired))))
+        (is (= 13 (:elapsed-ns (last paired))))
+        (is (= (last paired) (get-in report [:progress :last-observed])))
+        (is (not (macro-diagnostic-report-contains-key? report :duration-ns)))
+        (is (not (macro-diagnostic-report-contains-key? report :cause)))
+        (is (some #{:missing-return-is-not-timing-or-cause}
+                  (:nonclaims report))))
       (finally
         (delete-fixture-tree! root)))))
 
@@ -2494,6 +2568,38 @@
                         #(diagnostic-report/macro-report (str root))))))
       (finally
         (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-rejects-invalid-v2-progress-timing-and-authority
+  (let [namespace-name "gravity.macro.pipeline-test"
+        valid (macro-diagnostic-namespace-progress-v2-frame
+               :namespace-load :enter namespace-name 5)
+        legacy (macro-diagnostic-namespace-progress-frame
+                :namespace-load :enter namespace-name)
+        cases [["missing elapsed-ns" (dissoc valid :elapsed-ns)]
+               ["negative elapsed-ns" (assoc valid :elapsed-ns -1)]
+               ["non-integer elapsed-ns" (assoc valid :elapsed-ns "5")]
+               ["unknown v2 key" (assoc valid :unexpected true)]
+               ["unsupported v2 authority" (assoc valid :authority :diagnostic)]
+               ["v1 elapsed-ns is not historical schema" (assoc legacy :elapsed-ns 5)]
+               ["bare v1 schema is rejected" (assoc legacy :schema :development-test-progress-v1)]
+               ["foreign v1 schema is rejected" (assoc legacy :schema :other/development-test-progress-v1)]
+               ["unsupported progress schema" (assoc valid
+                                                     :schema :gravity/development-test-progress-v3)]
+               ["missing schema is not accepted" (-> valid
+                                                     (dissoc :schema)
+                                                     (assoc :other :gravity/development-test-progress-v1))]]]
+    (doseq [[label frame] cases]
+      (let [{:keys [root]} (macro-diagnostic-fixture!
+                            {:progress-by-id {"macro-pipeline-cohort" [frame]
+                                              "macro-receipt-controls" []
+                                              "macro-bootstrap-compatibility" []}})]
+        (try
+          (is (instance? Throwable
+                         (macro-diagnostic-report-call-error
+                          #(diagnostic-report/macro-report (str root))))
+              label)
+          (finally
+            (delete-fixture-tree! root)))))))
 
 (deftest macro-hosted-envelope-covers-all-child-watchdogs
   (let [workflow (slurp ".github/workflows/ci.yml")
