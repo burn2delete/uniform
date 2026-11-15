@@ -249,6 +249,14 @@ rejection and asserts its target facts; no production admission is broadened.
 The corrected policy selector is rerun before the obsolete scope rejection
 is removed.
 
+The first corrected-policy attempt on local
+`13876799b8df45b4a6984f52a454bc1e71a63634` (published
+`f3c98391caf5a59efddac8c7c10c2e508665df3f`, tree
+`1d65ea985adbb143933f1373f841dfafd8832711`) failed namespace loading with
+exit 2 because the test edit had one extra closing delimiter. No test ran.
+The delimiter was removed, and the full Clojure reader consumed all 39 test
+file forms before the fresh retry. Compiler source bytes were unchanged.
+
 Three newly started batches were stopped with exit 130 to reduce overlapping
 JVM memory pressure, before any selected test completed. An earlier eight-test
 source/MIR batch was externally killed with exit 137: its two current-reader

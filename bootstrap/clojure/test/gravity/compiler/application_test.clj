@@ -598,7 +598,7 @@
           (is (= path (diagnostic-source data)) (pr-str data))
           (doseq [[key expected] expected-facts]
             (is (= expected (diagnostic-fact data key))
-                (str label " " key " " (pr-str data))))))))))
+                (str label " " key " " (pr-str data)))))))))
 
 (defn- with-mutated-runtime-result [function-name transform operation]
   (let [original bootstrap/p15-s23-stage2-runtime-execute-function
