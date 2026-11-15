@@ -1,11 +1,18 @@
 # Current source to verified scalar MIR
 
-The production entrypoint is
-`gravity.compiler.application/current-source-to-verified-mir`. It constructs
-and freshly verifies checked Core and MIR from an actual `.gravity` or `.qst`
-source file and an explicit source policy. It supports the existing hosted,
-safe, JVM-targeted checked-I64 addition and applicable Boolean scalar families.
-This is one intermediate compiler handoff, with one exported `main` function.
+This document records the first production increment of
+`gravity.compiler.application/current-source-to-verified-mir`, including its
+original scope and verification checkpoints. That increment constructed and
+freshly verified checked Core and MIR from an actual `.gravity` or `.qst`
+source file and an explicit source policy, admitting hosted, safe,
+JVM-targeted checked-I64 addition and applicable Boolean scalar families with
+one exported `main` function.
+
+The [compositional scalar increment](compiler-compositional-scalar-mir.md)
+extends this same entrypoint to actual named exports, private helpers, direct
+calls, computed locals and nested scalar conditionals. The examples below
+remain valid; the historical single-function restriction no longer describes
+the current implementation.
 
 ## API
 

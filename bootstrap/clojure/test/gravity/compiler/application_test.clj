@@ -142,6 +142,7 @@
         receipt (:source-policy-receipt result)
         resolution (:function-resolution receipt)]
     (is (= :accepted (:status result)))
+    (is (not-any? #{:compositional-multi-function} (:nonclaims result)))
     (is (= {:path path :content-hash expected-hash :byte-count (alength bytes)}
            (:source result)))
     (is (content-id? (:artifact-id result)))
