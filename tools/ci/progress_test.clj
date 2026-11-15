@@ -132,6 +132,13 @@
     (is (= 12 (count (:rows progress))))
     (is (= #{:namespace-load :namespace-fixture :each-fixture :test-var}
            (set (map :phase (:rows progress)))))
+    (is (every? #(= :gravity/development-test-progress-v2 (:schema %))
+                (:rows progress)))
+    (is (= 0 (:elapsed-ns (first (:rows progress)))))
+    (is (every? #(and (integer? (:elapsed-ns %))
+                      (not (neg? (:elapsed-ns %))))
+                (:rows progress)))
+    (is (apply <= (map :elapsed-ns (:rows progress))))
     (is (every? #(= :non-authoritative (:authority %)) (:rows progress)))
     (is (not-any? #(some (set (keys %)) [:argv :environment :message :stack :result :summary])
                   (:rows progress)))))
@@ -139,11 +146,145 @@
 (deftest disabled-progress-does-not-allocate-or-write
   (let [output (writer false)
         result (with-redefs-fn {#'runner/progress-state
-                                (fn [] (throw (AssertionError. "disabled allocation")))}
+                                (fn [] (throw (AssertionError. "disabled allocation")))
+                                #'runner/progress-clock-ns
+                                (fn [] (throw (AssertionError. "disabled clock")))}
                  #(binding [*err* (:writer output)]
                     (exercise {})))]
     (is (= 0 (:result result)))
     (is (zero? @(:calls (:output result))))))
+
+(deftest progress-v2-elapsed-is-runner-relative-for-enter-return-and-throw
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        clock-values (atom [100 112 131 160])
+        calls (atom [])
+        original (Exception. "selected body")
+        clock (fn []
+                (let [value (first @clock-values)]
+                  (swap! clock-values #(vec (next %)))
+                  value))]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* state}
+        (with-redefs-fn {#'runner/progress-clock-ns clock}
+          #(do
+             (is (= :value
+                    (#'runner/observe-progress!
+                     :test-var "gravity.synthetic"
+                     "gravity.synthetic/return"
+                     (fn [] (swap! calls conj :return) :value))))
+             (let [result (try
+                            (#'runner/observe-progress!
+                             :test-var "gravity.synthetic"
+                             "gravity.synthetic/throw"
+                             (fn [] (swap! calls conj :throw) (throw original)))
+                            (catch Throwable error error))]
+               (is (identical? original result)))))))
+    (let [rows (mapv edn/read-string (str/split-lines (str output)))]
+      (is (= [[:test-var :enter]
+              [:test-var :return]
+              [:test-var :enter]
+              [:test-var :throw]]
+             (mapv (juxt :phase :edge) rows)))
+      (is (= [0 12 31 60] (mapv :elapsed-ns rows)))
+      (is (= [:return :throw] @calls))
+      (is (= "java.lang.Exception" (:error-class (last rows)))))))
+
+(deftest progress-v2-elapsed-handles-nanotime-signed-wrap
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        clock-values (atom [Long/MAX_VALUE Long/MIN_VALUE])
+        clock (fn []
+                (let [value (first @clock-values)]
+                  (swap! clock-values #(vec (next %)))
+                  value))]
+    (binding [*err* output]
+      (with-bindings {#'runner/*progress-state* state}
+        (with-redefs-fn {#'runner/progress-clock-ns clock}
+          #(is (= :value
+                  (#'runner/observe-progress!
+                   :test-var "gravity.synthetic"
+                   "gravity.synthetic/wrap"
+                   (constantly :value)))))))
+    (is (= [0 1]
+           (mapv :elapsed-ns
+                 (mapv edn/read-string (str/split-lines (str output))))))))
+
+(deftest backwards-progress-clock-retains-diagnostic-after-body
+  (let [state (#'runner/progress-state)
+        output (java.io.StringWriter.)
+        clock-values (atom [100 90])
+        calls (atom 0)
+        clock (fn []
+                (let [value (first @clock-values)]
+                  (swap! clock-values #(vec (next %)))
+                  value))
+        result (binding [*err* output]
+                 (with-redefs-fn {#'runner/progress-clock-ns clock}
+                   #(try
+                      (#'runner/run-with-progress!
+                       state
+                       (fn []
+                         (#'runner/observe-progress!
+                          :test-var "gravity.synthetic"
+                          "gravity.synthetic/backwards"
+                          (fn [] (swap! calls inc) :value))))
+                      ::returned
+                      (catch Throwable error error))))]
+    (is (= 1 @calls))
+    (is (instance? clojure.lang.ExceptionInfo result))
+    (is (= "DEV-PROGRESS-CLOCK" (:id (ex-data result))))
+    (is (some #(identical? result %)
+              (.toArray ^java.util.ArrayList (:errors state))))
+    (is (= [0]
+           (mapv :elapsed-ns
+                 (mapv edn/read-string (str/split-lines (str output))))))))
+
+(deftest progress-clock-failure-does-not-skip-body-or-replace-body-error
+  (let [clock-error (Exception. "clock")
+        value-calls (atom 0)
+        value-state (#'runner/progress-state)
+        value-result (binding [*err* (java.io.StringWriter.)]
+                       (with-redefs-fn {#'runner/progress-clock-ns
+                                        (fn [] (throw clock-error))}
+                         #(try
+                            (#'runner/run-with-progress!
+                             value-state
+                             (fn []
+                               (#'runner/observe-progress!
+                                :test-var "gravity.synthetic"
+                                "gravity.synthetic/value"
+                                (fn [] (swap! value-calls inc) :value))))
+                            ::returned
+                            (catch Throwable error error))))
+        body-error (Exception. "body")
+        error-calls (atom 0)
+        error-state (#'runner/progress-state)
+        error-result (binding [*err* (java.io.StringWriter.)]
+                       (with-redefs-fn {#'runner/progress-clock-ns
+                                        (fn [] (throw clock-error))}
+                         #(try
+                            (#'runner/run-with-progress!
+                             error-state
+                             (fn []
+                               (#'runner/observe-progress!
+                                :test-var "gravity.synthetic"
+                                "gravity.synthetic/error"
+                                (fn []
+                                  (swap! error-calls inc)
+                                  (throw body-error)))))
+                            ::returned
+                            (catch Throwable error error))))]
+    (is (= 1 @value-calls))
+    (is (identical? clock-error value-result))
+    (is (some #(identical? clock-error %)
+              (.toArray ^java.util.ArrayList (:errors value-state))))
+    (is (= 1 @error-calls))
+    (is (identical? body-error error-result))
+    (is (some #(identical? clock-error %)
+              (.getSuppressed ^Throwable body-error)))
+    (is (some #(identical? clock-error %)
+              (.toArray ^java.util.ArrayList (:errors error-state))))))
 
 (deftest diagnostic-write-failure-is-sticky-after-body
   (let [output (writer true)
@@ -339,8 +480,9 @@
         sink (writer-fixture nil nil nil)
         r (with-redefs [pr-str
                         (fn [& args]
-                          (if (= :gravity/development-test-progress-v1
-                                 (:schema (first args)))
+                          (if (contains? #{:gravity/development-test-progress-v1
+                                           :gravity/development-test-progress-v2}
+                                         (:schema (first args)))
                             (throw error)
                             (apply original-pr args)))]
             (exercise-legacy {:progress? true :writer (:writer sink)}))]

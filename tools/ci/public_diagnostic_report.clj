@@ -369,8 +369,14 @@
 (def ^:private macro-statuses
   #{:passed :failed :timeout :launch-error :skipped})
 
-(def ^:private macro-progress-schema
+(def ^:private macro-progress-v1-schema
   :gravity/development-test-progress-v1)
+
+(def ^:private macro-progress-v2-schema
+  :gravity/development-test-progress-v2)
+
+(def ^:private macro-progress-schema-prefix
+  "gravity/development-test-progress-")
 
 (def ^:private macro-progress-edges
   #{:enter :return :throw})
@@ -380,8 +386,11 @@
     :macro-paired-bootstrap-expand :macro-paired-verify :macro-paired-lineage
     :macro-paired-compare})
 
-(def ^:private macro-progress-keys
+(def ^:private macro-progress-v1-keys
   #{:schema :authority :phase :edge :namespace :test-var :error-class})
+
+(def ^:private macro-progress-v2-keys
+  (conj macro-progress-v1-keys :elapsed-ns))
 
 (defn- macro-id!
   [value label]
@@ -537,29 +546,38 @@
   [line]
   (let [trimmed (str/trim line)]
     (and (str/starts-with? trimmed "{")
-         (str/includes? trimmed (name macro-progress-schema)))))
+         (str/includes? trimmed macro-progress-schema-prefix))))
 
 (defn- validate-progress-frame!
   [value label]
   (require-map! value label)
-  (when-not (set/subset? (set (keys value)) macro-progress-keys)
-    (fail! (str label " has unsupported progress frame keys")
-           {:label label :keys (vec (sort-by str (keys value)))}))
-  (when-not (= macro-progress-schema (:schema value))
-    (fail! (str label " has an unsupported progress schema")
-           {:label label :schema (:schema value)}))
-  (when-not (= :non-authoritative (:authority value))
-    (fail! (str label " progress frame must be non-authoritative")
-           {:label label :authority (:authority value)}))
-  (require-keyword! (:phase value) (str label " :phase"))
-  (let [edge (require-keyword! (:edge value) (str label " :edge"))]
-    (when-not (contains? macro-progress-edges edge)
-      (fail! (str label " has an unsupported progress edge")
-             {:label label :edge edge})))
-  (doseq [key [:namespace :test-var :error-class]]
-    (when (contains? value key)
-      (nonempty-string! (str label " " key) (get value key))))
-  value)
+  (let [schema (:schema value)
+        allowed-keys (case schema
+                       :gravity/development-test-progress-v1 macro-progress-v1-keys
+                       :gravity/development-test-progress-v2 macro-progress-v2-keys
+                       (fail! (str label " has an unsupported progress schema")
+                              {:label label :schema schema}))]
+    (when-not (set/subset? (set (keys value)) allowed-keys)
+      (fail! (str label " has unsupported progress frame keys")
+             {:label label :keys (vec (sort-by str (keys value)))}))
+    (when (= schema macro-progress-v2-schema)
+      (let [elapsed-ns (require-integer! (:elapsed-ns value)
+                                         (str label " :elapsed-ns"))]
+        (when (neg? elapsed-ns)
+          (fail! (str label " :elapsed-ns must not be negative")
+                 {:label label :elapsed-ns elapsed-ns}))))
+    (when-not (= :non-authoritative (:authority value))
+      (fail! (str label " progress frame must be non-authoritative")
+             {:label label :authority (:authority value)}))
+    (require-keyword! (:phase value) (str label " :phase"))
+    (let [edge (require-keyword! (:edge value) (str label " :edge"))]
+      (when-not (contains? macro-progress-edges edge)
+        (fail! (str label " has an unsupported progress edge")
+               {:label label :edge edge})))
+    (doseq [key [:namespace :test-var :error-class]]
+      (when (contains? value key)
+        (nonempty-string! (str label " " key) (get value key))))
+    value))
 
 (defn- read-macro-log!
   [^Path root checksums relative]
