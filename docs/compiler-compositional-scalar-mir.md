@@ -32,6 +32,14 @@ verification. Historical source-interface pins are not renewed by this work.
   starts from that exact prerequisite candidate. It does not claim that
   #1429 was already on main.
 
+During development #1429 merged as
+`d6ca6c93059fe85acb53a594a8fedfa0e64362bd`. Its tree is identical to the
+preserved prerequisite tree. Commit
+`59e3cd07a39dca04ca91e2bd3053e5b2c117cb2b` composes that main into this
+successor without changing candidate source bytes. Draft PR
+[#1439](https://github.com/burn2delete/uniform/pull/1439) now targets main.
+This successor has not been merged.
+
 Connected changed-file checks found no overlapping owned implementation
 paths in #1419, #916, #911, #1369, #1372, #1197, #1207, #1420 or #1438.
 The six active workstream records also have no intersecting owned paths.
@@ -89,8 +97,8 @@ Evidence log: `evidence/baseline-scalar.log` in the development workspace.
 
 ## Verification checkpoints
 
-The required original application selector was started on the same untouched
-base before implementation:
+The required original application selector completed on untouched base
+`7209382b0282ec423ff102bcc67ad4859fd5a7b0`:
 
 ```sh
 clojure -J-Xmx2g -M:dev-test \
@@ -98,11 +106,44 @@ clojure -J-Xmx2g -M:dev-test \
   --exact current-source-to-verified-mir --progress
 ```
 
-At this initial checkpoint it is still running. Its pending result is not
-passing evidence. Implementation takes place in a separate checkout so it
-cannot change the selected source while that baseline executes.
+Result: **1 test, 234 assertions, 0 failures, 0 errors, exit 0**.
+The representative source above has content identity
+`sha256:f50c480bef4c286933c1b9b08281f757072c9f6935a5edc38c75bf640b2d0172`.
 
-The new acceptance selector will be:
+Preserved candidate checkpoints:
+
+| Checkpoint | Published commit | Exact tree |
+| --- | --- | --- |
+| Initial implementation | `ff1c9a885d60af6f809180c0d965b86e8ff6f270` | `d117ca3d1e6e0d169cc92d36cbc0bcc60d6b8ae0` |
+| Scalar authority, C5 provenance and proof facts | `538fc10049b1d6a087a03cd9eb37819dfba84aad` | `4e312e4792d2646ffd4f12b788284514425d9094` |
+| Composition with merged prerequisite | `59e3cd07a39dca04ca91e2bd3053e5b2c117cb2b` | `4e312e4792d2646ffd4f12b788284514425d9094` |
+
+The first implementation probe reached an accepted Uniform multi-function
+Core template, then rejected at host `C6-VERIFY` with
+`:exact-gravity-builder-result-envelope`. The transport recognized only the
+prior family/authority combinations. The next checkpoint added the exact
+new scalar family/authority carrier, while retaining digest-graph validation,
+fresh parent reconstruction and actual Uniform verifier execution. That
+first probe overlapped an owner edit and is only rejection evidence; it is
+not promoted as an exact-source acceptance result.
+
+The second checkpoint was tested from local source commit
+`6f13b5160e9e90d1c5785a4fd24b52ad0c91c02e`, whose tree exactly equals
+published `538fc10049b1d6a087a03cd9eb37819dfba84aad`. The subsequent main
+composition has that same tree. Its selected owner identities were:
+
+| Uniform owner | Source content identity |
+| --- | --- |
+| C6-C10 | `sha256:abccc67d102359b5e109a0588edb2db037e3e84162e41c86e979ff024de88a1e` |
+| C11 | `sha256:a803d6b086ea38921998ac37f7fd325a1625c026cd9fc3fd900b945f4a9efcf9` |
+
+Both current owner bindings compiled successfully. The language-boundary
+gate passed with **6 tests, 11 assertions, 0 failures, 0 errors**. Four
+affected SH13 interpreter selectors passed with **58 assertions, 0 failures,
+0 errors** at the initial implementation. These interpreter checks are
+separate from source-bridge acceptance.
+
+The recurring production selector is:
 
 ```sh
 clojure -J-Xmx2g -M:dev-test \
@@ -110,7 +151,107 @@ clojure -J-Xmx2g -M:dev-test \
   --exact scalar-functions-and-control-flow --progress
 ```
 
-No implementation acceptance or completed target compilation is claimed by
-this initial checkpoint. Later checkpoints record actual terminal results,
-candidate identities, remaining failed handoffs, and the corresponding
-source and owner identities.
+Its first complete run on the second checkpoint produced **1 test, 132
+assertions, 2 failures, 0 errors**. Both failures were test metadata predicates
+that incorrectly required C2 form IDs such as `:form-23` to be SHA256 IDs.
+The source construction, fresh Core/MIR verification, results `10`, `7` and
+`18014398509481987`, eager false-branch overflow, fresh execution verification,
+and private-export rejection assertions completed without failures. The
+corrected assertion compares each C2 form ID with the actual Core source
+origin and retains SHA256 checks for C5 syntax and scope IDs. This failed
+test run is not reported as a passing selector.
+
+That first test used an equivalent one-line `if` source, with identity
+`sha256:78fecba9f93bededb6ff1a850e86ce160bb5504f7d0b72ec86a41fd88aa58252`.
+The subsequent acceptance source uses the exact multiline representative
+above. The first run's returned Core identity was
+`sha256:92e9f6b4654d2f66238296f39a060b4672b8a94e49ab0dfdf6d387fdcc51a8d8`,
+and the application artifact was
+`sha256:9c98237ef91ef3bf35345abe7bf77456dfcb9965b6f7b26c35aed7ccbc97f9fe`.
+
+A real follow-up source declared a private function named `+` that returns
+its first I64 argument. C5 resolved the caller's operator to that namespace
+function, while the seed plan classified the spelling as a builtin. The
+production API rejected with `C6-VERIFY`,
+`:missing-fact :resolved-core-i64-add-primitive`, at the actual operator
+span, line 11 columns 41-42. Its expected binding was core `gravity.core/+`;
+its actual binding was the private namespace function `acceptance.shadow/+`.
+This identifies a concrete direct-call classification gap. The correction
+uses actual C5 operator bindings for both dependency discovery and call
+classification, retaining checked addition only for the true core binding.
+It does not change the historical seed's global precedence.
+
+The original rejection and source/MIR regression batches continue against
+the frozen second-checkpoint checkout. Subsequent edits use an isolated
+successor checkout so those tests cannot observe changing owner bytes.
+Pending or interrupted runs are not counted as passing evidence.
+
+## Construction and execution ownership
+
+The production API accepts only a source path and the five explicit policy
+keys. It reconstructs the actual Reader, Syntax, expansion and C5 products,
+transports every declaration and parameter, and binds the complete resolution
+projection into the authenticated C6 envelope. An unused parameter is retained
+through its C5 declaration identity. Module exports come from the real source;
+there is no synthesized `main` entrypoint.
+
+The Uniform C6-C10 owner checks the complete nonrecursive function graph,
+including unused functions. It builds parameter and local types, fixed-arity
+call signatures, scalar return types, branch compatibility, latent effects,
+numeric-error facts and persistent immutable ownership. The scalar scope
+contract has no function, form, depth or work quota. Original C3 syntax
+identity and expanded C5 function/scope identities remain distinct.
+
+The Uniform C11 owner builds per-function MIR with direct call operations,
+explicit blocks, branches and joins, source maps, type/effect/ownership/safety
+facts, proof references, definitions and uses. Checked addition has an
+original overflow guard and consumes that guard's token. The verifier
+reconstructs expected MIR from checked Core and compares the full result,
+in addition to checking signatures, dominance and preserved fact tables.
+
+Reference execution calls `sh13-run-scalar-functions-mir` on the unchanged
+`checked-core` and `mir-module` returned by the API, plus the actual exported
+name and argument vector. The existing SH13 interpreter executes private
+frames projected from that verified MIR. These frames do not acquire a new
+source target or become replacement input artifacts. The companion
+`sh13-verify-scalar-functions-execution` recomputes the execution result.
+
+The eager-overflow case must raise `:error/numeric` with kind `:overflow`
+inside the helper before any caller conditional is selected. The existing
+reference convention represents this with outer status `:rejected` and inner
+execution status `:raised`; a malformed MIR rejection instead has no
+execution. Tests distinguish these outcomes.
+
+The host retains its bootstrap transport, current-source selection, identity
+computation and composition roles. Semantic checking and construction stay
+in Uniform. The source-policy receipt records
+`:admission-status :development-unadmitted`,
+`:verification-scope :selected-current-source-host-seed` and
+`:self-hosted? false`. The expression receipt accurately records that the
+module still uses the Clojure seed plan assembler.
+
+## Verification matrix and remaining target boundary
+
+`gravity.compiler.application-test` contains focused selectors for the exact
+representative source, renamed `.qst` with three functions and nested calls,
+shadowed operator binding, both legacy single-function families, invalid
+calls/types/branches/effects/recursion, source-policy mismatch, supplied
+authority, genuine-product tampering and source/binding substitution.
+The old multiple-function scope rejection is removed only after the corrected
+representative selector and new semantic/policy negatives pass. Subtraction,
+multiplication and JavaScript policy remain outside this increment.
+
+Affected source/MIR regression selectors cover original parameter
+production, fresh resolution replay, checked-add facts, undeclared numeric
+effects, authentic source and mode mismatches, original MIR bridging and
+upstream fact/check substitution. The source-inspection regression that
+previously assumed the old C6 dispatcher was its outermost `if` now checks
+the scalar dispatch and then inspects the unchanged legacy export gate.
+Its corrected focused run passed **1 test, 16 assertions, 0 failures,
+0 errors**; the earlier run's 2 failures and 6 errors remain failed evidence.
+
+Final evidence records terminal results for these selectors, the language
+boundary, documentation validators and `git diff --check`. No pending result
+establishes completion. The next separate compiler increment is JavaScript
+source-target admission and emission; this MIR milestone does not produce a
+JavaScript module or establish completed target compilation.

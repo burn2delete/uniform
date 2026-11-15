@@ -4005,6 +4005,17 @@
    (get (get envelope :resolved-functions) :resolutions) :reference-syntax-id
    (get (c6c10-scalar-coordinate envelope form) :projected-syntax-id)))
 
+(defn c6c10-scalar-call-binding [envelope form]
+  (if (= :list (get form :kind))
+    (let [operator-form (c6c10-form-by-id (get envelope :form-tree) (first (get form :children)))
+          reference (c6c10-scalar-reference envelope operator-form)
+          binding (c6c10-scalar-row-by (get (get envelope :resolved-functions) :bindings)
+                    :binding-id (get reference :binding-id))]
+      (if (= [:operator :namespace :function (get envelope :module)]
+             [(get reference :position) (get binding :binding-class)
+              (get binding :kind) (get binding :namespace)]) binding nil))
+    nil))
+
 (defn c6c10-scalar-type? [type]
   (contains? #{:gravity/i64 :gravity/bool} type))
 
@@ -4166,7 +4177,9 @@
 
 (defn c6c10-scalar-map-instruction [state envelope instruction form-id path env depth]
   (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
-        operation (get instruction :op)]
+        operation (get instruction :op)
+        call-binding (if (contains? #{:function-call :builtin-call} operation)
+                       (c6c10-scalar-call-binding envelope form) nil)]
     (if (if (= form nil) false (c6c10-instruction-form-matches? instruction form))
       (if (= operation :literal) (c6c10-scalar-map-literal state envelope instruction form path depth)
         (if (= operation :local) (c6c10-scalar-map-local state envelope instruction form path env depth)
@@ -4179,15 +4192,18 @@
               (if (= operation :if)
                 (c6c10-scalar-validate-if
                  (c6c10-map-if state envelope instruction form path env depth) envelope form path depth)
-                (if (= operation :function-call)
-                  (c6c10-scalar-map-call state envelope instruction form path env depth)
-                  (if (if (= operation :builtin-call) (= '+ (get instruction :function)) false)
-                    (c6c10-scalar-map-checked-add state envelope instruction form path env depth)
-                    (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core
-                     :diagnostic/c6-lowering-gap
-                     {:missing-fact :compositional-scalar-source-operation
-                      :observed-operation operation :function (get instruction :function) :plan-path path}
-                     :use-the-supported-scalar-grammar))))))))
+                (if (map? call-binding)
+                  (c6c10-scalar-map-call state envelope
+                   (assoc instruction :function (get call-binding :name)) form path env depth)
+                  (if (= operation :function-call)
+                    (c6c10-scalar-map-call state envelope instruction form path env depth)
+                    (if (if (= operation :builtin-call) (= '+ (get instruction :function)) false)
+                      (c6c10-scalar-map-checked-add state envelope instruction form path env depth)
+                      (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core
+                       :diagnostic/c6-lowering-gap
+                       {:missing-fact :compositional-scalar-source-operation
+                        :observed-operation operation :function (get instruction :function) :plan-path path}
+                       :use-the-supported-scalar-grammar)))))))))
       (c6c10-form-rejection state envelope form :C6-ORIGIN :lower-to-core :diagnostic/c6-origin
        {:missing-fact :lockstep-plan-c2-form-mapping :plan-operation operation
         :source-form-id form-id :plan-path path} :reconstruct-current-source-parents))))
@@ -4340,27 +4356,18 @@
         :expected-arity (count (get declaration :parameters)) :actual-arity (get plan :arity)}
        :reconstruct-the-original-function-declaration))))
 
-(defn c6c10-scalar-instruction-calls [instruction result]
-  (let [operation (get instruction :op)
-        result (if (= operation :function-call)
-                 (c6c10-conj-unique result (get instruction :function)) result)
-        children (if (contains? #{:function-call :builtin-call} operation) (get instruction :args)
-                   (if (= operation :if)
-                     [(get instruction :test) (get instruction :then) (get instruction :else)]
-                     (if (= operation :do) (get instruction :body)
-                       (if (= operation :let)
-                         (loop [bindings (get instruction :bindings) values []]
-                           (if (= (count bindings) 0) (c6c10-append values (get instruction :body))
-                             (recur (rest bindings) (conj values (get (first bindings) :expr)))))
-                         []))))]
-    (loop [remaining children calls result]
-      (if (= (count remaining) 0) calls
-        (recur (rest remaining) (c6c10-scalar-instruction-calls (first remaining) calls))))))
-
-(defn c6c10-scalar-function-calls [plan]
-  (loop [instructions (get plan :instructions) result []]
-    (if (= (count instructions) 0) result
-      (recur (rest instructions) (c6c10-scalar-instruction-calls (first instructions) result)))))
+(defn c6c10-scalar-function-calls [envelope function-form]
+  ; The original C2 occurrence tree supplies order; actual C5 operator bindings
+  ; identify callees even when the seed classified their spelling as a builtin.
+  (loop [pending (vec (rest (rest (rest (get function-form :children))))) seen #{} result []]
+    (if (= (count pending) 0) result
+      (let [id (first pending)]
+        (if (contains? seen id)
+          (recur (rest pending) seen result)
+          (let [form (c6c10-form-by-id (get envelope :form-tree) id)
+                binding (c6c10-scalar-call-binding envelope form)]
+            (recur (c6c10-append (vec (get form :children)) (rest pending)) (conj seen id)
+             (if (map? binding) (c6c10-conj-unique result (get binding :name)) result))))))))
 
 (defn c6c10-scalar-build-graph [graph envelope name visiting]
   (if (contains? (get graph :functions) name) graph
@@ -4376,7 +4383,7 @@
            :diagnostic/c6-lowering-gap
            {:missing-fact :nonrecursive-scalar-call-graph :function name :call-cycle (conj visiting name)}
            :use-a-nonrecursive-first-order-call-graph)
-          (let [dependencies (c6c10-scalar-function-calls plan)
+          (let [dependencies (c6c10-scalar-function-calls envelope form)
                 upstream (loop [remaining dependencies accumulated graph]
                            (if (= :rejected (get accumulated :status)) accumulated
                              (if (= (count remaining) 0) accumulated

@@ -42,7 +42,9 @@
          "  (+ left right))\n\n"
          "(defn score [choose-sum :- Bool left :- I64 right :- I64]\n"
          "  (let [sum (add left right)]\n"
-         "    (if choose-sum sum left)))")))
+         "    (if choose-sum\n"
+         "      sum\n"
+         "      left)))")))
 
 (def ^:private composed-source
   (module-source 'renamed.scalar.composition '[evaluate] #{:error/raise}
@@ -191,8 +193,13 @@
     (is (every? content-id? (:root-syntax-ids resolution)))
     (is (= (set (keys (:functions core))) (set (map :name (:declarations resolution)))))
     (doseq [declaration (:declarations resolution)]
-      (doseq [key [:function-form-id :function-syntax-id :function-scope-id]]
+      (doseq [key [:function-syntax-id :function-scope-id]]
         (is (content-id? (get declaration key)) (str (:name declaration) " " key)))
+      (let [function (core-function core (:name declaration))
+            origin (get-in core [:source-origin-table (get-in function [:source :origin-id])])]
+        (is (keyword? (:function-form-id declaration)))
+        (is (= (:function-form-id declaration) (:c2-form-id origin))
+            "The ordinal C2 form ID must identify the actual function source origin"))
       (is (= (get-in declaration [:function-binding :binding-id])
              (get-in (core-function core (:name declaration)) [:attributes :declaration-binding-id]))))
     (is (false? (get-in receipt [:expression-binding :invoked?])))
@@ -218,7 +225,16 @@
                       :source-policy (:owner-metadata-content-id receipt)
                       :syntax (get-in receipt [:syntax-owner :artifact-id])
                       :resolution (:sh06-artifact-id resolution)
-                      :mir-report-scope (:scope report)}))))
+                      :mir-report-scope (:scope report)
+                      :compiler-bindings
+                      (into {}
+                            (map (fn [[owner binding]]
+                                   [owner (select-keys binding
+                                            [:source-path :source-content-hash
+                                             :plan-semantic-hash :functions-semantic-hash
+                                             :builder-function :builder-semantic-hash
+                                             :verifier-function :verifier-semantic-hash])]))
+                            (:compiler-bindings result))}))))
 
 (deftest current-source-to-verified-mir
   (let [compiler-identities (atom nil)]
@@ -435,6 +451,47 @@
             (is (= :returned (get-in execution [:execution :status])))
             (assert-execution-verified invoke result 'evaluate arguments execution)))))))
 
+(deftest scalar-functions-resolve-shadowed-addition
+  (let [text (module-source 'acceptance.shadowed '[select-value] #{}
+               (str "(defn + [selected :- I64 unused :- I64] selected)\n\n"
+                    "(defn select-value [first-value :- I64 second-value :- I64]\n"
+                    "  (+ second-value first-value))"))]
+    (with-source-file "shadowed-addition.gravity" text
+      (fn [path]
+        (let [result (application/current-source-to-verified-mir path bool-policy)
+              core (:checked-core result)
+              mir (:mir-module result)
+              helper (core-function core '+)
+              caller (core-function core 'select-value)
+              call (first (source-nodes core :call))
+              helper-mir (get-in mir [:functions '+])
+              invoke (reference-invoker path)]
+          (assert-source-result result path text 'acceptance.shadowed bool-policy)
+          (is (= '#{+ select-value} (set (keys (:functions core))) (set (keys (:functions mir)))))
+          (is (= '[select-value] (:exports core) (:exports mir)))
+          (is (= '[selected unused] (get-in helper [:attributes :params])))
+          (is (= (get-in helper [:attributes :parameter-node-ids]) (:params helper-mir)))
+          (is (= 2 (count (:params helper-mir)) (count (:operands call))))
+          (is (= [:gravity/i64 :gravity/i64] (:param-types helper-mir)))
+          (is (= '+ (get-in call [:attributes :callee])))
+          (is (= (get-in helper [:attributes :declaration-binding-id])
+                 (get-in call [:attributes :callee-binding-id])))
+          (is (empty? (source-nodes core :integer-add)))
+          (is (empty? (:runtime-check-table mir)))
+          (doseq [function [helper caller]]
+            (is (= #{} (get-in function [:type :latent-effects])
+                   (get-in core [:effect-facts (:node-id function) :residual])))
+            (is (= #{} (get-in function [:type :throws]))))
+          (doseq [[arguments expected] [[[3 7] 7] [[Long/MAX_VALUE 1] 1]
+                                       [[1 Long/MAX_VALUE] Long/MAX_VALUE]]]
+            (let [execution (execute-result invoke result 'select-value arguments)]
+              (is (= :accepted (:status execution)))
+              (is (= :returned (get-in execution [:execution :status])))
+              (is (= expected (get-in execution [:execution :value])))
+              (is (not-any? #(contains? #{:runtime-check :integer-add} (:opcode %))
+                            (get-in execution [:execution :trace])))
+              (assert-execution-verified invoke result 'select-value arguments execution))))))))
+
 (deftest current-source-rejects-invalid-programs
   (doseq [[label text policy expected-rule]
           [["malformed" (str add-source "[") add-policy "C2-DELIMITER"]
@@ -471,11 +528,11 @@
             {:missing-fact :binary-i64-add-operands
              :expected-type [:gravity/i64 :gravity/i64]
              :actual-type [:gravity/bool :gravity/bool]}]
-           ["branch-results" (str/replace scalar-source "(if choose-sum sum left)" "(if choose-sum true left)")
+           ["branch-results" (str/replace scalar-source "(if choose-sum\n      sum\n      left)" "(if choose-sum true left)")
             add-policy "C7-TYPE-MISMATCH"
             {:missing-fact :scalar-branch-result-types
              :expected-type :gravity/bool :actual-type :gravity/i64}]
-           ["branch-condition" (str/replace scalar-source "(if choose-sum sum left)" "(if left sum left)")
+           ["branch-condition" (str/replace scalar-source "(if choose-sum\n      sum\n      left)" "(if left sum left)")
             add-policy "C7-TYPE-MISMATCH"
             {:missing-fact :scalar-bool-condition
              :expected-type :gravity/bool :actual-type :gravity/i64}]
@@ -483,7 +540,7 @@
             bool-policy "C8-UNDECLARED"
             {:missing-fact :declared-numeric-error-effect :function 'score
              :inferred-effects #{:error/raise} :declared-effects #{}}]
-           ["lexical-binding" (str/replace scalar-source "(if choose-sum sum left)" "(if choose-sum missing left)")
+           ["lexical-binding" (str/replace scalar-source "(if choose-sum\n      sum\n      left)" "(if choose-sum missing left)")
             add-policy "C5-UNRESOLVED" {}]
            ["direct-recursion" (str/replace scalar-source "(+ left right)" "(add left right)")
             add-policy "C6-LOWERING-GAP" {:missing-fact :nonrecursive-scalar-call-graph}]
@@ -644,7 +701,15 @@
                    "MIR safety fact" "C11-SAFETY" "MIR type fact" "C11-TYPE"
                    "MIR guard table" "C11-SAFETY" "MIR missing token consumption" "C11-SAFETY"
                    "MIR wrong token definition" "C11-DOMINANCE"
-                   "MIR guard use before definition" "C11-SAFETY"}]
+                   "MIR guard use before definition" "C11-SAFETY"}
+            owners {"Core callee signature" 'add "Core caller effect" 'score
+                    "Core ownership" 'score "Core safety" 'add
+                    "MIR call signature" 'score "MIR call callee" 'score
+                    "MIR call arity" 'score "MIR call argument order" 'score
+                    "MIR call declaration" 'score "MIR ownership fact" 'add
+                    "MIR safety fact" 'add "MIR type fact" 'add
+                    "MIR guard table" 'add "MIR missing token consumption" 'add
+                    "MIR wrong token definition" 'add "MIR guard use before definition" 'add}]
         (is (= :passed (:status (invoke 'c11-verify-scalar-functions-mir [core mir]))))
         (doseq [[label candidate-core candidate-mir] cases]
           (testing label
@@ -655,8 +720,21 @@
               (is (= :rejected (:status verification)) (str label " " (pr-str verification)))
               (is (= (get rules label) (:diagnostic-id diagnostic)) (pr-str diagnostic))
               (is (= path (diagnostic-source diagnostic)) (pr-str diagnostic))
+              (is (= (get owners label) (:function diagnostic)) (pr-str diagnostic))
+              (is (string? (:operation-id diagnostic)) (pr-str diagnostic))
+              (is (not= (:expected diagnostic) (:actual diagnostic)) (pr-str diagnostic))
               (is (= :rejected (:status execution)))
-              (is (nil? (:execution execution)) "Rejected MIR must not execute"))))
+              (is (nil? (:execution execution)) "Rejected MIR must not execute")
+              (when (= label "MIR call signature")
+                (let [data (failure #((ns-resolve 'gravity.bootstrap 'p15-s23-application-c11-result!)
+                                      path :test-actual-c11-rejected-report verification))]
+                  (is (= "C11-TYPE" (:id data)) (pr-str data))
+                  (is (= path (diagnostic-source data)) (pr-str data))
+                  (is (= 'score (diagnostic-fact data :function-id)) (pr-str data))
+                  (is (= [:gravity/i64 :gravity/i64]
+                         (get-in (diagnostic-fact data :expected) [8 :params])) (pr-str data))
+                  (is (= [:gravity/bool :gravity/i64]
+                         (get-in (diagnostic-fact data :actual) [8 :params])) (pr-str data)))))))
         (let [execution (execute-result invoke result 'score [true 3 7])
               altered (assoc-in execution [:execution :value] 11)
               verification (invoke 'sh13-verify-scalar-functions-execution

@@ -12016,6 +12016,28 @@
 (defn c11-scalar-node [core id]
   (c11-find-node-by-id (get core :core-nodes) id))
 
+(defn c11-scalar-origin-node [core id]
+  (if (= nil id) nil
+    (let [node (c11-scalar-node core id)]
+      (if (= nil node)
+        (loop [nodes (get core :core-nodes)]
+          (if (= 0 (count nodes)) nil
+            (let [candidate (first nodes) check (get (get candidate :safety) :check)]
+              (if (if (= nil check) false
+                    (contains? #{(c11-runtime-check-operation-id check)
+                                 (c11-runtime-check-token-id check)} id))
+                candidate (recur (rest nodes))))))
+        node))))
+
+(defn c11-scalar-subject-node [core subject]
+  (loop [ids [(get subject :node-id) (get subject :core-node-id)
+              (get subject :op-id) (get subject :operation-id) (get subject :operation)
+              (get subject :fn-id) (get subject :guarded-operation-id)
+              (get (get subject :facts) :guarded-operation-id)]]
+    (if (= 0 (count ids)) nil
+      (let [node (c11-scalar-origin-node core (first ids))]
+        (if (= nil node) (recur (rest ids)) node)))))
+
 (defn c11-scalar-node-types [core ids]
   (loop [remaining ids result []]
     (if (= 0 (count remaining)) result
@@ -12026,16 +12048,12 @@
   (get (first (get core :core-nodes)) :source))
 
 (defn c11-scalar-rejected [core mir rule missing subject expected actual]
-  (let [operation-node (c11-scalar-node core (get subject :op-id))
-        core-node (if (= nil operation-node)
-                    (c11-scalar-node core (get (get subject :facts) :guarded-operation-id))
-                    operation-node)
-        source (if (= nil (get subject :source))
-                 (if (= nil core-node) (c11-scalar-source core) (get core-node :source))
-                 (get subject :source))
-        function-name (if (= nil (get subject :name))
-                        (if (= nil core-node) nil (get (get core-node :path) 1))
-                        (get subject :name))]
+  (let [core-node (c11-scalar-subject-node core subject)
+        source (if (= nil core-node)
+                 (if (= nil (get subject :source)) (c11-scalar-source core) (get subject :source))
+                 (get core-node :source))
+        function-name (if (= nil core-node) (get subject :name) (get (get core-node :path) 1))
+        operation-id (if (= nil (get subject :op-id)) (get core-node :node-id) (get subject :op-id))]
     {:artifact :gravity/c11-scalar-functions-report :schema-version 1
      :scope :compositional-scalar-functions :phase :verification :status :rejected
      :checked-core-artifact-id (get core :artifact-id)
@@ -12043,7 +12061,9 @@
      :diagnostics
      [{:diagnostic-id rule :rule rule :severity :error :stage :c11-mir-verification
        :mir-module (get mir :module-id) :function function-name
-       :block (get subject :block-id) :operation-id (get subject :op-id)
+       :block (get subject :block-id) :operation-id operation-id
+       :source-operation (get core-node :source-operation)
+       :origin-id (get source :origin-id) :syntax-id (get source :enclosing-syntax-origin-id)
        :source-span (get source :span) :origin-chain (get source :generated-origin)
        :profile (get core :profile) :target-request (get core :source-target)
        :missing-fact missing :expected expected :actual actual
@@ -12137,8 +12157,8 @@
         (if (= 0 (count nodes)) nil
           (let [node (first nodes) id (get node :node-id)
                 problem (c11-scalar-core-node-problem core node)]
-            (if (contains? seen id) ["C11-DOMINANCE" :unique-scalar-core-node]
-              (if (= nil problem) (recur (rest nodes) (conj seen id)) problem)))))
+            (if (contains? seen id) ["C11-DOMINANCE" :unique-scalar-core-node node]
+              (if (= nil problem) (recur (rest nodes) (conj seen id)) (conj problem node))))))
       ["C11-MODULE" :scalar-core-node-carrier])
     ["C11-MODULE" :fresh-compositional-scalar-core]))
 
@@ -12375,7 +12395,7 @@
   (let [problem (c11-scalar-core-problem checked-core)]
     (if (= nil problem) (c11-scalar-construct checked-core)
       (c11-scalar-rejected checked-core nil (get problem 0) (get problem 1)
-        {} :fresh-source-bound-scalar-core :invalid-core))))
+        (get problem 2) :fresh-source-bound-scalar-core :invalid-core))))
 
 (defn c11-scalar-signatures [mir]
   (loop [names (get mir :function-order) result []]
@@ -12422,8 +12442,51 @@
                (c11-scalar-operation-view (first right) family))
           (recur (rest left) (rest right)) (first right))))))
 
-(defn c11-scalar-expected-operation [mir operation]
-  (sh13-find-by-key (c11-scalar-operations mir) :op-id (get operation :op-id) 0))
+(defn c11-scalar-expected-operation [expected actual family]
+  (loop [left (c11-scalar-operations expected) right (c11-scalar-operations actual)]
+    (if (= 0 (count left)) nil
+      (if (= 0 (count right)) (first left)
+        (if (= (c11-scalar-operation-view (first left) family)
+               (c11-scalar-operation-view (first right) family))
+          (recur (rest left) (rest right)) (first left))))))
+
+(defn c11-scalar-table-at [mir path]
+  (loop [remaining path value mir]
+    (if (= 0 (count remaining)) value
+      (recur (rest remaining) (get value (first remaining))))))
+
+(defn c11-scalar-table-mismatch [core expected actual]
+  (loop [ids (c11-copy-vector (vec (keys actual)) (vec (keys expected)))]
+    (if (= 0 (count ids)) nil
+      (let [id (first ids) left (get expected id) right (get actual id)]
+        (if (if (= (contains? expected id) (contains? actual id)) (= left right) false)
+          (recur (rest ids))
+          (let [record (if (contains? expected id) left right)
+                node (c11-scalar-subject-node core record)
+                subject (if (= nil node) (c11-scalar-origin-node core id) node)]
+            {:subject (if (= nil subject) record subject)
+             :expected (if (contains? expected id) left :missing-fact-record)
+             :actual (if (contains? actual id) right :missing-fact-record)}))))))
+
+(defn c11-scalar-table-problem [core expected actual paths]
+  (loop [remaining paths]
+    (if (= 0 (count remaining)) nil
+      (let [left (c11-scalar-table-at expected (first remaining))
+            right (c11-scalar-table-at actual (first remaining))]
+        (if (= left right) (recur (rest remaining))
+          (c11-scalar-table-mismatch core left right))))))
+
+(defn c11-scalar-mismatch-report
+  [core mir expected rule missing operation family table-paths expected-default actual-default]
+  (if (= nil operation)
+    (let [problem (c11-scalar-table-problem core expected mir table-paths)]
+      (if (= nil problem)
+        (c11-scalar-rejected core mir rule missing {} expected-default actual-default)
+        (c11-scalar-rejected core mir rule missing (get problem :subject)
+          (get problem :expected) (get problem :actual))))
+    (c11-scalar-rejected core mir rule missing operation
+      (c11-scalar-operation-view (c11-scalar-expected-operation expected mir family) family)
+      (c11-scalar-operation-view operation family))))
 
 (defn c11-scalar-operand-types [definitions operands]
   (loop [remaining operands result []]
@@ -12528,34 +12591,40 @@
                                  [(get mir :control-flow-graph) (get mir :data-flow-graph)])
                             (c11-scalar-graphs-valid? mir) false)
                         (if (= expected mir) (c11-scalar-functions-passed checked-core mir)
-                          (c11-scalar-rejected checked-core mir "C11-VERIFY" :fresh-source-derived-mir
-                            {} :original-construction :altered-construction))
-                        (c11-scalar-rejected checked-core mir "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow
-                          {} :source-derived-dominance :altered-graph))
-                      (c11-scalar-rejected checked-core mir "C11-ORIGIN" :scalar-source-origin-preservation
-                        origin-mismatch :source-bound-origin :altered-origin))
-                    (c11-scalar-rejected checked-core mir "C11-VERIFY" :scalar-ownership-capability-profile-preservation
-                      {} :immutable-safe-scalar-facts :altered-facts))
-                  (c11-scalar-rejected checked-core mir "C11-SAFETY" :scalar-overflow-guard-token-preservation
-                    safety-mismatch :checked-overflow-guard-and-token :altered-safety))
-                (c11-scalar-rejected checked-core mir "C11-EFFECT" :scalar-call-effects-and-order
-                  effect-mismatch :declared-transitive-effects :altered-effects))
+                          (c11-scalar-mismatch-report checked-core mir expected
+                            "C11-VERIFY" :fresh-source-derived-mir
+                            (c11-scalar-operation-mismatch expected mir :operands) :operands []
+                            :original-construction :altered-construction))
+                        (c11-scalar-mismatch-report checked-core mir expected
+                          "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow nil :operands
+                          [[:data-flow-graph :definitions] [:control-flow-graph :dominance]]
+                          :source-derived-dominance :altered-graph))
+                      (c11-scalar-mismatch-report checked-core mir expected
+                        "C11-ORIGIN" :scalar-source-origin-preservation origin-mismatch :origin
+                        [[:source-map]] :source-bound-origin :altered-origin))
+                    (c11-scalar-mismatch-report checked-core mir expected
+                      "C11-VERIFY" :scalar-ownership-capability-profile-preservation nil :ownership
+                      [[:ownership-table] [:capability-table] [:profile-target-table]]
+                      :immutable-safe-scalar-facts :altered-facts))
+                  (c11-scalar-mismatch-report checked-core mir expected
+                    "C11-SAFETY" :scalar-overflow-guard-token-preservation safety-mismatch :safety
+                    [[:safety-table] [:runtime-check-table]] :checked-overflow-guard-and-token :altered-safety))
+                (c11-scalar-mismatch-report checked-core mir expected
+                  "C11-EFFECT" :scalar-call-effects-and-order effect-mismatch :effect
+                  [[:effect-table] [:effect-order-graph :nodes] [:effect-order-graph :functions]]
+                  :declared-transitive-effects :altered-effects))
               (if (= nil safety-mismatch)
-                (c11-scalar-rejected checked-core mir "C11-TYPE" :scalar-signatures-and-types
-                  type-mismatch
-                  (if (= nil type-mismatch) (c11-scalar-signatures expected)
-                    (c11-scalar-operation-view (c11-scalar-expected-operation expected type-mismatch) :type))
-                  (if (= nil type-mismatch) (c11-scalar-signatures mir)
-                    (c11-scalar-operation-view type-mismatch :type)))
-                (c11-scalar-rejected checked-core mir "C11-SAFETY" :scalar-overflow-guard-token-preservation
-                  safety-mismatch
-                  (c11-scalar-operation-view (c11-scalar-expected-operation expected safety-mismatch) :safety)
-                  (c11-scalar-operation-view safety-mismatch :safety))))
+                (c11-scalar-mismatch-report checked-core mir expected
+                  "C11-TYPE" :scalar-signatures-and-types type-mismatch :type
+                  [[:type-table] [:functions]] (c11-scalar-signatures expected) (c11-scalar-signatures mir))
+                (c11-scalar-mismatch-report checked-core mir expected
+                  "C11-SAFETY" :scalar-overflow-guard-token-preservation safety-mismatch :safety
+                  [[:safety-table] [:runtime-check-table]] :checked-overflow-guard-and-token :altered-safety)))
             (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-functions-exports-and-source-policy
               {} :source-derived-module :altered-module)))
         (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-mir-carrier {} :gravity/mir-module :invalid-carrier))
       (c11-scalar-rejected checked-core mir (get problem 0) (get problem 1)
-        {} :fresh-source-bound-scalar-core :invalid-core))))
+        (get problem 2) :fresh-source-bound-scalar-core :invalid-core))))
 
 ; Private execution frames project the actual, freshly verified MIR. They do
 ; not become replacement MIR or acquire a different source profile or target.

@@ -84,6 +84,20 @@
     (> (count candidate) 64) [:redacted-origin-chain-over-limit]
     :else (mapv p15-s23-c11-mir-safe-diagnostic-scalar candidate)))
 
+(defn- p15-s23-c11-mir-safe-diagnostic-comparison
+  "Retain owned scalar signature comparisons without printing host objects."
+  [value]
+  (cond
+    (vector? value) (mapv p15-s23-c11-mir-safe-diagnostic-comparison value)
+    (set? value) (into #{} (map p15-s23-c11-mir-safe-diagnostic-comparison) value)
+    (map? value)
+    (into {}
+          (map (fn [[key item]]
+                 [key (p15-s23-c11-mir-safe-diagnostic-comparison item)]))
+          (select-keys value [:kind :params :return :latent-effects :capabilities
+                              :throws :type :value :numeric-mode :bit-width :signedness]))
+    :else (p15-s23-c11-mir-safe-diagnostic-scalar value)))
+
 (defn p15-s23-c11-mir-safe-diagnostic-fact-value
   [key value]
   (let [sha256?
@@ -109,6 +123,9 @@
                             (and (integer? %) (<= 0 % Long/MAX_VALUE)))
                        candidate)))]
     (cond
+      (contains? #{:expected :actual} key)
+      (p15-s23-c11-mir-safe-diagnostic-comparison value)
+
       (contains? #{:missing-fact :requested-target :source-target
                    :source-operation :lowering-rule :expected-type
                    :actual-type :effect :capability :provider :grant
