@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.development-test-runner :as development]
             [gravity.digest :as digest]
             [gravity.macro-run-storage :as macro-run-storage]
             [gravity.reader.identity-expectations :as expected]
@@ -152,25 +153,40 @@
 (deftest real-paired-macro-expansion-retains-identities-provenance-and-output
   (let [artifacts
         (mapv (fn [ctx]
-                (let [{:keys [source c3 request binding invocation]} @ctx
-                      run (macro/expand source binding request (operations))
-                      artifact (bootstrap/sh05-macro-artifact-from-c3-artifact
-                                source c3 invocation :development-current)]
+                (let [{:keys [source c3 request binding invocation]}
+                      (development/observe-macro-paired-interval!
+                       :context #(deref ctx))
+                      run (development/observe-macro-paired-interval!
+                           :expand #(macro/expand source binding request (operations)))
+                      artifact (development/observe-macro-paired-interval!
+                                :construct
+                                #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                  source c3 invocation :development-current))]
                   (is (= :development-unadmitted (:revision-status binding)))
                   (is (= :development-current (:source-authority binding)))
-                  (is (= run (bootstrap/sh05-run-macro-request! source binding request)))
+                  (is (= run
+                         (development/observe-macro-paired-interval!
+                          :bootstrap-expand
+                          #(bootstrap/sh05-run-macro-request! source binding request))))
                   (is (= :passed (get-in run [:template-verification :status])))
                   (is (= :passed (get-in run [:resolved-verification :status])))
                   (is (= '[(def add-one (fn [x] (+ x 1)))] (:expanded-forms artifact)))
                   (is (= source (get-in artifact [:provenance :source-path])))
                   (is (seq (get-in artifact [:macro-expansion-trace 0 :generated-origin])))
-                  (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                           artifact invocation :development-current))))
-                  (assert-parent-lineage artifact c3 binding)
+                  (is (= :passed
+                         (:status
+                          (development/observe-macro-paired-interval!
+                           :verify
+                           #(bootstrap/sh05-macro-artifact-verification
+                             artifact invocation :development-current)))))
+                  (development/observe-macro-paired-interval!
+                   :lineage #(assert-parent-lineage artifact c3 binding))
                   artifact))
               [gravity-context qst-context])]
-    (is (= (select-keys (first artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms])
-           (select-keys (second artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms])))))
+    (development/observe-macro-paired-interval!
+     :compare
+     #(is (= (select-keys (first artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms])
+             (select-keys (second artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms]))))))
 
 (deftest real-macro-requests-reject-illegal-return-and-build-authority
   (let [{:keys [source binding request]} @gravity-context]

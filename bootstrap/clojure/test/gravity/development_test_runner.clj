@@ -111,11 +111,17 @@
        (= "gravity.self-hosting.sh06-unmetered-resolution-test/actual-current-source-artifact-retains-authentication-and-roundtrip"
           test-var)))
 
+(defn- macro-paired-test? [namespace test-var]
+  (and (= "gravity.macro.pipeline-test" namespace)
+       (= "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+          test-var)))
+
 (defn- observe-progress! [phase namespace test-var body]
   (emit-progress! phase :enter namespace test-var nil)
   (let [outcome (try {:value (if (and (= :test-var phase)
                                       (or (resolution-digest-test? namespace test-var)
-                                          (resolution-current-artifact-test? namespace test-var)))
+                                          (resolution-current-artifact-test? namespace test-var)
+                                          (macro-paired-test? namespace test-var)))
                                (binding [*progress-test-context* {:state *progress-state*
                                                                   :namespace namespace :test-var test-var}]
                                  (body))
@@ -153,6 +159,24 @@
                   :serialization :resolution-current-artifact-serialization} interval))]
     (if (and *progress-state* (identical? *progress-state* (:state context)) phase
              (resolution-current-artifact-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
+
+(defn observe-macro-paired-interval!
+  "Seven fixed diagnostic intervals in one selected test; never execution authority.
+  Outside its original enabled test scope, execute body once without reporting."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:context :macro-paired-context
+                  :expand :macro-paired-expand
+                  :construct :macro-paired-construct
+                  :bootstrap-expand :macro-paired-bootstrap-expand
+                  :verify :macro-paired-verify
+                  :lineage :macro-paired-lineage
+                  :compare :macro-paired-compare} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (macro-paired-test? (:namespace context) (:test-var context)))
       (observe-progress! phase (:namespace context) (:test-var context) body)
       (body))))
 
