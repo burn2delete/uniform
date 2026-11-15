@@ -8,6 +8,9 @@
             [simplify.coordination :as coordination]
             [simplify.main :as base]
             [simplify.runtime :as rt])
+  (:import [java.math BigInteger]
+           [java.nio.charset StandardCharsets]
+           [java.security MessageDigest])
   (:gen-class))
 
 (def defaults
@@ -193,20 +196,44 @@
                    :actual (select-keys state [:schema :repository :campaign])}))
       {:state state :digest digest})))
 
+(defn- control-sha256 [^bytes bytes]
+  (format "%064x"
+          (BigInteger. 1
+                        (.digest (doto (MessageDigest/getInstance "SHA-256")
+                                   (.update bytes))))))
+
+(defn- read-control-edn [raw]
+  (edn/read-string {:readers {}
+                    :default (fn [tag _]
+                               (rt/fail! "Unsupported EDN tag" {:tag tag}))}
+                   raw))
+
+(defn- read-control-bytes [control-file]
+  (with-open [input (io/input-stream control-file)]
+    (.readAllBytes input)))
+
 (defn- read-status-control [config]
-  (let [control-file (io/file (:state-dir config) "control.edn")]
+  (let [control-file (io/file (:state-dir config) "control.edn")
+        path (str control-file)]
     (if-not (.isFile control-file)
-      {:file (str control-file) :available false :status :unavailable}
+      {:file path :sha256 nil :available false :status :unavailable}
       (try
-        (let [value (rt/read-edn control-file)]
-          (if (and (map? value) (contains? value :paused) (boolean? (:paused value)))
-            {:file (str control-file) :available true
-             :status (if (:paused value) :paused :active)
-             :paused (:paused value)}
-            {:file (str control-file) :available true :status :malformed
-             :error {:message "Control file must contain boolean :paused"}}))
+        (let [bytes (read-control-bytes control-file)
+              digest (control-sha256 bytes)
+              raw (String. bytes StandardCharsets/UTF_8)]
+          (try
+            (let [value (read-control-edn raw)]
+              (if (and (map? value) (contains? value :paused) (boolean? (:paused value)))
+                {:file path :sha256 digest :available true
+                 :status (if (:paused value) :paused :active)
+                 :paused (:paused value)}
+                {:file path :sha256 digest :available true :status :malformed
+                 :error {:message "Control file must contain boolean :paused"}}))
+            (catch Exception e
+              {:file path :sha256 digest :available true :status :malformed
+               :error (rt/redact {:message (.getMessage e)})})))
         (catch Exception e
-          {:file (str control-file) :available true :status :malformed
+          {:file path :sha256 nil :available true :status :malformed
            :error (rt/redact {:message (.getMessage e)})})))))
 
 (defn status-summary! [config]
