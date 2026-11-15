@@ -187,6 +187,47 @@ data fails clearly. The output is diagnostic-only and grants no release,
 admission, migration, self-hosting or seed-retirement authority. Hard kills may
 leave unfinished files; the reader makes no fsync or crash-proof claim.
 
+### Read retained Macro diagnostics
+
+The retained Macro upload can be inspected without re-running any child:
+
+    clojure -X ci.public-diagnostic-report/run-macro! \
+      :artifact-dir '"/path/to/extracted-macro-artifacts"'
+
+ci.public-diagnostic-report/macro-report is the programmatic entrypoint and
+run-macro! accepts exactly one non-empty :artifact-dir option. The extracted
+root must contain the ordinary SHA256SUMS, checkout.txt, run-url.txt, and
+macro-summary.edn files. The summary may retain either the full result vector
+or the runner's selected form
+{:mode "macro" :selection map :results vector}; the report preserves that
+shape and selection map while removing command, stdin, and OS-process fields
+from child results.
+
+Each executed result is joined to its confined <id>.edn receipt and
+<id>.log file. Receipt identity, source commit, workflow run, attempt, status,
+exit code, watchdog, start/finish and elapsed observations must agree with the
+summary and checkout/run records. Passed, failed, timed-out, launch-error and
+actual skipped rows remain distinct; a skipped or selection-error row does not
+receive a fabricated receipt. The reader checks only logical status/exit and
+positive watchdog values and imposes no project or input quota.
+
+Only log lines carrying the
+:gravity/development-test-progress-v1 schema are parsed as EDN. Other JVM and
+test output remains ignored. Recognized frames retain their artifact path and
+one-based line number, in log order, after schema, non-authoritative authority,
+keyword phase/edge, and optional namespace, test-var, and error-class checks.
+Malformed recognized frames fail closed. The report exposes all ordered frames,
+the exact seven-phase Macro-paired subset, its count, and the last observed
+frame; no missing return is interpreted as a timing, cause, pass, or completion
+claim.
+
+The report retains SHA-256 identities for every extracted file and marks all
+progress as non-authoritative. It performs no network, provider
+authentication, Git-source authentication, subprocess, runtime-Var resolution,
+test invocation, or file write. The result is diagnostic-only and grants no
+main, CI-pass, release, migration, self-hosting, seed-retirement, repair, or
+recovery authority.
+
 ### Portable leaf selection
 
 The leaves jobs use the same verified pull-request path records. For regular

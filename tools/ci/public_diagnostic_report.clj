@@ -13,6 +13,9 @@
 (def diagnostic-schema
   "gravity/ci-public-diagnostic-report-v1")
 
+(def macro-diagnostic-schema
+  "gravity/ci-macro-diagnostic-report-v1")
+
 (def ^:private producer-schema
   "gravity/ci-public-release-diagnostic-v1")
 
@@ -362,6 +365,389 @@
         (fail! "run-url.txt path does not end in the child receipt run identity"
                {:run-id run-id})))
     url))
+
+(def ^:private macro-statuses
+  #{:passed :failed :timeout :launch-error :skipped})
+
+(def ^:private macro-progress-schema
+  :gravity/development-test-progress-v1)
+
+(def ^:private macro-progress-edges
+  #{:enter :return :throw})
+
+(def ^:private macro-paired-phases
+  #{:macro-paired-context :macro-paired-expand :macro-paired-construct
+    :macro-paired-bootstrap-expand :macro-paired-verify :macro-paired-lineage
+    :macro-paired-compare})
+
+(def ^:private macro-progress-keys
+  #{:schema :authority :phase :edge :namespace :test-var :error-class})
+
+(defn- macro-id!
+  [value label]
+  (nonempty-string! label value)
+  (when-not (re-matches #"[A-Za-z0-9][A-Za-z0-9._-]*" value)
+    (fail! (str label " must be a confined child identity")
+           {:label label :id value}))
+  value)
+
+(defn- run-id-from-url!
+  [url]
+  (let [path (try
+               (.getPath (java.net.URI. url))
+               (catch Throwable error
+                 (fail! "run-url.txt is not a valid URI"
+                        {:error-class (.getName (class error))})))
+        [_ run-id] (re-matches #".*/actions/runs/([0-9]+)" path)]
+    (when-not run-id
+      (fail! "run-url.txt path does not contain a run identity" {:path path}))
+    (positive-decimal! run-id "run-url.txt run-id")))
+
+(defn- read-macro-context!
+  [^Path root checksums]
+  (let [checkout (verify-file-against-checksum!
+                  (read-text-data! root "checkout.txt" "checkout.txt")
+                  checksums "checkout.txt")
+        run-url-file (verify-file-against-checksum!
+                      (read-text-data! root "run-url.txt" "run-url.txt")
+                      checksums "run-url.txt")
+        checkout-value (checkout-identity! checkout)
+        url-run-id (run-id-from-url! (str/trim (:text run-url-file)))
+        run-url (run-url! run-url-file url-run-id)]
+    {:checkout checkout-value
+     :run-url run-url
+     :run-id url-run-id
+     :files {:checkout (file-identity checkout)
+             :run-url (file-identity run-url-file)}}))
+
+(defn- read-macro-summary!
+  [^Path root checksums]
+  (let [summary (verify-file-against-checksum!
+                 (read-text-data! root "macro-summary.edn" "macro-summary.edn")
+                 checksums "macro-summary.edn")
+        value (read-one-edn! (:text summary) "macro-summary.edn")]
+    (cond
+      (vector? value)
+      {:value value :results value :shape :vector :file (file-identity summary)}
+
+      (map? value)
+      (let [_ (when-not (= "macro" (:mode value))
+                (fail! "macro-summary.edn map mode must be macro"
+                       {:mode (:mode value)}))
+            _ (require-map! (:selection value)
+                            "macro-summary.edn :selection")
+            results (:results value)]
+        (when-not (vector? results)
+          (fail! "macro-summary.edn :results must be a vector"
+                 {:type (some-> results class .getName)}))
+        {:value value :results results :shape :map :file (file-identity summary)})
+
+      :else
+      (fail! "macro-summary.edn must be a vector or selected summary map"
+             {:type (some-> value class .getName)}))))
+
+(defn- macro-status!
+  [value label]
+  (let [status (child-status {:status value})]
+    (when-not (contains? macro-statuses status)
+      (fail! (str label " has an unsupported status")
+             {:label label :status status}))
+    status))
+
+(defn- macro-time!
+  [value label]
+  (require-integer! value label)
+  (when (neg? value)
+    (fail! (str label " must not be negative") {:label label :value value}))
+  value)
+
+(defn- compare-present-fields!
+  [summary receipt id]
+  (when-not (= summary receipt)
+    (fail! "Macro child receipt disagrees with macro summary"
+           {:id id
+            :summary-keys (vec (sort-by str (keys summary)))
+            :receipt-keys (vec (sort-by str (keys receipt)))})))
+
+(defn- validate-macro-receipt!
+  [value label summary context]
+  (require-map! value label)
+  (let [id (macro-id! (:id value) (str label " :id"))
+        status (macro-status! (:status value) (str label " :status"))
+        exit-code (require-integer! (:exit-code value) (str label " :exit-code"))
+        timeout-seconds (require-integer! (:timeout-seconds value)
+                                         (str label " :timeout-seconds"))
+        _ (when-not (pos? timeout-seconds)
+            (fail! (str label " :timeout-seconds must be positive")
+                   {:label label :timeout-seconds timeout-seconds}))
+        started-ms (macro-time! (:started-ms value) (str label " :started-ms"))
+        finished-ms (macro-time! (:finished-ms value) (str label " :finished-ms"))
+        _ (when (< finished-ms started-ms)
+            (fail! (str label " finished before it started")
+                   {:label label :started-ms started-ms :finished-ms finished-ms}))
+        commit (object-id! (:commit value) (str label " :commit"))
+        run-id (positive-decimal! (:run-id value) (str label " :run-id"))
+        run-attempt (positive-decimal! (:run-attempt value)
+                                       (str label " :run-attempt"))]
+    (when-not (= id (:id summary))
+      (fail! "Macro child receipt id disagrees with macro summary"
+             {:summary-id (:id summary) :receipt-id id}))
+    (when-not (= commit (get-in context [:checkout :commit]))
+      (fail! "Macro child receipt commit disagrees with checkout.txt"
+             {:checkout (get-in context [:checkout :commit]) :child commit}))
+    (when-not (= run-id (:run-id context))
+      (fail! "Macro child receipt run-id disagrees with run-url.txt"
+             {:run-url (:run-id context) :child run-id}))
+    (when-not (contains? #{:passed :failed :timeout :launch-error} status)
+      (fail! "Executed macro child has a non-executed status"
+             {:id id :status status}))
+    (case status
+      :passed (when-not (zero? exit-code)
+                (fail! "Passed macro child must have exit code zero"
+                       {:id id :exit-code exit-code}))
+      :timeout (when-not (= 124 exit-code)
+                 (fail! "Timed-out macro child must have exit code 124"
+                        {:id id :exit-code exit-code}))
+      :launch-error (when-not (= 125 exit-code)
+                      (fail! "Macro launch-error child must have exit code 125"
+                             {:id id :exit-code exit-code}))
+      :failed (when (zero? exit-code)
+                (fail! "Failed macro child must have a non-zero exit code"
+                       {:id id :exit-code exit-code})))
+    (compare-present-fields! summary value id)
+    {:id id
+     :status status
+     :exit-code exit-code
+     :timeout-seconds timeout-seconds
+     :started-ms started-ms
+     :finished-ms finished-ms
+     :elapsed-ms (- finished-ms started-ms)
+     :commit commit
+     :run-id run-id
+     :run-attempt run-attempt}))
+
+(defn- safe-macro-row
+  [row status]
+  (let [safe (select-keys row [:id :reason :selection :selection-error
+                               :exit-code :timeout-seconds :started-ms
+                               :finished-ms :commit :run-id :run-attempt])]
+    (assoc safe :id (:id row) :status status)))
+
+(defn- progress-line?
+  [line]
+  (let [trimmed (str/trim line)]
+    (and (str/starts-with? trimmed "{")
+         (str/includes? trimmed (name macro-progress-schema)))))
+
+(defn- validate-progress-frame!
+  [value label]
+  (require-map! value label)
+  (when-not (set/subset? (set (keys value)) macro-progress-keys)
+    (fail! (str label " has unsupported progress frame keys")
+           {:label label :keys (vec (sort-by str (keys value)))}))
+  (when-not (= macro-progress-schema (:schema value))
+    (fail! (str label " has an unsupported progress schema")
+           {:label label :schema (:schema value)}))
+  (when-not (= :non-authoritative (:authority value))
+    (fail! (str label " progress frame must be non-authoritative")
+           {:label label :authority (:authority value)}))
+  (require-keyword! (:phase value) (str label " :phase"))
+  (let [edge (require-keyword! (:edge value) (str label " :edge"))]
+    (when-not (contains? macro-progress-edges edge)
+      (fail! (str label " has an unsupported progress edge")
+             {:label label :edge edge})))
+  (doseq [key [:namespace :test-var :error-class]]
+    (when (contains? value key)
+      (nonempty-string! (str label " " key) (get value key))))
+  value)
+
+(defn- read-macro-log!
+  [^Path root checksums relative]
+  (let [data (verify-file-against-checksum!
+              (read-text-data! root relative (str "macro log " relative))
+              checksums (str "macro log " relative))
+        frames (->> (str/split-lines (:text data))
+                    (map-indexed
+                     (fn [index line]
+                       (when (progress-line? line)
+                         (let [value (read-one-edn!
+                                      line
+                                      (str relative " line " (inc index)))]
+                           (validate-progress-frame!
+                            value (str relative " line " (inc index)))
+                           (assoc value :path relative :line (inc index))))))
+                    (remove nil?)
+                    vec)]
+    {:file (file-identity data) :frames frames}))
+
+(defn- validate-macro-row!
+  [^Path root checksums summary-row context]
+  (require-map! summary-row "macro summary result")
+  (let [id (macro-id! (:id summary-row) "macro summary result :id")
+        status (macro-status! (:status summary-row)
+                              (str "macro summary result " id " :status"))
+        receipt-relative (str id ".edn")
+        log-relative (str id ".log")
+        executed? (contains? #{:passed :failed :timeout :launch-error} status)
+        receipt-present? (contains? (:by-path checksums) receipt-relative)
+        log-present? (contains? (:by-path checksums) log-relative)
+        selection-error? (contains? summary-row :selection-error)]
+    (when (and executed?
+               (not receipt-present?)
+               (not (and (= :failed status) selection-error?)))
+      (fail! "Executed macro child is missing its receipt"
+             {:id id :status status :path receipt-relative}))
+    (when (and executed?
+               (not (and (= :failed status) selection-error?))
+               (not log-present?))
+      (fail! "Executed macro child is missing its log"
+             {:id id :status status :path log-relative}))
+    (when (contains? summary-row :commit)
+      (when-not (= (object-id! (:commit summary-row)
+                               (str "macro summary result " id " :commit"))
+                   (get-in context [:checkout :commit]))
+        (fail! "Macro summary result commit disagrees with checkout.txt"
+               {:id id :commit (:commit summary-row)})))
+    (when (contains? summary-row :run-id)
+      (when-not (= (positive-decimal! (:run-id summary-row)
+                                      (str "macro summary result " id " :run-id"))
+                   (:run-id context))
+        (fail! "Macro summary result run-id disagrees with run-url.txt"
+               {:id id :run-id (:run-id summary-row)})))
+    (when (contains? summary-row :run-attempt)
+      (positive-decimal! (:run-attempt summary-row)
+                         (str "macro summary result " id " :run-attempt")))
+    (let [receipt (when receipt-present?
+                    (let [data (verify-file-against-checksum!
+                                (read-file-data! root receipt-relative
+                                                 (str "macro receipt " receipt-relative))
+                                checksums
+                                (str "macro receipt " receipt-relative))
+                          value (read-one-edn!
+                                 (strict-utf8 (:raw data)
+                                              (str "macro receipt " receipt-relative))
+                                 (str "macro receipt " receipt-relative))]
+                      {:value (validate-macro-receipt!
+                               value (str "macro receipt " receipt-relative)
+                               summary-row context)
+                       :file (file-identity data)}))
+          log (when log-present? (read-macro-log! root checksums log-relative))
+          base (if receipt
+                 (merge (safe-macro-row summary-row (get-in receipt [:value :status]))
+                        (select-keys (:value receipt)
+                                     [:exit-code :timeout-seconds :started-ms
+                                      :finished-ms :elapsed-ms :commit :run-id
+                                      :run-attempt])
+                        (cond-> {:receipt (:file receipt)}
+                          log (assoc :log (:file log))))
+                 (safe-macro-row summary-row status))]
+      {:result base
+       :receipt receipt
+       :log log})))
+
+(defn- sanitize-macro-summary
+  [summary shape results]
+  (case shape
+    :vector results
+    :map (assoc (select-keys summary [:mode :selection]) :results results)))
+
+(defn- macro-file-identities
+  [^Path root checksums]
+  (into {}
+        (map (fn [relative]
+               (let [data (verify-file-against-checksum!
+                           (read-file-data! root relative
+                                            (str "macro artifact " relative))
+                           checksums
+                           (str "macro artifact " relative))]
+                 [relative (file-identity data)]))
+             (:paths checksums))))
+
+(defn macro-report
+  "Read one extracted Macro artifact directory without replay or mutation.
+
+  The returned map retains child failures, skips, receipts and progress frames
+  as diagnostic observations only. It never infers completion from missing
+  frames or a successful child."
+  [artifact-dir]
+  (let [root (root-path! artifact-dir)
+        checksums (verify-checksums! root)
+        context (read-macro-context! root checksums)
+        summary-data (read-macro-summary! root checksums)
+        rows (mapv #(validate-macro-row! root checksums % context)
+                   (:results summary-data))
+        ids (mapv #(get-in % [:result :id]) rows)
+        duplicate-ids (->> ids frequencies
+                           (filter (fn [[_ count]] (> count 1)))
+                           (mapv first))
+        _ (when (seq duplicate-ids)
+            (fail! "Macro summary contains duplicate child identities"
+                   {:ids duplicate-ids}))
+        results (mapv :result rows)
+        frames (vec (mapcat #(get-in % [:log :frames]) rows))
+        macro-paired (vec (filter #(contains? macro-paired-phases (:phase %))
+                                  frames))
+        attempts (->> results (keep :run-attempt) distinct vec)
+        _ (when (> (count attempts) 1)
+            (fail! "Macro child receipts disagree on run-attempt"
+                   {:attempts attempts}))
+        recorded (assoc (:checkout context)
+                        :run-id (:run-id context)
+                        :run-url (:run-url context)
+                        :attempt (or (first attempts) :not-observed))
+        sanitized-summary (sanitize-macro-summary (:value summary-data)
+                                                  (:shape summary-data)
+                                                  results)
+        files (macro-file-identities root checksums)]
+    {:schema macro-diagnostic-schema
+     :authority :diagnostic
+     :authoritative? false
+     :recorded recorded
+     :summary sanitized-summary
+     :results results
+     :progress {:progress-frames frames
+                :total-frames (count frames)
+                :macro-paired-count (count macro-paired)
+                :macro-paired-frames macro-paired
+                :last-observed (last frames)}
+     :inputs {:checksums (select-keys checksums [:file :entries])
+              :files files
+              :identity {:basis :recorded-artifact-files
+                         :provider-authenticated? false
+                         :git-source-authenticated? false}}
+     :nonclaims [:recorded-identities-not-provider-authenticated
+                 :recorded-identities-not-git-source-authenticated
+                 :progress-frames-are-non-authoritative
+                 :missing-return-is-not-timing-or-cause
+                 :no-timeout-cause-or-performance-claim
+                 :diagnostic-not-main-or-ci-acceptance
+                 :diagnostic-not-release-or-admission-authority
+                 :diagnostic-not-migration-or-self-hosting-authority
+                 :diagnostic-not-seed-retirement-authority
+                 :diagnostic-not-repair-or-recovery-authority
+                 :no-replay-provider-call-or-public-test-execution]}))
+
+(defn- validate-macro-options!
+  [options]
+  (when-not (map? options)
+    (fail! "Macro diagnostic report options must be a map"
+           {:type (some-> options class .getName)}))
+  (when-not (= #{:artifact-dir} (set (keys options)))
+    (fail! "Macro diagnostic report accepts exactly :artifact-dir"
+           {:keys (vec (sort-by str (keys options)))}))
+  (nonempty-string! ":artifact-dir" (:artifact-dir options))
+  options)
+
+(defn run-macro!
+  "Print one untruncated EDN Macro diagnostic report."
+  [options]
+  (validate-macro-options! options)
+  (let [value (macro-report (:artifact-dir options))]
+    (binding [*print-length* nil
+              *print-level* nil
+              *print-readably* true]
+      (println (pr-str value)))
+    0))
 
 (defn- read-child-context!
   [^Path root checksums]
