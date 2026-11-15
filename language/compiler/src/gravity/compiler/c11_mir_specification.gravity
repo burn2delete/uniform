@@ -43,7 +43,12 @@
              sh13-run-branch-join-mir
              sh13-verify-branch-join-execution
              sh13-run-branch-join-mir-with-arguments
-             sh13-verify-branch-join-execution-with-arguments])
+             sh13-verify-branch-join-execution-with-arguments
+             c11-build-scalar-functions-mir
+             c11-verify-scalar-functions-mir
+             c11-scalar-functions-passed
+             sh13-run-scalar-functions-mir
+             sh13-verify-scalar-functions-execution])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -10558,6 +10563,10 @@
                 {:function (get function :fn-id)
                  :operation (get operation :op-id)
                  :opcode opcode})]
+      (if (= opcode :runtime-check)
+        (c11-scalar-execute-guard function operation operands trace)
+        (if (= opcode :checked-add)
+          (c11-scalar-execute-add function operation operands trace)
       (if (= opcode :const)
         (sh13-continued-value
          operation (get operation :literal) next-trace)
@@ -10614,7 +10623,7 @@
                       {:status :continue
                        :value (get call-result :value)
                        :trace (get call-result :trace)}
-                      call-result)))))))))))
+                      call-result)))))))))))))
 
 (defn sh13-execute-operations [module function operations index values trace]
   (loop [module module
@@ -10633,7 +10642,9 @@
             function
             operations
             (+ index 1)
-            (assoc values (get operation :op-id) (get result :value))
+            (assoc (if (= nil (get result :consumed-value-id)) values
+                     (assoc values (get result :consumed-value-id) {:status :consumed}))
+              (get operation :op-id) (get result :value))
             (get result :trace))
           result)))))
 
@@ -11989,3 +12000,667 @@
      :diagnostics (if matches []
                     [(sh12-branch-join-diagnostic
                        "C11-VERIFY" :execution-result-substitution checked-core mir)])}))
+
+; Current source scalar functions. These owners consume freshly constructed
+; C6-C10 products. The source-only application retains the authenticated parent
+; replay; this family does not renew any historical migration interface.
+(defn c11-scalar-merge [left right]
+  (loop [remaining (vec (keys right)) result left]
+    (if (= 0 (count remaining)) result
+      (recur (vec (rest remaining))
+        (assoc result (first remaining) (get right (first remaining)))))))
+
+(defn c11-scalar-type? [type]
+  (if (= :gravity/i64 type) true (= :gravity/bool type)))
+
+(defn c11-scalar-node [core id]
+  (c11-find-node-by-id (get core :core-nodes) id))
+
+(defn c11-scalar-node-types [core ids]
+  (loop [remaining ids result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+        (conj result (get (c11-scalar-node core (first remaining)) :type))))))
+
+(defn c11-scalar-source [core]
+  (get (first (get core :core-nodes)) :source))
+
+(defn c11-scalar-rejected [core mir rule missing subject expected actual]
+  (let [source (if (= nil (get subject :source)) (c11-scalar-source core) (get subject :source))]
+    {:artifact :gravity/c11-scalar-functions-report :schema-version 1
+     :scope :compositional-scalar-functions :phase :verification :status :rejected
+     :checked-core-artifact-id (get core :artifact-id)
+     :mir-module-id (get mir :module-id) :checks []
+     :diagnostics
+     [{:diagnostic-id rule :rule rule :severity :error :stage :c11-mir-verification
+       :mir-module (get mir :module-id) :function (get subject :function)
+       :block (get subject :block-id) :operation-id (get subject :op-id)
+       :source-span (get source :span) :origin-chain (get source :generated-origin)
+       :profile (get core :profile) :target-request (get core :source-target)
+       :missing-fact missing :expected expected :actual actual
+       :provenance {:checked-core-artifact-id (get core :artifact-id)
+                    :actual-source-path (get (get (get core :physical-provenance) :actual-paths) :source)}
+       :remediation (sh12-branch-join-remediation rule)}]
+     :nonclaims [:target-emission :self-hosted? :seed-retirement :whole-c11]}))
+
+(defn c11-scalar-check-valid? [node]
+  (let [check (get (get node :safety) :check) predicate (get check :predicate)]
+    (= [:numeric-overflow (get node :node-id) :overflow :checked 64 :signed
+        :operands-in-declared-width-and-checked-add-result-within-width :add
+        (get node :operands) 64 :signed :error/numeric #{:error/raise} :hosted :jvm]
+       [(get check :kind) (get check :operation-id) (get check :condition)
+        (get check :numeric-mode) (get check :bit-width) (get check :signedness)
+        (get predicate :kind) (get predicate :operator) (get predicate :operand-ids)
+        (get predicate :bit-width) (get predicate :signedness)
+        (get check :failure) (get check :effects-introduced)
+        (get check :profile) (get check :target)])))
+
+(defn c11-scalar-node-type-valid? [core node]
+  (let [operation (get node :source-operation) type (get node :type)
+        ids (get node :operands) types (c11-scalar-node-types core ids)
+        attrs (get node :attributes)]
+    (if (= :function operation)
+      (if (map? type)
+        (= [(get type :params) (get type :return)]
+           [(c11-scalar-node-types core (get attrs :parameter-node-ids))
+            (get (c11-scalar-node core (c11-last-value ids)) :type)]) false)
+      (if (c11-scalar-type? type)
+        (if (= :parameter operation) (= [] ids)
+          (if (= :literal operation)
+            (if (= :gravity/i64 type) (sh13-i64? (get attrs :value))
+              (contains? #{true false} (get attrs :value)))
+            (if (= :integer-add operation)
+              (= [:gravity/i64 [:gravity/i64 :gravity/i64]] [type types])
+              (if (= :truthy operation)
+                (= [:gravity/bool [:gravity/bool]] [type types])
+                (if (= :if operation)
+                  (= [:gravity/bool type type] types)
+                  (if (= :call operation)
+                    (let [callee (c11-scalar-node core (get attrs :callee-node-id))
+                          signature (get callee :type)]
+                      (= [:function (get attrs :callee) (get attrs :callee-binding-id)
+                          (get attrs :signature) types type]
+                         [(get callee :source-operation) (get (get callee :attributes) :name)
+                          (get (get callee :attributes) :declaration-binding-id)
+                          signature (get signature :params) (get signature :return)]))
+                    (if (contains? #{:local :let-binding} operation)
+                      (= [type] types)
+                      (if (contains? #{:do :let} operation)
+                        (if (> (count types) 0) (= type (c11-last-value types)) false)
+                        false)))))))) false))))
+
+(defn c11-scalar-core-node-problem [core node]
+  (let [id (get node :node-id) op (get node :source-operation)
+        type-fact (get (get core :type-facts) id)
+        effect-fact (get (get core :effect-facts) id)
+        ownership (get (get core :ownership-facts) id)
+        safety (get (get core :safety-facts) id)
+        source (get node :source)]
+    (if (if (map? source) (if (map? (get source :span)) (if (= nil (get source :origin-id)) false true) false) false)
+      (if (if (= (get node :type) (get type-fact :type)) (c11-scalar-node-type-valid? core node) false)
+        (if (= (get node :effects) (get effect-fact :transitive))
+          (if (= [:persistent-immutable-value :forbidden :persistent-immutable-value :forbidden]
+                 [(get ownership :model) (get ownership :mutation)
+                  (get (get node :ownership) :model) (get (get node :ownership) :mutation)])
+            (if (= (get safety :outcome) (get (get node :safety) :outcome))
+              (if (= :integer-add op)
+                (if (if (= :runtime-checked (get safety :outcome))
+                      (if (= (get safety :runtime-check) (get (get (get node :safety) :check) :check-id))
+                        (c11-scalar-check-valid? node) false) false)
+                  nil ["C11-SAFETY" :scalar-checked-overflow-guard])
+                (if (if (= :proven-safe (get safety :outcome))
+                      (= nil (get (get node :safety) :check)) false)
+                  nil ["C11-SAFETY" :scalar-safe-outcome]))
+              ["C11-SAFETY" :scalar-safety-fact-linkage])
+            ["C11-VERIFY" :scalar-immutable-ownership])
+          ["C11-EFFECT" :scalar-effect-fact-linkage])
+        ["C11-TYPE" :scalar-node-type-and-call-signature])
+      ["C11-ORIGIN" :scalar-source-origin])))
+
+(defn c11-scalar-core-problem [core]
+  (if (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact
+          :complete-for-compositional-scalar-hosted-safe-jvm-slice
+          :compositional-scalar-functions-v1 :hosted :jvm]
+         [(get core :kind) (get core :status) (get (get core :scope) :family)
+          (get core :profile) (get core :source-target)])
+    (if (if (vector? (get core :core-nodes)) (> (count (get core :core-nodes)) 0) false)
+      (loop [nodes (get core :core-nodes) seen #{}]
+        (if (= 0 (count nodes)) nil
+          (let [node (first nodes) id (get node :node-id)
+                problem (c11-scalar-core-node-problem core node)]
+            (if (contains? seen id) ["C11-DOMINANCE" :unique-scalar-core-node]
+              (if (= nil problem) (recur (rest nodes) (conj seen id)) problem)))))
+      ["C11-MODULE" :scalar-core-node-carrier])
+    ["C11-MODULE" :fresh-compositional-scalar-core]))
+
+(defn c11-scalar-put-block [state block]
+  (assoc state :blocks (assoc (get state :blocks) (get block :block-id) block)))
+
+(defn c11-scalar-start-block [state id arguments available dominators source predecessors]
+  (let [block (assoc (c11-build-block id arguments [] nil predecessors [] dominators source)
+                :available-at-entry available)]
+    (assoc (c11-scalar-put-block state block)
+      :current id :available available
+      :block-order (conj (get state :block-order) id))))
+
+(defn c11-scalar-define [state id kind type source core-id extra]
+  (let [definition (c11-scalar-merge
+                     {:value-id id :kind kind :type type :block-id (get state :current)
+                      :function-id (get state :function-id) :core-node-id core-id :source source}
+                     extra)]
+    (assoc state :definitions (assoc (get state :definitions) id definition)
+      :available (conj (get state :available) id) :result id)))
+
+(defn c11-scalar-append-operation [state operation]
+  (let [block (get (get state :blocks) (get state :current))
+        next (c11-scalar-put-block state
+               (assoc block :instructions (conj (get block :instructions) operation)))]
+    (c11-scalar-define next (get operation :result) :instruction-result
+      (get operation :type) (get operation :source) (get operation :op-id)
+      {:operation-id (get operation :op-id)})))
+
+(defn c11-scalar-terminate [state kind operands successors edge-arguments source]
+  (let [id (get state :current) block (get (get state :blocks) id)
+        terminator (assoc (c11-build-terminator (str id ":" kind)
+                            kind operands successors #{} source :hosted {})
+                     :successor-arguments edge-arguments)]
+    (c11-scalar-put-block state (assoc block :terminator terminator :successors successors))))
+
+(defn c11-scalar-lower-nodes [core ids state]
+  (loop [remaining ids result state]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (c11-scalar-lower-node core (first remaining) result)))))
+
+(defn c11-scalar-lower-if [core node state]
+  (let [ids (get node :operands) id (get node :node-id) source (get node :source)
+        tested (c11-scalar-lower-node core (get ids 0) state)
+        before (get tested :available) branch-block (get tested :current)
+        dominators (get (get (get tested :blocks) branch-block) :dominators)
+        then-id (str id ":mir:then") else-id (str id ":mir:else") join-id (str id ":mir:join")
+        join-value (str id ":mir:join-value")
+        branched (c11-scalar-terminate tested :conditional-branch [(get tested :result)]
+                   [then-id else-id] [[] []] source)
+        then-state (c11-scalar-lower-node core (get ids 1)
+                     (c11-scalar-start-block branched then-id [] before
+                       (conj dominators then-id) source [branch-block]))
+        then-result (get then-state :result) then-end (get then-state :current)
+        then-done (c11-scalar-terminate then-state :branch [then-result] [join-id] [[then-result]] source)
+        else-state (c11-scalar-lower-node core (get ids 2)
+                     (c11-scalar-start-block then-done else-id [] before
+                       (conj dominators else-id) source [branch-block]))
+        else-result (get else-state :result) else-end (get else-state :current)
+        else-done (c11-scalar-terminate else-state :branch [else-result] [join-id] [[else-result]] source)
+        incoming [{:predecessor then-end :value-id then-result}
+                  {:predecessor else-end :value-id else-result}]
+        join-argument {:value-id join-value :type (get node :type)
+                       :source-core-node-id id :incoming incoming}
+        joined (c11-scalar-start-block else-done join-id [join-argument] before
+                 (conj dominators join-id) source [then-end else-end])
+        defined (c11-scalar-define joined join-value :block-argument (get node :type)
+                  source id {:incoming incoming})
+        operation (assoc (c11-build-operation core node join-id)
+                    :operands [join-value] :source-operands ids)]
+    (c11-scalar-append-operation defined operation)))
+
+(defn c11-scalar-lower-node [core id state]
+  (if (c11-vector-contains? (get state :available) id)
+    (assoc state :result id)
+    (let [node (c11-scalar-node core id) op (get node :source-operation)]
+      (if (= :if op) (c11-scalar-lower-if core node state)
+        (let [children (if (= :local op) state
+                         (c11-scalar-lower-nodes core (get node :operands) state))
+              block-id (get children :current) check (get (get node :safety) :check)
+              guarded (if (= nil check) children
+                        (c11-scalar-append-operation children
+                          (c11-build-runtime-check-operation core node block-id)))
+              built (c11-build-operation core node block-id)
+              operation (if (= :call op)
+                          (assoc built :opcode :call :dispatch :direct
+                            :callee (get (get node :attributes) :callee)
+                            :callee-id (get (get node :attributes) :callee-node-id)
+                            :callee-binding-id (get (get node :attributes) :callee-binding-id)
+                            :signature (get (get node :attributes) :signature)) built)]
+          (c11-scalar-append-operation guarded operation))))))
+
+(defn c11-scalar-build-function [core node]
+  (let [id (get node :node-id) attrs (get node :attributes) type (get node :type)
+        params (get attrs :parameter-node-ids) entry (str id ":mir:entry")
+        initial {:function-id id :blocks {} :block-order [] :definitions {} :available []}
+        started (c11-scalar-start-block initial entry [] [] [entry] (get node :source) [])
+        bound (loop [remaining params result started]
+                (if (= 0 (count remaining)) result
+                  (let [parameter (c11-scalar-node core (first remaining))]
+                    (recur (rest remaining)
+                      (c11-scalar-define result (first remaining) :entry-parameter
+                        (get parameter :type) (get parameter :source) (first remaining) {})))))
+        bound (c11-scalar-put-block bound
+                (assoc (get (get bound :blocks) entry) :available-at-entry params))
+        lowered (c11-scalar-lower-nodes core (get node :operands) bound)
+        ended (c11-scalar-terminate lowered :return [(get lowered :result)] [] [] (get node :source))]
+    {:function
+     {:artifact :gravity/mir-function :fn-id id :name (get attrs :name)
+      :params params :param-types (get type :params) :returns (get type :return)
+      :latent-effects (get type :latent-effects) :throws (get type :throws)
+      :capabilities #{} :visibility (get attrs :visibility) :exported? (get attrs :exported?)
+      :declaration-binding-id (get attrs :declaration-binding-id)
+      :entry entry :block-order (get ended :block-order) :blocks (get ended :blocks)
+      :source (get node :source) :facts (c11-operation-facts core node)
+      :provenance {:checked-core-artifact-id (get core :artifact-id) :core-node-id id}}
+     :definitions (get ended :definitions)}))
+
+(defn c11-scalar-functions [core]
+  (loop [remaining (get core :root-node-ids) functions {} definitions {} names []]
+    (if (= 0 (count remaining)) {:functions functions :definitions definitions :names names}
+      (let [built (c11-scalar-build-function core (c11-scalar-node core (first remaining)))
+            function (get built :function) name (get function :name)]
+        (recur (rest remaining) (assoc functions name function)
+          (c11-scalar-merge definitions (get built :definitions)) (conj names name))))))
+
+(defn c11-scalar-function-blocks [functions names]
+  (loop [remaining names result []]
+    (if (= 0 (count remaining)) result
+      (let [function (get functions (first remaining))
+            blocks (loop [ids (get function :block-order) out result]
+                     (if (= 0 (count ids)) out
+                       (recur (rest ids)
+                         (conj out (assoc (get (get function :blocks) (first ids))
+                                     :function-id (get function :fn-id))))))]
+        (recur (rest remaining) blocks)))))
+
+(defn c11-scalar-data-uses [blocks]
+  (loop [remaining blocks result []]
+    (if (= 0 (count remaining)) result
+      (let [block (first remaining) term (get block :terminator)
+            operations (conj (get block :instructions)
+                         {:op-id (get term :terminator-id) :operands (get term :operands)
+                          :terminator? true})
+            uses (loop [rows operations out result]
+                   (if (= 0 (count rows)) out
+                     (let [operation (first rows)
+                           with-uses (loop [ids (get operation :operands) index 0 edges out]
+                                       (if (= 0 (count ids)) edges
+                                         (recur (rest ids) (+ index 1)
+                                           (conj edges
+                                             {:value-id (first ids) :consumer-id (get operation :op-id)
+                                              :consumer-kind (if (get operation :terminator?) :terminator :operation)
+                                              :consumer-block (get block :block-id)
+                                              :function-id (get block :function-id) :operand-index index}))))]
+                       (recur (rest rows) with-uses))))]
+        (recur (rest remaining) uses)))))
+
+(defn c11-scalar-control-edges [blocks]
+  (loop [remaining blocks result []]
+    (if (= 0 (count remaining)) result
+      (let [block (first remaining) term (get block :terminator)
+            edges (loop [ids (get block :successors) index 0 out result]
+                    (if (= 0 (count ids)) out
+                      (recur (rest ids) (+ index 1)
+                        (conj out {:from (get block :block-id) :to (first ids)
+                                   :function-id (get block :function-id)
+                                   :kind (get term :kind)
+                                   :arguments (get (get term :successor-arguments) index)}))))]
+        (recur (rest remaining) edges)))))
+
+(defn c11-scalar-dominance [blocks]
+  (loop [remaining blocks result {}]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining)
+        (assoc result (get (first remaining) :block-id) (get (first remaining) :dominators))))))
+
+(defn c11-scalar-pass-contract []
+  {:artifact :gravity/compiler-pass-contract :pass-id :c11-build-compositional-scalar-functions
+   :owner :gravity-source :input :gravity/safety-checked-core :output :gravity/mir-module
+   :requires [:fresh-c6-c10-verification :c5-declaration-and-binding-identities
+              :scalar-types :transitive-effects :immutable-ownership :numeric-safety :source-origins]
+   :preserves [:functions :exports :direct-calls :eager-evaluation :types :effects
+               :ownership :capabilities :safety :profile :source-target :source-origins]
+   :invalidates [:core-control-shape]
+   :regenerates [:control-flow :data-flow :dominance :overflow-guard-tokens]
+   :postcondition-verifier 'c11-verify-scalar-functions-mir
+   :scope :nonrecursive-first-order-fixed-arity-scalar-functions
+   :profiles [:hosted] :source-targets [:jvm] :target-independent-output? true})
+
+(defn c11-scalar-construct [checked-core]
+  (let [nodes (get checked-core :core-nodes) built (c11-scalar-functions checked-core)
+        functions (get built :functions) names (get built :names)
+        blocks (c11-scalar-function-blocks functions names)]
+    {:artifact :gravity/mir-module :schema-version 1
+     :module-id (get (get checked-core :source-core-input) :module)
+     :source-core (get checked-core :artifact-id) :profile :hosted :source-target :jvm
+     :target-request :jvm :target-request-metadata (get checked-core :target-request-metadata)
+     :functions functions :function-order names :exports (get checked-core :exports) :globals {}
+     :control-flow-graph {:edges (c11-scalar-control-edges blocks)
+                          :dominance (c11-scalar-dominance blocks)}
+     :data-flow-graph {:definitions (get built :definitions) :edges (c11-scalar-data-uses blocks)}
+     :type-table (c11-add-runtime-check-facts checked-core nodes :type
+                   (c11-build-fact-table-by-id nodes (get checked-core :type-facts) :fact-id ":type-fact" {}))
+     :effect-table (c11-add-runtime-check-facts checked-core nodes :effect
+                     (c11-build-fact-table-by-id nodes (get checked-core :effect-facts) :fact-id ":effect-fact" {}))
+     :effect-order-graph (get checked-core :effect-graph)
+     :ownership-table (c11-add-runtime-check-facts checked-core nodes :ownership
+                        (c11-build-fact-table-by-id nodes (get checked-core :ownership-facts) :fact-id ":ownership-fact" {}))
+     :capability-table (c11-add-runtime-check-facts checked-core nodes :capability
+                         (c11-build-fact-table-by-id nodes (get checked-core :capability-facts) :fact-id ":capability-fact" {}))
+     :safety-table (c11-add-runtime-check-facts checked-core nodes :safety
+                     (c11-build-fact-table-by-id nodes (get checked-core :safety-facts) :outcome-id ":safety-outcome" {}))
+     :profile-target-table (c11-add-runtime-check-facts checked-core nodes :profile-target
+                             (c11-build-profile-target-table checked-core nodes {}))
+     :runtime-check-table (c11-build-runtime-check-table checked-core nodes {})
+     :source-map (c11-build-source-map nodes {}) :domain-anchors {}
+     :provenance {:checked-core-artifact-id (get checked-core :artifact-id)
+                  :checked-core-mapping-id (get checked-core :mapping-id)
+                  :checked-core-provenance-binding-id (get checked-core :provenance-binding-id)}
+     :pass-contract (c11-scalar-pass-contract)
+     :construction {:owner :gravity-source :function 'c11-build-scalar-functions-mir :status :constructed}
+     :verification-status :pending :diagnostics [] :target-independent? true
+     :scope {:family :compositional-scalar-functions :nonrecursive? true :first-order? true
+             :whole-c11? false :target-lowering-credit? false :backend-credit? false
+             :release-credit? false :self-hosted? false}
+     :clojure-seed-boundary? true :self-hosted? false}))
+
+(defn c11-build-scalar-functions-mir [checked-core]
+  (let [problem (c11-scalar-core-problem checked-core)]
+    (if (= nil problem) (c11-scalar-construct checked-core)
+      (c11-scalar-rejected checked-core nil (get problem 0) (get problem 1)
+        {} :fresh-source-bound-scalar-core :invalid-core))))
+
+(defn c11-scalar-signatures [mir]
+  (loop [names (get mir :function-order) result []]
+    (if (= 0 (count names)) result
+      (let [function (get (get mir :functions) (first names))]
+        (recur (rest names)
+          (conj result [(get function :fn-id) (get function :name)
+                        (get function :params) (get function :param-types)
+                        (get function :returns) (get function :latent-effects)
+                        (get function :throws) (get function :capabilities)
+                        (get function :visibility) (get function :exported?)
+                        (get function :declaration-binding-id)]))))))
+
+(defn c11-scalar-operations [mir]
+  (loop [blocks (c11-scalar-function-blocks (get mir :functions) (get mir :function-order)) result []]
+    (if (= 0 (count blocks)) result
+      (recur (rest blocks) (c11-copy-vector (get (first blocks) :instructions) result)))))
+
+(defn c11-scalar-operation-view [operation family]
+  (let [facts (get operation :facts)]
+    (if (= family :type)
+      [(get operation :op-id) (get operation :opcode) (get operation :result)
+       (get operation :type) (get operation :constant-payload)
+       (get operation :callee) (get operation :callee-id)
+       (get operation :callee-binding-id) (get operation :signature) (get operation :dispatch)
+       (if (= :call (get operation :opcode)) (count (get operation :operands)) nil)]
+      (if (= family :effect)
+        [(get operation :effects) (get operation :capabilities) (get operation :ordering)
+         (get facts :effect-fact-id) (get facts :capability-fact-id)]
+        (if (= family :safety)
+          [(get facts :runtime-check-id) (get facts :guarded-operation-id)
+           (get facts :safety-outcome-id) (get facts :safety-proof-id) (get facts :failure-behavior)
+           (if (contains? #{:runtime-check :integer-add} (get operation :opcode))
+             [(get operation :op-id) (get operation :result) (get operation :operands)] nil)]
+          (if (= family :origin) (get operation :source)
+            [(get operation :operands) (get operation :block-id)]))))))
+
+(defn c11-scalar-operation-mismatch [expected actual family]
+  (loop [left (c11-scalar-operations expected) right (c11-scalar-operations actual)]
+    (if (= 0 (count left))
+      (if (= 0 (count right)) nil (first right))
+      (if (= 0 (count right)) (first left)
+        (if (= (c11-scalar-operation-view (first left) family)
+               (c11-scalar-operation-view (first right) family))
+          (recur (rest left) (rest right)) (first right))))))
+
+(defn c11-scalar-operand-types [definitions operands]
+  (loop [remaining operands result []]
+    (if (= 0 (count remaining)) result
+      (recur (rest remaining) (conj result (get (get definitions (first remaining)) :type))))))
+
+(defn c11-scalar-operation-types-valid? [mir operation definitions previous]
+  (let [opcode (get operation :opcode) operands (get operation :operands)
+        types (c11-scalar-operand-types definitions operands) type (get operation :type)]
+    (if (= :runtime-check opcode)
+      (= [:gravity/runtime-check-token [:gravity/i64 :gravity/i64]] [type types])
+      (if (= :integer-add opcode)
+        (if (= [:gravity/i64 [:gravity/runtime-check-token :gravity/i64 :gravity/i64]] [type types])
+          (= [:runtime-check (first operands) (vec (rest operands)) (get operation :op-id)]
+             [(get previous :opcode) (get previous :result) (get previous :operands)
+              (get (get previous :facts) :guarded-operation-id)]) false)
+        (if (= :call opcode)
+          (let [callee (get (get mir :functions) (get operation :callee))]
+            (= [(get callee :fn-id) (get callee :param-types) (get callee :returns)
+                (get callee :latent-effects) :direct]
+               [(get operation :callee-id) types type (get operation :effects) (get operation :dispatch)]))
+          (if (= :constant opcode) (= [] operands)
+            (if (= :truthiness opcode)
+              (= [:gravity/bool [:gravity/bool]] [type types])
+              (if (contains? #{:local :local-binding :sequence :lexical-scope :conditional-join} opcode)
+                (if (> (count types) 0) (= type (c11-last-value types)) false)
+                false))))))))
+
+(defn c11-scalar-block-valid? [mir function block]
+  (let [definitions (get (get mir :data-flow-graph) :definitions)
+        initial (loop [arguments (get block :arguments) available (set (get block :available-at-entry))]
+                  (if (= 0 (count arguments)) available
+                    (recur (rest arguments) (conj available (get (first arguments) :value-id)))))]
+    (loop [operations (get block :instructions) available initial previous nil]
+      (if (= 0 (count operations))
+        (let [term (get block :terminator) ids (get term :operands)
+              types (c11-scalar-operand-types definitions ids)]
+          (if (sh13-vector-values-present? ids available 0)
+            (if (= :return (get term :kind)) (= [(get function :returns)] types)
+              (if (= :conditional-branch (get term :kind)) (= [:gravity/bool] types)
+                (= :branch (get term :kind)))) false))
+        (let [operation (first operations) id (get operation :result)]
+          (if (if (contains? available id) false
+                (sh13-vector-values-present? (get operation :operands) available 0))
+            (if (c11-scalar-operation-types-valid? mir operation definitions previous)
+              (recur (rest operations) (conj available id) operation) false)
+            false))))))
+
+(defn c11-scalar-graphs-valid? [mir]
+  (loop [names (get mir :function-order)]
+    (if (= 0 (count names)) true
+      (let [function (get (get mir :functions) (first names))
+            valid (loop [ids (get function :block-order)]
+                    (if (= 0 (count ids)) true
+                      (if (c11-scalar-block-valid? mir function (get (get function :blocks) (first ids)))
+                        (recur (rest ids)) false)))]
+        (if valid (recur (rest names)) false)))))
+
+(defn c11-scalar-functions-passed [checked-core mir]
+  {:artifact :gravity/c11-scalar-functions-report :schema-version 1
+   :scope :compositional-scalar-functions :phase :verification :status :passed
+   :checked-core-artifact-id (get checked-core :artifact-id) :mir-module-id (get mir :module-id)
+   :checks [:actual-declarations-and-exports :direct-call-signatures-and-effects
+            :per-function-scalar-types :blocks-terminators-and-cfg-edges
+            :operand-and-edge-dominance :eager-local-evaluation
+            :overflow-guard-token-production-and-consumption
+            :type-effect-ownership-capability-and-safety-preservation
+            :profile-target-and-source-origin-preservation :fresh-mir-reconstruction]
+   :preserves [:functions :exports :declaration-binding-identities :lexical-bindings
+               :types :effects :ownership :capabilities :safety :source-origins]
+   :diagnostics [] :nonclaims [:target-emission :self-hosted? :seed-retirement :whole-c11]})
+
+(defn c11-verify-scalar-functions-mir [checked-core mir]
+  (let [problem (c11-scalar-core-problem checked-core)]
+    (if (= nil problem)
+      (if (if (map? mir) (= :gravity/mir-module (get mir :artifact)) false)
+        (let [expected (c11-scalar-construct checked-core)
+              type-mismatch (c11-scalar-operation-mismatch expected mir :type)
+              effect-mismatch (c11-scalar-operation-mismatch expected mir :effect)
+              safety-mismatch (c11-scalar-operation-mismatch expected mir :safety)
+              origin-mismatch (c11-scalar-operation-mismatch expected mir :origin)]
+          (if (= [(get expected :source-core) (get expected :module-id) :hosted :jvm :jvm
+                  (get expected :function-order) (get expected :exports)]
+                 [(get mir :source-core) (get mir :module-id) (get mir :profile)
+                  (get mir :source-target) (get mir :target-request)
+                  (get mir :function-order) (get mir :exports)])
+            (if (if (= nil type-mismatch)
+                  (if (= (get expected :type-table) (get mir :type-table))
+                    (= (c11-scalar-signatures expected) (c11-scalar-signatures mir)) false) false)
+              (if (if (= nil effect-mismatch)
+                    (= [(get expected :effect-table) (get expected :effect-order-graph)]
+                       [(get mir :effect-table) (get mir :effect-order-graph)]) false)
+                (if (if (= nil safety-mismatch)
+                      (= [(get expected :safety-table) (get expected :runtime-check-table)]
+                         [(get mir :safety-table) (get mir :runtime-check-table)]) false)
+                  (if (= [(get expected :ownership-table) (get expected :capability-table)
+                          (get expected :profile-target-table)]
+                         [(get mir :ownership-table) (get mir :capability-table)
+                          (get mir :profile-target-table)])
+                    (if (if (= nil origin-mismatch) (= (get expected :source-map) (get mir :source-map)) false)
+                      (if (if (= [(get expected :control-flow-graph) (get expected :data-flow-graph)]
+                                 [(get mir :control-flow-graph) (get mir :data-flow-graph)])
+                            (c11-scalar-graphs-valid? mir) false)
+                        (if (= expected mir) (c11-scalar-functions-passed checked-core mir)
+                          (c11-scalar-rejected checked-core mir "C11-VERIFY" :fresh-source-derived-mir
+                            {} :original-construction :altered-construction))
+                        (c11-scalar-rejected checked-core mir "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow
+                          {} :source-derived-dominance :altered-graph))
+                      (c11-scalar-rejected checked-core mir "C11-ORIGIN" :scalar-source-origin-preservation
+                        origin-mismatch :source-bound-origin :altered-origin))
+                    (c11-scalar-rejected checked-core mir "C11-VERIFY" :scalar-ownership-capability-profile-preservation
+                      {} :immutable-safe-scalar-facts :altered-facts))
+                  (c11-scalar-rejected checked-core mir "C11-SAFETY" :scalar-overflow-guard-token-preservation
+                    safety-mismatch :checked-overflow-guard-and-token :altered-safety))
+                (c11-scalar-rejected checked-core mir "C11-EFFECT" :scalar-call-effects-and-order
+                  effect-mismatch :declared-transitive-effects :altered-effects))
+              (if (= nil safety-mismatch)
+                (c11-scalar-rejected checked-core mir "C11-TYPE" :scalar-signatures-and-types
+                  type-mismatch :source-derived-scalar-signatures :altered-signature-or-type)
+                (c11-scalar-rejected checked-core mir "C11-SAFETY" :scalar-overflow-guard-token-preservation
+                  safety-mismatch :checked-overflow-guard-and-token :altered-safety)))
+            (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-functions-exports-and-source-policy
+              {} :source-derived-module :altered-module)))
+        (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-mir-carrier {} :gravity/mir-module :invalid-carrier))
+      (c11-scalar-rejected checked-core mir (get problem 0) (get problem 1)
+        {} :fresh-source-bound-scalar-core :invalid-core))))
+
+; Private execution frames project the actual, freshly verified MIR. They do
+; not become replacement MIR or acquire a different source profile or target.
+(defn c11-scalar-runtime-type [type]
+  (if (= :gravity/i64 type) :i64
+    (if (= :gravity/bool type) :bool :runtime-check-token)))
+
+(defn c11-scalar-frame-operation [operation]
+  (let [opcode (get operation :opcode) operands (get operation :operands)]
+    (assoc operation :source-op-id (get operation :op-id)
+      :op-id (get operation :result)
+      :type (c11-scalar-runtime-type (get operation :type))
+      :opcode (if (= :constant opcode) :const
+                (if (= :runtime-check opcode) :runtime-check
+                  (if (= :integer-add opcode) :checked-add
+                    (if (= :call opcode) :call
+                      (if (= :truthiness opcode) :truthy :local)))))
+      :operands (if (contains? #{:sequence :lexical-scope :conditional-join} opcode)
+                  [(c11-last-value operands)] operands)
+      :literal (get (get operation :constant-payload) :value)
+      :callee (get operation :callee-id))))
+
+(defn c11-scalar-frame-arguments [block]
+  (loop [arguments (get block :arguments) result (get block :available-at-entry)]
+    (if (= 0 (count arguments)) result
+      (recur (rest arguments) (conj result (get (first arguments) :value-id))))))
+
+(defn c11-scalar-frame-edge [function terminator index]
+  (let [target (get (get terminator :successors) index)
+        block (get (get function :blocks) target)]
+    (c11-copy-vector (get (get terminator :successor-arguments) index)
+      (get block :available-at-entry))))
+
+(defn c11-scalar-frame-block [function block]
+  (let [term (get block :terminator) kind (get term :kind)
+        operations (loop [rows (get block :instructions) result []]
+                     (if (= 0 (count rows)) result
+                       (recur (rest rows) (conj result (c11-scalar-frame-operation (first rows))))))]
+    {:block-id (get block :block-id) :params (c11-scalar-frame-arguments block)
+     :operations operations
+     :terminator
+     (if (= :return kind) {:opcode :return :value (first (get term :operands))}
+       (if (= :branch kind)
+         {:opcode :branch :target (first (get term :successors))
+          :arguments (c11-scalar-frame-edge function term 0)}
+         {:opcode :conditional-branch :condition (first (get term :operands))
+          :then-target (get (get term :successors) 0) :else-target (get (get term :successors) 1)
+          :then-arguments (c11-scalar-frame-edge function term 0)
+          :else-arguments (c11-scalar-frame-edge function term 1)}))}))
+
+(defn c11-scalar-frame [mir]
+  {:source-core (get mir :source-core) :module-id (get mir :module-id)
+   :profile (get mir :profile) :source-target (get mir :source-target)
+   :functions
+   (loop [names (get mir :function-order) result []]
+     (if (= 0 (count names)) result
+       (let [function (get (get mir :functions) (first names))
+             blocks (loop [ids (get function :block-order) out []]
+                      (if (= 0 (count ids)) out
+                        (recur (rest ids)
+                          (conj out (c11-scalar-frame-block function (get (get function :blocks) (first ids)))))))]
+         (recur (rest names)
+           (conj result {:fn-id (get function :fn-id) :params (get function :params)
+                         :entry-block (get function :entry) :blocks blocks})))))})
+
+(defn c11-scalar-execute-guard [function operation operands trace]
+  (let [passed (if (sh13-i64? (get operands 0))
+                 (if (sh13-i64? (get operands 1))
+                   (sh13-add-safe? (get operands 0) (get operands 1)) false) false)
+        facts (get operation :facts) token-id (get operation :op-id)
+        next-trace (conj trace {:function (get function :fn-id) :opcode :runtime-check
+                                :operation (get operation :source-op-id)
+                                :check-id (get facts :runtime-check-id)
+                                :guard-result (if passed :pass :fail) :token-produced? passed
+                                :token-value-id (if passed token-id :not-applicable)})]
+    (if passed
+      {:status :continue :trace next-trace
+       :value {:check-id (get facts :runtime-check-id) :guarded-operation-id (get facts :guarded-operation-id)
+               :operands operands :status :available}}
+      {:status :raised :trace next-trace
+       :error {:type :error/numeric :kind :overflow :numeric-mode :checked
+               :bit-width 64 :signedness :signed :operation-id (get facts :guarded-operation-id)
+               :check-id (get facts :runtime-check-id) :operands operands :source (get operation :source)}})))
+
+(defn c11-scalar-execute-add [function operation operands trace]
+  (let [token (get operands 0) numbers [(get operands 1) (get operands 2)]
+        valid (= [(get (get operation :facts) :runtime-check-id) (get operation :source-op-id) numbers :available]
+                 [(get token :check-id) (get token :guarded-operation-id) (get token :operands) (get token :status)])
+        next-trace (conj trace {:function (get function :fn-id) :opcode :integer-add
+                                :operation (get operation :source-op-id) :token-consumed? valid
+                                :token-value-id (first (get operation :operands))})]
+    (if valid
+      {:status :continue :value (+ (get numbers 0) (get numbers 1)) :trace next-trace
+       :consumed-value-id (first (get operation :operands))}
+      (sh13-execution-rejected next-trace :invalid-overflow-guard-token))))
+
+(defn sh13-run-scalar-functions-mir [checked-core mir exported-function arguments]
+  (let [verification (c11-verify-scalar-functions-mir checked-core mir)
+        function (get (get mir :functions) exported-function)
+        exported? (c11-vector-contains? (get mir :exports) exported-function)
+        types (loop [remaining (get function :param-types) result []]
+                (if (= 0 (count remaining)) result
+                  (recur (rest remaining) (conj result (c11-scalar-runtime-type (first remaining))))))]
+    (if (= :passed (get verification :status))
+      (if (if exported? (if (= true (get function :exported?)) (= :public (get function :visibility)) false) false)
+        (if (if (vector? arguments) (if (= (count arguments) (count types))
+                                     (sh13-argument-values-valid? arguments types 0) false) false)
+          (let [execution (sh13-execute-function (c11-scalar-frame mir) (get function :fn-id) arguments [])]
+            {:artifact :gravity/sh13-scalar-functions-execution :schema-version 1
+             :status (if (= :returned (get execution :status)) :accepted :rejected)
+             :checked-core-artifact-id (get checked-core :artifact-id) :mir-module-id (get mir :module-id)
+             :entry-function exported-function :arguments arguments :execution execution
+             :verification verification :source-target (get mir :source-target)
+             :profile (get mir :profile) :diagnostics [] :clojure-seed-boundary? true :self-hosted? false
+             :nonclaims [:target-emission :native-execution :seed-retirement :self-hosted?]})
+          (c11-scalar-rejected checked-core mir "C11-TYPE" :exported-scalar-call-arguments
+            function types arguments))
+        (c11-scalar-rejected checked-core mir "C11-VERIFY" :selected-exported-scalar-function
+          function (get mir :exports) exported-function))
+      {:artifact :gravity/sh13-scalar-functions-execution :schema-version 1 :status :rejected
+       :verification verification :execution nil :diagnostics (get verification :diagnostics)})))
+
+(defn sh13-verify-scalar-functions-execution [checked-core mir exported-function arguments candidate]
+  (let [expected (sh13-run-scalar-functions-mir checked-core mir exported-function arguments)]
+    (if (= expected candidate)
+      {:artifact :gravity/sh13-scalar-functions-execution-verification :schema-version 1 :status :passed
+       :checked-core-artifact-id (get checked-core :artifact-id) :mir-module-id (get mir :module-id)
+       :entry-function exported-function :diagnostics []}
+      (c11-scalar-rejected checked-core mir "C11-VERIFY" :scalar-execution-result-substitution
+        {} :fresh-reference-execution :altered-execution))))

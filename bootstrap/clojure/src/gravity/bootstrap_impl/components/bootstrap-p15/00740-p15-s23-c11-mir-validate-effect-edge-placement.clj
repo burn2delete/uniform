@@ -344,19 +344,14 @@
 (defn- p15-s23-application-c11-family! [source-path checked-core]
   (p15-s23-c11-mir-require-trusted-carrier!
    source-path :application-fresh-checked-core checked-core :reject)
-  (let [root (peek (:core-nodes checked-core))
-        family (get-in checked-core [:scope :family])
-        bool? (and (= :gravity/bool (get-in root [:type :return]))
-                   (every? #{:gravity/bool} (get-in root [:type :params])))
-        flat? (and bool? (bool-branch-join/flat-sequence-source-family? checked-core))]
+  (let [family (get-in checked-core [:scope :family])]
     (p15-s23-c11-mir-require!
-     (or (= :checked-i64-add-v1 family) bool?)
+     (= :compositional-scalar-functions-v1 family)
      "C11-MODULE" source-path checked-core :application-supported-scalar-family)
-    {:family (if flat? :closed-flat-bool-literal-sequence
-                 (if bool? :boolean-scalar family))
-     :builder-function (if flat? 'sh12-build-flat-bool-sequence-mir 'sh12-build-branch-join-mir)
-     :verifier-function (if flat? 'sh12-verify-flat-bool-sequence-mir 'sh12-verify-branch-join-mir)
-     :flat? flat?}))
+    {:family family
+     :builder-function 'c11-build-scalar-functions-mir
+     :verifier-function 'c11-verify-scalar-functions-mir
+     :report-function 'c11-scalar-functions-passed}))
 
 (defn- p15-s23-application-c11-binding! [source-path selected]
   ;; Internal v2 here selects the existing current-source compilation transport;

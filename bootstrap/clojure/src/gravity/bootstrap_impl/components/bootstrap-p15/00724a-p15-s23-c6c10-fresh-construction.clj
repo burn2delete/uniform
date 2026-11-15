@@ -248,14 +248,14 @@
           artifact (p15-s23-c6c10-public-artifact context source-binding ingress sealed)
           receipt (assoc (:source-policy-receipt ingress)
                          :policy policy :owner-sources owner-sources
-                         :parameter-resolution
-                         (select-keys (:resolved-parameter ingress)
+                         :function-resolution
+                         (select-keys (:resolved-functions ingress)
                            [:sh06-artifact-id :sh06-semantic-projection-id :projection-binding
-                            :root-syntax-id :function-syntax-id :function-scope-id])
+                            :root-syntax-ids :declarations])
                          :expression-binding
                          (or (get-in ingress [:source-policy-receipt :expression-binding])
                              (assoc (:expression owner-sources)
-                                    :invoked? false :reason :parameter-seed-plan)))]
+                                    :invoked? false :reason :scalar-module-seed-plan)))]
       (p15-s23-c6c10-require-trusted-carrier! source-path :compiler-application-source-policy receipt)
       (p15-s23-c6c10-recheck-application-owners! source-path owner-sources)
       {:artifact artifact :context context :source-policy-receipt receipt

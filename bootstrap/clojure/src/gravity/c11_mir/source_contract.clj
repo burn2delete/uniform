@@ -129,4 +129,11 @@
     'sh12-branch-join-passed {:arity 2 :params ['checked-core 'mir]}
     'sh12-build-flat-bool-sequence-mir {:arity 1 :params ['checked-core]}
     'sh12-verify-flat-bool-sequence-mir {:arity 2 :params ['checked-core 'mir]}
-    'sh12-flat-bool-sequence-report {:arity 2 :params ['checked-core 'report]}}})
+    'sh12-flat-bool-sequence-report {:arity 2 :params ['checked-core 'report]}
+    'c11-build-scalar-functions-mir {:arity 1 :params ['checked-core]}
+    'c11-verify-scalar-functions-mir {:arity 2 :params ['checked-core 'mir]}
+    'c11-scalar-functions-passed {:arity 2 :params ['checked-core 'mir]}
+    'sh13-run-scalar-functions-mir
+    {:arity 4 :params ['checked-core 'mir 'exported-function 'arguments]}
+    'sh13-verify-scalar-functions-execution
+    {:arity 5 :params ['checked-core 'mir 'exported-function 'arguments 'candidate]}}})
