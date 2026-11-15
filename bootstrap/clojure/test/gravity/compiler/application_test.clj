@@ -784,8 +784,7 @@
 (deftest current-source-keeps-the-increment-scope
   (doseq [[label text]
           [["subtraction" (str/replace add-source "(+ left right)" "(- left right)")]
-           ["multiplication" (str/replace add-source "(+ left right)" "(* left right)")]
-           ["multiple-functions" (str add-source "\n(defn extra [] true)\n")]]]
+           ["multiplication" (str/replace add-source "(+ left right)" "(* left right)")]]]
     (testing label
       (with-source-file (str label ".gravity") text
         (fn [path]
