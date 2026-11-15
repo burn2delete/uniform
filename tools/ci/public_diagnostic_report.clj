@@ -16,6 +16,9 @@
 (def macro-diagnostic-schema
   "gravity/ci-macro-diagnostic-report-v1")
 
+(def syntax-diagnostic-schema
+  "gravity/ci-syntax-diagnostic-report-v1")
+
 (def ^:private producer-schema
   "gravity/ci-public-release-diagnostic-v1")
 
@@ -428,31 +431,41 @@
      :files {:checkout (file-identity checkout)
              :run-url (file-identity run-url-file)}}))
 
-(defn- read-macro-summary!
-  [^Path root checksums]
+(defn- read-selected-summary!
+  [^Path root checksums relative mode label]
   (let [summary (verify-file-against-checksum!
-                 (read-text-data! root "macro-summary.edn" "macro-summary.edn")
-                 checksums "macro-summary.edn")
-        value (read-one-edn! (:text summary) "macro-summary.edn")]
+                 (read-text-data! root relative label)
+                 checksums label)
+        value (read-one-edn! (:text summary) label)]
     (cond
       (vector? value)
       {:value value :results value :shape :vector :file (file-identity summary)}
 
       (map? value)
-      (let [_ (when-not (= "macro" (:mode value))
-                (fail! "macro-summary.edn map mode must be macro"
+      (let [_ (when-not (= mode (:mode value))
+                (fail! (str label " map mode must be " mode)
                        {:mode (:mode value)}))
             _ (require-map! (:selection value)
-                            "macro-summary.edn :selection")
+                            (str label " :selection"))
             results (:results value)]
         (when-not (vector? results)
-          (fail! "macro-summary.edn :results must be a vector"
+          (fail! (str label " :results must be a vector")
                  {:type (some-> results class .getName)}))
         {:value value :results results :shape :map :file (file-identity summary)})
 
       :else
-      (fail! "macro-summary.edn must be a vector or selected summary map"
+      (fail! (str label " must be a vector or selected summary map")
              {:type (some-> value class .getName)}))))
+
+(defn- read-macro-summary!
+  [^Path root checksums]
+  (read-selected-summary! root checksums "macro-summary.edn" "macro"
+                          "macro-summary.edn"))
+
+(defn- read-bootstrap-summary!
+  [^Path root checksums]
+  (read-selected-summary! root checksums "bootstrap-summary.edn" "bootstrap"
+                          "bootstrap-summary.edn"))
 
 (defn- macro-status!
   [value label]
@@ -760,6 +773,100 @@
   [options]
   (validate-macro-options! options)
   (let [value (macro-report (:artifact-dir options))]
+    (binding [*print-length* nil
+              *print-level* nil
+              *print-readably* true]
+      (println (pr-str value)))
+    0))
+
+(defn- syntax-row!
+  [rows]
+  (let [matches (filter #(= "syntax-regression" (get-in % [:result :id])) rows)]
+    (when-not (= 1 (count matches))
+      (fail! "Bootstrap summary must contain exactly one syntax-regression result"
+             {:count (count matches)}))
+    (first matches)))
+
+(defn syntax-report
+  "Read one retained bootstrap syntax artifact directory without replay.
+
+  The returned map preserves every recorded bootstrap child result while the
+  syntax-regression result and its ordered progress frames remain diagnostic
+  observations only."
+  [artifact-dir]
+  (let [root (root-path! artifact-dir)
+        checksums (verify-checksums! root)
+        context (read-macro-context! root checksums)
+        summary-data (read-bootstrap-summary! root checksums)
+        rows (mapv #(validate-macro-row! root checksums % context)
+                   (:results summary-data))
+        ids (mapv #(get-in % [:result :id]) rows)
+        duplicate-ids (->> ids frequencies
+                           (filter (fn [[_ count]] (> count 1)))
+                           (mapv first))
+        _ (when (seq duplicate-ids)
+            (fail! "Bootstrap summary contains duplicate child identities"
+                   {:ids duplicate-ids}))
+        syntax-row (syntax-row! rows)
+        results (mapv :result rows)
+        syntax-result (:result syntax-row)
+        frames (vec (or (get-in syntax-row [:log :frames]) []))
+        attempts (->> results (keep :run-attempt) distinct vec)
+        _ (when (> (count attempts) 1)
+            (fail! "Bootstrap child receipts disagree on run-attempt"
+                   {:attempts attempts}))
+        recorded (assoc (:checkout context)
+                        :run-id (:run-id context)
+                        :run-url (:run-url context)
+                        :attempt (or (first attempts) :not-observed))
+        sanitized-summary (sanitize-macro-summary (:value summary-data)
+                                                  (:shape summary-data)
+                                                  results)
+        files (macro-file-identities root checksums)]
+    {:schema syntax-diagnostic-schema
+     :authority :diagnostic
+     :authoritative? false
+     :recorded recorded
+     :summary sanitized-summary
+     :results results
+     :syntax-result syntax-result
+     :progress {:progress-frames frames
+                :total-frames (count frames)
+                :last-observed (last frames)}
+     :inputs {:checksums (select-keys checksums [:file :entries])
+              :files files
+              :identity {:basis :recorded-artifact-files
+                         :provider-authenticated? false
+                         :git-source-authenticated? false}}
+     :nonclaims [:recorded-identities-not-provider-authenticated
+                 :recorded-identities-not-git-source-authenticated
+                 :progress-frames-are-non-authoritative
+                 :missing-return-is-not-timing-or-cause
+                 :no-timeout-cause-or-performance-claim
+                 :diagnostic-not-main-or-ci-acceptance
+                 :diagnostic-not-bootstrap-conformance-authority
+                 :diagnostic-not-release-or-admission-authority
+                 :diagnostic-not-migration-or-self-hosting-authority
+                 :diagnostic-not-seed-retirement-authority
+                 :diagnostic-not-repair-or-recovery-authority
+                 :no-replay-provider-call-or-public-test-execution]}))
+
+(defn- validate-syntax-options!
+  [options]
+  (when-not (map? options)
+    (fail! "Syntax diagnostic report options must be a map"
+           {:type (some-> options class .getName)}))
+  (when-not (= #{:artifact-dir} (set (keys options)))
+    (fail! "Syntax diagnostic report accepts exactly :artifact-dir"
+           {:keys (vec (sort-by str (keys options)))}))
+  (nonempty-string! ":artifact-dir" (:artifact-dir options))
+  options)
+
+(defn run-syntax!
+  "Print one untruncated bootstrap syntax diagnostic report."
+  [options]
+  (validate-syntax-options! options)
+  (let [value (syntax-report (:artifact-dir options))]
     (binding [*print-length* nil
               *print-level* nil
               *print-readably* true]

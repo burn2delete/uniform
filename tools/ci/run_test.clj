@@ -1174,6 +1174,84 @@
     (coll? value) (some #(macro-diagnostic-report-contains-key? % key) value)
     :else false))
 
+(defn- syntax-diagnostic-executed-row
+  [id status exit-code timeout-seconds commit run-id run-attempt]
+  {:id id
+   :status status
+   :exit-code exit-code
+   :timeout-seconds timeout-seconds
+   :started-ms 1700000000000
+   :finished-ms (if (= :timeout status) 1700000600000 1700000004321)
+   :argv ["clojure" "-M:dev-test" "--progress"
+          "--namespace" "gravity.syntax.pipeline-test"]
+   :pid 5252
+   :run-attempt run-attempt
+   :commit commit
+   :descendant-pids [5253]
+   :run-id run-id
+   :stdin-path nil})
+
+(defn- syntax-diagnostic-fixture!
+  ([] (syntax-diagnostic-fixture! {}))
+  ([options]
+   (let [root (report-fixture-root!)
+         commit (or (:commit options) (apply str (repeat 40 "3")))
+         tree (or (:tree options) (apply str (repeat 40 "4")))
+         run-id (or (:run-id options) "43741859360")
+         run-attempt (or (:run-attempt options) "1")
+         run-url (or (:run-url options)
+                     (str "https://github.com/burn2delete/uniform/actions/runs/"
+                          run-id))
+         namespace-name "gravity.syntax.pipeline-test"
+         test-var "gravity.syntax.pipeline-test/selected-registered-products-require-the-authenticated-syntax-owner"
+         rows (or (:rows options)
+                  [(syntax-diagnostic-executed-row
+                    "cold-bootstrap-load" :failed 1 120 commit run-id run-attempt)
+                   (syntax-diagnostic-executed-row
+                    "syntax-regression" :timeout 124 600 commit run-id run-attempt)
+                   (macro-diagnostic-skipped-row
+                    "bootstrap-input-controls" :selection-filtered
+                    {:kind :selected :paths ["bootstrap/clojure/src/gravity/bootstrap.clj"]})])
+         summary-shape (or (:summary-shape options) :vector)
+         selection (or (:selection options)
+                       {:kind :selected
+                        :reason :syntax-regression
+                        :paths ["bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"]})
+         summary (if (= :map summary-shape)
+                   {:mode "bootstrap" :selection selection :results (vec rows)}
+                   (vec rows))
+         default-frames [(macro-diagnostic-namespace-progress-v2-frame
+                          :namespace-load :enter namespace-name 0)
+                         (macro-diagnostic-namespace-progress-v2-frame
+                          :namespace-load :return namespace-name 4)
+                         (macro-diagnostic-progress-v2-frame
+                          :test-var :enter namespace-name test-var 9)]
+         progress (or (:progress-by-id options) {})]
+     (report-fixture-write! root "checkout.txt" (str commit "\n" tree "\n"))
+     (report-fixture-write! root "run-url.txt" (str run-url "\n"))
+     (report-fixture-write-edn! root "bootstrap-summary.edn" summary)
+     (doseq [row rows
+             :when (not= :skipped (:status row))]
+       (let [id (:id row)
+             frames (if (contains? progress id)
+                      (get progress id)
+                      (if (= id "syntax-regression") default-frames []))]
+         (report-fixture-write-edn! root (str id ".edn") row)
+         (report-fixture-write! root (str id ".log")
+                                (macro-diagnostic-log-text frames))))
+     (report-fixture-write-checksums! root)
+     {:root root
+      :commit commit
+      :tree tree
+      :run-id run-id
+      :run-attempt run-attempt
+      :run-url run-url
+      :rows (vec rows)
+      :summary summary
+      :namespace namespace-name
+      :test-var test-var
+      :full-progress default-frames})))
+
 (defn- report-record-for-phase [report phase]
   (some #(when (= phase (:phase %)) %) (:records report)))
 
@@ -2398,6 +2476,156 @@
                 output (with-out-str
                          (reset! result
                                  (diagnostic-report/run-macro!
+                                  {:artifact-dir (str root)})))
+                [value trailing] (report-read-one-form output)]
+            (is (= 0 @result))
+            (is (= {:args [(str root)] :diagnostic-only true} value))
+            (is (= ::report-eof trailing))
+            (is (= 1 @report-calls)))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest syntax-diagnostic-report-preserves-timeout-children-and-open-frames
+  (let [fixture (syntax-diagnostic-fixture! {:summary-shape :map})
+        root (:root fixture)
+        before (report-fixture-snapshot root)]
+    (try
+      (let [report (diagnostic-report/syntax-report (str root))
+            rows (:results report)
+            frames (get-in report [:progress :progress-frames])
+            syntax-result (:syntax-result report)]
+        (is (= "gravity/ci-syntax-diagnostic-report-v1" (:schema report)))
+        (is (= :diagnostic (:authority report)))
+        (is (false? (:authoritative? report)))
+        (is (= {:commit (:commit fixture)
+                :tree (:tree fixture)
+                :run-id (:run-id fixture)
+                :run-url (:run-url fixture)
+                :attempt (:run-attempt fixture)}
+               (:recorded report)))
+        (is (= {:mode "bootstrap"
+                :selection (:selection (edn/read-string
+                                        (slurp (io/file root "bootstrap-summary.edn"))))
+                :results rows}
+               (:summary report)))
+        (is (= ["cold-bootstrap-load" "syntax-regression"
+                "bootstrap-input-controls"]
+               (mapv :id rows)))
+        (is (= [:failed :timeout :skipped] (mapv :status rows)))
+        (is (= [1 124 nil] (mapv :exit-code rows)))
+        (is (= "syntax-regression" (:id syntax-result)))
+        (is (= :timeout (:status syntax-result)))
+        (is (= 124 (:exit-code syntax-result)))
+        (is (= 600 (:timeout-seconds syntax-result)))
+        (is (= "syntax-regression.edn" (get-in syntax-result [:receipt :path])))
+        (is (= "syntax-regression.log" (get-in syntax-result [:log :path])))
+        (is (= [0 4 9] (mapv :elapsed-ns frames)))
+        (is (= [2 3 4] (mapv :line frames)))
+        (is (every? #(= "syntax-regression.log" (:path %)) frames))
+        (is (= (last frames) (get-in report [:progress :last-observed])))
+        (is (= 3 (get-in report [:progress :total-frames])))
+        (is (some #{:progress-frames-are-non-authoritative}
+                  (:nonclaims report)))
+        (is (some #{:no-timeout-cause-or-performance-claim}
+                  (:nonclaims report)))
+        (is (some #{:diagnostic-not-bootstrap-conformance-authority}
+                  (:nonclaims report)))
+        (is (not (macro-diagnostic-report-contains-key? report :argv)))
+        (is (not (macro-diagnostic-report-contains-key? report :pid)))
+        (is (not (macro-diagnostic-report-contains-key? report :descendant-pids)))
+        (is (= before (report-fixture-snapshot root))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest syntax-diagnostic-report-rejects-integrity-and-malformed-inputs
+  (let [{:keys [root]} (syntax-diagnostic-fixture!)]
+    (try
+      (report-fixture-write! root "syntax-regression.log" "tampered\n")
+      (is (instance? Throwable
+                     (report-fixture-call-error
+                      #(diagnostic-report/syntax-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (syntax-diagnostic-fixture!)]
+    (try
+      (let [rows (edn/read-string
+                  (slurp (io/file root "bootstrap-summary.edn")))
+            receipt (edn/read-string
+                     (slurp (io/file root "syntax-regression.edn")))
+            bad-commit (apply str (repeat 40 "f"))]
+        (report-fixture-write-edn!
+         root "syntax-regression.edn" (assoc receipt :commit bad-commit))
+        (report-fixture-write-edn!
+         root "bootstrap-summary.edn"
+         (mapv #(if (= "syntax-regression" (:id %))
+                  (assoc % :commit bad-commit)
+                  %)
+               rows))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (report-fixture-call-error
+                        #(diagnostic-report/syntax-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (syntax-diagnostic-fixture!)]
+    (try
+      (let [rows (edn/read-string
+                  (slurp (io/file root "bootstrap-summary.edn")))
+            receipt (edn/read-string
+                     (slurp (io/file root "syntax-regression.edn")))
+            bad-run-id "999999999"]
+        (report-fixture-write-edn!
+         root "syntax-regression.edn" (assoc receipt :run-id bad-run-id))
+        (report-fixture-write-edn!
+         root "bootstrap-summary.edn"
+         (mapv #(if (= "syntax-regression" (:id %))
+                  (assoc % :run-id bad-run-id)
+                  %)
+               rows))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (report-fixture-call-error
+                        #(diagnostic-report/syntax-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (syntax-diagnostic-fixture!)]
+    (try
+      (report-fixture-write!
+       root
+       "syntax-regression.log"
+       (str "unrelated output\n"
+            "{:schema :gravity/development-test-progress-v2, :authority\n"))
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (report-fixture-call-error
+                      #(diagnostic-report/syntax-report (str root)))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest syntax-diagnostic-run-syntax-validates-exact-options-and-emits-one-edn
+  (let [fixture (syntax-diagnostic-fixture!)
+        root (:root fixture)
+        invalid-options [nil
+                         {}
+                         {:artifact-dir ""}
+                         {:artifact-dir 42}
+                         {:artifact-dir (str root) :unexpected true}]]
+    (try
+      (let [report-calls (atom 0)]
+        (with-redefs [diagnostic-report/syntax-report
+                      (fn [& args]
+                        (swap! report-calls inc)
+                        {:args (vec args) :diagnostic-only true})]
+          (doseq [options invalid-options]
+            (is (instance? Throwable
+                           (report-fixture-call-error
+                            #(diagnostic-report/run-syntax! options)))
+                (pr-str options)))
+          (is (zero? @report-calls))
+          (let [result (atom nil)
+                output (with-out-str
+                         (reset! result
+                                 (diagnostic-report/run-syntax!
                                   {:artifact-dir (str root)})))
                 [value trailing] (report-read-one-form output)]
             (is (= 0 @result))
