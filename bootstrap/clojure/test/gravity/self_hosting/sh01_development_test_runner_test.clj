@@ -784,7 +784,8 @@
           (is (identical? failure observed)))))
     (is (= 1 @returns))
     (is (= 1 @throws))
-    (is (= [:macro-paired-compare :macro-paired-compare]
+    (is (= [:macro-paired-compare :macro-paired-compare
+            :macro-paired-compare :macro-paired-compare]
            (mapv :phase (progress-rows output))))
     (is (= [:enter :return :enter :throw]
            (mapv :edge (progress-rows output))))))
