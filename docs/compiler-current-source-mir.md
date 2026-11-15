@@ -14,6 +14,13 @@ calls, computed locals and nested scalar conditionals. The examples below
 remain valid; the historical single-function restriction no longer describes
 the current implementation.
 
+The [checked JavaScript module increment](compiler-checked-js-modules.md)
+also admits this scalar source route with a genuine `:js-ts` declaration and
+matching policy. It adds a production source-to-Node-module API while retaining
+the JVM route. Target-specific descriptions and execution records below belong
+to the original JVM increment; they do not describe that successor's target
+eligibility or JavaScript runtime evidence.
+
 ## API
 
 The caller writes ordinary source, for example:

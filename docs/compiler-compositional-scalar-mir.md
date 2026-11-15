@@ -1,5 +1,12 @@
 # Compositional scalar source to verified MIR
 
+This document preserves the compositional JVM increment and its recorded
+checkpoints. The [checked JavaScript module successor](compiler-checked-js-modules.md)
+adds genuine `:js-ts` source admission, target eligibility and Node 20 module
+execution to the same scalar language path. Its separate evidence supersedes
+the forward-looking JavaScript handoff below; historical commit and execution
+records here remain unchanged.
+
 ## Scope and finish line
 
 This increment extends the production

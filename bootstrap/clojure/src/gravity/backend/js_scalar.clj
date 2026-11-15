@@ -42,7 +42,7 @@
        :functionId function-id :mirInstructionId operation-id :coreNodeId core-id
        :originChain (:generated-origin source)
        :sourceSpan (:span source)
-       :syntaxId (:syntax-id source) :originId (:origin-id source)})))
+       :syntaxId (:enclosing-syntax-origin-id source) :originId (:origin-id source)})))
 
 (defn- error-runtime [program]
   (let [numeric (get-in program [:error-contract :numeric])
@@ -113,7 +113,8 @@
             (doseq [statement (:statements block)]
               (let [result (get value-names (:result statement))
                     origin (source-origin (:source statement) fn-id (:operation-id statement)
-                                          (or (:core-node-id (:source statement)) (:operation-id statement)))]
+                                          (or (:guarded-operation-id statement)
+                                              (:core-node-id (:source statement)) (:operation-id statement)))]
                 (case (:kind statement)
                   :constant
                   (line! (str "    " result " = "
@@ -211,7 +212,8 @@
                            column (:sourceColumn origin)
                            ;; C2 columns count Unicode scalar values. Source
                            ;; Map v3 original columns count UTF-16 code units.
-                           column (if (= :unicode-scalar (get-in origin [:sourceSpan :column-unit]))
+                           column (if (= :unicode-scalar (or (get-in origin [:sourceSpan :start :column-unit])
+                                                           (get-in origin [:sourceSpan :column-unit])))
                                     (.offsetByCodePoints ^String line 0 column) column)]
                        (assoc origin :generatedLine (inc index)
                                      :generatedColumn (- (count text) (count (str/triml text)))

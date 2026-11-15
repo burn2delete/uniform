@@ -3080,6 +3080,44 @@
                     :origin-chain [] :missing-fact missing :fallback-status :rejected
                     :remediation :reconstruct-current-source-and-c14-eligibility}]}))
 
+(defn b1-js-abi [mir]
+  {:artifact :gravity/c14-checked-js-abi :calling-convention :javascript-fixed-arity-functions
+   :types {:gravity/i64 {:javascript :bigint :typescript "bigint" :width 64 :signed true}
+           :gravity/bool {:javascript :boolean :typescript "boolean"}}
+   :nullish :rejected :coercion :forbidden :ownership :persistent-immutable-value
+   :boundary-validation [:exact-arity :primitive-types :signed-i64-range]
+   :argument-evaluation :left-to-right :body-evaluation :eager
+   :exports
+   (loop [names (get mir :exports) result []]
+     (if (= 0 (count names)) result
+       (let [name (first names) function (get (get mir :functions) name)]
+         (recur (rest names)
+          (conj result {:name name :export-name (str name) :function-id (get function :fn-id)
+                        :binding-id (get function :declaration-binding-id)
+                        :parameters (get function :param-types) :return (get function :returns)
+                        :effects (get function :latent-effects) :throws (get function :throws)
+                        :capabilities #{} :source (get function :source)})))))})
+
+(defn b1-js-runtime-valid? [application runtime]
+  (b1-js-all?
+   [(= {:kind :node :version-major 20 :ecmascript :es2022 :module-format :esm}
+       (get runtime :host))
+    (= :managed (get runtime :family)) (= :hosted (get runtime :profile))
+    (= :js-ts (get runtime :target))
+    (= {:arithmetic :ecmascript-bigint-operators
+        :boundary-checks :generated-primitive-type-and-range-checks
+        :error-raise :ecmascript-error-constructor-and-throw
+        :allocation :node-managed-heap :gc :node-managed-gc} (get runtime :providers))
+    (= [{:symbol "Error" :provider :ecmascript :adapter :uniform-typed-error
+         :input :constant-message-string :output :typed-uniform-error :capabilities #{}
+         :effects #{:error/raise} :invocation :failure-path-only}] (get runtime :host-globals))
+    (= (get (get (get application :source-policy-receipt) :policy) :effects)
+       (get runtime :program-effects))
+    (= #{:error/raise} (get runtime :boundary-effects))
+    (= :invalid-host-input-before-source-entry (get runtime :boundary-effect-scope))
+    (= #{} (get runtime :external-capabilities)) (= [] (get runtime :package-imports))
+    (= [] (get runtime :polyfills)) (= :synchronous-only (get runtime :event-loop))]))
+
 (defn b1-build-checked-js-input [application lowering]
   (let [mir (get application :mir-module) core (get application :checked-core)
         report (get application :mir-verification)
@@ -3099,12 +3137,12 @@
           (= (get core :artifact-id) (get report :checked-core-artifact-id) (get mir :source-core))
           (= (get mir :module-id) (get report :mir-module-id))
           (= (b1-js-evidence application) (get lowering :evidence))
-          (= :gravity/c14-checked-js-abi (get (get lowering :abi) :artifact))
-          (= :bigint (get (get lowering :numeric) :representation))
-          (= :checked (get (get lowering :numeric) :mode))
-          (= {:kind :node :version-major 20 :ecmascript :es2022 :module-format :esm}
-             (get (get lowering :runtime) :host))
-          (= #{} (get (get lowering :runtime) :external-capabilities))])
+          (= (b1-js-abi mir) (get lowering :abi))
+          (= {:mode :checked :representation :bigint :width 64 :signed true
+              :minimum "-9223372036854775808" :maximum "9223372036854775807"
+              :overflow :raise-error-numeric :number-mixing :rejected
+              :check-elision :forbidden :operation :add} (get lowering :numeric))
+          (b1-js-runtime-valid? application (get lowering :runtime))])
       {:artifact :gravity/b1-checked-js-input :schema-version 1 :status :accepted
        :backend :gravity.backend/js-ts :profile :hosted :source-target :js-ts
        :target (get lowering :target) :input input :source (get application :source)

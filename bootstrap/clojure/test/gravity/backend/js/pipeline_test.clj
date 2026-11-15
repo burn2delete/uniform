@@ -236,7 +236,9 @@
         (is (= :rejected (get-in product [:source-intake-refusal :status])))
         (is (= "B1-TARGET-UNSUPPORTED" (get-in product [:source-intake-refusal :data :id])))
         (is (= :js-ts (get-in product [:source-intake-refusal :data :target])))
-        (is (= #{:jvm} (get-in product [:source-intake-refusal :data :supported])))
+        (is (= #{:jvm :js-ts} (get-in product [:source-intake-refusal :data :supported])))
+        (is (= :hosted-safe-scalar-js-source-policy
+               (get-in product [:source-intake-refusal :data :missing-fact])))
         (is (false? (:compiled-source-provenance? product)))
         (is (true? (:executable? product)))
         (is (= "fixture\u0000\u03bb\n\"\\" (first (get-in product [:source-map "sourcesContent"]))))

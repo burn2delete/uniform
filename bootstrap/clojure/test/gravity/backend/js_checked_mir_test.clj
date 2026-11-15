@@ -125,6 +125,78 @@
     (is (some? path) (str "Genuine MIR must contain " opcode))
     (if path (update-in mir path transform) mir)))
 
+(defn- target-owner-invoker [source-path relative-path]
+  (let [project-root (bootstrap/reader-project-root-path
+                       (bootstrap/p15-s23-c11-mir-resolve-source-path))
+        path (.getCanonicalPath (io/file project-root relative-path))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path :encoding "UTF-8"))]
+    (fn [function arguments]
+      (bootstrap/p15-s23-stage2-runtime-execute-function
+       {:engine :gravity-js-target-rules-test :compiler-artifact-plan? true}
+       plan function arguments))))
+
+(defn- assert-owned-rejection [path expected-id result]
+  (is (= :rejected (:status result)) (pr-str result))
+  (is (= expected-id (get-in result [:diagnostics 0 :diagnostic-id])))
+  (is (= path (diagnostic-source (first (:diagnostics result)))))
+  (println "checked scalar Uniform target rule rejection" (pr-str {:id expected-id
+                                                                   :missing-fact (get-in result [:diagnostics 0 :missing-fact])})))
+
+(defn- assert-target-owner-rejections [path product]
+  ;; These are actual current Uniform owners executed on genuine production
+  ;; products. Pure target-rule tests do not confer construction authority.
+  (let [invoke-c14 (target-owner-invoker path "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+        invoke-b1 (target-owner-invoker path "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity")
+        invoke-b6 (target-owner-invoker path "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
+        request {:target :js-ts :runtime :node20 :language :es2022 :module-format :esm}
+        lowering (invoke-c14 'c14-build-checked-js-lowering [product request])
+        packet (invoke-b1 'b1-build-checked-js-input [product lowering])
+        program (invoke-b6 'b6-build-checked-js-program [product lowering packet])
+        mir (:mir-module product)
+        addition (first (filter #(= :integer-add (:opcode %)) (function-operations mir 'add)))
+        effect-id (get-in addition [:facts :effect-fact-id])
+        proof-operation (first (filter #(string? (get-in % [:facts :safety-proof-id]))
+                                       (function-operations mir 'add)))
+        proof-id (get-in proof-operation [:facts :safety-proof-id])
+        entry (get-in mir [:functions 'add :entry])]
+    (is (= :accepted (:status lowering) (:status packet) (:status program)))
+    (is (= :passed (:status (invoke-c14 'c14-verify-checked-js-lowering [product request lowering]))))
+    (is (= :passed (:status (invoke-b1 'b1-verify-checked-js-input [product lowering packet]))))
+    (is (= :passed (:status (invoke-b6 'b6-verify-checked-js-program [product lowering packet program]))))
+    (is (contains? (:effect-table mir) effect-id))
+    (is (contains? (get-in mir [:proof-certificate-table :safety-proofs]) proof-id))
+    (doseq [[expected candidate]
+            [["C14-UNSUPPORTED" (update product :mir-module mutate-operation :integer-add
+                                          #(assoc % :opcode :dynamic-eval))]
+             ["C14-PROOF-METADATA"
+              (update-in product [:mir-module :functions 'add :blocks entry :instructions]
+                         #(filterv (fn [operation] (not= :runtime-check (:opcode operation))) %))]
+             ["C14-PROOF-METADATA" (update product :mir-module mutate-operation :integer-add
+                                              #(update % :operands subvec 1))]
+             ["C14-MANIFEST" (update-in product [:mir-module :effect-table] dissoc effect-id)]
+             ["C14-MANIFEST" (update-in product [:mir-module :proof-certificate-table :safety-proofs] dissoc proof-id)]
+             ["C14-ABI" (update product :mir-module mutate-operation :call
+                                 #(assoc-in % [:signature :params 0] :gravity/bool))]
+             ["C14-INPUT" (assoc-in product [:source :content-hash] "sha256:changed")]
+             ["C14-INPUT" (dissoc product :mir-verification)]]]
+      (is (not= product candidate))
+      (assert-owned-rejection path expected
+                              (invoke-c14 'c14-build-checked-js-lowering [candidate request])))
+    (assert-owned-rejection path "B6-TARGET"
+                            (invoke-c14 'c14-build-checked-js-lowering [product (assoc request :runtime :browser)]))
+    (doseq [candidate [(assoc-in lowering [:abi :exports 0 :parameters 0] :gravity/i64)
+                       (assoc-in lowering [:runtime :host-globals] [])
+                       (update lowering :evidence dissoc :proof-certificate-table)]]
+      (is (not= lowering candidate))
+      (assert-owned-rejection path "B1-INPUT" (invoke-b1 'b1-build-checked-js-input [product candidate])))
+    (assert-owned-rejection path "B1-INPUT"
+                            (invoke-b6 'b6-build-checked-js-program
+                                       [product lowering (assoc-in packet [:abi :exports 0 :parameters 0] :gravity/i64)]))
+    (assert-owned-rejection path "B6-MANIFEST"
+                            (invoke-b6 'b6-verify-checked-js-program
+                                       [product lowering packet (assoc program :exports [])]))))
+
 (defn- copy-artifacts! [source destination]
   (doseq [file (.listFiles (io/file source))]
     (Files/copy (.toPath file) (.resolve ^Path destination (.getName file))
@@ -222,6 +294,8 @@
     (is (not= "source-unit-only" (get-in source-map ["x_gravity" "coverage"])))
     (let [origins (get-in source-map ["x_gravity" "generatedOrigins"])
           decoded (decoded-source-map (get source-map "mappings"))
+          core-ids (set (map :node-id (get-in application [:checked-core :core-nodes])))
+          function-ids (set (map :fn-id (vals (get-in application [:mir-module :functions]))))
           addition (first (filter #(= :integer-add (:opcode %))
                                   (function-operations (:mir-module application) 'add)))
           addition-origins (filter #(= (:op-id addition) (get % "mirInstructionId")) origins)]
@@ -231,6 +305,9 @@
       (is (> (count (set (map #(get % "sourceLine") origins))) 1))
       (doseq [origin origins]
         (is (vector? (get origin "originChain")))
+        (is (contains? core-ids (get origin "coreNodeId")))
+        (is (contains? function-ids (get origin "functionId")))
+        (is (content-id? (get origin "syntaxId")))
         (is (some #{(select-keys
                      {:generated-column (get origin "generatedColumn")
                       :source 0 :source-line (get origin "sourceLine")
@@ -308,6 +385,7 @@
             (is (= ":add" (get error "operation")))
             (is (= (:op-id addition) (get-in error ["source" "mirInstructionId"])))
             (is (= (:op-id addition) (get-in error ["source" "coreNodeId"])))
+            (is (= 10 (get-in error ["source" "span" "start" "line"])))
             (is (= (str (get-in reference [:execution :error :type])) (get error "type")))
             (is (= (str (get-in reference [:execution :error :kind])) (get error "kind")))))
         (doseq [[index error] (map-indexed vector (drop 2 errors))]
@@ -323,24 +401,42 @@
         (println "checked scalar runtime rejection kinds" (pr-str expected-kinds))))))
 
 (deftest scalar-module-boolean-execution
-  (let [text (module-source 'acceptance.boolean '[choose flag] #{}
-               (str "(defn choose [enabled :- Bool] (if enabled true false))\n"
-                    "(defn flag [] (do true false))"))]
+  (let [text (module-source 'acceptance.boolean '[choose flag exact] #{}
+               (str "(defn choose [enabled𝒙 :- Bool] (if enabled𝒙 true false))\n"
+                    "(defn flag [] (do true false))\n"
+                    "(defn exact [] 9007199254740993)"))]
     (with-source "boolean.gravity" text
       (fn [path directory]
         (let [result (application/current-source-to-js-module path boolean-policy
                        (options (.resolve directory "module")))
               report (node-report path (get-in result [:paths :javascript])
                        (str "console.log(JSON.stringify({exports:Object.keys(m),"
-                            "results:[m.choose(true),m.choose(false),m.flag()]}));"))
+                            "results:[m.choose(true),m.choose(false),m.flag()],exact:m.exact().toString()}));"))
+              source-map (json/read-strict-component-contract
+                           (slurp (get-in result [:paths :source-map])))
+              origins (get-in source-map ["x_gravity" "generatedOrigins"])
+              lines (str/split text #"\n" -1)
               invoke (reference-invoker path)]
-          (is (= ["choose" "flag"] (get report "exports")))
+          (is (= ["choose" "exact" "flag"] (get report "exports")))
           (is (= [true false false] (get report "results")))
+          (is (= "9007199254740993" (get report "exact")))
           (doseq [[name arguments expected] [['choose [true] true] ['choose [false] false]
                                             ['flag [] false]]]
             (let [reference (reference-result invoke (:application result) name arguments)]
               (is (= :returned (get-in reference [:execution :status])))
               (is (= expected (get-in reference [:execution :value])))))
+          (let [reference (reference-result invoke (:application result) 'exact [])]
+            (is (= :returned (get-in reference [:execution :status])))
+            (is (= "9007199254740993" (str (get-in reference [:execution :value])))))
+          (is (some #(> (get % "sourceColumn")
+                        (dec (get-in % ["sourceSpan" "start" "column"]))) origins)
+              "The supplementary Unicode parameter forces a real scalar-to-UTF16 column conversion")
+          (doseq [origin origins]
+            (let [line (get lines (dec (get origin "sourceLine")))
+                  scalar-column (dec (get-in origin ["sourceSpan" "start" "column"]))]
+              (is (= "utf16-code-unit" (get origin "sourceColumnUnit")))
+              (is (= (.offsetByCodePoints ^String line 0 scalar-column)
+                     (get origin "sourceColumn")))))
           (is (empty? (get-in result [:application :mir-module :runtime-check-table])))
           (println "checked Boolean Node20 execution" (pr-str (get report "results"))))))))
 
@@ -420,7 +516,8 @@
                         (is (string? (:id data)) (pr-str data))
                         (is (= path (diagnostic-source data)) (pr-str data))
                         (is (not (.exists (.toFile output))))
-                        (println "checked scalar product rejection" (pr-str {:case label :id (:id data)}))))]
+                        (println "checked scalar product rejection" (pr-str {:case label :id (:id data)}))
+                        data))]
         (with-redefs [bootstrap/p15-s23-current-source-to-verified-mir
                       (fn [& _]
                         (reset! replaced-constructor? true)
@@ -429,6 +526,28 @@
          path scalar-policy
          (fn [product authenticate!]
            (reset! captured [product authenticate!])
+           (assert-target-owner-rejections path product)
+           (let [execute bootstrap/p15-s23-stage2-runtime-execute-function]
+             (doseq [[label verifier change]
+                     [["c14-verifier-application" 'c14-verify-checked-js-lowering
+                       #(assoc % :application-id "sha256:substituted")]
+                      ["b1-verifier-artifact" 'b1-verify-checked-js-input
+                       #(assoc % :artifact :caller/substituted-verifier)]
+                      ["b6-verifier-checks" 'b6-verify-checked-js-program
+                       #(assoc % :checks [])]]]
+               (let [substituted? (atom false)]
+                 (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                               (fn [runtime plan function arguments]
+                                 (let [report (execute runtime plan function arguments)]
+                                   (if (= verifier function)
+                                     (do (is (= :passed (:status report)))
+                                         (reset! substituted? true)
+                                         (change report))
+                                     report)))]
+                   (let [data (refuse! label authenticate! product)]
+                     (is (= :current-target-verifier-result-binding (:missing-fact data))
+                         "The host binds the genuine target owner's exact fresh verifier report")))
+                 (is @substituted? "The mutation must reach the actual target verifier result"))))
            (let [core (:checked-core product) mir (:mir-module product)
                  caller (get-in core [:functions 'score])
                  addition (first (filter #(= :integer-add (:opcode %)) (function-operations mir 'add)))
@@ -458,6 +577,12 @@
                  (let [candidate (change product)]
                    (is (not= product candidate) "Every tamper changes a genuine product")
                    (refuse! label authenticate! candidate))))
+             (let [replaced-authenticator? (atom false)]
+               (with-redefs [bootstrap/p15-s23-authenticate-current-source-mir-handoff!
+                             (fn [& _] (reset! replaced-authenticator? true) :passed)]
+                 (refuse! "substituted-authority-entrypoint" (constantly :passed) product))
+               (is (false? @replaced-authenticator?)
+                   "Emitter authentication must use the original authority rather than a replaceable public Var"))
              (refuse! "substituted-authority-callback" (constantly :passed) product)
              (try
                (spit path (str scalar-source "\n") :encoding "UTF-8")

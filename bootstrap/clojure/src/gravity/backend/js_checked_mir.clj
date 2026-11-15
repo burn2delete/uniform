@@ -65,9 +65,7 @@
                    (= [:meta :jvm #{} #{} :safe]
                       ((juxt :profile :target :effects :capabilities :safety) (:module plan)))
                    (= (:builder-arity contract) (get-in functions [builder :arity]))
-                   (= (:verifier-arity contract) (get-in functions [verifier :arity]))
-                   (contains? (set (get-in plan [:module :exports])) builder)
-                   (contains? (set (get-in plan [:module :exports])) verifier))
+                   (= (:verifier-arity contract) (get-in functions [verifier :arity])))
       (fail! "B1-INPUT" source-path :current-target-owner-source-and-api {:owner owner}))
     (identity! source-path source (snapshot! (:source-path source)) :stable-current-target-owner)
     {:plan plan :contract contract
@@ -185,13 +183,14 @@
                (dissoc (snapshot! (:source-path expected)) :text)
                :stable-loaded-js-host-transport)))
 
+(let [authenticate-handoff! bootstrap/p15-s23-authenticate-current-source-mir-handoff!]
 (defn emit-verified-module!
   "Internal backend handoff. The supplied closure must be the exact live
    authenticator registered by the original source construction authority.
    Arbitrary callbacks, accepted-looking products and expired contexts reject.
    Public compiler callers use compile-source! with source and policy only."
   [authenticate! application options]
-  (bootstrap/p15-s23-authenticate-current-source-mir-handoff! authenticate! application)
+  (authenticate-handoff! authenticate! application)
   (let [source-path (get-in application [:source :path])
         request (emission-request! source-path options)
         output (:output-path options)
@@ -216,7 +215,12 @@
         code {:javascript (:javascript emitted)
               :typescript-declarations (printer/declaration-source program)
               :source-map (printer/source-map-source program source-text emitted)
-              :package-metadata (js/package-source false)}
+              :package-metadata
+              (str (printer/json-source
+                    {:name "uniform-checked-scalar-module" :private true
+                     :type "module" :sideEffects false :engines {:node ">=20 <21"}
+                     :types "./program.d.ts"
+                     :exports {"." {:types "./program.d.ts" :import "./program.mjs"}}}) "\n")}
         _ (check-javascript! source-path (:javascript code))
         artifact-records (into (sorted-map)
                               (for [[kind text] code]
@@ -265,7 +269,7 @@
         contents (assoc code :provenance provenance-text :manifest (edn-source manifest))]
     ;; No files have been published. Check source/Core/MIR/owners again after
     ;; compilation and formatting and immediately before the atomic operation.
-    (bootstrap/p15-s23-authenticate-current-source-mir-handoff! authenticate! application)
+    (authenticate-handoff! authenticate! application)
     (recheck-owners! source-path bindings)
     (recheck-host-transports! source-path)
     (bootstrap/js-ts-backend-stage-files! output paths contents source-path)
@@ -273,7 +277,7 @@
      :application application :paths paths :manifest manifest :provenance provenance
      :target-eligibility (:product c14) :backend-input (:product b1) :program program
      :verification reports :runtime-observation {:node-version observed-node}
-     :artifact-inventory (assoc artifacts :manifest (text-artifact "manifest.edn" (:manifest contents)))}))
+     :artifact-inventory (assoc artifacts :manifest (text-artifact "manifest.edn" (:manifest contents)))})))
 
 (defn compile-source!
   "Compile actual source under explicit policy and emit one fresh directory.
