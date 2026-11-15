@@ -373,7 +373,9 @@
   :gravity/development-test-progress-v2)
 
 (def ^:private macro-progress-schema-prefix
-  "gravity/development-test-progress-")
+  ;; Keep historical name-only recognition: malformed or foreign-namespace
+  ;; progress markers still reach strict schema validation for rejection.
+  "development-test-progress-")
 
 (def ^:private macro-progress-edges
   #{:enter :return :throw})

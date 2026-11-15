@@ -2581,6 +2581,8 @@
                ["unknown v2 key" (assoc valid :unexpected true)]
                ["unsupported v2 authority" (assoc valid :authority :diagnostic)]
                ["v1 elapsed-ns is not historical schema" (assoc legacy :elapsed-ns 5)]
+               ["bare v1 schema is rejected" (assoc legacy :schema :development-test-progress-v1)]
+               ["foreign v1 schema is rejected" (assoc legacy :schema :other/development-test-progress-v1)]
                ["unsupported progress schema" (assoc valid
                                                      :schema :gravity/development-test-progress-v3)]
                ["missing schema is not accepted" (-> valid
