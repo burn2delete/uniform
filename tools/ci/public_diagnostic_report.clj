@@ -476,7 +476,7 @@
         status (macro-status! (:status value) (str label " :status"))
         exit-code (require-integer! (:exit-code value) (str label " :exit-code"))
         timeout-seconds (require-integer! (:timeout-seconds value)
-                                         (str label " :timeout-seconds"))
+                                          (str label " :timeout-seconds"))
         _ (when-not (pos? timeout-seconds)
             (fail! (str label " :timeout-seconds must be positive")
                    {:label label :timeout-seconds timeout-seconds}))

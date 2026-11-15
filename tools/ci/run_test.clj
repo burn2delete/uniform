@@ -2261,7 +2261,7 @@
         test-var "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
         full-frames (macro-diagnostic-progress-frames namespace-name test-var)
         partial-frames (vec (concat (take 2 full-frames)
-                                   (take 17 (drop 2 full-frames))))
+                                    (take 17 (drop 2 full-frames))))
         fixture (macro-diagnostic-fixture!
                  {:progress-by-id {"macro-pipeline-cohort" partial-frames
                                    "macro-bootstrap-compatibility" []}})
