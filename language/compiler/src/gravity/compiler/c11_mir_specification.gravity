@@ -12052,6 +12052,8 @@
         source (if (= nil core-node)
                  (if (= nil (get subject :source)) (c11-scalar-source core) (get subject :source))
                  (get core-node :source))
+        span (get source :span)
+        actual-source-path (get (get (get core :physical-provenance) :actual-paths) :source)
         function-name (if (= nil core-node) (get subject :name) (get (get core-node :path) 1))
         operation-id (if (= nil (get subject :op-id)) (get core-node :node-id) (get subject :op-id))]
     {:artifact :gravity/c11-scalar-functions-report :schema-version 1
@@ -12064,7 +12066,9 @@
        :block (get subject :block-id) :operation-id operation-id
        :source-operation (get core-node :source-operation)
        :origin-id (get source :origin-id) :syntax-id (get source :enclosing-syntax-origin-id)
-       :source-span (get source :span) :origin-chain (get source :generated-origin)
+       :source-span (if (string? actual-source-path)
+                      (assoc span :file actual-source-path :source actual-source-path) span)
+       :origin-chain (get source :generated-origin)
        :profile (get core :profile) :target-request (get core :source-target)
        :missing-fact missing :expected expected :actual actual
        :provenance {:checked-core-artifact-id (get core :artifact-id)

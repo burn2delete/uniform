@@ -265,6 +265,71 @@ not returned and no batch summary existed. These are interrupted attempts,
 not passing batches. The six unfinished source/MIR selectors are rerun in a
 fresh JVM against the unchanged final Uniform owner bytes.
 
+The corrected policy retry completed on local `d132c58daea3038e6c621e10592d02fbcc4798cd`
+(published `d8985233ee98e09f0aefe62afeb7716e2b96e621`) with
+**1 test, 8 assertions, 0 failures, 0 errors, exit 0**. After that result and
+the representative/semantic rejection results above, the obsolete
+multiple-function rejection row was removed. Subtraction and multiplication
+remain in that scope selector. The scope-only change is published as
+`0ce42bfbc850f0d9e9f52094c4ee6629289948a9`, tree
+`f40c091ba862fdaebe91be8bf196c2b05e53a070`, with local counterpart
+`6681c275a0d0390e648e9631caedc26f1207f92f`.
+
+The six remaining original checked-add/source-MIR regression selectors
+completed on `88b68430daf8b785d7a7dd47741b014966bcb2cb` with
+**6 tests, 198 assertions, 0 failures, 0 errors, exit 0**. The two reader/replay
+selectors from the interrupted batch are also rerun for a clean terminal
+report against the final owner bytes.
+
+The full handoff/product tamper batch on the passing representative candidate
+ended with **2 tests, 161 assertions, 16 failures, 0 errors, exit 1**.
+All four production handoff mutations rejected correctly: altered Core type
+fact, Core verifier report, MIR guard table and MIR verifier report. Every
+one of the sixteen detailed product mutations also rejected with the expected
+rule and function attribution, and none executed. The concrete call-signature
+comparison survived the host diagnostic conversion, and a substituted
+execution result rejected.
+
+All sixteen failures concerned the raw C11 diagnostic's source-span file:
+it still held the path-neutral source-content identity copied from Core,
+while `:provenance :actual-source-path` correctly held the real path. The
+Uniform rejection formatter now overlays that actual path into the span's
+`:file` and `:source` fields when present, preserving the original coordinates
+and semantic origin IDs. This changes rejection presentation only; Core,
+MIR construction and verification decisions remain unchanged. The current
+C11 owner compiles with source identity
+`sha256:3d64a005277eec4ed0d63fbf2c863dd195578c8aba90be58c7acdc8105fe3af7`.
+The actual-path assertions remain intact for the fresh product-tamper rerun.
+
+The renamed `.qst`/shadowed-operator batch on `0ce42bfbc850f0d9e9f52094c4ee6629289948a9`
+ended with **2 tests, 110 assertions, 0 failures, 1 error**. The namespace
+function named `+` executed correctly, retained its unused parameter, and
+had no primitive-add node, overflow guard or numeric effect. The three-function
+nested `.qst` source instead rejected in the real C6 builder with
+`C6-VERIFY`, `:missing-fact :contained-gravity-source-host-stack`, boundary
+`:compiler-application-builder`, and `java.lang.StackOverflowError`.
+
+A small data-only invocation of the actual compiled C6
+`c6c10-expression-effects` helper returned the correct union for 26, 38 and
+128 effect rows but exhausted the host stack at 512. That newly added fold
+used ordinary self-recursion over every accumulated node while expression
+mapping frames remained live. Its equivalent `loop`/`recur` implementation
+returns the same union for all four inputs, including 512, and the current
+owner compiles with source identity
+`sha256:fa764b54ec4237f315b0141720d2b13e01c103c4008ee0c8a60bd4b14263c924`.
+No compiler quota or JVM stack-limit adjustment was introduced. This helper
+probe does not supply accepted Core/MIR and is not compositional acceptance;
+the ordinary `.qst` source is rerun through the production API to determine
+whether its actual construction failure is resolved.
+
+The complete ten-case semantic-negative selector also completed on the
+scope-checkpoint source/test tree with **1 test, 40 assertions, 0 failures,
+0 errors, exit 0**. Its launch HEAD was `d8985233ee98e09f0aefe62afeb7716e2b96e621`
+with only the unselected scope-test row removal in the working tree; that
+exact tree was committed as local `6681c275a0d0390e648e9631caedc26f1207f92f`
+and published as `0ce42bfbc850f0d9e9f52094c4ee6629289948a9`. The selected
+negative body and all compiler bytes stayed unchanged throughout the run.
+
 ## Construction and execution ownership
 
 The production API accepts only a source path and the five explicit policy

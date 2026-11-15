@@ -976,11 +976,11 @@
   (if (contains? #{:integer-add :integer-sub :integer-mul} operation) #{:error/raise} #{}))
 
 (defn c6c10-expression-effects [nodes result]
-  (if (= (count nodes) 0)
-    (set result)
-    (c6c10-expression-effects
-     (rest nodes)
-     (c6c10-conj-all-unique result (vec (get (first nodes) :effects))))))
+  (loop [remaining nodes accumulated result]
+    (if (= (count remaining) 0)
+      (set accumulated)
+      (recur (rest remaining)
+       (c6c10-conj-all-unique accumulated (vec (get (first remaining) :effects)))))))
 
 (defn c6c10-node-latent-effects [node]
   (if (= :function (get node :source-operation))
