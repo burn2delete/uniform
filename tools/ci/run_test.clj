@@ -1009,6 +1009,159 @@
       :run-attempt run-attempt
       :run-url run-url})))
 
+(defn- macro-diagnostic-executed-row
+  [id status exit-code commit run-id run-attempt]
+  {:id id
+   :status status
+   :exit-code exit-code
+   :timeout-seconds 900
+   :started-ms 1700000000000
+   :finished-ms (if (= :timeout status) 1700000900000 1700000004321)
+   :argv ["clojure" "-M:dev-test" "--progress" "--namespace"
+          "gravity.macro.pipeline-test"]
+   :pid 4242
+   :run-attempt run-attempt
+   :commit commit
+   :descendant-pids [4243]
+   :run-id run-id
+   :stdin-path nil})
+
+(defn- macro-diagnostic-skipped-row
+  [id reason selection]
+  {:id id
+   :status :skipped
+   :reason reason
+   :selection selection})
+
+(defn- macro-diagnostic-progress-frame
+  [phase edge namespace-name test-var]
+  (array-map
+   :schema :gravity/development-test-progress-v1
+   :authority :non-authoritative
+   :phase phase
+   :edge edge
+   :namespace namespace-name
+   :test-var test-var))
+
+(defn- macro-diagnostic-namespace-progress-frame
+  [phase edge namespace-name]
+  (array-map
+   :schema :gravity/development-test-progress-v1
+   :authority :non-authoritative
+   :phase phase
+   :edge edge
+   :namespace namespace-name))
+
+(defn- macro-diagnostic-progress-frames
+  [namespace-name test-var]
+  (let [phases [:macro-paired-context
+                :macro-paired-expand
+                :macro-paired-construct
+                :macro-paired-bootstrap-expand
+                :macro-paired-verify
+                :macro-paired-lineage
+                :macro-paired-context
+                :macro-paired-expand
+                :macro-paired-construct
+                :macro-paired-bootstrap-expand
+                :macro-paired-verify
+                :macro-paired-lineage
+                :macro-paired-compare]]
+    (vec
+     (concat
+      [(macro-diagnostic-namespace-progress-frame :namespace-load :enter namespace-name)
+       (macro-diagnostic-namespace-progress-frame :namespace-load :return namespace-name)]
+      (mapcat (fn [phase]
+                [(macro-diagnostic-progress-frame phase :enter namespace-name test-var)
+                 (macro-diagnostic-progress-frame phase :return namespace-name test-var)])
+              phases)))))
+
+(defn- macro-diagnostic-log-text
+  [frames]
+  (str "unrelated JVM output\n"
+       (str/join "\n" (map pr-str frames))
+       (when (seq frames) "\n")
+       "unrelated trailing output\n"))
+
+(defn- macro-diagnostic-fixture!
+  ([] (macro-diagnostic-fixture! {}))
+  ([options]
+   (let [root (report-fixture-root!)
+         commit (or (:commit options) (apply str (repeat 40 "1")))
+         tree (or (:tree options) (apply str (repeat 40 "2")))
+         run-id (or (:run-id options) "43677018147")
+         run-attempt (or (:run-attempt options) "1")
+         run-url (or (:run-url options)
+                     (str "https://github.com/burn2delete/uniform/actions/runs/"
+                          run-id))
+         namespace-name "gravity.macro.pipeline-test"
+         test-var "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+         rows (or (:rows options)
+                  [(macro-diagnostic-executed-row "macro-pipeline-cohort"
+                                                  :timeout 124 commit run-id run-attempt)
+                   (macro-diagnostic-executed-row "macro-receipt-controls"
+                                                  :passed 0 commit run-id run-attempt)
+                   (macro-diagnostic-executed-row "macro-bootstrap-compatibility"
+                                                  :passed 0 commit run-id run-attempt)])
+         summary-shape (or (:summary-shape options) :vector)
+         selection (or (:selection options)
+                       {:kind :selected
+                        :reason :unaffected-stage
+                        :paths []})
+         summary (if (= :map summary-shape)
+                   {:mode "macro" :selection selection :results (vec rows)}
+                   (vec rows))
+         progress (or (:progress-by-id options) {})
+         default-frames (macro-diagnostic-progress-frames namespace-name test-var)]
+     (report-fixture-write! root "checkout.txt" (str commit "\n" tree "\n"))
+     (report-fixture-write! root "run-url.txt" (str run-url "\n"))
+     (report-fixture-write-edn! root "macro-summary.edn" summary)
+     (doseq [row rows
+             :when (not= :skipped (:status row))]
+       (let [id (:id row)
+             frames (if (contains? progress id)
+                      (get progress id)
+                      default-frames)]
+         (report-fixture-write-edn! root (str id ".edn") row)
+         (report-fixture-write! root (str id ".log")
+                                (macro-diagnostic-log-text frames))))
+     (report-fixture-write-checksums! root)
+     {:root root
+      :commit commit
+      :tree tree
+      :run-id run-id
+      :run-attempt run-attempt
+      :run-url run-url
+      :rows (vec rows)
+      :summary summary
+      :namespace namespace-name
+      :test-var test-var
+      :full-progress default-frames})))
+
+(defn- macro-diagnostic-report-rows
+  [report]
+  (:results report))
+
+(defn- macro-diagnostic-report-progress-frames
+  [report]
+  (get-in report [:progress :progress-frames]))
+
+(defn- macro-diagnostic-report-paired-frames
+  [report]
+  (get-in report [:progress :macro-paired-frames]))
+
+(defn- macro-diagnostic-report-call-error
+  [thunk]
+  (report-fixture-call-error thunk))
+
+(defn- macro-diagnostic-report-contains-key?
+  [value key]
+  (cond
+    (map? value) (or (contains? value key)
+                     (some #(macro-diagnostic-report-contains-key? (val %) key) value))
+    (coll? value) (some #(macro-diagnostic-report-contains-key? % key) value)
+    :else false))
+
 (defn- report-record-for-phase [report phase]
   (some #(when (= phase (:phase %)) %) (:records report)))
 
@@ -2022,6 +2175,325 @@
         (is (= [:failed :passed :passed] (mapv :status rows)))
         (is (= [17 0 0] (mapv :exit-code rows))))
       (finally (delete-fixture-tree! directory)))))
+
+(deftest macro-diagnostic-report-preserves-full-order-later-child-and-safe-projection
+  (let [fixture (macro-diagnostic-fixture!
+                 {:progress-by-id {"macro-receipt-controls" []
+                                   "macro-bootstrap-compatibility" []}})
+        root (:root fixture)
+        before (report-fixture-snapshot root)]
+    (try
+      (let [report (diagnostic-report/macro-report (str root))
+            rows (macro-diagnostic-report-rows report)
+            frames (macro-diagnostic-report-progress-frames report)]
+        (is (= "gravity/ci-macro-diagnostic-report-v1" (:schema report)))
+        (is (= :diagnostic (:authority report)))
+        (is (false? (:authoritative? report)))
+        (is (= {:commit (:commit fixture)
+                :tree (:tree fixture)
+                :run-id (:run-id fixture)
+                :run-url (:run-url fixture)
+                :attempt (:run-attempt fixture)}
+               (:recorded report)))
+        (is (= ["macro-pipeline-cohort"
+                "macro-receipt-controls"
+                "macro-bootstrap-compatibility"]
+               (mapv :id rows)))
+        (is (= [:timeout :passed :passed] (mapv :status rows)))
+        (is (= [124 0 0] (mapv :exit-code rows)))
+        (is (= 28 (count frames)))
+        (is (= 26 (count (macro-diagnostic-report-paired-frames report))))
+        (is (= :namespace-load (:phase (first frames))))
+        (is (= :enter (:edge (first frames))))
+        (is (= :namespace-load (:phase (second frames))))
+        (is (= :return (:edge (second frames))))
+        (is (not (contains? (first frames) :test-var)))
+        (is (not (contains? (first frames) :error-class)))
+        (is (= :macro-paired-context
+               (:phase (first (macro-diagnostic-report-paired-frames report)))))
+        (is (= :macro-paired-compare
+               (:phase (last (macro-diagnostic-report-paired-frames report)))))
+        (is (= :return
+               (:edge (last (macro-diagnostic-report-paired-frames report)))))
+        (is (= (:namespace fixture)
+               (:namespace (first (macro-diagnostic-report-paired-frames report)))))
+        (is (= (:test-var fixture)
+               (:test-var (first (macro-diagnostic-report-paired-frames report)))))
+        (is (not (macro-diagnostic-report-contains-key? report :argv)))
+        (is (not (macro-diagnostic-report-contains-key? report :pid)))
+        (is (not (macro-diagnostic-report-contains-key? report :descendant-pids)))
+        (is (not (macro-diagnostic-report-contains-key? report :stdin-path)))
+        (is (= before (report-fixture-snapshot root))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-preserves-partial-selection-skips-without-fabricated-children
+  (let [selection {:kind :docs-only :reason :docs-only-pr :paths ["README.md"]}
+        skipped (macro-diagnostic-skipped-row "macro-docs-only-skip"
+                                              :docs-only-pr
+                                              :docs-only)
+        fixture (macro-diagnostic-fixture! {:summary-shape :map
+                                            :selection selection
+                                            :rows [skipped]})
+        root (:root fixture)
+        before (report-fixture-snapshot root)]
+    (try
+      (let [report (diagnostic-report/macro-report (str root))
+            rows (macro-diagnostic-report-rows report)
+            recorded (:recorded report)
+            frames (macro-diagnostic-report-progress-frames report)]
+        (is (= {:mode "macro" :selection selection :results rows}
+               (:summary report)))
+        (is (= ["macro-docs-only-skip"] (mapv :id rows)))
+        (is (= [:skipped] (mapv :status rows)))
+        (is (= :docs-only-pr (:reason (first rows))))
+        (is (= :not-observed (:attempt recorded)))
+        (is (or (nil? frames) (empty? frames)))
+        (is (not= :passed (:status report)))
+        (is (not= true (:passed? report)))
+        (is (not (macro-diagnostic-report-contains-key? report :argv)))
+        (is (= before (report-fixture-snapshot root))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-retains-timeout-and-later-pass-without-completion-claim
+  (let [namespace-name "gravity.macro.pipeline-test"
+        test-var "gravity.macro.pipeline-test/real-paired-macro-expansion-retains-identities-provenance-and-output"
+        full-frames (macro-diagnostic-progress-frames namespace-name test-var)
+        partial-frames (vec (concat (take 2 full-frames)
+                                    (take 17 (drop 2 full-frames))))
+        fixture (macro-diagnostic-fixture!
+                 {:progress-by-id {"macro-pipeline-cohort" partial-frames
+                                   "macro-bootstrap-compatibility" []}})
+        root (:root fixture)]
+    (try
+      (let [report (diagnostic-report/macro-report (str root))
+            rows (macro-diagnostic-report-rows report)
+            frames (macro-diagnostic-report-progress-frames report)]
+        (is (= ["macro-pipeline-cohort"
+                "macro-receipt-controls"
+                "macro-bootstrap-compatibility"]
+               (mapv :id rows)))
+        (is (= [:timeout :passed :passed] (mapv :status rows)))
+        (is (= [124 0 0] (mapv :exit-code rows)))
+        (is (= 47 (count frames)))
+        (is (= 43 (count (macro-diagnostic-report-paired-frames report))))
+        (is (= :enter
+               (:edge (first (macro-diagnostic-report-paired-frames report)))))
+        (is (= :return
+               (:edge (last (macro-diagnostic-report-paired-frames report)))))
+        (let [partial-paired (filter #(= "macro-pipeline-cohort.log" (:path %))
+                                     (macro-diagnostic-report-paired-frames report))]
+          (is (= 17 (count partial-paired)))
+          (is (= :macro-paired-construct (:phase (last partial-paired))))
+          (is (= :enter (:edge (last partial-paired)))))
+        (is (not= :passed (:status report)))
+        (is (not= true (:completed? report)))
+        (is (not= true (:passed? report)))
+        (is (not= :passed (:status (:assessment report))))
+        (is (some #{:progress-frames-are-non-authoritative}
+                  (:nonclaims report)))
+        (is (some #{:no-timeout-cause-or-performance-claim}
+                  (:nonclaims report)))
+        (is (some #{:diagnostic-not-main-or-ci-acceptance}
+                  (:nonclaims report))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-run-macro-validates-exact-options-and-emits-one-edn
+  (let [fixture (macro-diagnostic-fixture!)
+        root (:root fixture)
+        invalid-options [nil
+                         {}
+                         {:artifact-dir ""}
+                         {:artifact-dir 42}
+                         {:artifact-dir (str root) :unexpected true}]]
+    (try
+      (let [report-calls (atom 0)]
+        (with-redefs [diagnostic-report/macro-report
+                      (fn [& args]
+                        (swap! report-calls inc)
+                        {:args (vec args) :diagnostic-only true})]
+          (doseq [options invalid-options]
+            (is (instance? Throwable
+                           (report-fixture-call-error
+                            #(diagnostic-report/run-macro! options)))
+                (pr-str options)))
+          (is (zero? @report-calls))
+          (let [result (atom nil)
+                output (with-out-str
+                         (reset! result
+                                 (diagnostic-report/run-macro!
+                                  {:artifact-dir (str root)})))
+                [value trailing] (report-read-one-form output)]
+            (is (= 0 @result))
+            (is (= {:args [(str root)] :diagnostic-only true} value))
+            (is (= ::report-eof trailing))
+            (is (= 1 @report-calls)))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-rejects-integrity-confinement-and-malformed-inputs
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (report-fixture-write! root "macro-receipt-controls.log" "tampered\n")
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (java.nio.file.Files/deleteIfExists
+       (.toPath (io/file root "macro-receipt-controls.log")))
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [checksums (slurp (io/file root "SHA256SUMS"))]
+        (report-fixture-write! root "SHA256SUMS" (str checksums checksums))
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [summary (edn/read-string (slurp (io/file root "macro-summary.edn")))]
+        (report-fixture-write-edn!
+         root
+         "macro-summary.edn"
+         (assoc-in summary [0 :id] "../outside"))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [receipt (edn/read-string
+                     (slurp (io/file root "macro-pipeline-cohort.edn")))]
+        (report-fixture-write-edn!
+         root
+         "macro-pipeline-cohort.edn"
+         (update receipt :finished-ms inc))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [link (io/file root "escape.edn")]
+        (java.nio.file.Files/createSymbolicLink
+         (.toPath link)
+         (.toPath (io/file root "macro-pipeline-cohort.edn"))
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (report-fixture-write! root "macro-summary.edn" "[{:id\n")
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (java.nio.file.Files/write
+       (.toPath (io/file root "checkout.txt"))
+       (byte-array [(unchecked-byte 0xc3) (byte 0x28)])
+       (into-array java.nio.file.OpenOption
+                   [java.nio.file.StandardOpenOption/CREATE
+                    java.nio.file.StandardOpenOption/TRUNCATE_EXISTING
+                    java.nio.file.StandardOpenOption/WRITE]))
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [log (io/file root "macro-pipeline-cohort.log")]
+        (report-fixture-write!
+         root
+         "macro-pipeline-cohort.log"
+         (str (slurp log)
+              "{:schema :gravity/development-test-progress-v1, "
+              ":authority :non-authoritative, :phase :test-var, "
+              ":edge :bogus, :namespace \"gravity.macro.pipeline-test\", "
+              ":test-var \"gravity.macro.pipeline-test/x\"}\n"))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root)))))
+
+(deftest macro-diagnostic-report-rejects-recorded-source-run-attempt-and-progress-inconsistency
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (report-fixture-write!
+       root
+       "checkout.txt"
+       (str (apply str (repeat 40 "f")) "\n"
+            (apply str (repeat 40 "2")) "\n"))
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (report-fixture-write! root "run-url.txt"
+                             "https://github.com/burn2delete/uniform/actions/runs/999999\n")
+      (report-fixture-write-checksums! root)
+      (is (instance? Throwable
+                     (macro-diagnostic-report-call-error
+                      #(diagnostic-report/macro-report (str root)))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [row (edn/read-string
+                 (slurp (io/file root "macro-pipeline-cohort.edn")))]
+        (report-fixture-write-edn!
+         root
+         "macro-pipeline-cohort.edn"
+         (assoc row :run-attempt "2"))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root))))
+  (let [{:keys [root]} (macro-diagnostic-fixture!)]
+    (try
+      (let [rows (edn/read-string (slurp (io/file root "macro-summary.edn")))]
+        (report-fixture-write-edn!
+         root
+         "macro-summary.edn"
+         (assoc-in rows [0 :commit] (apply str (repeat 40 "f"))))
+        (report-fixture-write-checksums! root)
+        (is (instance? Throwable
+                       (macro-diagnostic-report-call-error
+                        #(diagnostic-report/macro-report (str root))))))
+      (finally
+        (delete-fixture-tree! root)))))
 
 (deftest macro-hosted-envelope-covers-all-child-watchdogs
   (let [workflow (slurp ".github/workflows/ci.yml")
