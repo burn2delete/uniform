@@ -265,7 +265,8 @@
                           [:operator-controls :local-control])]
       (is (= {:available false :status :unavailable :sha256 nil}
              (select-keys missing [:available :status :sha256]))))
-    (Files/createDirectory (.toPath control-file))
+    (Files/createDirectory (.toPath control-file)
+                           (make-array java.nio.file.attribute.FileAttribute 0))
     (let [non-file (get-in (main/status-summary! cfg)
                            [:operator-controls :local-control])]
       (is (= {:available false :status :unavailable :sha256 nil}
