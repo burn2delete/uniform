@@ -369,9 +369,6 @@
 (def ^:private macro-statuses
   #{:passed :failed :timeout :launch-error :skipped})
 
-(def ^:private macro-progress-v1-schema
-  :gravity/development-test-progress-v1)
-
 (def ^:private macro-progress-v2-schema
   :gravity/development-test-progress-v2)
 
