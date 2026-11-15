@@ -198,7 +198,7 @@
                                        [product lowering packet (assoc program :exports [])]))))
 
 (defn- copy-artifacts! [source destination]
-  (doseq [file (.listFiles (io/file source))]
+  (doseq [file (.listFiles (io/file (str source)))]
     (Files/copy (.toPath file) (.resolve ^Path destination (.getName file))
                 (make-array StandardCopyOption 0))))
 
