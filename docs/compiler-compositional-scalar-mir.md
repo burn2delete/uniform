@@ -119,6 +119,7 @@ Preserved candidate checkpoints:
 | Composition with merged prerequisite | `59e3cd07a39dca04ca91e2bd3053e5b2c117cb2b` | `4e312e4792d2646ffd4f12b788284514425d9094` |
 | Actual C5 call bindings and precise owned diagnostics | `6f4b6fdde6847ecf946a16b07edf252248868917` | `a627a38c64350f6fbd3727d3d14d83044abbdc01` |
 | Corrected public scope metadata | `88b68430daf8b785d7a7dd47741b014966bcb2cb` | `55c1b7599b8dae2d7e0d2397b40054acbec495be` |
+| Stack-stable effect fold and physical rejection spans | `4103a4978be5fd3776f2514e9e1670d9a45775b4` | `c729ad775e991d85a20d57609fee1fdb45a06d72` |
 
 The first implementation probe reached an accepted Uniform multi-function
 Core template, then rejected at host `C6-VERIFY` with
@@ -278,8 +279,11 @@ remain in that scope selector. The scope-only change is published as
 The six remaining original checked-add/source-MIR regression selectors
 completed on `88b68430daf8b785d7a7dd47741b014966bcb2cb` with
 **6 tests, 198 assertions, 0 failures, 0 errors, exit 0**. The two reader/replay
-selectors from the interrupted batch are also rerun for a clean terminal
-report against the final owner bytes.
+selectors from the interrupted batch subsequently completed on clean
+`4103a4978be5fd3776f2514e9e1670d9a45775b4`, tree
+`c729ad775e991d85a20d57609fee1fdb45a06d72`, with **2 tests, 25 assertions,
+0 failures, 0 errors, exit 0**. The source and test bytes were rechecked
+unchanged after the 961.19-second run.
 
 The full handoff/product tamper batch on the passing representative candidate
 ended with **2 tests, 161 assertions, 16 failures, 0 errors, exit 1**.
@@ -322,6 +326,17 @@ probe does not supply accepted Core/MIR and is not compositional acceptance;
 the ordinary `.qst` source is rerun through the production API to determine
 whether its actual construction failure is resolved.
 
+That ordinary-source retry on local execution commit
+`30dfdc855faeb349ebcb497aae694f99550565a0`, whose tree equals published
+`4103a4978be5fd3776f2514e9e1670d9a45775b4`, ended with **1 test, 1 assertion,
+0 failures, 1 error, exit 1**. The actual remaining failure was still
+`C6-VERIFY` / `:contained-gravity-source-host-stack` at
+`:compiler-application-builder`. The effect-fold change alone did not resolve
+the composed program. A diagnostic-only run of the same ordinary source
+records active Uniform function calls at the original overflow and rethrows
+the failure unchanged. It preserves the genuine builder input for causal
+replay; such instrumented replay is not production acceptance evidence.
+
 The complete ten-case semantic-negative selector also completed on the
 scope-checkpoint source/test tree with **1 test, 40 assertions, 0 failures,
 0 errors, exit 0**. Its launch HEAD was `d8985233ee98e09f0aefe62afeb7716e2b96e621`
@@ -329,6 +344,22 @@ with only the unselected scope-test row removal in the working tree; that
 exact tree was committed as local `6681c275a0d0390e648e9631caedc26f1207f92f`
 and published as `0ce42bfbc850f0d9e9f52094c4ee6629289948a9`. The selected
 negative body and all compiler bytes stayed unchanged throughout the run.
+
+The source/binding-substitution and supplied-authority selectors completed
+from clean local `6681c275a0d0390e648e9631caedc26f1207f92f` (published
+`0ce42bfbc850f0d9e9f52094c4ee6629289948a9`) with **2 tests, 58 assertions,
+0 failures, 0 errors, exit 0**. Both `.gravity` and `.qst` source envelopes,
+binding pins and post-envelope file bytes rejected when substituted. The
+production API also rejected supplied Core/MIR, verifier reports, bindings,
+authority tokens and semantic fact maps. These cases retain actual source
+attribution. Where a test mutates a product, the original owner runs first.
+
+The final changed-Clojure lint pass checked all 13 modified Clojure paths
+against main `d6ca6c93059fe85acb53a594a8fedfa0e64362bd`. It exited 0 with
+**0 blocking warnings or errors** and four unchanged baseline warnings.
+The lint configuration was unchanged and the existing macro contract was
+admitted. Its complete fresh output is retained in the development workspace
+under `evidence/lint-run-final`; the log is `evidence/changed-lint-final.log`.
 
 ## Construction and execution ownership
 
