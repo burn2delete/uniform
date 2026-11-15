@@ -16,7 +16,8 @@
     'gravity.self-hosting.sh08-normal-return-inference-kernel-test]
 
    :compiler
-   ['gravity.reader.composition-test
+   ['gravity.compiler.application-test
+    'gravity.reader.composition-test
     'gravity.checked-core.pipeline-test
     'gravity.c8-effect-checker-test
     'gravity.c11-mir-test

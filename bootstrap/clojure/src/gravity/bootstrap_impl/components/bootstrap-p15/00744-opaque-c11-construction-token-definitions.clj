@@ -6,7 +6,8 @@
       invoke-checked-core-verifier! __gravity_bootstrap_lexical_119416_invoke-checked-core-verifier
       authenticate-checked-core-ingress! __gravity_bootstrap_lexical_119416_authenticate-checked-core-ingress
       invoke-pinned-c11-builder! __gravity_bootstrap_lexical_119416_invoke-pinned-c11-builder
-      construct-authenticated-c11-mir! __gravity_bootstrap_lexical_119416_construct-authenticated-c11-mir]
+      construct-authenticated-c11-mir! __gravity_bootstrap_lexical_119416_construct-authenticated-c11-mir
+      construct-current-scalar-mir! __gravity_bootstrap_lexical_119416_construct-current-scalar-mir]
   (letfn [(artifact* [checked-core context version]
             (try
               (let [ingress (authenticate-checked-core-ingress!
@@ -95,6 +96,43 @@
                   (p15-s23-c11-mir-contain-exception! source-path :contained-public-c11-verifier-diagnostic error))
                 (catch Exception error
                   (p15-s23-c11-mir-contain-exception! source-path :contained-public-c11-verifier-host-failure error)))))]
+    (defn p15-s23-current-source-to-verified-mir
+      "Production source-only composition under the original C11 authority.
+       No accepted artifact, report, binding, plan or token is a caller input."
+      [source-path policy]
+      (binding [*print-length* nil *print-level* nil *print-meta* false
+                *print-dup* false *print-readably* true *print-namespace-maps* false]
+      (p15-s23-application-request! source-path policy)
+      (let [source (p15-s23-application-source-snapshot! source-path)
+            path (:path source)
+            fresh (p15-s23-c6c10-current-scalar-construction path (:text source) policy)
+            checked-core (:artifact fresh)
+            context (:context fresh)
+            mir (binding [*p15-s23-c11-mir-diagnostic-context*
+                          (p15-s23-c11-mir-diagnostic-context checked-core context {})]
+                  (construct-current-scalar-mir!
+                   checked-core context opaque-c11-construction-token))
+            result
+            {:artifact :gravity/compiler-application :schema-version 1 :status :accepted
+             :source (dissoc source :text)
+             :source-target (:target policy)
+             :checked-core checked-core :mir-module (:mir-module mir)
+             :core-verification (:gravity-verification fresh)
+             :mir-verification (:verification mir)
+             :source-policy-receipt (:source-policy-receipt fresh)
+             :compiler-bindings {:c6-c10 (:source-binding fresh) :c11 (:source-binding mir)}
+             :compiler-host {:implementation :clojure-stage0-seed :target :jvm :self-hosted? false}
+             :nonclaims [:javascript-target-admission :target-emission :compositional-multi-function
+                         :independent-acceptance :self-hosting :seed-retirement]}]
+        (p15-s23-c11-mir-require-strict-structure!
+         path source (p15-s23-application-source-snapshot! path) :application-stable-source)
+        (p15-s23-c6c10-recheck-application-owners!
+         path (get-in fresh [:source-policy-receipt :owner-sources]))
+        (p15-s23-application-recheck-c11! path (:source-binding mir))
+        (assoc result :artifact-id
+               (p15-s23-c6c10-canonical-digest
+                path {:domain :gravity/compiler-application-v1 :artifact result})))))
+
     (defn p15-s23-stage2-c11-mir-artifact
       "Existing legacy arity remains v1. The explicit header selects only a built-in contract."
       ([checked-core context] (artifact* checked-core context 1))

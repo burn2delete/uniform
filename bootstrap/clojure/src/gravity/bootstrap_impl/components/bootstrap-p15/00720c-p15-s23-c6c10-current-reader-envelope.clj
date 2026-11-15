@@ -5,13 +5,15 @@
   ([source-path raw-front-end reader-path selected-binding]
    (p15-s23-c6c10-current-reader-envelope-state! source-path raw-front-end reader-path selected-binding 2))
   ([source-path raw-front-end reader-path selected-binding version]
-  (p15-s23-c6c10-source-program-contract version)
-  (when-not (contains? #{2 3} version)
+  (when-not (= :compiler-application version)
+    (p15-s23-c6c10-source-program-contract version))
+  (when-not (contains? #{2 3 :compiler-application} version)
     (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :selected-current-reader-invocation-policy {}))
   ;; C3 deliberately projects its embedded C2 view without the raw Reader
   ;; boundary. Its authenticated provenance retains the actual C2 envelope and
   ;; descriptor. The selected binding comes from this fresh owner's plan call.
-  (let [field #(p15-s23-c6c10-reader-owner-field! source-path %1 %2)
+  (let [application? (= :compiler-application version)
+        field #(p15-s23-c6c10-reader-owner-field! source-path %1 %2)
         c2 (field raw-front-end :c2-reader-artifact)
         c3 (field raw-front-end :authenticated-c3-source-artifact)
         boundary (field c3 :gravity-syntax-boundary)
@@ -20,8 +22,13 @@
         integrity (field c2 :reader-product-integrity)
         source-unit (field c2 :source-unit-record)
         c2-artifact-id (field c2 :artifact-id)
-        witness {:binding selected-binding :provenance provenance :authentication authentication
-                 :c2-integrity integrity :source-unit-record source-unit :c2-artifact-id c2-artifact-id}]
+        witness (cond->
+                  {:binding selected-binding :provenance provenance :authentication authentication
+                   :c2-integrity integrity :source-unit-record source-unit :c2-artifact-id c2-artifact-id}
+                  application?
+                  (assoc :syntax-binding (field boundary :plan-binding)
+                         :syntax-descriptor (field boundary :authenticated-envelope-descriptor)
+                         :syntax-envelope (field boundary :authenticated-envelope)))]
     (p15-s23-c6c10-require-reader-owner-metadata! source-path witness)
     (let [descriptor (:actual-sh03-envelope-descriptor provenance)
           envelope (:actual-sh03-authenticated-envelope provenance)
@@ -31,7 +38,18 @@
           identity-keys [:source-content-hash :source-byte-count :plan-semantic-hash :functions-semantic-hash]
           policy {:source :development-current}]
     (let [checks
-          {:selected-program (= expected (select-keys selected-binding (keys expected)))
+          {:selected-program
+           (if application?
+             ;; This binding was made by the current Reader owner from its
+             ;; selected bytes. The joins below bind that exact program to
+             ;; the freshly authenticated result, not to a historical pin.
+             (and (= :gravity/sh03-current-source-reader-plan-binding (:artifact selected-binding))
+                  (= :complete (:status selected-binding))
+                  (= :gravity-source (:semantic-authority selected-binding))
+                  (= :clojure-stage0-seed (:compiled-by selected-binding))
+                  (= :clojure-stage2-generic-rule-runner (:executed-by selected-binding))
+                  (false? (:self-hosted? selected-binding)))
+             (= expected (select-keys selected-binding (keys expected))))
            :selected-path (and (string? (:source-path selected-binding))
                                (= reader-path (p15-s23-c6c10-canonical-file-path (:source-path selected-binding))))
            :source-revision (= (select-keys selected-binding identity-keys) (select-keys revision identity-keys))
@@ -62,11 +80,28 @@
       (when-not (= :development-unadmitted state)
         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :actual-current-reader-envelope-admission-state {}))
       (let [receipt (merge (p15-s23-c6c10-project-reader-owner-metadata source-path witness)
-                     {:source-interface {:interface :gravity/c6-c10 :version version}
+                     {:source-interface (if application?
+                                          {:interface :gravity/compiler-application :version 1}
+                                          {:interface :gravity/c6-c10 :version version})
                       :admission-status state :verification-scope :selected-current-source-host-seed
-                      :envelope-verification :passed :self-hosted? false})]
-        ;; Only the fixed projection crosses into the unchanged strict Core
-        ;; carrier. The full original envelope was verified above, unmodified.
+                      :envelope-verification :passed :self-hosted? false})
+            ;; Only owner-produced metadata crosses into the unchanged strict
+            ;; Core carrier. The full Reader envelope was verified unmodified.
+            receipt
+              (cond-> receipt
+                (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence)
+                application?
+                (assoc :syntax-owner
+                       {:artifact-id (:artifact-id c3)
+                        :binding (select-keys (:syntax-binding witness)
+                                   [:artifact :status :source-path :source-byte-count :source-content-hash
+                                    :plan-semantic-hash :functions-semantic-hash
+                                    :entrypoint-semantic-hash :verifier-semantic-hash :source-mode])
+                        :source-revision
+                        (select-keys (get-in witness [:syntax-descriptor :source-revision])
+                                     p15-s23-c6c10-reader-revision-projection-keys)
+                        :envelope (select-keys (:syntax-envelope witness)
+                                    [:artifact :schema-version :status :stage
+                                     :semantic-envelope-id :provenance-binding-id])}))]
         (p15-s23-c6c10-require-trusted-carrier! source-path :current-reader-policy-receipt receipt)
-        (cond-> receipt
-          (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence))))))))
+        receipt))))))

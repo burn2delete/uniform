@@ -145,7 +145,8 @@
      emitter source-path source-text authoritative-module function-table)))
 
 (declare sh03-reader-resolve-source-path p15-s23-c6c10-source-program-contract
-         ^:private p15-s23-c6c10-current-reader-envelope-state!)
+         ^:private p15-s23-c6c10-current-reader-envelope-state!
+         ^:private p15-s23-c6c10-project-expression-owner-metadata)
 
 (defn- p15-s23-c6c10-private-ingress-products
   ([source-path source-text] (p15-s23-c6c10-private-ingress-products source-path source-text nil))
@@ -168,8 +169,11 @@
      :co-canonical-source-path-and-text
      {:source-path source-path}))
   (when (some? source-policy-version)
-    (p15-s23-c6c10-source-program-contract source-policy-version)
-    (when-not (and (contains? #{2 3} source-policy-version)
+    ;; The source-only application selects current parents without claiming
+    ;; either historical public Boolean interface for its numeric Core.
+    (when-not (= :compiler-application source-policy-version)
+      (p15-s23-c6c10-source-program-contract source-policy-version))
+    (when-not (and (contains? #{2 3 :compiler-application} source-policy-version)
                    (string? reader-source-path)
                    (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
                       (.getCanonicalPath (java.io.File. reader-source-path))))
@@ -216,12 +220,23 @@
                                  invocation))
           emitter-rule
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
+          ;; The parameter route already selects the original seed plan
+          ;; transport below. Only the no-parameter application route invokes
+          ;; the current Uniform expression owner and needs its compiled plan.
+          expression
+          (when (and (= :compiler-application source-policy-version)
+                     (not parameter?))
+            (p15-s23-stage2-current-expression-development-binding! source-path))
           raw-plan
           (if parameter?
             (p15-s23-stage2-compiler-artifact-plan
              (:emitter emitter-rule) source-path source-text)
-            (p15-s23-c6c10-private-stage2-plan
-             (:emitter emitter-rule) source-path source-text raw-module))
+            (if expression
+              (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
+                (p15-s23-c6c10-private-stage2-plan
+                 (:emitter emitter-rule) source-path source-text raw-module))
+              (p15-s23-c6c10-private-stage2-plan
+               (:emitter emitter-rule) source-path source-text raw-module)))
           plan
           (p15-s23-c6c10-project-plan
            source-path source-content-hash literal-authentication raw-plan)
@@ -244,11 +259,17 @@
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
         parameter? (assoc :resolved-parameter resolved-parameter)
-        (contains? #{2 3} source-policy-version)
+        (contains? #{2 3 :compiler-application} source-policy-version)
         (assoc :source-policy-receipt
-               (p15-s23-c6c10-current-reader-envelope-state!
-                source-path raw-front-end reader-source-path selected-reader-binding
-                source-policy-version)))))))
+               (cond-> (p15-s23-c6c10-current-reader-envelope-state!
+                        source-path raw-front-end reader-source-path selected-reader-binding
+                        source-policy-version)
+                 expression
+                 (assoc :expression-binding
+                        (assoc (p15-s23-c6c10-project-expression-owner-metadata
+                                source-path (dissoc expression :plan))
+                               :invoked? (true? (get-in raw-plan
+                                               [:compiler :expression-lowering-invoked?])))))))))))
 
 (defn p15-s23-c6c10-resolve-source-path
   []

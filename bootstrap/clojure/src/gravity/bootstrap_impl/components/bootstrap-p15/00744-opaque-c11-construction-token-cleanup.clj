@@ -1,4 +1,5 @@
-(doseq [temporary '[__gravity_bootstrap_lexical_119416_construct-authenticated-c11-mir
+(doseq [temporary '[__gravity_bootstrap_lexical_119416_construct-current-scalar-mir
+                    __gravity_bootstrap_lexical_119416_construct-authenticated-c11-mir
                     __gravity_bootstrap_lexical_119416_invoke-pinned-c11-builder
                     __gravity_bootstrap_lexical_119416_authenticate-checked-core-ingress
                     __gravity_bootstrap_lexical_119416_invoke-checked-core-verifier

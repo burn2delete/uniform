@@ -1282,7 +1282,8 @@
   ;; route. Same-input replay cannot authenticate a coherently replaced hash.
   (let [path (str (.resolve @root
                    "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
-        input (parameter-input path (slurp path))
+        reader-path (str (.resolve @root "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        input (:envelope (parameter-source-products path (slurp path) nil reader-path))
         replacement (get-in input [:resolved-parameter :projection-binding])
         substituted (assoc-in input [:resolved-parameter :sh06-artifact-id] replacement)
         original (invoke parameter-c6-plan 'c6-c10-build-checked-core-template [input])
