@@ -69,17 +69,18 @@
     {:source source :binding binding :identities identities}))
 
 (defn- assert-parent-lineage [artifact c3 binding]
-  ;; The explicit current Reader implementation is an input, so a whole-artifact
-  ;; digest is not a golden for fixture text alone. Keep the actual parent joins
-  ;; and prove that neither upstream identity can disappear from the digest.
-  (is (= (expected/macro-preimage artifact)
-         (macro/artifact-identity-input artifact (operations))))
-  (is (= (expected/macro-id artifact) (:artifact-id artifact)))
-  (is (= {:kind :gravity/sh05-macro-expansion-artifact :slice :SH-05 :task "SH-05"
-          :status :accepted :document-set ["L4" "C4"] :diagnostics []}
-         (select-keys artifact [:kind :slice :task :status :document-set :diagnostics])))
-  (is (= (select-keys binding expected/macro-plan-fields)
-         (:plan-binding (expected/macro-preimage artifact))))
+  (let [expected-preimage (expected/macro-preimage artifact)]
+    ;; The explicit current Reader implementation is an input, so a whole-artifact
+    ;; digest is not a golden for fixture text alone. Keep the actual parent joins
+    ;; and prove that neither upstream identity can disappear from the digest.
+    (is (= expected-preimage
+           (macro/artifact-identity-input artifact (operations))))
+    (is (= (expected/macro-id artifact) (:artifact-id artifact)))
+    (is (= {:kind :gravity/sh05-macro-expansion-artifact :slice :SH-05 :task "SH-05"
+            :status :accepted :document-set ["L4" "C4"] :diagnostics []}
+           (select-keys artifact [:kind :slice :task :status :document-set :diagnostics])))
+    (is (= (select-keys binding expected/macro-plan-fields)
+           (:plan-binding expected-preimage))))
   (is (= ((:input (operations)) :c4-macro-governing-document) (:governing-document artifact)))
   (is (= {:artifact :gravity/sh05-macro-environment
           :macros [{:name 'defn
