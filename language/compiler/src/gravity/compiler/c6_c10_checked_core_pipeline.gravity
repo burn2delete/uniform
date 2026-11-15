@@ -272,13 +272,14 @@
 
 (defn c6c10-request-key-for-preimage [requests preimage]
   (let [intern-key (c6c10-digest-intern-key preimage)]
-    (if (= (count requests) 0)
-      nil
-      (if (= (c6c10-digest-intern-key
-              (get (first requests) :preimage))
-             intern-key)
-        (get (first requests) :key)
-        (c6c10-request-key-for-preimage (rest requests) preimage)))))
+    (loop [remaining requests]
+      (if (= (count remaining) 0)
+        nil
+        (if (= (c6c10-digest-intern-key
+                (get (first remaining) :preimage))
+               intern-key)
+          (get (first remaining) :key)
+          (recur (rest remaining)))))))
 
 (defn c6c10-add-digest-request [state preimage]
   (let [existing
