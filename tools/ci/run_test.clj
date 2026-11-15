@@ -1781,7 +1781,7 @@
                           #'public-adapter-rejected-record])))))
 
 (deftest public-diagnostic-report-joins-valid-prefix-and-final-indexes
-  (let [fixture (report-fixture!)]
+  (let [{:keys [root] :as fixture} (report-fixture!)]
     (try
       (let [{:keys [root accepted rejected accepted-out accepted-err run-out run-err
                     compile-out compile-err executable-out executable-err
