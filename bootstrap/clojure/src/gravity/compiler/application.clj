@@ -10,7 +10,8 @@
 
    Policy must contain exactly :profile, :target, :effects, :capabilities and
    :safety, matching the source declaration. This entrypoint supports the
-   existing hosted/safe JVM checked-I64 addition and Boolean scalar owners.
+   hosted/safe JVM scalar functions with checked I64 addition, Bool branches,
+   eager local bindings and nonrecursive fixed-arity direct calls.
    It returns source-bound checked Core, verified MIR, actual verifier reports
    and current owner identities. Owned diagnostics are thrown on rejection.
    Caller-supplied Core, MIR, verifier reports or authority are not accepted."

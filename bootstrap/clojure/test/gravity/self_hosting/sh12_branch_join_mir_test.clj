@@ -1302,9 +1302,25 @@
   ;; packet or a replacement acceptance function. Public hosted admission is
   ;; still outside this development fragment check.
   (let [function (get-in @parameter-c6-plan [:functions 'c6-c10-build-checked-core-template])
-        body (:then (first (:instructions function)))
+        dispatch (first (:instructions function))
+        scope-predicate (:test dispatch)
+        legacy (:else dispatch)
+        body (:then legacy)
         shape (first (filter #(= 'plan-shape-valid? (:name %)) (:bindings body)))
         predicate (get-in shape [:expr :then :then :test])]
+    (is (= :if (:op dispatch) (:op legacy)))
+    (is (= '= (:function scope-predicate)))
+    (is (= 'c6c10-build-scalar-template (get-in dispatch [:then :function])))
+    (is (= 'c6c10-envelope-shape-valid? (get-in legacy [:test :function])))
+    (doseq [[input expected]
+            [[{:scope :compositional-scalar-hosted-safe-jvm-source} true]
+             [{:scope :bounded-pure-hosted-safe-jvm-source} false]
+             [{:scope :bounded-checked-i64-add-hosted-safe-jvm-source} false]
+             [{} false]]]
+      (is (= expected
+             (bootstrap/p15-s23-stage2-runtime-execute-instruction
+              {:engine :gravity-sh12-branch-join-mir-test :compiler-artifact-plan? true}
+              @parameter-c6-plan {'input input} scope-predicate))))
     (is (= :let (:op body)))
     (is (= '= (:function predicate)))
     (doseq [[input module authoritative expected]

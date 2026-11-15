@@ -25,6 +25,178 @@
                         [:parameter-vector :parameter-name :annotation-marker :annotation-type]
                         (into [original] source) (into [parameters] forms))}))
 
+(defn- p15-s23-c6c10-resolved-scalar-functions
+  [source-path front-end c3-parent invocation]
+  ;; C5 and its authenticated projection own declarations and lexical lookup.
+  ;; This projection transports their actual identities and the existing
+  ;; defn -> def/fn source correspondence; it does not infer types or effects.
+  (let [reader-invocation (dissoc invocation :macro-source-mode)
+        parent (sh05-macro-artifact-from-c3-artifact
+                source-path c3-parent reader-invocation (:macro-source-mode invocation))
+        resolved (sh06-resolution-artifact-from-sh05-artifact
+                  source-path parent
+                  {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                  (:reader-source-path invocation) invocation)
+        request (sh07-core-authenticated-request resolved ::legacy invocation)
+        forms (into {} (map (juxt :form-id identity)) (:forms request))
+        sources (into {} (map (juxt :form-id identity)) (:form-tree front-end))
+        bindings (:binding-table request)
+        resolutions (:resolution-table request)
+        definitions (into {} (map (juxt :definition-syntax-id identity)) bindings)
+        references (into {} (map (juxt :reference-syntax-id identity)) resolutions)
+        binding-ids (into {} (map (juxt :binding-id identity)) bindings)
+        source-roots (mapv sources (rest (:top-level-form-ids front-end)))
+        projected-roots (mapv forms (:top-level-form-ids request))
+        hash (get-in request [:lineage :source-revision-id])]
+    (when-not (and (= hash (get-in front-end [:source-unit-record :bytes-hash]))
+                   (= (count source-roots) (count projected-roots)))
+      (p15-s23-c6c10-plan-shape-fail!
+       source-path {:operation :declaration-projection
+                    :source-count (count source-roots) :projected-count (count projected-roots)}))
+    (letfn [(coordinate [source projected]
+              [(:form-id source) {:projected-form-id (:form-id projected)
+                                  :projected-syntax-id (:syntax-id projected)}])
+            (paired-tree [source projected]
+              (let [source (if (= :metadata-wrapper (:kind source))
+                             (get sources (last (:children source))) source)
+                    children (mapv sources (:children source))
+                    projected-children (mapv forms (:child-form-ids projected))]
+                (when-not (and source projected (= (count children) (count projected-children)))
+                  (p15-s23-c6c10-plan-shape-fail!
+                   source-path {:operation :c5-source-correspondence
+                                :source-form-id (:form-id source)
+                                :projected-form-id (:form-id projected)}))
+                (into [(coordinate source projected)]
+                      (mapcat paired-tree children projected-children))))
+            (declaration [source projected]
+              (let [source (if (= :metadata-wrapper (:kind source))
+                             (get sources (last (:children source))) source)
+                    source-children (mapv sources (:children source))
+                    projected-children (mapv forms (:child-form-ids projected))
+                    function (get projected-children 2)
+                    function-children (mapv forms (:child-form-ids function))
+                    original-parameters (get source-children 2)
+                    parameters (get function-children 1)
+                    parameter-children (mapv forms (:child-form-ids parameters))
+                    original-children (mapv sources (:children original-parameters))
+                    parameter-positions
+                    (keep-indexed (fn [index form]
+                                    (when (= :lexical (:binding-class (get definitions (:syntax-id form))))
+                                      index)) parameter-children)]
+                (when-not (and (= 'defn (:value (first source-children)))
+                               (= 'def (:value (first projected-children)))
+                               (= 'fn (:value (first function-children)))
+                               (= (count (drop 2 source-children)) (count (rest function-children))))
+                  (p15-s23-c6c10-plan-shape-fail!
+                   source-path {:operation :c5-defn-source-correspondence
+                                :source-form-id (:form-id source)}))
+                {:declaration
+                 {:name (:value (get source-children 1))
+                  :function-form-id (:form-id source)
+                  :function-syntax-id (:syntax-id function)
+                  :function-scope-id (:scope-id function)
+                  :function-binding (get definitions (:syntax-id (get projected-children 1)))
+                  :parameters
+                  (mapv (fn [index position]
+                          (let [name-form (get parameter-children position)
+                                type-form (get parameter-children (+ position 2))
+                                reference (get references (:syntax-id type-form))]
+                            {:parameter-index index
+                             :parameter-binding (get definitions (:syntax-id name-form))
+                             :type-binding (get binding-ids (:binding-id reference))
+                             :type-resolution reference
+                             :coordinates
+                             (mapv (fn [role original projected]
+                                     {:role role :c2-form-id (:form-id original)
+                                      :projected-form-id (:form-id projected)
+                                      :projected-syntax-id (:syntax-id projected)})
+                                   [:parameter-vector :parameter-name :annotation-marker :annotation-type]
+                                   (into [original-parameters]
+                                         (map #(get original-children %) (range position (+ position 3))))
+                                   (into [parameters]
+                                         (map #(get parameter-children %) (range position (+ position 3)))))}))
+                        (range) parameter-positions)}
+                 :coordinates
+                 (into [(coordinate source projected)
+                        (coordinate (first source-children) (first projected-children))
+                        (coordinate (get source-children 1) (get projected-children 1))]
+                       (mapcat paired-tree (drop 2 source-children) (rest function-children)))}))]
+      (let [rows (mapv declaration source-roots projected-roots)]
+        {:kind :gravity/c6-c10-resolved-scalar-functions-v1
+         :source-content-hash hash :sh06-artifact-id (:artifact-id resolved)
+         :sh06-semantic-projection-id (get-in request [:lineage :sh06-semantic-projection-id])
+         :projection-binding (:projection-binding request)
+         :root-syntax-id (:syntax-id (first projected-roots))
+         :root-syntax-ids (mapv :syntax-id projected-roots)
+         :declarations (mapv :declaration rows)
+         :bindings bindings :resolutions resolutions
+         :coordinates (into {} (mapcat :coordinates rows))}))))
+
+(defn- p15-s23-c6c10-project-scalar-plan
+  [source-path source-content-hash literal-authentication raw-plan]
+  ;; The existing seed assembler supplies a module-shaped transport plan.
+  ;; Authenticate every declaration's source occurrences, not a synthetic main.
+  (let [forms (:forms-by-id literal-authentication)
+        source-functions
+        (into {}
+              (keep (fn [form]
+                      (let [value (:value form)
+                            definition (if (= :metadata-wrapper (:kind form))
+                                         (get forms (last (:children form))) form)]
+                        (when (and (nil? (:parent-form-id form)) (seq? value) (= 'defn (first value)))
+                          [(second value) {:source form :body-ids (vec (drop 3 (:children definition)))}]))))
+              (vals forms))
+        _ (when-not (= (set (keys source-functions)) (set (keys (:functions raw-plan))))
+            (p15-s23-c6c10-plan-shape-fail!
+             source-path {:operation :module-functions
+                          :source-functions (set (keys source-functions))
+                          :plan-functions (set (keys (:functions raw-plan)))}))
+        functions
+        (into (sorted-map)
+              (map (fn [[name function]]
+                     (let [ids (:body-ids (get source-functions name))
+                           instructions (:instructions function)]
+                       (when-not (and (= (count ids) (count instructions) (count (:body function)))
+                                      (= (vec (:body function)) (mapv #(get-in forms [% :value]) ids)))
+                         (p15-s23-c6c10-plan-shape-fail!
+                          source-path {:operation :function-body :function name
+                                       :source-form-count (count ids) :instruction-count (count instructions)}))
+                       [name (-> (select-keys function p15-s23-c6c10-function-projection-keys)
+                                 (update :binding select-keys p15-s23-c6c10-binding-projection-keys)
+                                 (assoc :instructions
+                                        (mapv #(p15-s23-c6c10-normalize-deferred-ratio-instruction
+                                                source-path literal-authentication %1 %2)
+                                              instructions ids)))])))
+              (:functions raw-plan))
+        selected (-> (select-keys raw-plan p15-s23-c6c10-raw-plan-projection-keys)
+                     (dissoc :entrypoint)
+                     (assoc :functions functions)
+                     (update :source select-keys [:sha256])
+                     (update :module select-keys [:capabilities :module :exports :effects :safety :target :profile]))
+        neutral (p15-s23-c6c10-path-neutral-value source-content-hash selected)
+        occurrences
+        (apply p15-s23-c6c10-merge-occurrences
+               (mapcat (fn [[name function]]
+                         (mapcat
+                          (fn [index form-id instruction]
+                            [(p15-s23-c6c10-prefix-occurrences
+                              [:plan :functions name :body index]
+                              (p15-s23-c6c10-form-value-numeric-occurrences
+                               source-path literal-authentication form-id))
+                             (p15-s23-c6c10-prefix-occurrences
+                              [:plan :functions name :instructions index]
+                              (p15-s23-c6c10-instruction-numeric-occurrences
+                               source-path literal-authentication instruction form-id))])
+                          (range) (:body-ids (get source-functions name)) (:instructions function)))
+                       (:functions neutral)))
+        authentication (p15-s23-c6c10-authentication-with-occurrences
+                        literal-authentication :private-stage2-plan occurrences)
+        plan-id (p15-s23-c6c10-authenticated-semantic-digest
+                 source-path authentication :private-stage2-plan
+                 {:domain :gravity/c6-c10-private-scalar-module-plan-v1
+                  :plan (dissoc neutral :plan-id)})]
+    (assoc neutral :plan-id plan-id)))
+
 (defn p15-s23-c6c10-normalize-deferred-ratios-in-plan
   [source-path literal-authentication raw-plan]
   (let [body-form-ids
@@ -213,40 +385,41 @@
           (p15-s23-c6c10-project-front-end source-path raw-front-end reader-invocation)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
-          parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))
+          application? (= :compiler-application source-policy-version)
+          parameter? (and (not application?)
+                          (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity])))
+          resolved-functions (when application?
+                               (p15-s23-c6c10-resolved-scalar-functions
+                                source-path front-end (:authenticated-c3-source-artifact raw-front-end) invocation))
           resolved-parameter (when parameter?
                                (p15-s23-c6c10-resolved-parameter source-path source-text front-end
                                  (when (some? reader-source-path) (:authenticated-c3-source-artifact raw-front-end))
                                  invocation))
           emitter-rule
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
-          ;; The parameter route already selects the original seed plan
-          ;; transport below. Only the no-parameter application route invokes
-          ;; the current Uniform expression owner and needs its compiled plan.
-          expression
-          (when (and (= :compiler-application source-policy-version)
-                     (not parameter?))
-            (p15-s23-stage2-current-expression-development-binding! source-path))
+          ;; The application compiles a module, so it uses the existing seed
+          ;; assembler without the executable-only main entrypoint check.
+          ;; C6-C10 owns all scalar semantic admission after source binding.
           raw-plan
-          (if parameter?
+          (if (or application? parameter?)
             (p15-s23-stage2-compiler-artifact-plan
              (:emitter emitter-rule) source-path source-text)
-            (if expression
-              (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
-                (p15-s23-c6c10-private-stage2-plan
-                 (:emitter emitter-rule) source-path source-text raw-module))
-              (p15-s23-c6c10-private-stage2-plan
-               (:emitter emitter-rule) source-path source-text raw-module)))
+            (p15-s23-c6c10-private-stage2-plan
+             (:emitter emitter-rule) source-path source-text raw-module))
           plan
-          (p15-s23-c6c10-project-plan
-           source-path source-content-hash literal-authentication raw-plan)
+          ((if application? p15-s23-c6c10-project-scalar-plan p15-s23-c6c10-project-plan)
+           source-path source-content-hash literal-authentication
+           (if application?
+             (assoc-in raw-plan [:module :exports] (:exports raw-module))
+             raw-plan))
           authoritative-module
           (p15-s23-c6c10-project-authoritative-module
            source-content-hash raw-module front-end)
           carrier-subject
           (cond-> {:front-end-products front-end :stage2-plan plan
                    :authoritative-module authoritative-module}
-            parameter? (assoc :resolved-parameter resolved-parameter))
+            parameter? (assoc :resolved-parameter resolved-parameter)
+            application? (assoc :resolved-functions resolved-functions))
           carrier-validation
           (p15-s23-c6c10-carrier-validation source-path carrier-subject)]
       (cond-> {:source-content-hash source-content-hash
@@ -259,17 +432,12 @@
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
         parameter? (assoc :resolved-parameter resolved-parameter)
+        application? (assoc :resolved-functions resolved-functions)
         (contains? #{2 3 :compiler-application} source-policy-version)
         (assoc :source-policy-receipt
-               (cond-> (p15-s23-c6c10-current-reader-envelope-state!
-                        source-path raw-front-end reader-source-path selected-reader-binding
-                        source-policy-version)
-                 expression
-                 (assoc :expression-binding
-                        (assoc (p15-s23-c6c10-project-expression-owner-metadata
-                                source-path (dissoc expression :plan))
-                               :invoked? (true? (get-in raw-plan
-                                               [:compiler :expression-lowering-invoked?])))))))))))
+               (p15-s23-c6c10-current-reader-envelope-state!
+                source-path raw-front-end reader-source-path selected-reader-binding
+                source-policy-version)))))))
 
 (defn p15-s23-c6c10-resolve-source-path
   []

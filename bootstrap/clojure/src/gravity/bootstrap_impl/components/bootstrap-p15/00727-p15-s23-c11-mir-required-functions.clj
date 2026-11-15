@@ -99,6 +99,7 @@
     :module-id :function-id :block-id :operation-id :op-id :value-id
     :source-operation :checked-core-artifact-id :mir-id :syntax-id :origin-id
     :core-node-id :c2-form-id :lowering-rule :expected-type :actual-type
+    :expected :actual
     :effect :capability :provider :grant :owner-id :borrow-id :region-id
     :resource-id :control-path :specialized-safe-rule :safety-mode
     :proof-id :runtime-check :unsafe-audit :boundary-identity-reason

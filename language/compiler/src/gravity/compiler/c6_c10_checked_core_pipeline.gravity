@@ -272,13 +272,14 @@
 
 (defn c6c10-request-key-for-preimage [requests preimage]
   (let [intern-key (c6c10-digest-intern-key preimage)]
-    (if (= (count requests) 0)
-      nil
-      (if (= (c6c10-digest-intern-key
-              (get (first requests) :preimage))
-             intern-key)
-        (get (first requests) :key)
-        (c6c10-request-key-for-preimage (rest requests) preimage)))))
+    (loop [remaining requests]
+      (if (= (count remaining) 0)
+        nil
+        (if (= (c6c10-digest-intern-key
+                (get (first remaining) :preimage))
+               intern-key)
+          (get (first remaining) :key)
+          (recur (rest remaining)))))))
 
 (defn c6c10-add-digest-request [state preimage]
   (let [existing
@@ -975,6 +976,13 @@
 (defn c6c10-checked-add-effects [operation]
   (if (contains? #{:integer-add :integer-sub :integer-mul} operation) #{:error/raise} #{}))
 
+(defn c6c10-expression-effects [nodes result]
+  (loop [remaining nodes accumulated result]
+    (if (= (count remaining) 0)
+      (set accumulated)
+      (recur (rest remaining)
+       (c6c10-conj-all-unique accumulated (vec (get (first remaining) :effects)))))))
+
 (defn c6c10-node-latent-effects [node]
   (if (= :function (get node :source-operation))
     (get (get node :type) :latent-effects) #{}))
@@ -1022,10 +1030,21 @@
         (c6c10-add-digest-request
          (get node-request :state) ownership-input)
         ownership-digest (get ownership-request :ref)
-        safety-basis (if (= source-operation :parameter)
+        scalar? (= true (get envelope :compositional-scalar?))
+        direct-effects (if (= source-operation :call)
+                         (get (get attributes :signature) :latent-effects)
+                         (c6c10-checked-add-effects source-operation))
+        latent-effects (if (= source-operation :function) (get type :latent-effects) #{})
+        aggregate-effects
+        (if (= source-operation :function) latent-effects
+          (if scalar?
+            (c6c10-expression-effects (get product :nodes) (vec direct-effects))
+            direct-effects))
+        safety-basis (if (= source-operation :call) :checked-direct-scalar-call
+                       (if (= source-operation :parameter)
                        (if (= type :gravity/i64) :resolved-i64-parameter-binding
                          (c6c10-safety-basis source-operation))
-                       (c6c10-safety-basis source-operation))
+                       (c6c10-safety-basis source-operation)))
         proof-input-base
         {:domain :gravity/c10-pure-safety-proof-v1
          :artifact :gravity/c6-c10-pure-safety-proof
@@ -1042,20 +1061,22 @@
          :profile :hosted
          :source-target :jvm
          :type type
-         :effects #{}
+         :effects (if scalar? aggregate-effects #{})
          :capabilities #{}
          :ownership-model (get ownership :model)
          :ownership-digest ownership-digest
          :specialized-safe-rule
-         :persistent-immutable-pure-bounded-operation
-         :effect-requirements #{}
+         (if scalar? :persistent-immutable-scalar-composition
+           :persistent-immutable-pure-bounded-operation)
+         :effect-requirements (if scalar? aggregate-effects #{})
          :capability-requirements #{}
          :invalidation-conditions
          [:source-origin-change :operand-change :source-operation-change
           :type-change :effect-change :capability-change
           :ownership-change :profile-change :source-target-change
           :rule-version-change]
-         :status :proved-for-bounded-pure-slice}
+         :status (if scalar? :proved-for-scalar-composition
+                   :proved-for-bounded-pure-slice)}
         proof-input
         (c6c10-merge-maps
          proof-input-base
@@ -1079,9 +1100,6 @@
             :failure :error/numeric :effects #{:error/raise}}
            proof-input))
         proof-id (get proof-request :ref)
-        direct-effects (c6c10-checked-add-effects source-operation)
-        latent-effects (if (= source-operation :function) (get type :latent-effects) #{})
-        aggregate-effects (if (= source-operation :function) latent-effects direct-effects)
         node
         {:node-id node-id
          :path path
@@ -1164,7 +1182,10 @@
 (defn c6c10-form-subject [envelope form]
   (c6c10-merge-maps
    form
-   {:syntax-id (get envelope :entrypoint-syntax-id)
+   {:syntax-id (if (= true (get envelope :compositional-scalar?))
+                 (get (get (get (get envelope :resolved-functions) :coordinates)
+                            (get form :form-id)) :projected-syntax-id)
+                 (get envelope :entrypoint-syntax-id))
     :source-content-hash (get envelope :source-content-hash)}))
 
 (defn c6c10-c7-prospective-core-node-request
@@ -1601,11 +1622,18 @@
           name-form-id (first binding-form-ids)
           expr-form-id (second binding-form-ids)
           name-form
-          (c6c10-form-by-id (get envelope :form-tree) name-form-id)]
+          (c6c10-form-by-id (get envelope :form-tree) name-form-id)
+          scalar? (= true (get envelope :compositional-scalar?))
+          resolved (if scalar? (c6c10-scalar-definition-binding envelope name-form) nil)]
       (if (if (= name-form nil)
             true
             (if (= name (get name-form :value))
-              (c6c10-vector-contains? local-names name)
+              (if (c6c10-vector-contains? local-names name) true
+                (if scalar?
+                  (if (= [:lexical :local name]
+                         [(get resolved :binding-class) (get resolved :kind) (get resolved :name)])
+                    false true)
+                  false))
               true))
         (c6c10-form-rejection
          state envelope name-form :C6-VERIFY :lower-to-core
@@ -1630,23 +1658,27 @@
                    value-product envelope name-form binder-path
                    :binding :let-binding false (+ depth 1)
                    [(get value-product :result-node-id)]
-                   {:name name
-                    :shadowed-binding
-                    (if (= shadowed nil) nil (get shadowed :node-id))
-                    :source-form-id name-form-id}
+                   (c6c10-merge-maps
+                    {:name name
+                     :shadowed-binding
+                     (if (= shadowed nil) nil (get shadowed :node-id))
+                     :source-form-id name-form-id}
+                    (if scalar? {:declaration-binding-id (get resolved :binding-id)} {}))
                    (get value-product :type) :lexical-binding
                    {:storage :forwarded-persistent-value
                     :value-node-id (get value-product :result-node-id)}
                    nil nil)
                   binder-id (get binder-product :result-node-id)
                   binding-record
-                  {:binding-node-id binder-id
-                   :name name
-                   :path binder-path
-                   :value-node-id (get value-product :result-node-id)
-                   :shadowed-binding
-                   (if (= shadowed nil) nil (get shadowed :node-id))
-                   :source-form-id name-form-id}
+                  (c6c10-merge-maps
+                   {:binding-node-id binder-id
+                    :name name
+                    :path binder-path
+                    :value-node-id (get value-product :result-node-id)
+                    :shadowed-binding
+                    (if (= shadowed nil) nil (get shadowed :node-id))
+                    :source-form-id name-form-id}
+                   (if scalar? {:declaration-binding-id (get resolved :binding-id)} {}))
                   binder-product
                   (assoc
                    binder-product :binding-records
@@ -1657,7 +1689,8 @@
                   next-env
                   (assoc env name
                          {:node-id binder-id
-                          :type (get value-product :type)})]
+                          :type (get value-product :type)
+                          :declaration-binding-id (get resolved :binding-id)})]
               (c6c10-map-let-bindings-loop
                (get next-product :state) envelope (rest bindings)
                (rest (rest binding-form-ids)) path next-env
@@ -1759,17 +1792,27 @@
           (if (= [:gravity/i64 :gravity/i64] [(get left :type) (get right :type)])
             (c6c10-add-node product envelope form path :arithmetic
               (if mul? :integer-mul (if sub? :integer-sub :integer-add)) true depth operands
-              {:primitive (if mul? '* (if sub? '- '+)) :arity 2 :evaluation-order :left-to-right
-               :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
-               :numeric-semantics (if mul? :checked-signed-i64-multiplication
-                                    (if sub? :checked-signed-i64-subtraction :checked-signed-i64-addition)) :numeric-mode :checked
-               :bit-width 64 :signedness :signed :overflow :error/numeric}
+              (c6c10-merge-maps
+               {:primitive (if mul? '* (if sub? '- '+)) :arity 2 :evaluation-order :left-to-right
+                :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
+                :numeric-semantics (if mul? :checked-signed-i64-multiplication
+                                     (if sub? :checked-signed-i64-subtraction :checked-signed-i64-addition)) :numeric-mode :checked
+                :bit-width 64 :signedness :signed :overflow :error/numeric}
+               (if (= true (get envelope :compositional-scalar?))
+                 {:primitive-binding-id (get (get envelope :scalar-primitive-reference) :binding-id)
+                  :primitive-resolution (get envelope :scalar-primitive-reference)}
+                 {}))
               :gravity/i64 :arithmetic-result {:storage :static-value :derived-from operands} nil nil)
             (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
-              :diagnostic/c7-type-mismatch {:missing-fact :binary-i64-add-operands :plan-path path}
+              :diagnostic/c7-type-mismatch
+              {:missing-fact :binary-i64-add-operands :plan-path path
+               :expected-type [:gravity/i64 :gravity/i64]
+               :actual-type [(get left :type) (get right :type)]}
               :use-two-declared-i64-operands))))
       (c6c10-form-rejection state envelope form :L2-BUILTIN-ARITY :core-semantics
-        :diagnostic/l2-builtin-arity {:missing-fact :binary-i64-add-operands :actual-arity (count arguments)}
+        :diagnostic/l2-builtin-arity {:missing-fact :binary-i64-add-operands
+                                    :function (get instruction :function)
+                                    :expected-arity 2 :actual-arity (count arguments)}
         :supply-two-i64-add-operands))))
 
 (defn c6c10-map-integer-comparison
@@ -1901,7 +1944,9 @@
 
 (defn c6c10-map-instruction
   [state envelope instruction form-id path env depth]
-  (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
+  (if (= true (get envelope :compositional-scalar?))
+    (c6c10-scalar-map-instruction state envelope instruction form-id path env depth)
+    (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
         operation (get instruction :op)]
     (if (= form nil)
         (c6c10-form-rejection
@@ -1948,7 +1993,7 @@
           :source-form-kind (get form :kind)
           :source-form-operator (c6c10-form-operator form)
           :plan-path path}
-         :regenerate-fresh-c2-c3-and-stage2-plan)))))
+         :regenerate-fresh-c2-c3-and-stage2-plan))))))
 
 (defn c6c10-build-zero-arity-function-product
   [state envelope function-plan function-form]
@@ -2579,6 +2624,7 @@
   (c6c10-build-dependency-edges-loop nodes nodes 0 []))
 
 (defn c6c10-type-producer-rule [source-operation]
+  (if (= source-operation :call) :checked-direct-function-result
   (if (contains? #{:integer-add :integer-sub :integer-mul} source-operation)
     (if (= source-operation :integer-mul) :binary-checked-i64-mul
       (if (= source-operation :integer-sub) :binary-checked-i64-sub :binary-checked-i64-add))
@@ -2608,7 +2654,7 @@
                   :sequence-result-type
                   (if (= source-operation :let)
                     :lexical-scope-result-type
-                    :closed-function-type))))))))))))))
+                    :closed-function-type)))))))))))))))
 
 (defn c6c10-source-value-ids [node]
   (let [operation (get node :source-operation)
@@ -2620,7 +2666,7 @@
         (if (= operation :truthy)
           [(first operands)]
           (if (contains?
-               #{:integer-add :integer-sub :integer-mul :integer-eq :integer-lt :integer-lte
+               #{:call :integer-add :integer-sub :integer-mul :integer-eq :integer-lt :integer-lte
                  :integer-gt :integer-gte}
                operation)
             (c6c10-copy-vector operands [])
@@ -2635,6 +2681,7 @@
                   []))))))))))
 
 (defn c6c10-forwarding-kind [source-operation]
+  (if (= source-operation :call) :from-checked-direct-function-result
   (if (= source-operation :local)
     :from-lexical-binding
     (if (= source-operation :let-binding)
@@ -2654,7 +2701,7 @@
               :from-lexical-scope-result
               (if (= source-operation :function)
                 :from-entrypoint-result
-                :not-applicable)))))))))
+                :not-applicable))))))))))
 
 (defn c6c10-empty-fact-product [state owner-domain-id]
   {:state state
@@ -2706,9 +2753,11 @@
             :ownership-constraints
             #{:persistent-immutable-shareable}
             :profile-constraints #{:hosted}})
+          (if (= (get node :source-operation) :call)
+            (assoc type-fact-base-plain :call-signature (get node :attributes))
           (if (= (get node :source-operation) :parameter)
             (assoc type-fact-base-plain :declaration (get node :attributes))
-            type-fact-base-plain))
+            type-fact-base-plain)))
         type-fact-request
         (c6c10-add-digest-request
          (get type-id-request :state)
@@ -2719,7 +2768,7 @@
         effect-fact-base-plain
         {:core-node-id node-id
          :type-fact-id type-fact-id
-         :direct (c6c10-checked-add-effects (get node :source-operation))
+         :direct (get (get node :attributes) :intrinsic-effects)
          :latent (c6c10-node-latent-effects node)
          :transitive (get node :effects)
          :residual (get node :effects)
@@ -2733,7 +2782,9 @@
           (c6c10-merge-maps
            effect-fact-base-plain
            {:function-summary
-            {:declared (c6c10-node-latent-effects node)
+            {:declared (if (contains? (get node :attributes) :declared-effects)
+                         (get (get node :attributes) :declared-effects)
+                         (c6c10-node-latent-effects node))
              :inferred (c6c10-node-latent-effects node)
              :latent (c6c10-node-latent-effects node)
              :throws (get (get node :type) :throws)}})
@@ -2828,10 +2879,12 @@
         {:profile :hosted
          :operation (get node :source-operation)
          :legal? true
-         :scope (if (= (get node :effects) #{}) :gravity-owned-bounded-pure-hosted-jvm-slice
+         :scope (if (= checked-operation :compositional-scalar)
+                  :gravity-owned-compositional-scalar-hosted-jvm-slice
+                  (if (= (get node :effects) #{}) :gravity-owned-bounded-pure-hosted-jvm-slice
                     (if (= checked-operation :integer-mul) :gravity-owned-checked-i64-mul-hosted-jvm-slice
                       (if (= checked-operation :integer-sub)
-                        :gravity-owned-checked-i64-sub-hosted-jvm-slice :gravity-owned-checked-i64-add-hosted-jvm-slice)))}]
+                        :gravity-owned-checked-i64-sub-hosted-jvm-slice :gravity-owned-checked-i64-add-hosted-jvm-slice))))}]
     {:state (get ownership-fact-request :state)
      :owner-domain-id (get fact-product :owner-domain-id)
      :type-ids (assoc (get fact-product :type-ids) node-id type-id)
@@ -2874,7 +2927,7 @@
       (c6c10-effect-graph-nodes
        (rest nodes)
        (assoc result (get node :node-id)
-              {:direct (c6c10-checked-add-effects (get node :source-operation))
+              {:direct (get (get node :attributes) :intrinsic-effects)
                :latent (c6c10-node-latent-effects node)
                :transitive (get node :effects)
                :ordering (if (= (get node :effects) #{}) :none :sequence)
@@ -3662,7 +3715,8 @@
            expected actual
            [:kind :schema-version :status :scope :source-content-hash
             :source-core-input :entrypoint :profile :source-target
-            :root-node-ids :dependency-order-graph
+            :root-node-ids :dependency-order-graph :functions :exports
+            :declaration-order :function-order :call-graph :resolved-functions
             :lexical-binding-records :pass-history :authenticated-input :resolved-parameter
             :bounds :diagnostics :mir-derived? :whole-language?
             :clojure-seed-boundary? :self-hosted?])
@@ -3916,7 +3970,740 @@
       :requests expected-requests}
      rule stage message-key source facts remediation)))
 
+; The current-source module application uses this compositional scalar family.
+; It shares the original node, provenance, fact and digest owners above. The
+; historical single-function interfaces keep their original family contracts.
+(defn c6c10-scalar-scope []
+  {:artifact :gravity/c6-c10-checked-core-scope-contract
+   :family :compositional-scalar-functions-v1 :whole-language? false
+   :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+   :source-operations [:literal :local :parameter :let-binding :let :do
+                       :if :truthy :integer-add :call :function]
+   :scalar-types [:gravity/i64 :gravity/bool]
+   :call-graph :nonrecursive-first-order-fixed-arity
+   :ownership :persistent-immutable
+   :numeric-mode :checked :numeric-failure :error/numeric
+   :evaluation-order :left-to-right
+   :forbidden [:recursion :closure :import :mutation :collection
+               :subtraction :multiplication :backend-specific-lowering]})
+
+(defn c6c10-scalar-row-by [rows field value]
+  (loop [remaining rows]
+    (if (= (count remaining) 0) nil
+      (if (= (get (first remaining) field) value) (first remaining)
+        (recur (rest remaining))))))
+
+(defn c6c10-scalar-coordinate [envelope form]
+  (get (get (get envelope :resolved-functions) :coordinates) (get form :form-id)))
+
+(defn c6c10-scalar-definition-binding [envelope form]
+  (c6c10-scalar-row-by
+   (get (get envelope :resolved-functions) :bindings) :definition-syntax-id
+   (get (c6c10-scalar-coordinate envelope form) :projected-syntax-id)))
+
+(defn c6c10-scalar-reference [envelope form]
+  (c6c10-scalar-row-by
+   (get (get envelope :resolved-functions) :resolutions) :reference-syntax-id
+   (get (c6c10-scalar-coordinate envelope form) :projected-syntax-id)))
+
+(defn c6c10-scalar-call-binding [envelope form]
+  (if (= :list (get form :kind))
+    (let [operator-form (c6c10-form-by-id (get envelope :form-tree) (first (get form :children)))
+          reference (c6c10-scalar-reference envelope operator-form)
+          binding (c6c10-scalar-row-by (get (get envelope :resolved-functions) :bindings)
+                    :binding-id (get reference :binding-id))]
+      (if (= [:operator :namespace :function (get envelope :module)]
+             [(get reference :position) (get binding :binding-class)
+              (get binding :kind) (get binding :namespace)]) binding nil))
+    nil))
+
+(defn c6c10-scalar-type? [type]
+  (contains? #{:gravity/i64 :gravity/bool} type))
+
+(defn c6c10-scalar-parameter-type [entry]
+  (let [binding (get entry :type-binding)]
+    (if (= [:core :type 'gravity.core]
+           [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
+      (if (= (get binding :name) 'I64) :gravity/i64
+        (if (= (get binding :name) 'Bool) :gravity/bool nil))
+      nil)))
+
+(defn c6c10-scalar-map-literal [state envelope instruction form path depth]
+  (let [value (get instruction :value) kind (get form :kind)
+        type (if (= kind :boolean) :gravity/bool
+               (if (= kind :integer)
+                 (if (<= -9223372036854775808 value)
+                   (if (<= value 9223372036854775807) :gravity/i64 nil) nil)
+                 nil))]
+    (if (= type nil)
+      (c6c10-form-rejection state envelope form :C7-TYPE-MISMATCH :type-check
+       :diagnostic/c7-type-mismatch
+       {:missing-fact :scalar-literal-type :expected-type [:gravity/i64 :gravity/bool]
+        :actual-type (c6c10-observed-form-type kind) :actual-value value
+        :plan-path path :plan-depth depth :prospective-kind :literal
+        :prospective-source-operation :literal}
+       :use-bool-or-representable-i64-literal)
+      (c6c10-add-node (c6c10-empty-product state) envelope form path
+       :literal :literal true depth [] {:value value} type
+       :literal-value {:storage :static-value} nil nil))))
+
+(defn c6c10-scalar-map-local [state envelope instruction form path env depth]
+  (let [binding (get env (get instruction :name))
+        reference (c6c10-scalar-reference envelope form)
+        declaration-id (get binding :declaration-binding-id)]
+    (if (c6c10-parameter-checks?
+         [(map? binding) (map? reference) (c6c10-parameter-id? declaration-id)
+          (= (get reference :binding-id) declaration-id)
+          (= (get reference :symbol) (get instruction :name))])
+      (c6c10-add-node (c6c10-empty-product state) envelope form path
+       :local :local true depth [(get binding :node-id)]
+       {:name (get instruction :name) :resolved-binding (get binding :node-id)
+        :resolved-c5-binding-id declaration-id :resolution reference}
+       (get binding :type) :local-reference
+       {:storage :shared-persistent-reference :binding-node-id (get binding :node-id)} nil nil)
+      (c6c10-form-rejection state envelope form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :resolved-lexical-binding :local (get instruction :name)
+        :expected-binding-id declaration-id :actual-binding-id (get reference :binding-id)
+        :plan-path path} :restore-original-lexical-binding))))
+
+(defn c6c10-scalar-node-types [nodes ids]
+  (loop [remaining ids result []]
+    (if (= (count remaining) 0) result
+      (recur (rest remaining)
+       (conj result (get (c6c10-node-by-id nodes (first remaining)) :type))))))
+
+(defn c6c10-scalar-map-call [state envelope instruction form path env depth]
+  (let [name (get instruction :function)
+        callee (get (get envelope :checked-functions) name)
+        signature (get callee :type)
+        operator-form (c6c10-form-by-id (get envelope :form-tree) (first (get form :children)))
+        reference (c6c10-scalar-reference envelope operator-form)
+        binding-id (get (get callee :attributes) :declaration-binding-id)
+        arguments (get instruction :args)]
+    (if (c6c10-parameter-checks?
+         [(map? callee) (map? reference) (c6c10-parameter-id? binding-id)
+          (= binding-id (get reference :binding-id))])
+      (if (= (count arguments) (count (get signature :params)))
+        (let [product (if (= (count arguments) 0)
+                        (assoc (c6c10-empty-product state) :direct-root-node-ids [])
+                        (c6c10-map-sequence state envelope arguments
+                         (rest (get form :children)) path :args env depth form :call-arguments))]
+          (if (= :rejected (get product :status)) product
+            (let [operands (get product :direct-root-node-ids)
+                  types (c6c10-scalar-node-types (get product :nodes) operands)]
+              (if (= types (get signature :params))
+                (c6c10-add-node product envelope form path :call :call true depth operands
+                 {:callee name :callee-node-id (get callee :node-id)
+                  :callee-binding-id binding-id :resolution reference
+                  :signature signature :argument-types types :arity (count arguments)
+                  :evaluation-order :left-to-right}
+                 (get signature :return) :call-result
+                 {:storage :persistent-call-result :callee-node-id (get callee :node-id)
+                  :argument-node-ids operands :result-disposition :shared-persistent-value-return}
+                 nil nil)
+                (c6c10-form-rejection (get product :state) envelope form
+                 :C7-TYPE-MISMATCH :type-check :diagnostic/c7-type-mismatch
+                 {:missing-fact :scalar-call-argument-types :function name
+                  :expected-type (get signature :params) :actual-type types
+                  :relevant-binding-id binding-id :plan-path path :plan-depth depth
+                  :prospective-kind :call :prospective-source-operation :call}
+                 :supply-arguments-of-the-declared-parameter-types)))))
+        (c6c10-form-rejection state envelope form :L2-BUILTIN-ARITY :core-semantics
+         :diagnostic/l2-builtin-arity
+         {:missing-fact :fixed-arity-scalar-call :function name
+          :expected-arity (count (get signature :params)) :actual-arity (count arguments)
+          :relevant-binding-id binding-id :plan-path path}
+         :supply-the-declared-number-of-arguments))
+      (c6c10-form-rejection state envelope form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :resolved-direct-scalar-callee :function name
+        :expected-binding-id binding-id :actual-binding-id (get reference :binding-id)
+        :plan-path path} :use-a-resolved-module-function))))
+
+(defn c6c10-scalar-validate-if [product envelope form path depth]
+  (if (= :rejected (get product :status)) product
+    (let [nodes (get product :nodes)
+          node (c6c10-node-by-id nodes (get product :result-node-id))
+          operands (get node :operands)
+          truthy (c6c10-node-by-id nodes (first operands))
+          condition (c6c10-node-by-id nodes (first (get truthy :operands)))
+          then-node (c6c10-node-by-id nodes (get operands 1))
+          else-node (c6c10-node-by-id nodes (get operands 2))
+          then-type (get then-node :type) else-type (get else-node :type)]
+      (if (= :gravity/bool (get condition :type))
+        (if (if (= then-type else-type) (c6c10-scalar-type? then-type) false) product
+          (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+           :diagnostic/c7-type-mismatch
+           {:missing-fact :scalar-branch-result-types :expected-type then-type :actual-type else-type
+            :then-type then-type :else-type else-type :plan-path path :plan-depth depth
+            :prospective-kind :conditional :prospective-source-operation :if}
+           :return-the-same-scalar-type-from-both-branches))
+        (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+         :diagnostic/c7-type-mismatch
+         {:missing-fact :scalar-bool-condition :expected-type :gravity/bool
+          :actual-type (get condition :type) :plan-path path :plan-depth depth
+          :prospective-kind :conditional :prospective-source-operation :if}
+         :use-a-bool-condition)))))
+
+(defn c6c10-scalar-map-checked-add [state envelope instruction form path env depth]
+  (let [operator-form (c6c10-form-by-id (get envelope :form-tree) (first (get form :children)))
+        reference (c6c10-scalar-reference envelope operator-form)
+        binding (c6c10-scalar-row-by (get (get envelope :resolved-functions) :bindings)
+                  :binding-id (get reference :binding-id))]
+    (if (c6c10-parameter-checks?
+         [(map? reference) (map? binding) (c6c10-parameter-id? (get binding :binding-id))
+          (= ['+ :operator :core :var 'gravity.core '+]
+             [(get reference :symbol) (get reference :position) (get binding :binding-class)
+              (get binding :kind) (get binding :namespace) (get binding :name)])])
+      (c6c10-map-checked-i64-add state (assoc envelope :scalar-primitive-reference reference)
+        instruction form path env depth)
+      (c6c10-form-rejection state envelope operator-form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :resolved-core-i64-add-primitive :function '+
+        :expected-binding {:binding-class :core :kind :var :namespace 'gravity.core :name '+}
+        :actual-binding binding :relevant-binding-id (get reference :binding-id) :plan-path path}
+       :use-the-resolved-core-addition-primitive))))
+
+(defn c6c10-scalar-expression-result [product envelope form path depth]
+  (if (= :rejected (get product :status)) product
+    (if (c6c10-scalar-type? (get product :type)) product
+      (let [node (c6c10-node-by-id (get product :nodes) (get product :result-node-id))]
+        (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+         :diagnostic/c7-type-mismatch
+         {:missing-fact :scalar-expression-result :expected-type [:gravity/i64 :gravity/bool]
+          :actual-type (get product :type) :plan-path path :plan-depth depth
+          :prospective-kind (get node :kind) :prospective-source-operation (get node :source-operation)}
+         :return-an-i64-or-bool-value)))))
+
+(defn c6c10-scalar-map-instruction [state envelope instruction form-id path env depth]
+  (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
+        operation (get instruction :op)
+        call-binding (if (contains? #{:function-call :builtin-call} operation)
+                       (c6c10-scalar-call-binding envelope form) nil)]
+    (if (if (= form nil) false (c6c10-instruction-form-matches? instruction form))
+      (if (= operation :literal) (c6c10-scalar-map-literal state envelope instruction form path depth)
+        (if (= operation :local) (c6c10-scalar-map-local state envelope instruction form path env depth)
+          (if (= operation :let)
+            (c6c10-scalar-expression-result
+             (c6c10-map-let state envelope instruction form path env depth) envelope form path depth)
+            (if (= operation :do)
+              (c6c10-scalar-expression-result
+               (c6c10-map-do state envelope instruction form path env depth) envelope form path depth)
+              (if (= operation :if)
+                (c6c10-scalar-validate-if
+                 (c6c10-map-if state envelope instruction form path env depth) envelope form path depth)
+                (if (map? call-binding)
+                  (c6c10-scalar-map-call state envelope
+                   (assoc instruction :function (get call-binding :name)) form path env depth)
+                  (if (= operation :function-call)
+                    (c6c10-scalar-map-call state envelope instruction form path env depth)
+                    (if (if (= operation :builtin-call) (= '+ (get instruction :function)) false)
+                      (c6c10-scalar-map-checked-add state envelope instruction form path env depth)
+                      (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core
+                       :diagnostic/c6-lowering-gap
+                       {:missing-fact :compositional-scalar-source-operation
+                        :observed-operation operation :function (get instruction :function) :plan-path path}
+                       :use-the-supported-scalar-grammar)))))))))
+      (c6c10-form-rejection state envelope form :C6-ORIGIN :lower-to-core :diagnostic/c6-origin
+       {:missing-fact :lockstep-plan-c2-form-mapping :plan-operation operation
+        :source-form-id form-id :plan-path path} :reconstruct-current-source-parents))))
+
+(defn c6c10-scalar-parameter-valid? [envelope declaration plan entry index]
+  (let [forms (get envelope :form-tree)
+        function-form (c6c10-form-by-id forms (get declaration :function-form-id))
+        parameter-form (c6c10-form-by-id forms (get (get function-form :children) 2))
+        ids (get parameter-form :children) offset (* index 3)
+        name-form (c6c10-form-by-id forms (get ids offset))
+        marker (c6c10-form-by-id forms (get ids (+ offset 1)))
+        type-form (c6c10-form-by-id forms (get ids (+ offset 2)))
+        coordinates (get entry :coordinates)
+        binding (get entry :parameter-binding) type-binding (get entry :type-binding)
+        reference (get entry :type-resolution)
+        actual-binding (c6c10-scalar-definition-binding envelope name-form)
+        actual-reference (c6c10-scalar-reference envelope type-form)]
+    (c6c10-parameter-checks?
+     [(c6c10-plain-form? parameter-form :vector)
+      (= (count ids) (* 3 (count (get declaration :parameters))))
+      (= index (get entry :parameter-index))
+      (= (get (get plan :params) index) (get name-form :value))
+      (c6c10-plain-form? name-form :symbol)
+      (c6c10-plain-form? marker :keyword) (= :- (get marker :value))
+      (c6c10-plain-form? type-form :symbol)
+      (c6c10-scalar-type? (c6c10-scalar-parameter-type entry))
+      (= (get type-form :value) (get reference :symbol))
+      (= binding actual-binding) (= reference actual-reference)
+      (c6c10-parameter-binding-shape? binding)
+      (c6c10-parameter-binding-shape? type-binding)
+      (= type-binding (c6c10-scalar-row-by
+                      (get (get envelope :resolved-functions) :bindings) :binding-id
+                      (get reference :binding-id)))
+      (= :type (get reference :position))
+      (= (get binding :scope-id) (get declaration :function-scope-id))
+      (= [:lexical :local :lexical (get envelope :module) [:hosted] [:jvm] :safe]
+         [(get binding :binding-class) (get binding :kind) (get binding :visibility)
+          (get binding :namespace) (get binding :profile-set) (get binding :target-set)
+          (get binding :safety)])
+      (= (get binding :name) (get name-form :value))
+      (= [] (get binding :effects)) (= [] (get binding :capabilities))
+      (c6c10-parameter-coordinate? (get coordinates 0) :parameter-vector parameter-form)
+      (c6c10-parameter-coordinate? (get coordinates 1) :parameter-name name-form)
+      (c6c10-parameter-coordinate? (get coordinates 2) :annotation-marker marker)
+      (c6c10-parameter-coordinate? (get coordinates 3) :annotation-type type-form)
+      (= (get (get coordinates 1) :projected-syntax-id) (get binding :definition-syntax-id))
+      (= (get (get coordinates 3) :projected-syntax-id) (get reference :reference-syntax-id))])))
+
+(defn c6c10-scalar-parameters [state envelope declaration plan]
+  (let [entries (get declaration :parameters) name (get declaration :name)]
+    (loop [index 0 product (c6c10-empty-product state) environment {} names [] types [] ids []]
+      (if (= index (count entries))
+        {:status :accepted :product product :environment environment :names names :types types :ids ids}
+        (let [entry (get entries index)
+              form (c6c10-form-by-id (get envelope :form-tree)
+                     (get (get (get entry :coordinates) 1) :c2-form-id))
+              parameter-name (get form :value) type (c6c10-scalar-parameter-type entry)
+              binding-id (get (get entry :parameter-binding) :binding-id)]
+          (if (if (c6c10-scalar-parameter-valid? envelope declaration plan entry index)
+                (= false (c6c10-vector-contains? names parameter-name)) false)
+            (let [path [:functions name :parameters index :binder]
+                  attributes {:name parameter-name :parameter-index index
+                              :source-form-id (get form :form-id)
+                              :resolved-binding-id binding-id :declaration-binding-id binding-id
+                              :type-binding-id (get (get entry :type-binding) :binding-id)}
+                  binder (c6c10-add-node (c6c10-empty-product (get product :state)) envelope form path
+                          :binding :parameter false 0 [] attributes type :function-parameter
+                          {:storage :persistent-parameter-value} nil nil)
+                  id (get binder :result-node-id)
+                  binder (assoc binder :binding-records
+                          [(assoc attributes :binding-node-id id :path path)])]
+              (recur (+ index 1) (c6c10-merge-products product binder)
+               (assoc environment parameter-name
+                      {:node-id id :type type :declaration-binding-id binding-id})
+               (conj names parameter-name) (conj types type) (conj ids id)))
+            (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+             :diagnostic/c7-type-mismatch
+             {:missing-fact :resolved-scalar-parameter-declaration :function name :parameter-index index
+              :expected-type [:gravity/i64 :gravity/bool] :actual-type type
+              :relevant-binding-id binding-id :plan-path [:functions name :parameters index]}
+             :use-distinct-explicitly-typed-scalar-parameters)))))))
+
+(defn c6c10-scalar-function-shape? [envelope declaration plan form]
+  (let [name (get declaration :name) binding (get declaration :function-binding)
+        name-form (c6c10-form-by-id (get envelope :form-tree) (get (get form :children) 1))
+        params-form (c6c10-form-by-id (get envelope :form-tree) (get (get form :children) 2))
+        arity (count (get declaration :parameters))
+        exported? (c6c10-vector-contains? (get envelope :exports) name)]
+    (c6c10-parameter-checks?
+     [(c6c10-function-form? form name) (c6c10-plain-form? form :list)
+      (= nil (get form :parent-form-id)) (c6c10-plain-form? params-form :vector)
+      (= (* 3 arity) (count (get params-form :children)))
+      (= name (get plan :name)) (= arity (get plan :arity))
+      (= arity (count (get plan :params)))
+      (= (+ (count (get form :children)) -3) (get plan :body-form-count))
+      (= (get plan :body-form-count) (count (get plan :instructions)))
+      (= (get plan :body-form-count) (count (get plan :body)))
+      (= binding (c6c10-scalar-definition-binding envelope name-form))
+      (c6c10-parameter-binding-shape? binding)
+      (= [:namespace :function] [(get binding :binding-class) (get binding :kind)])
+      (= name (get binding :name)) (= (get envelope :module) (get binding :namespace))
+      (= (if exported? :public :private) (get binding :visibility))
+      (= :safe (get binding :safety)) (= [:hosted] (get binding :profile-set))
+      (= [:jvm] (get binding :target-set))
+      (c6c10-parameter-id? (get declaration :function-syntax-id))
+      (c6c10-parameter-id? (get declaration :function-scope-id))])))
+
+(defn c6c10-scalar-build-function [state envelope declaration plan]
+  (let [name (get declaration :name)
+        form (c6c10-form-by-id (get envelope :form-tree) (get declaration :function-form-id))
+        syntax (c6c10-top-level-syntax-by-form-id (get envelope :c3-syntax-object-stream) (get form :form-id))
+        envelope (assoc envelope :entrypoint-syntax-id (get syntax :syntax/id))]
+    (if (c6c10-scalar-function-shape? envelope declaration plan form)
+      (let [parameters (c6c10-scalar-parameters state envelope declaration plan)]
+        (if (= :rejected (get parameters :status)) parameters
+          (let [binder (get parameters :product)
+                body (c6c10-map-sequence (get binder :state) envelope (get plan :instructions)
+                      (rest (rest (rest (get form :children)))) [:functions name] :body
+                      (get parameters :environment) 0 form :implicit-function-nil)]
+            (if (= :rejected (get body :status)) body
+              (if (c6c10-scalar-type? (get body :type))
+                (let [effects (c6c10-expression-effects (get body :nodes) [])
+                      exported? (c6c10-vector-contains? (get envelope :exports) name)
+                      result (c6c10-add-node (c6c10-merge-products binder body) envelope form
+                              [:functions name] :function :function false 0 (get body :direct-root-node-ids)
+                              {:name name :params (get parameters :names) :parameter-node-ids (get parameters :ids)
+                               :arity (count (get parameters :ids)) :body-count (count (get plan :instructions))
+                               :visibility (if exported? :public :private) :exported? exported?
+                               :declared-effects (get envelope :declared-effects)
+                               :function-syntax-id (get declaration :function-syntax-id)
+                               :function-scope-id (get declaration :function-scope-id)
+                               :declaration-binding-id (get (get declaration :function-binding) :binding-id)}
+                              {:params (get parameters :types) :return (get body :type)
+                               :latent-effects effects :capabilities #{}
+                               :throws (if (contains? effects :error/raise) #{:error/numeric} #{})
+                               :ownership-constraints #{:persistent-immutable-shareable}
+                               :profile-constraints #{:hosted}}
+                              :function-result {:storage :forwarded-persistent-value
+                                                :result-node-id (get body :result-node-id)
+                                                :result-disposition :shared-persistent-value-return} nil nil)]
+                  (assoc result :root-node-id (get result :result-node-id)))
+                (c6c10-form-rejection (get body :state) envelope form :C7-TYPE-MISMATCH :type-check
+                 :diagnostic/c7-type-mismatch
+                 {:missing-fact :scalar-function-result :function name
+                  :expected-type [:gravity/i64 :gravity/bool] :actual-type (get body :type)
+                  :plan-path [:functions name]}
+                 :return-an-i64-or-bool-value))))))
+      (c6c10-form-rejection state envelope form :C6-VERIFY :lower-to-core :diagnostic/c6-verify
+       {:missing-fact :resolved-scalar-function-declaration :function name
+        :expected-arity (count (get declaration :parameters)) :actual-arity (get plan :arity)}
+       :reconstruct-the-original-function-declaration))))
+
+(defn c6c10-scalar-function-calls [envelope function-form]
+  ; The original C2 occurrence tree supplies order; actual C5 operator bindings
+  ; identify callees even when the seed classified their spelling as a builtin.
+  (loop [pending (vec (rest (rest (rest (get function-form :children))))) seen #{} result []]
+    (if (= (count pending) 0) result
+      (let [id (first pending)]
+        (if (contains? seen id)
+          (recur (rest pending) seen result)
+          (let [form (c6c10-form-by-id (get envelope :form-tree) id)
+                binding (c6c10-scalar-call-binding envelope form)]
+            (recur (c6c10-append (vec (get form :children)) (rest pending)) (conj seen id)
+             (if (map? binding) (c6c10-conj-unique result (get binding :name)) result))))))))
+
+(defn c6c10-scalar-build-graph [graph envelope name visiting]
+  (if (contains? (get graph :functions) name) graph
+    (let [declaration (get (get envelope :declarations) name)
+          plan (get (get envelope :plans) name)
+          form (c6c10-form-by-id (get envelope :form-tree) (get declaration :function-form-id))]
+      (if (= declaration nil)
+        (c6c10-form-rejection (get graph :state) envelope form :C6-VERIFY :lower-to-core
+         :diagnostic/c6-verify {:missing-fact :resolved-direct-scalar-callee :function name}
+         :declare-the-called-function)
+        (if (c6c10-vector-contains? visiting name)
+          (c6c10-form-rejection (get graph :state) envelope form :C6-LOWERING-GAP :lower-to-core
+           :diagnostic/c6-lowering-gap
+           {:missing-fact :nonrecursive-scalar-call-graph :function name :call-cycle (conj visiting name)}
+           :use-a-nonrecursive-first-order-call-graph)
+          (let [dependencies (c6c10-scalar-function-calls envelope form)
+                upstream (loop [remaining dependencies accumulated graph]
+                           (if (= :rejected (get accumulated :status)) accumulated
+                             (if (= (count remaining) 0) accumulated
+                               (recur (rest remaining)
+                                (c6c10-scalar-build-graph accumulated envelope (first remaining) (conj visiting name))))))]
+            (if (= :rejected (get upstream :status)) upstream
+              (let [product (c6c10-scalar-build-function (get upstream :state)
+                             (assoc envelope :checked-functions (get upstream :functions)) declaration plan)]
+                (if (= :rejected (get product :status)) product
+                  {:status :accepted :state (get product :state)
+                   :products (assoc (get upstream :products) name product)
+                   :functions (assoc (get upstream :functions) name
+                               (c6c10-node-by-id (get product :nodes) (get product :root-node-id)))
+                   :order (conj (get upstream :order) name)
+                   :calls (assoc (get upstream :calls) name dependencies)})))))))))
+
+(defn c6c10-scalar-source-declarations? [input]
+  (let [front (get input :front-end-products) resolved (get input :resolved-functions)
+        declarations (get resolved :declarations) roots (get front :top-level-form-ids)
+        syntaxes (get front :c3-syntax-object-stream) forms (get front :form-tree)
+        module (get input :authoritative-module) functions (get (get input :stage2-plan) :functions)
+        names (loop [remaining declarations result []]
+                (if (= (count remaining) 0) result
+                  (recur (rest remaining) (conj result (get (first remaining) :name)))))
+        exports (get module :exports)]
+    (if (c6c10-parameter-checks?
+         [(vector? declarations) (> (count declarations) 0)
+          (= (count declarations) (count (set names)))
+          (= (set names) (set (keys functions)))
+          (vector? exports) (= (count exports) (count (set exports)))
+          (= (+ (count declarations) 1) (count roots) (count syntaxes))
+          (c6c10-namespace-form? (c6c10-form-by-id forms (first roots)) (get module :module))
+          (= :gravity/c6-c10-resolved-scalar-functions-v1 (get resolved :kind))
+          (= (get input :source-content-hash) (get resolved :source-content-hash))
+          (c6c10-parameter-id? (get resolved :sh06-artifact-id))
+          (c6c10-parameter-id? (get resolved :sh06-semantic-projection-id))
+          (c6c10-parameter-id? (get resolved :projection-binding))
+          (vector? (get resolved :bindings)) (vector? (get resolved :resolutions))
+          (map? (get resolved :coordinates))])
+      (if (loop [remaining exports]
+            (if (= (count remaining) 0) true
+              (if (contains? functions (first remaining)) (recur (rest remaining)) false)))
+        (loop [index 0]
+          (if (= index (count roots)) true
+            (let [root (get roots index) syntax (get syntaxes index)
+                  declaration (if (= index 0) nil (get declarations (- index 1)))]
+              (if (= root (get (get syntax :source) :form-id))
+                (if (if (= index 0) true
+                      (= root (get declaration :function-form-id)))
+                  (recur (+ index 1)) false)
+                false))))
+        false)
+      false)))
+
+(defn c6c10-scalar-input-checks [input]
+  (let [front (get input :front-end-products) plan (get input :stage2-plan)
+        module (get input :authoritative-module) pins (get input :binding-pins)]
+    {:envelope
+     (c6c10-parameter-checks?
+      [(c6c10-exact-map-keys? input
+        #{:kind :source-content-hash :front-end-products :stage2-plan :authoritative-module
+          :binding-pins :carrier-validation :scope :resolved-functions})
+       (= :gravity/private-fresh-c2-c3-stage2-plan-envelope (get input :kind))
+       (= :compositional-scalar-hosted-safe-jvm-source (get input :scope))])
+     :front-end
+     (c6c10-parameter-checks?
+      [(c6c10-private-front-end-shape? front)
+       (= :gravity/p15-s23-stage2-c2-c3-front-end-products (get front :artifact))
+       (= :complete (get front :status))])
+     :source-binding
+     (= (get input :source-content-hash) (get (get front :source-unit-record) :bytes-hash)
+        (get (get plan :source) :sha256) (get (get input :resolved-functions) :source-content-hash))
+     :module
+     (c6c10-parameter-checks?
+      [(c6c10-authoritative-module-matches-plan? module (get plan :module) front)
+       (= [] (get module :requires)) (= [] (get module :imports)) (= [] (get module :providers))
+       (= {} (get module :metadata)) (= nil (get module :doc))
+       (= :hosted (get module :profile)) (= :jvm (get module :target))
+       (= :safe (get module :safety)) (= #{} (get module :capabilities))
+       (contains? #{#{} #{:error/raise}} (get module :effects))
+       (= nil (c6c10-first-metadata-form (get front :form-tree)))])
+     :binding-pins
+     (c6c10-exact-map-keys? pins
+      #{:c2-semantic-hash :c3-semantic-hash :plan-semantic-hash :reader-integrity-hash
+        :builder-source-hash :builder-plan-hash :builder-function-hash :function-resolution-hash})
+     :carrier (c6c10-carrier-validation-shape? (get input :carrier-validation))
+     :declarations (c6c10-scalar-source-declarations? input)}))
+
+(defn c6c10-scalar-check-effects [envelope graph names]
+  (loop [remaining names]
+    (if (= (count remaining) 0) {:status :accepted}
+      (let [name (first remaining) node (get (get graph :functions) name)
+            effects (get (get node :type) :latent-effects)
+            declared (get envelope :declared-effects)
+            missing? (loop [labels (vec effects)]
+                       (if (= (count labels) 0) false
+                         (if (contains? declared (first labels)) (recur (rest labels)) true)))]
+        (if missing?
+          (c6c10-form-rejection (get graph :state) envelope
+           (c6c10-form-by-id (get envelope :form-tree)
+            (get (get (get envelope :declarations) name) :function-form-id))
+           :C8-UNDECLARED :effect-check :diagnostic/c8-undeclared
+           {:missing-fact :declared-numeric-error-effect :function name
+            :namespace (get envelope :module) :declared-effects declared :inferred-effects effects
+            :effect :error/raise :callees (get (get graph :calls) name)
+            :relevant-binding-id (get (get node :attributes) :declaration-binding-id)}
+           :declare-the-inferred-numeric-error-effect)
+          (recur (rest remaining)))))))
+
+(defn c6c10-scalar-build-facts [graph]
+  (loop [names (get graph :order)
+         facts (c6c10-empty-fact-product (get graph :state) nil)]
+    (if (= (count names) 0) facts
+      (let [name (first names) product (get (get graph :products) name)
+            owner (c6c10-add-digest-request (get facts :state)
+                   {:domain :gravity/c9-persistent-shared-owner-domain-v1
+                    :function-node-id (get product :root-node-id)})
+            next-facts (c6c10-build-fact-tables (get product :nodes)
+                        (assoc facts :state (get owner :state) :owner-domain-id (get owner :ref))
+                        :compositional-scalar)]
+        (recur (rest names) next-facts)))))
+
+(defn c6c10-scalar-function-table [graph facts]
+  (loop [names (get graph :order) result {}]
+    (if (= (count names) 0) result
+      (let [node (get (get graph :functions) (first names))
+            params (get (get node :attributes) :parameter-node-ids)
+            types (loop [remaining params result []]
+                    (if (= (count remaining) 0) result
+                      (recur (rest remaining) (conj result (get (get facts :type-ids) (first remaining))))))
+            type (get node :type)]
+        (recur (rest names)
+         (assoc result (get node :node-id)
+          {:params types :return (get (get facts :type-ids) (c6c10-last-value (get node :operands)))
+           :latent-effects (get type :latent-effects) :capabilities #{} :throws (get type :throws)
+           :name (first names) :visibility (get (get node :attributes) :visibility)
+           :declaration-binding-id (get (get node :attributes) :declaration-binding-id)}))))))
+
+(defn c6c10-scalar-effect-functions [envelope graph]
+  (loop [names (get graph :order) result {}]
+    (if (= (count names) 0) result
+      (let [node (get (get graph :functions) (first names)) type (get node :type)]
+        (recur (rest names)
+         (assoc result (get node :node-id)
+          {:declared (get envelope :declared-effects) :inferred (get type :latent-effects)
+           :latent (get type :latent-effects) :throws (get type :throws)
+           :callees (get (get graph :calls) (first names))}))))))
+
+(defn c6c10-scalar-pass-artifacts [envelope graph product facts]
+  (let [nodes (get product :nodes) type-ids (get facts :type-ids)
+        module (get envelope :module)
+        input (c6c10-add-digest-request (get facts :state)
+               {:domain :gravity/c6-core-module-input-v1 :plan-id (get envelope :plan-id)
+                :core-node-ids (c6c10-node-id-vector nodes [])})
+        typed {:artifact :gravity/typed-core :module module :core-input (get input :ref)
+               :types type-ids :locals (c6c10-binding-locals-with-types (get product :binding-records) type-ids {})
+               :functions (c6c10-scalar-function-table graph facts)
+               :constraints [] :dynamic-boundaries [] :casts [] :layout-facts :not-applicable :diagnostics []}
+        typed-request (c6c10-add-digest-request (get input :state)
+                       {:domain :gravity/c7-typed-core-v1 :artifact typed})
+        effects {:artifact :gravity/effect-graph :module module
+                 :nodes (c6c10-effect-graph-nodes nodes {})
+                 :functions (c6c10-scalar-effect-functions envelope graph)
+                 :namespace {:declared (get envelope :declared-effects)
+                             :inferred (c6c10-expression-effects nodes [])}
+                 :build-effects [] :replay-required #{} :diagnostics []}
+        effect-request (c6c10-add-digest-request (get typed-request :state)
+                        {:domain :gravity/c8-effect-graph-v1 :artifact effects})
+        owners (loop [remaining nodes result {}]
+                 (if (= (count remaining) 0) result
+                   (let [id (get (first remaining) :node-id)]
+                     (recur (rest remaining)
+                      (assoc result id (get (get (get facts :ownership-facts) id) :owner-id))))))
+        ownership {:artifact :gravity/ownership-analysis :module module :owners owners
+                   :moves [] :borrows [] :regions {} :arenas {} :linear {} :transfers [] :diagnostics []}
+        owner-request (c6c10-add-digest-request (get effect-request :state)
+                       {:domain :gravity/c9-ownership-analysis-v1 :artifact ownership})
+        closure {:artifact :gravity/c6-c10-pure-capability-closure :module module
+                 :required #{} :granted #{} :provider-bindings {} :status :not-required}
+        closure-request (c6c10-add-digest-request (get owner-request :state)
+                         {:domain :gravity/c8-capability-closure-v1 :artifact closure})]
+    {:state (get closure-request :state) :typed-core typed :typed-core-key (get typed-request :ref)
+     :effect-graph effects :effect-graph-key (get effect-request :ref)
+     :ownership-analysis ownership :ownership-analysis-key (get owner-request :ref)
+     :pure-capability-closure closure :pure-capability-closure-key (get closure-request :ref)}))
+
+(defn c6c10-scalar-pass-history []
+  (loop [rows (c6c10-checked-add-pass-history) result []]
+    (if (= (count rows) 0) result
+      (let [row (first rows) document (get row :owner-document)]
+        (recur (rest rows)
+         (conj result
+          (assoc row :version "c6-c10-compositional-scalar-v1"
+           :status :complete-for-compositional-scalar-slice
+           :requires (if (= document "C6")
+                       [:fresh-c2 :fresh-c3 :fresh-c5 :genuine-stage2-plan :authoritative-module-projection]
+                       (if (= document "C7") [:core-node-graph :resolved-scalar-declarations :nonrecursive-call-graph]
+                         (if (= document "C8") [:typed-core :callee-effect-summaries :declared-effect-allowance
+                                                :empty-declared-capabilities]
+                           (if (= document "C9") [:typed-core :checked-effect-closure]
+                             [:type-facts :effect-facts :ownership-facts :profile-facts :source-origin-table])))))))))))
+
+(defn c6c10-scalar-artifact [input envelope graph]
+  (let [product (loop [names (get graph :order) result (c6c10-empty-product (get graph :state))]
+                  (if (= (count names) 0) (assoc result :state (get graph :state))
+                    (recur (rest names) (c6c10-merge-products result (get (get graph :products) (first names))))))
+        nodes (get product :nodes) edges (c6c10-build-dependency-edges nodes)
+        facts (c6c10-scalar-build-facts graph)
+        passes (c6c10-scalar-pass-artifacts envelope graph product facts)
+        mapping (c6c10-add-digest-request (get passes :state)
+                 {:domain :gravity/c6-c10-origin-mapping-v1
+                  :source-content-hash (get input :source-content-hash)
+                  :core-node-origin-map (c6c10-node-origin-map nodes {})
+                  :origin-table (get product :origin-table)
+                  :lexical-binding-records (get product :binding-records)})
+        provenance (c6c10-add-digest-request (get mapping :state)
+                    {:domain :gravity/c6-c10-path-neutral-provenance-v1
+                     :source-content-hash (get input :source-content-hash)
+                     :binding-pins (get input :binding-pins) :mapping-id (get mapping :ref)
+                     :origin-closure (get product :origin-closure)})
+        names (get envelope :declaration-order)
+        roots (loop [remaining names result []]
+                (if (= (count remaining) 0) result
+                  (recur (rest remaining) (conj result (get (get (get graph :functions) (first remaining)) :node-id)))))
+        functions (loop [remaining names result {}]
+                    (if (= (count remaining) 0) result
+                      (recur (rest remaining)
+                       (assoc result (first remaining) (get (get (get graph :functions) (first remaining)) :node-id)))))
+        artifact
+        {:kind :gravity/p15-s23-stage2-gravity-checked-core-artifact :schema-version 1
+         :status :complete-for-compositional-scalar-hosted-safe-jvm-slice :scope (c6c10-scalar-scope)
+         :source-content-hash (get input :source-content-hash)
+         :source-core-input {:module (get envelope :module) :plan-id (get envelope :plan-id)
+                             :entrypoint nil :exports (get envelope :exports)
+                             :operation-set (c6c10-collect-operation-set nodes [])
+                             :declared-effects (get envelope :declared-effects) :declared-capabilities #{}}
+         :entrypoint nil :profile :hosted :source-target :jvm
+         :functions functions :exports (get envelope :exports) :declaration-order names
+         :function-order (get graph :order) :call-graph (get graph :calls)
+         :resolved-functions (get input :resolved-functions)
+         :core-nodes nodes :root-node-ids roots :mapping-id (get mapping :ref)
+         :provenance-binding-id (get provenance :ref)
+         :instruction-origin-sidecar {:mapping-id (get mapping :ref) :provenance-binding-id (get provenance :ref)
+                                      :node-origin-map (c6c10-node-origin-map nodes {})}
+         :dependency-order-graph {:artifact :gravity/c6-c10-dependency-order-graph
+                                  :node-order (c6c10-node-id-vector nodes []) :edges edges
+                                  :all-dependencies-precede-consumers? (c6c10-all-edges-precede? edges)
+                                  :all-lexical-bindings-resolve? (c6c10-all-lexical-bindings-resolve? nodes)
+                                  :status :passed}
+         :lexical-binding-records (get product :binding-records)
+         :source-origin-table (get product :origin-table) :origin-closure (get product :origin-closure)
+         :type-facts (get facts :type-facts) :effect-facts (get facts :effect-facts)
+         :capability-facts (get facts :capability-facts) :ownership-facts (get facts :ownership-facts)
+         :safety-facts (get facts :safety-facts) :profile-facts (get facts :profile-facts)
+         :proof-records (c6c10-node-safety-proof-records nodes {})
+         :typed-core (get passes :typed-core) :typed-core-key (get passes :typed-core-key)
+         :effect-graph (get passes :effect-graph) :effect-graph-key (get passes :effect-graph-key)
+         :capability-proof-records [] :pure-capability-closure (get passes :pure-capability-closure)
+         :pure-capability-closure-key (get passes :pure-capability-closure-key)
+         :ownership-analysis (get passes :ownership-analysis) :ownership-analysis-key (get passes :ownership-analysis-key)
+         :pass-history (c6c10-scalar-pass-history)
+         :authenticated-input {:kind :gravity/c6-c10-authenticated-input
+                               :source-content-hash (get input :source-content-hash)
+                               :plan-id (get envelope :plan-id) :binding-pins (get input :binding-pins)}
+         :input-carrier-validation (get input :carrier-validation)
+         :semantic-provenance {:source-content-hash (get input :source-content-hash) :binding-pins (get input :binding-pins)}
+         :diagnostics [] :mir-derived? false :whole-language? false :clojure-seed-boundary? true :self-hosted? false}]
+    (if (if (c6c10-all-edges-precede? edges) (c6c10-all-lexical-bindings-resolve? nodes) false)
+      (let [sealed (c6c10-add-digest-request (get provenance :state)
+                    {:domain :gravity/c6-c10-checked-core-artifact-v1 :semantic-artifact artifact})
+            id (get sealed :ref)]
+        {:status :accepted :artifact-template (assoc artifact :artifact-id id)
+         :digest-requests (get (get sealed :state) :requests) :digest-graph-root id :digest-graph-roots [id]
+         :diagnostics [] :authority {:semantic-owner :gravity-source
+                                    :host-role :generic-validation-hashing-and-instantiation
+                                    :scope :compositional-scalar-c6-c10 :self-hosted? false}})
+      (c6c10-envelope-rejection :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+       {:missing-fact :validated-dependency-and-lexical-order} :reconstruct-the-checked-node-graph))))
+
+(defn c6c10-build-scalar-template [input]
+  (let [checks (c6c10-scalar-input-checks input)
+        front (get input :front-end-products) plan (get input :stage2-plan)
+        module (get input :authoritative-module) resolved (get input :resolved-functions)]
+    (if (= false (get checks :source-binding))
+      (c6c10-envelope-rejection :C6-ORIGIN :lower-to-core :diagnostic/c6-origin input
+       {:missing-fact :source-content-front-end-plan-binding} :reconstruct-current-source-parents)
+      (if (c6c10-parameter-checks?
+           [(get checks :envelope) (get checks :front-end) (get checks :source-binding)
+            (get checks :module) (get checks :binding-pins) (get checks :carrier)
+            (get checks :declarations)])
+        (let [declarations (get resolved :declarations)
+              names (loop [remaining declarations result []]
+                      (if (= (count remaining) 0) result
+                        (recur (rest remaining) (conj result (get (first remaining) :name)))))
+              by-name (loop [remaining declarations result {}]
+                        (if (= (count remaining) 0) result
+                          (recur (rest remaining) (assoc result (get (first remaining) :name) (first remaining)))))
+              envelope {:compositional-scalar? true :source-content-hash (get input :source-content-hash)
+                        :form-tree (get front :form-tree) :module (get module :module) :plan-id (get plan :plan-id)
+                        :c3-syntax-object-stream (get front :c3-syntax-object-stream)
+                        :declared-effects (get module :effects) :exports (get module :exports)
+                        :resolved-functions resolved :declarations by-name :plans (get plan :functions)
+                        :declaration-order names}
+              graph (loop [remaining names result {:status :accepted :state {:next-ordinal 0 :requests []}
+                                                   :products {} :functions {} :order [] :calls {}}]
+                      (if (= :rejected (get result :status)) result
+                        (if (= (count remaining) 0) result
+                          (recur (rest remaining) (c6c10-scalar-build-graph result envelope (first remaining) []))))) ]
+          (if (= :rejected (get graph :status)) graph
+            (let [effects (c6c10-scalar-check-effects envelope graph
+                           (c6c10-conj-all-unique (get envelope :exports) names))]
+              (if (= :rejected (get effects :status)) effects
+                (c6c10-scalar-artifact input envelope graph)))))
+        (c6c10-envelope-rejection :C6-VERIFY :lower-to-core :diagnostic/c6-verify input
+         {:missing-fact :current-scalar-module-inputs :checks checks} :reconstruct-current-source-parents)))))
+
 (defn c6-c10-build-checked-core-template [input]
+  (if (= :compositional-scalar-hosted-safe-jvm-source (get input :scope))
+    (c6c10-build-scalar-template input)
   (if (c6c10-envelope-shape-valid? input)
     (let [front-end (get input :front-end-products)
           plan (get input :stage2-plan)
@@ -4083,7 +4870,7 @@
     (c6c10-envelope-rejection
      :C6-CORE-SHAPE :lower-to-core :diagnostic/c6-core-shape input
      {:missing-fact :exact-private-c2-c3-stage2-plan-envelope}
-     :supply-exact-private-envelope)))
+     :supply-exact-private-envelope))))
 
 (defn c6-c10-verify-checked-core-template [input template requests]
   (let [expected (c6-c10-build-checked-core-template input)]
@@ -4109,7 +4896,8 @@
                          :semantic-authority :gravity-source
                          :checks [:fresh-template-replay
                                   :exact-digest-request-replay
-                                  :bounded-pure-c6-c10-scope]
+                                  (if (= :compositional-scalar-hosted-safe-jvm-source (get input :scope))
+                                    :compositional-scalar-c6-c10-scope :bounded-pure-c6-c10-scope)]
                          :diagnostics []}
                         (c6c10-template-verification-rejection
                          input expected :C6-VERIFY :lower-to-core

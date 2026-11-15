@@ -123,7 +123,10 @@
      :builder-function-hash (:builder-semantic-hash source-binding)}
       (contains? ingress :resolved-parameter)
       (assoc :parameter-resolution-hash
-             (p15-s23-c6c10-canonical-digest source-path (:resolved-parameter ingress))))))
+             (p15-s23-c6c10-canonical-digest source-path (:resolved-parameter ingress)))
+      (contains? ingress :resolved-functions)
+      (assoc :function-resolution-hash
+             (p15-s23-c6c10-canonical-digest source-path (:resolved-functions ingress))))))
 
 (defn p15-s23-c6c10-private-builder-envelope
   [source-path ingress source-binding]
@@ -132,10 +135,12 @@
          (select-keys
           ingress
           [:source-content-hash :front-end-products :stage2-plan
-           :authoritative-module :carrier-validation :resolved-parameter])
+           :authoritative-module :carrier-validation :resolved-parameter :resolved-functions])
          :kind :gravity/private-fresh-c2-c3-stage2-plan-envelope
          :scope
-         (let [plan (:stage2-plan ingress) functions (:functions plan)
+         (if (contains? ingress :resolved-functions)
+           :compositional-scalar-hosted-safe-jvm-source
+           (let [plan (:stage2-plan ingress) functions (:functions plan)
                instructions (get-in functions ['main :instructions])]
            (if (and (= 1 (count functions)) (= 1 (count instructions))
                     (= :builtin-call (:op (first instructions)))
@@ -143,7 +148,7 @@
              (if (= '* (:function (first instructions))) :bounded-checked-i64-mul-hosted-safe-jvm-source
                (if (= '- (:function (first instructions)))
                  :bounded-checked-i64-sub-hosted-safe-jvm-source :bounded-checked-i64-add-hosted-safe-jvm-source))
-             :bounded-pure-hosted-safe-jvm-source))
+             :bounded-pure-hosted-safe-jvm-source)))
          :binding-pins
          (p15-s23-c6c10-binding-pins
           source-path ingress source-binding))]
@@ -195,7 +200,10 @@
           (vector? (:checks report))
           (= [:fresh-template-replay
               :exact-digest-request-replay
-              :bounded-pure-c6-c10-scope]
+              (if (= :compositional-scalar-functions-v1
+                     (get-in raw-result [:artifact-template :scope :family]))
+                :compositional-scalar-c6-c10-scope
+                :bounded-pure-c6-c10-scope)]
              (:checks report))
           (= (p15-s23-c6c10-canonical-identity
               source-path (:artifact-template raw-result))

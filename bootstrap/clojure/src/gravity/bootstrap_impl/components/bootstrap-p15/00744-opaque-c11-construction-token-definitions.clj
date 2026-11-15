@@ -122,7 +122,7 @@
              :source-policy-receipt (:source-policy-receipt fresh)
              :compiler-bindings {:c6-c10 (:source-binding fresh) :c11 (:source-binding mir)}
              :compiler-host {:implementation :clojure-stage0-seed :target :jvm :self-hosted? false}
-             :nonclaims [:javascript-target-admission :target-emission :compositional-multi-function
+             :nonclaims [:javascript-target-admission :target-emission
                          :independent-acceptance :self-hosting :seed-retirement]}]
         (p15-s23-c11-mir-require-strict-structure!
          path source (p15-s23-application-source-snapshot! path) :application-stable-source)

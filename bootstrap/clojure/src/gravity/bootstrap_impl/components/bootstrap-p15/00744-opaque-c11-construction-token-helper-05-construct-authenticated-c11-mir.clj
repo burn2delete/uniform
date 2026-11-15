@@ -47,11 +47,7 @@
           ;; Validate the actual report only after the real verifier passed.
           ;; This success-schema function never substitutes for verification.
           (let [expected (p15-s23-application-c11-invoke!
-                          path plan 'sh12-branch-join-passed [checked-core mir])
-                expected (if (:flat? selected)
-                           (p15-s23-application-c11-invoke!
-                            path plan 'sh12-flat-bool-sequence-report [checked-core expected])
-                           expected)]
+                          path plan (:report-function selected) [checked-core mir])]
             (p15-s23-c11-mir-require-strict-structure!
              path expected report :application-actual-c11-verifier-report))
           (p15-s23-application-recheck-c11! path (:metadata binding))
