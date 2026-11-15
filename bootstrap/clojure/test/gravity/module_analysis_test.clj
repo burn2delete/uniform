@@ -249,6 +249,42 @@
     (is (= "B1-TARGET-UNSUPPORTED" (:id rejected)))
     (is (= supported-targets (:supported rejected)))))
 
+(deftest parse-module-js-scalar-policy
+  (let [header '(ns scalar.js
+                  (:profile :hosted) (:target :js-ts)
+                  (:effects #{:error/raise}) (:capabilities #{})
+                  (:safety :safe) (:exports [score]))
+        source [header '(defn score [value :- I64] value)]
+        accepted (analysis/parse-module source-path source)
+        replace-clause (fn [key clause]
+                         (apply list (concat (take 2 header)
+                                             (remove #(= key (first %)) (drop 2 header))
+                                             [clause])))]
+    (is (= :js-ts (:target accepted)))
+    (is (= :hosted (:profile accepted)))
+    (is (= :safe (:safety accepted)))
+    (is (= #{:error/raise} (:effects accepted)))
+    (is (= #{} (:capabilities accepted)))
+    (is (= '[score] (:exports accepted)))
+    (doseq [[key clause]
+            [[:profile '(:profile :native)]
+             [:safety '(:safety :unsafe)]
+             [:effects '(:effects #{:io/write})]
+             [:capabilities '(:capabilities #{:io/stdout})]
+             [:requires '(:requires [external.code])]
+             [:imports '(:imports [host.api])]
+             [:providers '(:providers [:host/provider])]]]
+      (let [data (diagnostic #(analysis/parse-module source-path [(replace-clause key clause)]))]
+        (is (= "B1-TARGET-UNSUPPORTED" (:id data)) (str key))
+        (is (= :hosted-safe-scalar-js-source-policy (:missing-fact data)) (str key))
+        (is (= source-path (get-in data [:source-span :source])) (str key)))))
+  (let [data (diagnostic
+              #(analysis/parse-module source-path
+                 '[(ns scalar.alias (:profile :hosted) (:target :js))]))]
+    (is (= "B1-TARGET-UNSUPPORTED" (:id data)))
+    (is (= :js (:target data)))
+    (is (= #{:jvm :js-ts} (:supported data)))))
+
 (deftest quoted-symbols-do-not-trigger-alias-resolution
   (let [module (analysis/parse-module source-path valid-forms)
         quoted '(do (quote missing.alias/value))]

@@ -20,6 +20,8 @@
              sh17-structural-preflight
              sh17-build-target-lowering
              sh17-verify-target-lowering
+             c14-build-checked-js-lowering
+             c14-verify-checked-js-lowering
              verify-c14-target-lowering])
   (:effects #{})
   (:capabilities #{})
@@ -4383,3 +4385,312 @@
          :stage :target-lowering
          :reason :request-structural-bound
          :structural-preflight request-preflight}]})))
+
+; Production checked scalar JavaScript lowering. The application constructor
+; authenticates current source, current owners and fresh C6/C11 executions.
+; This pure owner checks the preserved relationships and target legality; a
+; caller-supplied :passed label is never construction authority.
+(defn c14-js-all? [checks]
+  (loop [remaining checks]
+    (if (= 0 (count remaining)) true
+      (if (= true (first remaining)) (recur (rest remaining)) false))))
+
+(defn c14-js-scalar? [type]
+  (contains? #{:gravity/i64 :gravity/bool} type))
+
+(defn c14-js-source? [source]
+  (c14-js-all? [(map? source) (map? (get source :span))
+                (string? (get source :origin-id))
+                (vector? (get source :generated-origin))]))
+
+(defn c14-js-rejection [application rule missing subject]
+  (let [source (get subject :source) path (get (get application :source) :path)]
+    {:artifact :gravity/c14-checked-js-lowering :schema-version 1 :status :rejected
+     :diagnostics [{:diagnostic-id rule :rule rule :severity :error :stage :target-lowering
+                    :backend :gravity.backend/js-ts :profile :hosted :target :js-ts
+                    :input-artifact (get application :artifact-id)
+                    :operation-id (get subject :op-id) :function-id (get subject :fn-id)
+                    :source-span (assoc (get source :span) :file path :source path)
+                    :origin-chain (get source :generated-origin) :missing-fact missing
+                    :fallback-status :rejected :remediation :reconstruct-current-source-and-verified-target-inputs}]}))
+
+(defn c14-js-owner? [owner]
+  (c14-js-all?
+   [(map? owner) (= :development-current (get owner :source-mode))
+    (string? (get owner :source-path))
+    (c14-sha256-id? (get owner :source-content-hash))
+    (c14-sha256-id? (get owner :plan-semantic-hash))
+    (c14-sha256-id? (get owner :functions-semantic-hash))
+    (c14-sha256-id? (get owner :builder-semantic-hash))
+    (c14-sha256-id? (get owner :verifier-semantic-hash))]))
+
+(defn c14-js-input-valid? [application]
+  (let [core (get application :checked-core) mir (get application :mir-module)
+        core-report (get application :core-verification) report (get application :mir-verification)
+        source (get application :source) policy (get (get application :source-policy-receipt) :policy)
+        bindings (get application :compiler-bindings)]
+    (c14-js-all?
+     [(= [:gravity/compiler-application 1 :accepted :js-ts]
+         [(get application :artifact) (get application :schema-version)
+          (get application :status) (get application :source-target)])
+      (c14-sha256-id? (get application :artifact-id))
+      (c14-sha256-id? (get source :content-hash)) (string? (get source :path))
+      (= (get source :content-hash) (get core :source-content-hash))
+      (= [:hosted :js-ts :safe #{}]
+         [(get policy :profile) (get policy :target) (get policy :safety) (get policy :capabilities)])
+      (contains? #{#{} #{:error/raise}} (get policy :effects))
+      (= [:compositional-scalar-functions-v1 :hosted :js-ts]
+         [(get (get core :scope) :family) (get core :profile) (get core :source-target)])
+      (= [:gravity/mir-module :hosted :js-ts :js-ts :pending true]
+         [(get mir :artifact) (get mir :profile) (get mir :source-target)
+          (get mir :target-request) (get mir :verification-status) (get mir :target-independent?)])
+      (= (get core :artifact-id) (get mir :source-core)
+         (get core-report :checked-core-artifact-id) (get report :checked-core-artifact-id)
+         (get (get mir :provenance) :checked-core-artifact-id))
+      (= (get core :mapping-id) (get (get mir :provenance) :checked-core-mapping-id))
+      (= (get core :provenance-binding-id)
+         (get (get mir :provenance) :checked-core-provenance-binding-id))
+      (= (get (get core :source-core-input) :module) (get mir :module-id) (get report :mir-module-id))
+      (= :passed (get core-report :status)) (= :gravity-source (get core-report :semantic-authority))
+      (c14-sha256-id? (get core-report :digest-graph-proof-id))
+      (= [:gravity/c11-scalar-functions-report 1 :compositional-scalar-functions :verification :passed []]
+         [(get report :artifact) (get report :schema-version) (get report :scope)
+          (get report :phase) (get report :status) (get report :diagnostics)])
+      (contains? (set (get report :checks)) :fresh-mir-reconstruction)
+      (= (get core :exports) (get mir :exports))
+      (= (get policy :effects) (get (get core :source-core-input) :declared-effects))
+      (= #{} (get (get core :source-core-input) :declared-capabilities))
+      (= {} (get mir :globals)) (= {} (get mir :domain-anchors))
+      (map? (get mir :functions)) (vector? (get mir :function-order))
+      (= (set (keys (get mir :functions))) (set (get mir :function-order)))
+      (= (count (get mir :functions)) (count (get mir :function-order)))
+      (map? (get mir :runtime-check-table)) (map? (get mir :capability-proof-table))
+      (map? (get (get mir :proof-certificate-table) :safety-proofs))
+      (map? (get mir :source-map)) (map? (get mir :effect-order-graph))
+      (c14-js-owner? (get bindings :c6-c10)) (c14-js-owner? (get bindings :c11))
+      (= {:implementation :clojure-stage0-seed :target :jvm :self-hosted? false}
+         (get application :compiler-host))])))
+
+(defn c14-js-facts-valid? [mir subject]
+  (let [facts (get subject :facts)
+        refs [[:type-table :type-fact-id] [:effect-table :effect-fact-id]
+              [:ownership-table :ownership-fact-id] [:capability-table :capability-fact-id]
+              [:safety-table :safety-outcome-id] [:profile-target-table :profile-target-fact-id]]]
+    (loop [remaining refs]
+      (if (= 0 (count remaining))
+        (let [proof (get facts :safety-proof-id)
+              profile (get (get mir :profile-target-table) (get facts :profile-target-fact-id))
+              safety (get (get mir :safety-table) (get facts :safety-outcome-id))]
+          (if (c14-js-all?
+               [(= [:hosted :js-ts :js-ts]
+                   [(get profile :profile) (get profile :source-target) (get profile :target-request)])
+                (= [:hosted :js-ts] [(get safety :profile) (get safety :target)])
+                (contains? #{:proven-safe :runtime-checked} (get safety :outcome))])
+            (if (= :not-applicable proof) true
+              (contains? (get (get mir :proof-certificate-table) :safety-proofs) proof)) false))
+        (let [row (first remaining) table (get mir (get row 0)) id (get facts (get row 1))]
+          (if (c14-js-all? [(map? table) (string? id) (contains? table id)])
+            (recur (rest remaining)) false))))))
+
+(defn c14-js-operation-problem [mir operation previous]
+  (let [opcode (get operation :opcode) facts (get operation :facts)
+        operands (get operation :operands)
+        check (get (get mir :runtime-check-table) (get facts :runtime-check-id))]
+    (if (contains? #{:constant :local :local-binding :sequence :lexical-scope
+                    :truthiness :conditional-join :call :runtime-check :integer-add} opcode)
+      (if (c14-js-all? [(c14-js-facts-valid? mir operation)
+                        (c14-js-source? (get operation :source))
+                        (= (get operation :source) (get (get mir :source-map) (get operation :op-id)))
+                        (= #{} (get operation :capabilities))
+                        (contains? #{#{} #{:error/raise}} (get operation :effects))])
+        (if (= :runtime-check opcode)
+          (if (c14-js-all?
+               [(= [:numeric-overflow :overflow :checked 64 :signed :error/numeric :hosted :js-ts]
+                   [(get check :kind) (get check :condition) (get check :numeric-mode)
+                    (get check :bit-width) (get check :signedness) (get check :failure)
+                    (get check :profile) (get check :target)])
+                (= :add (get (get check :predicate) :operator))
+                (= (get check :check-operation-id) (get operation :op-id))
+                (= (get check :token-value-id) (get operation :result))
+                (= (get check :guarded-operation-id) (get facts :guarded-operation-id))
+                (= operands (get (get check :predicate) :operand-ids))
+                (= #{:error/raise} (get operation :effects))])
+            nil ["C14-PROOF-METADATA" :checked-i64-guard-and-source-target operation])
+          (if (= :integer-add opcode)
+            (if (c14-js-all?
+                 [(= :runtime-check (get previous :opcode))
+                  (= (get previous :result) (first operands))
+                  (= (get previous :operands) (vec (rest operands)))
+                  (= (get (get previous :facts) :guarded-operation-id) (get operation :op-id))
+                  (= (get (get previous :facts) :runtime-check-id) (get facts :runtime-check-id))
+                  (= (get check :guarded-operation-id) (get operation :op-id))])
+              nil ["C14-PROOF-METADATA" :original-overflow-guard-token-consumption operation])
+            (if (= :call opcode)
+              (let [callee (get (get mir :functions) (get operation :callee))]
+                (if (c14-js-all?
+                     [(= :direct (get operation :dispatch))
+                      (= (get callee :fn-id) (get operation :callee-id))
+                      (= (get callee :declaration-binding-id) (get operation :callee-binding-id))
+                      (= [(get callee :param-types) (get callee :returns) (get callee :latent-effects)]
+                         [(get (get operation :signature) :params) (get (get operation :signature) :return)
+                          (get (get operation :signature) :latent-effects)])
+                      (= (count (get callee :params)) (count operands))])
+                  nil ["C14-ABI" :direct-call-binding-and-signature operation]))
+              (if (c14-js-scalar? (get operation :type)) nil
+                ["C14-ABI" :supported-scalar-value operation]))))
+        ["C14-MANIFEST" :complete-operation-facts-and-origin operation])
+      ["C14-UNSUPPORTED" :supported-scalar-mir-operation operation])))
+
+(defn c14-js-block-index [order id]
+  (loop [index 0]
+    (if (= index (count order)) -1
+      (if (= id (get order index)) index (recur (+ index 1))))))
+
+(defn c14-js-static-edges-valid? [function block index]
+  (let [term (get block :terminator) kind (get term :kind)
+        targets (get term :successors) arguments (get term :successor-arguments)
+        count-expected (if (= :return kind) 0 (if (= :branch kind) 1 2))]
+    (if (c14-js-all? [(vector? targets) (vector? arguments)
+                      (= count-expected (count targets) (count arguments))])
+      (loop [edge 0]
+        (if (= edge (count targets)) true
+          (let [target (get targets edge) block-target (get (get function :blocks) target)]
+            (if (c14-js-all?
+                 [(> (c14-js-block-index (get function :block-order) target) index)
+                  (= (count (get arguments edge)) (count (get block-target :arguments)))])
+              (recur (+ edge 1)) false)))) false)))
+
+(defn c14-js-function-problem [mir function]
+  (let [parameters (get function :param-types)
+        valid-parameters (loop [types parameters]
+                           (if (= 0 (count types)) true
+                             (if (c14-js-scalar? (first types)) (recur (rest types)) false)))]
+    (if (c14-js-all? [(vector? (get function :params)) (vector? parameters)
+                      (= (count (get function :params)) (count parameters)) valid-parameters
+                      (c14-js-scalar? (get function :returns))
+                      (c14-js-source? (get function :source))
+                      (c14-js-facts-valid? mir function)
+                      (= (set (keys (get function :blocks))) (set (get function :block-order)))
+                      (= (count (get function :blocks)) (count (get function :block-order)))
+                      (= (get function :entry) (first (get function :block-order)))
+                      (= #{} (get function :capabilities))
+                      (contains? #{#{} #{:error/raise}} (get function :latent-effects))
+                      (= (get function :source) (get (get mir :source-map) (get function :fn-id)))])
+      (loop [ids (get function :block-order) index 0]
+        (if (= 0 (count ids)) nil
+          (let [block (get (get function :blocks) (first ids))
+                term (get block :terminator)
+                problem (loop [rows (get block :instructions) previous nil]
+                          (if (= 0 (count rows)) nil
+                            (let [problem (c14-js-operation-problem mir (first rows) previous)]
+                              (if (= nil problem) (recur (rest rows) (first rows)) problem))))]
+            (if (= nil problem)
+              (if (contains? #{:return :branch :conditional-branch} (get term :kind))
+                (if (c14-js-static-edges-valid? function block index)
+                  (recur (rest ids) (+ index 1))
+                  ["C14-UNSUPPORTED" :acyclic-static-block-edges-and-arguments term])
+                ["C14-UNSUPPORTED" :supported-scalar-terminator term]) problem))))
+      ["C14-ABI" :scalar-function-abi-and-facts function])))
+
+(defn c14-js-functions-problem [mir]
+  (loop [names (get mir :function-order)]
+    (if (= 0 (count names)) nil
+      (let [function (get (get mir :functions) (first names))
+            exported? (contains? (set (get mir :exports)) (first names))
+            problem (c14-js-function-problem mir function)]
+        (if (= exported? (get function :exported?))
+          (if (= nil problem) (recur (rest names)) problem)
+          ["C14-ABI" :actual-source-export-visibility function])))))
+
+(defn c14-js-abi [mir]
+  {:artifact :gravity/c14-checked-js-abi :calling-convention :javascript-fixed-arity-functions
+   :types {:gravity/i64 {:javascript :bigint :typescript "bigint" :width 64 :signed true}
+           :gravity/bool {:javascript :boolean :typescript "boolean"}}
+   :nullish :rejected :coercion :forbidden :ownership :persistent-immutable-value
+   :boundary-validation [:exact-arity :primitive-types :signed-i64-range]
+   :argument-evaluation :left-to-right :body-evaluation :eager
+   :exports
+   (loop [names (get mir :exports) result []]
+     (if (= 0 (count names)) result
+       (let [name (first names) function (get (get mir :functions) name)]
+         (recur (rest names)
+          (conj result {:name name :export-name (str name) :function-id (get function :fn-id)
+                        :binding-id (get function :declaration-binding-id)
+                        :parameters (get function :param-types) :return (get function :returns)
+                        :effects (get function :latent-effects) :throws (get function :throws)
+                        :capabilities #{} :source (get function :source)})))))})
+
+(defn c14-js-runtime [application]
+  {:artifact :gravity/managed-runtime :family :managed :profile :hosted :target :js-ts
+   :host {:kind :node :version-major 20 :ecmascript :es2022 :module-format :esm}
+   :services {:generated #{:export-argument-validation :checked-i64-add :typed-error-translation}
+              :linked #{} :delegated #{:managed-allocation :gc :primitive-bigint :host-exceptions}
+              :external #{}
+              :forbidden #{:filesystem :network :process :environment :clock :random
+                           :eval :function-constructor :dynamic-import :prototype-mutation}}
+   :providers {:arithmetic :ecmascript-bigint-operators
+               :boundary-checks :generated-primitive-type-and-range-checks
+               :error-raise :ecmascript-error-constructor-and-throw
+               :allocation :node-managed-heap :gc :node-managed-gc}
+   :host-globals [{:symbol "Error" :provider :ecmascript
+                   :adapter :uniform-typed-error :input :constant-message-string
+                   :output :typed-uniform-error :capabilities #{}
+                   :effects #{:error/raise} :invocation :failure-path-only}]
+   :program-effects (get (get (get application :source-policy-receipt) :policy) :effects)
+   :boundary-effects #{:error/raise}
+   :boundary-effect-scope :invalid-host-input-before-source-entry
+   :external-capabilities #{} :package-imports [] :polyfills []
+   :event-loop :synchronous-only :bundler :none :tree-shaking :preserve-exports-and-checks
+   :initialization :definitions-only :serialization :bigint-json-implicit-conversion-forbidden
+   :host-fatal-failures :host-runtime-boundary})
+
+(defn c14-js-evidence [application]
+  (let [mir (get application :mir-module)]
+    {:type-table (get mir :type-table) :effect-table (get mir :effect-table)
+     :effect-order-graph (get mir :effect-order-graph)
+     :capability-table (get mir :capability-table) :capability-proof-table (get mir :capability-proof-table)
+     :ownership-table (get mir :ownership-table) :safety-table (get mir :safety-table)
+     :runtime-check-table (get mir :runtime-check-table)
+     :proof-certificate-table (get mir :proof-certificate-table)
+     :profile-target-table (get mir :profile-target-table)
+     :source-map (get mir :source-map) :provenance (get mir :provenance)
+     :core-verification (get application :core-verification)
+     :mir-verification (get application :mir-verification)
+     :source-policy-receipt (get application :source-policy-receipt)
+     :compiler-bindings (get application :compiler-bindings)}))
+
+(defn c14-build-checked-js-lowering [application target-request]
+  (if (= {:target :js-ts :runtime :node20 :language :es2022 :module-format :esm} target-request)
+    (if (c14-js-input-valid? application)
+      (let [mir (get application :mir-module) problem (c14-js-functions-problem mir)]
+        (if (= nil problem)
+          {:artifact :gravity/c14-checked-js-lowering :schema-version 1 :status :accepted
+           :backend :gravity.backend/js-ts :profile :hosted :source-target :js-ts :target target-request
+           :input {:application-id (get application :artifact-id)
+                   :checked-core-id (get (get application :checked-core) :artifact-id)
+                   :mir-module-id (get mir :module-id)}
+           :source (get application :source) :compiler-host (get application :compiler-host)
+           :abi (c14-js-abi mir) :runtime (c14-js-runtime application)
+           :numeric {:mode :checked :representation :bigint :width 64 :signed true
+                     :minimum "-9223372036854775808" :maximum "9223372036854775807"
+                     :overflow :raise-error-numeric :number-mixing :rejected
+                     :check-elision :forbidden :operation :add}
+           :evidence (c14-js-evidence application)
+           :eligibility {:status :passed :backend :gravity.backend/js-ts :fallbacks []
+                         :checks [:fresh-constructed-source-application :actual-javascript-source-target
+                                  :scalar-function-abi :original-checked-i64-guard-tokens
+                                  :node20-es2022-esm-runtime :preserved-effect-capability-ownership-safety-proof-facts
+                                  :actual-source-and-generated-origins]}
+           :diagnostics [] :semantic-authority :gravity-source
+           :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+          (c14-js-rejection application (get problem 0) (get problem 1) (get problem 2))))
+      (c14-js-rejection application "C14-INPUT" :fresh-source-core-mir-verification-and-owner-relationships {}))
+    (c14-js-rejection application "B6-TARGET" :node20-es2022-esm-target {})))
+
+(defn c14-verify-checked-js-lowering [application target-request candidate]
+  (let [expected (c14-build-checked-js-lowering application target-request)]
+    (if (c14-js-all? [(= :accepted (get expected :status)) (= expected candidate)])
+      {:artifact :gravity/c14-checked-js-verification :status :passed
+       :application-id (get application :artifact-id) :checks [:fresh-target-lowering-reconstruction]
+       :diagnostics []}
+      (c14-js-rejection application "C14-INPUT" :checked-js-lowering-result-substitution {}))))

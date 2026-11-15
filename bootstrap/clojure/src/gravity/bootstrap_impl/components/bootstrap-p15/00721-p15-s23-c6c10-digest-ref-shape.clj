@@ -196,7 +196,8 @@
   (let [status (:status raw-result)
         keyset (when (map? raw-result) (set (keys raw-result)))
         sub? (= :checked-i64-sub-v1 (get-in raw-result [:artifact-template :scope :family]))
-        mul? (= :checked-i64-mul-v1 (get-in raw-result [:artifact-template :scope :family]))]
+        mul? (= :checked-i64-mul-v1 (get-in raw-result [:artifact-template :scope :family]))
+        scalar-target (get-in raw-result [:artifact-template :source-target])]
     (when-not
      (and (map? raw-result)
           (contains? #{:accepted :rejected} status)
@@ -217,13 +218,16 @@
                            :host-role :generic-validation-hashing-and-instantiation
                            :scope :compositional-scalar-c6-c10 :self-hosted? false}
                           (:authority raw-result))
+                       (contains? #{:jvm :js-ts} scalar-target)
                        (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact 1
-                           :complete-for-compositional-scalar-hosted-safe-jvm-slice :hosted :jvm]
+                           (if (= :js-ts scalar-target)
+                             :complete-for-compositional-scalar-hosted-safe-js-ts-slice
+                             :complete-for-compositional-scalar-hosted-safe-jvm-slice) :hosted scalar-target]
                           ((juxt :kind :schema-version :status :profile :source-target)
                            (:artifact-template raw-result)))
                        (= {:artifact :gravity/c6-c10-checked-core-scope-contract
                            :family :compositional-scalar-functions-v1 :whole-language? false
-                           :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+                           :profiles [:hosted] :safety-modes [:safe] :source-targets [scalar-target]
                            :source-operations [:literal :local :parameter :let-binding :let :do
                                                :if :truthy :integer-add :call :function]
                            :scalar-types [:gravity/i64 :gravity/bool]

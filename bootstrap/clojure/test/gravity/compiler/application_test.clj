@@ -152,7 +152,7 @@
            (get-in core [:physical-provenance :source-content-hash])))
     (is (= path (get-in core [:physical-provenance :actual-paths :source])))
     (is (= module (get-in core [:source-core-input :module]) (:module-id mir)))
-    (is (= :jvm (:source-target core)
+    (is (= (:target policy) (:source-target core)
            (get-in core [:target-request-metadata :source-target])
            (get-in core [:target-request-metadata :requested-target])))
     (is (= :hosted (:profile core) (:profile mir)))
@@ -236,6 +236,30 @@
                                              :builder-function :builder-semantic-hash
                                              :verifier-function :verifier-semantic-hash])]))
                             (:compiler-bindings result))}))))
+
+(deftest scalar-functions-js-source-target
+  (let [text (str/replace scalar-source "(:target :jvm)" "(:target :js-ts)")
+        policy (assoc add-policy :target :js-ts)]
+    (with-source-file "scalar-js.gravity" text
+      (fn [path]
+        (let [result (application/current-source-to-verified-mir path policy)
+              core (:checked-core result) mir (:mir-module result)]
+          (assert-source-result result path text 'acceptance.scalar policy)
+          (is (= :js-ts (:source-target result) (:source-target mir) (:target-request mir)))
+          (is (= :pending (:verification-status mir))
+              "The actual fresh verifier report stays separate from the raw MIR")
+          (is (= [:js-ts] (get-in core [:scope :source-targets])
+                 (get-in mir [:pass-contract :source-targets])))
+          (is (= :complete-for-compositional-scalar-hosted-safe-js-ts-slice (:status core)))
+          (doseq [table [:type-facts :effect-facts :ownership-facts :capability-facts]]
+            (is (= #{:js-ts} (set (map :source-target (vals (get core table))))) (str table)))
+          (is (= #{:js-ts} (set (map :target (vals (:safety-facts core))))))
+          (is (= #{:js-ts} (set (map :target (vals (:runtime-check-table mir))))))
+          (is (= #{:js-ts} (set (map :source-target (vals (:profile-target-table mir))))))
+          (doseq [declaration (get-in result [:source-policy-receipt :function-resolution :declarations])]
+            (is (= [:js-ts] (get-in declaration [:function-binding :target-set])))
+            (doseq [parameter (:parameters declaration)]
+              (is (= [:js-ts] (get-in parameter [:parameter-binding :target-set]))))))))))
 
 (deftest current-source-to-verified-mir
   (let [compiler-identities (atom nil)]
@@ -584,12 +608,33 @@
         (is (some? data))
         (is (string? (:id data)))))))
 
+(deftest current-source-handoff-keeps-lexical-constructor
+  (with-source-file "handoff.gravity" scalar-source
+    (fn [path]
+      (let [substituted-calls (atom 0) consumed? (atom false)
+            data
+            (with-redefs [bootstrap/p15-s23-current-source-to-verified-mir
+                          (fn [& _]
+                            (swap! substituted-calls inc)
+                            (throw (ex-info "Substituted public constructor" {:id :substituted-constructor})))]
+              (failure
+                #(bootstrap/p15-s23-call-with-current-source-verified-mir
+                   path (assoc add-policy :target :unsupported)
+                   (fn [_ _] (reset! consumed? true)))))]
+        (is (= "C11-MODULE" (:id data)))
+        (is (= :application-explicit-hosted-safe-scalar-policy (:missing-fact data)))
+        (is (= path (diagnostic-source data)))
+        (is (zero? @substituted-calls))
+        (is (false? @consumed?))))))
+
 (deftest scalar-functions-reject-policy-mismatch
   (doseq [[label text expected-rule expected-facts]
           [["effect-policy-mismatch" (str/replace scalar-source "#{:error/raise}" "#{}")
             "C6-ORIGIN" {:missing-fact :declared-source-policy-matches-request}]
            ["target-policy-mismatch" (str/replace scalar-source "(:target :jvm)" "(:target :js)")
-            "B1-TARGET-UNSUPPORTED" {:target :js :supported #{:jvm} :bootstrap-stage :stage0}]]]
+            "B1-TARGET-UNSUPPORTED" {:target :js :supported #{:jvm :js-ts} :bootstrap-stage :stage0}]
+           ["canonical-target-policy-mismatch" (str/replace scalar-source "(:target :jvm)" "(:target :js-ts)")
+            "C6-ORIGIN" {:missing-fact :declared-source-policy-matches-request}]]]
     (with-source-file (str label ".gravity") text
       (fn [path]
         (let [data (failure #(application/current-source-to-verified-mir path add-policy))]

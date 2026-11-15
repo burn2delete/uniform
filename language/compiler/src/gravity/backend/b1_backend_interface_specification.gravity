@@ -15,6 +15,8 @@
              b1-build-bounded-llvm-authenticated-packet
              b1-build-bounded-c-authenticated-packet
              b1-build-bounded-wasm-authenticated-packet
+             b1-build-checked-js-input
+             b1-verify-checked-js-input
              verify-b1-backend-interface])
   (:effects #{})
   (:capabilities #{})
@@ -3046,3 +3048,85 @@
      :diagnostic "B1-INPUT"
      :missing-fact :accepted-c14-wasm-lowering-record
      :diagnostics ["B1-INPUT"]}))
+
+; The production application construction authority authenticates inputs before
+; these pure checks run. Pending MIR flags are retained, never promoted.
+(defn b1-js-all? [checks]
+  (loop [remaining checks]
+    (if (= 0 (count remaining)) true
+      (if (= true (first remaining)) (recur (rest remaining)) false))))
+
+(defn b1-js-evidence [application]
+  (let [mir (get application :mir-module)]
+    {:type-table (get mir :type-table) :effect-table (get mir :effect-table)
+     :effect-order-graph (get mir :effect-order-graph)
+     :capability-table (get mir :capability-table) :capability-proof-table (get mir :capability-proof-table)
+     :ownership-table (get mir :ownership-table) :safety-table (get mir :safety-table)
+     :runtime-check-table (get mir :runtime-check-table)
+     :proof-certificate-table (get mir :proof-certificate-table)
+     :profile-target-table (get mir :profile-target-table)
+     :source-map (get mir :source-map) :provenance (get mir :provenance)
+     :core-verification (get application :core-verification)
+     :mir-verification (get application :mir-verification)
+     :source-policy-receipt (get application :source-policy-receipt)
+     :compiler-bindings (get application :compiler-bindings)}))
+
+(defn b1-js-rejection [application rule missing]
+  (let [path (get (get application :source) :path)]
+    {:artifact :gravity/b1-checked-js-input :schema-version 1 :status :rejected
+     :diagnostics [{:diagnostic-id rule :rule rule :severity :error :stage :backend-eligibility
+                    :backend :gravity.backend/js-ts :profile :hosted :target :js-ts
+                    :input-artifact (get application :artifact-id) :source-span {:file path :source path}
+                    :origin-chain [] :missing-fact missing :fallback-status :rejected
+                    :remediation :reconstruct-current-source-and-c14-eligibility}]}))
+
+(defn b1-build-checked-js-input [application lowering]
+  (let [mir (get application :mir-module) core (get application :checked-core)
+        report (get application :mir-verification)
+        input {:application-id (get application :artifact-id)
+               :checked-core-id (get core :artifact-id) :mir-module-id (get mir :module-id)}]
+    (if (b1-js-all?
+         [(= [:gravity/compiler-application :accepted :js-ts]
+             [(get application :artifact) (get application :status) (get application :source-target)])
+          (= [:gravity/c14-checked-js-lowering 1 :accepted :gravity.backend/js-ts :hosted :js-ts]
+             [(get lowering :artifact) (get lowering :schema-version) (get lowering :status)
+              (get lowering :backend) (get lowering :profile) (get lowering :source-target)])
+          (= {:target :js-ts :runtime :node20 :language :es2022 :module-format :esm} (get lowering :target))
+          (= input (get lowering :input)) (= (get application :source) (get lowering :source))
+          (= :passed (get (get lowering :eligibility) :status))
+          (= :pending (get mir :verification-status))
+          (= :passed (get report :status) (get (get application :core-verification) :status))
+          (= (get core :artifact-id) (get report :checked-core-artifact-id) (get mir :source-core))
+          (= (get mir :module-id) (get report :mir-module-id))
+          (= (b1-js-evidence application) (get lowering :evidence))
+          (= :gravity/c14-checked-js-abi (get (get lowering :abi) :artifact))
+          (= :bigint (get (get lowering :numeric) :representation))
+          (= :checked (get (get lowering :numeric) :mode))
+          (= {:kind :node :version-major 20 :ecmascript :es2022 :module-format :esm}
+             (get (get lowering :runtime) :host))
+          (= #{} (get (get lowering :runtime) :external-capabilities))])
+      {:artifact :gravity/b1-checked-js-input :schema-version 1 :status :accepted
+       :backend :gravity.backend/js-ts :profile :hosted :source-target :js-ts
+       :target (get lowering :target) :input input :source (get application :source)
+       :abi (get lowering :abi) :runtime (get lowering :runtime) :numeric (get lowering :numeric)
+       :evidence (get lowering :evidence)
+       :eligibility {:artifact :gravity/b1-backend-eligibility-report :accepted? true
+                     :backend :gravity.backend/js-ts :input-artifact (get application :artifact-id)
+                     :checks [:fresh-c6-c11-construction-authority :preserved-c14-eligibility
+                              :scalar-abi-representability :explicit-node20-provider-selection
+                              :checked-bigint-arithmetic :effects-capabilities-ownership-safety-and-proof-preservation
+                              :source-and-generated-origin-preservation]
+                     :rejections [] :fallbacks [] :missing-evidence [] :unsupported-operations []}
+       :verification-policy :fresh-owner-reconstruction-with-separate-mir-report
+       :raw-mir-verification-status (get mir :verification-status)
+       :diagnostics [] :semantic-authority :gravity-source
+       :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+      (b1-js-rejection application "B1-INPUT" :verified-source-application-and-complete-c14-relationships))))
+
+(defn b1-verify-checked-js-input [application lowering candidate]
+  (let [expected (b1-build-checked-js-input application lowering)]
+    (if (b1-js-all? [(= :accepted (get expected :status)) (= expected candidate)])
+      {:artifact :gravity/b1-checked-js-verification :status :passed
+       :application-id (get application :artifact-id) :checks [:fresh-backend-input-reconstruction]
+       :diagnostics []}
+      (b1-js-rejection application "B1-INPUT" :checked-js-input-result-substitution))))

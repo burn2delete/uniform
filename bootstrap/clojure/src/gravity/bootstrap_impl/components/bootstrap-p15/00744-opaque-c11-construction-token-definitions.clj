@@ -7,7 +7,8 @@
       authenticate-checked-core-ingress! __gravity_bootstrap_lexical_119416_authenticate-checked-core-ingress
       invoke-pinned-c11-builder! __gravity_bootstrap_lexical_119416_invoke-pinned-c11-builder
       construct-authenticated-c11-mir! __gravity_bootstrap_lexical_119416_construct-authenticated-c11-mir
-      construct-current-scalar-mir! __gravity_bootstrap_lexical_119416_construct-current-scalar-mir]
+      construct-current-scalar-mir! __gravity_bootstrap_lexical_119416_construct-current-scalar-mir
+      live-application-handoffs (java.util.IdentityHashMap.)]
   (letfn [(artifact* [checked-core context version]
             (try
               (let [ingress (authenticate-checked-core-ingress!
@@ -122,7 +123,7 @@
              :source-policy-receipt (:source-policy-receipt fresh)
              :compiler-bindings {:c6-c10 (:source-binding fresh) :c11 (:source-binding mir)}
              :compiler-host {:implementation :clojure-stage0-seed :target :jvm :self-hosted? false}
-             :nonclaims [:javascript-target-admission :target-emission
+             :nonclaims [:target-emission
                          :independent-acceptance :self-hosting :seed-retirement]}]
         (p15-s23-c11-mir-require-strict-structure!
          path source (p15-s23-application-source-snapshot! path) :application-stable-source)
@@ -132,6 +133,54 @@
         (assoc result :artifact-id
                (p15-s23-c6c10-canonical-digest
                 path {:domain :gravity/compiler-application-v1 :artifact result})))))
+
+    (defn p15-s23-authenticate-current-source-mir-handoff!
+      "Authenticate an invocation-local source construction handoff.
+       Only the original live lexical authenticator is invoked; arbitrary
+       callback values never substitute for construction or verification."
+      [authenticate! candidate]
+      (p15-s23-c11-mir-require-trusted-carrier!
+       "<compiler-application>" :application-backend-candidate candidate :reject)
+      (let [path (if (string? (get-in candidate [:source :path]))
+                   (get-in candidate [:source :path]) "<compiler-application>")
+            authenticator (locking live-application-handoffs
+                            (.get live-application-handoffs authenticate!))]
+        (p15-s23-c11-mir-require!
+         (some? authenticator) "C11-VERIFY" path {}
+         :live-current-source-construction-handoff)
+        (authenticator candidate)))
+
+    ;; Capture the original constructor value in the same lexical authority.
+    ;; Replacing the public source API Var must not register fabricated products.
+    (let [construct-source p15-s23-current-source-to-verified-mir]
+    (defn p15-s23-call-with-current-source-verified-mir
+      "Compose a backend with genuine freshly constructed source products.
+       The consumer receives the product and an invocation-local handoff."
+      [source-path policy consumer]
+      (let [product (construct-source source-path policy)
+            path (get-in product [:source :path])
+            authenticate!
+            (fn [candidate]
+              (p15-s23-c11-mir-require-trusted-carrier!
+               path :application-backend-candidate candidate :reject)
+              (p15-s23-c11-mir-require-strict-structure!
+               path product candidate :application-original-construction-product)
+              (p15-s23-c11-mir-require-strict-structure!
+               path (:source product)
+               (dissoc (p15-s23-application-source-snapshot! path) :text)
+               :application-stable-source)
+              (p15-s23-c6c10-recheck-application-owners!
+               path (get-in product [:source-policy-receipt :owner-sources]))
+              (p15-s23-application-recheck-c11!
+               path (get-in product [:compiler-bindings :c11]))
+              candidate)]
+        (locking live-application-handoffs
+          (.put live-application-handoffs authenticate! authenticate!))
+        (try
+          (consumer product authenticate!)
+          (finally
+            (locking live-application-handoffs
+              (.remove live-application-handoffs authenticate!)))))))
 
     (defn p15-s23-stage2-c11-mir-artifact
       "Existing legacy arity remains v1. The explicit header selects only a built-in contract."

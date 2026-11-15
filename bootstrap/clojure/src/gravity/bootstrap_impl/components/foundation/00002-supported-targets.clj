@@ -1,5 +1,5 @@
 
-(def supported-targets #{:jvm})
+(def supported-targets #{:jvm :js-ts})
 (def ^:dynamic *additional-bootstrap-targets* #{})
 
 (defn bootstrap-target-supported?

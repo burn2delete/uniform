@@ -21,6 +21,8 @@
              build-b6-numeric-representation-manifest
              build-b6-async-effect-map
              build-b6-artifact-record
+             b6-build-checked-js-program
+             b6-verify-checked-js-program
              verify-b6-javascript-typescript-backend-design])
   (:effects #{})
   (:capabilities #{})
@@ -448,7 +450,7 @@
    :module-format module-format
    :bundler bundler
    :source-map-strategy source-map-strategy
-   :required-fields (:required-fields b6-runtime-module-target-contract)
+   :required-fields (get b6-runtime-module-target-contract :required-fields)
    :source-model-only? true})
 
 (defn build-b6-typescript-api-record
@@ -459,7 +461,7 @@
    :effect-boundary effect-boundary
    :capability-boundary capability-boundary
    :source-map-anchor source-map-anchor
-   :required-fields (:required-fields b6-typescript-api-contract)
+   :required-fields (get b6-typescript-api-contract :required-fields)
    :source-model-only? true})
 
 (defn build-b6-host-capability-manifest
@@ -469,7 +471,7 @@
    :imports imports
    :dynamic-import-policy dynamic-import-policy
    :side-effect-policy side-effect-policy
-   :required-fields (:required-fields b6-host-global-import-contract)
+   :required-fields (get b6-host-global-import-contract :required-fields)
    :source-model-only? true})
 
 (defn build-b6-nullish-exception-map
@@ -478,8 +480,8 @@
    :nullish-map nullish-map
    :exception-map exception-map
    :callback-policy callback-policy
-   :nullish-forms (:nullish-forms b6-nullish-exception-contract)
-   :failure-channels (:failure-channels b6-nullish-exception-contract)
+   :nullish-forms (get b6-nullish-exception-contract :nullish-forms)
+   :failure-channels (get b6-nullish-exception-contract :failure-channels)
    :source-model-only? true})
 
 (defn build-b6-numeric-representation-manifest
@@ -489,7 +491,7 @@
    :overflow-policy overflow-policy
    :precision-policy precision-policy
    :serialization-policy serialization-policy
-   :required-fields (:required-fields b6-numeric-representation-contract)
+   :required-fields (get b6-numeric-representation-contract :required-fields)
    :source-model-only? true})
 
 (defn build-b6-async-effect-map
@@ -499,7 +501,7 @@
    :event-loop event-loop
    :cancellation cancellation
    :backpressure backpressure
-   :required-fields (:required-fields b6-async-event-loop-contract)
+   :required-fields (get b6-async-event-loop-contract :required-fields)
    :source-model-only? true})
 
 (defn build-b6-artifact-record
@@ -510,7 +512,7 @@
    :source-hash source-hash
    :manifest-id manifest-id
    :provenance provenance
-   :required-fields (:required-fields b6-artifact-manifest-contract)
+   :required-fields (get b6-artifact-manifest-contract :required-fields)
    :source-model-only? true})
 
 (defn verify-b6-javascript-typescript-backend-design
@@ -530,3 +532,195 @@
    :diagnostics-covered? true
    :production-backend-execution? false
    :source-model-only? true})
+
+; Production B6 scalar lowering. These are static JavaScript statement records,
+; not an instruction packet for a runtime evaluator. No function is executed
+; while lowering; every source value remains an expression or parameter.
+(defn b6-js-all? [checks]
+  (loop [remaining checks]
+    (if (= 0 (count remaining)) true
+      (if (= true (first remaining)) (recur (rest remaining)) false))))
+
+(defn b6-js-rejection [application rule missing subject]
+  (let [path (get (get application :source) :path) source (get subject :source)]
+    {:artifact :gravity/b6-checked-js-program :schema-version 1 :status :rejected
+     :diagnostics [{:diagnostic-id rule :rule rule :severity :error :stage :javascript-lowering
+                    :backend :gravity.backend/js-ts :profile :hosted :target :js-ts
+                    :runtime :node20 :module-format :esm :input-artifact (get application :artifact-id)
+                    :operation-id (get subject :op-id)
+                    :source-span (assoc (get source :span) :file path :source path)
+                    :origin-chain (get source :generated-origin) :missing-fact missing
+                    :fallback-status :rejected :remediation :reconstruct-checked-scalar-backend-input}]}))
+
+(defn b6-js-type [type]
+  (if (= :gravity/i64 type) :bigint
+    (if (= :gravity/bool type) :boolean :unsupported)))
+
+(defn b6-js-last [values]
+  (get values (- (count values) 1)))
+
+(defn b6-js-origin [application source core-id mir-id]
+  (let [input (get application :source) path (get input :path)]
+    {:path path :contentHash (get input :content-hash)
+     :span (assoc (get source :span) :file path :source path)
+     :coreNodeId core-id :mirInstructionId mir-id}))
+
+(defn b6-js-operation [application operation previous]
+  (let [mir (get application :mir-module) opcode (get operation :opcode)
+        id (get operation :op-id) operands (get operation :operands) facts (get operation :facts)
+        base {:operation-id id :result (get operation :result)
+              :type (b6-js-type (get operation :type)) :source (get operation :source)
+              :facts facts :original-opcode opcode :block-id (get operation :block-id)}]
+    (if (= :constant opcode)
+      (assoc base :kind :constant :value (get (get operation :constant-payload) :value))
+      (if (contains? #{:local :local-binding :sequence :lexical-scope :truthiness :conditional-join} opcode)
+        (assoc base :kind :copy :value (b6-js-last operands))
+        (if (= :call opcode)
+          (assoc base :kind :call :function-id (get operation :callee-id)
+            :callee (get operation :callee) :binding-id (get operation :callee-binding-id)
+            :arguments operands :signature (get operation :signature))
+          (if (= :runtime-check opcode)
+            (let [guarded (get facts :guarded-operation-id)
+                  origin (get (get mir :source-map) guarded)]
+              (assoc base :kind :checked-add-guard :type :bigint
+                :operands operands :check-id (get facts :runtime-check-id)
+                :guarded-operation-id guarded
+                :target-representation :guard-token-backed-checked-sum
+                :error-source (b6-js-origin application origin guarded guarded)))
+            (if (= :integer-add opcode)
+              (if (b6-js-all?
+                   [(= :runtime-check (get previous :opcode))
+                    (= (get previous :result) (first operands))
+                    (= (get previous :operands) (vec (rest operands)))
+                    (= (get (get previous :facts) :guarded-operation-id) id)
+                    (= (get (get previous :facts) :runtime-check-id) (get facts :runtime-check-id))])
+                (assoc base :kind :guarded-add :checked-sum (first operands)
+                  :operands (vec (rest operands)) :check-id (get facts :runtime-check-id)
+                  :guard-operation-id (get previous :op-id))
+                (b6-js-rejection application "B6-NUMERIC" :original-checked-add-guard-token operation))
+              (b6-js-rejection application "B1-UNSUPPORTED" :static-scalar-javascript-operation operation))))))))
+
+(defn b6-js-block [application block]
+  (let [statements
+        (loop [remaining (get block :instructions) previous nil result []]
+          (if (= 0 (count remaining)) result
+            (recur (rest remaining) (first remaining)
+              (conj result (b6-js-operation application (first remaining) previous)))))
+        term (get block :terminator)]
+    {:block-id (get block :block-id) :source (get block :source)
+     :arguments (loop [rows (get block :arguments) result []]
+                  (if (= 0 (count rows)) result
+                    (recur (rest rows) (conj result (get (first rows) :value-id)))))
+     :statements statements
+     :terminator {:kind (get term :kind) :operation-id (get term :terminator-id)
+                  :operands (get term :operands) :successors (get term :successors)
+                  :successor-arguments (get term :successor-arguments)
+                  :source (get term :source)}}))
+
+(defn b6-js-function [application function]
+  (let [mir (get application :mir-module)
+        definitions (get (get mir :data-flow-graph) :definitions)
+        params (get function :params) types (get function :param-types)
+        name (get function :name) id (get function :fn-id)]
+    {:name name :function-id id :binding-id (get function :declaration-binding-id)
+     :exported? (get function :exported?) :export-name (str name)
+     :visibility (get function :visibility) :arity (count params)
+     :source (get function :source)
+     :error-source (b6-js-origin application (get function :source) id id)
+     :parameters
+     (loop [index 0 result []]
+       (if (= index (count params)) result
+         (let [parameter (get params index) definition (get definitions parameter)]
+           (recur (+ index 1)
+            (conj result {:value-id parameter :index index :type (b6-js-type (get types index))
+                          :gravity-type (get types index) :source (get definition :source)})))))
+     :return-type (b6-js-type (get function :returns)) :gravity-return-type (get function :returns)
+     :effects (get function :latent-effects) :throws (get function :throws) :capabilities #{}
+     :entry (get function :entry)
+     :blocks (loop [ids (get function :block-order) result []]
+               (if (= 0 (count ids)) result
+                 (recur (rest ids)
+                  (conj result (b6-js-block application (get (get function :blocks) (first ids)))))))
+     :boundary {:validation-order [:exact-arity :left-to-right-parameter-type-and-range]
+                :type-validation :primitive-typeof :nullish :reject-as-type
+                :coercion :forbidden :i64-range :signed-64-bit
+                :failure-before-body true :failure-value-disclosure :type-only}}))
+
+(defn b6-js-error-contract []
+  {:representation :ecmascript-error-instance :fields :enumerable-own-properties
+   :numeric {:name "UniformNumericError" :type ":error/numeric" :kind ":overflow"
+             :numericMode ":checked" :width 64 :signed true :operation ":add"
+             :source-fields [:path :contentHash :span :coreNodeId :mirInstructionId]
+             :source-selection :guarded-addition-original-origin}
+   :abi {:name "UniformABIError" :type ":error/abi" :kinds [":arity" ":type" ":range"]
+         :fields [:function :argumentIndex :expected :actualType :source]
+         :arity-fields [:actualArity] :arity-argument-index nil
+         :parameter-index :zero-based :null-and-undefined :type
+         :source-selection :actual-exported-function-origin}
+   :boundary-effect :error/raise :numeric-effect :error/raise
+   :host-provider "Error"})
+
+(defn b6-js-program-problem [functions]
+  (loop [remaining functions]
+    (if (= 0 (count remaining)) nil
+      (let [function (first remaining)
+            problem (loop [blocks (get function :blocks)]
+                      (if (= 0 (count blocks)) nil
+                        (let [found (loop [rows (get (first blocks) :statements)]
+                                      (if (= 0 (count rows)) nil
+                                        (if (= :rejected (get (first rows) :status)) (first rows)
+                                          (recur (rest rows)))))]
+                          (if (= nil found) (recur (rest blocks)) found))))]
+        (if (= nil problem) (recur (rest remaining)) problem)))))
+
+(defn b6-build-checked-js-program [application lowering packet]
+  (let [mir (get application :mir-module)
+        input {:application-id (get application :artifact-id)
+               :checked-core-id (get (get application :checked-core) :artifact-id)
+               :mir-module-id (get mir :module-id)}]
+    (if (b6-js-all?
+         [(= :accepted (get application :status))
+          (= :gravity/c14-checked-js-lowering (get lowering :artifact))
+          (= :accepted (get lowering :status))
+          (= :gravity/b1-checked-js-input (get packet :artifact))
+          (= :accepted (get packet :status))
+          (= input (get lowering :input) (get packet :input))
+          (= {:target :js-ts :runtime :node20 :language :es2022 :module-format :esm}
+             (get lowering :target) (get packet :target))
+          (= (get lowering :abi) (get packet :abi))
+          (= (get lowering :runtime) (get packet :runtime))
+          (= (get lowering :numeric) (get packet :numeric))
+          (= (get lowering :evidence) (get packet :evidence))
+          (= :passed (get (get application :mir-verification) :status))
+          (= :pending (get mir :verification-status))])
+      (let [functions
+            (loop [names (get mir :function-order) result []]
+              (if (= 0 (count names)) result
+                (recur (rest names)
+                 (conj result (b6-js-function application (get (get mir :functions) (first names)))))))
+            problem (b6-js-program-problem functions)]
+        (if (= nil problem)
+          {:artifact :gravity/b6-checked-js-program :schema-version 1 :status :accepted
+           :backend :gravity.backend/js-ts :target (get lowering :target) :input input
+           :profile :hosted :source-target :js-ts :source (get application :source)
+           :abi (get packet :abi) :runtime (get packet :runtime) :numeric (get packet :numeric)
+           :error-contract (b6-js-error-contract) :functions functions :exports (get mir :exports)
+           :control-lowering :static-acyclic-basic-block-functions
+           :guard-lowering :original-check-token-backed-checked-sum
+           :source-map (get mir :source-map) :evidence (get packet :evidence)
+           :provenance {:source (get application :source) :input input
+                        :source-policy-receipt (get application :source-policy-receipt)
+                        :compiler-bindings (get application :compiler-bindings)
+                        :compiler-host (get application :compiler-host)}
+           :diagnostics [] :semantic-authority :gravity-source
+           :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+          problem))
+      (b6-js-rejection application "B1-INPUT" :current-c14-b1-and-application-relationships {}))))
+
+(defn b6-verify-checked-js-program [application lowering packet candidate]
+  (let [expected (b6-build-checked-js-program application lowering packet)]
+    (if (b6-js-all? [(= :accepted (get expected :status)) (= expected candidate)])
+      {:artifact :gravity/b6-checked-js-verification :status :passed
+       :application-id (get application :artifact-id) :checks [:fresh-static-program-lowering]
+       :diagnostics []}
+      (b6-js-rejection application "B6-MANIFEST" :checked-js-program-result-substitution {}))))

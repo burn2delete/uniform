@@ -335,10 +335,10 @@
     (p15-s23-c11-mir-require!
      (and (map? policy)
           (= #{:profile :target :effects :capabilities :safety} (set (keys policy)))
-          (= :hosted (:profile policy)) (= :jvm (:target policy))
+          (= :hosted (:profile policy)) (contains? #{:jvm :js-ts} (:target policy))
           (= :safe (:safety policy)) (= #{} (:capabilities policy))
           (contains? #{#{} #{:error/raise}} (:effects policy)))
-     "C11-MODULE" path {} :application-explicit-hosted-safe-jvm-policy))
+     "C11-MODULE" path {} :application-explicit-hosted-safe-scalar-policy))
   nil)
 
 (defn- p15-s23-application-c11-family! [source-path checked-core]

@@ -139,7 +139,9 @@
          :kind :gravity/private-fresh-c2-c3-stage2-plan-envelope
          :scope
          (if (contains? ingress :resolved-functions)
-           :compositional-scalar-hosted-safe-jvm-source
+           (if (= :js-ts (get-in ingress [:authoritative-module :target]))
+             :compositional-scalar-hosted-safe-js-ts-source
+             :compositional-scalar-hosted-safe-jvm-source)
            (let [plan (:stage2-plan ingress) functions (:functions plan)
                instructions (get-in functions ['main :instructions])]
            (if (and (= 1 (count functions)) (= 1 (count instructions))
