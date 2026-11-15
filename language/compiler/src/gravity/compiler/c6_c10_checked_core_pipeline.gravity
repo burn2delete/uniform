@@ -1239,8 +1239,7 @@
               "c6-c10-core-lowering-v1")
        remediation))
     (c6c10-diagnostic-rejection
-     (if (= true (get envelope :compositional-scalar?)) state
-       {:next-ordinal 0 :requests []}) rule stage message-key
+     {:next-ordinal 0 :requests []} rule stage message-key
      (c6c10-form-subject envelope form) facts remediation)))
 
 (defn c6c10-form-operator [form]
@@ -1792,11 +1791,16 @@
           (if (= [:gravity/i64 :gravity/i64] [(get left :type) (get right :type)])
             (c6c10-add-node product envelope form path :arithmetic
               (if mul? :integer-mul (if sub? :integer-sub :integer-add)) true depth operands
-              {:primitive (if mul? '* (if sub? '- '+)) :arity 2 :evaluation-order :left-to-right
-               :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
-               :numeric-semantics (if mul? :checked-signed-i64-multiplication
-                                    (if sub? :checked-signed-i64-subtraction :checked-signed-i64-addition)) :numeric-mode :checked
-               :bit-width 64 :signedness :signed :overflow :error/numeric}
+              (c6c10-merge-maps
+               {:primitive (if mul? '* (if sub? '- '+)) :arity 2 :evaluation-order :left-to-right
+                :operand-types [:gravity/i64 :gravity/i64] :result-type :gravity/i64
+                :numeric-semantics (if mul? :checked-signed-i64-multiplication
+                                     (if sub? :checked-signed-i64-subtraction :checked-signed-i64-addition)) :numeric-mode :checked
+                :bit-width 64 :signedness :signed :overflow :error/numeric}
+               (if (= true (get envelope :compositional-scalar?))
+                 {:primitive-binding-id (get (get envelope :scalar-primitive-reference) :binding-id)
+                  :primitive-resolution (get envelope :scalar-primitive-reference)}
+                 {}))
               :gravity/i64 :arithmetic-result {:storage :static-value :derived-from operands} nil nil)
             (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
               :diagnostic/c7-type-mismatch
@@ -4130,21 +4134,55 @@
           :prospective-kind :conditional :prospective-source-operation :if}
          :use-a-bool-condition)))))
 
+(defn c6c10-scalar-map-checked-add [state envelope instruction form path env depth]
+  (let [operator-form (c6c10-form-by-id (get envelope :form-tree) (first (get form :children)))
+        reference (c6c10-scalar-reference envelope operator-form)
+        binding (c6c10-scalar-row-by (get (get envelope :resolved-functions) :bindings)
+                  :binding-id (get reference :binding-id))]
+    (if (c6c10-parameter-checks?
+         [(map? reference) (map? binding) (c6c10-parameter-id? (get binding :binding-id))
+          (= ['+ :operator :core :var 'gravity.core '+]
+             [(get reference :symbol) (get reference :position) (get binding :binding-class)
+              (get binding :kind) (get binding :namespace) (get binding :name)])])
+      (c6c10-map-checked-i64-add state (assoc envelope :scalar-primitive-reference reference)
+        instruction form path env depth)
+      (c6c10-form-rejection state envelope operator-form :C6-VERIFY :lower-to-core
+       :diagnostic/c6-verify
+       {:missing-fact :resolved-core-i64-add-primitive :function '+
+        :expected-binding {:binding-class :core :kind :var :namespace 'gravity.core :name '+}
+        :actual-binding binding :relevant-binding-id (get reference :binding-id) :plan-path path}
+       :use-the-resolved-core-addition-primitive))))
+
+(defn c6c10-scalar-expression-result [product envelope form path depth]
+  (if (= :rejected (get product :status)) product
+    (if (c6c10-scalar-type? (get product :type)) product
+      (let [node (c6c10-node-by-id (get product :nodes) (get product :result-node-id))]
+        (c6c10-form-rejection (get product :state) envelope form :C7-TYPE-MISMATCH :type-check
+         :diagnostic/c7-type-mismatch
+         {:missing-fact :scalar-expression-result :expected-type [:gravity/i64 :gravity/bool]
+          :actual-type (get product :type) :plan-path path :plan-depth depth
+          :prospective-kind (get node :kind) :prospective-source-operation (get node :source-operation)}
+         :return-an-i64-or-bool-value)))))
+
 (defn c6c10-scalar-map-instruction [state envelope instruction form-id path env depth]
   (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
         operation (get instruction :op)]
     (if (if (= form nil) false (c6c10-instruction-form-matches? instruction form))
       (if (= operation :literal) (c6c10-scalar-map-literal state envelope instruction form path depth)
         (if (= operation :local) (c6c10-scalar-map-local state envelope instruction form path env depth)
-          (if (= operation :let) (c6c10-map-let state envelope instruction form path env depth)
-            (if (= operation :do) (c6c10-map-do state envelope instruction form path env depth)
+          (if (= operation :let)
+            (c6c10-scalar-expression-result
+             (c6c10-map-let state envelope instruction form path env depth) envelope form path depth)
+            (if (= operation :do)
+              (c6c10-scalar-expression-result
+               (c6c10-map-do state envelope instruction form path env depth) envelope form path depth)
               (if (= operation :if)
                 (c6c10-scalar-validate-if
                  (c6c10-map-if state envelope instruction form path env depth) envelope form path depth)
                 (if (= operation :function-call)
                   (c6c10-scalar-map-call state envelope instruction form path env depth)
                   (if (if (= operation :builtin-call) (= '+ (get instruction :function)) false)
-                    (c6c10-map-checked-i64-add state envelope instruction form path env depth)
+                    (c6c10-scalar-map-checked-add state envelope instruction form path env depth)
                     (c6c10-form-rejection state envelope form :C6-LOWERING-GAP :lower-to-core
                      :diagnostic/c6-lowering-gap
                      {:missing-fact :compositional-scalar-source-operation
@@ -4249,6 +4287,7 @@
       (= (get plan :body-form-count) (count (get plan :body)))
       (= binding (c6c10-scalar-definition-binding envelope name-form))
       (c6c10-parameter-binding-shape? binding)
+      (= [:namespace :function] [(get binding :binding-class) (get binding :kind)])
       (= name (get binding :name)) (= (get envelope :module) (get binding :namespace))
       (= (if exported? :public :private) (get binding :visibility))
       (= :safe (get binding :safety)) (= [:hosted] (get binding :profile-set))
@@ -4259,7 +4298,8 @@
 (defn c6c10-scalar-build-function [state envelope declaration plan]
   (let [name (get declaration :name)
         form (c6c10-form-by-id (get envelope :form-tree) (get declaration :function-form-id))
-        envelope (assoc envelope :entrypoint-syntax-id (get declaration :function-syntax-id))]
+        syntax (c6c10-top-level-syntax-by-form-id (get envelope :c3-syntax-object-stream) (get form :form-id))
+        envelope (assoc envelope :entrypoint-syntax-id (get syntax :syntax/id))]
     (if (c6c10-scalar-function-shape? envelope declaration plan form)
       (let [parameters (c6c10-scalar-parameters state envelope declaration plan)]
         (if (= :rejected (get parameters :status)) parameters
@@ -4277,6 +4317,8 @@
                                :arity (count (get parameters :ids)) :body-count (count (get plan :instructions))
                                :visibility (if exported? :public :private) :exported? exported?
                                :declared-effects (get envelope :declared-effects)
+                               :function-syntax-id (get declaration :function-syntax-id)
+                               :function-scope-id (get declaration :function-scope-id)
                                :declaration-binding-id (get (get declaration :function-binding) :binding-id)}
                               {:params (get parameters :types) :return (get body :type)
                                :latent-effects effects :capabilities #{}
@@ -4440,7 +4482,7 @@
            {:missing-fact :declared-numeric-error-effect :function name
             :namespace (get envelope :module) :declared-effects declared :inferred-effects effects
             :effect :error/raise :callees (get (get graph :calls) name)
-            :core-node-id (get node :node-id)}
+            :relevant-binding-id (get (get node :attributes) :declaration-binding-id)}
            :declare-the-inferred-numeric-error-effect)
           (recur (rest remaining)))))))
 
@@ -4634,6 +4676,7 @@
                           (recur (rest remaining) (assoc result (get (first remaining) :name) (first remaining)))))
               envelope {:compositional-scalar? true :source-content-hash (get input :source-content-hash)
                         :form-tree (get front :form-tree) :module (get module :module) :plan-id (get plan :plan-id)
+                        :c3-syntax-object-stream (get front :c3-syntax-object-stream)
                         :declared-effects (get module :effects) :exports (get module :exports)
                         :resolved-functions resolved :declarations by-name :plans (get plan :functions)
                         :declaration-order names}

@@ -12026,14 +12026,23 @@
   (get (first (get core :core-nodes)) :source))
 
 (defn c11-scalar-rejected [core mir rule missing subject expected actual]
-  (let [source (if (= nil (get subject :source)) (c11-scalar-source core) (get subject :source))]
+  (let [operation-node (c11-scalar-node core (get subject :op-id))
+        core-node (if (= nil operation-node)
+                    (c11-scalar-node core (get (get subject :facts) :guarded-operation-id))
+                    operation-node)
+        source (if (= nil (get subject :source))
+                 (if (= nil core-node) (c11-scalar-source core) (get core-node :source))
+                 (get subject :source))
+        function-name (if (= nil (get subject :name))
+                        (if (= nil core-node) nil (get (get core-node :path) 1))
+                        (get subject :name))]
     {:artifact :gravity/c11-scalar-functions-report :schema-version 1
      :scope :compositional-scalar-functions :phase :verification :status :rejected
      :checked-core-artifact-id (get core :artifact-id)
      :mir-module-id (get mir :module-id) :checks []
      :diagnostics
      [{:diagnostic-id rule :rule rule :severity :error :stage :c11-mir-verification
-       :mir-module (get mir :module-id) :function (get subject :function)
+       :mir-module (get mir :module-id) :function function-name
        :block (get subject :block-id) :operation-id (get subject :op-id)
        :source-span (get source :span) :origin-chain (get source :generated-origin)
        :profile (get core :profile) :target-request (get core :source-target)
@@ -12346,6 +12355,10 @@
      :profile-target-table (c11-add-runtime-check-facts checked-core nodes :profile-target
                              (c11-build-profile-target-table checked-core nodes {}))
      :runtime-check-table (c11-build-runtime-check-table checked-core nodes {})
+     :capability-proof-table (c11-build-capability-proof-table (get checked-core :capability-proof-records) {})
+     :proof-certificate-table
+     {:capability-proof-table-reference :capability-proof-table
+      :safety-proofs (c11-build-safety-proof-table nodes {})}
      :source-map (c11-build-source-map nodes {}) :domain-anchors {}
      :provenance {:checked-core-artifact-id (get checked-core :artifact-id)
                   :checked-core-mapping-id (get checked-core :mapping-id)
@@ -12408,6 +12421,9 @@
         (if (= (c11-scalar-operation-view (first left) family)
                (c11-scalar-operation-view (first right) family))
           (recur (rest left) (rest right)) (first right))))))
+
+(defn c11-scalar-expected-operation [mir operation]
+  (sh13-find-by-key (c11-scalar-operations mir) :op-id (get operation :op-id) 0))
 
 (defn c11-scalar-operand-types [definitions operands]
   (loop [remaining operands result []]
@@ -12526,9 +12542,15 @@
                   effect-mismatch :declared-transitive-effects :altered-effects))
               (if (= nil safety-mismatch)
                 (c11-scalar-rejected checked-core mir "C11-TYPE" :scalar-signatures-and-types
-                  type-mismatch :source-derived-scalar-signatures :altered-signature-or-type)
+                  type-mismatch
+                  (if (= nil type-mismatch) (c11-scalar-signatures expected)
+                    (c11-scalar-operation-view (c11-scalar-expected-operation expected type-mismatch) :type))
+                  (if (= nil type-mismatch) (c11-scalar-signatures mir)
+                    (c11-scalar-operation-view type-mismatch :type)))
                 (c11-scalar-rejected checked-core mir "C11-SAFETY" :scalar-overflow-guard-token-preservation
-                  safety-mismatch :checked-overflow-guard-and-token :altered-safety)))
+                  safety-mismatch
+                  (c11-scalar-operation-view (c11-scalar-expected-operation expected safety-mismatch) :safety)
+                  (c11-scalar-operation-view safety-mismatch :safety))))
             (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-functions-exports-and-source-policy
               {} :source-derived-module :altered-module)))
         (c11-scalar-rejected checked-core mir "C11-MODULE" :scalar-mir-carrier {} :gravity/mir-module :invalid-carrier))

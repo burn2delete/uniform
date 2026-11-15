@@ -210,8 +210,30 @@
                            :host-role :generic-validation-hashing-and-instantiation
                            :scope :bounded-pure-c6-c10 :self-hosted? false}
                           (:authority raw-result))
-                       (not (contains? #{:checked-i64-add-v1 :checked-i64-sub-v1 :checked-i64-mul-v1}
+                       (not (contains? #{:checked-i64-add-v1 :checked-i64-sub-v1 :checked-i64-mul-v1
+                                        :compositional-scalar-functions-v1}
                               (get-in raw-result [:artifact-template :scope :family]))))
+                  (and (= {:semantic-owner :gravity-source
+                           :host-role :generic-validation-hashing-and-instantiation
+                           :scope :compositional-scalar-c6-c10 :self-hosted? false}
+                          (:authority raw-result))
+                       (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact 1
+                           :complete-for-compositional-scalar-hosted-safe-jvm-slice :hosted :jvm]
+                          ((juxt :kind :schema-version :status :profile :source-target)
+                           (:artifact-template raw-result)))
+                       (= {:artifact :gravity/c6-c10-checked-core-scope-contract
+                           :family :compositional-scalar-functions-v1 :whole-language? false
+                           :profiles [:hosted] :safety-modes [:safe] :source-targets [:jvm]
+                           :source-operations [:literal :local :parameter :let-binding :let :do
+                                               :if :truthy :integer-add :call :function]
+                           :scalar-types [:gravity/i64 :gravity/bool]
+                           :call-graph :nonrecursive-first-order-fixed-arity
+                           :ownership :persistent-immutable
+                           :numeric-mode :checked :numeric-failure :error/numeric
+                           :evaluation-order :left-to-right
+                           :forbidden [:recursion :closure :import :mutation :collection
+                                       :subtraction :multiplication :backend-specific-lowering]}
+                          (get-in raw-result [:artifact-template :scope])))
                   (and (= {:semantic-owner :gravity-source
                            :host-role :generic-validation-hashing-and-instantiation
                            :scope (if mul? :bounded-checked-i64-mul-c6-c10
