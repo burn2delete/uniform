@@ -117,6 +117,8 @@ Preserved candidate checkpoints:
 | Initial implementation | `ff1c9a885d60af6f809180c0d965b86e8ff6f270` | `d117ca3d1e6e0d169cc92d36cbc0bcc60d6b8ae0` |
 | Scalar authority, C5 provenance and proof facts | `538fc10049b1d6a087a03cd9eb37819dfba84aad` | `4e312e4792d2646ffd4f12b788284514425d9094` |
 | Composition with merged prerequisite | `59e3cd07a39dca04ca91e2bd3053e5b2c117cb2b` | `4e312e4792d2646ffd4f12b788284514425d9094` |
+| Actual C5 call bindings and precise owned diagnostics | `6f4b6fdde6847ecf946a16b07edf252248868917` | `a627a38c64350f6fbd3727d3d14d83044abbdc01` |
+| Corrected public scope metadata | `88b68430daf8b785d7a7dd47741b014966bcb2cb` | `55c1b7599b8dae2d7e0d2397b40054acbec495be` |
 
 The first implementation probe reached an accepted Uniform multi-function
 Core template, then rejected at host `C6-VERIFY` with
@@ -185,6 +187,75 @@ The original rejection and source/MIR regression batches continue against
 the frozen second-checkpoint checkout. Subsequent edits use an isolated
 successor checkout so those tests cannot observe changing owner bytes.
 Pending or interrupted runs are not counted as passing evidence.
+
+### Confirmed representative acceptance
+
+The exact selector above completed successfully on local execution commit
+`fbb6cdd642a801a77deddd73ddf67c6acb210fbb`, whose tree exactly equals
+published `6f4b6fdde6847ecf946a16b07edf252248868917`:
+**1 test, 134 assertions, 0 failures, 0 errors, exit 0**.
+Elapsed time including namespace loading was 518.21 seconds. The source was
+the exact multiline representative with the `f50c480b...` identity above.
+All four required runtime outcomes, original function identities/exports,
+fresh Core/MIR verification and fresh execution verification passed.
+
+| Exported call | Observed and asserted outcome |
+| --- | --- |
+| `score(true, 3, 7)` | I64 `10` |
+| `score(false, 7, 3)` | I64 `7` |
+| `score(true, 9007199254740993, 9007199254740994)` | I64 `18014398509481987` |
+| `score(false, 9223372036854775807, 1)` | `:error/numeric`, kind `:overflow`, before a conditional is selected |
+
+The returned Core identity was
+`sha256:440f6785a81b865efae1316ab561d6d4a1a8d2db1e2259a057e0b610fcb2dcc8`;
+the application artifact identity was
+`sha256:75b427bfe0152384a2545122dfcf9de2dd26ddc3fd22cf8cce7753f2f8350124`.
+Its C5 resolution identity was
+`sha256:acdf51ef7062e53baf1eb50e12ad683d7bfc66ec01d41c8726e3e8f5f8a2cd99`.
+The selected Uniform owner identities, printed by the passing test, were:
+
+| Identity | C6-C10 | C11 |
+| --- | --- | --- |
+| Source | `sha256:59ee9f6fcaa54e14ca4a55f45aeebda6f289abaf62ecb9f6847261fb90f545e7` | `sha256:85027320c016eaacafe367f1278dde5fdbba0294feace8990a3ad4c6d0a58f97` |
+| Plan | `sha256:55c1289be28e2abb3784c3f615bbf4babad90dd50f08a1fd3ebe6bc0988735c4` | `sha256:c077496fbaae7973ceab1cff848547e627f4285702804023b95f7a32fbf65b11` |
+| Functions | `sha256:9f63f35ceef7abe216e03962504f2e4d988ece30c906e36d69b8666dbba2a08a` | `sha256:aea5134a8d5350bb24acc438e7f19560efe08ecd8463b5bbb80da9e96eb04b3e` |
+| Builder | `sha256:b69281ddcbf8898784b9a0c6dc75b86c1f4987a0ec81d7f27cd18e53d8125b90` | `sha256:fd5fa6edb5a0af19cfd8808f4085d48ff2c03ac170ea2ef7a61124eef41b10a7` |
+| Verifier | `sha256:12a8ca5c524e17507d545f946648016532b896bf7af14052cd36492a9516bc26` | `sha256:e96cf156bc51998a285e649a02d6ab745f7d73ecea391eee8b4587e168e2e5fd` |
+
+The next metadata checkpoint removes an obsolete
+`:compositional-multi-function` nonclaim from the application envelope and
+links the prerequisite API note to this current scope. It leaves these C6-C10
+and C11 source bytes unchanged. It has local counterpart
+`c15dd60f11c26164a38c99cf4284cca15206e16d`, with the exact published tree
+shown above. Subsequent application cases also assert that the stale nonclaim
+is absent. The representative artifact identity above belongs to its recorded
+execution commit; changing the public envelope changes its artifact digest.
+
+### Negative and interrupted checkpoint outcomes
+
+The first semantic/policy batch on the frozen second checkpoint ended with
+**2 tests, 46 assertions, 2 failures, 0 errors, exit 1**. All ten semantic
+cases completed without failures: unknown callee, arity, argument type,
+unused invalid arithmetic, incompatible branch results, non-Bool condition,
+inherited undeclared numeric effect, lexical reference, direct recursion and
+mutual recursion. The source-effect-policy mismatch also passed.
+
+Both failures were expectations for a source declaring `:js` with a JVM
+request. The existing module owner rejects that source earlier with
+`B1-TARGET-UNSUPPORTED`, `:bootstrap-stage :stage0`, `:target :js`,
+`:supported #{:jvm}` and the actual source path. The test incorrectly expected
+a later `C6-ORIGIN` policy mismatch. The correction retains the real earlier
+rejection and asserts its target facts; no production admission is broadened.
+The corrected policy selector is rerun before the obsolete scope rejection
+is removed.
+
+Three newly started batches were stopped with exit 130 to reduce overlapping
+JVM memory pressure, before any selected test completed. An earlier eight-test
+source/MIR batch was externally killed with exit 137: its two current-reader
+and replay selectors had returned without failures, but its third test had
+not returned and no batch summary existed. These are interrupted attempts,
+not passing batches. The six unfinished source/MIR selectors are rerun in a
+fresh JVM against the unchanged final Uniform owner bytes.
 
 ## Construction and execution ownership
 
@@ -255,3 +326,16 @@ boundary, documentation validators and `git diff --check`. No pending result
 establishes completion. The next separate compiler increment is JavaScript
 source-target admission and emission; this MIR milestone does not produce a
 JavaScript module or establish completed target compilation.
+
+The next concrete failed handoff was reproduced on candidate
+`6f4b6fdde6847ecf946a16b07edf252248868917` by changing only the representative
+source target to `:js` and making the explicit request policy also use `:js`.
+That source identity is
+`sha256:a4f939c1ca8a638c5313c07e77c6ef8a6f8bbe0fcb956241c11b2d23904cd8c3`.
+The real API rejects at `p15-s23-application-request!` with `C11-MODULE` and
+`:missing-fact :application-explicit-hosted-safe-jvm-policy`, attributed to
+the actual `scalar-functions-js.gravity` path. The diagnostic's generic
+message is `MIR module record is malformed`; the missing-fact field identifies
+the precise policy handoff. The recording probe exits 0 after catching that
+exception, which is compiler rejection evidence. This is earlier than any
+JavaScript emission attempt; no JavaScript output was produced.

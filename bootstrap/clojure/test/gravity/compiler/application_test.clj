@@ -585,16 +585,20 @@
         (is (string? (:id data)))))))
 
 (deftest scalar-functions-reject-policy-mismatch
-  (doseq [[label text]
-          [["effect-policy-mismatch" (str/replace scalar-source "#{:error/raise}" "#{}")]
-           ["target-policy-mismatch" (str/replace scalar-source "(:target :jvm)" "(:target :js)")]]]
+  (doseq [[label text expected-rule expected-facts]
+          [["effect-policy-mismatch" (str/replace scalar-source "#{:error/raise}" "#{}")
+            "C6-ORIGIN" {:missing-fact :declared-source-policy-matches-request}]
+           ["target-policy-mismatch" (str/replace scalar-source "(:target :jvm)" "(:target :js)")
+            "B1-TARGET-UNSUPPORTED" {:target :js :supported #{:jvm} :bootstrap-stage :stage0}]]]
     (with-source-file (str label ".gravity") text
       (fn [path]
         (let [data (failure #(application/current-source-to-verified-mir path add-policy))]
           (record-rejection label data)
-          (is (= "C6-ORIGIN" (:id data)) (pr-str data))
-          (is (= :declared-source-policy-matches-request (:missing-fact data)) (pr-str data))
-          (is (= path (diagnostic-source data)) (pr-str data)))))))
+          (is (= expected-rule (:id data)) (pr-str data))
+          (is (= path (diagnostic-source data)) (pr-str data))
+          (doseq [[key expected] expected-facts]
+            (is (= expected (diagnostic-fact data key))
+                (str label " " key " " (pr-str data))))))))))
 
 (defn- with-mutated-runtime-result [function-name transform operation]
   (let [original bootstrap/p15-s23-stage2-runtime-execute-function
