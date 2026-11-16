@@ -74,6 +74,10 @@ clojure -M:gravity hosted-core-app bootstrap/clojure/fixtures/accepted/core-app.
 The complete stage, profile, compiler, backend, runtime, domain and release
 command inventory is retained in the [reference archive](README-reference-archive.md).
 
+For the production Clojure API that compiles checked scalar source to standalone
+Node 20 ESM, see [Checked scalar JavaScript modules](docs/compiler-checked-js-modules.md).
+Public compile-command integration remains a separate step.
+
 ## Normal compiler development
 
 Start with [Development Verification](docs/development-verification.md). The
