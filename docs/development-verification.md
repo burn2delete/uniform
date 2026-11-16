@@ -9,6 +9,10 @@ previously mixed into this guide.
 
 ## Purpose and evidence boundaries
 
+For the public checked scalar JavaScript command and real-process acceptance
+selector, use [Checked scalar JavaScript modules](compiler-checked-js-modules.md).
+That workflow retains the Clojure/JVM compiler host and records Node execution separately.
+
 Run commands from the repository root. Select the smallest test that exercises
 the changed behavior, then expand validation only when the change crosses an
 interface or affects an artifact consumed downstream.

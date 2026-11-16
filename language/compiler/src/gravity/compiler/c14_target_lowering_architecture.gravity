@@ -4682,7 +4682,7 @@
                                   :node20-es2022-esm-runtime :preserved-effect-capability-ownership-safety-proof-facts
                                   :actual-source-and-generated-origins]}
            :diagnostics [] :semantic-authority :gravity-source
-           :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+           :nonclaims [:full-language :release :self-hosting :seed-retirement]}
           (c14-js-rejection application (get problem 0) (get problem 1) (get problem 2))))
       (c14-js-rejection application "C14-INPUT" :fresh-source-core-mir-verification-and-owner-relationships {}))
     (c14-js-rejection application "B6-TARGET" :node20-es2022-esm-target {})))

@@ -1,0 +1,4828 @@
+{:baseline
+ {:schema :uniform/public-js-baseline-reproduction-v1,
+  :nonclaims
+  [:candidate-acceptance :release :self-hosting :seed-retirement],
+  :initial-status :clean,
+  :authority :non-authoritative-development-evidence,
+  :toolchain
+  {:java "21.0.13",
+   :clojure-cli "1.12.0.1530",
+   :clojure "1.12.0",
+   :node "v20.20.2"},
+  :final-status :clean,
+  :commit "410fad5ee055ac5fc9df8a4f0e324442b771bb89",
+  :producer-prerequisite
+  {:errors 0,
+   :exit 0,
+   :tests 1,
+   :command
+   "clojure -J-Xmx2g -M:dev-test --namespace gravity.backend.js-checked-mir-test --exact scalar-module-target-execution --progress",
+   :standalone true,
+   :exports ["score"],
+   :elapsed-ns 803021639992,
+   :failures 0,
+   :log "producer-selector.log",
+   :assertions 426,
+   :results
+   ["10"
+    "7"
+    "18014398509481987"
+    "9223372036854775807"
+    "-9223372036854775808"
+    "-1"]},
+  :production-source-changes? false,
+  :environment
+  {:path-prefix
+   ["/workspace/scratch/0b2be7afba4b/toolchain/clojure-cli/bin"
+    "/workspace/scratch/0b2be7afba4b/toolchain/node-v20.20.2-linux-x64/bin"],
+   :clj-config
+   "/workspace/scratch/0b2be7afba4b/toolchain/clojure-config",
+   :java-tool-options-added? false},
+  :branch "codex/public-js-baseline-check",
+  :public-command
+  {:first-handoff
+   :omitted-lowering-routed-to-legacy-runtime-derived-producer,
+   :diagnostic-id "P15S23X002",
+   :exit 1,
+   :stdout-log "public-command.stdout.log",
+   :stderr-log "public-command.stderr.log",
+   :command
+   "bin/gravity compile examples/checked-js/acceptance.gravity --target js -o target/acceptance-js",
+   :source "bootstrap/gravity/p15_s23/runtime.gravity",
+   :boundary :pinned-reference-runtime-contract,
+   :missing-fact :runtime-artifact-source-byte-count,
+   :output-directory-exists? false,
+   :diagnostic-stage :p15-s23-stage2-runtime-executor,
+   :artifact-files-found? false,
+   :legacy-module-file-exists? false,
+   :owner
+   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00656-c-backend-stage2-runtime-source-rule-runtime-artifact-contract-bindings-07.clj",
+   :stdout ""},
+  :worktree "/workspace/scratch/7de7e5af60ee/uniform-baseline"},
+ :schema :uniform/public-checked-js-cli-development-evidence-v1,
+ :nonclaims
+ [:full-language
+  :native-release
+  :release
+  :self-hosting
+  :seed-retirement],
+ :historical-publication-attempt
+ {:dependency 1441,
+  :blob-write-retested :passed,
+  :other-uploaded-files 19,
+  :blocked-operation-github-api-response-received? false,
+  :blocked-file "bootstrap/clojure/test/gravity/bootstrap_test.clj",
+  :blocked-result "user rejected MCP tool call",
+  :blocked-operation-retried? false,
+  :blocked-operation :create-blob,
+  :blocked-blob "8915aa384518d8c243b55c996fedd3c0e3cb3ca7",
+  :pull-request 1442,
+  :user-authorized-merge? true,
+  :candidate-on-main? false,
+  :github-permission :full-access},
+ :publication
+ {:final-merge-identity :reported-by-pull-request,
+  :previously-blocked-bootstrap-test-blob
+  {:sha "8915aa384518d8c243b55c996fedd3c0e3cb3ca7",
+   :publication :passed},
+  :documentation-only-followup? true,
+  :receipt-stage :pre-merge-source-acceptance,
+  :source-commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+  :source-published? true,
+  :url "https://github.com/burn2delete/uniform/pull/1442",
+  :pull-request 1442,
+  :target-branch "main",
+  :user-authorized-merge? true},
+ :authority :non-authoritative-development-evidence,
+ :public-help
+ {:command ["clojure" "-M:gravity" "help"],
+  :exit 0,
+  :stdout
+  "gravity bootstrap-hosted command\n\nUsage:\n  gravity --version\n  gravity help\n  gravity check <file.qst|file.gravity>\n  gravity sh07-core <file.qst|file.gravity>\n  gravity run <file.qst|file.gravity>\n  gravity compile <file.qst|file.gravity>\n  gravity compile <file.qst|file.gravity> -o <executable>\n  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n    (checked hosted/safe scalar module; Node 20 / ES2022 ESM)\n    (canonical source target :js-ts; compiler host Clojure/JVM)\n    (Node syntax validation during compilation; import exports to execute)\n  gravity compile <file.qst|file.gravity> --target js|js-ts\n    --lowering runtime-derived -o <directory>\n    (explicit legacy route; retains its existing results and failures)\n  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n    (local hermetic input entry; effectful Reader bridge unavailable)\n  gravity test\n  gravity p18-t05-seedless-release-boundary\n  gravity p18-t05-write-seedless-release-artifacts\n  gravity p18-t06-final-release\n  gravity p18-t06-write-final-release-artifacts\n  gravity p18-t00-co-canonical-source-extensions\n  gravity p18-t00-write-co-canonical-source-extension-artifacts\n  gravity <artifact-command> <file.qst|file.gravity>\n\nMetadata:\n  :bootstrap-hosted? true\n  :packaged-jvm-cli? false\n  :seedless-release? false\n  :experimental-verified-mir-c-route \"implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication\"\n",
+  :shell-wrapper :unchanged-frozen-main-bytes},
+ :independent-acceptance-helper-review
+ {:schema :uniform/independent-public-js-review-v1,
+  :date "2026-11-16",
+  :nonclaims
+  [:full-language
+   :full-t1-cli-conformance
+   :release
+   :self-hosting
+   :seed-retirement
+   :performance],
+  :independence
+  {:acceptance-helper-authored-by-reviewer? false,
+   :backend-production-and-tests-authored-by-reviewer? false,
+   :excluded-from-independent-approval
+   ["bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
+    "bootstrap/clojure/test/gravity/cli_test.clj"],
+   :exclusion-reason
+   :reviewer-authored-diagnostic-fix-and-focused-cli-test,
+   :excluded-path-review-owner "/root/review_acceptance"},
+  :authority :non-authoritative-development-evidence,
+  :acceptance-helper-review
+  {:path
+   "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj",
+   :verified-test-behavior
+   [:real-public-command-subprocesses
+    :wrapper-and-current-source-launchers
+    :js-and-js-ts-command-aliases
+    :ordinary-checked-in-source
+    :multiple-runtime-inputs-and-seven-primitive-bigint-results
+    :private-helper-and-eager-overflow-before-branch-return
+    :numeric-error-check-operation-operands-and-source-identities
+    :arity-type-and-signed-i64-range-rejections
+    :declared-exports-only
+    :renamed-qst-and-pure-boolean-module
+    :stale-packaged-jar-current-source-selection
+    :six-file-artifact-and-byte-identity-checks
+    :complete-copy-outside-checkout-with-cleared-node-environment
+    :malformed-source-call-types-arity-and-invalid-unused-body
+    :undeclared-numeric-error-effect
+    :incompatible-source-target-profile-and-capabilities
+    :owned-option-and-lowering-diagnostics-without-invented-coordinates
+    :existing-output-and-output-parent-preservation
+    :missing-node-and-installed-incompatible-node-refusals
+    :no-partial-output-after-refusals],
+   :reviewed-tree "73449b0ccf7052bbc2500ae7528bef767df5e33c",
+   :runtime-result :recorded-separately-by-root-final-public-selector,
+   :blocking-findings [],
+   :initial-reviewed-local-commit
+   "a43540a80dd37bd76788540bd229b3ff120902fa",
+   :published-equivalent-commit
+   "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :blob "d72d2b5ba7972e6c798b899800b8e550e5026a3e",
+   :result :passed-static-review,
+   :incompatible-node-case
+   :requires-a-real-additional-installed-version,
+   :unchanged-in-corrected-candidate
+   "dda7fd940b12af20c6e7016bef224cc984ca5362"},
+  :production-review
+  {:result
+   :no-remaining-blocking-findings-in-reviewed-production-scope,
+   :observations
+   [:policy-discovery-reuses-current-reader-syntax-and-module-machinery
+    :only-five-declared-policy-fields-are-selected
+    :preliminary-products-never-become-accepted-ir
+    :fresh-construction-and-independent-source-policy-matching-remain
+    :canonical-source-target-is-preserved-separately-from-requested-alias
+    :empty-boolean-effect-set-is-preserved
+    :explicit-legacy-lowering-remains-separate-without-fallback
+    :js-verified-mir-refuses-before-disabled-native-boundary
+    :jvm-c-and-default-operation-resolution-seams-are-preserved
+    :semantic-fact-presentation-preserves-original-sealed-diagnostic
+    :authority-and-six-file-atomic-publication-are-reused
+    :provenance-scope-changes-precede-final-identity-and-publication
+    :uniform-owner-edits-change-nonclaims-only],
+   :self-authored-paths-excluded? true},
+  :residuals
+  {:public-acceptance :owned-and-recorded-separately-by-root,
+   :previous-public-process-timeout :not-counted-as-a-pass,
+   :watchdogs-and-required-assertions :unchanged,
+   :frozen-wrapper-help :historical-static-help-preserved,
+   :current-source-help-command ["clojure" "-M:gravity" "help"],
+   :hosted-ci :not-reviewed-by-this-agent,
+   :integration-and-main-status :not-conferred-by-this-review,
+   :compiler-host :clojure-jvm-seed},
+  :corrected-candidate-equivalence
+  {:launcher-selection-changed? false,
+   :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+   :candidate "dda7fd940b12af20c6e7016bef224cc984ca5362",
+   :backend-input-relation
+   :identical-production-test-and-language-bytes,
+   :correction :restore-frozen-wrapper-help-bytes,
+   :final-public-and-clean-checkout-execution
+   :requires-separate-corrected-candidate-record,
+   :all-other-tracked-paths-byte-identical? true,
+   :compiler-and-test-subtree-diff-exit 0,
+   :frozen-launcher
+   {:main-commit "410fad5ee055ac5fc9df8a4f0e324442b771bb89",
+    :corrected-candidate "dda7fd940b12af20c6e7016bef224cc984ca5362",
+    :equal-blob "f30c0bf7dec572edc5e09b678ccfa8816b128ad8"},
+   :compared-with "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :complete-tracked-delta
+   [{:path "bin/gravity", :added-lines 0, :deleted-lines 6}],
+   :backend-execution-identity-remains
+   "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :identical-input-objects
+   {"bootstrap/clojure"
+    {:kind :tree, :id "353bfcf24679398d849e36164d26818d02269edb"},
+    "language"
+    {:kind :tree, :id "a400e76565045d1f0e07e11da559214e96af3cfd"},
+    "deps.edn"
+    {:kind :blob, :id "3bd7d5fe8633fa76baeefb3b7abccc4db4a73d46"}}},
+  :backend-execution
+  {:terminal
+   {:exit 0, :tests 2, :assertions 611, :failures 0, :errors 0},
+   :cleared-environment-execution
+   :not-exercised-by-these-backend-selectors,
+   :exit-file "evidence/backend/candidate-producer-authority.exit",
+   :runner-elapsed-ns 1301153758009,
+   :tree "73449b0ccf7052bbc2500ae7528bef767df5e33c",
+   :candidate "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :checkout "/workspace/scratch/7de7e5af60ee/uniform-backend",
+   :log-sha256
+   "07c76a2a565bc42ab1a0c04bddebb042703ca646900e7a891e8bfe39f8bddd16",
+   :node-exports ["score"],
+   :node-results
+   ["10"
+    "7"
+    "18014398509481987"
+    "9223372036854775807"
+    "-9223372036854775808"
+    "-1"],
+   :genuine-c11-reference-and-replay-comparisons 6,
+   :command
+   ["clojure"
+    "-J-Xmx2g"
+    "-M:dev-test"
+    "--namespace"
+    "gravity.backend.js-checked-mir-test"
+    "--exact"
+    "scalar-module-target-execution"
+    "--exact"
+    "scalar-module-rejects-genuine-product-tampering"
+    "--progress"],
+   :toolchain
+   {:java "21.0.13", :clojure-cli "1.12.0.1530", :node "v20.20.2"},
+   :initial-git-status-porcelain "",
+   :direct-uniform-target-owner-refusals
+   {:count 14,
+    :diagnostic-ids
+    #{"C14-INPUT"
+      "B1-INPUT"
+      "C14-MANIFEST"
+      "B6-TARGET"
+      "C14-ABI"
+      "B6-MANIFEST"
+      "C14-PROOF-METADATA"
+      "C14-UNSUPPORTED"}},
+   :result :passed,
+   :genuine-product-verifier-and-authority-refusals
+   {:count 23,
+    :diagnostic-id "C11-VERIFY",
+    :includes
+    [:genuine-target-verifier-report-substitution
+     :core-mir-source-and-compiler-owner-substitution
+     :abi-call-guard-effect-ownership-safety-proof-and-provenance-loss
+     :substituted-public-authenticator-and-callback
+     :changed-source-bytes
+     :expired-construction-context]},
+   :artifact-byte-and-source-map-checks :passed,
+   :artifact-inventory
+   ["program.mjs"
+    "program.d.ts"
+    "program.mjs.map"
+    "package.json"
+    "manifest.edn"
+    "provenance.edn"],
+   :final-git-status-porcelain "",
+   :log "evidence/backend/candidate-producer-authority.log",
+   :git-diff-check-exit 0,
+   :separate-directory-copy-execution :passed},
+  :reviewer "/root/review_cli",
+  :base-commit "410fad5ee055ac5fc9df8a4f0e324442b771bb89"},
+ :toolchain
+ {:manual-dependencies
+  ["org.clojure/clojure 1.12.0"
+   "org.clojure/spec.alpha 0.5.238"
+   "org.clojure/core.specs.alpha 0.4.74"],
+  :clojure "1.12.0",
+  :preparation-exit 0,
+  :preparation-log
+  {:log "manual-final/prerequisites.log",
+   :byte-count 1739,
+   :sha256
+   "sha256:c8168c95fa6d9ae9509bf25318974884f3f11f920d0cb247a8600ab5e04fad83"},
+  :scope :final-manual-and-public-acceptance,
+  :node "v20.20.2",
+  :java-tool-options "-XX:-UsePerfData -Xmx2g",
+  :java "OpenJDK 21.0.13",
+  :dependency-cache :ordinary-maven-cache,
+  :clojure-cli "1.12.0.1530",
+  :borrowed-generated-products? false},
+ :scope :hosted-safe-scalar-node20-es2022-module,
+ :owned-paths
+ ["README.md"
+  "bootstrap/clojure/src/gravity/backend/js_checked_mir.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00916-p18-t04-parse-compile-request.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00927-p18-t04-compile-js-ts-target-file.clj"
+  "bootstrap/clojure/src/gravity/cli.clj"
+  "bootstrap/clojure/src/gravity/cli/compile_command.clj"
+  "bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
+  "bootstrap/clojure/src/gravity/compiler/application.clj"
+  "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+  "bootstrap/clojure/test/gravity/cli_test.clj"
+  "bootstrap/clojure/test/gravity/compiler/application_test.clj"
+  "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj"
+  "docs/compiler-checked-js-modules.md"
+  "docs/compiler-public-js-cli-receipt.edn"
+  "docs/development-verification.md"
+  "language/README.md"
+  "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
+  "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"],
+ :prerequisite
+ {:pull-request 1441,
+  :branch "codex/js-checked-scalar-modules",
+  :commit "7f77aac859f1c6525a7f137b84a92143040d0b1c",
+  :state :merged,
+  :merge-commit "410fad5ee055ac5fc9df8a4f0e324442b771bb89"},
+ :independent-manual-acceptance-review
+ {:schema :uniform/independent-manual-public-js-review-v1,
+  :public-commands
+  {:canonical-target :js-ts,
+   :command-boundary-records :match-both-recorded-invocations,
+   :runtime-acceptance-evidence
+   :separate-actual-import-and-call-observations,
+   :requested-targets [:js :js-ts],
+   :execution :node-esm-import-and-call-exports,
+   :source-target :js-ts,
+   :toolchain
+   {:java "21.0.13", :clojure-cli "1.12.0.1530", :node "v20.20.2"},
+   :source
+   {:path
+    "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+    :byte-count 341,
+    :sha256
+    "6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162"},
+   :argv
+   [["bin/gravity"
+     "compile"
+     "examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/acceptance-js"]
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:gravity"
+     "compile"
+     "examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/acceptance-js-explicit"]],
+   :compiler-host
+   {:implementation :clojure-stage0-seed,
+    :target :jvm,
+    :self-hosted? false},
+   :compiler-runtime-observation
+   {:node-version "v20.20.2", :validation :syntax-only},
+   :statuses [:emitted :emitted],
+   :artifact-kind :importable-javascript-module},
+  :date "2026-11-16",
+  :candidate
+  {:commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+   :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+   :checkout "/workspace/scratch/7de7e5af60ee/uniform-manual-final",
+   :recorded-initial-status "",
+   :observed-tracked-status "",
+   :observed-untracked-paths
+   ["target/acceptance-js-explicit/" "target/acceptance-js/"],
+   :acceptance-helper-blob "d72d2b5ba7972e6c798b899800b8e550e5026a3e"},
+  :blocking-findings [],
+  :authority :non-authoritative-development-evidence,
+  :evidence
+  {:directory "/workspace/scratch/7de7e5af60ee/evidence/manual-final",
+   :sha256
+   {"verify-runtime.clj"
+    "b9dc4acff99ace419e199bc62d1828601008a4570e4a4a302086207498361ecd",
+    "runtime-observations.edn"
+    "205b4e4396b3eda79a7a417a62dea61d80df280159be9b04df4b1a925e5883ea",
+    "runtime-verification.log"
+    "a3d882f4b71c10cbba439c32321188e3b2c24b4a2928034c2eafcbf43ea64d2c",
+    "wrapper-js.stdout.edn"
+    "3a842044adcca550d6f9549358c2d3faad9441fae2d187abf433c667bf06bc43",
+    "source-js-ts.stdout.edn"
+    "4b6fb581c14f0c37fed3e3fdf6a6afa03a97276958b09aa085f3280f5889c7db",
+    "required-node.stdout.txt"
+    "9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
+    "standalone-required-node.stdout.txt"
+    "9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
+    "prerequisites.log"
+    "c8168c95fa6d9ae9509bf25318974884f3f11f920d0cb247a8600ab5e04fad83"},
+   :process-exits
+   {"prerequisites.exit" 0,
+    "wrapper-js.exit" 0,
+    "source-js-ts.exit" 0,
+    "runtime-verification.exit" 0,
+    "required-node.exit" 0,
+    "standalone-required-node.exit" 0},
+   :runtime-collector-counters {:test 1, :pass 462, :fail 0, :error 0},
+   :compile-stderr :only-normal-java-tool-options-banner,
+   :required-node-stderr "",
+   :standalone-required-node-stderr ""},
+  :artifact-identities
+  {:independently-rehashed-files 18,
+   :wrapper-and-outside-copy
+   {"program.mjs"
+    {:byte-count 9111,
+     :sha256
+     "d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7"},
+    "program.d.ts"
+    {:byte-count 294,
+     :sha256
+     "2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27"},
+    "program.mjs.map"
+    {:byte-count 33127,
+     :sha256
+     "2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2"},
+    "package.json"
+    {:byte-count 215,
+     :sha256
+     "c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc"},
+    "manifest.edn"
+    {:byte-count 215434,
+     :sha256
+     "66198cac45aa1bddb3ff6df7b9f51d5031fd82fe4aa447ced256ce9d5de6e12f"},
+    "provenance.edn"
+    {:byte-count 40368,
+     :sha256
+     "0fc59fbd179d6e11e2f924d975c8b49e0e3ec760bb8427b7b3f337a9a22ed2ef"}},
+   :canonical-alias-primary-files-identical? true,
+   :canonical-alias-sidecars
+   {"manifest.edn"
+    {:byte-count 215434,
+     :sha256
+     "9d3f0524b5b1ac1f7f81e0c9105dd3de8a690e20cab291a580663eb0ff696eb0"},
+    "provenance.edn"
+    {:byte-count 40371,
+     :sha256
+     "7b5f842d4a019316dad131c0a85c28e21215a6a77b9bdf50dd8d0afc6020be15"}},
+   :complete-provenance-difference {:requested-target [:js :js-ts]},
+   :complete-manifest-difference
+   [:artifact-id
+    [:artifacts :provenance :byte-count]
+    [:artifacts :provenance :sha256]],
+   :sidecar-differences :correspond-only-to-preserved-requested-alias},
+  :standalone
+  {:collector-process-mechanism
+   {:environment-cleared-with "ProcessBuilder.environment().clear()",
+    :environment-keys ["PATH"],
+    :path :resolved-node-executable-parent-directory,
+    :executable :absolute-resolved-node,
+    :module-import "./program.mjs",
+    :working-directory :copied-artifact-directory},
+   :directory "/tmp/uniform-cli-node-only-6342716111469223293",
+   :all-twelve-error-reports-equal-to-original? true,
+   :success-report-equal-to-original? true,
+   :required-node-exit 0,
+   :required-node-stderr "",
+   :outside-checkout? true,
+   :directory-contains-exact-six-artifact-files? true,
+   :all-six-byte-counts-and-sha256-identical-to-wrapper? true,
+   :required-node-stdout "10\n7\n18014398509481987\n",
+   :emitted-module-repository-or-compiler-loads :none-observed},
+  :scope
+  {:method
+   [:read-only-collector-and-helper-review
+    :recorded-process-output-review
+    :edn-structural-comparisons
+    :independent-byte-count-and-sha256-checks],
+   :collector-and-helper-authored-by-reviewer? false,
+   :recompilation-by-reviewer? false,
+   :runtime-processes-launched-by-reviewer? false,
+   :source-or-artifact-mutations-by-reviewer? false,
+   :new-output "evidence/reviews/manual-acceptance-review.edn"},
+  :residuals
+  {:public-negative-and-process-selector :separate-root-owned-evidence,
+   :hosted-ci-and-main-integration :outside-this-review,
+   :compiler-host :clojure-jvm-seed,
+   :nonclaims
+   [:full-language
+    :full-t1-cli-conformance
+    :release
+    :self-hosting
+    :seed-retirement
+    :performance]},
+  :result :passed,
+  :runtime
+  {:numeric-errors
+   {:check-id
+    "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+    :eager-overflow-before-false-branch-return :observed,
+    :name "UniformNumericError",
+    :operation ":add",
+    :mode ":checked",
+    :width 64,
+    :operation-id
+    "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+    :manifest-runtime-check-and-source-map-correspondence :passed,
+    :type ":error/numeric",
+    :operands
+    [["9223372036854775807" "1"] ["-9223372036854775808" "-1"]],
+    :original-source-span
+    {:start-line 10,
+     :start-column 3,
+     :end-line 10,
+     :end-column 17,
+     :start-byte 193,
+     :end-byte 207},
+    :kind ":overflow",
+    :raw-operand-types ["bigint" "bigint"],
+    :core-and-mir-operation-identities-match? true,
+    :signed true},
+   :error-count 12,
+   :result-type-check
+   :typeof-applied-to-actual-results-before-string-projection,
+   :raw-result-types
+   ["bigint" "bigint" "bigint" "bigint" "bigint" "bigint" "bigint"],
+   :exports ["score"],
+   :abi-errors
+   {:name "UniformABIError",
+    :type ":error/abi",
+    :function "score",
+    :arity {:expected 3, :observed [2 4]},
+    :type-cases
+    {:argument-1-bigint ["number" "null" "undefined"],
+     :argument-0-boolean ["number" "null" "undefined"]},
+    :range-cases
+    {:argument-index 1,
+     :expected "signed I64",
+     :actual-type "bigint",
+     :count 2},
+    :actual-error-instances? true,
+    :original-function-and-source-identities :preserved},
+   :required-node-stdout "10\n7\n18014398509481987\n",
+   :error-kinds
+   [:overflow
+    :overflow
+    :arity
+    :arity
+    :type
+    :type
+    :type
+    :type
+    :type
+    :type
+    :range
+    :range],
+   :alias-runtime-reports-equal? true,
+   :results
+   ["10"
+    "7"
+    "18014398509481987"
+    "15"
+    "100"
+    "9223372036854775807"
+    "-9223372036854775808"]},
+  :reviewer "/root/review_cli"},
+ :source-candidate
+ {:commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+  :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+  :branch "codex/public-checked-js-compiler",
+  :local-equivalent "cd50e2cb7987007bb95d3219309aeb525bbf6ade",
+  :public-acceptance-worktree
+  "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final",
+  :manual-worktree
+  "/workspace/scratch/7de7e5af60ee/uniform-manual-final",
+  :initial-status ""},
+ :regressions
+ {:corrected-candidate
+  {:earlier-candidate-evidence
+   {:candidate "a43540a80dd37bd76788540bd229b3ff120902fa",
+    :results "../regressions/results.edn",
+    :unchanged-compiler-and-test-bytes? true,
+    :actual-changed-paths ["bin/gravity"],
+    :application-authority
+    {:exit 0, :tests 3, :assertions 50, :failures 0, :errors 0},
+    :legacy-js
+    {:exit 1,
+     :tests 1,
+     :assertions 16,
+     :failures 10,
+     :errors 0,
+     :compile-diagnostic "P15S23X002",
+     :boundary :pinned-reference-runtime-contract,
+     :missing-fact :runtime-artifact-source-byte-count}},
+   :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+   :nonclaims [:full-language :release :self-hosting :seed-retirement],
+   :candidate "dda7fd940b12af20c6e7016bef224cc984ca5362",
+   :authority :non-authoritative-development-evidence,
+   :status :passed,
+   :independent-source-review
+   {:status :accepted-for-scoped-source-integration,
+    :change :restore-frozen-shell-launcher-bytes,
+    :residual
+    "Runtime and clean-checkout acceptance remain separately owned experiments."},
+   :final-git-status-porcelain "",
+   :retained-failed-attempts
+   [{:log "../regressions/language-boundary.log",
+     :diagnostic "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED",
+     :resolution
+     "Restore the exact main bin/gravity bytes; no gate or pin change."}
+    {:log "../regressions/launcher.log",
+     :observation
+     "Two identical JAVA_TOOL_OPTIONS startup banners exceeded the unchanged helper's one-banner removal.",
+     :resolution
+     "Prepare the ordinary dependency basis, then rerun the unchanged launcher namespace in a separate JVM."}],
+   :results
+   {:language-boundary
+    {:exit 0,
+     :tests 6,
+     :assertions 11,
+     :failures 0,
+     :errors 0,
+     :log "language-boundary.log"},
+    :cli
+    {:exit 0,
+     :tests 10,
+     :assertions 190,
+     :failures 0,
+     :errors 0,
+     :elapsed-ns 29824916716,
+     :log "cli.log"},
+    :launcher-dependency-preparation
+    {:exit 0, :log "launcher-dependency-preparation.log"},
+    :launcher
+    {:exit 0,
+     :tests 4,
+     :assertions 50,
+     :failures 0,
+     :errors 0,
+     :elapsed-ns 31565843168,
+     :log "launcher.log"},
+    :whitespace {:exit 0, :log "whitespace.log"}}},
+  :unchanged-compiler-inputs
+  {:earlier-published-candidate
+   "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :earlier-local-candidate "a43540a80dd37bd76788540bd229b3ff120902fa",
+   :earlier-tree "73449b0ccf7052bbc2500ae7528bef767df5e33c",
+   :only-delta-to-corrected-candidate "bin/gravity",
+   :delta :remove-six-shell-help-lines-and-restore-exact-main-launcher,
+   :compiler-and-test-bytes-identical? true,
+   :backend
+   {:errors 0,
+    :exit 0,
+    :tests 2,
+    :executed-candidate "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+    :byte-count 7584,
+    :selectors
+    ["scalar-module-target-execution"
+     "scalar-module-rejects-genuine-product-tampering"],
+    :sha256
+    "sha256:07c76a2a565bc42ab1a0c04bddebb042703ca646900e7a891e8bfe39f8bddd16",
+    :failures 0,
+    :log "backend/candidate-producer-authority.log",
+    :assertions 611},
+   :application-authority
+   {:exit 0,
+    :tests 3,
+    :assertions 50,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 1088396950776,
+    :log "application-authority.log"}}},
+ :status :local-public-acceptance-passed,
+ :public-selector
+ {:errors 0,
+  :exit 0,
+  :per-cli-process-watchdog-seconds 900,
+  :candidate-commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+  :tests 1,
+  :command
+  ["clojure"
+   "-J-Xmx2g"
+   "-M:dev-test"
+   "--namespace"
+   "gravity.compiler.application-test"
+   "--exact"
+   "public-js-compiler-acceptance"
+   "--progress"],
+  :byte-count 19266,
+  :sha256
+  "sha256:2793717366ebd778a71b12be71c77870b43141b0fd770b3a5b6ef7cbd45a2694",
+  :cli-observations
+  [{:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/module-js"],
+    :exit 0,
+    :elapsed-ms 706275,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/module-js-ts"],
+    :exit 0,
+    :elapsed-ms 714791,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/tmp/uniform-public-stale-jar-5191199925832909629/examples/renamed-logic.qst"
+     "--target"
+     "js"
+     "-o"
+     "target/renamed-boolean"],
+    :exit 0,
+    :elapsed-ms 682661,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed-output"],
+    :exit 1,
+    :elapsed-ms 34020,
+    :diagnostic "C2-DELIMITER",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed.gravity",
+    :source-position
+    {:line 17, :column 2, :column-unit :unicode-scalar, :byte 342},
+    :facts {},
+    :reader-reason :unexpected-end-of-source}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type-output"],
+    :exit 1,
+    :elapsed-ms 382284,
+    :diagnostic "C7-TYPE-MISMATCH",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type.gravity",
+    :source-position
+    {:line 13, :column 13, :column-unit :unicode-scalar, :byte 280},
+    :facts
+    {:missing-fact :scalar-call-argument-types,
+     :function add,
+     :expected-type [:gravity/i64 :gravity/i64],
+     :actual-type [:gravity/bool :gravity/i64]},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid-output"],
+    :exit 1,
+    :elapsed-ms 389902,
+    :diagnostic "C7-TYPE-MISMATCH",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid.gravity",
+    :source-position
+    {:line 18, :column 29, :column-unit :unicode-scalar, :byte 370},
+    :facts
+    {:missing-fact :binary-i64-add-operands,
+     :expected-type [:gravity/i64 :gravity/i64],
+     :actual-type [:gravity/bool :gravity/bool]},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity-output"],
+    :exit 1,
+    :elapsed-ms 419660,
+    :diagnostic "L2-BUILTIN-ARITY",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity.gravity",
+    :source-position
+    {:line 13, :column 13, :column-unit :unicode-scalar, :byte 280},
+    :facts
+    {:missing-fact :fixed-arity-scalar-call,
+     :function add,
+     :expected-arity 2,
+     :actual-arity 1},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion-output"],
+    :exit 1,
+    :elapsed-ms 381273,
+    :diagnostic "C6-LOWERING-GAP",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion.gravity",
+    :source-position
+    {:line 9, :column 1, :column-unit :unicode-scalar, :byte 154},
+    :facts
+    {:missing-fact :nonrecursive-scalar-call-graph, :function add},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error-output"],
+    :exit 1,
+    :elapsed-ms 405040,
+    :diagnostic "C8-UNDECLARED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error.gravity",
+    :source-position
+    {:line 12, :column 1, :column-unit :unicode-scalar, :byte 198},
+    :facts
+    {:missing-fact :declared-numeric-error-effect,
+     :function score,
+     :declared-effects #{},
+     :inferred-effects #{:error/raise}},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form-output"],
+    :exit 1,
+    :elapsed-ms 427470,
+    :diagnostic "C6-LOWERING-GAP",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form.gravity",
+    :source-position
+    {:line 10, :column 3, :column-unit :unicode-scalar, :byte 193},
+    :facts
+    {:missing-fact :compositional-scalar-source-operation,
+     :function nil},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch-output"],
+    :exit 1,
+    :elapsed-ms 769677,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch.gravity",
+    :source-position {},
+    :facts
+    {:missing-fact
+     :fresh-source-core-mir-verification-and-owner-relationships},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy-output"],
+    :exit 1,
+    :elapsed-ms 89314,
+    :diagnostic "B1-TARGET-UNSUPPORTED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy.gravity",
+    :source-position {},
+    :facts {:missing-fact :hosted-safe-scalar-js-source-policy},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile-output"],
+    :exit 1,
+    :elapsed-ms 92627,
+    :diagnostic "B1-TARGET-UNSUPPORTED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile.gravity",
+    :source-position {},
+    :facts {:missing-fact :hosted-safe-scalar-js-source-policy},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "not-supported"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-not-supported"],
+    :exit 1,
+    :elapsed-ms 26630,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "verified-mir"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-verified-mir"],
+    :exit 1,
+    :elapsed-ms 29553,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "--lowering"
+     "verified-mir"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-ts-verified-mir"],
+    :exit 1,
+    :elapsed-ms 21949,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"],
+    :exit 1,
+    :elapsed-ms 20071,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments ["compile"],
+    :exit 1,
+    :elapsed-ms 26877,
+    :diagnostic "P18T04002",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--lowering"],
+    :exit 1,
+    :elapsed-ms 25720,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "-o"],
+    :exit 1,
+    :elapsed-ms 33110,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 25079,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"
+     "--output"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 27713,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "runtime-derived"
+     "--lowering"
+     "runtime-derived"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 28435,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--unknown"
+     "value"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 28455,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/existing"],
+    :exit 1,
+    :elapsed-ms 798121,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :fresh-output-path},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/not-a-directory/child"],
+    :exit 1,
+    :elapsed-ms 814044,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :output-parent-directory},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "../outside-output"],
+    :exit 1,
+    :elapsed-ms 42646,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"],
+    :exit 1,
+    :elapsed-ms 48734,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-node"],
+    :exit 1,
+    :elapsed-ms 714333,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :node20-runtime},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/without-node"],
+    :exit 1,
+    :elapsed-ms 788542,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :node20-runtime},
+    :reader-reason nil}],
+  :failures 0,
+  :log "candidate-final/public-js-compiler-acceptance.log",
+  :assertions 557,
+  :candidate-tree "498c4d978d442cf62df20569e789ff357bd31fbc"},
+ :independent-source-review
+ {:findings
+  ["Policy discovery uses existing current Reader/Syntax/module owners; only the discovered five-key policy reaches the existing fresh source constructor."
+   "Preliminary discovery supplies no accepted Core, MIR, verifier report or construction authority."
+   "The js/js-ts command aliases preserve requested spelling and canonical :js-ts source/target identity."
+   "Explicit runtime-derived lowering remains on the legacy route; checked failures do not fall back."
+   "Command-option projections retain offending options and lowering facts without invented source coordinates."
+   "Named semantic facts are projected without altering the retained sealed diagnostic or its identity."
+   "Manifest/provenance scope changes precede final identity calculation and atomic publication; compilation claims syntax validation only."],
+  :schema :uniform/public-js-independent-source-review-v1,
+  :date "2026-11-16",
+  :nonclaims [:full-language :release :self-hosting :seed-retirement],
+  :candidate
+  {:commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+   :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+   :base "410fad5ee055ac5fc9df8a4f0e324442b771bb89"},
+  :blocking-findings [],
+  :limitations
+  {:public-clean-checkout-runtime-acceptance
+   :separate-parent-owned-evidence-pending-at-review-time,
+   :node-runtime-and-standalone-module-results-not-established-by-this-review?
+   true,
+   :hosted-ci :not-assessed-by-this-review,
+   :legacy-runtime-regression :failed-as-recorded,
+   :final-documentation-evidence-review :pending-separate-review,
+   :exact-final-integration-preflight :required-separately},
+  :review-independence
+  {:authored-paths-excluded-from-self-approval
+   ["bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj"],
+   :acceptance-helper-independent-reviewer "/root/review_cli",
+   :acceptance-helper-independent-coverage
+   :separately-covered-by-review-cli,
+   :this-record-does-not-self-approve-acceptance-helper? true},
+  :authority :scoped-independent-source-review,
+  :static-disposition :accepted,
+  :scope
+  [:current-reader-and-module-policy-discovery
+   :fresh-source-construction-and-independent-policy-matching
+   :requested-and-canonical-js-target-identities
+   :checked-versus-explicit-legacy-dispatch
+   :unrelated-target-and-disabled-verified-mir-c-dispatch
+   :owned-command-option-diagnostics-and-source-attribution
+   :selected-sealed-semantic-fact-projection
+   :provenance-scope-before-identity-and-publication
+   :production-diagnostic-and-dispatch-tests-authored-by-other-agents
+   :frozen-shell-launcher-restoration],
+  :personally-executed-checks
+  {:corrected-candidate
+   {:whitespace {:exit 0},
+    :commands "../candidate/regressions-corrected/commands.edn",
+    :initial-and-final-status-porcelain "",
+    :commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+    :cli {:exit 0, :tests 10, :assertions 190, :failures 0, :errors 0},
+    :branch "codex/public-js-regressions-corrected",
+    :normal-dependency-preparation {:exit 0},
+    :worktree
+    "/workspace/scratch/7de7e5af60ee/uniform-regressions-corrected",
+    :language-boundary
+    {:exit 0, :tests 6, :assertions 11, :failures 0, :errors 0},
+    :launcher
+    {:exit 0, :tests 4, :assertions 50, :failures 0, :errors 0},
+    :results "../candidate/regressions-corrected/results.edn"},
+   :earlier-candidate
+   {:commit "a43540a80dd37bd76788540bd229b3ff120902fa",
+    :commands "../candidate/regressions/commands.edn",
+    :results "../candidate/regressions/results.edn",
+    :application-authority-and-policy
+    {:exit 0, :tests 3, :assertions 50, :failures 0, :errors 0},
+    :documentation {:exit 0, :documents 240, :phase-indexes 19},
+    :roadmap {:exit 0},
+    :governance {:exit 0, :workstreams 185},
+    :legacy-js
+    {:errors 0,
+     :diagnostic "P15S23X002",
+     :exit 1,
+     :tests 1,
+     :source "bootstrap/gravity/p15_s23/runtime.gravity",
+     :boundary :pinned-reference-runtime-contract,
+     :remaining-assertion-failures :absent-artifact-cascades,
+     :missing-fact :runtime-artifact-source-byte-count,
+     :real-compile-exits [1 1 1],
+     :failures 10,
+     :assertions 16}},
+   :earlier-results-not-relabeled-as-new-execution? true},
+  :exact-source-reconciliation
+  {:shared-tree "73449b0ccf7052bbc2500ae7528bef767df5e33c",
+   :actual-delta {:insertions 0, :deletions 6},
+   :correction-parent "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :unchanged-git-subtrees
+   {"bootstrap/clojure/src" "4d7b4a72432a638b0ab4cf81386da24b271c438b",
+    "bootstrap/clojure/test"
+    "494d00a6cdb56ac9109649d5bac791f8b601ccab",
+    "language/compiler/src"
+    "63e4ae08a9c4c65ccdb717c9ffe9cecda8d72ddf"},
+   :restored-main-and-candidate-launcher-blob
+   "f30c0bf7dec572edc5e09b678ccfa8816b128ad8",
+   :initial-reviewed-local-commit
+   "a43540a80dd37bd76788540bd229b3ff120902fa",
+   :verification
+   "git show/rev-parse bound commits, trees and launcher blobs; git diff showed only the six removed bin/gravity help lines.",
+   :published-equivalent-commit
+   "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :actual-changed-paths ["bin/gravity"],
+   :gate-or-pin-changes? false,
+   :compiler-and-test-bytes-changed? false,
+   :correction-commit "dda7fd940b12af20c6e7016bef224cc984ca5362"},
+  :reviewer "/root/review_acceptance",
+  :retained-failed-attempts
+  [{:log "../candidate/regressions/language-boundary.log",
+    :diagnostic "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED",
+    :resolution
+    "Restore exact main launcher bytes; corrected candidate's boundary gate passed."}
+   {:log "../candidate/regressions/launcher.log",
+    :observation
+    "An unchanged stderr assertion removed one of two identical inherited JVM option banners.",
+    :resolution
+    "Prepare the ordinary dependency basis and rerun unchanged tests; corrected candidate passed."}]},
+ :governing-contracts
+ [:D1
+  :D2
+  :D3
+  :D8
+  :D9
+  :C6
+  :C7
+  :C8
+  :C9
+  :C10
+  :C11
+  :C14
+  :C15
+  :B1
+  :B6
+  :T1
+  :P4
+  :SAFE9
+  :R1
+  :R4
+  :R10
+  :SAFE7
+  :R11
+  :B13
+  :S9
+  :PKG3
+  :PKG10
+  :BOOT8],
+ :main-base "410fad5ee055ac5fc9df8a4f0e324442b771bb89",
+ :historical-restoration
+ {:date "2026-11-16",
+  :fresh-verification-required? true,
+  :preserved-prerequisite "7f77aac859f1c6525a7f137b84a92143040d0b1c",
+  :historical-final-local-commit
+  "5ee0c2bdaf635ad672378386e97a80963b9409d6",
+  :restored-from
+  [:preserved-producer
+   :retained-exact-source-text
+   :retained-diagnostic-repair-patch
+   :retained-acceptance-helper-text],
+  :reason :previous-unpublished-workspace-no-longer-available,
+  :historical-source-candidate
+  "4ed9d71177812c1a2e11ee4d5d7c0976311ff2fe",
+  :historical-observations
+  {:tests 34,
+   :assertions 1402,
+   :failures 0,
+   :errors 0,
+   :public-selector {:tests 1, :assertions 529, :cli-processes 29},
+   :original-local-logs-present? false,
+   :acceptance-credit-for-restored-candidate? false},
+  :diagnostic-repair-blobs
+  {"bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj"
+   "7ad9029b67b375c362f755213cf2bed72939c9ca",
+   "bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
+   "4bb5d106978f9e4544e7e6a6a96372642c9afff2"}},
+ :failed-and-interrupted-attempts
+ {:public-selector-first
+  {:schema :uniform/public-cli-acceptance-attempt-v1,
+   :competing-work
+   [:baseline-producer
+    :manual-public-compilation
+    :application-authority],
+   :terminal-test-summary? false,
+   :candidate-commit "a43540a80dd37bd76788540bd229b3ff120902fa",
+   :outer-process-exit 130,
+   :command
+   ["clojure"
+    "-J-Xmx2g"
+    "-M:dev-test"
+    "--namespace"
+    "gravity.compiler.application-test"
+    "--exact"
+    "public-js-compiler-acceptance"
+    "--progress"],
+   :reason
+   :stop-failed-attempt-before-unchanged-resource-isolated-rerun,
+   :wrapper-js {:exit 0, :elapsed-ms 867628},
+   :acceptance-credit? false,
+   :assertion-failures-observed 1,
+   :watchdog-changed? false,
+   :explicit-source-js-ts
+   {:exit 124,
+    :elapsed-ms 900156,
+    :watchdog-seconds 900,
+    :stdout "",
+    :stderr ""},
+   :interrupted-after-failure? true,
+   :candidate-tree "73449b0ccf7052bbc2500ae7528bef767df5e33c",
+   :published-equivalent "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1"},
+  :manual-before-launcher-restoration
+  {:schema :uniform/public-cli-manual-attempt-v1,
+   :candidate-commit "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :initial-status "",
+   :complete-manual-acceptance-credit? false,
+   :required-node {:exit 0, :stdout "10\n7\n18014398509481987\n"},
+   :reason
+   :restore-language-boundary-frozen-launcher-before-final-acceptance,
+   :wrapper-js {:exit 0, :status :emitted},
+   :superseded-by :fresh-checkout-of-corrected-candidate,
+   :explicit-source-js-ts
+   {:status :interrupted,
+    :outer-process-exit 130,
+    :terminal-compiler-result? false},
+   :candidate-tree "73449b0ccf7052bbc2500ae7528bef767df5e33c"},
+  :launcher-first
+  {:errors 0,
+   :failed-selector "build-route-uses-standalone-invocation",
+   :exit 1,
+   :tests 4,
+   :observation
+   "The assertion removes one exact JAVA_TOOL_OPTIONS banner; one identical banner remained.",
+   :inference
+   "Cold Clojure CLI basis preparation and the runtime each printed the inherited JVM banner.",
+   :unchanged-warm-rerun
+   {:candidate "dda7fd940b12af20c6e7016bef224cc984ca5362",
+    :log "../regressions-corrected/launcher.log",
+    :exit 0,
+    :tests 4,
+    :assertions 50,
+    :failures 0,
+    :errors 0},
+   :failures 1,
+   :log "launcher.log",
+   :assertions 50},
+  :language-boundary-first
+  {:path "bin/gravity",
+   :errors 0,
+   :diagnostic "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED",
+   :exit 1,
+   :tests 6,
+   :classification :frozen-removal-only-shell-launcher-debt,
+   :failures 1,
+   :log "language-boundary.log",
+   :assertions 11},
+  :hosted-source-before-launcher-restoration
+  {:path "bin/gravity",
+   :diagnostic "LANGUAGE-BOUNDARY-FROZEN-DEBT-MODIFIED",
+   :resolution :restore-exact-main-launcher-in-dda7,
+   :head "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1",
+   :first-failed-command :language-boundary,
+   :overall-conclusion :cancelled,
+   :url
+   "https://github.com/burn2delete/uniform/actions/runs/43903402856",
+   :bootstrap-conclusion :failure,
+   :bootstrap-job 133426215018,
+   :run-id 43903402856,
+   :log
+   {:log "ci/job-133426215018-bootstrap.log",
+    :byte-count 152058,
+    :sha256
+    "sha256:fad7cd387e2bd24fd353c5adc2eedbaa1364be335cd1cf3b887b9488d1986f6b"}}},
+ :hosted-ci
+ {:schema :uniform/hosted-ci-current-source-summary-v1,
+  :conclusion "failure",
+  :first-actionable-failure
+  {:configured-timeout-seconds 600,
+   :configuration-owner "tools/ci/run.clj",
+   :job-name "bootstrap",
+   :exit 124,
+   :passed-command-ids
+   ["checkout-parents"
+    "changed-path-discovery"
+    "cold-bootstrap-load"
+    "reader-regression"
+    "bootstrap-input-controls"
+    "language-boundary"
+    "catalog-controls"
+    "ownership-inventory"],
+   :job-id 133456999896,
+   :assertion-failure-observed? false,
+   :classification "host-command-timeout",
+   :job-url
+   "https://github.com/burn2delete/uniform/actions/runs/43907142976/job/133456999896",
+   :started-at-utc "2026-11-16T16:54:07.6184097Z",
+   :run-attempt 2,
+   :compiler-diagnostic-observed? false,
+   :log-path
+   "/workspace/scratch/7de7e5af60ee/evidence/ci/job-133456999896-bootstrap-attempt-2.log",
+   :last-visible-namespace "gravity.syntax.pipeline-test",
+   :occurred-at-utc "2026-11-16T17:04:07.7216131Z",
+   :command-id "syntax-regression",
+   :diagnostic-evidence-scope "workflow-log-preview",
+   :language-boundary-status "passed"},
+  :repository "burn2delete/uniform",
+  :authority :read-only-hosted-ci-observation,
+  :observed-at-utc "2026-11-16 17:11:33 UTC",
+  :jobs
+  [{:id 133456999417,
+    :name "fresh-leaf-regressions / darwin",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133456999418,
+    :name "resolution-unmetered",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133456999896,
+    :name "bootstrap",
+    :status "completed",
+    :conclusion "failure"}
+   {:id 133457000138,
+    :name "select CI checks",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457000824,
+    :name "darwin-unsupported-host",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457001243,
+    :name "contracts",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457001558,
+    :name "macro",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457001772,
+    :name "resolution-invocation-selection",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457002008,
+    :name "checked-core-runtime",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457002141,
+    :name "fresh-leaf-regressions / portable",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457096242,
+    :name "static",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133457097268,
+    :name "experimental-source-snapshot",
+    :status "completed",
+    :conclusion "skipped"}
+   {:id 133457105917,
+    :name "resolution-pipeline",
+    :status "completed",
+    :conclusion "success"}
+   {:id 133467147333,
+    :name "experimental-prerelease",
+    :status "completed",
+    :conclusion "skipped"}],
+  :local-runtime-acceptance-claim? false,
+  :run-attempt 2,
+  :status "completed",
+  :url
+  "https://github.com/burn2delete/uniform/actions/runs/43907142976",
+  :head-sha "dda7fd940b12af20c6e7016bef224cc984ca5362",
+  :prior-attempts
+  [{:schema :uniform/hosted-ci-current-source-summary-v1,
+    :conclusion "failure",
+    :first-actionable-failure
+    {:configured-timeout-seconds 600,
+     :configuration-owner "tools/ci/run.clj",
+     :job-name "bootstrap",
+     :exit 124,
+     :passed-command-ids
+     ["checkout-parents"
+      "changed-path-discovery"
+      "cold-bootstrap-load"
+      "reader-regression"
+      "bootstrap-input-controls"
+      "language-boundary"
+      "catalog-controls"
+      "ownership-inventory"],
+     :job-id 133442068350,
+     :assertion-failure-observed? false,
+     :classification "host-command-timeout",
+     :job-url
+     "https://github.com/burn2delete/uniform/actions/runs/43907142976/job/133442068350",
+     :started-at-utc "2026-11-16T16:33:44.8215298Z",
+     :run-attempt 1,
+     :compiler-diagnostic-observed? false,
+     :log-path
+     "/workspace/scratch/7de7e5af60ee/evidence/ci/job-133442068350-bootstrap.log",
+     :last-visible-namespace "gravity.syntax.pipeline-test",
+     :occurred-at-utc "2026-11-16T16:43:44.9212551Z",
+     :command-id "syntax-regression",
+     :language-boundary-status "passed"},
+    :repository "burn2delete/uniform",
+    :authority :read-only-hosted-ci-observation,
+    :observed-at-utc "2026-11-16 16:50:59 UTC",
+    :jobs
+    [{:id 133439129135,
+      :name "select CI checks",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133439132072,
+      :name "experimental-source-snapshot",
+      :status "completed",
+      :conclusion "skipped"}
+     {:id 133442068182,
+      :name "resolution-pipeline",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068192,
+      :name "contracts",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068231,
+      :name "fresh-leaf-regressions / darwin",
+      :status "completed",
+      :conclusion "cancelled"}
+     {:id 133442068251,
+      :name "resolution-invocation-selection",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068270,
+      :name "darwin-unsupported-host",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068296,
+      :name "static",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068304,
+      :name "fresh-leaf-regressions / portable",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068305,
+      :name "resolution-unmetered",
+      :status "completed",
+      :conclusion "failure"}
+     {:id 133442068320,
+      :name "macro",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133442068350,
+      :name "bootstrap",
+      :status "completed",
+      :conclusion "failure"}
+     {:id 133442068352,
+      :name "checked-core-runtime",
+      :status "completed",
+      :conclusion "success"}
+     {:id 133454429375,
+      :name "experimental-prerelease",
+      :status "completed",
+      :conclusion "skipped"}],
+    :local-runtime-acceptance-claim? false,
+    :run-attempt 1,
+    :status "completed",
+    :url
+    "https://github.com/burn2delete/uniform/actions/runs/43907142976",
+    :head-sha "dda7fd940b12af20c6e7016bef224cc984ca5362",
+    :mutations-performed? false,
+    :failures
+    [{:configured-timeout-seconds 600,
+      :configuration-owner "tools/ci/run.clj",
+      :job-name "bootstrap",
+      :exit 124,
+      :passed-command-ids
+      ["checkout-parents"
+       "changed-path-discovery"
+       "cold-bootstrap-load"
+       "reader-regression"
+       "bootstrap-input-controls"
+       "language-boundary"
+       "catalog-controls"
+       "ownership-inventory"],
+      :job-id 133442068350,
+      :assertion-failure-observed? false,
+      :classification "host-command-timeout",
+      :job-url
+      "https://github.com/burn2delete/uniform/actions/runs/43907142976/job/133442068350",
+      :started-at-utc "2026-11-16T16:33:44.8215298Z",
+      :run-attempt 1,
+      :compiler-diagnostic-observed? false,
+      :log-path
+      "/workspace/scratch/7de7e5af60ee/evidence/ci/job-133442068350-bootstrap.log",
+      :last-visible-namespace "gravity.syntax.pipeline-test",
+      :occurred-at-utc "2026-11-16T16:43:44.9212551Z",
+      :command-id "syntax-regression",
+      :language-boundary-status "passed"}
+     {:diagnostic
+      "Error building classpath. Failed to read artifact descriptor for org.clojure:clojure:jar:1.12.5",
+      :stage "dependency-classpath",
+      :job-name "resolution-unmetered",
+      :exit 1,
+      :job-id 133442068305,
+      :repository-url "https://repo1.maven.org/maven2/",
+      :command
+      ["clojure"
+       "-Srepro"
+       "-M"
+       "tools/ci/run.clj"
+       "resolution-unmetered"],
+      :classification "environment",
+      :job-url
+      "https://github.com/burn2delete/uniform/actions/runs/43907142976/job/133442068305",
+      :reason "Too Many Requests",
+      :run-attempt 1,
+      :tests-executed? false,
+      :http-status 429,
+      :compiler-diagnostic-observed? false,
+      :log-path
+      "/workspace/scratch/7de7e5af60ee/evidence/ci/job-133442068305-resolution-unmetered.log",
+      :artifact "org.clojure:clojure:pom:1.12.5",
+      :occurred-at-utc "2026-11-16T16:44:01.8543370Z",
+      :checked-out-merge-sha
+      "5de2bd46b5807f0b73c38ecc56afb79e94fe06da"}],
+    :run-id 43907142976}],
+  :mutations-performed? false,
+  :failures
+  [{:configured-timeout-seconds 600,
+    :configuration-owner "tools/ci/run.clj",
+    :job-name "bootstrap",
+    :exit 124,
+    :passed-command-ids
+    ["checkout-parents"
+     "changed-path-discovery"
+     "cold-bootstrap-load"
+     "reader-regression"
+     "bootstrap-input-controls"
+     "language-boundary"
+     "catalog-controls"
+     "ownership-inventory"],
+    :job-id 133456999896,
+    :assertion-failure-observed? false,
+    :classification "host-command-timeout",
+    :job-url
+    "https://github.com/burn2delete/uniform/actions/runs/43907142976/job/133456999896",
+    :started-at-utc "2026-11-16T16:54:07.6184097Z",
+    :run-attempt 2,
+    :compiler-diagnostic-observed? false,
+    :log-path
+    "/workspace/scratch/7de7e5af60ee/evidence/ci/job-133456999896-bootstrap-attempt-2.log",
+    :last-visible-namespace "gravity.syntax.pipeline-test",
+    :occurred-at-utc "2026-11-16T17:04:07.7216131Z",
+    :command-id "syntax-regression",
+    :diagnostic-evidence-scope "workflow-log-preview",
+    :language-boundary-status "passed"}],
+  :run-id 43907142976},
+ :manual-acceptance
+ {:schema :uniform/public-cli-manual-acceptance-v1,
+  :candidate-commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+  :standalone-required-node
+  {:exit 0, :stdout "10\n7\n18014398509481987\n"},
+  :initial-status "",
+  :required-node {:exit 0, :stdout "10\n7\n18014398509481987\n"},
+  :standalone
+  {:directory "/tmp/uniform-cli-node-only-6342716111469223293",
+   :environment :cleared,
+   :path :node20-only,
+   :six-artifacts-byte-identical? true,
+   :success
+   {"exports" ["score"],
+    "results"
+    ["10"
+     "7"
+     "18014398509481987"
+     "15"
+     "100"
+     "9223372036854775807"
+     "-9223372036854775808"],
+    "resultTypes"
+    ["bigint" "bigint" "bigint" "bigint" "bigint" "bigint" "bigint"]},
+   :errors
+   [{"operationId"
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     "width" 64N,
+     "signed" true,
+     "name" "UniformNumericError",
+     "operation" ":add",
+     "kind" ":overflow",
+     "checkId"
+     "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "mirInstructionId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 207N,
+       "byte-start" 193N,
+       "end"
+       {"byte" 207N,
+        "char" 207N,
+        "column" 17N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 193N,
+        "char" 193N,
+        "column" 3N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N}}},
+     "operands" ["9223372036854775807" "1"],
+     "type" ":error/numeric",
+     "isError" true,
+     "numericMode" ":checked",
+     "operandTypes" ["bigint" "bigint"]}
+    {"operationId"
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     "width" 64N,
+     "signed" true,
+     "name" "UniformNumericError",
+     "operation" ":add",
+     "kind" ":overflow",
+     "checkId"
+     "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "mirInstructionId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 207N,
+       "byte-start" 193N,
+       "end"
+       {"byte" 207N,
+        "char" 207N,
+        "column" 17N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 193N,
+        "char" 193N,
+        "column" 3N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N}}},
+     "operands" ["-9223372036854775808" "-1"],
+     "type" ":error/numeric",
+     "isError" true,
+     "numericMode" ":checked",
+     "operandTypes" ["bigint" "bigint"]}
+    {"argumentIndex" nil,
+     "actualArity" 2N,
+     "expected" 3N,
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":arity",
+     "actualType" nil,
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" nil,
+     "actualArity" 4N,
+     "expected" 3N,
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":arity",
+     "actualType" nil,
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "number",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "null",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "undefined",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "number",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "null",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "undefined",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "signed I64",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":range",
+     "actualType" "bigint",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "signed I64",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":range",
+     "actualType" "bigint",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}]},
+  :tracked-status-after "",
+  :commands
+  [{:argv
+    ["bin/gravity"
+     "compile"
+     "examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/acceptance-js"],
+    :exit 0,
+    :result
+    {:lowering-mode :checked-scalar-mir,
+     :canonical-target :js-ts,
+     :source-target :js-ts,
+     :command-boundary
+     {:compile-command
+      ["gravity"
+       "compile"
+       "examples/checked-js/acceptance.gravity"
+       "--target"
+       "js"
+       "-o"
+       "target/acceptance-js"],
+      :execution :node-esm-import-and-call-exports,
+      :bootstrap-hosted? true,
+      :self-hosted? false,
+      :module-path "target/acceptance-js/program.mjs",
+      :public-command "gravity",
+      :clojure-seed-boundary? true,
+      :artifact-kind :importable-javascript-module,
+      :seedless-release? false},
+     :requested-target :js,
+     :paths
+     {:javascript "target/acceptance-js/program.mjs",
+      :typescript-declarations "target/acceptance-js/program.d.ts",
+      :source-map "target/acceptance-js/program.mjs.map",
+      :package-metadata "target/acceptance-js/package.json",
+      :manifest "target/acceptance-js/manifest.edn",
+      :provenance "target/acceptance-js/provenance.edn"},
+     :lowering-requested? false,
+     :source
+     {:path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      :content-hash
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      :byte-count 341},
+     :target-requested? true,
+     :exports [score],
+     :compiler-host
+     {:implementation :clojure-stage0-seed,
+      :target :jvm,
+      :self-hosted? false},
+     :status :emitted,
+     :target-selection :explicit,
+     :public-current-source? true,
+     :compiled-module? true,
+     :runtime-observation
+     {:node-version "v20.20.2", :validation :syntax-only},
+     :artifact :gravity/checked-js-module,
+     :artifact-inventory
+     {:javascript
+      {:file "program.mjs",
+       :sha256
+       "sha256:d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7",
+       :byte-count 9111},
+      :manifest
+      {:file "manifest.edn",
+       :sha256
+       "sha256:66198cac45aa1bddb3ff6df7b9f51d5031fd82fe4aa447ced256ce9d5de6e12f",
+       :byte-count 215434},
+      :package-metadata
+      {:file "package.json",
+       :sha256
+       "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc",
+       :byte-count 215},
+      :provenance
+      {:file "provenance.edn",
+       :sha256
+       "sha256:0fc59fbd179d6e11e2f924d975c8b49e0e3ec760bb8427b7b3f337a9a22ed2ef",
+       :byte-count 40368},
+      :source-map
+      {:file "program.mjs.map",
+       :sha256
+       "sha256:2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2",
+       :byte-count 33127},
+      :typescript-declarations
+      {:file "program.d.ts",
+       :sha256
+       "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27",
+       :byte-count 294}}},
+    :artifacts
+    {"manifest.edn"
+     {:byte-count 215434,
+      :sha256
+      "sha256:66198cac45aa1bddb3ff6df7b9f51d5031fd82fe4aa447ced256ce9d5de6e12f"},
+     "package.json"
+     {:byte-count 215,
+      :sha256
+      "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc"},
+     "program.d.ts"
+     {:byte-count 294,
+      :sha256
+      "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27"},
+     "program.mjs"
+     {:byte-count 9111,
+      :sha256
+      "sha256:d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7"},
+     "program.mjs.map"
+     {:byte-count 33127,
+      :sha256
+      "sha256:2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2"},
+     "provenance.edn"
+     {:byte-count 40368,
+      :sha256
+      "sha256:0fc59fbd179d6e11e2f924d975c8b49e0e3ec760bb8427b7b3f337a9a22ed2ef"}}}
+   {:argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:gravity"
+     "compile"
+     "examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/acceptance-js-explicit"],
+    :exit 0,
+    :result
+    {:lowering-mode :checked-scalar-mir,
+     :canonical-target :js-ts,
+     :source-target :js-ts,
+     :command-boundary
+     {:compile-command
+      ["gravity"
+       "compile"
+       "examples/checked-js/acceptance.gravity"
+       "--target"
+       "js-ts"
+       "-o"
+       "target/acceptance-js-explicit"],
+      :execution :node-esm-import-and-call-exports,
+      :bootstrap-hosted? true,
+      :self-hosted? false,
+      :module-path "target/acceptance-js-explicit/program.mjs",
+      :public-command "gravity",
+      :clojure-seed-boundary? true,
+      :artifact-kind :importable-javascript-module,
+      :seedless-release? false},
+     :requested-target :js-ts,
+     :paths
+     {:javascript "target/acceptance-js-explicit/program.mjs",
+      :typescript-declarations
+      "target/acceptance-js-explicit/program.d.ts",
+      :source-map "target/acceptance-js-explicit/program.mjs.map",
+      :package-metadata "target/acceptance-js-explicit/package.json",
+      :manifest "target/acceptance-js-explicit/manifest.edn",
+      :provenance "target/acceptance-js-explicit/provenance.edn"},
+     :lowering-requested? false,
+     :source
+     {:path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      :content-hash
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      :byte-count 341},
+     :target-requested? true,
+     :exports [score],
+     :compiler-host
+     {:implementation :clojure-stage0-seed,
+      :target :jvm,
+      :self-hosted? false},
+     :status :emitted,
+     :target-selection :explicit,
+     :public-current-source? true,
+     :compiled-module? true,
+     :runtime-observation
+     {:node-version "v20.20.2", :validation :syntax-only},
+     :artifact :gravity/checked-js-module,
+     :artifact-inventory
+     {:javascript
+      {:file "program.mjs",
+       :sha256
+       "sha256:d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7",
+       :byte-count 9111},
+      :manifest
+      {:file "manifest.edn",
+       :sha256
+       "sha256:9d3f0524b5b1ac1f7f81e0c9105dd3de8a690e20cab291a580663eb0ff696eb0",
+       :byte-count 215434},
+      :package-metadata
+      {:file "package.json",
+       :sha256
+       "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc",
+       :byte-count 215},
+      :provenance
+      {:file "provenance.edn",
+       :sha256
+       "sha256:7b5f842d4a019316dad131c0a85c28e21215a6a77b9bdf50dd8d0afc6020be15",
+       :byte-count 40371},
+      :source-map
+      {:file "program.mjs.map",
+       :sha256
+       "sha256:2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2",
+       :byte-count 33127},
+      :typescript-declarations
+      {:file "program.d.ts",
+       :sha256
+       "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27",
+       :byte-count 294}}},
+    :artifacts
+    {"manifest.edn"
+     {:byte-count 215434,
+      :sha256
+      "sha256:9d3f0524b5b1ac1f7f81e0c9105dd3de8a690e20cab291a580663eb0ff696eb0"},
+     "package.json"
+     {:byte-count 215,
+      :sha256
+      "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc"},
+     "program.d.ts"
+     {:byte-count 294,
+      :sha256
+      "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27"},
+     "program.mjs"
+     {:byte-count 9111,
+      :sha256
+      "sha256:d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7"},
+     "program.mjs.map"
+     {:byte-count 33127,
+      :sha256
+      "sha256:2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2"},
+     "provenance.edn"
+     {:byte-count 40371,
+      :sha256
+      "sha256:7b5f842d4a019316dad131c0a85c28e21215a6a77b9bdf50dd8d0afc6020be15"}}}],
+  :runtime
+  {:success
+   {"exports" ["score"],
+    "results"
+    ["10"
+     "7"
+     "18014398509481987"
+     "15"
+     "100"
+     "9223372036854775807"
+     "-9223372036854775808"],
+    "resultTypes"
+    ["bigint" "bigint" "bigint" "bigint" "bigint" "bigint" "bigint"]},
+   :errors
+   [{"operationId"
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     "width" 64N,
+     "signed" true,
+     "name" "UniformNumericError",
+     "operation" ":add",
+     "kind" ":overflow",
+     "checkId"
+     "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "mirInstructionId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 207N,
+       "byte-start" 193N,
+       "end"
+       {"byte" 207N,
+        "char" 207N,
+        "column" 17N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 193N,
+        "char" 193N,
+        "column" 3N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N}}},
+     "operands" ["9223372036854775807" "1"],
+     "type" ":error/numeric",
+     "isError" true,
+     "numericMode" ":checked",
+     "operandTypes" ["bigint" "bigint"]}
+    {"operationId"
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     "width" 64N,
+     "signed" true,
+     "name" "UniformNumericError",
+     "operation" ":add",
+     "kind" ":overflow",
+     "checkId"
+     "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "mirInstructionId"
+      "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 207N,
+       "byte-start" 193N,
+       "end"
+       {"byte" 207N,
+        "char" 207N,
+        "column" 17N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 193N,
+        "char" 193N,
+        "column" 3N,
+        "column-unit" ":unicode-scalar",
+        "line" 10N}}},
+     "operands" ["-9223372036854775808" "-1"],
+     "type" ":error/numeric",
+     "isError" true,
+     "numericMode" ":checked",
+     "operandTypes" ["bigint" "bigint"]}
+    {"argumentIndex" nil,
+     "actualArity" 2N,
+     "expected" 3N,
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":arity",
+     "actualType" nil,
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" nil,
+     "actualArity" 4N,
+     "expected" 3N,
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":arity",
+     "actualType" nil,
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "number",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "null",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "bigint",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "undefined",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "number",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "null",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 0N,
+     "expected" "boolean",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":type",
+     "actualType" "undefined",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "signed I64",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":range",
+     "actualType" "bigint",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}
+    {"argumentIndex" 1N,
+     "expected" "signed I64",
+     "name" "UniformABIError",
+     "function" "score",
+     "kind" ":range",
+     "actualType" "bigint",
+     "source"
+     {"contentHash"
+      "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+      "coreNodeId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "mirInstructionId"
+      "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+      "path"
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+      "span"
+      {"byte-end" 340N,
+       "byte-start" 210N,
+       "end"
+       {"byte" 340N,
+        "char" 340N,
+        "column" 14N,
+        "column-unit" ":unicode-scalar",
+        "line" 16N},
+       "file"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "source"
+       "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+       "start"
+       {"byte" 210N,
+        "char" 210N,
+        "column" 1N,
+        "column-unit" ":unicode-scalar",
+        "line" 12N}}},
+     "operands" nil,
+     "type" ":error/abi",
+     "isError" true,
+     "operandTypes" nil}]},
+  :provenance
+  {:canonical-target :js-ts,
+   :nonclaims [:full-language :release :self-hosting :seed-retirement],
+   :source-target :js-ts,
+   :requested-target :js,
+   :compiler-bindings
+   {:c6-c10
+    {:source-content-hash
+     "sha256:a1e887a7a430076dfff573aa69ff0deb339db9cc103100b29b9b6527803209e7",
+     :builder-function c6-c10-build-checked-core-template,
+     :verifier-function c6-c10-verify-checked-core-template,
+     :source-mode :development-current,
+     :builder-semantic-hash
+     "sha256:1d6300beaa13de4f3078a1127e7b0d3aae5f0ce66e5ac98fed39de9be8741397",
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+     :source-byte-count 238746,
+     :verifier-semantic-hash
+     "sha256:317c55f7a95ff199be4c3f459522150c1247e281d6fa99dc428c28fa6452b79b",
+     :functions-semantic-hash
+     "sha256:522bca0787fc70ceb665fc0069019548f8b92cca57d3088610374bf5971c5ca3",
+     :semantic-authority :gravity-source,
+     :function-shapes
+     {c6-c10-build-checked-core-template {:arity 1, :params [input]},
+      c6-c10-verify-checked-core-template
+      {:arity 3, :params [input template requests]}},
+     :plan-semantic-hash
+     "sha256:1f72fd222e415c4a13be10b9d50c2706d72c8ac4538037ae4e965d6d26222ae5"},
+    :c11
+    {:source-content-hash
+     "sha256:c358e2c2d3309afb2fcb30f427b4ae48c03d9a471e197d17fcdefdeeedfe1f3f",
+     :builder-function c11-build-scalar-functions-mir,
+     :family :compositional-scalar-functions-v1,
+     :verifier-function c11-verify-scalar-functions-mir,
+     :source-mode :development-current,
+     :builder-semantic-hash
+     "sha256:fd5fa6edb5a0af19cfd8808f4085d48ff2c03ac170ea2ef7a61124eef41b10a7",
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/compiler/c11_mir_specification.gravity",
+     :source-byte-count 642364,
+     :verifier-semantic-hash
+     "sha256:f1c4e943bdf1dde4721648d57dab88caef6356365242779c9182bbe6278e927c",
+     :functions-semantic-hash
+     "sha256:16c0e835db0842c7b98ff3113758e6d265298d58f059ad54c212b0e7d0efeab5",
+     :function-shapes
+     {sh12-build-flat-bool-sequence-mir
+      {:arity 1, :params [checked-core]},
+      sh12-branch-join-passed {:arity 2, :params [checked-core mir]},
+      c11-scalar-functions-passed
+      {:arity 2, :params [checked-core mir]},
+      sh12-flat-bool-sequence-report
+      {:arity 2, :params [checked-core report]},
+      sh12-verify-branch-join-mir
+      {:arity 2, :params [checked-core mir]},
+      c11-build-scalar-functions-mir
+      {:arity 1, :params [checked-core]},
+      sh12-verify-flat-bool-sequence-mir
+      {:arity 2, :params [checked-core mir]},
+      sh12-build-branch-join-mir {:arity 1, :params [checked-core]},
+      sh13-verify-scalar-functions-execution
+      {:arity 5,
+       :params
+       [checked-core mir exported-function arguments candidate]},
+      sh13-run-scalar-functions-mir
+      {:arity 4,
+       :params [checked-core mir exported-function arguments]},
+      c11-verify-scalar-functions-mir
+      {:arity 2, :params [checked-core mir]}},
+     :plan-semantic-hash
+     "sha256:e92ebf6b247e0dc176629322d2b8e61231f990eb819e1014dbfead8453890834"},
+    :b1
+    {:source-content-hash
+     "sha256:b806d6ee520de5171f64ddc47f3a063ea64c70d15f5d6610b51a425a30e5171c",
+     :builder-function b1-build-checked-js-input,
+     :seed-emitter
+     {:source-rule-hash
+      "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+      :rule-record
+      {:missing-builtin-functions [],
+       :compiler-owner :gravity-source,
+       :builtin-functions
+       [*
+        +
+        -
+        /
+        <
+        <=
+        =
+        >
+        >=
+        assoc
+        build-read-declared-input
+        conj
+        count
+        first
+        get
+        hash-map
+        list
+        pr-str
+        rest
+        second
+        str
+        vector],
+       :missing-special-forms [],
+       :status :complete,
+       :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+       :engine :gravity-stage2-plan-emitter-rules-v1,
+       :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+       :special-forms [do host-reflect if let println quote],
+       :rule-set-complete? true}},
+     :verifier-function b1-verify-checked-js-input,
+     :source-mode :development-current,
+     :builder-semantic-hash
+     "sha256:23e852def0c01652605f2f527fa5b753253b8b919252229fb197e3be9aca35dd",
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity",
+     :compiler-host :clojure-stage0-seed,
+     :source-byte-count 149866,
+     :verifier-semantic-hash
+     "sha256:667d7ca612fb9358bb9bd7e19b08ec5464fbb74f6fb5bf65339e5ed145c93f05",
+     :functions-semantic-hash
+     "sha256:34a7c872feeb1fb8723f3297431c8f2375d6e4ce15ad66122d3d2936c1a4565f",
+     :semantic-authority :gravity-source,
+     :function-shapes
+     {b1-build-checked-js-input
+      {:arity 2, :params [application lowering]},
+      b1-verify-checked-js-input
+      {:arity 3, :params [application lowering candidate]}},
+     :owner :b1,
+     :plan-semantic-hash
+     "sha256:bb7ac4c018056b4ec8865d1641afd0b41523f0cc9454de73cd9790a02997cbae",
+     :admission-status :development-unadmitted},
+    :b6
+    {:source-content-hash
+     "sha256:69c1a6f7e095cd6bb723930dd1a06d7e6276cc48bee55a0ce0da1790dacc0170",
+     :builder-function b6-build-checked-js-program,
+     :seed-emitter
+     {:source-rule-hash
+      "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+      :rule-record
+      {:missing-builtin-functions [],
+       :compiler-owner :gravity-source,
+       :builtin-functions
+       [*
+        +
+        -
+        /
+        <
+        <=
+        =
+        >
+        >=
+        assoc
+        build-read-declared-input
+        conj
+        count
+        first
+        get
+        hash-map
+        list
+        pr-str
+        rest
+        second
+        str
+        vector],
+       :missing-special-forms [],
+       :status :complete,
+       :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+       :engine :gravity-stage2-plan-emitter-rules-v1,
+       :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+       :special-forms [do host-reflect if let println quote],
+       :rule-set-complete? true}},
+     :verifier-function b6-verify-checked-js-program,
+     :source-mode :development-current,
+     :builder-semantic-hash
+     "sha256:41234466dff591563fe278cd3411a07ad2de82923980ee9bee18d0698b7f0d7c",
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity",
+     :compiler-host :clojure-stage0-seed,
+     :source-byte-count 36892,
+     :verifier-semantic-hash
+     "sha256:44e6e5cf562ac4368fbaf995f6f3c2ba9ddef8fafed3471a33e72af2432bcafb",
+     :functions-semantic-hash
+     "sha256:7d2afef35ebfcbb1e11a3a11c86f0e90f15234804c41fbd136c151c5d6ab9a48",
+     :semantic-authority :gravity-source,
+     :function-shapes
+     {b6-build-checked-js-program
+      {:arity 3, :params [application lowering packet]},
+      b6-verify-checked-js-program
+      {:arity 4, :params [application lowering packet candidate]}},
+     :owner :b6,
+     :plan-semantic-hash
+     "sha256:57172495e32a9a91fa4eba1ec0dc772c261f4789c7dbd9c992ca693194bbefcf",
+     :admission-status :development-unadmitted},
+    :c14
+    {:source-content-hash
+     "sha256:f73233b4580eaeb0896c87e2238f266aebeaa362e5d352d80693bede637eba5f",
+     :builder-function c14-build-checked-js-lowering,
+     :seed-emitter
+     {:source-rule-hash
+      "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+      :rule-record
+      {:missing-builtin-functions [],
+       :compiler-owner :gravity-source,
+       :builtin-functions
+       [*
+        +
+        -
+        /
+        <
+        <=
+        =
+        >
+        >=
+        assoc
+        build-read-declared-input
+        conj
+        count
+        first
+        get
+        hash-map
+        list
+        pr-str
+        rest
+        second
+        str
+        vector],
+       :missing-special-forms [],
+       :status :complete,
+       :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+       :engine :gravity-stage2-plan-emitter-rules-v1,
+       :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+       :special-forms [do host-reflect if let println quote],
+       :rule-set-complete? true}},
+     :verifier-function c14-verify-checked-js-lowering,
+     :source-mode :development-current,
+     :builder-semantic-hash
+     "sha256:fabf69ae8c5c7109a7b3897d06e568154a37989aa9870bda857594962ea5e5a0",
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+     :compiler-host :clojure-stage0-seed,
+     :source-byte-count 217432,
+     :verifier-semantic-hash
+     "sha256:b1fbf2c975405128faafac253d8e1cad504b669ef9a419192d8740527281c2ca",
+     :functions-semantic-hash
+     "sha256:2689b2325bab023c2cb51924be23e3f00c1c103556daacd76d58afbb4f8e144e",
+     :semantic-authority :gravity-source,
+     :function-shapes
+     {c14-build-checked-js-lowering
+      {:arity 2, :params [application target-request]},
+      c14-verify-checked-js-lowering
+      {:arity 3, :params [application target-request candidate]}},
+     :owner :c14,
+     :plan-semantic-hash
+     "sha256:b265b3b7738937c852c8cf7fe524879c98abd1028a9465bfe9f9b327e389041a",
+     :admission-status :development-unadmitted}},
+   :host-transport-sources
+   {"bootstrap/clojure/src/gravity/backend/js.clj"
+    {:source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/clojure/src/gravity/backend/js.clj",
+     :source-content-hash
+     "sha256:d5636ad80b3ae72baabab370022819aecc254a5254dfbcae1b69039f2a0c269a",
+     :source-byte-count 20680},
+    "bootstrap/clojure/src/gravity/backend/js_checked_mir.clj"
+    {:source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/clojure/src/gravity/backend/js_checked_mir.clj",
+     :source-content-hash
+     "sha256:ba83f612f17cb9834dd8a86605fca7a967de4f208ef3f6f4faf13af9a61877e0",
+     :source-byte-count 17930},
+    "bootstrap/clojure/src/gravity/backend/js_scalar.clj"
+    {:source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/clojure/src/gravity/backend/js_scalar.clj",
+     :source-content-hash
+     "sha256:7a10b4a9aca57b6acdc6bc5b7347e06cf3a032af10cfb694a82eb88c41d9ff95",
+     :source-byte-count 15006}},
+   :source
+   {:path
+    "/workspace/scratch/7de7e5af60ee/uniform-manual-final/examples/checked-js/acceptance.gravity",
+    :content-hash
+    "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+    :byte-count 341},
+   :compiler-host
+   {:implementation :clojure-stage0-seed,
+    :target :jvm,
+    :self-hosted? false},
+   :validation-scope
+   {:node-validation :syntax-check,
+    :export-execution :not-performed,
+    :clean-checkout-acceptance :separate-development-evidence},
+   :runtime-observation
+   {:node-version "v20.20.2", :validation :syntax-only},
+   :input
+   {:application-id
+    "sha256:4b1a3bbaae6b6a095c17efc0c3082698ab16e46350bcf5bbee69ff762b19c630",
+    :checked-core-id
+    "sha256:6106ceb392db3f25eb9a0996df3b08a61fa825403ee96da408957a765434bdc1",
+    :mir-module-id acceptance.scalar},
+   :source-policy-receipt
+   {:syntax-owner
+    {:artifact-id
+     "sha256:c6f4627bb03680d32f07ec0d15869d1a3babb0de97d878f6bad96bd7ee794811",
+     :binding
+     {:artifact :gravity/sh04-development-syntax-plan-binding-v1,
+      :status :complete,
+      :source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+      :source-byte-count 78643,
+      :source-content-hash
+      "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa",
+      :plan-semantic-hash
+      "sha256:2eb36a0fcec4f1d35c595d9f7b6c956f1e7db88b17525a2bb953480090606801",
+      :functions-semantic-hash
+      "sha256:8eaf764d380866acc5822cccefd571c394026fa206c51d0dbcc8192901d031ba",
+      :source-mode :development-current},
+     :source-revision
+     {:source-content-hash
+      "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa",
+      :builder-function c3-syntax-stream-build-template,
+      :builder-semantic-hash
+      "sha256:f9d25df4bbe41837b016434393d689f807140a2c489e7c9e39949f15c4336744",
+      :source-byte-count 78643,
+      :functions-semantic-hash
+      "sha256:8eaf764d380866acc5822cccefd571c394026fa206c51d0dbcc8192901d031ba",
+      :source-language :gravity,
+      :owner :sh04-syntax,
+      :logical-source-path
+      "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+      :plan-semantic-hash
+      "sha256:2eb36a0fcec4f1d35c595d9f7b6c956f1e7db88b17525a2bb953480090606801"},
+     :envelope
+     {:artifact :gravity/sh02-stage-authenticated-envelope,
+      :schema-version 1,
+      :status :accepted,
+      :stage :c3-syntax,
+      :semantic-envelope-id
+      "sha256:47b1210fd7eac0ff7df21236a5cb2e30469b00f3ec9fc9272fabf8c6004271c4",
+      :provenance-binding-id
+      "sha256:c0d001579b774f77285e3b8b84895affc06c14e43cbdaeacffe317c2cccbcc8a"}},
+    :verification-scope :selected-current-source-host-seed,
+    :reader-source-revision
+    {:source-content-hash
+     "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205",
+     :builder-function sh03-read-source-unit,
+     :builder-semantic-hash
+     "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3",
+     :function-shapes-content-id
+     "sha256:304950251dc5a12af19ca889acc3dd6aa442cb23d21abd0c8a71368d53bea47f",
+     :source-byte-count 246369,
+     :verifier-semantic-hash
+     "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7",
+     :functions-semantic-hash
+     "sha256:7be1bd97600db2d9cab88e7ac8cbf10e9644fa2e120309a9b892e11c3c83a701",
+     :source-language :gravity,
+     :owner :sh03-reader,
+     :logical-source-path
+     "bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+     :plan-semantic-hash
+     "sha256:cf23056d9f691c24fc7344445723d69e288dd1b755db3199086d4608323d4aa6"},
+    :owner-metadata-content-id
+    "sha256:ee06e77ad5bebeee0cc3f1554708cfd67116657b62e8f14c4168d712f8ccf578",
+    :reader-plan-binding
+    {:source-content-hash
+     "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205",
+     :observed-instruction-nodes 11491,
+     :builtin-functions-hash
+     "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400",
+     :instruction-summary-content-id
+     "sha256:97bab4bd749e6b497c609d01d3a8ed4951dd4b41e3a72bd04f115656411edd45",
+     :executed-by :clojure-stage2-generic-rule-runner,
+     :function-names-hash
+     "sha256:32401a608a596e84fac2663ea87efbfa2c758afa150c8a50242d84a6be92c78a",
+     :self-hosted? false,
+     :source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+     :function-count 232,
+     :source-byte-count 246369,
+     :status :complete,
+     :observed-instruction-depth 20,
+     :verifier-semantic-hash
+     "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7",
+     :functions-semantic-hash
+     "sha256:7be1bd97600db2d9cab88e7ac8cbf10e9644fa2e120309a9b892e11c3c83a701",
+     :artifact :gravity/sh03-current-source-reader-plan-binding,
+     :semantic-authority :gravity-source,
+     :function-shapes-hash
+     "sha256:3ccb1d0fc93c71951a1660e3a6a6fe069c3166cce5f08d87bfb07b9d979555ee",
+     :compiled-by :clojure-stage0-seed,
+     :entrypoint-semantic-hash
+     "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3",
+     :plan-semantic-hash
+     "sha256:cf23056d9f691c24fc7344445723d69e288dd1b755db3199086d4608323d4aa6",
+     :generic-bridge-residual? true},
+    :envelope-verification :passed,
+    :projection-contract
+    {:artifact :gravity/c6-reader-owner-metadata-projection,
+     :schema-version 1,
+     :encoding :owner-canonical-semantic-v1,
+     :sorted-metadata-policy :default-only,
+     :core-carrier-policy :reject},
+    :policy
+    {:profile :hosted,
+     :target :js-ts,
+     :effects #{:error/raise},
+     :capabilities #{},
+     :safety :safe},
+    :self-hosted? false,
+    :owner-sources
+    {:reader
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+      :source-byte-count 246369,
+      :source-content-hash
+      "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205"},
+     :syntax
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+      :source-byte-count 78643,
+      :source-content-hash
+      "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa"},
+     :expansion
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/macro.gravity",
+      :source-byte-count 54374,
+      :source-content-hash
+      "sha256:0a6e58a8134c6f9dbd139617fda376cd8978223820562c1f5b214b658f1d8db1"},
+     :resolution
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/resolution.gravity",
+      :source-byte-count 94395,
+      :source-content-hash
+      "sha256:6243c361dc86902e40965c1fcbeabaadea7d898b587d8ba987842b3c8c28b408"},
+     :expression
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/p15_s23/emitter.gravity",
+      :source-byte-count 1599012,
+      :source-content-hash
+      "sha256:f60b1dbd3d51364f229de0a8ef3a2a5149d87efd03e341ce33be9092e93b8303"},
+     :checked-core
+     {:source-path
+      "/workspace/scratch/7de7e5af60ee/uniform-manual-final/language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+      :source-byte-count 238746,
+      :source-content-hash
+      "sha256:a1e887a7a430076dfff573aa69ff0deb339db9cc103100b29b9b6527803209e7"}},
+    :function-resolution
+    {:sh06-artifact-id
+     "sha256:5d09f5db887a1912b1756176b3fc719c6104f5faef4392f7ae10218b4d34c993",
+     :sh06-semantic-projection-id
+     "sha256:79484e2ac3603347a0f51a3ce5ba3941c97c0d44b952baa5123924ef290e6661",
+     :projection-binding
+     "sha256:9f10fbdc58225b0c8d450c8b2bf32816cd5503b851a07e3699ce0fdfe822a8f7",
+     :root-syntax-ids
+     ["sha256:887fc7205dc218335ca8fa312c596bf8389aa3f353e56b9314a07fc228434136"
+      "sha256:e66c67e45e712197896b671b8d2077ec038b32384b864dc72cc9e7d030ff4867"],
+     :declarations
+     [{:name add,
+       :function-form-id :form-23,
+       :function-syntax-id
+       "sha256:beb3cc4fc9d130b6be24ed0f9c360217811b19e369df1da0e70bb020451f696c",
+       :function-scope-id
+       "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+       :function-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name add,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:f06e7452b691487bb5fb32b75f9805f17c1c1889638152611777e2e883d81510",
+        :type-ref :gravity.type/function,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [:error/raise],
+        :safety :safe,
+        :binding-id
+        "sha256:e96aefe98739f11eadb04259dd06e4925cbfb37ee75aefa2585772a04097dac4",
+        :kind :function,
+        :semantic-span {:ordinal 1},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:4544e0e4f5ee31bc2e1c57b2085413953bc62c48ae334b0787d1180551ecce0b",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :private,
+        :binding-class :namespace},
+       :parameters
+       [{:parameter-index 0,
+         :parameter-binding
+         {:capabilities [],
+          :package {:name acceptance.scalar, :version "workspace"},
+          :name left,
+          :target-set [:js-ts],
+          :upstream-binding-id
+          "sha256:0330ad1b9f97db4e25251ed41b0b5bb82b965368a57fe30cce2e2f370bbde8aa",
+          :type-ref :gravity.type/local,
+          :definition-artifact-id
+          "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:5cada45cb21aac40ee9d0cfc59a105f5f3b314215fa6469aa79daef206424400",
+          :kind :local,
+          :semantic-span {:scope-ordinal 1, :binding-ordinal 0},
+          :scope-id
+          "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+          :definition-syntax-id
+          "sha256:789c6d889dde311d664be3dac01be2bfe9a61e98cda385f70f27df6dea1a1e37",
+          :profile-set [:hosted],
+          :namespace acceptance.scalar,
+          :visibility :lexical,
+          :binding-class :lexical},
+         :type-binding
+         {:capabilities [],
+          :package
+          {:name gravity/core, :version "bootstrap-contract-v1"},
+          :name I64,
+          :target-set [:all],
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+          :type-ref :gravity.type/type,
+          :definition-artifact-id
+          "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :kind :type,
+          :semantic-span {:catalog :gravity/core, :ordinal 21},
+          :scope-id nil,
+          :definition-syntax-id
+          "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+          :profile-set
+          [:ai
+           :core
+           :distributed
+           :firmware
+           :formal
+           :gpu
+           :hardware
+           :hosted
+           :kernel
+           :meta
+           :native],
+          :namespace gravity.core,
+          :visibility :public,
+          :binding-class :core},
+         :type-resolution
+         {:reference-syntax-id
+          "sha256:496db5e93c3f0dc95b0a891d2e7872c3f2794688afdfa102e5bf1d836da9d0e9",
+          :symbol I64,
+          :position :type,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :resolution-order :profile-allowed-core-binding,
+          :source-span
+          {:byte-start 154,
+           :byte-end 208,
+           :line-start 9,
+           :column-start 1,
+           :line-end 10,
+           :column-end 18,
+           :scalar-start 154,
+           :scalar-end 208},
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+         :coordinates
+         [{:role :parameter-vector,
+           :c2-form-id :form-26,
+           :projected-form-id
+           "sha256:545805eb7f2202ae94580c696d3791b0defcf54793dc86720bd6da88f959b2b1",
+           :projected-syntax-id
+           "sha256:5a3ecdd196e3dc53bdfd336437e73e622337664e562994acf1f513048bfaa430"}
+          {:role :parameter-name,
+           :c2-form-id :form-27,
+           :projected-form-id
+           "sha256:4382da40bc23b7d92d64e3fd1d0a7d1a1eea48c055f9f812c13ca5f1c6ae0f45",
+           :projected-syntax-id
+           "sha256:789c6d889dde311d664be3dac01be2bfe9a61e98cda385f70f27df6dea1a1e37"}
+          {:role :annotation-marker,
+           :c2-form-id :form-28,
+           :projected-form-id
+           "sha256:2acbe0f4d0f4b2e2c6e354128b85eb8c7a160ee8d844254c654458747e84d821",
+           :projected-syntax-id
+           "sha256:929404d0fd5eb89ba1dd7755149c52ab2564bf5cd0fa361be6198569353e74aa"}
+          {:role :annotation-type,
+           :c2-form-id :form-29,
+           :projected-form-id
+           "sha256:84e6381d2c89f3ddcf7de4b8871971db593cb43d2afad42db7900235245c9844",
+           :projected-syntax-id
+           "sha256:496db5e93c3f0dc95b0a891d2e7872c3f2794688afdfa102e5bf1d836da9d0e9"}]}
+        {:parameter-index 1,
+         :parameter-binding
+         {:capabilities [],
+          :package {:name acceptance.scalar, :version "workspace"},
+          :name right,
+          :target-set [:js-ts],
+          :upstream-binding-id
+          "sha256:3d6bd3cda266643c35a37da48f5fe8ea6ad0bed544f995b59bd8fd51fb13b32d",
+          :type-ref :gravity.type/local,
+          :definition-artifact-id
+          "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:b7a4c80c71924330cf0b541a2ce84fbc117d47555cbe770d7ed8e801fac13ae6",
+          :kind :local,
+          :semantic-span {:scope-ordinal 1, :binding-ordinal 1},
+          :scope-id
+          "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+          :definition-syntax-id
+          "sha256:54567cfc618fc270a6e5f128fcee1f2f25924a8f842aae971d9e5d72ced14014",
+          :profile-set [:hosted],
+          :namespace acceptance.scalar,
+          :visibility :lexical,
+          :binding-class :lexical},
+         :type-binding
+         {:capabilities [],
+          :package
+          {:name gravity/core, :version "bootstrap-contract-v1"},
+          :name I64,
+          :target-set [:all],
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+          :type-ref :gravity.type/type,
+          :definition-artifact-id
+          "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :kind :type,
+          :semantic-span {:catalog :gravity/core, :ordinal 21},
+          :scope-id nil,
+          :definition-syntax-id
+          "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+          :profile-set
+          [:ai
+           :core
+           :distributed
+           :firmware
+           :formal
+           :gpu
+           :hardware
+           :hosted
+           :kernel
+           :meta
+           :native],
+          :namespace gravity.core,
+          :visibility :public,
+          :binding-class :core},
+         :type-resolution
+         {:reference-syntax-id
+          "sha256:569d2d992c3925a0f97ad0d144637c2287f9347b28bb2207492cc302af7c7aec",
+          :symbol I64,
+          :position :type,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :resolution-order :profile-allowed-core-binding,
+          :source-span
+          {:byte-start 154,
+           :byte-end 208,
+           :line-start 9,
+           :column-start 1,
+           :line-end 10,
+           :column-end 18,
+           :scalar-start 154,
+           :scalar-end 208},
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+         :coordinates
+         [{:role :parameter-vector,
+           :c2-form-id :form-26,
+           :projected-form-id
+           "sha256:545805eb7f2202ae94580c696d3791b0defcf54793dc86720bd6da88f959b2b1",
+           :projected-syntax-id
+           "sha256:5a3ecdd196e3dc53bdfd336437e73e622337664e562994acf1f513048bfaa430"}
+          {:role :parameter-name,
+           :c2-form-id :form-30,
+           :projected-form-id
+           "sha256:8246c9d47e833cd7dfc24f793b7080a5021eceb46522587f57e313e32bde4fc6",
+           :projected-syntax-id
+           "sha256:54567cfc618fc270a6e5f128fcee1f2f25924a8f842aae971d9e5d72ced14014"}
+          {:role :annotation-marker,
+           :c2-form-id :form-31,
+           :projected-form-id
+           "sha256:c66f2bde57819c9ee666132d1e084bc61e4093b6139b0ffaaf998504e87bb341",
+           :projected-syntax-id
+           "sha256:ba6f04763b9f2d06ea949a6a6b4932b5910df3ef0b485757a12951feb31af532"}
+          {:role :annotation-type,
+           :c2-form-id :form-32,
+           :projected-form-id
+           "sha256:6c995a12f63301248eb225a124a5f97c88e1b23b30efdb98a1b4aa1a0a6c695f",
+           :projected-syntax-id
+           "sha256:569d2d992c3925a0f97ad0d144637c2287f9347b28bb2207492cc302af7c7aec"}]}]}
+      {:name score,
+       :function-form-id :form-37,
+       :function-syntax-id
+       "sha256:b949e66a575c8beb008239c317c779086f47a514e4b1a5237c5ba21df7f49573",
+       :function-scope-id
+       "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+       :function-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name score,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:fd86da5e973d891c4ba0f98051d96ba3b92363260b82fdb51956f488b53b9a65",
+        :type-ref :gravity.type/function,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [:error/raise],
+        :safety :safe,
+        :binding-id
+        "sha256:55a610bf6bfeb34fb83f738c760a5ccef5bac593c229a37cd179563d54c14a30",
+        :kind :function,
+        :semantic-span {:ordinal 2},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:0be37450918b8f5de84f37d47491bae18ba00c3250581638c44d41ac89252196",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :public,
+        :binding-class :namespace},
+       :parameters
+       [{:parameter-index 0,
+         :parameter-binding
+         {:capabilities [],
+          :package {:name acceptance.scalar, :version "workspace"},
+          :name choose-sum,
+          :target-set [:js-ts],
+          :upstream-binding-id
+          "sha256:c62367746a6287b27910c6da5f8b163ef515ce42744ccc10ab8f4e8e1781bbfa",
+          :type-ref :gravity.type/local,
+          :definition-artifact-id
+          "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:b4237ad922ec8657d4fc1019322688fd54b944b84c4d272c8d7dc4e8c32796af",
+          :kind :local,
+          :semantic-span {:scope-ordinal 2, :binding-ordinal 0},
+          :scope-id
+          "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+          :definition-syntax-id
+          "sha256:a7e1d849cc1db9e5953d519306431fbd7bdc8d657e5cd829b1c20af5c6820af2",
+          :profile-set [:hosted],
+          :namespace acceptance.scalar,
+          :visibility :lexical,
+          :binding-class :lexical},
+         :type-binding
+         {:capabilities [],
+          :package
+          {:name gravity/core, :version "bootstrap-contract-v1"},
+          :name Bool,
+          :target-set [:all],
+          :upstream-binding-id
+          "sha256:a32ccc3819e90afcc8d96a6c7cc3b030e5e8887adf78d6ea6f2e3d878aba2e5d",
+          :type-ref :gravity.type/type,
+          :definition-artifact-id
+          "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:545dd26bff971db19d97bc1f34f5c617cec068f1b3edac46eab041c4681086f4",
+          :kind :type,
+          :semantic-span {:catalog :gravity/core, :ordinal 12},
+          :scope-id nil,
+          :definition-syntax-id
+          "sha256:6f66f07fce2c022ae6b57a5257dcd253d4f6a38f90bcca148ebd5b2699391f45",
+          :profile-set
+          [:ai
+           :core
+           :distributed
+           :firmware
+           :formal
+           :gpu
+           :hardware
+           :hosted
+           :kernel
+           :meta
+           :native],
+          :namespace gravity.core,
+          :visibility :public,
+          :binding-class :core},
+         :type-resolution
+         {:reference-syntax-id
+          "sha256:32db663506144f0240bc9d9bd9b035e704d875c0752ea1b6a40e7e36c4586626",
+          :symbol Bool,
+          :position :type,
+          :binding-id
+          "sha256:545dd26bff971db19d97bc1f34f5c617cec068f1b3edac46eab041c4681086f4",
+          :resolution-order :profile-allowed-core-binding,
+          :source-span
+          {:byte-start 210,
+           :byte-end 340,
+           :line-start 12,
+           :column-start 1,
+           :line-end 16,
+           :column-end 14,
+           :scalar-start 210,
+           :scalar-end 340},
+          :upstream-binding-id
+          "sha256:a32ccc3819e90afcc8d96a6c7cc3b030e5e8887adf78d6ea6f2e3d878aba2e5d"},
+         :coordinates
+         [{:role :parameter-vector,
+           :c2-form-id :form-40,
+           :projected-form-id
+           "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+           :projected-syntax-id
+           "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+          {:role :parameter-name,
+           :c2-form-id :form-41,
+           :projected-form-id
+           "sha256:5e78e8fdc75d27d5e8f419f4a16392305982bcf92565cb8130a6766d3e0facd7",
+           :projected-syntax-id
+           "sha256:a7e1d849cc1db9e5953d519306431fbd7bdc8d657e5cd829b1c20af5c6820af2"}
+          {:role :annotation-marker,
+           :c2-form-id :form-42,
+           :projected-form-id
+           "sha256:1cc19c319b967c7ee7754de5bb994eabe7e738de75078fb800b15d69f8fee939",
+           :projected-syntax-id
+           "sha256:5ac501a4200be0e24b82f2035af4b05fbf8279781f557bb7162c17f472e15843"}
+          {:role :annotation-type,
+           :c2-form-id :form-43,
+           :projected-form-id
+           "sha256:a267115bec6b93e7544204d44e438e757a611bfb82031e8572a7a81864fbea47",
+           :projected-syntax-id
+           "sha256:32db663506144f0240bc9d9bd9b035e704d875c0752ea1b6a40e7e36c4586626"}]}
+        {:parameter-index 1,
+         :parameter-binding
+         {:capabilities [],
+          :package {:name acceptance.scalar, :version "workspace"},
+          :name left,
+          :target-set [:js-ts],
+          :upstream-binding-id
+          "sha256:8aaf533b8c818d86691dbeebb94f3b595be79c2bce3b5f71cd66b46fd5e3418b",
+          :type-ref :gravity.type/local,
+          :definition-artifact-id
+          "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:f97c461597e95ac01786358fb244be6ac8738c16f4b95b3975653f46f7500a6f",
+          :kind :local,
+          :semantic-span {:scope-ordinal 2, :binding-ordinal 1},
+          :scope-id
+          "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+          :definition-syntax-id
+          "sha256:32040a5cf731cd69d0ee048cedcdc9ea08689b5757907d7df800c38abba74988",
+          :profile-set [:hosted],
+          :namespace acceptance.scalar,
+          :visibility :lexical,
+          :binding-class :lexical},
+         :type-binding
+         {:capabilities [],
+          :package
+          {:name gravity/core, :version "bootstrap-contract-v1"},
+          :name I64,
+          :target-set [:all],
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+          :type-ref :gravity.type/type,
+          :definition-artifact-id
+          "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :kind :type,
+          :semantic-span {:catalog :gravity/core, :ordinal 21},
+          :scope-id nil,
+          :definition-syntax-id
+          "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+          :profile-set
+          [:ai
+           :core
+           :distributed
+           :firmware
+           :formal
+           :gpu
+           :hardware
+           :hosted
+           :kernel
+           :meta
+           :native],
+          :namespace gravity.core,
+          :visibility :public,
+          :binding-class :core},
+         :type-resolution
+         {:reference-syntax-id
+          "sha256:0d00ef57f37db53261776709bef15caa3990f77f5dc478eb36b4eaf8ef4a9d9e",
+          :symbol I64,
+          :position :type,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :resolution-order :profile-allowed-core-binding,
+          :source-span
+          {:byte-start 210,
+           :byte-end 340,
+           :line-start 12,
+           :column-start 1,
+           :line-end 16,
+           :column-end 14,
+           :scalar-start 210,
+           :scalar-end 340},
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+         :coordinates
+         [{:role :parameter-vector,
+           :c2-form-id :form-40,
+           :projected-form-id
+           "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+           :projected-syntax-id
+           "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+          {:role :parameter-name,
+           :c2-form-id :form-44,
+           :projected-form-id
+           "sha256:0f50b9fc76db733b8f72ea5545e48712f867e9806fd5cef9dfaeff860180b387",
+           :projected-syntax-id
+           "sha256:32040a5cf731cd69d0ee048cedcdc9ea08689b5757907d7df800c38abba74988"}
+          {:role :annotation-marker,
+           :c2-form-id :form-45,
+           :projected-form-id
+           "sha256:d232c83cce7120a1148f9caeeba7a860923e79b385ab193ae5ef41689c4224cd",
+           :projected-syntax-id
+           "sha256:cdecbd60c5bf79ff1391a1392fa386ddd34bc265f07a84e99871ddcc380e4dce"}
+          {:role :annotation-type,
+           :c2-form-id :form-46,
+           :projected-form-id
+           "sha256:f1d39cc6af6c59059d0d4b2eb551185a5bb9c617721e52fd173839d2c1e36bf5",
+           :projected-syntax-id
+           "sha256:0d00ef57f37db53261776709bef15caa3990f77f5dc478eb36b4eaf8ef4a9d9e"}]}
+        {:parameter-index 2,
+         :parameter-binding
+         {:capabilities [],
+          :package {:name acceptance.scalar, :version "workspace"},
+          :name right,
+          :target-set [:js-ts],
+          :upstream-binding-id
+          "sha256:c33c34a68c832d0ecaf5a01eef9805067eeff62630400170f3188929c1e77f2b",
+          :type-ref :gravity.type/local,
+          :definition-artifact-id
+          "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:931c6dc2238264b1ca81c8510bd6322977e7859eff2388343e051657b820fda1",
+          :kind :local,
+          :semantic-span {:scope-ordinal 2, :binding-ordinal 2},
+          :scope-id
+          "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+          :definition-syntax-id
+          "sha256:9b0573b4948ea49c3fd2226c8c000266f0b33af3081387c19d7e596e5f71af46",
+          :profile-set [:hosted],
+          :namespace acceptance.scalar,
+          :visibility :lexical,
+          :binding-class :lexical},
+         :type-binding
+         {:capabilities [],
+          :package
+          {:name gravity/core, :version "bootstrap-contract-v1"},
+          :name I64,
+          :target-set [:all],
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+          :type-ref :gravity.type/type,
+          :definition-artifact-id
+          "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+          :effects [],
+          :safety :safe,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :kind :type,
+          :semantic-span {:catalog :gravity/core, :ordinal 21},
+          :scope-id nil,
+          :definition-syntax-id
+          "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+          :profile-set
+          [:ai
+           :core
+           :distributed
+           :firmware
+           :formal
+           :gpu
+           :hardware
+           :hosted
+           :kernel
+           :meta
+           :native],
+          :namespace gravity.core,
+          :visibility :public,
+          :binding-class :core},
+         :type-resolution
+         {:reference-syntax-id
+          "sha256:f2aa439d160c4f2546dddfe9b99131080cf827703618d7d787b2ca3a26a160fe",
+          :symbol I64,
+          :position :type,
+          :binding-id
+          "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+          :resolution-order :profile-allowed-core-binding,
+          :source-span
+          {:byte-start 210,
+           :byte-end 340,
+           :line-start 12,
+           :column-start 1,
+           :line-end 16,
+           :column-end 14,
+           :scalar-start 210,
+           :scalar-end 340},
+          :upstream-binding-id
+          "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+         :coordinates
+         [{:role :parameter-vector,
+           :c2-form-id :form-40,
+           :projected-form-id
+           "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+           :projected-syntax-id
+           "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+          {:role :parameter-name,
+           :c2-form-id :form-47,
+           :projected-form-id
+           "sha256:70e5927a248cda74543a255c53e905d61a85864fd7f3573ef61851485afeaeaa",
+           :projected-syntax-id
+           "sha256:9b0573b4948ea49c3fd2226c8c000266f0b33af3081387c19d7e596e5f71af46"}
+          {:role :annotation-marker,
+           :c2-form-id :form-48,
+           :projected-form-id
+           "sha256:a1ac55adb7dfa1146eeaacdd83d526f998415aee83eaca76abce81ff012b1853",
+           :projected-syntax-id
+           "sha256:80629d45b8300f18ce00b8b5b403a1fb72643ff016b2186cceb00e52b380d272"}
+          {:role :annotation-type,
+           :c2-form-id :form-49,
+           :projected-form-id
+           "sha256:eec677d8b56e8591915556899ef1ac469d78f1c7785b8f27784d29db856a58ca",
+           :projected-syntax-id
+           "sha256:f2aa439d160c4f2546dddfe9b99131080cf827703618d7d787b2ca3a26a160fe"}]}]}]},
+    :expression-binding
+    {:source-path
+     "/workspace/scratch/7de7e5af60ee/uniform-manual-final/bootstrap/gravity/p15_s23/emitter.gravity",
+     :source-byte-count 1599012,
+     :source-content-hash
+     "sha256:f60b1dbd3d51364f229de0a8ef3a2a5149d87efd03e341ce33be9092e93b8303",
+     :invoked? false,
+     :reason :scalar-module-seed-plan},
+    :source-interface
+    {:interface :gravity/compiler-application, :version 1},
+    :reader-result-identity
+    {:actual-sh03-reader-result-id
+     "sha256:3baa87e219fd4a205dd171c80f84dbeeca42453e692df1637cd492a02ccc0317",
+     :actual-c2-artifact-id
+     "sha256:2596ebf694f2643435459f5e824a0d1fe114dc6beecd074320bd298e4d11bf68",
+     :actual-reader-product-integrity-hash
+     "sha256:102ca3cec562f29dd2e09b7b909aefba13e1d0194eb81632905134f96808080f",
+     :actual-reader-source-id
+     "sha256:d9b6b9c46342935771a36ea0d393c4c791b508ed87edd692a867b1f7fd8653d4",
+     :actual-sh03-semantic-product-binding
+     {:adapter-contract :gravity/sh03-to-c2-reader-products-v3,
+      :adapted-source-unit-id
+      "sha256:d9b6b9c46342935771a36ea0d393c4c791b508ed87edd692a867b1f7fd8653d4",
+      :adapted-token-stream-id
+      "sha256:aaee422e04da0b8b9c3269cd0385ce5abcb56869e385a7b2a339341bc60f5db8",
+      :adapted-form-tree-id
+      "sha256:f10f39c55728f95e6a9e14524656fd2ce9848ff41365a51d588e28254fb03e73",
+      :adapted-extension-invocation-set-id
+      "sha256:2273149eb3f9197a78ff830cb363c5f84a3bec5c9d6ca33c7743b7a09c3ec176"}},
+    :authenticated-envelope
+    {:artifact :gravity/sh02-stage-authenticated-envelope,
+     :schema-version 1,
+     :status :accepted,
+     :stage :c2-reader,
+     :semantic-envelope-id
+     "sha256:a9755c52be90e203f3ecd460e66ced4f805722260da24653453cafdf11fc8c69",
+     :provenance-binding-id
+     "sha256:3280ac74e0ffa7674ee72b7887c79b3edaefb02ea85adfedc356a5865813eacc",
+     :source-rule
+     {:source-content-hash
+      "sha256:7ef0386733632569a81a3e709551e4c4d300ec43ff0f7f13b5fe7399df29c3b7",
+      :builder-function authenticated-envelope-build-template,
+      :executed-by :clojure-stage0-rule-runner,
+      :verifier-function authenticated-envelope-verify-template,
+      :builder-semantic-hash
+      "sha256:19b21ed1e94563631c25b502f5297fa1e33070f0a62fefc480bcba5984b02a7a",
+      :function-shapes-content-id
+      "sha256:3b23575ab65c1ecfee55b3048397de45fdbd47dbdd5d2f57ff0f255242443f5d",
+      :self-hosted? false,
+      :source-byte-count 59822,
+      :verifier-semantic-hash
+      "sha256:e52b201a81ef82f857aaabc68cb2d6a8f0f4505f853c555816023f5dad294a77",
+      :owner-source-rule-content-id
+      "sha256:0791c54ef861f8596325d01b477e40f650bc346a61fc70a1f29af6f6bb08e56f",
+      :functions-semantic-hash
+      "sha256:0c04397dd7a0fd54a89156ea09079117599b116b9c3d2db3221cd1645ada97c6",
+      :artifact :gravity/pinned-authenticated-envelope-source-rule,
+      :semantic-authority :gravity-source,
+      :compiled-by :clojure-stage0-seed,
+      :owner :gravity.compiler/authenticated-envelope,
+      :plan-semantic-hash
+      "sha256:2f6c3810a46cc333718da8212117109fdf76a5aabe24142aa859bbf1a131dcde",
+      :admission-status :development-unadmitted},
+     :gravity-template-replay
+     {:status :template-replay-passed,
+      :identity-enforcement :pending-host-resolution,
+      :eligible-for-contextual-acceptance? false,
+      :request-count 21,
+      :semantic-authority :gravity-source,
+      :checks-content-id
+      "sha256:0263adbb3f33bc407ecc2db3587b87dd8373c3cbb9da2ded19620a42eb5d3a36",
+      :diagnostics-content-id
+      "sha256:a1ce67da81e7bda80028a285324ffe2ca3552b186ccf3eeda6cfeb20afccf6a8"}},
+    :admission-status :development-unadmitted},
+   :target-products
+   {:c14
+    "sha256:c0a3a4083349714cd88e4bb05c7f534663d27631b3b3741ff869e54f0094c4ae",
+    :b1
+    "sha256:920a88a6e34e9e29678d98042ebac4de72afcfe9e2bd5ba71806d86a96f113f0",
+    :b6
+    "sha256:3a558d24f381d5ab6bee75b797edc2366a8709b711dbf520ca8592059c163057"}},
+  :compiler-dependencies
+  ["org.clojure/clojure 1.12.0"
+   "org.clojure/spec.alpha 0.5.238"
+   "org.clojure/core.specs.alpha 0.4.74"],
+  :assertions {:test 1, :pass 462, :fail 0, :error 0},
+  :candidate-tree "498c4d978d442cf62df20569e789ff357bd31fbc"},
+ :validation
+ {:docs
+  {:exit 0,
+   :evidence
+   {:log "final-gates/docs.log",
+    :byte-count 123,
+    :sha256
+    "sha256:882aef512e8c531b6231028358c749ea3421fc5277354cd3f9da5aabb72a2c5b"}},
+  :governance
+  {:exit 0,
+   :evidence
+   {:log "final-gates/governance.log",
+    :byte-count 202,
+    :sha256
+    "sha256:3750f859170a6aca414db92cab2e1f516c717ac570f9f9c1ff427056f6ef7f78"}},
+  :roadmap
+  {:exit 0,
+   :evidence
+   {:log "final-gates/roadmap.log",
+    :byte-count 349,
+    :sha256
+    "sha256:c97aa427409105c791dc8dedb5983bdff755114b285e1bec30daf612fe31578b"}},
+  :whitespace
+  {:exit 0,
+   :evidence
+   {:log "final-gates/whitespace.log",
+    :byte-count 0,
+    :sha256
+    "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}}},
+ :residual-boundaries
+ {:compiler-host :clojure-jvm-stage0,
+  :artifact-runtime :node20-es2022-esm,
+  :compile-time-validation :node-syntax-only,
+  :export-runtime-validation :separate-actual-node-execution,
+  :clean-checkout-validation :separate-recorded-experiment,
+  :shell-help :unchanged-frozen-legacy-text,
+  :current-public-help "clojure -M:gravity help"},
+ :compatibility-limit
+ {:legacy-selector
+  {:errors 0,
+   :exit 1,
+   :additional-failures :absent-artifact-cascades,
+   :tests 1,
+   :source "bootstrap/gravity/p15_s23/runtime.gravity",
+   :boundary :pinned-reference-runtime-contract,
+   :compile-exits [1 1 1],
+   :missing-fact :runtime-artifact-source-byte-count,
+   :compile-diagnostic "P15S23X002",
+   :elapsed-ns 116026840537,
+   :failures 10,
+   :log "legacy-js.log",
+   :assertions 16},
+  :baseline-same-diagnostic? true,
+  :legacy-selector-passed? false,
+  :historical-pins-refreshed? false,
+  :checked-route-falls-back? false,
+  :route-selection-coverage :passing-current-cli-namespace},
+ :independent-public-selector-review
+ {:schema :uniform/independent-public-selector-review-v1,
+  :date "2026-11-16",
+  :unchanged-assertions
+  {:result :verified,
+   :compared-commits
+   ["a43540a80dd37bd76788540bd229b3ff120902fa"
+    "b0bc8a525b4aa273be6a16d20f5393ae580ab4d1"
+    "dda7fd940b12af20c6e7016bef224cc984ca5362"],
+   :helper
+   {:path
+    "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj",
+    :committed-and-worktree-blob
+    "d72d2b5ba7972e6c798b899800b8e550e5026a3e"},
+   :test-entry-point
+   {:path
+    "bootstrap/clojure/test/gravity/compiler/application_test.clj",
+    :committed-and-worktree-blob
+    "ff7acbe9ab088e29663d510b2c611b1b21a4ea47"},
+   :process-watchdog-seconds 900,
+   :compiler-process-pair-size 2,
+   :assertions-or-watchdog-weakened? false},
+  :execution
+  {:terminal
+   {:tests 1, :assertions 557, :failures 0, :errors 0, :exit 0},
+   :observed-diagnostic-counts
+   {"P18T04002" 10,
+    "C7-TYPE-MISMATCH" 2,
+    "C14-INPUT" 3,
+    "C6-LOWERING-GAP" 2,
+    "L2-BUILTIN-ARITY" 1,
+    "C8-UNDECLARED" 1,
+    "B6-TARGET" 5,
+    "C2-DELIMITER" 1,
+    "B1-TARGET-UNSUPPORTED" 2},
+   :selector
+   "gravity.compiler.application-test/public-js-compiler-acceptance",
+   :real-incompatible-node
+   {:path
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    :version "v24.22.1"},
+   :last-progress-record
+   {:schema :gravity/development-test-progress-v2,
+    :authority :non-authoritative,
+    :phase :namespace-fixture,
+    :edge :return,
+    :elapsed-ns 5315516525666,
+    :namespace "gravity.compiler.application-test"},
+   :toolchain
+   {:java "21.0.13", :clojure-cli "1.12.0.1530", :node "v20.20.2"},
+   :documented-command
+   ["clojure"
+    "-J-Xmx2g"
+    "-M:dev-test"
+    "--namespace"
+    "gravity.compiler.application-test"
+    "--exact"
+    "public-js-compiler-acceptance"
+    "--progress"],
+   :public-compile-exit-counts {0 3, 1 27},
+   :public-compile-process-count 30},
+  :candidate
+  {:commit "dda7fd940b12af20c6e7016bef224cc984ca5362",
+   :tree "498c4d978d442cf62df20569e789ff357bd31fbc",
+   :checkout
+   "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final",
+   :bootstrap-clojure-tree "353bfcf24679398d849e36164d26818d02269edb",
+   :recorded-initial-git-status-porcelain "",
+   :observed-final-git-status-porcelain "",
+   :fixture-cleanup :completed},
+  :blocking-findings [],
+  :authority :non-authoritative-development-evidence,
+  :evidence
+  {:directory
+   "/workspace/scratch/7de7e5af60ee/evidence/candidate-final",
+   :sha256
+   {"clean-initial-status.txt"
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prerequisites.log"
+    "c7614c70ecad0049889e755acce5a75365c58e0dee3b35632afbdbafa58946c5",
+    "public-js-compiler-acceptance.exit"
+    "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "public-js-compiler-acceptance.log"
+    "2793717366ebd778a71b12be71c77870b43141b0fd770b3a5b6ef7cbd45a2694",
+    "revision.txt"
+    "d549bd6ee38ab74914c315c08136532072924d0fdf813bab171687a515392d57"},
+   :raw-process-records-preserved-below? true,
+   :related-manual-runtime-review
+   "evidence/reviews/manual-acceptance-review.edn",
+   :runtime-payload-identities
+   :validated-within-each-run-not-copied-between-checkouts},
+  :scope
+  {:method
+   [:read-only-helper-and-entry-point-review
+    :observed-public-process-record-review
+    :terminal-counter-and-exit-review
+    :final-source-object-status-and-evidence-hash-verification],
+   :public-helper-authored-by-reviewer? false,
+   :test-execution-owner "/root",
+   :new-compilations-or-runtime-tests-by-reviewer? false,
+   :source-or-artifact-mutations-by-reviewer? false,
+   :excluded-from-independent-production-code-approval
+   ["bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
+    "bootstrap/clojure/test/gravity/cli_test.clj"],
+   :exclusion-reason
+   :reviewer-authored-diagnostic-fix-covered-by-other-reviewer},
+  :residual-scope
+  {:previous-failed-or-interrupted-attempts
+   :separately-preserved-and-not-counted-as-passes,
+   :legacy-unrelated-dispatch-and-genuine-product-authority-checks
+   :separate-root-owned-evidence,
+   :hosted-ci-and-main-integration :outside-this-review,
+   :compiler-host :clojure-jvm-seed,
+   :nonclaims
+   [:full-language
+    :full-t1-cli-conformance
+    :release
+    :self-hosting
+    :seed-retirement
+    :performance]},
+  :result :passed,
+  :assertion-confirmed-command-fields
+  {:unknown-option {:unsupported-option "--unknown"},
+   :missing-output {:option "-o"},
+   :incompatible-node-version "v24.22.1",
+   :process-log-does-not-print-these-fields? true,
+   :unsupported-lowering
+   {:option "--lowering",
+    :supported-lowering-modes [:runtime-derived],
+    :actual-requested-mode-preserved? true},
+   :basis :helper-compares-actual-public-diagnostic-fields,
+   :escaping-output {:option "-o"},
+   :duplicate-options ["--target" "--output" "--lowering"],
+   :missing-value-options ["--target" "-o" "--lowering"],
+   :required-node-version "20.x",
+   :command-option-source-coordinates :not-invented},
+  :observed-public-processes
+  [{:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/module-js"],
+    :exit 0,
+    :elapsed-ms 706275,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/module-js-ts"],
+    :exit 0,
+    :elapsed-ms 714791,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/tmp/uniform-public-stale-jar-5191199925832909629/examples/renamed-logic.qst"
+     "--target"
+     "js"
+     "-o"
+     "target/renamed-boolean"],
+    :exit 0,
+    :elapsed-ms 682661,
+    :diagnostic nil,
+    :diagnostic-source nil,
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed-output"],
+    :exit 1,
+    :elapsed-ms 34020,
+    :diagnostic "C2-DELIMITER",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/malformed.gravity",
+    :source-position
+    {:line 17, :column 2, :column-unit :unicode-scalar, :byte 342},
+    :facts {},
+    :reader-reason :unexpected-end-of-source}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type-output"],
+    :exit 1,
+    :elapsed-ms 382284,
+    :diagnostic "C7-TYPE-MISMATCH",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-type.gravity",
+    :source-position
+    {:line 13, :column 13, :column-unit :unicode-scalar, :byte 280},
+    :facts
+    {:missing-fact :scalar-call-argument-types,
+     :function add,
+     :expected-type [:gravity/i64 :gravity/i64],
+     :actual-type [:gravity/bool :gravity/i64]},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid-output"],
+    :exit 1,
+    :elapsed-ms 389902,
+    :diagnostic "C7-TYPE-MISMATCH",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unused-invalid.gravity",
+    :source-position
+    {:line 18, :column 29, :column-unit :unicode-scalar, :byte 370},
+    :facts
+    {:missing-fact :binary-i64-add-operands,
+     :expected-type [:gravity/i64 :gravity/i64],
+     :actual-type [:gravity/bool :gravity/bool]},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity-output"],
+    :exit 1,
+    :elapsed-ms 419660,
+    :diagnostic "L2-BUILTIN-ARITY",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/wrong-call-arity.gravity",
+    :source-position
+    {:line 13, :column 13, :column-unit :unicode-scalar, :byte 280},
+    :facts
+    {:missing-fact :fixed-arity-scalar-call,
+     :function add,
+     :expected-arity 2,
+     :actual-arity 1},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion-output"],
+    :exit 1,
+    :elapsed-ms 381273,
+    :diagnostic "C6-LOWERING-GAP",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-recursion.gravity",
+    :source-position
+    {:line 9, :column 1, :column-unit :unicode-scalar, :byte 154},
+    :facts
+    {:missing-fact :nonrecursive-scalar-call-graph, :function add},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error-output"],
+    :exit 1,
+    :elapsed-ms 405040,
+    :diagnostic "C8-UNDECLARED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/undeclared-error.gravity",
+    :source-position
+    {:line 12, :column 1, :column-unit :unicode-scalar, :byte 198},
+    :facts
+    {:missing-fact :declared-numeric-error-effect,
+     :function score,
+     :declared-effects #{},
+     :inferred-effects #{:error/raise}},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form-output"],
+    :exit 1,
+    :elapsed-ms 427470,
+    :diagnostic "C6-LOWERING-GAP",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-form.gravity",
+    :source-position
+    {:line 10, :column 3, :column-unit :unicode-scalar, :byte 193},
+    :facts
+    {:missing-fact :compositional-scalar-source-operation,
+     :function nil},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch-output"],
+    :exit 1,
+    :elapsed-ms 769677,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/source-target-mismatch.gravity",
+    :source-position {},
+    :facts
+    {:missing-fact
+     :fresh-source-core-mir-verification-and-owner-relationships},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy-output"],
+    :exit 1,
+    :elapsed-ms 89314,
+    :diagnostic "B1-TARGET-UNSUPPORTED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-policy.gravity",
+    :source-position {},
+    :facts {:missing-fact :hosted-safe-scalar-js-source-policy},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile-output"],
+    :exit 1,
+    :elapsed-ms 92627,
+    :diagnostic "B1-TARGET-UNSUPPORTED",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-source-profile.gravity",
+    :source-position {},
+    :facts {:missing-fact :hosted-safe-scalar-js-source-policy},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "not-supported"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-not-supported"],
+    :exit 1,
+    :elapsed-ms 26630,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "verified-mir"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-verified-mir"],
+    :exit 1,
+    :elapsed-ms 29553,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js-ts"
+     "--lowering"
+     "verified-mir"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/js-ts-verified-mir"],
+    :exit 1,
+    :elapsed-ms 21949,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {:missing-fact :js-ts-lowering-mode},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"],
+    :exit 1,
+    :elapsed-ms 20071,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments ["compile"],
+    :exit 1,
+    :elapsed-ms 26877,
+    :diagnostic "P18T04002",
+    :diagnostic-source "bin/gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--lowering"],
+    :exit 1,
+    :elapsed-ms 25720,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "-o"],
+    :exit 1,
+    :elapsed-ms 33110,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--target"
+     "js-ts"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 25079,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"
+     "--output"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 27713,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--lowering"
+     "runtime-derived"
+     "--lowering"
+     "runtime-derived"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 28435,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity"
+     "--target"
+     "js"
+     "--unknown"
+     "value"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/options-output"],
+    :exit 1,
+    :elapsed-ms 28455,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/never-created.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/existing"],
+    :exit 1,
+    :elapsed-ms 798121,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :fresh-output-path},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/not-a-directory/child"],
+    :exit 1,
+    :elapsed-ms 814044,
+    :diagnostic "C14-INPUT",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :output-parent-directory},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "../outside-output"],
+    :exit 1,
+    :elapsed-ms 42646,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"],
+    :exit 1,
+    :elapsed-ms 48734,
+    :diagnostic "P18T04002",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/unsupported-node"],
+    :exit 1,
+    :elapsed-ms 714333,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :node20-runtime},
+    :reader-reason nil}
+   {:arguments
+    ["compile"
+     "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity"
+     "--target"
+     "js"
+     "-o"
+     "target/development-loop-batches/public-js-4700287a-9a8b-4349-a004-cd5839ad55b4/without-node"],
+    :exit 1,
+    :elapsed-ms 788542,
+    :diagnostic "B6-TARGET",
+    :diagnostic-source
+    "/workspace/scratch/7de7e5af60ee/uniform-acceptance-final/examples/checked-js/acceptance.gravity",
+    :source-position {},
+    :facts {:missing-fact :node20-runtime},
+    :reader-reason nil}],
+  :reviewer "/root/review_cli",
+  :successful-assertion-coverage
+  {:semantic-refusals
+   [:malformed-source
+    :wrong-call-type
+    :wrong-call-arity
+    :invalid-unused-body
+    :undeclared-error-effect
+    :unsupported-recursion
+    :unsupported-form
+    :source-target-mismatch
+    :unsupported-source-profile
+    :unsupported-source-capability-policy],
+   :publication-after-rejection
+   {:rejected-target-directory-absence
+    :asserted-before-fixture-cleanup-where-output-is-named,
+    :existing-directory-marker-and-entry-set :unchanged,
+    :invalid-parent-file-bytes :unchanged},
+   :publication
+   {:inventory
+    ["program.mjs"
+     "program.d.ts"
+     "program.mjs.map"
+     "package.json"
+     "manifest.edn"
+     "provenance.edn"],
+    :all-six-reported-path-byte-count-and-sha256-checks :passed,
+    :compiler-host-jvm-and-clojure-seed-distinguished-from-node-target
+    :passed,
+    :compiler-syntax-validation-distinguished-from-test-execution
+    :passed},
+   :command-and-runtime-refusals
+   [:unsupported-lowering
+    :js-verified-mir
+    :js-ts-verified-mir
+    :missing-command-source
+    :missing-option-values
+    :duplicate-options
+    :unknown-option
+    :existing-output
+    :invalid-output-parent
+    :missing-output
+    :escaping-output
+    :missing-node
+    :real-incompatible-node],
+   :basis
+   :executed-assertions-in-unchanged-helper-with-zero-terminal-failures,
+   :standalone
+   {:complete-six-file-copy-outside-checkout :passed,
+    :environment :cleared-before-setting-only-node-directory-path,
+    :node-executable :absolute-resolved-installed-node,
+    :success-and-all-twelve-error-reports-match-original :passed},
+   :source-variation
+   {:extension ".qst",
+    :export "decide",
+    :results [false true],
+    :effects #{},
+    :capabilities #{},
+    :private-renamed-helper :passed,
+    :current-source-selected-despite-real-stale-packaged-jar :passed,
+    :stale-jar-unchanged :passed},
+   :runtime
+   {:eager-helper-overflow-before-false-branch-return :passed,
+    :primitive-result-type "bigint",
+    :error-count 12,
+    :abi-arity-type-and-range-payloads :passed,
+    :canonical-alias-success-report-and-module-bytes-equal :passed,
+    :numeric-error-payload
+    [:actual-error-instance
+     :numeric-mode
+     :width
+     :signedness
+     :operation
+     :evaluated-operands
+     :primitive-operand-types
+     :check-id
+     :operation-id
+     :manifest-runtime-check-correspondence
+     :original-source-map-correspondence
+     :original-source-path-and-content-hash
+     :core-and-mir-operation-identities],
+    :primitive-result-count 7,
+    :exports ["score"],
+    :values
+    ["10"
+     "7"
+     "18014398509481987"
+     "15"
+     "100"
+     "9223372036854775807"
+     "-9223372036854775808"],
+    :error-kinds
+    [:overflow
+     :overflow
+     :arity
+     :arity
+     :type
+     :type
+     :type
+     :type
+     :type
+     :type
+     :range
+     :range]},
+   :ordinary-source-and-aliases
+   [:real-wrapper-js-process
+    :real-current-source-js-ts-process
+    :source-target-js-ts-preserved
+    :requested-alias-preserved-in-provenance]}}}

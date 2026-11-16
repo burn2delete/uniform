@@ -74,9 +74,48 @@ clojure -M:gravity hosted-core-app bootstrap/clojure/fixtures/accepted/core-app.
 The complete stage, profile, compiler, backend, runtime, domain and release
 command inventory is retained in the [reference archive](README-reference-archive.md).
 
-For the production Clojure API that compiles checked scalar source to standalone
-Node 20 ESM, see [Checked scalar JavaScript modules](docs/compiler-checked-js-modules.md).
-Public compile-command integration remains a separate step.
+## Compile a checked JavaScript module
+
+The public compiler supports hosted/safe scalar modules with I64 and Bool,
+checked I64 addition, eager local bindings, Boolean branches, fixed-arity
+nonrecursive direct calls, exports and private helpers. The compiler runs on
+the Clojure/JVM seed; the emitted module runs independently with Node 20.
+
+The tested toolchain is OpenJDK 21.0.13, Clojure CLI 1.12.0.1530,
+Clojure 1.12.0 and Node v20.20.2. From the repository root:
+
+```bash
+clojure -P -M:gravity
+clojure -J-Xmx2g -M:gravity --version
+bin/gravity compile examples/checked-js/acceptance.gravity \
+  --target js -o target/acceptance-js
+node --input-type=module -e '
+  import {score} from "./target/acceptance-js/program.mjs";
+  console.log(score(true, 3n, 7n).toString());
+  console.log(score(false, 7n, 3n).toString());
+  console.log(score(true, 9007199254740993n, 9007199254740994n).toString());
+'
+```
+
+The expected stdout is `10`, `7`, then `18014398509481987`, one value per line.
+Use a fresh output directory: compilation emits `program.mjs`, `program.d.ts`,
+`program.mjs.map`, `package.json`, `manifest.edn` and `provenance.edn` together.
+`--target js-ts` selects the same producer; the canonical source declaration
+remains `:js-ts`. The explicit source launcher is
+`clojure -J-Xmx2g -M:gravity compile` with the same arguments.
+Use `clojure -M:gravity help` for the current command forms.
+
+The CLI reads policy from the actual source. It requires no API expression,
+policy map or intermediate IR. Node syntax validation occurs during
+compilation; importing and calling exports demonstrates runtime behavior.
+Explicit `--lowering runtime-derived` retains the legacy route and its genuine
+results or refusals. Other lowering requests receive structured refusals.
+
+See [Checked scalar JavaScript modules](docs/compiler-checked-js-modules.md)
+for source launch, both aliases, ABI errors, independent execution and exact
+acceptance evidence. Full-language support, native standalone compilation,
+self-hosting, seed retirement and production release readiness remain outside
+this scalar-module result.
 
 ## Normal compiler development
 

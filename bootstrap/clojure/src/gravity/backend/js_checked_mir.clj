@@ -246,7 +246,10 @@
                     :runtime-observation {:node-version observed-node :validation :syntax-only}
                     :semantic-authority :gravity-source
                     :host-role :source-binding-syntax-printing-hashing-and-atomic-publication
-                    :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+                    :validation-scope {:node-validation :syntax-check
+                                       :export-execution :not-performed
+                                       :clean-checkout-acceptance :separate-development-evidence}
+                    :nonclaims [:full-language :release :self-hosting :seed-retirement]}
         provenance-text (edn-source provenance)
         artifacts (assoc artifact-records :provenance (text-artifact "provenance.edn" provenance-text))
         manifest-base {:artifact :gravity/checked-js-module-manifest :schema-version 1 :status :emitted
@@ -263,7 +266,10 @@
                        :target-verification reports :artifacts artifacts
                        :source-map :source-map :provenance :provenance
                        :exports (:exports program) :diagnostics []
-                       :nonclaims [:public-compile-cli :clean-checkout-acceptance :release :self-hosting :seed-retirement]}
+                       :validation-scope {:node-validation :syntax-check
+                                          :export-execution :not-performed
+                                          :clean-checkout-acceptance :separate-development-evidence}
+                       :nonclaims [:full-language :release :self-hosting :seed-retirement]}
         manifest (assoc manifest-base :artifact-id
                         (bootstrap/p15-s23-c11-mir-digest manifest-base))
         contents (assoc code :provenance provenance-text :manifest (edn-source manifest))]

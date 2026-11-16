@@ -16,7 +16,7 @@
         request (invoke resolve-operation
                         'p18-t04-parse-compile-request arguments)
         {:keys [target output-path target-requested? lowering-mode]} request]
-    (if (= :verified-mir lowering-mode)
+    (if (and (= :verified-mir lowering-mode) (not= :js-ts target))
       (prn
        (invoke resolve-operation
                'p18-t04-compile-experimental-verified-mir-c-target-file!
@@ -35,9 +35,12 @@
               (prn (invoke resolve-operation 'compile-file path))))
 
           (= (operation-value resolve-operation 'js-ts-backend-target) target)
-          (prn (invoke resolve-operation
-                       'p18-t04-compile-js-ts-target-file!
-                       path output-path target lowering-mode))
+          (prn (if (= :runtime-derived lowering-mode)
+                 (invoke resolve-operation
+                         'p18-t04-compile-js-ts-target-file!
+                         path output-path target lowering-mode)
+                 (invoke resolve-operation
+                         'p18-t04-compile-checked-js-target-file! request)))
 
           (contains? (operation-value resolve-operation
                                       'c-backend-supported-targets)

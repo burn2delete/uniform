@@ -18,7 +18,8 @@
                                      :expected-arity :actual-arity :effect
                                      :bootstrap-hosted? :packaged-jvm-cli?
                                      :seedless-release?
-                                     :declared-effects :granted-build-effects
+                                     :declared-effects :inferred-effects
+                                     :granted-build-effects
                                      :required-effect :required-capability
                                      :requested-capability
                                      :selected-or-missing-provider
@@ -43,6 +44,8 @@
                                      :clojure-seed-boundary?
                                      :expected-command
                                      :seed-boundary-facts
+                                     :option :unsupported-option
+                                     :lowering-mode :supported-lowering-modes
                                      :output-path :executable-path
                                      :expected-stdout :actual-stdout
                                      :command-contract
@@ -50,6 +53,7 @@
                                      :profile-contract :policy-layers
                                      :dependency-profile :supported
                                      :host-runtime :host-symbol
+                                     :observed-node-version :required-node-version
                                      :target-profile :target-feature
                                      :caller-safety :erased-check
                                      :operation :memory-regime :memory-family

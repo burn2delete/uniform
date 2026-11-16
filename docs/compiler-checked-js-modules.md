@@ -2,7 +2,7 @@
 
 ## Supported production route
 
-This increment connects ordinary hosted/safe `:js-ts` Uniform source to
+The public compiler connects ordinary hosted/safe `:js-ts` Uniform source to
 freshly checked Core, verified compositional scalar MIR, B1/C14 target
 eligibility, and executable Node 20 / ES2022 ESM modules. Uniform source
 owners retain semantic admission, target legality and lowering rules. The
@@ -13,14 +13,23 @@ local bindings, Boolean branches, fixed-arity nonrecursive direct calls,
 declared numeric-error effects, actual exports and private helpers. Runtime
 I64 arguments and results use JavaScript BigInt with signed 64-bit checks.
 
-The production API is
-`gravity.compiler.application/current-source-to-js-module`. Its caller supplies
-an ordinary source file, an explicit source policy and emission options. The
-API constructs fresh products itself; it accepts no supplied Core, MIR,
-verifier report, construction token or target eligibility certificate.
+Use `bin/gravity compile <source> --target js -o <fresh-directory>`, or the
+explicit current-source launcher `clojure -J-Xmx2g -M:gravity compile` with
+the same arguments. The CLI reads source policy through the existing current
+Reader/Syntax and module machinery, then calls
+`gravity.compiler.application/current-source-to-js-module`. Users supply no
+Clojure API expression, policy map, intermediate IR or compilation harness.
+Fresh construction and verification remain authoritative; preliminary policy
+discovery does not accept the program. The producer accepts no supplied Core,
+MIR, verifier report, construction token or target eligibility certificate.
 
-Public CLI dispatch and complete clean-checkout acceptance remain the following
-integration increment. This route retains the Clojure/JVM stage0 compiler host.
+The public integration source candidate is
+`dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
+`498c4d978d442cf62df20569e789ff357bd31fbc`. The
+[public-command receipt](compiler-public-js-cli-receipt.edn) distinguishes its
+fresh observations from earlier producer and public-command attempts. The
+generated library executes independently with Node; the compiler retains its
+Clojure/JVM stage0 host dependency.
 
 Governing contracts are D1/D2/D3/D8/D9, C6-C11/C14/C15, B1/B6, P4 and SAFE9.
 R1/R4 govern managed runtime services and failures; R10/SAFE7 govern checked
@@ -30,11 +39,11 @@ stage0 lineage. S7's native binary layout and target-triple fixtures are not
 claims of this primitive JavaScript ABI. Historical source-interface admission
 and release pins are not renewed.
 
-## Starting state
+## Implementation lineage
 
-Latest connected main and fetched Git main both resolve to
+The producer prerequisite was based on main commit
 `4c0ada9438cbcf20587447541ecfd16ab08e99a7`, the merge of PR #1439.
-The isolated implementation branch is `codex/js-checked-scalar-modules`.
+Its isolated implementation branch is `codex/js-checked-scalar-modules`.
 PR #1429 supplies the current-source construction boundary and PR #1439
 supplies scalar function composition. Earlier execution reports remain tied
 to their recorded revisions; this increment reproduces its own prerequisites.
@@ -46,11 +55,80 @@ and workstream ownership were inspected; the older module-analysis extraction
 candidates were treated as historical proposals, and unrelated changes were
 preserved.
 
+The public integration reuses producer checkpoint
+`7f77aac859f1c6525a7f137b84a92143040d0b1c` from PR #1441 on the dependent
+branch `codex/public-checked-js-compiler` and PR
+[#1442](https://github.com/burn2delete/uniform/pull/1442). At restoration start,
+that PR's remote head was `aa391b6e98e67d71e8051e473216ee7f856eff17`, containing
+only the early scope checkpoint. The earlier local implementation and its
+acceptance files were lost after the workspace reset; they had not reached
+that remote branch or main. Completion subsequently found and preserved local
+implementation `8a7363864ff2d64fce261c620e5e2d207d33b401`, its main merge
+`c84abf613c620ada8fd1ca40edfdb74ed5d5b0db`, and the newer published PR head
+`431ab7f2cec1206b6962eb89142643a1a5426bba`.
+
+The merged producer is now main commit
+`410fad5ee055ac5fc9df8a4f0e324442b771bb89`. PR #1442 targets main directly.
+The completed source checkpoint adds the reproduced command-option diagnostic
+repairs, the missing legacy test adaptation, and
+focused acceptance assertions. Local commit
+`a43540a80dd37bd76788540bd229b3ff120902fa` and published commit
+`b0bc8a525b4aa273be6a16d20f5393ae580ab4d1` have the identical tree
+`73449b0ccf7052bbc2500ae7528bef767df5e33c`. Language-boundary validation then
+required restoring the frozen shell launcher bytes. The corrected published
+candidate `dda7fd940b12af20c6e7016bef224cc984ca5362` differs only by removal
+of six shell-help lines; its compiler and test bytes are identical. Local
+commit `cd50e2cb7987007bb95d3219309aeb525bbf6ade` has the same corrected tree.
+Subsequent documentation commits do not change those source or test bytes.
+Publication and acceptance observations are bound separately in the
+[public-command receipt](compiler-public-js-cli-receipt.edn).
+
 The scope excludes recursion, closures, imports, collections, additional
 arithmetic, source I/O, other backends, optimization work, self-hosting, seed
 retirement, automation changes and release packaging.
 
-## Exact source-to-module invocation
+## Prerequisites and source launch
+
+Run from a clean checkout of the exact candidate being evaluated. A normal
+dependency cache is permitted; do not copy generated compiler products or target
+artifacts from another checkout. Install these tools and make them available on
+`PATH`:
+
+| Tool | Verified candidate version | Role |
+| --- | --- | --- |
+| Java | OpenJDK `21.0.13` | JVM hosting the compiler seed. |
+| Clojure CLI | `1.12.0.1530` | Source launch and dependency preparation. |
+| Clojure | `1.12.0` | Compiler host language/runtime, supplied by this CLI's normal dependency configuration. |
+| Node | `v20.20.2` | Node 20 validation during compilation and independent execution afterward. |
+| Bash | Available as `bash` | Runs the `bin/gravity` wrapper. |
+
+These versions were checked again for the published candidate in a clean
+checkout. The manual public commands use only the standard Clojure, spec.alpha
+and core.specs.alpha dependencies and an ordinary dependency cache. The checked
+target requires Node major version 20; an unavailable executable or another
+major version produces a target diagnostic. Dependency preparation may download
+standard Clojure dependencies into the normal cache. No packaged JAR, generated
+source, custom policy or test namespace is required.
+
+```bash
+git status --porcelain
+git rev-parse HEAD
+java -version
+clojure -Sdescribe
+node --version
+clojure -P -M:gravity
+clojure -J-Xmx2g -M:gravity --version
+```
+
+Require clean initial status, the intended candidate SHA, the documented
+toolchain and successful current-source launch before recording acceptance.
+Explicit target/lowering commands already bypass a historical packaged JAR in
+`bin/gravity`. Run `clojure -M:gravity help` for the current checked JavaScript
+command and explicit legacy lowering. The historical shell launcher's static
+help is frozen by the repository language-boundary contract; its bytes and
+current-source selection remain unchanged.
+
+## Exact public source-to-module invocation
 
 The checked-in ordinary source is
 [`examples/checked-js/acceptance.gravity`](../examples/checked-js/acceptance.gravity):
@@ -76,7 +154,108 @@ The checked-in ordinary source is
 
 Its UTF-8 source SHA-256 is
 `6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162`.
-From the repository root, with Clojure and actual Node 20 on `PATH`, run:
+From the repository root, with the prerequisites prepared, run each form with
+its own fresh output directory:
+
+```bash
+bin/gravity compile examples/checked-js/acceptance.gravity \
+  --target js -o target/acceptance-js
+
+clojure -J-Xmx2g -M:gravity compile \
+  examples/checked-js/acceptance.gravity \
+  --target js-ts -o target/acceptance-js-explicit
+```
+
+Each `-o` argument is a required fresh output directory, not an executable
+filename. Existing destinations and paths outside the output policy are
+rejected without overwriting an artifact. Successful compilation reports the
+importable module and actual artifact paths. Compilation checks the actual
+Node major version and generated ESM syntax; it never invokes `score` to
+discover an answer. Use a new relative path under `target/` for ordinary work.
+The public command also permits a single relative directory name. Absolute
+output paths and paths containing a `..` segment are rejected.
+
+The compiler obtains profile, target, effects, capabilities and safety from
+the actual source. Arithmetic modules must declare the numeric-error effect;
+Boolean-only modules may use `(:effects #{})`. No effects or capabilities are
+added to make a source pass. The canonical source target is `:js-ts`; both CLI
+spellings `js` and `js-ts` select it. Provenance preserves the requested spelling
+alongside the canonical target. The alias does not rewrite a source declaration
+of `:jvm`. The source, checked Core, MIR, runtime-check policy, target request
+and manifest remain `:js-ts`; the compiler host remains the JVM seed.
+
+### Lowering selection and diagnostics
+
+| Request | Route |
+| --- | --- |
+| `compile source --target js -o directory` | Checked source-to-JavaScript module producer. |
+| `compile source --target js-ts -o directory` | Same checked producer with canonical requested target. |
+| `compile source --target js --lowering runtime-derived -o directory` | Existing legacy JavaScript route, with its own actual results or diagnostics. |
+| Another explicit lowering value for JavaScript | Structured refusal, with no silent fallback. |
+| Another target or no target | Existing target/default behavior. |
+
+The checked producer does not fall back to legacy packets, seed execution or
+precomputed stdout when checking or emission fails. Source errors retain their
+owning diagnostic and useful source attribution, return a nonzero process exit
+and publish no new target directory. CLI option errors report command facts
+without fabricated source spans. An unrelated stale migration pin is not
+evidence that a malformed program was correctly rejected. The disabled native-C
+verified-MIR command remains a separate surface.
+
+### Execute the exported functions
+
+After this single compilation, supply runtime arguments to Node:
+
+```sh
+node --input-type=module -e '
+  import {score} from "./target/acceptance-js/program.mjs";
+  console.log(score(true, 3n, 7n).toString());
+  console.log(score(false, 7n, 3n).toString());
+  console.log(
+    score(true, 9007199254740993n, 9007199254740994n).toString()
+  );
+'
+```
+
+Expected stdout is:
+
+```text
+10
+7
+18014398509481987
+```
+
+Additional calls use this same module, without recompilation. Standalone
+acceptance copies the entire output directory outside the checkout, changes
+the Node working directory there and imports `./program.mjs`.
+The generated module has no imports or runtime reference to Clojure or the
+repository; the source map embeds the original source text.
+
+For example, copy all six files from `target/acceptance-js` to a directory
+outside the repository, open a shell in that copy with Node 20 on `PATH`, and
+run:
+
+```bash
+node --input-type=module -e '
+  import {score} from "./program.mjs";
+  console.log(score(true, 3n, 7n).toString());
+  console.log(score(false, 7n, 3n).toString());
+  console.log(score(true, 9007199254740993n, 9007199254740994n).toString());
+  console.log(score(true, -10n, 25n).toString());
+'
+```
+
+The expected fourth value is `15`. This execution uses runtime arguments and
+requires only Node, with no Clojure or repository dependency. A bare
+`node program.mjs` only loads function definitions and does not demonstrate
+their behavior. For acceptance, repeat with a cleared environment and Node-only
+`PATH`, then compare all copied artifact hashes and runtime observations.
+
+### Historical producer API invocation and execution
+
+The producer prerequisite used this API invocation before public dispatch was
+implemented. It is retained as historical evidence; the public workflow above
+requires no API expression or manually supplied policy:
 
 ```sh
 clojure -J-Xmx2g -M -e '
@@ -93,47 +272,7 @@ clojure -J-Xmx2g -M -e '
 '
 ```
 
-This command uses production namespaces only. The output directory must be
-fresh. Existing destinations and paths outside the existing output policy are
-rejected. Compilation checks the actual Node major version and generated ESM
-syntax; it never invokes `score` to discover an answer.
-
-The explicit source policy has exactly the five keys shown above. Its target
-must agree with the actual source declaration. The canonical target is
-`:js-ts`; the existing `:js` alias is accepted in emission options and recorded
-as the requested target alongside the canonical target in provenance. It does
-not rewrite the source declaration or permit a `:jvm` policy to masquerade as
-JavaScript. The source, checked Core, MIR, runtime-check policy, target request
-and manifest remain `:js-ts`; `:compiler-host` continues to name the JVM seed.
-
-After this single compilation, supply runtime arguments to Node:
-
-```sh
-node --input-type=module -e '
-  import {score} from "./target/acceptance-js/program.mjs";
-  console.log(score(true, 3n, 7n).toString());
-  console.log(score(false, 7n, 3n).toString());
-  console.log(
-    score(true, 9007199254740993n, 9007199254740994n).toString()
-  );
-'
-```
-
-The actual Node `v20.20.2` stdout was:
-
-```text
-10
-7
-18014398509481987
-```
-
-Additional calls use this same module, without recompilation. The standalone
-acceptance copies the entire output directory to a fresh directory under
-`/tmp`, changes the Node working directory there and imports `./program.mjs`.
-The generated module has no imports or runtime reference to Clojure or the
-repository; the source map embeds the original source text.
-
-The documented production API command completed with exit 0 and
+That documented production API command completed with exit 0 and
 `:status :emitted`. Manual execution of that exact output also returned `15`
 for `score(true, -10n, 25n)` and `100` for `score(false, 100n, -50n)`, then the
 maximum I64, minimum I64 and `-1` for the boundary combinations. Both required
@@ -285,8 +424,8 @@ vectors and maps. Owner source observations are current development evidence;
 the host transport files are captured at backend load and rechecked before
 publication. They are not a self-hosted or seedless release certificate.
 
-The [recorded production receipt](compiler-checked-js-modules-receipt.edn)
-binds the actual documented invocation's source, verified application/Core
+The [producer prerequisite receipt](compiler-checked-js-modules-receipt.edn)
+binds its historical API invocation's source, verified application/Core
 identities, compiler bindings, source policy, reports, artifact bytes, Node
 results, error objects and standalone comparison. Its six output files are:
 
@@ -304,7 +443,7 @@ selected compiler source identities are part of the evidence. The receipt
 preserves the corresponding exact development context rather than claiming
 path-independent artifact bytes.
 
-## Reproduced boundary and failed attempts
+## Producer prerequisite boundary and failed attempts
 
 The untouched JVM baseline selector
 `gravity.compiler.application-test/scalar-functions-and-control-flow` passed
@@ -344,7 +483,7 @@ The complete numeric payload and corrected tamper fixture are published at
 unchanged. This is the frozen compiler/test checkpoint for final focused
 execution and the regenerated documented output.
 
-## Focused verification
+## Producer prerequisite verification
 
 The required selector is:
 
@@ -370,7 +509,7 @@ with the same genuine product and exercise C14/B1/B6 rejections without relying
 on the outer handoff to short-circuit them. Forged and expired handoffs and
 substituted reports are also rejected.
 
-The actual runtime used for this increment is Node `v20.20.2`; Clojure is
+The producer prerequisite's recorded runtime is Node `v20.20.2`; Clojure is
 `1.12.0`. The official Node archive was verified against its SHA-256 manifest.
 The Node 24 executable initially on the environment's default PATH is not used
 as Node 20 acceptance evidence.
@@ -416,8 +555,15 @@ and ended `:timeout`, exit 124. The following `macro-receipt-controls` and
 `macro-bootstrap-compatibility` commands both passed. The cause of the cohort
 timeout is not established; it is an unresolved hosted-CI result, not a passing
 check or an attributed baseline failure. No CI configuration or timeout was
-changed. Local focused acceptance is complete; hosted CI and normal integration
-review remain separate from these development results.
+changed. Those prerequisite local results passed; hosted CI and normal
+integration review remain separate from those development results.
+
+The later prerequisite
+[CI run 43782295582](https://github.com/burn2delete/uniform/actions/runs/43782295582)
+also failed: its contracts job could not resolve Clojure from Maven Central
+because the server returned HTTP 429, and `macro-pipeline-cohort` reached the
+unchanged 900-second watchdog. These are separate observed failures; neither
+establishes the cause of the Macro timeout or a passing restored-candidate run.
 
 Required repository gates:
 
@@ -428,15 +574,155 @@ clojure -M tools/validate_full_language_roadmap.clj
 git diff --check
 ```
 
-## Next integration handoff
+## Public command acceptance and restoration
 
-Connect ordinary public compile-command dispatch to this production API and
-its canonical target/runtime options. Carry the existing diagnostics, six-file
-atomic publication, explicit source policy and fresh construction authority
-through that dispatch. Then run the same positive, negative, standalone and
-provenance acceptance from a clean checkout through the public command, with
-the supported toolchain established independently.
+The focused public-process regression selector is:
 
-This increment's API and Node evidence do not by themselves complete that
-public CLI or clean-checkout boundary. Broader language support, other backends,
-self-hosting, seed retirement and release conformance remain separate work.
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.compiler.application-test \
+  --exact public-js-compiler-acceptance \
+  --progress
+```
+
+Acceptance requires real public CLI subprocesses, actual emitted-module
+execution and both source extensions and target aliases. It must cover
+arithmetic, calls, eager bindings and branches; Boolean modules with empty
+effects; renamed source, namespaces, helpers, parameters and exports; and
+explicit source routing with a stale packaged JAR in an isolated fixture.
+Rejected fixtures must cover malformed syntax, bad call types/arity, invalid
+unused functions, undeclared numeric-error effects, source/CLI target mismatch,
+unsupported policy/forms/lowering, malformed options, unavailable or unsupported
+Node, existing output and invalid paths. Rejections must retain the owning
+diagnostic, applicable source attribution, nonzero exit and no new artifact.
+Producer authority/tamper regressions remain required.
+
+The clean-checkout experiment is separate from this selector. Record the exact
+base and restored candidate commits, initial clean status, actual tool versions,
+preparation and both public compile commands, six artifact paths and
+hashes, source/compiler identities, runtime outputs and typed errors, and
+Node-only execution of a complete copy outside the checkout. Compare alias
+behavior while preserving legitimate requested-target provenance differences.
+
+### Historical public-command observations
+
+Before the workspace reset, local implementation candidate
+`4ed9d71177812c1a2e11ee4d5d7c0976311ff2fe`, tree
+`6c12794fc18c83e039243eb3be16cace0bd4083d`, recorded passing clean-checkout
+manual acceptance and a public-process selector with 1 test, 529 assertions,
+zero failures/errors and exit 0. Its 29 CLI observations comprised three
+successful compilations and 26 expected refusals, including actual absent-Node
+and Node `v24.22.1` cases. Together with existing regression gates, that run
+recorded 34 tests and 1,402 assertions with no failures or errors.
+
+The historical manual run emitted all six artifacts through the wrapper and
+both explicit-source aliases, produced the required three Node values and four
+additional/boundary values, verified typed eager overflow against manifest
+identities, and executed a complete artifact copy outside the checkout with
+Node alone. Later documentation-only commits preserved those source identities;
+they were not separate execution candidates.
+
+The earlier local candidate `8ef632711ae57cc99f267a4209fd0b2ab2fdca89` had
+passed manual positive execution but lost owned type/arity facts in public
+diagnostic presentation. Its selector showed six assertion failures, was
+interrupted with exit 130, and produced no terminal test summary. The repair
+projected selected source-owned semantic facts without changing sealed
+diagnostic identity or trusting arbitrary nested facts. A separate combined
+CLI/launcher run failed because CLI tests closed the shared future executor;
+both namespaces subsequently passed unmodified in separate JVMs.
+
+These observations survive in retained conversation records. The original
+local checkout, complete patch, logs, receipt updates and emitted files were
+lost after the reset. They cannot establish byte identity or acceptance for
+the restored candidate. The checked-in producer receipt remains the historical
+producer record; the restored public-command receipt must bind newly recorded
+evidence to the new candidate.
+
+### Current public-command acceptance
+
+Fresh public-command and clean-checkout acceptance passed for source candidate
+`dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
+`498c4d978d442cf62df20569e789ff357bd31fbc`. The
+[public-command receipt](compiler-public-js-cli-receipt.edn) records exact
+commands, exits, source and compiler identities, artifact hashes, runtime
+errors, owned diagnostics, tool versions and the separate failed attempts.
+
+| Check | Terminal observation |
+| --- | --- |
+| Clean-checkout wrapper and explicit `js-ts` commands | Both exit 0; all six files emitted through the ordinary public commands with only standard Clojure dependencies. |
+| Required Node calls | `10`, `7`, `18014398509481987`, one value per line. |
+| Runtime ABI and checked arithmetic | Seven primitive BigInt results, twelve exact numeric/ABI refusals, private helper absent, and complete eager-overflow payload bound to the original addition. |
+| Complete copy outside checkout | Six byte-identical files; matching values and errors with a cleared environment and Node-only PATH. |
+| Public-process selector | 1 test, 557 assertions, zero failures/errors, exit 0; 30 actual CLI processes (3 successful compilations and 27 owned refusals). |
+| Backend target execution and genuine-product rejection | 2 tests, 611 assertions, zero failures/errors, exit 0. |
+| Source policy and construction authority | 3 tests, 50 assertions, zero failures/errors, exit 0. |
+| CLI and launcher | 10 tests / 190 assertions and 4 tests / 50 assertions, each with zero failures/errors and exit 0. |
+| Language boundary | 6 tests, 11 assertions, zero failures/errors, exit 0 after restoring the exact frozen launcher bytes. |
+| Documentation, roadmap, governance and whitespace | Exit 0; 240 canonical documents, 19 phase indexes and 185 governed workstreams validated. |
+
+The backend selectors executed published checkpoint
+`b0bc8a525b4aa273be6a16d20f5393ae580ab4d1`; the source-authority batch
+executed its tree-equivalent local commit
+`a43540a80dd37bd76788540bd229b3ff120902fa`. The corrected candidate differs
+only by removing six shell-help lines and restoring the main launcher blob.
+Compiler and test bytes are identical. Those earlier results retain their
+actual execution identities; both final public-command experiments ran
+from clean checkouts of the corrected candidate.
+
+The explicit legacy JavaScript selector remains a recorded failure:
+1 test, 16 assertions, 10 failures, exit 1. Its three real compile commands
+return `P15S23X002`, boundary `:pinned-reference-runtime-contract`, missing
+fact `:runtime-artifact-source-byte-count`, for
+`bootstrap/gravity/p15_s23/runtime.gravity`. The untouched main baseline
+reproduced that same legacy handoff refusal. Historical pins are unchanged;
+this selector is not reported as passing compatibility evidence. The current
+CLI tests separately verify explicit legacy route selection.
+
+Failed and interrupted attempts remain separate in the receipt: the initial
+shell-help edit violated the frozen language boundary; a cold launcher test
+saw two inherited JVM startup banners; and a competing public `js-ts` process
+hit the unchanged 900-second watchdog. The launcher passed unchanged after
+ordinary dependency preparation. The failed public run was stopped with
+exit 130, and the full selector was rerun with competing compiler jobs
+removed. An earlier manual run was also stopped before completion when the
+launcher correction required a fresh exact-candidate checkout. None of these
+partial attempts is counted as final acceptance.
+
+Hosted CI is recorded separately. Source
+[run 43907142976](https://github.com/burn2delete/uniform/actions/runs/43907142976)
+attempt 2 remains failed because bootstrap's `syntax-regression` exceeded
+its existing 600-second deadline (exit 124). No assertion failure or compiler
+diagnostic was reported before that timeout; completion of that group remains
+unverified. The unchanged retry resolved the initial Maven HTTP 429 and
+Darwin cancellation. Eleven jobs passed and two were skipped. The repaired
+language-boundary command also passed within the failed bootstrap job.
+No deadline or pin was changed.
+The receipt retains both attempts and their exact observation times.
+PR #1442 records the final publication and merge state.
+
+#### Current manual artifact identities
+
+The wrapper's `target/acceptance-js` directory contains:
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `manifest.edn` | 215434 | `66198cac45aa1bddb3ff6df7b9f51d5031fd82fe4aa447ced256ce9d5de6e12f` |
+| `package.json` | 215 | `c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc` |
+| `program.d.ts` | 294 | `2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27` |
+| `program.mjs` | 9111 | `d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7` |
+| `program.mjs.map` | 33127 | `2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2` |
+| `provenance.edn` | 40368 | `0fc59fbd179d6e11e2f924d975c8b49e0e3ec760bb8427b7b3f337a9a22ed2ef` |
+
+These identities include the actual absolute source and compiler paths of
+the recorded checkout. They are not claims of path-independent bytes. The
+two aliases produced byte-identical JavaScript, declarations, source map and
+package metadata. Their provenance retains the requested alias; the manifest
+changes only its corresponding provenance record and artifact identity.
+
+Manifest scope statements describe the public compiler route. Each compile
+invocation performs Node syntax validation; export execution and clean-checkout
+acceptance are separately recorded experiments. The supported result is a
+working Clojure-hosted Uniform compiler for the documented hosted/safe scalar
+subset, targeting Node 20 ES2022 modules. Full-language support, standalone
+native compilation, self-hosting, seed retirement and production release
+readiness remain separate obligations.

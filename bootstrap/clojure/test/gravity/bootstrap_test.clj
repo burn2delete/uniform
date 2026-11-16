@@ -29104,7 +29104,8 @@
                         "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
                                     (System/getenv "PATH"))}
                        [bin "compile" qst-path
-                        "--target" "js-ts" "-o" qst-output])
+                        "--target" "js-ts" "--lowering" "runtime-derived"
+                        "-o" qst-output])
                       one-segment-result
                       (run-process-in-directory
                        (.toString directory)
@@ -29112,7 +29113,8 @@
                         "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
                                     (System/getenv "PATH"))}
                        [bin "compile" gravity-path
-                        "--target" "js" "-o" one-segment-output])
+                        "--target" "js" "--lowering" "runtime-derived"
+                        "-o" one-segment-output])
                       gravity-artifact (when (zero? (:exit gravity-result))
                                          (edn/read-string
                                           (:out gravity-result)))

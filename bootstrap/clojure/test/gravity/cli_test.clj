@@ -45,6 +45,13 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n"
+   "    (checked hosted/safe scalar module; Node 20 / ES2022 ESM)\n"
+   "    (canonical source target :js-ts; compiler host Clojure/JVM)\n"
+   "    (Node syntax validation during compilation; import exports to execute)\n"
+   "  gravity compile <file.qst|file.gravity> --target js|js-ts\n"
+   "    --lowering runtime-derived -o <directory>\n"
+   "    (explicit legacy route; retains its existing results and failures)\n"
    "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
    "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
    "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
@@ -194,6 +201,46 @@
     (is (not-any? #{'gravity.bootstrap}
                   (map ns-name (vals (ns-aliases namespace)))))))
 
+(deftest public-compile-diagnostics-preserve-command-facts
+  (let [source "never-created.gravity"
+        output "target/public-compile-options"
+        prefix ["compile" source "--target" "js"]]
+    (doseq [[arguments expected]
+            [[(into prefix ["--unknown" "value" "-o" output])
+              {:id "P18T04002" :unsupported-option "--unknown"}]
+             [["compile" source "--target"]
+              {:id "P18T04002" :option "--target" :missing-fields [:target]}]
+             [(into prefix ["-o"])
+              {:id "P18T04002" :option "-o" :missing-fields [:output-path]}]
+             [(into prefix ["--lowering"])
+              {:id "P18T04002" :option "--lowering" :missing-fields [:lowering-mode]}]
+             [(into prefix ["--target" "js-ts" "-o" output])
+              {:id "P18T04002" :option "--target" :missing-fields [:duplicate-target-option]}]
+             [(into prefix ["-o" output "--output" output])
+              {:id "P18T04002" :option "--output" :missing-fields [:duplicate-output-option]}]
+             [(into prefix ["--lowering" "runtime-derived" "--lowering" "runtime-derived" "-o" output])
+              {:id "P18T04002" :option "--lowering" :missing-fields [:duplicate-lowering-option]}]
+             [(into prefix ["--lowering" "not-supported" "-o" output])
+              {:id "B6-TARGET" :option "--lowering"
+               :source-span {:source "bin/gravity"}
+               :lowering-mode :not-supported
+               :supported-lowering-modes [:runtime-derived]}]]]
+      (let [rejected (try
+                       (dispatch/dispatch! #(ns-resolve 'gravity.bootstrap %) arguments)
+                       nil
+                       (catch clojure.lang.ExceptionInfo exception exception))]
+        (is (instance? clojure.lang.ExceptionInfo rejected) (str arguments))
+        (when rejected
+          (let [writer (java.io.StringWriter.)]
+            (binding [*err* writer]
+              (diagnostic-presentation/print-diagnostic! (constantly nil) rejected))
+            (let [projection (edn/read-string (str writer))]
+              (doseq [[key value] expected]
+                (is (= value (get projection key)) (str arguments " " key)))
+              (is (empty? (select-keys (:source-span projection)
+                                      [:line :column :start :end :byte-start :byte-end]))
+                  "Command-option errors do not invent source coordinates"))))))))
+
 (defn- fake-resolver [operation]
   (case operation
     p18-cli-help-text (fn [] "injected help\n")
@@ -222,6 +269,57 @@
                                                     ["not-a-command"])))]
     (is (false? @result))
     (is (empty? output))))
+
+(deftest public-compile-preserves-operation-resolution-and-target-boundaries
+  (let [source "module.gravity"
+        output "target/public-compile-dispatch"]
+    (doseq [[flags expected-operation expected-arguments]
+            [[[] 'compile-file [source]]
+             [["-o" output] 'p18-t04-compile-executable-file! [source output]]
+             [["--target" "jvm"] 'compile-file [source]]
+             [["--target" "jvm" "-o" output]
+              'p18-t04-compile-executable-file! [source output]]
+             [["--target" "jvm" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-jvm-target-file! [source output :jvm :runtime-derived]]
+             [["--target" "c" "-o" output]
+              'p18-t04-compile-c-target-file! [source output :c nil]]
+             [["--target" "c" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-experimental-verified-mir-c-target-file! :request]
+             [["--target" "js" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js-ts" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-js-ts-target-file! [source output :js-ts :runtime-derived]]
+             [["--target" "js-ts" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-js-ts-target-file! [source output :js-ts :runtime-derived]]
+             [["--target" "js" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js-ts" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js" "--lowering" "not-supported" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]]]
+      (let [arguments (into ["compile" source] flags)
+            request (bootstrap/p18-t04-parse-compile-request arguments)
+            calls (atom [])
+            selected? (atom nil)
+            resolver
+            (fn [operation]
+              (case operation
+                p18-t04-parse-compile-request #'bootstrap/p18-t04-parse-compile-request
+                js-ts-backend-target #'bootstrap/js-ts-backend-target
+                c-backend-supported-targets #'bootstrap/c-backend-supported-targets
+                (fn [& values]
+                  (swap! calls conj [operation (vec values)])
+                  {:operation operation})))
+            stdout (with-out-str
+                     (reset! selected? (dispatch/dispatch! resolver arguments)))]
+        (is (true? @selected?) (str arguments))
+        (is (= [[expected-operation
+                 (if (= :request expected-arguments) [request] expected-arguments)]]
+               @calls)
+            (str arguments))
+        (is (= {:operation expected-operation} (edn/read-string stdout)))))))
 
 (deftest extracted-entrypoint-owns-error-exits
   (let [statuses (atom [])

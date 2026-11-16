@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.compiler.application :as application])
+            [gravity.compiler.application :as application]
+            [gravity.compiler.public-js-acceptance :as public-js-acceptance])
   (:import [java.nio.charset StandardCharsets]
            [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]
@@ -16,6 +17,9 @@
    :capabilities #{} :safety :safe})
 
 (def ^:private bool-policy (assoc add-policy :effects #{}))
+
+(deftest public-js-compiler-acceptance
+  (public-js-acceptance/run-acceptance!))
 
 (defn- source-text [module parameters body effects]
   (str "(ns " module "\n"
