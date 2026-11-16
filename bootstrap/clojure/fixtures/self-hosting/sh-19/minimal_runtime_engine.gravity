@@ -32,16 +32,6 @@
                  :process-exit}
    :maximum-allocation-bytes 1048576
    :maximum-file-read-bytes 16777216
-   :maximum-inline-utf8-bytes 256
-   :maximum-request-nodes 4096
-   :maximum-result-nodes 16384
-   :maximum-request-depth 16
-   :maximum-result-depth 24
-   :maximum-container-width 512
-   :maximum-map-width 64
-   :maximum-scalars 3072
-   :maximum-string-code-units 1024
-   :maximum-startup-services 32
    :allocation-policies #{:bounded :none}
    :allocation-failure-behaviors
    #{:abort-with-report :trap :result-boundary}
@@ -89,45 +79,24 @@
       false)
     false))
 
-(defn sh19-bounded-string? [value]
-  (if (string? value)
-    (<= (count value) 1024)
-    false))
-
-(defn sh19-scalar? [value]
-  (if (= nil value)
-    true
-    (if (boolean? value)
-      true
-      (if (integer? value)
-        true
-        (if (number? value)
-          true
-          (if (keyword? value)
-            true
-            (if (symbol? value)
-              true
-              (if (char? value)
-                true
-                (string? value)))))))))
-
 (defn sh19-keyword-sequence? [values]
-  (if (= (count values) 0)
-    true
-    (if (keyword? (first values))
-      (sh19-keyword-sequence? (rest values))
-      false)))
+  (loop [remaining values]
+    (if (= (count remaining) 0)
+      true
+      (if (keyword? (first remaining))
+        (recur (rest remaining))
+        false))))
 
-(defn sh19-enqueue-values [values depth pending]
+(defn sh19-enqueue-values [values ancestors pending]
   (loop [remaining values
          result pending]
     (if (= (count remaining) 0)
       result
       (recur
        (rest remaining)
-       (conj result {:value (first remaining) :depth depth})))))
+       (conj result {:value (first remaining) :ancestors ancestors})))))
 
-(defn sh19-enqueue-map-values [value map-keys depth pending]
+(defn sh19-enqueue-map-values [value map-keys ancestors pending]
   (loop [remaining map-keys
          result pending]
     (if (= (count remaining) 0)
@@ -136,78 +105,95 @@
        (rest remaining)
        (conj
         result
-        {:value (get value (first remaining)) :depth depth})))))
+        {:value (get value (first remaining)) :ancestors ancestors})))))
 
-(defn sh19-bounded-worklist?
-  [pending nodes-left scalars-left maximum-depth]
-  (loop [work pending
-         available-nodes nodes-left
-         available-scalars scalars-left]
+(defn sh19-ancestor? [value ancestors]
+  (loop [index 0]
+    (if (= index (count ancestors))
+      false
+      (if (bootstrap-native-identical? value (get ancestors index))
+        true
+        (recur (+ index 1))))))
+
+(defn sh19-native-vector? [value]
+  ; Validate view ranges and backing chains before indexing native views.
+  (loop [current value ancestors []]
+    (if (sh19-ancestor? current ancestors)
+      false
+      (let [header (bootstrap-native-carrier-header current)
+            kind (get header 0)]
+        (if (= :vector kind)
+          (>= (get header 2) 0)
+          (if (= :subvector kind)
+            (let [extent (get header 2)
+                  start (get header 5)
+                  backing (get header 4)
+                  backing-header (bootstrap-native-carrier-header backing)]
+              (if (contains? #{:vector :subvector} (get backing-header 0))
+                (if (>= start 0)
+                  (if (>= extent 0)
+                    (if (<= (+ start extent) (get backing-header 2))
+                      (recur backing (conj ancestors current))
+                      false)
+                    false)
+                  false)
+                false))
+            false))))))
+
+(defn sh19-carrier-valid? [input]
+  ; Traverse every visible value. Native class checks exclude callbacks and
+  ; ancestor identity checks reject cycles without imposing population quotas.
+  ; Metadata and unused backing slots remain inert.
+  (loop [work [{:value input :ancestors []}]]
     (if (= (count work) 0)
       true
-      (if (<= available-nodes 0)
-        false
-        (let [item (first work)
-              remaining (vec (rest work))
-              value (get item :value)
-              depth (get item :depth)]
-          (if (> depth maximum-depth)
-            false
-            (if (sh19-scalar? value)
-              (if (<= available-scalars 0)
-                false
-                (if (string? value)
-                  (if (sh19-bounded-string? value)
-                    (recur
-                     remaining (- available-nodes 1)
-                     (- available-scalars 1))
+      (let [last-index (- (count work) 1)
+            item (get work last-index)
+            remaining (subvec work 0 last-index)
+            value (get item :value)
+            ancestors (get item :ancestors)
+            header (bootstrap-native-carrier-header value)
+            kind (get header 0)]
+        (if (get item :check-set-members)
+          ; Hash members only after their complete carrier traversal succeeds.
+          (if (= (count value) (count (set value)))
+            (recur remaining)
+            false)
+          (if (contains? #{:nil :boolean :character :integer8 :integer16
+                          :integer32 :integer64 :big-int :big-integer :ratio
+                          :big-decimal :float32 :float64 :string :symbol :keyword}
+                         kind)
+            (recur remaining)
+            (if (sh19-ancestor? value ancestors)
+              false
+              (let [next-ancestors (conj ancestors value)]
+                (if (contains? #{:vector :subvector} kind)
+                  (if (sh19-native-vector? value)
+                    (recur (sh19-enqueue-values value next-ancestors remaining))
                     false)
-                  (recur
-                   remaining (- available-nodes 1)
-                   (- available-scalars 1))))
-              (if (vector? value)
-                (if (<= (count value) 512)
-                  (recur
-                   (sh19-enqueue-values
-                    value (+ depth 1) remaining)
-                   (- available-nodes 1) available-scalars)
-                  false)
-                (if (set? value)
-                  (if (<= (count value) 512)
-                    (recur
-                     (sh19-enqueue-values
-                      (vec value) (+ depth 1) remaining)
-                     (- available-nodes 1) available-scalars)
-                    false)
-                  (if (map? value)
-                    (let [map-keys (vec (keys value))
-                          key-count (count map-keys)]
-                      (if (<= key-count 64)
-                        (if (sh19-keyword-sequence? map-keys)
-                          (if (<= key-count available-scalars)
-                            (if (< key-count available-nodes)
-                              (recur
-                               (sh19-enqueue-map-values
-                                value map-keys (+ depth 1) remaining)
-                               (- (- available-nodes 1) key-count)
-                               (- available-scalars key-count))
+                  (if (= :set kind)
+                    (if (>= (get header 2) 0)
+                      (let [members (vec value)]
+                        (recur (sh19-enqueue-values
+                                members next-ancestors
+                                (conj remaining {:value members :check-set-members true}))))
+                      false)
+                    (if (if (= :map kind) true
+                          (if (= :tree-map kind)
+                            (= :default-comparator (get header 4))
+                            false))
+                      (if (>= (get header 2) 0)
+                        (let [map-keys (vec (keys value))]
+                          (if (sh19-keyword-sequence? map-keys)
+                            ; Lookup must not hide duplicate native map entries.
+                            ; Only validated keyword keys may be hashed here.
+                            (if (= (count map-keys) (count (set map-keys)))
+                              (recur (sh19-enqueue-map-values
+                                      value map-keys next-ancestors remaining))
                               false)
-                            false)
-                          false)
-                        false))
-                    false))))))))))
-
-(defn sh19-bounded-value?
-  [value maximum-nodes maximum-scalars maximum-depth]
-  (sh19-bounded-worklist?
-   [{:value value :depth 0}]
-   maximum-nodes maximum-scalars maximum-depth))
-
-(defn sh19-request-bounded? [request]
-  (sh19-bounded-value? request 4096 3072 16))
-
-(defn sh19-result-bounded? [result]
-  (sh19-bounded-value? result 16384 12288 24))
+                            false))
+                        false)
+                      false)))))))))))
 
 (defn sh19-required-effect [operation]
   (if (= operation :allocate)
@@ -254,7 +240,7 @@
 
 (defn sh19-source-span-valid? [source-span]
   (if (map? source-span)
-    (if (sh19-bounded-string? (get source-span :source))
+    (if (string? (get source-span :source))
       (if (> (count (get source-span :source)) 0)
         (if (integer? (get source-span :start-byte))
           (if (integer? (get source-span :end-byte))
@@ -274,42 +260,36 @@
     false))
 
 (defn sh19-common-request-valid? [request]
-  (if (sh19-request-bounded? request)
-    (if (map? request)
-      (if (= :gravity/sh19-runtime-request (get request :artifact))
-        (if
-         (sh19-member?
-          #{:startup :allocate :string-from-utf8 :file-read
-            :no-allocation :stream-write :panic :process-exit}
-          (get request :operation))
-          (if (sh19-sha256-id? (get request :request-id))
-            (if (sh19-sha256-id? (get request :action-id))
-              (if (= (get request :request-id)
-                     (get request :action-id))
-                false
-                (if
-                 (sh19-sha256-id?
-                  (get request :caller-artifact-id))
-                  (if (keyword? (get request :principal))
-                    (if (set? (get request :declared-effects))
-                      (if (set? (get request :capability-grants))
-                        (if (sh19-source-span-valid?
-                             (get request :source-span))
-                          (if (vector? (get request :origin-chain))
-                            (if
-                             (<=
-                              (count (get request :origin-chain)) 32)
-                              (if (= :meta (get request :profile))
-                                (= :native (get request :target))
-                                false)
-                              false)
+  (if (map? request)
+    (if (= :gravity/sh19-runtime-request (get request :artifact))
+      (if
+       (sh19-member?
+        #{:startup :allocate :string-from-utf8 :file-read
+          :no-allocation :stream-write :panic :process-exit}
+        (get request :operation))
+        (if (sh19-sha256-id? (get request :request-id))
+          (if (sh19-sha256-id? (get request :action-id))
+            (if (= (get request :request-id)
+                   (get request :action-id))
+              false
+              (if
+               (sh19-sha256-id?
+                (get request :caller-artifact-id))
+                (if (keyword? (get request :principal))
+                  (if (set? (get request :declared-effects))
+                    (if (set? (get request :capability-grants))
+                      (if (sh19-source-span-valid?
+                           (get request :source-span))
+                        (if (vector? (get request :origin-chain))
+                          (if (= :meta (get request :profile))
+                            (= :native (get request :target))
                             false)
                           false)
                         false)
                       false)
                     false)
-                  false))
-              false)
+                  false)
+                false))
             false)
           false)
         false)
@@ -460,80 +440,78 @@
   (sh19-between? value 128 191))
 
 (defn sh19-utf8-valid-from? [bytes index]
-  (let [length (count bytes)]
-    (if (= index length)
-      true
-      (if (> index length)
-        false
-        (let [first-byte (get bytes index)]
-          (if (sh19-between? first-byte 0 127)
-            (sh19-utf8-valid-from? bytes (+ index 1))
-            (if (sh19-between? first-byte 194 223)
-              (if (< (+ index 1) length)
-                (if (sh19-continuation-byte?
-                     (get bytes (+ index 1)))
-                  (sh19-utf8-valid-from? bytes (+ index 2))
+  (loop [index index]
+    (let [length (count bytes)]
+      (if (= index length)
+        true
+        (if (> index length)
+          false
+          (let [first-byte (get bytes index)]
+            (if (sh19-between? first-byte 0 127)
+              (recur (+ index 1))
+              (if (sh19-between? first-byte 194 223)
+                (if (< (+ index 1) length)
+                  (if (sh19-continuation-byte?
+                       (get bytes (+ index 1)))
+                    (recur (+ index 2))
+                    false)
                   false)
-                false)
-              (if (sh19-between? first-byte 224 239)
-                (if (< (+ index 2) length)
-                  (let [second-byte (get bytes (+ index 1))
-                        third-byte (get bytes (+ index 2))
-                        second-valid
-                        (if (= first-byte 224)
-                          (sh19-between? second-byte 160 191)
-                          (if (= first-byte 237)
-                            (sh19-between? second-byte 128 159)
-                            (sh19-continuation-byte? second-byte)))]
-                    (if second-valid
-                      (if (sh19-continuation-byte? third-byte)
-                        (sh19-utf8-valid-from? bytes (+ index 3))
-                        false)
-                      false))
-                  false)
-                (if (sh19-between? first-byte 240 244)
-                  (if (< (+ index 3) length)
+                (if (sh19-between? first-byte 224 239)
+                  (if (< (+ index 2) length)
                     (let [second-byte (get bytes (+ index 1))
                           third-byte (get bytes (+ index 2))
-                          fourth-byte (get bytes (+ index 3))
                           second-valid
-                          (if (= first-byte 240)
-                            (sh19-between? second-byte 144 191)
-                            (if (= first-byte 244)
-                              (sh19-between? second-byte 128 143)
+                          (if (= first-byte 224)
+                            (sh19-between? second-byte 160 191)
+                            (if (= first-byte 237)
+                              (sh19-between? second-byte 128 159)
                               (sh19-continuation-byte? second-byte)))]
                       (if second-valid
                         (if (sh19-continuation-byte? third-byte)
-                          (if (sh19-continuation-byte? fourth-byte)
-                            (sh19-utf8-valid-from?
-                             bytes (+ index 4))
-                            false)
+                          (recur (+ index 3))
                           false)
                         false))
                     false)
-                  false)))))))))
+                  (if (sh19-between? first-byte 240 244)
+                    (if (< (+ index 3) length)
+                      (let [second-byte (get bytes (+ index 1))
+                            third-byte (get bytes (+ index 2))
+                            fourth-byte (get bytes (+ index 3))
+                            second-valid
+                            (if (= first-byte 240)
+                              (sh19-between? second-byte 144 191)
+                              (if (= first-byte 244)
+                                (sh19-between? second-byte 128 143)
+                                (sh19-continuation-byte? second-byte)))]
+                        (if second-valid
+                          (if (sh19-continuation-byte? third-byte)
+                            (if (sh19-continuation-byte? fourth-byte)
+                              (recur (+ index 4))
+                              false)
+                            false)
+                          false))
+                      false)
+                    false))))))))))
 
 (defn sh19-utf8-valid? [bytes]
   (if (vector? bytes)
-    (if (<= (count bytes) 256)
-      (sh19-utf8-valid-from? bytes 0)
-      false)
+    (sh19-utf8-valid-from? bytes 0)
     false))
 
 (defn sh19-unique-values? [remaining seen]
-  (if (= (count remaining) 0)
-    true
-    (let [value (first remaining)]
-      (if (= true (get seen value))
-        false
-        (sh19-unique-values?
-         (rest remaining) (assoc seen value true))))))
+  (loop [remaining remaining seen seen]
+    (if (= (count remaining) 0)
+      true
+      (let [value (first remaining)]
+        (if (= true (get seen value))
+          false
+          (recur (rest remaining) (assoc seen value true)))))))
 
 (defn sh19-reverse-from [values index result]
-  (if (< index 0)
-    result
-    (sh19-reverse-from
-     values (- index 1) (conj result (get values index)))))
+  (loop [index index result result]
+    (if (< index 0)
+      result
+      (recur (- index 1) (conj result (get values index))))))
 
 (defn sh19-reverse-vector [values]
   (sh19-reverse-from values (- (count values) 1) []))
@@ -545,15 +523,13 @@
     (if (keyword? entrypoint)
       (if (vector? initialization)
         (if (> (count initialization) 0)
-          (if (<= (count initialization) 32)
-            (if (sh19-keyword-sequence? initialization)
-              (if (sh19-unique-values? initialization {})
-                (if (= nil (get (set initialization) entrypoint))
-                  (if (vector? cleanup)
-                    (if (= cleanup
-                           (sh19-reverse-vector initialization))
-                      (= nil (get (set cleanup) entrypoint))
-                      false)
+          (if (sh19-keyword-sequence? initialization)
+            (if (sh19-unique-values? initialization {})
+              (if (= nil (get (set initialization) entrypoint))
+                (if (vector? cleanup)
+                  (if (= cleanup
+                         (sh19-reverse-vector initialization))
+                    (= nil (get (set cleanup) entrypoint))
                     false)
                   false)
                 false)
@@ -798,7 +774,7 @@
     :origin-chain (get request :origin-chain)}
    :pending (get (sh19-runtime-policy) :pending)})
 
-(defn sh19-bounds-rejection []
+(defn sh19-carrier-rejection []
   {:artifact :gravity/sh19-runtime-result
    :status :rejected
    :request-id nil
@@ -812,7 +788,7 @@
      :runtime-family :minimal-self-hosting
      :request-id nil
      :operation nil
-     :reason :runtime-request-structural-bound-exceeded
+     :reason :malformed-runtime-request
      :caller-artifact-id nil
      :principal nil
      :effect nil
@@ -823,7 +799,7 @@
      :source-span nil
      :generated-origin-chain []
      :redaction-status :not-applicable
-     :remediation :reduce-request-depth-width-nodes-scalars-or-strings}]
+     :remediation :supply-finite-native-runtime-carriers}]
    :decision-log
    {:artifact :gravity/runtime-decision-log
     :action-id nil
@@ -846,12 +822,12 @@
    :identity-input
    {:policy-artifact :gravity/sh19-minimal-runtime-policy
     :policy-version 2
-    :request-omitted :structural-bound-exceeded}
+    :request-omitted :malformed-carrier}
    :preserves {}
    :pending (get (sh19-runtime-policy) :pending)})
 
 (defn sh19-handle-request [request]
-  (if (sh19-request-bounded? request)
+  (if (sh19-carrier-valid? request)
     (if (sh19-common-request-valid? request)
       (if (sh19-authority-valid? request)
         (if (sh19-provider-valid? request)
@@ -881,11 +857,11 @@
        (sh19-diagnostic
         request "R1-MANIFEST" :malformed-runtime-request
         :supply-complete-runtime-identity-and-policy-fields)))
-    (sh19-bounds-rejection)))
+    (sh19-carrier-rejection)))
 
 (defn sh19-verify-result [request candidate]
-  (if (sh19-request-bounded? request)
-    (if (sh19-result-bounded? candidate)
+  (if (sh19-carrier-valid? request)
+    (if (sh19-carrier-valid? candidate)
       (let [expected (sh19-handle-request request)]
         (if (= expected candidate)
           {:artifact :gravity/sh19-runtime-result-verification
@@ -908,10 +884,10 @@
        :request-id (get request :request-id)
        :diagnostics
        [(sh19-diagnostic
-         request "R1-MANIFEST" :runtime-result-bound-exceeded
-         :reduce-result-depth-width-nodes-scalars-or-strings)]})
+         request "R1-MANIFEST" :malformed-runtime-result
+         :supply-finite-native-runtime-carriers)]})
     {:artifact :gravity/sh19-runtime-result-verification
      :status :rejected
      :request-id nil
      :diagnostics
-     [(first (get (sh19-bounds-rejection) :diagnostics))]}))
+     [(first (get (sh19-carrier-rejection) :diagnostics))]}))

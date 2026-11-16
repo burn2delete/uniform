@@ -92,6 +92,17 @@
   [request]
   (invoke-engine 'sh19-handle-request [request]))
 
+(defn- raw-native-set
+  [members]
+  (let [backing (clojure.lang.PersistentArrayMap.
+                 (object-array (mapcat (fn [member] [member member]) members)))
+        ctor (.getDeclaredConstructor
+              clojure.lang.PersistentHashSet
+              (into-array Class [clojure.lang.IPersistentMap
+                                 clojure.lang.IPersistentMap]))]
+    (is (.trySetAccessible ctor))
+    (.newInstance ctor (object-array [nil backing]))))
+
 (def ^:private accepted-functions
   '[sh19-startup-request
     sh19-allocation-request
@@ -143,13 +154,13 @@
     (is (= :minimal-self-hosting (:family policy)))
     (is (= 1048576 (:maximum-allocation-bytes policy)))
     (is (= 16777216 (:maximum-file-read-bytes policy)))
-    (is (= 256 (:maximum-inline-utf8-bytes policy)))
-    (is (= 4096 (:maximum-request-nodes policy)))
-    (is (= 16384 (:maximum-result-nodes policy)))
-    (is (= 16 (:maximum-request-depth policy)))
-    (is (= 24 (:maximum-result-depth policy)))
-    (is (= 512 (:maximum-container-width policy)))
-    (is (= 64 (:maximum-map-width policy)))
+    (doseq [field [:maximum-inline-utf8-bytes
+                   :maximum-request-nodes :maximum-result-nodes
+                   :maximum-request-depth :maximum-result-depth
+                   :maximum-container-width :maximum-map-width
+                   :maximum-scalars :maximum-string-code-units
+                   :maximum-startup-services]]
+      (is (not (contains? policy field)) (str field)))
     (is (= #{:abort-with-report :trap :result-boundary}
            (:allocation-failure-behaviors policy)))
     (is (= :external
@@ -264,7 +275,7 @@
               (invoke-engine
                'sh19-verify-result [request result])))))))
 
-(deftest sh19-validates-complete-bounded-utf8-without-host-decoding
+(deftest sh19-validates-complete-utf8-without-inline-byte-quota
   (let [base
         (request accepted-gravity-plan 'sh19-string-request)
         valid-byte-vectors
@@ -276,7 +287,10 @@
          [237 159 191]
          [238 128 128]
          [240 144 128 128]
-         [244 143 191 191]]
+         [244 143 191 191]
+         (vec (repeat 257 65))
+         (vec (repeat 4097 65))
+         (vec (mapcat identity (repeat 65 [240 144 128 128])))]
         invalid-byte-vectors
         [[128]
          [192 128]
@@ -291,13 +305,28 @@
          [245 128 128 128]
          [256]
          [1.5]
-         (vec (repeat 257 65))]]
+         (conj (vec (repeat 257 65)) 128)
+         (conj (vec (repeat 4097 65)) 128)
+         (into (vec (repeat 257 65)) [237 160 128])
+         (into (vec (repeat 257 65)) [240 144 128])]]
     (doseq [bytes valid-byte-vectors]
-      (let [result (handle (assoc base :bytes bytes))]
+      (let [candidate (assoc base :bytes bytes)
+            result (handle candidate)]
         (is (= :accepted (:status result)) (str bytes))
         (is (= bytes (get-in result [:action :payload :bytes])))
         (is (= (count bytes)
-               (get-in result [:action :payload :byte-count])))))
+               (get-in result [:action :payload :byte-count])))
+        (is (= result (handle candidate)))
+        (is (= :passed
+               (:status
+                (invoke-engine 'sh19-verify-result [candidate result]))))
+        (is (= :runtime-result-substitution
+               (get-in
+                (invoke-engine
+                 'sh19-verify-result
+                 [candidate (assoc-in result [:action :payload :byte-count]
+                                      (inc (count bytes)))])
+                [:diagnostics 0 :reason])))))
     (doseq [bytes invalid-byte-vectors]
       (let [result (handle (assoc base :bytes bytes))]
         (is (= :rejected (:status result)) (str bytes))
@@ -386,74 +415,192 @@
     (is (= :runtime-result-substitution
            (get-in verification [:diagnostics 0 :reason])))))
 
-(deftest sh19-enforces-startup-order-and-global-structure-bounds
+(deftest sh19-accepts-carriers-beyond-former-population-limits
+  (let [base (request accepted-gravity-plan 'sh19-file-read-request)
+        deep-value (reduce (fn [value _] {:next value}) :leaf (range 25))
+        wide-map (into {} (map #(vector (keyword (str "field-" %)) %)
+                               (range 65)))
+        shared {:leaf [:shared :acyclic]}
+        node-heavy (vec (repeat 32 {:nodes (vec (repeat 200 {:leaf :scalar}))}))
+        candidates
+        [(assoc base :extra deep-value)
+         (assoc base :extra [shared shared {:again shared}])
+         (assoc base :extra (vec (range 513)))
+         (assoc base :extra (subvec (into [(Object.)] (range 513)) 1))
+         (assoc base :extra (set (range 513)))
+         (assoc base :extra wide-map)
+         (assoc base :extra (into (sorted-map) wide-map))
+         (assoc-in base [:source-span :source] (apply str (repeat 1025 "x")))
+         (assoc base :origin-chain (vec (repeat 513 {:kind :source})))
+         (assoc base :origin-chain node-heavy)]]
+    (doseq [candidate candidates]
+      (let [result (handle candidate)]
+        (is (= :accepted (:status result)))
+        (is (empty? (:diagnostics result)))
+        (is (= candidate (get-in result [:identity-input :request])))
+        (is (= candidate (get-in result [:action :action-identity :semantic-request])))
+        (is (= (:source-span candidate) (get-in result [:preserves :source-span])))
+        (is (= (:origin-chain candidate) (get-in result [:preserves :origin-chain])))
+        (is (= result (handle candidate)))
+        (is (= :passed
+               (:status (invoke-engine 'sh19-verify-result [candidate result]))))
+        (is (= :runtime-result-substitution
+               (get-in (invoke-engine 'sh19-verify-result
+                                      [candidate (assoc-in result [:decision-log :decision] :deny)])
+                       [:diagnostics 0 :reason])))))))
+
+(deftest sh19-rejects-duplicate-native-set-members-before-replay
+  (let [base (assoc (request accepted-gravity-plan 'sh19-file-read-request)
+                   :extra #{:a :b})
+        valid-result (handle base)]
+    (doseq [members [[] [:a :b] [nil false :a]
+                     [[1 #{:x :y}] {:nested [2 3]}]]]
+      (let [candidate (assoc base :extra (raw-native-set members))
+            result (handle candidate)]
+        (is (= :accepted (:status result)))
+        (is (= (set members) (get-in result [:identity-input :request :extra])))
+        (is (= result (handle candidate)))
+        (is (= :passed
+               (:status (invoke-engine 'sh19-verify-result [candidate result]))))))
+    (doseq [members [[:a :a] [nil nil] [false false]
+                     [[1 #{:x}] [1 #{:x}]]
+                     [{:k :a} {:k :a}]
+                     [(raw-native-set [:a :a])]]]
+      (let [value (raw-native-set members)
+            candidate (assoc base :extra value)
+            result (handle candidate)
+            request-verification
+            (invoke-engine 'sh19-verify-result [candidate valid-result])]
+        (is (= (count members) (count value)))
+        (doseq [rejection [result request-verification]]
+          (is (= :rejected (:status rejection)))
+          (is (= "R1-MANIFEST" (get-in rejection [:diagnostics 0 :rule])))
+          (is (= :malformed-runtime-request
+                 (get-in rejection [:diagnostics 0 :reason]))))
+        (is (= :malformed-carrier (get-in result [:identity-input :request-omitted])))
+        ;; The duplicate :a storage has the same count as #{:a :b}; hosted
+        ;; set equality alone can accept this substitution in either copy.
+        (doseq [location [[:identity-input :request :extra]
+                          [:action :action-identity :semantic-request :extra]
+                          [:extra]]]
+          (let [verification
+                (invoke-engine 'sh19-verify-result
+                               [base (assoc-in valid-result location value)])]
+            (is (= :rejected (:status verification)))
+            (is (= "R1-MANIFEST" (get-in verification [:diagnostics 0 :rule])))
+            (is (= :malformed-runtime-result
+                   (get-in verification [:diagnostics 0 :reason])))))))))
+
+(deftest sh19-traverses-malformed-carriers-beyond-former-cutoffs
+  (let [base (request accepted-gravity-plan 'sh19-file-read-request)
+        valid-result (handle base)
+        physical (object-array [:next nil])
+        cyclic (clojure.lang.PersistentArrayMap. physical)
+        duplicate-physical (object-array [:k :safe :k nil])
+        duplicate-cyclic (clojure.lang.PersistentArrayMap. duplicate-physical)
+        forced (atom 0)
+        delayed (lazy-seq (swap! forced inc) (repeat :never-force))
+        wide-map (into {} (map #(vector (keyword (str "field-" %)) %)
+                               (range 65)))]
+    (aset physical 1 cyclic)
+    (aset duplicate-physical 3 duplicate-cyclic)
+    (doseq [value [(conj (vec (repeat 513 :scalar)) (Object.))
+                   (assoc wide-map "not-a-keyword" :invalid-key)
+                   (reduce (fn [value _] {:next value}) '(unsupported-list) (range 25))
+                   (clojure.lang.APersistentVector$SubVector. nil [1] 1 0)
+                   (clojure.lang.APersistentVector$SubVector. nil [1] 0 2)
+                   #{(Object.)}
+                   delayed
+                   cyclic
+                   (raw-native-set [cyclic])
+                   (raw-native-set [delayed])
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k :safe]))
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k (Object.)]))
+                   duplicate-cyclic]]
+      (let [candidate (assoc base :extra value)
+            result (handle candidate)
+            request-verification
+            (invoke-engine 'sh19-verify-result [candidate valid-result])
+            result-verification
+            (invoke-engine 'sh19-verify-result [base (assoc valid-result :extra value)])]
+        (doseq [rejection [result request-verification result-verification]]
+          (is (= :rejected (:status rejection)))
+          (is (= "R1-MANIFEST" (get-in rejection [:diagnostics 0 :rule]))))
+        (is (= :malformed-runtime-request (get-in result [:diagnostics 0 :reason])))
+        (is (= :malformed-runtime-request
+               (get-in request-verification [:diagnostics 0 :reason])))
+        (is (= :malformed-carrier (get-in result [:identity-input :request-omitted])))
+        (is (= :malformed-runtime-result
+               (get-in result-verification [:diagnostics 0 :reason])))))
+    (is (zero? @forced))))
+
+(deftest sh19-rejects-native-carrier-callbacks-without-invocation
+  (let [base (request accepted-gravity-plan 'sh19-file-read-request)
+        calls (atom 0)
+        deny (fn [] (swap! calls inc) (throw (AssertionError. "carrier callback")))
+        opaque (proxy [Object] []
+                 (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))
+        foreign-map (sorted-map-by (fn [a b] (swap! calls inc) (compare a b)) :field 1)]
+    (reset! calls 0)
+    (doseq [value [opaque foreign-map
+                   (raw-native-set [opaque])
+                   (raw-native-set [[opaque]])
+                   (raw-native-set [{:nested opaque}])
+                   (clojure.lang.PersistentArrayMap.
+                    (object-array [:k :safe :k :safe opaque :invalid-key]))]]
+      (let [result (handle (assoc base :extra value))]
+        (is (= :rejected (:status result)))
+        (is (= :malformed-runtime-request (get-in result [:diagnostics 0 :reason])))))
+    (is (zero? @calls))))
+
+(deftest sh19-checks-complete-inline-text-for-every-service
+  (doseq [[function field] [['sh19-stdout-request :bytes]
+                            ['sh19-stderr-request :bytes]
+                            ['sh19-panic-request :message-bytes]]]
+    (let [base (request accepted-gravity-plan function)
+          bytes (into (vec (repeat 513 65)) [240 144 128 128])
+          candidate (assoc base field bytes)
+          result (handle candidate)
+          invalid (handle (assoc base field (conj bytes 128)))]
+      (is (= :accepted (:status result)))
+      (is (= bytes (get-in result [:action :payload field])))
+      (is (= result (handle candidate)))
+      (is (= :passed (:status (invoke-engine 'sh19-verify-result [candidate result]))))
+      (is (= :rejected (:status invalid)))
+      (is (= :invalid-utf8 (get-in invalid [:diagnostics 0 :reason]))))))
+
+(deftest sh19-enforces-startup-order-without-service-count-limit
   (let [startup
         (request accepted-gravity-plan 'sh19-startup-request)
-        file-request
-        (request accepted-gravity-plan 'sh19-file-read-request)
-        duplicate-init
-        (handle
-         (assoc startup
-                :initialization-order [:runtime :runtime]
-                :cleanup-order [:runtime :runtime]))
-        non-reverse-cleanup
-        (handle
-         (assoc startup
-                :cleanup-order [:runtime :compiler]))
-        entrypoint-in-initialization
-        (handle
-         (assoc startup
-                :initialization-order
-                [:runtime :gravity.compiler/main]
-                :cleanup-order
-                [:gravity.compiler/main :runtime]))
-        wide-request
-        (handle
-         (assoc file-request
-                :origin-chain
-                (vec (repeat 513 {:kind :source}))))
-        long-string
-        (handle
-         (assoc-in file-request
-                   [:source-span :source]
-                   (apply str (repeat 1025 "x"))))
-        node-heavy
-        (handle
-         (assoc file-request
-                :origin-chain
-                (vec
-                 (repeat
-                  32
-                  {:nodes
-                   (vec
-                    (repeat
-                     200
-                     {:leaf :bounded-scalar}))}))))
-        deep-value
-        (reduce
-         (fn [value _] {:next value})
-         :leaf
-         (range 25))
-        deep-request
-        (handle (assoc file-request :extra deep-value))
-        oversized-candidate
-        (invoke-engine
-         'sh19-verify-result
-         [file-request (vec (repeat 513 :candidate-node))])]
-    (doseq [result
-            [duplicate-init non-reverse-cleanup
-             entrypoint-in-initialization]]
-      (is (= :rejected (:status result)))
-      (is (= "R1-STARTUP"
-             (get-in result [:diagnostics 0 :rule]))))
-    (doseq [result [wide-request long-string node-heavy deep-request]]
-      (is (= :rejected (:status result)))
-      (is (= :runtime-request-structural-bound-exceeded
-             (get-in result [:diagnostics 0 :reason])))
-      (is (nil? (get-in result [:identity-input :request]))))
-    (is (= :rejected (:status oversized-candidate)))
-    (is (= :runtime-result-bound-exceeded
-           (get-in oversized-candidate [:diagnostics 0 :reason])))))
+        initialization (mapv #(keyword (str "service-" %)) (range 65))
+        cleanup (vec (reverse initialization))
+        candidate (assoc startup :initialization-order initialization :cleanup-order cleanup)
+        result (handle candidate)]
+    (is (= :accepted (:status result)))
+    (is (= initialization (get-in result [:action :payload :initialization-order])))
+    (is (= cleanup (get-in result [:action :payload :cleanup-order])))
+    (is (= result (handle candidate)))
+    (is (= :passed (:status (invoke-engine 'sh19-verify-result [candidate result]))))
+    (doseq [invalid [(assoc candidate :initialization-order [] :cleanup-order [])
+                     (assoc candidate :cleanup-order initialization)
+                     (assoc candidate :cleanup-order (subvec cleanup 1))
+                     (assoc candidate :initialization-order (conj initialization (first initialization))
+                                      :cleanup-order (into [(first initialization)] cleanup))
+                     (assoc candidate :initialization-order (conj initialization :gravity.compiler/main)
+                                      :cleanup-order (into [:gravity.compiler/main] cleanup))
+                     (assoc candidate :initialization-order (conj initialization "not-a-service")
+                                      :cleanup-order (into ["not-a-service"] cleanup))]]
+      (let [rejected (handle invalid)]
+        (is (= :rejected (:status rejected)))
+        (is (= "R1-STARTUP" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= :invalid-startup (get-in rejected [:diagnostics 0 :reason])))))
+    (is (= :runtime-result-substitution
+           (get-in (invoke-engine 'sh19-verify-result
+                                  [candidate (assoc-in result [:action :payload :cleanup-order]
+                                                       initialization)])
+                   [:diagnostics 0 :reason])))))
 
 (deftest sh19-closes-no-allocation-failure-and-identity-policy
   (let [no-allocation
@@ -554,3 +701,35 @@
                (get-in result [:diagnostics 0 :rule])))
         (is (= :missing-or-mismatched-provider
                (get-in result [:diagnostics 0 :reason])))))))
+
+(deftest sh19-retains-allocation-read-and-exit-domains
+  (let [allocation (request accepted-gravity-plan 'sh19-allocation-request)
+        file-request (request accepted-gravity-plan 'sh19-file-read-request)
+        exit (request accepted-gravity-plan 'sh19-exit-request)]
+    (doseq [candidate [(assoc allocation :size-bytes -1)
+                       (assoc allocation :size-bytes 65537)
+                       (-> allocation
+                           (assoc :alignment 3)
+                           (assoc-in [:provider :scope :maximum-alignment] 3))
+                       (-> allocation
+                           (assoc :allocation-limit-bytes 1048577)
+                           (assoc-in [:provider :scope :maximum-bytes] 1048577))]]
+      (let [result (handle candidate)]
+        (is (= :rejected (:status result)))
+        (is (= "R3-ALLOCATOR" (get-in result [:diagnostics 0 :rule])))
+        (is (= :invalid-allocation (get-in result [:diagnostics 0 :reason])))))
+    (doseq [size [0 16777217]]
+      (let [result (handle (-> file-request
+                               (assoc :maximum-bytes size)
+                               (assoc-in [:provider :scope :maximum-bytes] size)))]
+        (is (= :rejected (:status result)))
+        (is (= :invalid-file-read (get-in result [:diagnostics 0 :reason])))))
+    (is (= :missing-or-mismatched-provider
+           (get-in (handle (assoc-in file-request [:provider :scope :maximum-bytes] 1))
+                   [:diagnostics 0 :reason])))
+    (doseq [code [-1 256]]
+      (let [result (handle (assoc exit :exit-code code))]
+        (is (= :rejected (:status result)))
+        (is (= :invalid-exit (get-in result [:diagnostics 0 :reason])))))
+    (doseq [code [0 255]]
+      (is (= :accepted (:status (handle (assoc exit :exit-code code))))))))
