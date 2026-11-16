@@ -25,7 +25,7 @@
     :distributed :ai :meta :gpu :formal})
 
 (def supported-profiles-default #{:hosted})
-(def supported-targets-default #{:jvm})
+(def supported-targets-default #{:jvm :js-ts})
 
 (def effect-capability-default
   {:io/write :io/stdout

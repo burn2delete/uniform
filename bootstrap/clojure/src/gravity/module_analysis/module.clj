@@ -60,6 +60,21 @@
              {:source-span (source-span source-path 0)
               :target target :supported supported-targets
               :remediation "Use a target enabled by the selected bootstrap backend."}))
+    ;; Target recognition does not grant hosted interop. The implemented
+    ;; JavaScript source route is the checked scalar application; Uniform
+    ;; C6-C11 still checks every source operation, binding and semantic fact.
+    (when (and (= :js-ts target)
+               (not (and (= :hosted profile) (= :safe safety)
+                         (= #{} capabilities)
+                         (contains? #{#{} #{:error/raise}} effects)
+                         (= [] requires) (= [] imports) (= [] providers))))
+      (fail! "B1-TARGET-UNSUPPORTED"
+             "JavaScript source requires the hosted safe scalar policy"
+             {:source-span (source-span source-path 0)
+              :target target :profile profile :safety safety
+              :supported supported-targets
+              :missing-fact :hosted-safe-scalar-js-source-policy
+              :remediation "Use hosted safe scalar source without imports, providers or external capabilities."}))
     {:module module-name :source-path source-path :profile profile :target target
      :effects effects :capabilities capabilities :requires requires
      :imports imports :exports exports :safety safety :providers providers

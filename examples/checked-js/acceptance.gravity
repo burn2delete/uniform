@@ -1,0 +1,16 @@
+(ns acceptance.scalar
+  (:profile :hosted)
+  (:target :js-ts)
+  (:effects #{:error/raise})
+  (:capabilities #{})
+  (:safety :safe)
+  (:exports [score]))
+
+(defn add [left :- I64 right :- I64]
+  (+ left right))
+
+(defn score [choose-sum :- Bool left :- I64 right :- I64]
+  (let [sum (add left right)]
+    (if choose-sum
+      sum
+      left)))

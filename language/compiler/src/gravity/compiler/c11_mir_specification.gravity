@@ -12076,11 +12076,11 @@
        :remediation (sh12-branch-join-remediation rule)}]
      :nonclaims [:target-emission :self-hosted? :seed-retirement :whole-c11]}))
 
-(defn c11-scalar-check-valid? [node]
+(defn c11-scalar-check-valid? [core node]
   (let [check (get (get node :safety) :check) predicate (get check :predicate)]
     (= [:numeric-overflow (get node :node-id) :overflow :checked 64 :signed
         :operands-in-declared-width-and-checked-add-result-within-width :add
-        (get node :operands) 64 :signed :error/numeric #{:error/raise} :hosted :jvm]
+        (get node :operands) 64 :signed :error/numeric #{:error/raise} :hosted (get core :source-target)]
        [(get check :kind) (get check :operation-id) (get check :condition)
         (get check :numeric-mode) (get check :bit-width) (get check :signedness)
         (get predicate :kind) (get predicate :operator) (get predicate :operand-ids)
@@ -12124,11 +12124,19 @@
 
 (defn c11-scalar-core-node-problem [core node]
   (let [id (get node :node-id) op (get node :source-operation)
+        target (get core :source-target)
         type-fact (get (get core :type-facts) id)
         effect-fact (get (get core :effect-facts) id)
         ownership (get (get core :ownership-facts) id)
         safety (get (get core :safety-facts) id)
         source (get node :source)]
+    (if (= [target target target target target target]
+           [(get type-fact :source-target) (get effect-fact :source-target)
+            (get ownership :source-target)
+            (get (get (get core :capability-facts) id) :source-target)
+            (get safety :target)
+            (if (= :integer-add op) (get (get (get node :safety) :check) :target)
+              (get (get (get node :safety) :proof) :source-target))])
     (if (if (map? source) (if (map? (get source :span)) (if (= nil (get source :origin-id)) false true) false) false)
       (if (if (= (get node :type) (get type-fact :type)) (c11-scalar-node-type-valid? core node) false)
         (if (= (get node :effects) (get effect-fact :transitive))
@@ -12139,7 +12147,7 @@
               (if (= :integer-add op)
                 (if (if (= :runtime-checked (get safety :outcome))
                       (if (= (get safety :runtime-check) (get (get (get node :safety) :check) :check-id))
-                        (c11-scalar-check-valid? node) false) false)
+                        (c11-scalar-check-valid? core node) false) false)
                   nil ["C11-SAFETY" :scalar-checked-overflow-guard])
                 (if (if (= :proven-safe (get safety :outcome))
                       (= nil (get (get node :safety) :check)) false)
@@ -12148,14 +12156,22 @@
             ["C11-VERIFY" :scalar-immutable-ownership])
           ["C11-EFFECT" :scalar-effect-fact-linkage])
         ["C11-TYPE" :scalar-node-type-and-call-signature])
-      ["C11-ORIGIN" :scalar-source-origin])))
+      ["C11-ORIGIN" :scalar-source-origin])
+    ["C11-MODULE" :scalar-source-target-facts])))
 
 (defn c11-scalar-core-problem [core]
-  (if (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact
-          :complete-for-compositional-scalar-hosted-safe-jvm-slice
-          :compositional-scalar-functions-v1 :hosted :jvm]
+  (if (if (contains? #{:jvm :js-ts} (get core :source-target))
+        (if (= {:requested-target (get core :source-target) :source-target (get core :source-target)
+                :identity-bearing? false :downstream-lowering-required? true}
+               (get core :target-request-metadata))
+        (if (= [(get core :source-target)] (get (get core :scope) :source-targets))
+        (= [:gravity/p15-s23-stage2-gravity-checked-core-artifact
+          (if (= :js-ts (get core :source-target))
+            :complete-for-compositional-scalar-hosted-safe-js-ts-slice
+            :complete-for-compositional-scalar-hosted-safe-jvm-slice)
+          :compositional-scalar-functions-v1 :hosted (get core :source-target)]
          [(get core :kind) (get core :status) (get (get core :scope) :family)
-          (get core :profile) (get core :source-target)])
+          (get core :profile) (get core :source-target)]) false) false) false)
     (if (if (vector? (get core :core-nodes)) (> (count (get core :core-nodes)) 0) false)
       (loop [nodes (get core :core-nodes) seen #{}]
         (if (= 0 (count nodes)) nil
@@ -12340,7 +12356,7 @@
       (recur (rest remaining)
         (assoc result (get (first remaining) :block-id) (get (first remaining) :dominators))))))
 
-(defn c11-scalar-pass-contract []
+(defn c11-scalar-pass-contract [source-target]
   {:artifact :gravity/compiler-pass-contract :pass-id :c11-build-compositional-scalar-functions
    :owner :gravity-source :input :gravity/safety-checked-core :output :gravity/mir-module
    :requires [:fresh-c6-c10-verification :c5-declaration-and-binding-identities
@@ -12351,7 +12367,7 @@
    :regenerates [:control-flow :data-flow :dominance :overflow-guard-tokens]
    :postcondition-verifier 'c11-verify-scalar-functions-mir
    :scope :nonrecursive-first-order-fixed-arity-scalar-functions
-   :profiles [:hosted] :source-targets [:jvm] :target-independent-output? true})
+   :profiles [:hosted] :source-targets [source-target] :target-independent-output? true})
 
 (defn c11-scalar-construct [checked-core]
   (let [nodes (get checked-core :core-nodes) built (c11-scalar-functions checked-core)
@@ -12359,8 +12375,8 @@
         blocks (c11-scalar-function-blocks functions names)]
     {:artifact :gravity/mir-module :schema-version 1
      :module-id (get (get checked-core :source-core-input) :module)
-     :source-core (get checked-core :artifact-id) :profile :hosted :source-target :jvm
-     :target-request :jvm :target-request-metadata (get checked-core :target-request-metadata)
+     :source-core (get checked-core :artifact-id) :profile :hosted :source-target (get checked-core :source-target)
+     :target-request (get (get checked-core :target-request-metadata) :requested-target) :target-request-metadata (get checked-core :target-request-metadata)
      :functions functions :function-order names :exports (get checked-core :exports) :globals {}
      :control-flow-graph {:edges (c11-scalar-control-edges blocks)
                           :dominance (c11-scalar-dominance blocks)}
@@ -12387,7 +12403,7 @@
      :provenance {:checked-core-artifact-id (get checked-core :artifact-id)
                   :checked-core-mapping-id (get checked-core :mapping-id)
                   :checked-core-provenance-binding-id (get checked-core :provenance-binding-id)}
-     :pass-contract (c11-scalar-pass-contract)
+     :pass-contract (c11-scalar-pass-contract (get checked-core :source-target))
      :construction {:owner :gravity-source :function 'c11-build-scalar-functions-mir :status :constructed}
      :verification-status :pending :diagnostics [] :target-independent? true
      :scope {:family :compositional-scalar-functions :nonrecursive? true :first-order? true
@@ -12572,7 +12588,8 @@
               effect-mismatch (c11-scalar-operation-mismatch expected mir :effect)
               safety-mismatch (c11-scalar-operation-mismatch expected mir :safety)
               origin-mismatch (c11-scalar-operation-mismatch expected mir :origin)]
-          (if (= [(get expected :source-core) (get expected :module-id) :hosted :jvm :jvm
+          (if (= [(get expected :source-core) (get expected :module-id) :hosted
+                  (get expected :source-target) (get expected :target-request)
                   (get expected :function-order) (get expected :exports)]
                  [(get mir :source-core) (get mir :module-id) (get mir :profile)
                   (get mir :source-target) (get mir :target-request)

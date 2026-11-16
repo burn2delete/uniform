@@ -1,0 +1,1875 @@
+{:host-source-observation
+ :captured-at-backend-load-and-rechecked-before-publication,
+ :nonclaims
+ [:public-compile-cli
+  :clean-checkout-acceptance
+  :hosted-ci
+  :release
+  :self-hosting
+  :seed-retirement],
+ :runtime-execution
+ {:node "v20.20.2",
+  :exports ["score"],
+  :results
+  [{:case "additional-positive", :value "15"}
+   {:case "additional-false", :value "100"}
+   {:case "i64-maximum", :value "9223372036854775807"}
+   {:case "i64-minimum", :value "-9223372036854775808"}
+   {:case "i64-opposite-extremes", :value "-1"}],
+  :errors
+  [{:operandTypes ["bigint" "bigint"],
+    :name "UniformNumericError",
+    :operation ":add",
+    :width 64,
+    :type ":error/numeric",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     :mirInstructionId
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 207,
+      :byte-start 193,
+      :end
+      {:byte 207,
+       :char 207,
+       :column 17,
+       :column-unit ":unicode-scalar",
+       :line 10},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 193,
+       :char 193,
+       :column 3,
+       :column-unit ":unicode-scalar",
+       :line 10}}},
+    :operands ["9223372036854775807" "1"],
+    :case "eager-overflow-false",
+    :kind ":overflow",
+    :isError true,
+    :numericMode ":checked",
+    :operationId
+    "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+    :checkId
+    "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+    :signed true}
+   {:operandTypes ["bigint" "bigint"],
+    :name "UniformNumericError",
+    :operation ":add",
+    :width 64,
+    :type ":error/numeric",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     :mirInstructionId
+     "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 207,
+      :byte-start 193,
+      :end
+      {:byte 207,
+       :char 207,
+       :column 17,
+       :column-unit ":unicode-scalar",
+       :line 10},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 193,
+       :char 193,
+       :column 3,
+       :column-unit ":unicode-scalar",
+       :line 10}}},
+    :operands ["-9223372036854775808" "-1"],
+    :case "negative-overflow",
+    :kind ":overflow",
+    :isError true,
+    :numericMode ":checked",
+    :operationId
+    "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+    :checkId
+    "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
+    :signed true}
+   {:argumentIndex nil,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "missing-argument",
+    :kind ":arity",
+    :expected 3,
+    :isError true,
+    :actualArity 2,
+    :actualType nil}
+   {:argumentIndex nil,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "extra-argument",
+    :kind ":arity",
+    :expected 3,
+    :isError true,
+    :actualArity 4,
+    :actualType nil}
+   {:argumentIndex 1,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "number-i64",
+    :kind ":type",
+    :expected "bigint",
+    :isError true,
+    :actualType "number"}
+   {:argumentIndex 1,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "null-i64",
+    :kind ":type",
+    :expected "bigint",
+    :isError true,
+    :actualType "null"}
+   {:argumentIndex 1,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "undefined-i64",
+    :kind ":type",
+    :expected "bigint",
+    :isError true,
+    :actualType "undefined"}
+   {:argumentIndex 0,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "number-bool",
+    :kind ":type",
+    :expected "boolean",
+    :isError true,
+    :actualType "number"}
+   {:argumentIndex 0,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "null-bool",
+    :kind ":type",
+    :expected "boolean",
+    :isError true,
+    :actualType "null"}
+   {:argumentIndex 0,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "undefined-bool",
+    :kind ":type",
+    :expected "boolean",
+    :isError true,
+    :actualType "undefined"}
+   {:argumentIndex 1,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "i64-above-range",
+    :kind ":range",
+    :expected "signed I64",
+    :isError true,
+    :actualType "bigint"}
+   {:argumentIndex 1,
+    :name "UniformABIError",
+    :type ":error/abi",
+    :source
+    {:contentHash
+     "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+     :coreNodeId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :mirInstructionId
+     "sha256:7602ff271237cd8de32f415d2f279771042796e314355f3e89495665d0820f47",
+     :path
+     "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+     :span
+     {:byte-end 340,
+      :byte-start 210,
+      :end
+      {:byte 340,
+       :char 340,
+       :column 14,
+       :column-unit ":unicode-scalar",
+       :line 16},
+      :file
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :source
+      "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+      :start
+      {:byte 210,
+       :char 210,
+       :column 1,
+       :column-unit ":unicode-scalar",
+       :line 12}}},
+    :function "score",
+    :case "i64-below-range",
+    :kind ":range",
+    :expected "signed I64",
+    :isError true,
+    :actualType "bigint"}]},
+ :verified-input
+ {:application-id
+  "sha256:f0524ac3892e473a3518130550dd245f0f2c6e683af53b30fc63cc66be72506c",
+  :checked-core-id
+  "sha256:6106ceb392db3f25eb9a0996df3b08a61fa825403ee96da408957a765434bdc1",
+  :mir-module-id acceptance.scalar},
+ :required-selector
+ {:namespace gravity.backend.js-checked-mir-test,
+  :exact scalar-module-target-execution,
+  :tests 1,
+  :assertions 426,
+  :failures 0,
+  :errors 0},
+ :source-target :js-ts,
+ :production-launch-command
+ "Candidate: 4470a4fbe8fe104b114310cb31d7fd916d77b458\nTree: 6c3faf0c9b1839ab0bf6faa7c06999760007637b\nCWD: /workspace/scratch/0b2be7afba4b/uniform\nProduction source/test bytes frozen. Documentation updates do not change compiler sources.\n\nPATH=/workspace/scratch/0b2be7afba4b/toolchain/clojure-cli/bin:/workspace/scratch/0b2be7afba4b/toolchain/node-v20.20.2-linux-x64/bin:$PATH CLJ_CONFIG=/workspace/scratch/0b2be7afba4b/toolchain/clojure-config clojure -J-Xmx2g -M -e '\n(require (quote [gravity.compiler.application :as compiler]))\n(prn\n  (select-keys\n    (compiler/current-source-to-js-module\n      \"examples/checked-js/acceptance.gravity\"\n      {:profile :hosted :target :js-ts :effects #{:error/raise}\n       :capabilities #{} :safety :safe}\n      {:output-path \"target/acceptance-js\" :target :js-ts\n       :runtime :node20 :language :es2022 :module-format :esm})\n    [:status :paths :runtime-observation]))\n' > /workspace/scratch/0b2be7afba4b/evidence/finalnumeric-production-api.log 2>&1\n",
+ :production-api-exit 0,
+ :compiler-checkpoint-tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
+ :authority :non-authoritative-development-evidence,
+ :preceding-execution-receipt-commit
+ "9b87c7e26937dfa59ddbb5ba0d7749787830b6c2",
+ :schema-version 1,
+ :hosted-ci-observation
+ {:conclusion :failure,
+  :cause :not-established,
+  :decoded-job-log
+  {:file "finalnumeric-hosted-macro-job.log",
+   :sha256
+   "sha256:433a1eb566177d1d03688f0a15247d9b4a860b67bc426ab76a1d346273c712db",
+   :byte-count 155029},
+  :provider-tree-matches-source true,
+  :provider-commit "7d496a151cb28afd94aed6aa3a2953a333ece44e",
+  :failed-job
+  {:name "macro",
+   :id 133010270219,
+   :command "macro-pipeline-cohort",
+   :watchdog-seconds 900,
+   :status :timeout,
+   :exit 124},
+  :source-commit "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :provider-parents
+  ["4c0ada9438cbcf20587447541ecfd16ab08e99a7"
+   "4470a4fbe8fe104b114310cb31d7fd916d77b458"],
+  :job-counts {:success 11, :skipped 2, :failure 1},
+  :status :completed,
+  :url
+  "https://github.com/burn2delete/uniform/actions/runs/43778464329",
+  :run-id 43778464329,
+  :following-macro-commands
+  [{:name "macro-receipt-controls", :status :passed, :exit 0}
+   {:name "macro-bootstrap-compatibility", :status :passed, :exit 0}],
+  :provider-tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b"},
+ :compiler-bindings
+ {:b1
+  {:source-content-hash
+   "sha256:14292df4ff6a0aaa250de1f13ea2ab3d88d7ca186e5a491ab12a7d7ba798bf80",
+   :builder-function b1-build-checked-js-input,
+   :seed-emitter
+   {:source-rule-hash
+    "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+    :rule-record
+    {:missing-builtin-functions [],
+     :compiler-owner :gravity-source,
+     :builtin-functions
+     [*
+      +
+      -
+      /
+      <
+      <=
+      =
+      >
+      >=
+      assoc
+      build-read-declared-input
+      conj
+      count
+      first
+      get
+      hash-map
+      list
+      pr-str
+      rest
+      second
+      str
+      vector],
+     :missing-special-forms [],
+     :status :complete,
+     :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+     :engine :gravity-stage2-plan-emitter-rules-v1,
+     :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+     :special-forms [do host-reflect if let println quote],
+     :rule-set-complete? true}},
+   :verifier-function b1-verify-checked-js-input,
+   :source-mode :development-current,
+   :builder-semantic-hash
+   "sha256:ed9624259e18f32672669c8e68b4498f667a65747a1cc8a6ebc8a6b655ea5f73",
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity",
+   :compiler-host :clojure-stage0-seed,
+   :source-byte-count 149871,
+   :verifier-semantic-hash
+   "sha256:667d7ca612fb9358bb9bd7e19b08ec5464fbb74f6fb5bf65339e5ed145c93f05",
+   :functions-semantic-hash
+   "sha256:dee2c23a2a881d926afd776f5dcea356ee193d578dca08449bebc7e19bdcba45",
+   :semantic-authority :gravity-source,
+   :plan-semantic-hash
+   "sha256:f506e75a5d689e90450488856e4ca54e7a0f87092254c0c3d4070f980a7c16dd",
+   :admission-status :development-unadmitted},
+  :b6
+  {:source-content-hash
+   "sha256:856cc3eb919b97bb34f56452094207867962f21a0705e6c0d176a258770953e5",
+   :builder-function b6-build-checked-js-program,
+   :seed-emitter
+   {:source-rule-hash
+    "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+    :rule-record
+    {:missing-builtin-functions [],
+     :compiler-owner :gravity-source,
+     :builtin-functions
+     [*
+      +
+      -
+      /
+      <
+      <=
+      =
+      >
+      >=
+      assoc
+      build-read-declared-input
+      conj
+      count
+      first
+      get
+      hash-map
+      list
+      pr-str
+      rest
+      second
+      str
+      vector],
+     :missing-special-forms [],
+     :status :complete,
+     :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+     :engine :gravity-stage2-plan-emitter-rules-v1,
+     :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+     :special-forms [do host-reflect if let println quote],
+     :rule-set-complete? true}},
+   :verifier-function b6-verify-checked-js-program,
+   :source-mode :development-current,
+   :builder-semantic-hash
+   "sha256:36e11c203b3ec80003ebaf32341b646be788aa2475c327ffba155bf0ba6d7cb9",
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity",
+   :compiler-host :clojure-stage0-seed,
+   :source-byte-count 36897,
+   :verifier-semantic-hash
+   "sha256:44e6e5cf562ac4368fbaf995f6f3c2ba9ddef8fafed3471a33e72af2432bcafb",
+   :functions-semantic-hash
+   "sha256:1e0eeaeb5a17c4154d78d893d141dfd074971354c127a51094090c937b804d10",
+   :semantic-authority :gravity-source,
+   :plan-semantic-hash
+   "sha256:827aac8ba81abeb12c100e7552fae2df937e4a67879fe0b9346dc05711bbf3c7",
+   :admission-status :development-unadmitted},
+  :c11
+  {:source-content-hash
+   "sha256:c358e2c2d3309afb2fcb30f427b4ae48c03d9a471e197d17fcdefdeeedfe1f3f",
+   :builder-function c11-build-scalar-functions-mir,
+   :verifier-function c11-verify-scalar-functions-mir,
+   :source-mode :development-current,
+   :builder-semantic-hash
+   "sha256:fd5fa6edb5a0af19cfd8808f4085d48ff2c03ac170ea2ef7a61124eef41b10a7",
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/compiler/c11_mir_specification.gravity",
+   :source-byte-count 642364,
+   :verifier-semantic-hash
+   "sha256:f1c4e943bdf1dde4721648d57dab88caef6356365242779c9182bbe6278e927c",
+   :functions-semantic-hash
+   "sha256:16c0e835db0842c7b98ff3113758e6d265298d58f059ad54c212b0e7d0efeab5",
+   :plan-semantic-hash
+   "sha256:e92ebf6b247e0dc176629322d2b8e61231f990eb819e1014dbfead8453890834"},
+  :c14
+  {:source-content-hash
+   "sha256:9fe66ce9d685b04a5d17bf767d4317c0b8f8ed58b59ae7a23d678f52e5f8e815",
+   :builder-function c14-build-checked-js-lowering,
+   :seed-emitter
+   {:source-rule-hash
+    "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f",
+    :rule-record
+    {:missing-builtin-functions [],
+     :compiler-owner :gravity-source,
+     :builtin-functions
+     [*
+      +
+      -
+      /
+      <
+      <=
+      =
+      >
+      >=
+      assoc
+      build-read-declared-input
+      conj
+      count
+      first
+      get
+      hash-map
+      list
+      pr-str
+      rest
+      second
+      str
+      vector],
+     :missing-special-forms [],
+     :status :complete,
+     :artifact :gravity/p15-s23-stage2-plan-emitter-rule-record,
+     :engine :gravity-stage2-plan-emitter-rules-v1,
+     :plan-kind :gravity/stage2-hosted-core-compiled-plan,
+     :special-forms [do host-reflect if let println quote],
+     :rule-set-complete? true}},
+   :verifier-function c14-verify-checked-js-lowering,
+   :source-mode :development-current,
+   :builder-semantic-hash
+   "sha256:95e489294693ca663d751e9e4009512d39c145efc893cd4d116e1e3b35d1d5ca",
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity",
+   :compiler-host :clojure-stage0-seed,
+   :source-byte-count 217437,
+   :verifier-semantic-hash
+   "sha256:b1fbf2c975405128faafac253d8e1cad504b669ef9a419192d8740527281c2ca",
+   :functions-semantic-hash
+   "sha256:3b58afe31c449a23afe3501b974f35f6eac1b610d03bfbf9c22a8946fc6fd069",
+   :semantic-authority :gravity-source,
+   :plan-semantic-hash
+   "sha256:ae2c9e744cf79e0ca6d46d79f057820e59581670039bbfc896e12b7d7f4a7dd9",
+   :admission-status :development-unadmitted},
+  :c6-c10
+  {:source-content-hash
+   "sha256:a1e887a7a430076dfff573aa69ff0deb339db9cc103100b29b9b6527803209e7",
+   :builder-function c6-c10-build-checked-core-template,
+   :verifier-function c6-c10-verify-checked-core-template,
+   :source-mode :development-current,
+   :builder-semantic-hash
+   "sha256:1d6300beaa13de4f3078a1127e7b0d3aae5f0ce66e5ac98fed39de9be8741397",
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+   :source-byte-count 238746,
+   :verifier-semantic-hash
+   "sha256:317c55f7a95ff199be4c3f459522150c1247e281d6fa99dc428c28fa6452b79b",
+   :functions-semantic-hash
+   "sha256:522bca0787fc70ceb665fc0069019548f8b92cca57d3088610374bf5971c5ca3",
+   :semantic-authority :gravity-source,
+   :plan-semantic-hash
+   "sha256:1f72fd222e415c4a13be10b9d50c2706d72c8ac4538037ae4e965d6d26222ae5"}},
+ :standalone
+ {:directory "/tmp/uniform-finalnumeric-js-WTv8n0o9",
+  :working-directory :copied-artifact-directory,
+  :module-specifier "./program.mjs",
+  :environment :cleared-except-node-path,
+  :required-stdout-identical true,
+  :runtime-record-identical true},
+ :execution-log-identities
+ [{:file "finalnumeric-production-api.log",
+   :sha256
+   "sha256:87bb1ba7485466800de55c8afc60f4247d80a1a53998fea03007ccd7bcdc3e6c",
+   :byte-count 392}
+  {:file "finalnumeric-production-node.log",
+   :sha256
+   "sha256:9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
+   :byte-count 23}
+  {:file "finalnumeric-production-runtime.json",
+   :sha256
+   "sha256:31385de3ac91ec51f3e9e76a7faba47b1a1937ac0c1181af9b276aec30622dd0",
+   :byte-count 12047}
+  {:file "finalnumeric-production-standalone-node.log",
+   :sha256
+   "sha256:9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
+   :byte-count 23}
+  {:file "finalnumeric-production-standalone-runtime.json",
+   :sha256
+   "sha256:31385de3ac91ec51f3e9e76a7faba47b1a1937ac0c1181af9b276aec30622dd0",
+   :byte-count 12047}
+  {:file "finalnumeric-required-selector.log",
+   :sha256
+   "sha256:87844907502d8775ac7e7ef213b82b53879dd3c9938efef299c175e8f4a18c08",
+   :byte-count 2112}
+  {:file "finalnumeric-runtime-regressions.log",
+   :sha256
+   "sha256:044da1554eacc1c0b7e267cd908b75610a02a9d0185f2b7832f10e9391ce94ff",
+   :byte-count 4683}
+  {:file "finalnumeric-rejection-regressions.log",
+   :sha256
+   "sha256:253f079c1d31f601db34acf9f82582d16987bea91889446a04bbe7acc9f4c6ad",
+   :byte-count 7942}
+  {:file "finalnumeric-test-results.edn",
+   :sha256
+   "sha256:95da066a0022997de4f4af592f002151848a8df67433c2d9a5c53b6b07477848",
+   :byte-count 2058}
+  {:file "finalnumeric-test-commands.edn",
+   :sha256
+   "sha256:bc5a1094691486692eab9238e351f43e3fe34705f7f993eae1407d7b6b02c41a",
+   :byte-count 1308}
+  {:file "finalnumeric-post-run-code-check.log",
+   :sha256
+   "sha256:fa32ad1d76eb79a1b7dcce1e282ab9f7030a0b9c39e16f613c899cd4948ccdac",
+   :byte-count 596}],
+ :toolchain
+ {:node "v20.20.2",
+  :clojure "1.12.0",
+  :clojure-cli "1.12.0.1530",
+  :node-archive-sha256
+  "df770b2a6f130ed8627c9782c988fda9669fa23898329a61a871e32f965e007d"},
+ :host-transport-sources
+ {"bootstrap/clojure/src/gravity/backend/js.clj"
+  {:source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/clojure/src/gravity/backend/js.clj",
+   :source-content-hash
+   "sha256:d5636ad80b3ae72baabab370022819aecc254a5254dfbcae1b69039f2a0c269a",
+   :source-byte-count 20680},
+  "bootstrap/clojure/src/gravity/backend/js_checked_mir.clj"
+  {:source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/clojure/src/gravity/backend/js_checked_mir.clj",
+   :source-content-hash
+   "sha256:164c1c504fcee6df43d060aa78254fc88f4df9920512899f66b2873d077a6c1f",
+   :source-byte-count 17478},
+  "bootstrap/clojure/src/gravity/backend/js_scalar.clj"
+  {:source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/clojure/src/gravity/backend/js_scalar.clj",
+   :source-content-hash
+   "sha256:7a10b4a9aca57b6acdc6bc5b7347e06cf3a032af10cfb694a82eb88c41d9ff95",
+   :source-byte-count 15006}},
+ :source
+ {:path
+  "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
+  :content-hash
+  "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
+  :byte-count 341},
+ :numeric-operand-observation
+ {:native-type :bigint,
+  :json-projection :explicit-decimal-strings,
+  :type-evidence :operandTypes},
+ :focused-test-commands
+ {:working-directory "/workspace/scratch/0b2be7afba4b/uniform",
+  :published-code-candidate "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :environment-prefix
+  {"PATH"
+   "/workspace/scratch/0b2be7afba4b/toolchain/clojure-cli/bin:/workspace/scratch/0b2be7afba4b/toolchain/node-v20.20.2-linux-x64/bin:$PATH",
+   "CLJ_CONFIG"
+   "/workspace/scratch/0b2be7afba4b/toolchain/clojure-config"},
+  :commands
+  [{:log "finalnumeric-required-selector.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-target-execution"
+     "--progress"]}
+   {:log "finalnumeric-runtime-regressions.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-runtime-rejections"
+     "--exact"
+     "scalar-module-boolean-execution"
+     "--exact"
+     "scalar-module-composed-qst-and-shadowed-call"
+     "--progress"]}
+   {:log "finalnumeric-rejection-regressions.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-rejects-source-and-target-mismatch"
+     "--exact"
+     "scalar-module-rejects-genuine-product-tampering"
+     "--progress"]}],
+  :runtime "Node v20.20.2",
+  :clojure "1.12.0"},
+ :manifest-artifact-id
+ "sha256:5fe2f15ea7b49f63463a5e820e98766b9f44d957e639ca53321d0e921ad9f515",
+ :target-verification
+ {:c14
+  {:application-id
+   "sha256:f0524ac3892e473a3518130550dd245f0f2c6e683af53b30fc63cc66be72506c",
+   :artifact :gravity/c14-checked-js-verification,
+   :checks [:fresh-target-lowering-reconstruction],
+   :diagnostics [],
+   :status :passed},
+  :b1
+  {:application-id
+   "sha256:f0524ac3892e473a3518130550dd245f0f2c6e683af53b30fc63cc66be72506c",
+   :artifact :gravity/b1-checked-js-verification,
+   :checks [:fresh-backend-input-reconstruction],
+   :diagnostics [],
+   :status :passed},
+  :b6
+  {:application-id
+   "sha256:f0524ac3892e473a3518130550dd245f0f2c6e683af53b30fc63cc66be72506c",
+   :artifact :gravity/b6-checked-js-verification,
+   :checks [:fresh-static-program-lowering],
+   :diagnostics [],
+   :status :passed}},
+ :compiler-host
+ {:implementation :clojure-stage0-seed,
+  :target :jvm,
+  :self-hosted? false},
+ :focused-test-results
+ {:source-checksums "finalnumeric-source.sha256",
+  :tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
+  :not-claimed
+  [:ordinary-public-compile-cli
+   :clean-checkout-integration
+   :release
+   :self-hosting
+   :seed-retirement],
+  :clojure "1.12.0",
+  :published-code-candidate "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :node-results
+  {:numeric-error-reference-comparison
+   [:type :kind :check-id :operation-id :evaluated-operands],
+   :shadowed-addition ["7" "1" "9223372036854775807"],
+   :renamed-qst ["20" "10"],
+   :numeric-error-operands-native-types ["bigint" "bigint"],
+   :runtime-error-kinds
+   [":overflow"
+    ":overflow"
+    ":arity"
+    ":arity"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":range"
+    ":range"],
+   :unicode-source-map-columns :passed,
+   :representative-exports ["score"],
+   :exact-i64-literal "9007199254740993",
+   :standalone-copy :passed,
+   :representative
+   ["10"
+    "7"
+    "18014398509481987"
+    "9223372036854775807"
+    "-9223372036854775808"
+    "-1"],
+   :boolean [true false false]},
+  :scope :focused-checked-javascript-scalar-module,
+  :totals {:tests 6, :assertions 924, :failures 0, :errors 0},
+  :local-code-candidate "63b89baa605605dc82a1bf504cfb2f464f2ed106",
+  :commands "finalnumeric-test-commands.edn",
+  :status :passed,
+  :runtime "Node v20.20.2",
+  :batches
+  [{:log "finalnumeric-required-selector.log",
+    :selectors ["scalar-module-target-execution"],
+    :exit 0,
+    :tests 1,
+    :assertions 426,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 390203833098}
+   {:log "finalnumeric-runtime-regressions.log",
+    :selectors
+    ["scalar-module-boolean-execution"
+     "scalar-module-composed-qst-and-shadowed-call"
+     "scalar-module-runtime-rejections"],
+    :exit 0,
+    :tests 3,
+    :assertions 277,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 1502686835259}
+   {:log "finalnumeric-rejection-regressions.log",
+    :selectors
+    ["scalar-module-rejects-genuine-product-tampering"
+     "scalar-module-rejects-source-and-target-mismatch"],
+    :exit 0,
+    :tests 2,
+    :assertions 221,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 1235792630943}]},
+ :core-verification
+ {:status :passed,
+  :request-count 154,
+  :semantic-authority :gravity-source,
+  :checks
+  [:fresh-template-replay
+   :exact-digest-request-replay
+   :compositional-scalar-c6-c10-scope],
+  :checked-core-artifact-id
+  "sha256:6106ceb392db3f25eb9a0996df3b08a61fa825403ee96da408957a765434bdc1",
+  :digest-graph-proof-id
+  "sha256:9e71937a41cb3ca929dfc7fd85b3dad61c07824fa19553e0d7c5225430d6b82e"},
+ :mir-verification
+ {:diagnostics [],
+  :nonclaims
+  [:target-emission :self-hosted? :seed-retirement :whole-c11],
+  :mir-module-id acceptance.scalar,
+  :schema-version 1,
+  :phase :verification,
+  :checks
+  [:actual-declarations-and-exports
+   :direct-call-signatures-and-effects
+   :per-function-scalar-types
+   :blocks-terminators-and-cfg-edges
+   :operand-and-edge-dominance
+   :eager-local-evaluation
+   :overflow-guard-token-production-and-consumption
+   :type-effect-ownership-capability-and-safety-preservation
+   :profile-target-and-source-origin-preservation
+   :fresh-mir-reconstruction],
+  :scope :compositional-scalar-functions,
+  :status :passed,
+  :preserves
+  [:functions
+   :exports
+   :declaration-binding-identities
+   :lexical-bindings
+   :types
+   :effects
+   :ownership
+   :capabilities
+   :safety
+   :source-origins],
+  :artifact :gravity/c11-scalar-functions-report,
+  :checked-core-artifact-id
+  "sha256:6106ceb392db3f25eb9a0996df3b08a61fa825403ee96da408957a765434bdc1"},
+ :artifact :gravity/checked-js-development-execution-receipt,
+ :output-directory "target/acceptance-js",
+ :acceptance-checkpoint "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+ :target
+ {:target :js-ts,
+  :runtime :node20,
+  :language :es2022,
+  :module-format :esm},
+ :base-commit "4c0ada9438cbcf20587447541ecfd16ab08e99a7",
+ :artifact-inventory
+ [{:file "program.mjs",
+   :sha256
+   "sha256:6fa1c638c4db0fe879d2b9e3a2ffa3459b2991458b47a24b3139c376665960aa",
+   :byte-count 8838}
+  {:file "program.d.ts",
+   :sha256
+   "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27",
+   :byte-count 294}
+  {:file "program.mjs.map",
+   :sha256
+   "sha256:aeb2120b923d7f7ed7bbede290043918a75d7124557b31890b9addbf3c1aa87e",
+   :byte-count 33114}
+  {:file "package.json",
+   :sha256
+   "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc",
+   :byte-count 215}
+  {:file "manifest.edn",
+   :sha256
+   "sha256:373f44a3d6e32cabbbf6592b6839434633684f3368abbcbba2c5daccb357334b",
+   :byte-count 215061}
+  {:file "provenance.edn",
+   :sha256
+   "sha256:a07c29b06822ff08ca60fd17c474ab156665753dd66dc51a86ffec56899a3d20",
+   :byte-count 39997}],
+ :compiler-checkpoint "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+ :acceptance-checkpoint-tree
+ "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
+ :required-node-stdout "10\n7\n18014398509481987\n",
+ :source-policy-receipt
+ {:syntax-owner
+  {:artifact-id
+   "sha256:c6f4627bb03680d32f07ec0d15869d1a3babb0de97d878f6bad96bd7ee794811",
+   :binding
+   {:artifact :gravity/sh04-development-syntax-plan-binding-v1,
+    :status :complete,
+    :source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+    :source-byte-count 78643,
+    :source-content-hash
+    "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa",
+    :plan-semantic-hash
+    "sha256:2eb36a0fcec4f1d35c595d9f7b6c956f1e7db88b17525a2bb953480090606801",
+    :functions-semantic-hash
+    "sha256:8eaf764d380866acc5822cccefd571c394026fa206c51d0dbcc8192901d031ba",
+    :source-mode :development-current},
+   :source-revision
+   {:source-content-hash
+    "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa",
+    :builder-function c3-syntax-stream-build-template,
+    :builder-semantic-hash
+    "sha256:f9d25df4bbe41837b016434393d689f807140a2c489e7c9e39949f15c4336744",
+    :source-byte-count 78643,
+    :functions-semantic-hash
+    "sha256:8eaf764d380866acc5822cccefd571c394026fa206c51d0dbcc8192901d031ba",
+    :source-language :gravity,
+    :owner :sh04-syntax,
+    :logical-source-path
+    "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+    :plan-semantic-hash
+    "sha256:2eb36a0fcec4f1d35c595d9f7b6c956f1e7db88b17525a2bb953480090606801"},
+   :envelope
+   {:artifact :gravity/sh02-stage-authenticated-envelope,
+    :schema-version 1,
+    :status :accepted,
+    :stage :c3-syntax,
+    :semantic-envelope-id
+    "sha256:47b1210fd7eac0ff7df21236a5cb2e30469b00f3ec9fc9272fabf8c6004271c4",
+    :provenance-binding-id
+    "sha256:e990069ff820fbd0ca28f15a4687f58a14c5a74f342d0a7df38e9dcbd6ad7d8a"}},
+  :verification-scope :selected-current-source-host-seed,
+  :reader-source-revision
+  {:source-content-hash
+   "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205",
+   :builder-function sh03-read-source-unit,
+   :builder-semantic-hash
+   "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3",
+   :function-shapes-content-id
+   "sha256:304950251dc5a12af19ca889acc3dd6aa442cb23d21abd0c8a71368d53bea47f",
+   :source-byte-count 246369,
+   :verifier-semantic-hash
+   "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7",
+   :functions-semantic-hash
+   "sha256:7be1bd97600db2d9cab88e7ac8cbf10e9644fa2e120309a9b892e11c3c83a701",
+   :source-language :gravity,
+   :owner :sh03-reader,
+   :logical-source-path
+   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+   :plan-semantic-hash
+   "sha256:cf23056d9f691c24fc7344445723d69e288dd1b755db3199086d4608323d4aa6"},
+  :owner-metadata-content-id
+  "sha256:a57336bce0e0c37aacf980e024e80d99707e23308c44bf426c45bd18be2ddce7",
+  :reader-plan-binding
+  {:source-content-hash
+   "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205",
+   :observed-instruction-nodes 11491,
+   :builtin-functions-hash
+   "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400",
+   :instruction-summary-content-id
+   "sha256:97bab4bd749e6b497c609d01d3a8ed4951dd4b41e3a72bd04f115656411edd45",
+   :executed-by :clojure-stage2-generic-rule-runner,
+   :function-names-hash
+   "sha256:32401a608a596e84fac2663ea87efbfa2c758afa150c8a50242d84a6be92c78a",
+   :self-hosted? false,
+   :source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+   :function-count 232,
+   :source-byte-count 246369,
+   :status :complete,
+   :observed-instruction-depth 20,
+   :verifier-semantic-hash
+   "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7",
+   :functions-semantic-hash
+   "sha256:7be1bd97600db2d9cab88e7ac8cbf10e9644fa2e120309a9b892e11c3c83a701",
+   :artifact :gravity/sh03-current-source-reader-plan-binding,
+   :semantic-authority :gravity-source,
+   :function-shapes-hash
+   "sha256:3ccb1d0fc93c71951a1660e3a6a6fe069c3166cce5f08d87bfb07b9d979555ee",
+   :compiled-by :clojure-stage0-seed,
+   :entrypoint-semantic-hash
+   "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3",
+   :plan-semantic-hash
+   "sha256:cf23056d9f691c24fc7344445723d69e288dd1b755db3199086d4608323d4aa6",
+   :generic-bridge-residual? true},
+  :envelope-verification :passed,
+  :projection-contract
+  {:artifact :gravity/c6-reader-owner-metadata-projection,
+   :schema-version 1,
+   :encoding :owner-canonical-semantic-v1,
+   :sorted-metadata-policy :default-only,
+   :core-carrier-policy :reject},
+  :policy
+  {:profile :hosted,
+   :target :js-ts,
+   :effects #{:error/raise},
+   :capabilities #{},
+   :safety :safe},
+  :self-hosted? false,
+  :owner-sources
+  {:reader
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/src/gravity/bootstrap/reader.gravity",
+    :source-byte-count 246369,
+    :source-content-hash
+    "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205"},
+   :syntax
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+    :source-byte-count 78643,
+    :source-content-hash
+    "sha256:a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa"},
+   :expansion
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/macro.gravity",
+    :source-byte-count 54374,
+    :source-content-hash
+    "sha256:0a6e58a8134c6f9dbd139617fda376cd8978223820562c1f5b214b658f1d8db1"},
+   :resolution
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/resolution.gravity",
+    :source-byte-count 94395,
+    :source-content-hash
+    "sha256:6243c361dc86902e40965c1fcbeabaadea7d898b587d8ba987842b3c8c28b408"},
+   :expression
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/p15_s23/emitter.gravity",
+    :source-byte-count 1599012,
+    :source-content-hash
+    "sha256:f60b1dbd3d51364f229de0a8ef3a2a5149d87efd03e341ce33be9092e93b8303"},
+   :checked-core
+   {:source-path
+    "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity",
+    :source-byte-count 238746,
+    :source-content-hash
+    "sha256:a1e887a7a430076dfff573aa69ff0deb339db9cc103100b29b9b6527803209e7"}},
+  :function-resolution
+  {:sh06-artifact-id
+   "sha256:5d09f5db887a1912b1756176b3fc719c6104f5faef4392f7ae10218b4d34c993",
+   :sh06-semantic-projection-id
+   "sha256:79484e2ac3603347a0f51a3ce5ba3941c97c0d44b952baa5123924ef290e6661",
+   :projection-binding
+   "sha256:9f10fbdc58225b0c8d450c8b2bf32816cd5503b851a07e3699ce0fdfe822a8f7",
+   :root-syntax-ids
+   ["sha256:887fc7205dc218335ca8fa312c596bf8389aa3f353e56b9314a07fc228434136"
+    "sha256:e66c67e45e712197896b671b8d2077ec038b32384b864dc72cc9e7d030ff4867"],
+   :declarations
+   [{:name add,
+     :function-form-id :form-23,
+     :function-syntax-id
+     "sha256:beb3cc4fc9d130b6be24ed0f9c360217811b19e369df1da0e70bb020451f696c",
+     :function-scope-id
+     "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+     :function-binding
+     {:capabilities [],
+      :package {:name acceptance.scalar, :version "workspace"},
+      :name add,
+      :target-set [:js-ts],
+      :upstream-binding-id
+      "sha256:f06e7452b691487bb5fb32b75f9805f17c1c1889638152611777e2e883d81510",
+      :type-ref :gravity.type/function,
+      :definition-artifact-id
+      "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+      :effects [:error/raise],
+      :safety :safe,
+      :binding-id
+      "sha256:e96aefe98739f11eadb04259dd06e4925cbfb37ee75aefa2585772a04097dac4",
+      :kind :function,
+      :semantic-span {:ordinal 1},
+      :scope-id nil,
+      :definition-syntax-id
+      "sha256:4544e0e4f5ee31bc2e1c57b2085413953bc62c48ae334b0787d1180551ecce0b",
+      :profile-set [:hosted],
+      :namespace acceptance.scalar,
+      :visibility :private,
+      :binding-class :namespace},
+     :parameters
+     [{:parameter-index 0,
+       :parameter-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name left,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:0330ad1b9f97db4e25251ed41b0b5bb82b965368a57fe30cce2e2f370bbde8aa",
+        :type-ref :gravity.type/local,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:5cada45cb21aac40ee9d0cfc59a105f5f3b314215fa6469aa79daef206424400",
+        :kind :local,
+        :semantic-span {:scope-ordinal 1, :binding-ordinal 0},
+        :scope-id
+        "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+        :definition-syntax-id
+        "sha256:789c6d889dde311d664be3dac01be2bfe9a61e98cda385f70f27df6dea1a1e37",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :lexical,
+        :binding-class :lexical},
+       :type-binding
+       {:capabilities [],
+        :package
+        {:name gravity/core, :version "bootstrap-contract-v1"},
+        :name I64,
+        :target-set [:all],
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+        :type-ref :gravity.type/type,
+        :definition-artifact-id
+        "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :kind :type,
+        :semantic-span {:catalog :gravity/core, :ordinal 21},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+        :profile-set
+        [:ai
+         :core
+         :distributed
+         :firmware
+         :formal
+         :gpu
+         :hardware
+         :hosted
+         :kernel
+         :meta
+         :native],
+        :namespace gravity.core,
+        :visibility :public,
+        :binding-class :core},
+       :type-resolution
+       {:reference-syntax-id
+        "sha256:496db5e93c3f0dc95b0a891d2e7872c3f2794688afdfa102e5bf1d836da9d0e9",
+        :symbol I64,
+        :position :type,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :resolution-order :profile-allowed-core-binding,
+        :source-span
+        {:byte-start 154,
+         :byte-end 208,
+         :line-start 9,
+         :column-start 1,
+         :line-end 10,
+         :column-end 18,
+         :scalar-start 154,
+         :scalar-end 208},
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+       :coordinates
+       [{:role :parameter-vector,
+         :c2-form-id :form-26,
+         :projected-form-id
+         "sha256:545805eb7f2202ae94580c696d3791b0defcf54793dc86720bd6da88f959b2b1",
+         :projected-syntax-id
+         "sha256:5a3ecdd196e3dc53bdfd336437e73e622337664e562994acf1f513048bfaa430"}
+        {:role :parameter-name,
+         :c2-form-id :form-27,
+         :projected-form-id
+         "sha256:4382da40bc23b7d92d64e3fd1d0a7d1a1eea48c055f9f812c13ca5f1c6ae0f45",
+         :projected-syntax-id
+         "sha256:789c6d889dde311d664be3dac01be2bfe9a61e98cda385f70f27df6dea1a1e37"}
+        {:role :annotation-marker,
+         :c2-form-id :form-28,
+         :projected-form-id
+         "sha256:2acbe0f4d0f4b2e2c6e354128b85eb8c7a160ee8d844254c654458747e84d821",
+         :projected-syntax-id
+         "sha256:929404d0fd5eb89ba1dd7755149c52ab2564bf5cd0fa361be6198569353e74aa"}
+        {:role :annotation-type,
+         :c2-form-id :form-29,
+         :projected-form-id
+         "sha256:84e6381d2c89f3ddcf7de4b8871971db593cb43d2afad42db7900235245c9844",
+         :projected-syntax-id
+         "sha256:496db5e93c3f0dc95b0a891d2e7872c3f2794688afdfa102e5bf1d836da9d0e9"}]}
+      {:parameter-index 1,
+       :parameter-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name right,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:3d6bd3cda266643c35a37da48f5fe8ea6ad0bed544f995b59bd8fd51fb13b32d",
+        :type-ref :gravity.type/local,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:b7a4c80c71924330cf0b541a2ce84fbc117d47555cbe770d7ed8e801fac13ae6",
+        :kind :local,
+        :semantic-span {:scope-ordinal 1, :binding-ordinal 1},
+        :scope-id
+        "sha256:9200cdb26ee953c7979b7fbc612e0b11737bff4d98faed4e23b4d97f1e13b1a1",
+        :definition-syntax-id
+        "sha256:54567cfc618fc270a6e5f128fcee1f2f25924a8f842aae971d9e5d72ced14014",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :lexical,
+        :binding-class :lexical},
+       :type-binding
+       {:capabilities [],
+        :package
+        {:name gravity/core, :version "bootstrap-contract-v1"},
+        :name I64,
+        :target-set [:all],
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+        :type-ref :gravity.type/type,
+        :definition-artifact-id
+        "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :kind :type,
+        :semantic-span {:catalog :gravity/core, :ordinal 21},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+        :profile-set
+        [:ai
+         :core
+         :distributed
+         :firmware
+         :formal
+         :gpu
+         :hardware
+         :hosted
+         :kernel
+         :meta
+         :native],
+        :namespace gravity.core,
+        :visibility :public,
+        :binding-class :core},
+       :type-resolution
+       {:reference-syntax-id
+        "sha256:569d2d992c3925a0f97ad0d144637c2287f9347b28bb2207492cc302af7c7aec",
+        :symbol I64,
+        :position :type,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :resolution-order :profile-allowed-core-binding,
+        :source-span
+        {:byte-start 154,
+         :byte-end 208,
+         :line-start 9,
+         :column-start 1,
+         :line-end 10,
+         :column-end 18,
+         :scalar-start 154,
+         :scalar-end 208},
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+       :coordinates
+       [{:role :parameter-vector,
+         :c2-form-id :form-26,
+         :projected-form-id
+         "sha256:545805eb7f2202ae94580c696d3791b0defcf54793dc86720bd6da88f959b2b1",
+         :projected-syntax-id
+         "sha256:5a3ecdd196e3dc53bdfd336437e73e622337664e562994acf1f513048bfaa430"}
+        {:role :parameter-name,
+         :c2-form-id :form-30,
+         :projected-form-id
+         "sha256:8246c9d47e833cd7dfc24f793b7080a5021eceb46522587f57e313e32bde4fc6",
+         :projected-syntax-id
+         "sha256:54567cfc618fc270a6e5f128fcee1f2f25924a8f842aae971d9e5d72ced14014"}
+        {:role :annotation-marker,
+         :c2-form-id :form-31,
+         :projected-form-id
+         "sha256:c66f2bde57819c9ee666132d1e084bc61e4093b6139b0ffaaf998504e87bb341",
+         :projected-syntax-id
+         "sha256:ba6f04763b9f2d06ea949a6a6b4932b5910df3ef0b485757a12951feb31af532"}
+        {:role :annotation-type,
+         :c2-form-id :form-32,
+         :projected-form-id
+         "sha256:6c995a12f63301248eb225a124a5f97c88e1b23b30efdb98a1b4aa1a0a6c695f",
+         :projected-syntax-id
+         "sha256:569d2d992c3925a0f97ad0d144637c2287f9347b28bb2207492cc302af7c7aec"}]}]}
+    {:name score,
+     :function-form-id :form-37,
+     :function-syntax-id
+     "sha256:b949e66a575c8beb008239c317c779086f47a514e4b1a5237c5ba21df7f49573",
+     :function-scope-id
+     "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+     :function-binding
+     {:capabilities [],
+      :package {:name acceptance.scalar, :version "workspace"},
+      :name score,
+      :target-set [:js-ts],
+      :upstream-binding-id
+      "sha256:fd86da5e973d891c4ba0f98051d96ba3b92363260b82fdb51956f488b53b9a65",
+      :type-ref :gravity.type/function,
+      :definition-artifact-id
+      "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+      :effects [:error/raise],
+      :safety :safe,
+      :binding-id
+      "sha256:55a610bf6bfeb34fb83f738c760a5ccef5bac593c229a37cd179563d54c14a30",
+      :kind :function,
+      :semantic-span {:ordinal 2},
+      :scope-id nil,
+      :definition-syntax-id
+      "sha256:0be37450918b8f5de84f37d47491bae18ba00c3250581638c44d41ac89252196",
+      :profile-set [:hosted],
+      :namespace acceptance.scalar,
+      :visibility :public,
+      :binding-class :namespace},
+     :parameters
+     [{:parameter-index 0,
+       :parameter-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name choose-sum,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:c62367746a6287b27910c6da5f8b163ef515ce42744ccc10ab8f4e8e1781bbfa",
+        :type-ref :gravity.type/local,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:b4237ad922ec8657d4fc1019322688fd54b944b84c4d272c8d7dc4e8c32796af",
+        :kind :local,
+        :semantic-span {:scope-ordinal 2, :binding-ordinal 0},
+        :scope-id
+        "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+        :definition-syntax-id
+        "sha256:a7e1d849cc1db9e5953d519306431fbd7bdc8d657e5cd829b1c20af5c6820af2",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :lexical,
+        :binding-class :lexical},
+       :type-binding
+       {:capabilities [],
+        :package
+        {:name gravity/core, :version "bootstrap-contract-v1"},
+        :name Bool,
+        :target-set [:all],
+        :upstream-binding-id
+        "sha256:a32ccc3819e90afcc8d96a6c7cc3b030e5e8887adf78d6ea6f2e3d878aba2e5d",
+        :type-ref :gravity.type/type,
+        :definition-artifact-id
+        "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:545dd26bff971db19d97bc1f34f5c617cec068f1b3edac46eab041c4681086f4",
+        :kind :type,
+        :semantic-span {:catalog :gravity/core, :ordinal 12},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:6f66f07fce2c022ae6b57a5257dcd253d4f6a38f90bcca148ebd5b2699391f45",
+        :profile-set
+        [:ai
+         :core
+         :distributed
+         :firmware
+         :formal
+         :gpu
+         :hardware
+         :hosted
+         :kernel
+         :meta
+         :native],
+        :namespace gravity.core,
+        :visibility :public,
+        :binding-class :core},
+       :type-resolution
+       {:reference-syntax-id
+        "sha256:32db663506144f0240bc9d9bd9b035e704d875c0752ea1b6a40e7e36c4586626",
+        :symbol Bool,
+        :position :type,
+        :binding-id
+        "sha256:545dd26bff971db19d97bc1f34f5c617cec068f1b3edac46eab041c4681086f4",
+        :resolution-order :profile-allowed-core-binding,
+        :source-span
+        {:byte-start 210,
+         :byte-end 340,
+         :line-start 12,
+         :column-start 1,
+         :line-end 16,
+         :column-end 14,
+         :scalar-start 210,
+         :scalar-end 340},
+        :upstream-binding-id
+        "sha256:a32ccc3819e90afcc8d96a6c7cc3b030e5e8887adf78d6ea6f2e3d878aba2e5d"},
+       :coordinates
+       [{:role :parameter-vector,
+         :c2-form-id :form-40,
+         :projected-form-id
+         "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+         :projected-syntax-id
+         "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+        {:role :parameter-name,
+         :c2-form-id :form-41,
+         :projected-form-id
+         "sha256:5e78e8fdc75d27d5e8f419f4a16392305982bcf92565cb8130a6766d3e0facd7",
+         :projected-syntax-id
+         "sha256:a7e1d849cc1db9e5953d519306431fbd7bdc8d657e5cd829b1c20af5c6820af2"}
+        {:role :annotation-marker,
+         :c2-form-id :form-42,
+         :projected-form-id
+         "sha256:1cc19c319b967c7ee7754de5bb994eabe7e738de75078fb800b15d69f8fee939",
+         :projected-syntax-id
+         "sha256:5ac501a4200be0e24b82f2035af4b05fbf8279781f557bb7162c17f472e15843"}
+        {:role :annotation-type,
+         :c2-form-id :form-43,
+         :projected-form-id
+         "sha256:a267115bec6b93e7544204d44e438e757a611bfb82031e8572a7a81864fbea47",
+         :projected-syntax-id
+         "sha256:32db663506144f0240bc9d9bd9b035e704d875c0752ea1b6a40e7e36c4586626"}]}
+      {:parameter-index 1,
+       :parameter-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name left,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:8aaf533b8c818d86691dbeebb94f3b595be79c2bce3b5f71cd66b46fd5e3418b",
+        :type-ref :gravity.type/local,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:f97c461597e95ac01786358fb244be6ac8738c16f4b95b3975653f46f7500a6f",
+        :kind :local,
+        :semantic-span {:scope-ordinal 2, :binding-ordinal 1},
+        :scope-id
+        "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+        :definition-syntax-id
+        "sha256:32040a5cf731cd69d0ee048cedcdc9ea08689b5757907d7df800c38abba74988",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :lexical,
+        :binding-class :lexical},
+       :type-binding
+       {:capabilities [],
+        :package
+        {:name gravity/core, :version "bootstrap-contract-v1"},
+        :name I64,
+        :target-set [:all],
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+        :type-ref :gravity.type/type,
+        :definition-artifact-id
+        "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :kind :type,
+        :semantic-span {:catalog :gravity/core, :ordinal 21},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+        :profile-set
+        [:ai
+         :core
+         :distributed
+         :firmware
+         :formal
+         :gpu
+         :hardware
+         :hosted
+         :kernel
+         :meta
+         :native],
+        :namespace gravity.core,
+        :visibility :public,
+        :binding-class :core},
+       :type-resolution
+       {:reference-syntax-id
+        "sha256:0d00ef57f37db53261776709bef15caa3990f77f5dc478eb36b4eaf8ef4a9d9e",
+        :symbol I64,
+        :position :type,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :resolution-order :profile-allowed-core-binding,
+        :source-span
+        {:byte-start 210,
+         :byte-end 340,
+         :line-start 12,
+         :column-start 1,
+         :line-end 16,
+         :column-end 14,
+         :scalar-start 210,
+         :scalar-end 340},
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+       :coordinates
+       [{:role :parameter-vector,
+         :c2-form-id :form-40,
+         :projected-form-id
+         "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+         :projected-syntax-id
+         "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+        {:role :parameter-name,
+         :c2-form-id :form-44,
+         :projected-form-id
+         "sha256:0f50b9fc76db733b8f72ea5545e48712f867e9806fd5cef9dfaeff860180b387",
+         :projected-syntax-id
+         "sha256:32040a5cf731cd69d0ee048cedcdc9ea08689b5757907d7df800c38abba74988"}
+        {:role :annotation-marker,
+         :c2-form-id :form-45,
+         :projected-form-id
+         "sha256:d232c83cce7120a1148f9caeeba7a860923e79b385ab193ae5ef41689c4224cd",
+         :projected-syntax-id
+         "sha256:cdecbd60c5bf79ff1391a1392fa386ddd34bc265f07a84e99871ddcc380e4dce"}
+        {:role :annotation-type,
+         :c2-form-id :form-46,
+         :projected-form-id
+         "sha256:f1d39cc6af6c59059d0d4b2eb551185a5bb9c617721e52fd173839d2c1e36bf5",
+         :projected-syntax-id
+         "sha256:0d00ef57f37db53261776709bef15caa3990f77f5dc478eb36b4eaf8ef4a9d9e"}]}
+      {:parameter-index 2,
+       :parameter-binding
+       {:capabilities [],
+        :package {:name acceptance.scalar, :version "workspace"},
+        :name right,
+        :target-set [:js-ts],
+        :upstream-binding-id
+        "sha256:c33c34a68c832d0ecaf5a01eef9805067eeff62630400170f3188929c1e77f2b",
+        :type-ref :gravity.type/local,
+        :definition-artifact-id
+        "sha256:ba6f06ec51941c4609694b62e6355e4122cbc7f02b293a89b2cdc596edf96429",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:931c6dc2238264b1ca81c8510bd6322977e7859eff2388343e051657b820fda1",
+        :kind :local,
+        :semantic-span {:scope-ordinal 2, :binding-ordinal 2},
+        :scope-id
+        "sha256:a0ba421cea2e98a452fc25d1922147f1eaa2001efaa96abcd1921a78001f295b",
+        :definition-syntax-id
+        "sha256:9b0573b4948ea49c3fd2226c8c000266f0b33af3081387c19d7e596e5f71af46",
+        :profile-set [:hosted],
+        :namespace acceptance.scalar,
+        :visibility :lexical,
+        :binding-class :lexical},
+       :type-binding
+       {:capabilities [],
+        :package
+        {:name gravity/core, :version "bootstrap-contract-v1"},
+        :name I64,
+        :target-set [:all],
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995",
+        :type-ref :gravity.type/type,
+        :definition-artifact-id
+        "sha256:36ea553f78c4ea8325b5dfe9d89d5e09048fea615d6fb0cabe8234dbde84371a",
+        :effects [],
+        :safety :safe,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :kind :type,
+        :semantic-span {:catalog :gravity/core, :ordinal 21},
+        :scope-id nil,
+        :definition-syntax-id
+        "sha256:f3a635539336b1e372aff8a4e3a8b0a77b1a42c244eae27e4ec3642c140ed8d6",
+        :profile-set
+        [:ai
+         :core
+         :distributed
+         :firmware
+         :formal
+         :gpu
+         :hardware
+         :hosted
+         :kernel
+         :meta
+         :native],
+        :namespace gravity.core,
+        :visibility :public,
+        :binding-class :core},
+       :type-resolution
+       {:reference-syntax-id
+        "sha256:f2aa439d160c4f2546dddfe9b99131080cf827703618d7d787b2ca3a26a160fe",
+        :symbol I64,
+        :position :type,
+        :binding-id
+        "sha256:5c0404af6994933ab856ed182e7c9071be1c758df4aa94537340ec8b0c1dba71",
+        :resolution-order :profile-allowed-core-binding,
+        :source-span
+        {:byte-start 210,
+         :byte-end 340,
+         :line-start 12,
+         :column-start 1,
+         :line-end 16,
+         :column-end 14,
+         :scalar-start 210,
+         :scalar-end 340},
+        :upstream-binding-id
+        "sha256:0a2a820027d3ef1a1887d3ce0024d77b17d2cc4c28cd3b01a832e4d868b8e995"},
+       :coordinates
+       [{:role :parameter-vector,
+         :c2-form-id :form-40,
+         :projected-form-id
+         "sha256:5799a97d2ec355986d92056ba2454d80795243a192f9f0950271a67daf302862",
+         :projected-syntax-id
+         "sha256:91561ca6a0d3beb2e936401fb676c242492ebcb3ba28f2bda6fa881a5783d0a2"}
+        {:role :parameter-name,
+         :c2-form-id :form-47,
+         :projected-form-id
+         "sha256:70e5927a248cda74543a255c53e905d61a85864fd7f3573ef61851485afeaeaa",
+         :projected-syntax-id
+         "sha256:9b0573b4948ea49c3fd2226c8c000266f0b33af3081387c19d7e596e5f71af46"}
+        {:role :annotation-marker,
+         :c2-form-id :form-48,
+         :projected-form-id
+         "sha256:a1ac55adb7dfa1146eeaacdd83d526f998415aee83eaca76abce81ff012b1853",
+         :projected-syntax-id
+         "sha256:80629d45b8300f18ce00b8b5b403a1fb72643ff016b2186cceb00e52b380d272"}
+        {:role :annotation-type,
+         :c2-form-id :form-49,
+         :projected-form-id
+         "sha256:eec677d8b56e8591915556899ef1ac469d78f1c7785b8f27784d29db856a58ca",
+         :projected-syntax-id
+         "sha256:f2aa439d160c4f2546dddfe9b99131080cf827703618d7d787b2ca3a26a160fe"}]}]}]},
+  :expression-binding
+  {:source-path
+   "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/gravity/p15_s23/emitter.gravity",
+   :source-byte-count 1599012,
+   :source-content-hash
+   "sha256:f60b1dbd3d51364f229de0a8ef3a2a5149d87efd03e341ce33be9092e93b8303",
+   :invoked? false,
+   :reason :scalar-module-seed-plan},
+  :source-interface
+  {:interface :gravity/compiler-application, :version 1},
+  :reader-result-identity
+  {:actual-sh03-reader-result-id
+   "sha256:3baa87e219fd4a205dd171c80f84dbeeca42453e692df1637cd492a02ccc0317",
+   :actual-c2-artifact-id
+   "sha256:2596ebf694f2643435459f5e824a0d1fe114dc6beecd074320bd298e4d11bf68",
+   :actual-reader-product-integrity-hash
+   "sha256:102ca3cec562f29dd2e09b7b909aefba13e1d0194eb81632905134f96808080f",
+   :actual-reader-source-id
+   "sha256:d9b6b9c46342935771a36ea0d393c4c791b508ed87edd692a867b1f7fd8653d4",
+   :actual-sh03-semantic-product-binding
+   {:adapter-contract :gravity/sh03-to-c2-reader-products-v3,
+    :adapted-source-unit-id
+    "sha256:d9b6b9c46342935771a36ea0d393c4c791b508ed87edd692a867b1f7fd8653d4",
+    :adapted-token-stream-id
+    "sha256:aaee422e04da0b8b9c3269cd0385ce5abcb56869e385a7b2a339341bc60f5db8",
+    :adapted-form-tree-id
+    "sha256:f10f39c55728f95e6a9e14524656fd2ce9848ff41365a51d588e28254fb03e73",
+    :adapted-extension-invocation-set-id
+    "sha256:2273149eb3f9197a78ff830cb363c5f84a3bec5c9d6ca33c7743b7a09c3ec176"}},
+  :authenticated-envelope
+  {:artifact :gravity/sh02-stage-authenticated-envelope,
+   :schema-version 1,
+   :status :accepted,
+   :stage :c2-reader,
+   :semantic-envelope-id
+   "sha256:a9755c52be90e203f3ecd460e66ced4f805722260da24653453cafdf11fc8c69",
+   :provenance-binding-id
+   "sha256:110d6600efc0554b450672e4d86fff876269edd97202e44822870f97050294f5",
+   :source-rule
+   {:source-content-hash
+    "sha256:7ef0386733632569a81a3e709551e4c4d300ec43ff0f7f13b5fe7399df29c3b7",
+    :builder-function authenticated-envelope-build-template,
+    :executed-by :clojure-stage0-rule-runner,
+    :verifier-function authenticated-envelope-verify-template,
+    :builder-semantic-hash
+    "sha256:19b21ed1e94563631c25b502f5297fa1e33070f0a62fefc480bcba5984b02a7a",
+    :function-shapes-content-id
+    "sha256:3b23575ab65c1ecfee55b3048397de45fdbd47dbdd5d2f57ff0f255242443f5d",
+    :self-hosted? false,
+    :source-byte-count 59822,
+    :verifier-semantic-hash
+    "sha256:e52b201a81ef82f857aaabc68cb2d6a8f0f4505f853c555816023f5dad294a77",
+    :owner-source-rule-content-id
+    "sha256:0791c54ef861f8596325d01b477e40f650bc346a61fc70a1f29af6f6bb08e56f",
+    :functions-semantic-hash
+    "sha256:0c04397dd7a0fd54a89156ea09079117599b116b9c3d2db3221cd1645ada97c6",
+    :artifact :gravity/pinned-authenticated-envelope-source-rule,
+    :semantic-authority :gravity-source,
+    :compiled-by :clojure-stage0-seed,
+    :owner :gravity.compiler/authenticated-envelope,
+    :plan-semantic-hash
+    "sha256:2f6c3810a46cc333718da8212117109fdf76a5aabe24142aa859bbf1a131dcde",
+    :admission-status :development-unadmitted},
+   :gravity-template-replay
+   {:status :template-replay-passed,
+    :identity-enforcement :pending-host-resolution,
+    :eligible-for-contextual-acceptance? false,
+    :request-count 21,
+    :semantic-authority :gravity-source,
+    :checks-content-id
+    "sha256:0263adbb3f33bc407ecc2db3587b87dd8373c3cbb9da2ded19620a42eb5d3a36",
+    :diagnostics-content-id
+    "sha256:a1ce67da81e7bda80028a285324ffe2ca3552b186ccf3eeda6cfeb20afccf6a8"}},
+  :admission-status :development-unadmitted},
+ :target-products
+ {:c14
+  "sha256:cc5cb49185aa9a59f7166889d17d4ebffed01cd3a0d8265e626badb96b057da5",
+  :b1
+  "sha256:e6b63fa32885503f4ede7c9f7a0e18253a41c783c188797af8833dc20e9337b7",
+  :b6
+  "sha256:93486456f4efd71e93c0a239458a5f04cbfd6777ae2eac4244437a8cbb97336f"}}
