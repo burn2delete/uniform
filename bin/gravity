@@ -141,6 +141,12 @@ Usage:
   gravity run <file.gravity|file.qst> --target c --lowering runtime-derived
   gravity compile <file.qst|file.gravity>
   gravity compile <file.qst|file.gravity> -o <executable>
+  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>
+    (checked hosted/safe scalar module; Node 20 / ES2022 ESM)
+    (canonical source target :js-ts; compiler host Clojure/JVM)
+    (Node syntax validation during compilation; import and call exports to execute)
+  gravity compile <file.qst|file.gravity> --target js|js-ts --lowering runtime-derived -o <directory>
+    (explicit legacy route; retains its existing results and failures)
   gravity compile <file.qst|file.gravity> --target c -o <executable>
   gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>
   gravity test

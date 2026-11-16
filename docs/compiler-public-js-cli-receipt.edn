@@ -2,11 +2,13 @@
  :authority :non-authoritative-development-evidence
  :status :restored-source-awaiting-fresh-acceptance
  :scope :hosted-safe-scalar-node20-es2022-module
- :main-base "4c0ada9438cbcf20587447541ecfd16ab08e99a7"
+ :planning-main-base "4c0ada9438cbcf20587447541ecfd16ab08e99a7"
+ :main-base "410fad5ee055ac5fc9df8a4f0e324442b771bb89"
  :prerequisite {:pull-request 1441
                 :branch "codex/js-checked-scalar-modules"
                 :commit "7f77aac859f1c6525a7f137b84a92143040d0b1c"
-                :state :open-draft}
+                :state :merged
+                :merge-commit "410fad5ee055ac5fc9df8a4f0e324442b771bb89"}
  :implementation-branch "codex/public-checked-js-compiler"
  :restoration
  {:date "2026-11-16"
@@ -33,6 +35,13 @@
   :user-authorized-merge? true
   :github-permission :full-access
   :blob-write-retested :passed
+  :blocked-file "bootstrap/clojure/test/gravity/bootstrap_test.clj"
+  :blocked-blob "8915aa384518d8c243b55c996fedd3c0e3cb3ca7"
+  :blocked-operation :create-blob
+  :blocked-result "user rejected MCP tool call"
+  :blocked-operation-github-api-response-received? false
+  :blocked-operation-retried? false
+  :other-uploaded-files 19
   :candidate-on-main? false}
  :acceptance :not-yet-run
  :nonclaims [:full-language :release :self-hosting :seed-retirement]}

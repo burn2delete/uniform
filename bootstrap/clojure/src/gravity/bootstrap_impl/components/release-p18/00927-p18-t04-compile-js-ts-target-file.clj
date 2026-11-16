@@ -11,15 +11,16 @@
   (when lowering-mode
     (js-ts-backend-fail!
      "B6-TARGET" "requested JS/TS lowering mode is unsupported"
-     source-path nil
-     {:lowering-mode lowering-mode
+     source-path {:source-span {:source "bin/gravity"}}
+     {:option "--lowering"
+      :lowering-mode lowering-mode
       :supported-lowering-modes [:runtime-derived]
       :missing-fact :js-ts-lowering-mode
       :remediation "Omit --lowering for checked modules, or select the legacy --lowering runtime-derived route explicitly."}))
   (when-not output-path
     (p18-t04-fail!
      "P18T04002"
-     {:source source-path :request request :missing-fields [:output-path]
+     {:source source-path :request request :option "-o" :missing-fields [:output-path]
       :remediation "Use --target js (or js-ts) -o <fresh-output-directory>."}))
   (let [requested-target (some-> target-argument str/lower-case keyword)
         artifact

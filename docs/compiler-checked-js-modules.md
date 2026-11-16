@@ -104,9 +104,9 @@ clojure -J-Xmx2g -M:gravity --version
 Require clean initial status, the intended candidate SHA, the documented
 toolchain and successful current-source launch before recording acceptance.
 Explicit target/lowering commands already bypass a historical packaged JAR in
-`bin/gravity`. Use `clojure -M:gravity help` for current source help, including
-checked JavaScript options. The wrapper's historical help and routing remain
-separate compatibility surfaces.
+`bin/gravity`. Both `bin/gravity help` and `clojure -M:gravity help` describe
+the checked JavaScript command and explicit legacy lowering. Launcher selection
+continues to use the existing current-source routing.
 
 ## Exact public source-to-module invocation
 
@@ -143,11 +143,7 @@ bin/gravity compile examples/checked-js/acceptance.gravity \
 
 clojure -J-Xmx2g -M:gravity compile \
   examples/checked-js/acceptance.gravity \
-  --target js-ts -o target/acceptance-js-canonical
-
-clojure -J-Xmx2g -M:gravity compile \
-  examples/checked-js/acceptance.gravity \
-  --target js -o target/acceptance-js-explicit
+  --target js-ts -o target/acceptance-js-explicit
 ```
 
 Each `-o` argument is a required fresh output directory, not an executable
@@ -583,7 +579,7 @@ Producer authority/tamper regressions remain required.
 
 The clean-checkout experiment is separate from this selector. Record the exact
 base and restored candidate commits, initial clean status, actual tool versions,
-preparation and all three public compile commands, six artifact paths and
+preparation and both public compile commands, six artifact paths and
 hashes, source/compiler identities, runtime outputs and typed errors, and
 Node-only execution of a complete copy outside the checkout. Compare alias
 behavior while preserving legitimate requested-target provenance differences.

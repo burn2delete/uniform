@@ -70,6 +70,7 @@
                   (p18-t04-fail! "P18T04002"
                                  {:source source-path
                                   :command args
+                                  :option option
                                   :output-path candidate
                                   :allowed-output-roots ["target/"
                                                           "<current-directory>"]}))

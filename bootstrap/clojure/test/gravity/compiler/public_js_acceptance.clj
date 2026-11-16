@@ -223,8 +223,10 @@
        "[true,9007199254740993n,9007199254740994n],"
        "[true,-10n,25n],[false,100n,-50n],"
        "[true,9223372036854775807n,0n],[true,-9223372036854775808n,0n]];"
+       "const results=inputs.map(args=>m.score(...args));"
        "console.log(JSON.stringify({exports:Object.keys(m),"
-       "results:inputs.map(args=>m.score(...args).toString())}));"))
+       "results:results.map(value=>value.toString()),"
+       "resultTypes:results.map(value=>typeof value)}));"))
 
 (def ^:private errors-script
   (str "const cases=[[false,9223372036854775807n,1n],"
@@ -266,6 +268,7 @@
     (is (= ["10" "7" "18014398509481987" "15" "100"
             "9223372036854775807" "-9223372036854775808"]
            (get success "results")))
+    (is (= (vec (repeat 7 "bigint")) (get success "resultTypes")))
     (is (= [":overflow" ":overflow" ":arity" ":arity" ":type" ":type"
             ":type" ":type" ":type" ":type" ":range" ":range"]
            (mapv #(get % "kind") errors)))
@@ -429,6 +432,9 @@
            ["unsupported-recursion" (str/replace source-text "(+ left right)" "(add left right)") "C6-LOWERING-GAP"]
            ["unsupported-form" (str/replace source-text "(+ left right)" "[left right]") "C6-LOWERING-GAP"]
            ["source-target-mismatch" (str/replace source-text "(:target :js-ts)" "(:target :jvm)") "C14-INPUT"]
+           ["unsupported-source-profile" (str/replace source-text "(:profile :hosted)" "(:profile :core)")
+            "B1-TARGET-UNSUPPORTED"
+            {:facts {:missing-fact :hosted-safe-scalar-js-source-policy}}]
            ["unsupported-source-policy" (str/replace source-text "(:capabilities #{})" "(:capabilities #{:fs/read})") "B1-TARGET-UNSUPPORTED"]]))
       (testing "unsupported JavaScript lowering cannot select the native route or fall back"
         (parallel-pairs!
@@ -437,26 +443,40 @@
                   result (compile! current-source (root)
                                    ["compile" source "--target" target "--lowering" lowering
                                     "-o" rejected-output])]
-              (assert-rejected! result "B6-TARGET" nil rejected-output :js-ts-lowering-mode)))
+              (assert-rejected! result "B6-TARGET" nil rejected-output :js-ts-lowering-mode)
+              (is (= "--lowering" (get-in result [:data :option])))
+              (is (= (keyword lowering) (get-in result [:data :lowering-mode])))
+              (is (= [:runtime-derived] (get-in result [:data :supported-lowering-modes])))
+              (is (empty? (select-keys (get-in result [:data :source-span])
+                                      [:form-index :line :column :start :end :byte-start :byte-end]))
+                  "Lowering option failures do not invent a source location")))
           [["js" "not-supported"] ["js" "verified-mir"] ["js-ts" "verified-mir"]]))
       (testing "command shape errors precede attempts to read nonexistent source"
         (let [missing-source (str directory "/never-created.gravity")
               rejected-output (str relative-root "/options-output")]
           (parallel-pairs!
-            (fn [arguments]
+            (fn [[arguments expected-option]]
               (let [result (compile! current-source (root) arguments)]
                 (assert-rejected! result "P18T04002" nil rejected-output)
+                (when expected-option
+                  (is (= expected-option
+                         (select-keys (:data result) (keys expected-option)))
+                      "CLI option failures identify the actual offending option"))
                 (is (empty? (select-keys (get-in result [:data :source-span])
-                                        [:line :column :start :end :byte-start :byte-end]))
+                                        [:form-index :line :column :start :end :byte-start :byte-end]))
                     "CLI shape errors do not invent a source location")))
-            [["compile"]
-             ["compile" missing-source "--target"]
-             ["compile" missing-source "--target" "js" "-o"]
-             ["compile" missing-source "--target" "js" "--lowering"]
-             ["compile" missing-source "--target" "js" "--target" "js-ts" "-o" rejected-output]
-             ["compile" missing-source "--target" "js" "-o" rejected-output "--output" rejected-output]
-             ["compile" missing-source "--target" "js" "--lowering" "runtime-derived" "--lowering" "runtime-derived" "-o" rejected-output]
-             ["compile" missing-source "--target" "js" "--unknown" "value" "-o" rejected-output]])))
+            [[["compile"] nil]
+             [["compile" missing-source "--target"] {:option "--target"}]
+             [["compile" missing-source "--target" "js" "-o"] {:option "-o"}]
+             [["compile" missing-source "--target" "js" "--lowering"] {:option "--lowering"}]
+             [["compile" missing-source "--target" "js" "--target" "js-ts" "-o" rejected-output]
+              {:option "--target"}]
+             [["compile" missing-source "--target" "js" "-o" rejected-output "--output" rejected-output]
+              {:option "--output"}]
+             [["compile" missing-source "--target" "js" "--lowering" "runtime-derived" "--lowering" "runtime-derived" "-o" rejected-output]
+              {:option "--lowering"}]
+             [["compile" missing-source "--target" "js" "--unknown" "value" "-o" rejected-output]
+              {:unsupported-option "--unknown"}]])))
       (testing "output destination and Node availability failures publish nothing"
         (parallel-pairs!
          (fn [check] (check))
@@ -475,10 +495,12 @@
               (is (= "retained\n" (slurp parent)))))
           (fn []
             (let [missing-output (compile! current-source (root) ["compile" source "--target" "js"])]
-              (assert-rejected! missing-output "P18T04002" nil nil)))
+              (assert-rejected! missing-output "P18T04002" nil nil)
+              (is (= "-o" (get-in missing-output [:data :option])))))
           (fn []
             (let [result (compile! current-source (root) ["compile" source "--target" "js" "-o" "../outside-output"])]
-              (assert-rejected! result "P18T04002" nil nil)))
+              (assert-rejected! result "P18T04002" nil nil)
+              (is (= "-o" (get-in result [:data :option])))))
           (fn []
             (let [no-node-output (str relative-root "/without-node")
                   launcher [(absolute (io/file (System/getProperty "java.home") "bin/java"))

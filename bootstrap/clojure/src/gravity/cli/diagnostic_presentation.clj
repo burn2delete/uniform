@@ -44,6 +44,8 @@
                                      :clojure-seed-boundary?
                                      :expected-command
                                      :seed-boundary-facts
+                                     :option :unsupported-option
+                                     :lowering-mode :supported-lowering-modes
                                      :output-path :executable-path
                                      :expected-stdout :actual-stdout
                                      :command-contract

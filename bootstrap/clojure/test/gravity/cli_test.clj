@@ -201,6 +201,46 @@
     (is (not-any? #{'gravity.bootstrap}
                   (map ns-name (vals (ns-aliases namespace)))))))
 
+(deftest public-compile-diagnostics-preserve-command-facts
+  (let [source "never-created.gravity"
+        output "target/public-compile-options"
+        prefix ["compile" source "--target" "js"]]
+    (doseq [[arguments expected]
+            [[(into prefix ["--unknown" "value" "-o" output])
+              {:id "P18T04002" :unsupported-option "--unknown"}]
+             [["compile" source "--target"]
+              {:id "P18T04002" :option "--target" :missing-fields [:target]}]
+             [(into prefix ["-o"])
+              {:id "P18T04002" :option "-o" :missing-fields [:output-path]}]
+             [(into prefix ["--lowering"])
+              {:id "P18T04002" :option "--lowering" :missing-fields [:lowering-mode]}]
+             [(into prefix ["--target" "js-ts" "-o" output])
+              {:id "P18T04002" :option "--target" :missing-fields [:duplicate-target-option]}]
+             [(into prefix ["-o" output "--output" output])
+              {:id "P18T04002" :option "--output" :missing-fields [:duplicate-output-option]}]
+             [(into prefix ["--lowering" "runtime-derived" "--lowering" "runtime-derived" "-o" output])
+              {:id "P18T04002" :option "--lowering" :missing-fields [:duplicate-lowering-option]}]
+             [(into prefix ["--lowering" "not-supported" "-o" output])
+              {:id "B6-TARGET" :option "--lowering"
+               :source-span {:source "bin/gravity"}
+               :lowering-mode :not-supported
+               :supported-lowering-modes [:runtime-derived]}]]]
+      (let [rejected (try
+                       (dispatch/dispatch! #(ns-resolve 'gravity.bootstrap %) arguments)
+                       nil
+                       (catch clojure.lang.ExceptionInfo exception exception))]
+        (is (instance? clojure.lang.ExceptionInfo rejected) (str arguments))
+        (when rejected
+          (let [writer (java.io.StringWriter.)]
+            (binding [*err* writer]
+              (diagnostic-presentation/print-diagnostic! (constantly nil) rejected))
+            (let [projection (edn/read-string (str writer))]
+              (doseq [[key value] expected]
+                (is (= value (get projection key)) (str arguments " " key)))
+              (is (empty? (select-keys (:source-span projection)
+                                      [:line :column :start :end :byte-start :byte-end]))
+                  "Command-option errors do not invent source coordinates"))))))))
+
 (defn- fake-resolver [operation]
   (case operation
     p18-cli-help-text (fn [] "injected help\n")
