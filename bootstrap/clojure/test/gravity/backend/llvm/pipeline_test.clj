@@ -88,6 +88,48 @@
   (bootstrap/p15-s23-stage2-runtime-execute-function
    {:engine :gravity-llvm-data-development :compiler-artifact-plan? true} @gravity-plan name arguments))
 
+(deftest host-preflight-traverses-operations-beyond-256
+  ;; Supplied data exercises preflight only; it grants no authenticated ingress.
+  (let [operations (mapv #(operation (str "c" %) "entry" :constant []
+                                    :gravity/integer (mod % 251))
+                         (range 300))
+        mir (assoc (module-data
+                    {"entry" {:instructions operations
+                              :terminator {:kind :return :operands ["c299"]
+                                           :successors []}}} nil)
+                   :verification-status :passed :target-independent? true
+                   :profile :hosted :source-target :jvm
+                   :target-request :llvm-x86_64-linux)
+        artifact {:kind :gravity/p15-s23-c11-authenticated-mir-artifact
+                  :mir-module mir
+                  :b1-preflight {:status :verified-mir-candidate-for-b1}}
+        path [:mir-module :functions 'main :blocks "entry" :instructions]
+        accepted (native "preflight!" artifact)]
+    (is (= mir (:mir accepted)))
+    (is (= ["entry"] (:block-order accepted)))
+    (is (= operations (:operations accepted)))
+    (doseq [[changed id reason]
+            [[(assoc (last operations) :opcode :unsupported)
+              "B1-UNSUPPORTED" :unsupported-mir-opcode]
+             [(operation "c299" "entry" :local [] :gravity/integer nil)
+              "B1-UNSUPPORTED" :forwarded-operation-requires-operand]
+             [(operation "c299" "entry" :local ["missing"] :gravity/integer nil)
+              "B1-UNSUPPORTED" :forwarded-operation-operand-definition]
+             [(assoc (last operations) :effects [:io])
+              "B1-INPUT" :verified-pure-c11-b1-input]
+             [(assoc (last operations) :capabilities [:io])
+              "B1-INPUT" :verified-pure-c11-b1-input]
+             [(assoc-in (last operations) [:constant-payload :value]
+                        (inc (bigint Long/MAX_VALUE)))
+              "B1-UNSUPPORTED" :bounded-scalar-constant-payload]]]
+      (let [rejected (try
+                       (native "preflight!" (assoc-in artifact (conj path 299) changed))
+                       nil
+                       (catch clojure.lang.ExceptionInfo exception
+                         (ex-data exception)))]
+        (is (= id (:id rejected)) (str reason))
+        (is (= reason (get-in rejected [:facts :missing-fact])) (str reason))))))
+
 (deftest emitted-module-data-and-real-operation-refusals
   (doseq [[label mir] (fixtures)
           :let [{:keys [lowering refusals accepted-reasons two-argument-reasons]} (capture-native mir)]]
