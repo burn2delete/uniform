@@ -47,7 +47,7 @@
 (defn- error-runtime [program]
   (let [numeric (get-in program [:error-contract :numeric])
         abi (get-in program [:error-contract :abi])]
-    [(str "function uniform_numeric_error(source) {")
+    [(str "function uniform_numeric_error(operationId, checkId, left, right, source) {")
      "  const error = new Error(\"Checked I64 addition overflow\");"
      (str "  error.name = " (json-source (:name numeric)) ";")
      (str "  error.type = " (json-source (:type numeric)) ";")
@@ -56,6 +56,9 @@
      (str "  error.width = " (:width numeric) ";")
      (str "  error.signed = " (json-source (:signed numeric)) ";")
      (str "  error.operation = " (json-source (:operation numeric)) ";")
+     "  error.operationId = operationId;"
+     "  error.checkId = checkId;"
+     "  error.operands = [left, right];"
      "  error.source = source;"
      "  throw error;"
      "}"
@@ -128,7 +131,10 @@
                   (let [[left right] (map value-names (:operands statement))]
                     (line! (str "    " result " = " left " + " right ";") origin)
                     (line! (str "    if (" result " < " minimum " || " result " > " maximum ") {") origin)
-                    (line! (str "      uniform_numeric_error(" (json-source (:error-source statement)) ");") origin)
+                    (line! (str "      uniform_numeric_error("
+                                (json-source (:guarded-operation-id statement)) ", "
+                                (json-source (:check-id statement)) ", " left ", " right ", "
+                                (json-source (:error-source statement)) ");") origin)
                     (line! "    }" nil))
                   :guarded-add
                   (line! (str "    " result " = " (get value-names (:checked-sum statement)) ";") origin)

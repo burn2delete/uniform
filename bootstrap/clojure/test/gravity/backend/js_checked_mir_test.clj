@@ -173,7 +173,7 @@
               (update-in product [:mir-module :functions 'add :blocks entry :instructions]
                          #(filterv (fn [operation] (not= :runtime-check (:opcode operation))) %))]
              ["C14-PROOF-METADATA" (update product :mir-module mutate-operation :integer-add
-                                              #(update % :operands subvec 1))]
+                                              #(update % :operands (fn [values] (into [] (rest values)))))]
              ["C14-MANIFEST" (update-in product [:mir-module :effect-table] dissoc effect-id)]
              ["C14-MANIFEST" (update-in product [:mir-module :proof-certificate-table :safety-proofs] dissoc proof-id)]
              ["C14-ABI" (update product :mir-module mutate-operation :call
@@ -255,6 +255,9 @@
        "return {returned:m.score(...args).toString()};"
        "} catch (e) {return {isError:e instanceof Error,name:e.name,type:e.type,kind:e.kind,"
        "numericMode:e.numericMode,width:e.width,signed:e.signed,operation:e.operation,"
+       "checkId:e.checkId,operationId:e.operationId,"
+       "operands:Array.isArray(e.operands)?e.operands.map(value=>value.toString()):null,"
+       "operandTypes:Array.isArray(e.operands)?e.operands.map(value=>typeof value):null,"
        "function:e.function,argumentIndex:e.argumentIndex,expected:e.expected,"
        "actualType:e.actualType,actualArity:e.actualArity,source:e.source};}})));"))
 
@@ -383,6 +386,16 @@
             (is (= 64 (get error "width")))
             (is (= true (get error "signed")))
             (is (= ":add" (get error "operation")))
+            (is (= (get-in reference [:execution :error :check-id])
+                   (get-in addition [:facts :runtime-check-id])
+                   (get error "checkId")))
+            (is (= (get-in reference [:execution :error :operation-id])
+                   (:op-id addition) (get error "operationId")))
+            (is (= ["bigint" "bigint"] (get error "operandTypes"))
+                "Numeric error operands retain native BigInt values before JSON transport")
+            (is (= (mapv str (get-in reference [:execution :error :operands]))
+                   (mapv str (rest args)) (get error "operands"))
+                "The target error preserves the actual evaluated operands in source order")
             (is (= (:op-id addition) (get-in error ["source" "mirInstructionId"])))
             (is (= (:op-id addition) (get-in error ["source" "coreNodeId"])))
             (is (= 10 (get-in error ["source" "span" "start" "line"])))
@@ -562,7 +575,7 @@
                   ["exported-abi" #(assoc-in % [:mir-module :functions 'score :param-types 0] :gravity/i64)]
                   ["missing-overflow-guard" #(assoc-in % [:mir-module :runtime-check-table] {})]
                   ["guard-token" #(update % :mir-module mutate-operation :integer-add
-                                          (fn [op] (update op :operands subvec 1)))]
+                                          (fn [op] (update op :operands (fn [values] (into [] (rest values))))))]
                   ["missing-effects" #(assoc-in % [:mir-module :effect-table] {})]
                   ["missing-ownership" #(assoc-in % [:mir-module :ownership-table] {})]
                   ["missing-safety" #(assoc-in % [:mir-module :safety-table] {})]

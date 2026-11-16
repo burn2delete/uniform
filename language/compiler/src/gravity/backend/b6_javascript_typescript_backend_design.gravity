@@ -650,6 +650,12 @@
   {:representation :ecmascript-error-instance :fields :enumerable-own-properties
    :numeric {:name "UniformNumericError" :type ":error/numeric" :kind ":overflow"
              :numericMode ":checked" :width 64 :signed true :operation ":add"
+             :fields [:operationId :checkId :operands :source]
+             :operation-id-selection :guarded-addition-original-operation-id
+             :check-id-selection :original-runtime-check-id
+             :operands {:representation :javascript-array :element-type :bigint :count 2
+                        :selection :already-evaluated-mir-operands
+                        :order :mir-operand-order :coercion :forbidden}
              :source-fields [:path :contentHash :span :coreNodeId :mirInstructionId]
              :source-selection :guarded-addition-original-origin}
    :abi {:name "UniformABIError" :type ":error/abi" :kinds [":arity" ":type" ":range"]
