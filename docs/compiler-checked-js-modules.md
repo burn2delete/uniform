@@ -23,11 +23,12 @@ Fresh construction and verification remain authoritative; preliminary policy
 discovery does not accept the program. The producer accepts no supplied Core,
 MIR, verifier report, construction token or target eligibility certificate.
 
-The implementation has been restored after a workspace reset. Fresh
-verification of this restored candidate is pending. Earlier producer and
-public-command results below retain their original revision identities and
-are not acceptance evidence for the restored checkout. The generated library
-is intended to execute independently with Node; the compiler retains its
+The public integration source candidate is
+`dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
+`498c4d978d442cf62df20569e789ff357bd31fbc`. The
+[public-command receipt](compiler-public-js-cli-receipt.edn) distinguishes its
+fresh observations from earlier producer and public-command attempts. The
+generated library executes independently with Node; the compiler retains its
 Clojure/JVM stage0 host dependency.
 
 Governing contracts are D1/D2/D3/D8/D9, C6-C11/C14/C15, B1/B6, P4 and SAFE9.
@@ -61,9 +62,26 @@ branch `codex/public-checked-js-compiler` and PR
 that PR's remote head was `aa391b6e98e67d71e8051e473216ee7f856eff17`, containing
 only the early scope checkpoint. The earlier local implementation and its
 acceptance files were lost after the workspace reset; they had not reached
-that remote branch or main. The restored implementation requires a new
-candidate identity and fresh verification. Record its publication, acceptance
-and merge status in the [public-command receipt](compiler-public-js-cli-receipt.edn).
+that remote branch or main. Completion subsequently found and preserved local
+implementation `8a7363864ff2d64fce261c620e5e2d207d33b401`, its main merge
+`c84abf613c620ada8fd1ca40edfdb74ed5d5b0db`, and the newer published PR head
+`431ab7f2cec1206b6962eb89142643a1a5426bba`.
+
+The merged producer is now main commit
+`410fad5ee055ac5fc9df8a4f0e324442b771bb89`. PR #1442 targets main directly.
+The completed source checkpoint adds the reproduced command-option diagnostic
+repairs, the missing legacy test adaptation, and
+focused acceptance assertions. Local commit
+`a43540a80dd37bd76788540bd229b3ff120902fa` and published commit
+`b0bc8a525b4aa273be6a16d20f5393ae580ab4d1` have the identical tree
+`73449b0ccf7052bbc2500ae7528bef767df5e33c`. Language-boundary validation then
+required restoring the frozen shell launcher bytes. The corrected published
+candidate `dda7fd940b12af20c6e7016bef224cc984ca5362` differs only by removal
+of six shell-help lines; its compiler and test bytes are identical. Local
+commit `cd50e2cb7987007bb95d3219309aeb525bbf6ade` has the same corrected tree.
+Subsequent documentation commits do not change those source or test bytes.
+Publication and acceptance observations are bound separately in the
+[public-command receipt](compiler-public-js-cli-receipt.edn).
 
 The scope excludes recursion, closures, imports, collections, additional
 arithmetic, source I/O, other backends, optimization work, self-hosting, seed
@@ -76,7 +94,7 @@ dependency cache is permitted; do not copy generated compiler products or target
 artifacts from another checkout. Install these tools and make them available on
 `PATH`:
 
-| Tool | Previously verified version | Role |
+| Tool | Verified candidate version | Role |
 | --- | --- | --- |
 | Java | OpenJDK `21.0.13` | JVM hosting the compiler seed. |
 | Clojure CLI | `1.12.0.1530` | Source launch and dependency preparation. |
@@ -84,8 +102,9 @@ artifacts from another checkout. Install these tools and make them available on
 | Node | `v20.20.2` | Node 20 validation during compilation and independent execution afterward. |
 | Bash | Available as `bash` | Runs the `bin/gravity` wrapper. |
 
-These are the versions used by the earlier acceptance run. The restored
-candidate must record its actual tool versions and fresh results. The checked
+These versions were checked again for the published candidate in a clean
+checkout. The manual public commands use only the standard Clojure, spec.alpha
+and core.specs.alpha dependencies and an ordinary dependency cache. The checked
 target requires Node major version 20; an unavailable executable or another
 major version produces a target diagnostic. Dependency preparation may download
 standard Clojure dependencies into the normal cache. No packaged JAR, generated
@@ -104,9 +123,10 @@ clojure -J-Xmx2g -M:gravity --version
 Require clean initial status, the intended candidate SHA, the documented
 toolchain and successful current-source launch before recording acceptance.
 Explicit target/lowering commands already bypass a historical packaged JAR in
-`bin/gravity`. Both `bin/gravity help` and `clojure -M:gravity help` describe
-the checked JavaScript command and explicit legacy lowering. Launcher selection
-continues to use the existing current-source routing.
+`bin/gravity`. Run `clojure -M:gravity help` for the current checked JavaScript
+command and explicit legacy lowering. The historical shell launcher's static
+help is frozen by the repository language-boundary contract; its bytes and
+current-source selection remain unchanged.
 
 ## Exact public source-to-module invocation
 
@@ -618,23 +638,91 @@ the restored candidate. The checked-in producer receipt remains the historical
 producer record; the restored public-command receipt must bind newly recorded
 evidence to the new candidate.
 
-### Current restored-candidate status
+### Current public-command acceptance
 
-Fresh current-candidate verification is pending. No passing public-command,
-clean-checkout or milestone result is claimed for this restoration yet. Record
-fresh test, documentation, roadmap, whitespace and publication results in the
-[public-command receipt](compiler-public-js-cli-receipt.edn), keeping failed or
-interrupted attempts separate from terminal passes. The preceding producer
-CI failures remain independent historical results; no new hosted-CI result is
-inferred from them.
+Fresh public-command and clean-checkout acceptance passed for source candidate
+`dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
+`498c4d978d442cf62df20569e789ff357bd31fbc`. The
+[public-command receipt](compiler-public-js-cli-receipt.edn) records exact
+commands, exits, source and compiler identities, artifact hashes, runtime
+errors, owned diagnostics, tool versions and the separate failed attempts.
 
-Manifest scope statements describe the implemented public compiler route.
-An individual compile invocation performs Node syntax validation. Export
-execution and clean-checkout acceptance are separate recorded experiments;
-compilation does not claim that either was performed for every emitted module.
+| Check | Terminal observation |
+| --- | --- |
+| Clean-checkout wrapper and explicit `js-ts` commands | Both exit 0; all six files emitted through the ordinary public commands with only standard Clojure dependencies. |
+| Required Node calls | `10`, `7`, `18014398509481987`, one value per line. |
+| Runtime ABI and checked arithmetic | Seven primitive BigInt results, twelve exact numeric/ABI refusals, private helper absent, and complete eager-overflow payload bound to the original addition. |
+| Complete copy outside checkout | Six byte-identical files; matching values and errors with a cleared environment and Node-only PATH. |
+| Public-process selector | 1 test, 557 assertions, zero failures/errors, exit 0; 30 actual CLI processes (3 successful compilations and 27 owned refusals). |
+| Backend target execution and genuine-product rejection | 2 tests, 611 assertions, zero failures/errors, exit 0. |
+| Source policy and construction authority | 3 tests, 50 assertions, zero failures/errors, exit 0. |
+| CLI and launcher | 10 tests / 190 assertions and 4 tests / 50 assertions, each with zero failures/errors and exit 0. |
+| Language boundary | 6 tests, 11 assertions, zero failures/errors, exit 0 after restoring the exact frozen launcher bytes. |
+| Documentation, roadmap, governance and whitespace | Exit 0; 240 canonical documents, 19 phase indexes and 185 governed workstreams validated. |
 
-Once the complete restored-candidate procedure passes, the precise supported
-result is a working Clojure-hosted Uniform compiler for the documented
-hosted/safe scalar subset, targeting Node 20 ES2022 modules. Full-language
-support, standalone native compilation, self-hosting, seed retirement and
-production release readiness remain separate obligations.
+The backend selectors executed published checkpoint
+`b0bc8a525b4aa273be6a16d20f5393ae580ab4d1`; the source-authority batch
+executed its tree-equivalent local commit
+`a43540a80dd37bd76788540bd229b3ff120902fa`. The corrected candidate differs
+only by removing six shell-help lines and restoring the main launcher blob.
+Compiler and test bytes are identical. Those earlier results retain their
+actual execution identities; both final public-command experiments ran
+from clean checkouts of the corrected candidate.
+
+The explicit legacy JavaScript selector remains a recorded failure:
+1 test, 16 assertions, 10 failures, exit 1. Its three real compile commands
+return `P15S23X002`, boundary `:pinned-reference-runtime-contract`, missing
+fact `:runtime-artifact-source-byte-count`, for
+`bootstrap/gravity/p15_s23/runtime.gravity`. The untouched main baseline
+reproduced that same legacy handoff refusal. Historical pins are unchanged;
+this selector is not reported as passing compatibility evidence. The current
+CLI tests separately verify explicit legacy route selection.
+
+Failed and interrupted attempts remain separate in the receipt: the initial
+shell-help edit violated the frozen language boundary; a cold launcher test
+saw two inherited JVM startup banners; and a competing public `js-ts` process
+hit the unchanged 900-second watchdog. The launcher passed unchanged after
+ordinary dependency preparation. The failed public run was stopped with
+exit 130, and the full selector was rerun with competing compiler jobs
+removed. An earlier manual run was also stopped before completion when the
+launcher correction required a fresh exact-candidate checkout. None of these
+partial attempts is counted as final acceptance.
+
+Hosted CI is recorded separately. Source
+[run 43907142976](https://github.com/burn2delete/uniform/actions/runs/43907142976)
+attempt 2 remains failed because bootstrap's `syntax-regression` exceeded
+its existing 600-second deadline (exit 124). No assertion failure or compiler
+diagnostic was reported before that timeout; completion of that group remains
+unverified. The unchanged retry resolved the initial Maven HTTP 429 and
+Darwin cancellation. Eleven jobs passed and two were skipped. The repaired
+language-boundary command also passed within the failed bootstrap job.
+No deadline or pin was changed.
+The receipt retains both attempts and their exact observation times.
+PR #1442 records the final publication and merge state.
+
+#### Current manual artifact identities
+
+The wrapper's `target/acceptance-js` directory contains:
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `manifest.edn` | 215434 | `66198cac45aa1bddb3ff6df7b9f51d5031fd82fe4aa447ced256ce9d5de6e12f` |
+| `package.json` | 215 | `c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc` |
+| `program.d.ts` | 294 | `2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27` |
+| `program.mjs` | 9111 | `d5fcad4d08b0e0af3044779d32ac1507517ebea89fecad2c907df904349cdbe7` |
+| `program.mjs.map` | 33127 | `2b1b79b6d25b4c397134f02bd5ab6d6b2dae6eff2ca563d804918dfb2f28bad2` |
+| `provenance.edn` | 40368 | `0fc59fbd179d6e11e2f924d975c8b49e0e3ec760bb8427b7b3f337a9a22ed2ef` |
+
+These identities include the actual absolute source and compiler paths of
+the recorded checkout. They are not claims of path-independent bytes. The
+two aliases produced byte-identical JavaScript, declarations, source map and
+package metadata. Their provenance retains the requested alias; the manifest
+changes only its corresponding provenance record and artifact identity.
+
+Manifest scope statements describe the public compiler route. Each compile
+invocation performs Node syntax validation; export execution and clean-checkout
+acceptance are separately recorded experiments. The supported result is a
+working Clojure-hosted Uniform compiler for the documented hosted/safe scalar
+subset, targeting Node 20 ES2022 modules. Full-language support, standalone
+native compilation, self-hosting, seed retirement and production release
+readiness remain separate obligations.

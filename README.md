@@ -103,6 +103,7 @@ Use a fresh output directory: compilation emits `program.mjs`, `program.d.ts`,
 `--target js-ts` selects the same producer; the canonical source declaration
 remains `:js-ts`. The explicit source launcher is
 `clojure -J-Xmx2g -M:gravity compile` with the same arguments.
+Use `clojure -M:gravity help` for the current command forms.
 
 The CLI reads policy from the actual source. It requires no API expression,
 policy map or intermediate IR. Node syntax validation occurs during

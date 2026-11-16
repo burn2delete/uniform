@@ -117,6 +117,7 @@ to observe behavior. Compilation-time Node validation checks syntax; actual
 runtime execution and standalone copying are separate acceptance steps.
 Explicit `--lowering runtime-derived` preserves the legacy route. The compiler
 host remains Clojure/JVM, and unsupported programs receive owned diagnostics.
+Use `clojure -M:gravity help` for the current command forms.
 
 See the [compiler guide](../docs/compiler-checked-js-modules.md) for tested
 Java/Clojure/Node prerequisites, ABI and numeric errors, artifact identities
