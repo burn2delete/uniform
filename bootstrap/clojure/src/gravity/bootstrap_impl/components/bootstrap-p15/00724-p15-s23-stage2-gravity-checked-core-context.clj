@@ -101,6 +101,13 @@
         (p15-s23-c6c10-owned-upstream-data
          (merge
           diagnostic
+          ;; Project named source-owned semantic facts for the existing CLI
+          ;; fields. Keep the sealed diagnostic and its identity unchanged;
+          ;; arbitrary nested facts are not public presentation authority.
+          (select-keys (:facts diagnostic)
+                       [:function :expected-type :actual-type
+                        :expected-arity :actual-arity
+                        :declared-effects :inferred-effects])
           {:id rule
            :rule rule
            :bootstrap-stage :stage0

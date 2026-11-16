@@ -1,7 +1,56 @@
 
 
+(defn p18-t04-compile-checked-js-target-file!
+  "Connect the parsed public JS request to the source-only checked producer.
+   Command presentation never becomes an input to artifact identity."
+  [{:keys [source-path output-path target target-argument lowering-mode] :as request}]
+  (when-not (= js-ts-backend-target target)
+    (js-ts-backend-fail!
+     "B6-TARGET" "public checked JavaScript target is unsupported"
+     source-path nil {:requested-target target :missing-fact :supported-target}))
+  (when lowering-mode
+    (js-ts-backend-fail!
+     "B6-TARGET" "requested JS/TS lowering mode is unsupported"
+     source-path nil
+     {:lowering-mode lowering-mode
+      :supported-lowering-modes [:runtime-derived]
+      :missing-fact :js-ts-lowering-mode
+      :remediation "Omit --lowering for checked modules, or select the legacy --lowering runtime-derived route explicitly."}))
+  (when-not output-path
+    (p18-t04-fail!
+     "P18T04002"
+     {:source source-path :request request :missing-fields [:output-path]
+      :remediation "Use --target js (or js-ts) -o <fresh-output-directory>."}))
+  (let [requested-target (some-> target-argument str/lower-case keyword)
+        artifact
+        ((requiring-resolve 'gravity.compiler.application/current-source-to-js-module)
+         source-path
+         {:output-path output-path :target requested-target
+          :runtime :node20 :language :es2022 :module-format :esm})
+        manifest (:manifest artifact)]
+    (merge
+     (select-keys artifact [:artifact :status :paths :artifact-inventory])
+     {:source (:source manifest)
+      :source-target (:source-target manifest)
+      :requested-target (get-in artifact [:provenance :requested-target])
+      :canonical-target (get-in artifact [:provenance :canonical-target])
+      :compiler-host (:compiler-host manifest)
+      :exports (:exports manifest)
+      :runtime-observation (get-in artifact [:provenance :runtime-observation])
+      :target-requested? true :target-selection :explicit
+      :public-current-source? true :lowering-mode :checked-scalar-mir
+      :lowering-requested? false :compiled-module? true
+      :command-boundary
+      {:compile-command ["gravity" "compile" source-path
+                         "--target" target-argument "-o" output-path]
+       :artifact-kind :importable-javascript-module
+       :module-path (get-in artifact [:paths :javascript])
+       :execution :node-esm-import-and-call-exports
+       :public-command "gravity" :bootstrap-hosted? true
+       :clojure-seed-boundary? true :self-hosted? false :seedless-release? false}})))
+
 (defn p18-t04-compile-js-ts-target-file!
-  "Compile a current source unit to the bounded Node 20 ES2022 ESM target.
+  "Preserve the separately selected legacy runtime-derived JS/TS route.
 
   Both public aliases are canonicalized before this boundary.  The emitted
   JavaScript, declarations, source map, package metadata, manifest, and

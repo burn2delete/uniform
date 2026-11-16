@@ -84,6 +84,47 @@ path classification and relocation order.
 
 ## Roadmap and development commands
 
+### Public checked scalar JavaScript compiler
+
+Ordinary hosted/safe source with canonical target `:js-ts` can compile through
+the public command to Node 20 / ES2022 ESM. The current subset is I64 and Bool,
+checked addition, eager local bindings, Boolean branches, fixed-arity
+nonrecursive direct calls, exports and private helpers. I64 uses native
+JavaScript BigInt with signed 64-bit checks.
+
+From the repository root, prepare the Clojure source launcher and select a
+fresh output directory:
+
+```bash
+clojure -P -M:gravity
+bin/gravity compile examples/checked-js/acceptance.gravity \
+  --target js -o target/acceptance-js
+node --input-type=module -e '
+  import {score} from "./target/acceptance-js/program.mjs";
+  console.log(score(true, 3n, 7n).toString());
+'
+```
+
+The explicit source command is `clojure -J-Xmx2g -M:gravity compile` with the
+same arguments. Both `js` and `js-ts` CLI aliases preserve the canonical source
+target. The CLI reads profile, target, effects, capabilities and safety from
+the source; Boolean modules may declare empty effects. Fresh construction,
+semantic verification and source identity checks remain authoritative.
+
+The six emitted files are `program.mjs`, `program.d.ts`, `program.mjs.map`,
+`package.json`, `manifest.edn` and `provenance.edn`. Import and call the exports
+to observe behavior. Compilation-time Node validation checks syntax; actual
+runtime execution and standalone copying are separate acceptance steps.
+Explicit `--lowering runtime-derived` preserves the legacy route. The compiler
+host remains Clojure/JVM, and unsupported programs receive owned diagnostics.
+
+See the [compiler guide](../docs/compiler-checked-js-modules.md) for tested
+Java/Clojure/Node prerequisites, ABI and numeric errors, artifact identities
+and fresh-checkout evidence. This subset does not establish full-language
+support, self-hosting, seed retirement or production release readiness.
+
+### Existing development catalogs
+
 Use the [implementation roadmap](../docs/implementation-roadmap.md),
 [full-language gap map](../docs/full-language-implementation-gap-map.md),
 [component roadmaps](../docs/component-roadmaps/README.md), and [compiler

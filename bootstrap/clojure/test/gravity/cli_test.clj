@@ -45,6 +45,13 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n"
+   "    (checked hosted/safe scalar module; Node 20 / ES2022 ESM)\n"
+   "    (canonical source target :js-ts; compiler host Clojure/JVM)\n"
+   "    (Node syntax validation during compilation; import exports to execute)\n"
+   "  gravity compile <file.qst|file.gravity> --target js|js-ts\n"
+   "    --lowering runtime-derived -o <directory>\n"
+   "    (explicit legacy route; retains its existing results and failures)\n"
    "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
    "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
    "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
@@ -222,6 +229,57 @@
                                                     ["not-a-command"])))]
     (is (false? @result))
     (is (empty? output))))
+
+(deftest public-compile-preserves-operation-resolution-and-target-boundaries
+  (let [source "module.gravity"
+        output "target/public-compile-dispatch"]
+    (doseq [[flags expected-operation expected-arguments]
+            [[[] 'compile-file [source]]
+             [["-o" output] 'p18-t04-compile-executable-file! [source output]]
+             [["--target" "jvm"] 'compile-file [source]]
+             [["--target" "jvm" "-o" output]
+              'p18-t04-compile-executable-file! [source output]]
+             [["--target" "jvm" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-jvm-target-file! [source output :jvm :runtime-derived]]
+             [["--target" "c" "-o" output]
+              'p18-t04-compile-c-target-file! [source output :c nil]]
+             [["--target" "c" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-experimental-verified-mir-c-target-file! :request]
+             [["--target" "js" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js-ts" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-js-ts-target-file! [source output :js-ts :runtime-derived]]
+             [["--target" "js-ts" "--lowering" "runtime-derived" "-o" output]
+              'p18-t04-compile-js-ts-target-file! [source output :js-ts :runtime-derived]]
+             [["--target" "js" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js-ts" "--lowering" "verified-mir" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]
+             [["--target" "js" "--lowering" "not-supported" "-o" output]
+              'p18-t04-compile-checked-js-target-file! :request]]]
+      (let [arguments (into ["compile" source] flags)
+            request (bootstrap/p18-t04-parse-compile-request arguments)
+            calls (atom [])
+            selected? (atom nil)
+            resolver
+            (fn [operation]
+              (case operation
+                p18-t04-parse-compile-request #'bootstrap/p18-t04-parse-compile-request
+                js-ts-backend-target #'bootstrap/js-ts-backend-target
+                c-backend-supported-targets #'bootstrap/c-backend-supported-targets
+                (fn [& values]
+                  (swap! calls conj [operation (vec values)])
+                  {:operation operation})))
+            stdout (with-out-str
+                     (reset! selected? (dispatch/dispatch! resolver arguments)))]
+        (is (true? @selected?) (str arguments))
+        (is (= [[expected-operation
+                 (if (= :request expected-arguments) [request] expected-arguments)]]
+               @calls)
+            (str arguments))
+        (is (= {:operation expected-operation} (edn/read-string stdout)))))))
 
 (deftest extracted-entrypoint-owns-error-exits
   (let [statuses (atom [])

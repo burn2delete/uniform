@@ -3158,7 +3158,7 @@
        :verification-policy :fresh-owner-reconstruction-with-separate-mir-report
        :raw-mir-verification-status (get mir :verification-status)
        :diagnostics [] :semantic-authority :gravity-source
-       :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+       :nonclaims [:full-language :release :self-hosting :seed-retirement]}
       (b1-js-rejection application "B1-INPUT" :verified-source-application-and-complete-c14-relationships))))
 
 (defn b1-verify-checked-js-input [application lowering candidate]

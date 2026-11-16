@@ -719,7 +719,7 @@
                         :compiler-bindings (get application :compiler-bindings)
                         :compiler-host (get application :compiler-host)}
            :diagnostics [] :semantic-authority :gravity-source
-           :nonclaims [:public-compile-cli :release :self-hosting :seed-retirement]}
+           :nonclaims [:full-language :release :self-hosting :seed-retirement]}
           problem))
       (b6-js-rejection application "B1-INPUT" :current-c14-b1-and-application-relationships {}))))
 

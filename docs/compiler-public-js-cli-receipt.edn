@@ -1,6 +1,6 @@
 {:schema :uniform/public-checked-js-cli-development-evidence-v1
  :authority :non-authoritative-development-evidence
- :status :in-progress
+ :status :restored-source-awaiting-fresh-acceptance
  :scope :hosted-safe-scalar-node20-es2022-module
  :main-base "4c0ada9438cbcf20587447541ecfd16ab08e99a7"
  :prerequisite {:pull-request 1441
@@ -8,5 +8,31 @@
                 :commit "7f77aac859f1c6525a7f137b84a92143040d0b1c"
                 :state :open-draft}
  :implementation-branch "codex/public-checked-js-compiler"
+ :restoration
+ {:date "2026-11-16"
+  :reason :previous-unpublished-workspace-no-longer-available
+  :preserved-prerequisite "7f77aac859f1c6525a7f137b84a92143040d0b1c"
+  :restored-from [:preserved-producer :retained-exact-source-text
+                  :retained-diagnostic-repair-patch :retained-acceptance-helper-text]
+  :historical-source-candidate "4ed9d71177812c1a2e11ee4d5d7c0976311ff2fe"
+  :historical-final-local-commit "5ee0c2bdaf635ad672378386e97a80963b9409d6"
+  :historical-observations
+  {:tests 34 :assertions 1402 :failures 0 :errors 0
+   :public-selector {:tests 1 :assertions 529 :cli-processes 29}
+   :original-local-logs-present? false
+   :acceptance-credit-for-restored-candidate? false}
+  :diagnostic-repair-blobs
+  {"bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00724-p15-s23-stage2-gravity-checked-core-context.clj"
+   "7ad9029b67b375c362f755213cf2bed72939c9ca"
+   "bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj"
+   "4bb5d106978f9e4544e7e6a6a96372642c9afff2"}
+  :fresh-verification-required? true}
+ :publication
+ {:pull-request 1442
+  :dependency 1441
+  :user-authorized-merge? true
+  :github-permission :full-access
+  :blob-write-retested :passed
+  :candidate-on-main? false}
  :acceptance :not-yet-run
  :nonclaims [:full-language :release :self-hosting :seed-retirement]}

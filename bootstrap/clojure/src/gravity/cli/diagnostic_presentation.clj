@@ -18,7 +18,8 @@
                                      :expected-arity :actual-arity :effect
                                      :bootstrap-hosted? :packaged-jvm-cli?
                                      :seedless-release?
-                                     :declared-effects :granted-build-effects
+                                     :declared-effects :inferred-effects
+                                     :granted-build-effects
                                      :required-effect :required-capability
                                      :requested-capability
                                      :selected-or-missing-provider
@@ -50,6 +51,7 @@
                                      :profile-contract :policy-layers
                                      :dependency-profile :supported
                                      :host-runtime :host-symbol
+                                     :observed-node-version :required-node-version
                                      :target-profile :target-feature
                                      :caller-safety :erased-check
                                      :operation :memory-regime :memory-family
