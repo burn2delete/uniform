@@ -17,7 +17,8 @@
    {:case "i64-minimum", :value "-9223372036854775808"}
    {:case "i64-opposite-extremes", :value "-1"}],
   :errors
-  [{:name "UniformNumericError",
+  [{:operandTypes ["bigint" "bigint"],
+    :name "UniformNumericError",
     :operation ":add",
     :width 64,
     :type ":error/numeric",
@@ -49,12 +50,18 @@
        :column 3,
        :column-unit ":unicode-scalar",
        :line 10}}},
+    :operands ["9223372036854775807" "1"],
     :case "eager-overflow-false",
     :kind ":overflow",
     :isError true,
     :numericMode ":checked",
+    :operationId
+    "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+    :checkId
+    "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
     :signed true}
-   {:name "UniformNumericError",
+   {:operandTypes ["bigint" "bigint"],
+    :name "UniformNumericError",
     :operation ":add",
     :width 64,
     :type ":error/numeric",
@@ -86,10 +93,15 @@
        :column 3,
        :column-unit ":unicode-scalar",
        :line 10}}},
+    :operands ["-9223372036854775808" "-1"],
     :case "negative-overflow",
     :kind ":overflow",
     :isError true,
     :numericMode ":checked",
+    :operationId
+    "sha256:760d243600c81f69fde02482837258528b5226309a56339606817e60f0b79780",
+    :checkId
+    "sha256:3f02878b248cb6600a7687a9c854acc917cd73ebec90b7481419539ca8a5ef25",
     :signed true}
    {:argumentIndex nil,
     :name "UniformABIError",
@@ -477,10 +489,44 @@
   :failures 0,
   :errors 0},
  :source-target :js-ts,
+ :production-launch-command
+ "Candidate: 4470a4fbe8fe104b114310cb31d7fd916d77b458\nTree: 6c3faf0c9b1839ab0bf6faa7c06999760007637b\nCWD: /workspace/scratch/0b2be7afba4b/uniform\nProduction source/test bytes frozen. Documentation updates do not change compiler sources.\n\nPATH=/workspace/scratch/0b2be7afba4b/toolchain/clojure-cli/bin:/workspace/scratch/0b2be7afba4b/toolchain/node-v20.20.2-linux-x64/bin:$PATH CLJ_CONFIG=/workspace/scratch/0b2be7afba4b/toolchain/clojure-config clojure -J-Xmx2g -M -e '\n(require (quote [gravity.compiler.application :as compiler]))\n(prn\n  (select-keys\n    (compiler/current-source-to-js-module\n      \"examples/checked-js/acceptance.gravity\"\n      {:profile :hosted :target :js-ts :effects #{:error/raise}\n       :capabilities #{} :safety :safe}\n      {:output-path \"target/acceptance-js\" :target :js-ts\n       :runtime :node20 :language :es2022 :module-format :esm})\n    [:status :paths :runtime-observation]))\n' > /workspace/scratch/0b2be7afba4b/evidence/finalnumeric-production-api.log 2>&1\n",
  :production-api-exit 0,
- :compiler-checkpoint-tree "8bfbea214574ae2d97f17b9ea68c28d88e23aab0",
+ :compiler-checkpoint-tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
  :authority :non-authoritative-development-evidence,
+ :preceding-execution-receipt-commit
+ "9b87c7e26937dfa59ddbb5ba0d7749787830b6c2",
  :schema-version 1,
+ :hosted-ci-observation
+ {:conclusion :failure,
+  :cause :not-established,
+  :decoded-job-log
+  {:file "finalnumeric-hosted-macro-job.log",
+   :sha256
+   "sha256:433a1eb566177d1d03688f0a15247d9b4a860b67bc426ab76a1d346273c712db",
+   :byte-count 155029},
+  :provider-tree-matches-source true,
+  :provider-commit "7d496a151cb28afd94aed6aa3a2953a333ece44e",
+  :failed-job
+  {:name "macro",
+   :id 133010270219,
+   :command "macro-pipeline-cohort",
+   :watchdog-seconds 900,
+   :status :timeout,
+   :exit 124},
+  :source-commit "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :provider-parents
+  ["4c0ada9438cbcf20587447541ecfd16ab08e99a7"
+   "4470a4fbe8fe104b114310cb31d7fd916d77b458"],
+  :job-counts {:success 11, :skipped 2, :failure 1},
+  :status :completed,
+  :url
+  "https://github.com/burn2delete/uniform/actions/runs/43778464329",
+  :run-id 43778464329,
+  :following-macro-commands
+  [{:name "macro-receipt-controls", :status :passed, :exit 0}
+   {:name "macro-bootstrap-compatibility", :status :passed, :exit 0}],
+  :provider-tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b"},
  :compiler-bindings
  {:b1
   {:source-content-hash
@@ -540,7 +586,7 @@
    :admission-status :development-unadmitted},
   :b6
   {:source-content-hash
-   "sha256:f12f0537cbec44ef88e721e6ab0e23ace1dae99d721cb8f003a854b299d66acf",
+   "sha256:856cc3eb919b97bb34f56452094207867962f21a0705e6c0d176a258770953e5",
    :builder-function b6-build-checked-js-program,
    :seed-emitter
    {:source-rule-hash
@@ -585,14 +631,14 @@
    :source-path
    "/workspace/scratch/0b2be7afba4b/uniform/language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity",
    :compiler-host :clojure-stage0-seed,
-   :source-byte-count 36469,
+   :source-byte-count 36897,
    :verifier-semantic-hash
    "sha256:44e6e5cf562ac4368fbaf995f6f3c2ba9ddef8fafed3471a33e72af2432bcafb",
    :functions-semantic-hash
-   "sha256:3f3054aeb0f0bfb78ecaa67d4e77a78843d4e0043e5ee3718fcfa1de2d5aef54",
+   "sha256:1e0eeaeb5a17c4154d78d893d141dfd074971354c127a51094090c937b804d10",
    :semantic-authority :gravity-source,
    :plan-semantic-hash
-   "sha256:bc0b4b6c0187c0e0827fd0aa4cab8a318a486d65a7d10fd12fd4c3e6c6914c7c",
+   "sha256:827aac8ba81abeb12c100e7552fae2df937e4a67879fe0b9346dc05711bbf3c7",
    :admission-status :development-unadmitted},
   :c11
   {:source-content-hash
@@ -686,37 +732,57 @@
    :plan-semantic-hash
    "sha256:1f72fd222e415c4a13be10b9d50c2706d72c8ac4538037ae4e965d6d26222ae5"}},
  :standalone
- {:directory "/tmp/uniform-acceptance-js-MjAvHDOv",
+ {:directory "/tmp/uniform-finalnumeric-js-WTv8n0o9",
   :working-directory :copied-artifact-directory,
   :module-specifier "./program.mjs",
   :environment :cleared-except-node-path,
   :required-stdout-identical true,
   :runtime-record-identical true},
  :execution-log-identities
- [{:file "js-production-api.log",
+ [{:file "finalnumeric-production-api.log",
    :sha256
    "sha256:87bb1ba7485466800de55c8afc60f4247d80a1a53998fea03007ccd7bcdc3e6c",
    :byte-count 392}
-  {:file "js-production-node.log",
+  {:file "finalnumeric-production-node.log",
    :sha256
    "sha256:9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
    :byte-count 23}
-  {:file "js-production-runtime.json",
+  {:file "finalnumeric-production-runtime.json",
    :sha256
-   "sha256:f6c225c4359663c547e779cd28bf9420c45efbaf24db82cf66ee053cb1315657",
-   :byte-count 11553}
-  {:file "js-production-standalone-node.log",
+   "sha256:31385de3ac91ec51f3e9e76a7faba47b1a1937ac0c1181af9b276aec30622dd0",
+   :byte-count 12047}
+  {:file "finalnumeric-production-standalone-node.log",
    :sha256
    "sha256:9b0524f10f6ed8f0a87865c27b60664f89003e20fb025c4f17e9ce59e65e1e10",
    :byte-count 23}
-  {:file "js-production-standalone-runtime.json",
+  {:file "finalnumeric-production-standalone-runtime.json",
    :sha256
-   "sha256:f6c225c4359663c547e779cd28bf9420c45efbaf24db82cf66ee053cb1315657",
-   :byte-count 11553}
-  {:file "js-acceptance-production-final.log",
+   "sha256:31385de3ac91ec51f3e9e76a7faba47b1a1937ac0c1181af9b276aec30622dd0",
+   :byte-count 12047}
+  {:file "finalnumeric-required-selector.log",
    :sha256
-   "sha256:e61c0d36c34dcb47d148532951bf7fcdd6196b68923abb6149c15647a6b3bcbf",
-   :byte-count 2236}],
+   "sha256:87844907502d8775ac7e7ef213b82b53879dd3c9938efef299c175e8f4a18c08",
+   :byte-count 2112}
+  {:file "finalnumeric-runtime-regressions.log",
+   :sha256
+   "sha256:044da1554eacc1c0b7e267cd908b75610a02a9d0185f2b7832f10e9391ce94ff",
+   :byte-count 4683}
+  {:file "finalnumeric-rejection-regressions.log",
+   :sha256
+   "sha256:253f079c1d31f601db34acf9f82582d16987bea91889446a04bbe7acc9f4c6ad",
+   :byte-count 7942}
+  {:file "finalnumeric-test-results.edn",
+   :sha256
+   "sha256:95da066a0022997de4f4af592f002151848a8df67433c2d9a5c53b6b07477848",
+   :byte-count 2058}
+  {:file "finalnumeric-test-commands.edn",
+   :sha256
+   "sha256:bc5a1094691486692eab9238e351f43e3fe34705f7f993eae1407d7b6b02c41a",
+   :byte-count 1308}
+  {:file "finalnumeric-post-run-code-check.log",
+   :sha256
+   "sha256:fa32ad1d76eb79a1b7dcce1e282ab9f7030a0b9c39e16f613c899cd4948ccdac",
+   :byte-count 596}],
  :toolchain
  {:node "v20.20.2",
   :clojure "1.12.0",
@@ -740,16 +806,67 @@
   {:source-path
    "/workspace/scratch/0b2be7afba4b/uniform/bootstrap/clojure/src/gravity/backend/js_scalar.clj",
    :source-content-hash
-   "sha256:5d00fa02f185ab6d9559477b31ff39b1e368ebbeaf9837700af718cbecbb033a",
-   :source-byte-count 14643}},
+   "sha256:7a10b4a9aca57b6acdc6bc5b7347e06cf3a032af10cfb694a82eb88c41d9ff95",
+   :source-byte-count 15006}},
  :source
  {:path
   "/workspace/scratch/0b2be7afba4b/uniform/examples/checked-js/acceptance.gravity",
   :content-hash
   "sha256:6f6d2b94071cf17eee814d176d1dcf5ce9b6906ddbd79c6ac42ed472d7d11162",
   :byte-count 341},
+ :numeric-operand-observation
+ {:native-type :bigint,
+  :json-projection :explicit-decimal-strings,
+  :type-evidence :operandTypes},
+ :focused-test-commands
+ {:working-directory "/workspace/scratch/0b2be7afba4b/uniform",
+  :published-code-candidate "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :environment-prefix
+  {"PATH"
+   "/workspace/scratch/0b2be7afba4b/toolchain/clojure-cli/bin:/workspace/scratch/0b2be7afba4b/toolchain/node-v20.20.2-linux-x64/bin:$PATH",
+   "CLJ_CONFIG"
+   "/workspace/scratch/0b2be7afba4b/toolchain/clojure-config"},
+  :commands
+  [{:log "finalnumeric-required-selector.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-target-execution"
+     "--progress"]}
+   {:log "finalnumeric-runtime-regressions.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-runtime-rejections"
+     "--exact"
+     "scalar-module-boolean-execution"
+     "--exact"
+     "scalar-module-composed-qst-and-shadowed-call"
+     "--progress"]}
+   {:log "finalnumeric-rejection-regressions.log",
+    :argv
+    ["clojure"
+     "-J-Xmx2g"
+     "-M:dev-test"
+     "--namespace"
+     "gravity.backend.js-checked-mir-test"
+     "--exact"
+     "scalar-module-rejects-source-and-target-mismatch"
+     "--exact"
+     "scalar-module-rejects-genuine-product-tampering"
+     "--progress"]}],
+  :runtime "Node v20.20.2",
+  :clojure "1.12.0"},
  :manifest-artifact-id
- "sha256:addd26222ec28f21c797f261b7459e4467857efc40af3eebae0d202e3a381d52",
+ "sha256:5fe2f15ea7b49f63463a5e820e98766b9f44d957e639ca53321d0e921ad9f515",
  :target-verification
  {:c14
   {:application-id
@@ -776,6 +893,84 @@
  {:implementation :clojure-stage0-seed,
   :target :jvm,
   :self-hosted? false},
+ :focused-test-results
+ {:source-checksums "finalnumeric-source.sha256",
+  :tree "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
+  :not-claimed
+  [:ordinary-public-compile-cli
+   :clean-checkout-integration
+   :release
+   :self-hosting
+   :seed-retirement],
+  :clojure "1.12.0",
+  :published-code-candidate "4470a4fbe8fe104b114310cb31d7fd916d77b458",
+  :node-results
+  {:numeric-error-reference-comparison
+   [:type :kind :check-id :operation-id :evaluated-operands],
+   :shadowed-addition ["7" "1" "9223372036854775807"],
+   :renamed-qst ["20" "10"],
+   :numeric-error-operands-native-types ["bigint" "bigint"],
+   :runtime-error-kinds
+   [":overflow"
+    ":overflow"
+    ":arity"
+    ":arity"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":type"
+    ":range"
+    ":range"],
+   :unicode-source-map-columns :passed,
+   :representative-exports ["score"],
+   :exact-i64-literal "9007199254740993",
+   :standalone-copy :passed,
+   :representative
+   ["10"
+    "7"
+    "18014398509481987"
+    "9223372036854775807"
+    "-9223372036854775808"
+    "-1"],
+   :boolean [true false false]},
+  :scope :focused-checked-javascript-scalar-module,
+  :totals {:tests 6, :assertions 924, :failures 0, :errors 0},
+  :local-code-candidate "63b89baa605605dc82a1bf504cfb2f464f2ed106",
+  :commands "finalnumeric-test-commands.edn",
+  :status :passed,
+  :runtime "Node v20.20.2",
+  :batches
+  [{:log "finalnumeric-required-selector.log",
+    :selectors ["scalar-module-target-execution"],
+    :exit 0,
+    :tests 1,
+    :assertions 426,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 390203833098}
+   {:log "finalnumeric-runtime-regressions.log",
+    :selectors
+    ["scalar-module-boolean-execution"
+     "scalar-module-composed-qst-and-shadowed-call"
+     "scalar-module-runtime-rejections"],
+    :exit 0,
+    :tests 3,
+    :assertions 277,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 1502686835259}
+   {:log "finalnumeric-rejection-regressions.log",
+    :selectors
+    ["scalar-module-rejects-genuine-product-tampering"
+     "scalar-module-rejects-source-and-target-mismatch"],
+    :exit 0,
+    :tests 2,
+    :assertions 221,
+    :failures 0,
+    :errors 0,
+    :elapsed-ns 1235792630943}]},
  :core-verification
  {:status :passed,
   :request-count 154,
@@ -824,7 +1019,7 @@
   "sha256:6106ceb392db3f25eb9a0996df3b08a61fa825403ee96da408957a765434bdc1"},
  :artifact :gravity/checked-js-development-execution-receipt,
  :output-directory "target/acceptance-js",
- :acceptance-checkpoint "142f6cf58f2beaaf218eb5ff67cb4bc53279ab3b",
+ :acceptance-checkpoint "4470a4fbe8fe104b114310cb31d7fd916d77b458",
  :target
  {:target :js-ts,
   :runtime :node20,
@@ -834,33 +1029,32 @@
  :artifact-inventory
  [{:file "program.mjs",
    :sha256
-   "sha256:80a615b58384fd1ba7f027347d5a6060394f67a2fca6cc58b38322ec1e3632c4",
-   :byte-count 8533}
+   "sha256:6fa1c638c4db0fe879d2b9e3a2ffa3459b2991458b47a24b3139c376665960aa",
+   :byte-count 8838}
   {:file "program.d.ts",
    :sha256
    "sha256:2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27",
    :byte-count 294}
   {:file "program.mjs.map",
    :sha256
-   "sha256:4482ce5a31fc0c4afd90adac1db0753e9dce9ed6b80b01ccf9ba636c6787e846",
-   :byte-count 33111}
+   "sha256:aeb2120b923d7f7ed7bbede290043918a75d7124557b31890b9addbf3c1aa87e",
+   :byte-count 33114}
   {:file "package.json",
    :sha256
    "sha256:c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc",
    :byte-count 215}
   {:file "manifest.edn",
    :sha256
-   "sha256:2ddf8f66a9656b8a41d053a5a3e680c6a2a97867f7f6cee8758961d23379819d",
-   :byte-count 214724}
+   "sha256:373f44a3d6e32cabbbf6592b6839434633684f3368abbcbba2c5daccb357334b",
+   :byte-count 215061}
   {:file "provenance.edn",
    :sha256
-   "sha256:f6ba479808d20885e852fa26ab48dd7fac3afdb826bc2c1ff522fdc83d0c07e5",
+   "sha256:a07c29b06822ff08ca60fd17c474ab156665753dd66dc51a86ffec56899a3d20",
    :byte-count 39997}],
- :compiler-checkpoint "398b631408cc465ca24bc8b2f197226a995b63fd",
+ :compiler-checkpoint "4470a4fbe8fe104b114310cb31d7fd916d77b458",
  :acceptance-checkpoint-tree
- "acfe22ed2335289f9be09f1c13927c5c68a183e6",
+ "6c3faf0c9b1839ab0bf6faa7c06999760007637b",
  :required-node-stdout "10\n7\n18014398509481987\n",
- :production-source-unchanged-between-checkpoints true,
  :source-policy-receipt
  {:syntax-owner
   {:artifact-id
@@ -1678,4 +1872,4 @@
   :b1
   "sha256:e6b63fa32885503f4ede7c9f7a0e18253a41c783c188797af8833dc20e9337b7",
   :b6
-  "sha256:09fa32aa34d4fb1e012d92e2baf514f20267da63f6e0d9ff2e51c7f4f3eefdcf"}}
+  "sha256:93486456f4efd71e93c0a239458a5f04cbfd6777ae2eac4244437a8cbb97336f"}}

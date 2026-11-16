@@ -218,11 +218,21 @@ fields.
 | `width` | `64` |
 | `signed` | `true` |
 | `operation` | `":add"` |
+| `operationId` | Original guarded-addition identity, equal to `source.mirInstructionId`. |
+| `checkId` | Actual C11 runtime-check identity. |
+| `operands` | The two already evaluated primitive BigInt operands, in MIR operand order. |
 | `source` | Actual source path, content hash, original span, Core node identity and MIR instruction identity. |
 
 For `score(false, 9223372036854775807n, 1n)`, checked overflow belongs to
 `(+ left right)` on line 10, inside the eager private helper. It must be raised
 before the false branch can return `left`.
+
+These properties preserve the complete scalar C11 numeric-error payload using
+the documented JavaScript names. The `operands` array retains native BigInts;
+there is no automatic JSON conversion. A caller recording JSON must explicitly
+choose a representation, for example `error.operands.map(String)`. Acceptance
+checks the original primitive types before using that decimal-string projection
+to compare with the actual reference error.
 
 ABI failures have `name: "UniformABIError"`, `type: ":error/abi"`, and these
 properties:
@@ -282,12 +292,12 @@ results, error objects and standalone comparison. Its six output files are:
 
 | File | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `program.mjs` | 8,533 | `80a615b58384fd1ba7f027347d5a6060394f67a2fca6cc58b38322ec1e3632c4` |
+| `program.mjs` | 8,838 | `6fa1c638c4db0fe879d2b9e3a2ffa3459b2991458b47a24b3139c376665960aa` |
 | `program.d.ts` | 294 | `2df2f99cafd5c40543bb0847b8908cfe18695b4cc2746033dcba5a59b1aaff27` |
-| `program.mjs.map` | 33,111 | `4482ce5a31fc0c4afd90adac1db0753e9dce9ed6b80b01ccf9ba636c6787e846` |
+| `program.mjs.map` | 33,114 | `aeb2120b923d7f7ed7bbede290043918a75d7124557b31890b9addbf3c1aa87e` |
 | `package.json` | 215 | `c6d0db1953749cca827eada497f3ef5b39926d147218fadc9863585bd91a88cc` |
-| `manifest.edn` | 214,724 | `2ddf8f66a9656b8a41d053a5a3e680c6a2a97867f7f6cee8758961d23379819d` |
-| `provenance.edn` | 39,997 | `f6ba479808d20885e852fa26ab48dd7fac3afdb826bc2c1ff522fdc83d0c07e5` |
+| `manifest.edn` | 215,061 | `373f44a3d6e32cabbbf6592b6839434633684f3368abbcbba2c5daccb357334b` |
+| `provenance.edn` | 39,997 | `a07c29b06822ff08ca60fd17c474ab156665753dd66dc51a86ffec56899a3d20` |
 
 These are execution-specific identities: original absolute source paths and
 selected compiler source identities are part of the evidence. The receipt
@@ -310,6 +320,8 @@ Subsequent attempts remain separate evidence:
 | Second changed source probe | Genuine `:js-ts` source, Core, MIR and runtime-check facts; fresh reports passed and raw MIR stayed pending. |
 | First full backend selector | `B1-INPUT`, missing `:current-target-owner-source-and-api`; reduced compiler plans omit module exports, so the host checked a nonexistent field. Corrected the owner source/function binding check. No target directory was published. |
 | First corrected backend selector | 424 reported checks: 423 passed and one error when the standalone-copy test helper passed a `java.nio.Path` directly to `io/file`. Corrected the helper conversion; this failed selector was not counted as passing. |
+| First remaining regression batches | Stopped with exit 130 for the numeric-payload correction. Boolean execution had returned successfully; the genuine-tamper selector had one attribution assertion failure because its token mutation made a `SubVector` carrier. Replaced that fixture with a plain persistent vector so the intended semantic mutation reaches the genuine-product check. |
+| Numeric-payload review | Initial Node execution passed the listed error fields, but review found C11's check identity and evaluated operands were missing. Added them to the Uniform B6 contract and printer, with exact differential assertions. Prior successful files and logs remain bound to their original checkpoint. |
 | Former legacy JS rejection test | Six assertions still expected the old supported-target list. Updated that list while retaining rejection of the legacy unsupported source route; the complete 10-test namespace then passed 315 assertions. |
 | Expired launcher | The previous scratch-owned Clojure launcher disappeared and returned exit 127. Restored the official CLI locally; this was distinct from a compiler rejection. |
 
@@ -324,6 +336,13 @@ published as `142f6cf58f2beaaf218eb5ff67cb4bc53279ab3b`, tree
 `ce305f2d4d3e5f36a5b10d8c6fb781581c7fb67b`. Test launch snapshots retain exact
 candidate identity and source/test hashes; production bytes did not change
 between the corrected invocation and that test-helper correction.
+
+The complete numeric payload and corrected tamper fixture are published at
+`4470a4fbe8fe104b114310cb31d7fd916d77b458`, tree
+`6c3faf0c9b1839ab0bf6faa7c06999760007637b`, equivalent to local
+`63b89baa605605dc82a1bf504cfb2f464f2ed106`. The source-admission owners stayed
+unchanged. This is the frozen compiler/test checkpoint for final focused
+execution and the regenerated documented output.
 
 ## Focused verification
 
@@ -356,16 +375,25 @@ The actual runtime used for this increment is Node `v20.20.2`; Clojure is
 The Node 24 executable initially on the environment's default PATH is not used
 as Node 20 acceptance evidence.
 
-Remaining regression selectors are recorded after they finish. Completed
-checks are:
+All six focused JavaScript selectors passed on the final numeric checkpoint:
+6 tests, 924 assertions, no failures or errors. The actual Node results include
+renamed three-function `.qst` composition (`20`, `10`), a source-defined `+`
+(`7`, `1`, maximum I64), Boolean results and the exact I64 literal above Number's
+safe-integer range. These are target executions with corresponding genuine C11
+reference/replay checks.
+
+Completed checks are:
 
 | Check | Terminal result |
 | --- | --- |
 | Exact production source-to-module command | Exit 0; all six files emitted, observed Node `v20.20.2`. |
-| Required `scalar-module-target-execution` selector | 1 test, 426 assertions, no failures or errors; six Node results, six corresponding C11 reference/replay checks, artifact/map checks and standalone execution. |
+| Required `scalar-module-target-execution` selector at final numeric checkpoint | 1 test, 426 assertions, no failures or errors; six Node results, six corresponding C11 reference/replay checks, artifact/map checks and standalone execution. |
+| Remaining runtime/Boolean/composition selectors | 3 tests, 277 assertions, no failures or errors; complete numeric error payload, twelve runtime rejection cases, `.qst`, shadowed calls, exact literals and Unicode source positions. |
+| JavaScript source/target and genuine-product rejection selectors | 2 tests, 221 assertions, no failures or errors; twelve source/target refusals, fourteen direct target-owner negatives and genuine application/authority/verifier tampering. |
 | Manual runtime calls on the documented output | Required three values, five additional/boundary values and twelve exact numeric/ABI rejections passed; private helper absent. |
 | Manual copy outside checkout | Required stdout and success/error records matched the original under a cleared environment. |
 | Source application positive/policy/authority group | 5 tests, 280 assertions, no failures or errors; includes retained JVM execution and genuine JS source target. |
+| Original source/MIR invalid and tamper group | 3 tests, 209 assertions, no failures or errors; six source/binding substitutions, ten invalid programs and genuine Core/MIR tampering. |
 | Direct module-analysis regression | 10 tests, 143 assertions, no failures or errors. |
 | Bootstrap module/profile compatibility | 11 tests, 81 assertions, no failures or errors. |
 | Existing JavaScript backend namespace | 10 tests, 315 assertions, no failures or errors. |
@@ -374,6 +402,22 @@ checks are:
 | Full-language roadmap structure | Passed; its coverage snapshot is non-authoritative. |
 | Changed-file lint | 14 Clojure paths, no blocking warnings or errors; 3 unchanged baseline warnings. |
 | Whitespace validation | `git diff --check` passed. |
+
+The final three-selector runtime group completed in 1502.69 seconds; the
+two-selector rejection group completed in 1235.79 seconds. Both exited 0.
+The required selector completed in 390.20 seconds and exited 0. These durations
+describe this recorded environment and are not performance claims.
+
+The final numeric compiler checkpoint's
+[GitHub CI run 43778464329](https://github.com/burn2delete/uniform/actions/runs/43778464329)
+completed with 11 successful jobs, two skipped jobs and one failed `macro` job.
+Its `macro-pipeline-cohort` command reached the existing 900-second watchdog
+and ended `:timeout`, exit 124. The following `macro-receipt-controls` and
+`macro-bootstrap-compatibility` commands both passed. The cause of the cohort
+timeout is not established; it is an unresolved hosted-CI result, not a passing
+check or an attributed baseline failure. No CI configuration or timeout was
+changed. Local focused acceptance is complete; hosted CI and normal integration
+review remain separate from these development results.
 
 Required repository gates:
 
