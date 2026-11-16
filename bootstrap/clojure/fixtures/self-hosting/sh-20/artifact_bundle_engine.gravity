@@ -38,10 +38,6 @@
    :schema-version 1
    :canonical-encoding :gravity/canonical-edn-v1
    :artifact-kinds #{:object :executable}
-   :maximum-source-map-entries 128
-   :maximum-origin-entries 16
-   :maximum-dependencies 128
-   :maximum-dependency-edges 256
    :diagnostics #{"B13-SCHEMA"
                   "B13-HASH"
                   "B13-PROVENANCE"
@@ -122,9 +118,7 @@
 
 (defn sh20-origin-chain-valid? [entries]
   (if (vector? entries)
-    (if (<= (count entries) 16)
-      (sh20-origin-chain-valid-from? entries 0)
-      false)
+    (sh20-origin-chain-valid-from? entries 0)
     false))
 
 (defn sh20-source-span-valid? [span]
@@ -212,9 +206,7 @@
 
 (defn sh20-references-valid? [references]
   (if (vector? references)
-    (if (<= (count references) 128)
-      (sh20-references-valid-from? references 0)
-      false)
+    (sh20-references-valid-from? references 0)
     false))
 
 (defn sh20-outcomes-valid-from? [outcomes index seen]
@@ -341,9 +333,7 @@
   (let [entries (get request :source-map)]
     (if (vector? entries)
       (if (> (count entries) 0)
-        (if (<= (count entries) 128)
-          (sh20-source-map-valid-from? entries 0 -1)
-          false)
+        (sh20-source-map-valid-from? entries 0 -1)
         false)
       false)))
 
@@ -379,15 +369,13 @@
            values (+ index 1) (conj seen value)))
         false))))
 
-(defn sh20-keywords-valid? [values maximum allow-empty]
+(defn sh20-keywords-valid? [values allow-empty]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (if allow-empty
+    (if allow-empty
+      (sh20-keywords-valid-from? values 0 #{})
+      (if (> (count values) 0)
         (sh20-keywords-valid-from? values 0 #{})
-        (if (> (count values) 0)
-          (sh20-keywords-valid-from? values 0 #{})
-          false))
-      false)
+        false))
     false))
 
 (defn sh20-target-valid? [request]
@@ -401,9 +389,9 @@
                 (if (keyword? (get target :runtime-family))
                   (if
                    (sh20-keywords-valid?
-                    (get target :runtime-providers) 32 false)
+                    (get target :runtime-providers) false)
                     (sh20-keywords-valid?
-                     (get target :target-features) 32 false)
+                     (get target :target-features) false)
                     false)
                   false)
                 false)
@@ -446,12 +434,10 @@
 (defn sh20-dependencies-valid? [request]
   (let [dependencies (get request :dependencies)]
     (if (vector? dependencies)
-      (if (<= (count dependencies) 128)
-        (sh20-dependencies-valid-from?
-         dependencies 0
-         #{(get request :artifact-node-id)}
-         #{(get request :artifact-id)})
-        false)
+      (sh20-dependencies-valid-from?
+       dependencies 0
+       #{(get request :artifact-node-id)}
+       #{(get request :artifact-id)})
       false)))
 
 (defn sh20-dependency-node-from [dependencies node-id index]
@@ -542,13 +528,11 @@
       (if (integer? artifact-ordinal)
         (if (= artifact-ordinal (+ (count dependencies) 1))
           (if (vector? edges)
-            (if (<= (count edges) 256)
-              (if
-               (sh20-edges-valid-from?
-                request edges 0 #{} #{})
-                (sh20-all-dependencies-referenced-from?
-                 dependencies edges 0)
-                false)
+            (if
+             (sh20-edges-valid-from?
+              request edges 0 #{} #{})
+              (sh20-all-dependencies-referenced-from?
+               dependencies edges 0)
               false)
             false)
           false)
@@ -567,10 +551,10 @@
             (get record :timestamp-policy))
             (if
              (sh20-keywords-valid?
-              (get record :nondeterminism) 32 true)
+              (get record :nondeterminism) true)
               (if
                (sh20-keywords-valid?
-                (get record :declared-environment) 32 false)
+                (get record :declared-environment) false)
                 (sh20-boolean? (get record :reproducible))
                 false)
               false)

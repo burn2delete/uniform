@@ -436,6 +436,17 @@
         (is (= :meta (get-in bundle [:manifest :profile])))
         (is (= :portable-mir
                (get-in bundle [:manifest :target])))
+        (is (= false (:release-grade artifact-request)
+               (get-in bundle [:manifest :release-grade])))
+        (is (nil? (:release-evidence bundle)))
+        (is (= (:source-map artifact-request)
+               (get-in bundle [:source-map :entries])))
+        (is (= (:dependencies artifact-request)
+               (get-in bundle [:dependency-graph :nodes])
+               (get-in bundle [:identity-input :dependencies])))
+        (is (= (:dependency-edges artifact-request)
+               (get-in bundle [:dependency-graph :edges])
+               (get-in bundle [:identity-input :dependency-edges])))
         (is (= :passed
                (:status
                 (invoke
