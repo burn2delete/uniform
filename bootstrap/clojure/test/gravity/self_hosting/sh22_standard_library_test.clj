@@ -198,7 +198,7 @@
     (is (= :gravity/sh22-bootstrap-library-policy (:artifact policy)))
     (is (= 1 (:version policy)))
     (is (true? (:experimental-opt-in-required policy)))
-    (is (= 25 (count (:operation-set policy))))
+    (is (= 26 (count (:operation-set policy))))
     (is (contains? (:diagnostics policy) "STD3002"))
     (is (contains? (:diagnostics policy) "STD8001"))
     (is (some #{:authenticated-sh19-runtime-services}
@@ -209,7 +209,8 @@
     (is (= 'gravity.stdlib.self-hosting-core (:module manifest)))
     (is (= :experimental (:stability manifest)))
     (is (empty? (:unsafe-islands manifest)))
-    (is (= 25 (count exports)))
+    (is (= 26 (count exports)))
+    (is (= (:operation-set policy) (set (map :name exports))))
     (is (every? #(= :experimental (:stability %)) exports))
     (is (every? #(= #{:meta} (:profiles %)) exports))
     (is (every? string? (map :type exports)))
@@ -478,6 +479,148 @@
       (is (= 42 (get-in add-result [:value :value])))
       (is (= :checked-i64
              (get-in add-result [:facts :numeric-mode]))))))
+
+(defn- observe-utf8-encoding [input]
+  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original @scoped
+        calls (atom 0)
+        result (with-redefs-fn
+                 {scoped (fn [& arguments]
+                           (when (= 'sh22-utf8-encode-scalars (nth arguments 2))
+                             (swap! calls inc))
+                           (apply original arguments))}
+                 #(handle input))]
+    [result @calls]))
+
+(deftest utf8-encoding-matches-jdk-and-composes-with-validation
+  (let [export (first (filter #(= :utf8-encode (:name %))
+                              (:exports (invoke-engine 'sh22-module-manifest []))))]
+    (is (= :text (:family export)))
+    (is (= :experimental (:stability export)))
+    (is (= #{:meta} (:profiles export)))
+    (is (= "(Vector Scalar) -> (Result (Vector Byte) TextError)" (:type export)))
+    (is (= #{:memory/allocate} (:effects export)))
+    (is (= #{} (:capabilities export)))
+    (is (= :bounded-by-input (:allocation export))))
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (assoc (request plan 'sh22-utf8-request) :operation :utf8-encode)]
+      (doseq [scalars [[] [0] [63 64] [127] [128] [2047] [2048] [4095 4096]
+                       [55295] [57344] [65535] [65536]
+                       [262143 262144 524287 524288 786431 786432 1048575 1048576]
+                       [1114111] [0N 1114111N] [65 8364 128512] [101 769] [233]
+                       [0 127 128 2047 2048 55295 57344 65535 65536 1114111]
+                       (subvec [0 65 1114111 0] 1 3)
+                       (vec (repeat 257 1114111))]]
+        (let [input (assoc base :arguments [scalars])
+              [result calls] (observe-utf8-encoding input)
+              ;; JDK is an independent oracle, never the encoder implementation.
+              expected (mapv #(bit-and 255 %)
+                             (.getBytes (String. (int-array scalars) 0 (count scalars))
+                                        java.nio.charset.StandardCharsets/UTF_8))
+              validation-input (assoc input :operation :utf8-validate
+                                      :arguments [(:value result)])
+              validation (handle validation-input)]
+          (is (= :accepted (:status result)))
+          (is (= 1 calls))
+          (is (vector? (:value result)))
+          (is (= expected (:value result)))
+          (is (= {:text-kind :utf8-bytes :encoding :utf-8
+                  :boundary-policy :unicode-scalar :normalization :none
+                  :allocation :bounded-by-input}
+                 (:facts result)))
+          (is (= [scalars] (:arguments input) (get-in result [:identity-input :arguments])))
+          (is (= (select-keys input [:actual-source-path :source-span :origin-chain])
+                 (:provenance result)))
+          (is (= :accepted (:status validation)))
+          (is (= expected (get-in validation [:value :bytes])))
+          (is (= (count expected) (get-in validation [:value :byte-count])))
+          (is (= (count scalars) (get-in validation [:value :scalar-count])))
+          (doseq [[subject candidate] [[input result] [validation-input validation]]]
+            (is (= :passed (:status (invoke-engine 'sh22-verify-result [subject candidate]))))))))))
+
+(deftest utf8-encoding-rejects-invalid-scalars-and-result-substitution
+  (let [base (assoc (request accepted-gravity-plan 'sh22-utf8-request)
+                    :operation :utf8-encode)]
+    (doseq [scalar [-1 55296 56319 56320 57343 1114112
+                    Long/MIN_VALUE Long/MAX_VALUE 9223372036854775808N
+                    1/2 65.0 65M nil false \A :scalar 'scalar
+                    "A" [] {} #{65} '(throw "inert")]]
+      (let [input (assoc base :arguments [[65 8364 scalar]])
+            [result calls] (observe-utf8-encoding input)]
+        (is (= :rejected (:status result)))
+        (is (zero? calls))
+        (is (= ["STD4001" :invalid-unicode-scalar]
+               ((juxt :rule :reason) (first (:diagnostics result)))))
+        (is (not (contains? result :value)))
+        (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+    (doseq [[arguments rule reason]
+            [[[] "STD1001" :invalid-arity]
+             [[[] []] "STD1001" :invalid-arity]
+             [[nil] "STD4001" :expected-scalar-vector]
+             [[false] "STD4001" :expected-scalar-vector]
+             [["A"] "STD4001" :expected-scalar-vector]
+             [[#{65}] "STD4001" :expected-scalar-vector]
+             [['(65)] "STD4001" :expected-scalar-vector]
+             [[{:scalars [65]}] "STD4001" :expected-scalar-vector]]]
+      (let [input (assoc base :arguments arguments)
+            [result calls] (observe-utf8-encoding input)]
+        (is (= :rejected (:status result)))
+        (is (zero? calls))
+        (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
+        (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))))
+    (let [input (assoc base :arguments [[65]])
+          result (handle input)]
+      (doseq [candidate [(assoc result :value [66])
+                         (assoc result :value [192 129])
+                         (assoc result :operation :utf8-validate)
+                         (assoc-in result [:facts :normalization] :nfc)
+                         (assoc-in result [:facts :allocation] :none)
+                         (assoc-in result [:identity-input :arguments] [[66]])
+                         (assoc-in result [:provenance :source-span :end] 65)
+                         (handle (assoc input :arguments [[66]]))]]
+        (let [verification (invoke-engine 'sh22-verify-result [input candidate])]
+          (is (= :rejected (:status verification)))
+          (is (= :library-result-substitution
+                 (get-in verification [:diagnostics 0 :reason]))))))))
+
+(deftest utf8-encoding-rejects-missing-authority-and-malformed-carriers
+  (let [base (assoc (request accepted-gravity-plan 'sh22-utf8-request)
+                    :operation :utf8-encode :arguments [[]])
+        callbacks (atom 0)
+        deny #(do (swap! callbacks inc) (throw (AssertionError. "encoder payload callback")))
+        opaque (proxy [Object] []
+                 (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        backing (proxy [clojure.lang.APersistentVector] []
+                  (count [] (deny)) (nth [_] (deny)) (assocN [_ _] (deny))
+                  (cons [_] (deny)) (empty [] (deny)) (pop [] (deny)))
+        malformed-view (clojure.lang.APersistentVector$SubVector. nil backing 0 1)]
+    (doseq [[input rule reason]
+            [[(assoc base :effects #{}) "STD1002" :undeclared-library-effect]
+             [(assoc base :effects #{:memory/allocate :io/write}) "STD1002" :undeclared-library-effect]
+             [(assoc base :capabilities #{:fs/read}) "STD1003" :unexpected-library-capability]
+             [(assoc base :allocation-policy :none) "STD1001" :allocation-policy-mismatch]
+             [(assoc base :experimental-opt-in false) "STD1001" :malformed-library-request]
+             [(assoc base :profile :core) "STD1001" :malformed-library-request]
+             [(assoc base :arguments '(65)) "STD1001" :malformed-library-request]
+             [(assoc base :arguments [malformed-view]) "STD1001" :malformed-library-request]
+             [(assoc base :arguments [(clojure.lang.PersistentArrayMap. (object-array [:dangling]))])
+              "STD1001" :malformed-library-request]
+             [(assoc base :arguments [(conj (vec (repeat 257 1114111)) 55296)])
+              "STD4001" :invalid-unicode-scalar]
+             [(assoc base :arguments [[65 opaque]]) "STD4001" :invalid-unicode-scalar]
+             [(assoc base :arguments [[65 deny]]) "STD4001" :invalid-unicode-scalar]]]
+      (let [[result calls] (observe-utf8-encoding input)]
+        (is (= :rejected (:status result)))
+        (is (zero? calls))
+        (is (not (contains? result :value)))
+        (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
+        (is (= (:source-span input) (get-in result [:diagnostics 0 :source-span])))
+        (is (= (:origin-chain input) (get-in result [:diagnostics 0 :origin-chain])))
+        (is (= :passed (:status (invoke-engine 'sh22-verify-result [input result]))))
+        (is (= :rejected
+               (:status (invoke-engine 'sh22-verify-result
+                                       [input (assoc-in result [:diagnostics 0 :reason] :forged)]))))))
+    (is (zero? @callbacks))))
 
 (deftest sh22-builds-errors-artifact-data-and-stable-meta-views
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
