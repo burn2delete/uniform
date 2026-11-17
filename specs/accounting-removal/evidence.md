@@ -2486,7 +2486,7 @@ unrestricted. The run identifies the active call as
 `sh07-core-from-resolution-artifact`. It supplies no timing breakdown within
 that call, assertion result, commit, or tree.
 
-The path selector now builds its upstream pair from the repository's
+For that run's repair, the path selector built its upstream pair from the repository's
 [`profile-accepted-meta.gravity`](../../bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity),
 which exports one integer literal definition. SH-09 selects the first type
 fact for its pure operation and SH-10 selects fact index zero for its
@@ -2495,6 +2495,27 @@ for that shared lineage. This reduces the source that checked-Core constructs
 and replays. The selector still requires fresh Core, Type, Effect, Ownership,
 envelope and C10 verification. The broader SAFE1 and tamper selectors continue
 to use their original upstream fixtures.
+
+The controller's exact selector on the single-definition repository fixture
+exited 124. Stderr recorded entry to `:current-syntax`,
+`:current-macro-expansion`, `:current-resolution`, `:checked-core`, and
+`:fresh-checked-core-verification`. Stdout contained only the namespace's
+`Testing` line. Capture was complete, the writer ended, and the controller
+marked the result unrestricted. No assertion count, stage durations, commit,
+or tree were supplied.
+
+The fresh Core verifier verifies the supplied resolution artifact and
+reconstructs the expected Core from it. Both operations process the source
+form and token evidence. The revised path selector writes a standalone UTF-8
+`input.gravity` with one exported integer and only the profile, export and
+safety clauses. The module parser supplies the JVM target and empty effect
+and capability sets. Both upstream producers consume the verified result
+before the fixture removes the temporary file. Assertions check their exact
+captured paths, `/checkout-a/safety-input.gravity/effect` and
+`/checkout-a/safety-input.gravity/ownership`. The 4,352-character path is
+introduced only when sealing the second SH-11 request. Stage markers now
+include JVM uptime so a subsequent capture can distinguish time already
+spent in construction from time spent in replay.
 
 The table records authored assertions. No worker execution, exact-revision
 pass receipt, or independent acceptance is available for this repair.

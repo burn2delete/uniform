@@ -946,5 +946,11 @@ The next exact run reached checked-Core construction and timed out before
 fresh Core verification. The path selector now builds both upstream products
 from one exported integer definition through the existing verified pipeline.
 The broader SAFE1 and lineage selectors retain the paired primitive fixtures.
-Controller checks of this revision and independent acceptance remain pending. ACC-13 stays
-open. See the [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
+
+With that definition the controller reached fresh Core verification and timed
+out there (exit 124). The path selector now uses a standalone module with the
+same exported integer, explicit safe mode, and default JVM target and empty
+authority sets. It also checks both upstream producer paths. The controller
+has yet to observe a completed path comparison. ACC-13 remains open pending
+verification and independent acceptance. See the
+[scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).

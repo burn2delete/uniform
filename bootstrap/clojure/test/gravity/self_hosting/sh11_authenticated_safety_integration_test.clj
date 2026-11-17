@@ -156,7 +156,8 @@
 
 (defn- fixture-stage [stage]
   (binding [*out* *err*]
-    (println "SH-11 fixture stage" stage)
+    (println "SH-11 fixture stage" stage
+             "JVM uptime (ms)" (.getUptime (java.lang.management.ManagementFactory/getRuntimeMXBean)))
     (flush)))
 
 (defn- require-status! [stage expected result]
@@ -324,6 +325,21 @@
 
 (def ^:private current-gravity-upstream (primitive-upstream ".gravity"))
 (def ^:private current-qst-upstream (primitive-upstream ".qst"))
+
+(defn- path-control-upstream []
+  ;; Each source token and form is carried through resolution and the fresh
+  ;; Core replay. One exported literal supplies the fact both producers use.
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh11-" (make-array java.nio.file.attribute.FileAttribute 0))
+        source (.resolve directory "input.gravity")]
+    (try
+      (spit (.toFile source)
+            "(ns path.input (:profile :meta) (:exports [x]) (:safety :safe))\n(def x 1)\n"
+            :encoding "UTF-8")
+      (current-upstream-products (.getCanonicalPath (.toFile source)) ".gravity")
+      (finally
+        (java.nio.file.Files/deleteIfExists source)
+        (java.nio.file.Files/delete directory)))))
 
 (defn- fact-links [upstream]
   (let [effected (get-in upstream [:effect :effected-core])
@@ -1053,11 +1069,7 @@
       (is (= :rejected (:status result-rejection))))))
 
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
-  ;; Both upstream producers consume the first type fact. One literal definition
-  ;; supplies it through the same checked-Core build and fresh verification.
-  (let [upstream (current-upstream-products
-                  (path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity")
-                  ".gravity")
+  (let [upstream (path-control-upstream)
         short-path "/checkout-a/safety-input.gravity"
         long-path (str "/checkout-b/"
                        (apply str (repeat 160 "relocated-source-directory/"))
@@ -1079,6 +1091,10 @@
         provenance-a (get-in prepared-a [:authenticated :provenance-root])
         provenance-b (get-in prepared-b [:authenticated :provenance-root])]
     (is (> (count long-path) 4096))
+    (is (= (str short-path "/effect")
+           (get-in upstream [:effect :effected-core :provenance :actual-source-path])))
+    (is (= (str short-path "/ownership")
+           (get-in upstream [:ownership :owned-core :provenance :actual-source-path])))
     (doseq [run [run-a run-b]]
       (is (= :accepted (get-in run [:c10-request :status])))
       (is (= :passed (get-in run [:safety-verification :status])))
