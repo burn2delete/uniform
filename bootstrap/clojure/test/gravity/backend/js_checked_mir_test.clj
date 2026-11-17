@@ -272,6 +272,16 @@
                          (assoc-in [:x_gravity :generatedOrigins] origins))]
         (is (= (str (printer/json-source expected) "\n")
                (printer/source-map-source program source-text {:lines lines})))))
+    (testing "A sole mapped printer line has one trailing separator and no leading gap"
+      (let [origin (assoc later-origin :sourceSpan {:line 2 :column 3 :column-unit :unicode-scalar})
+            expected-origin (assoc origin :generatedLine 1 :generatedColumn 16
+                                   :sourceColumn 3 :sourceColumnUnit "utf16-code-unit")
+            expected (-> expected-map
+                         (assoc :mappings "gBACG;")
+                         (assoc-in [:x_gravity :generatedOrigins] [expected-origin]))]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text
+                                          {:lines [{:text "                only" :origin origin}]})))))
     (testing "Unmapped output still includes the final empty line"
       (let [expected (assoc expected-map :mappings ";;;;;;;")]
         (is (= (str (printer/json-source expected) "\n")

@@ -202,12 +202,14 @@
 
 (def ^:private base64-digits "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
-(defn- vlq [number]
-  (loop [value (if (neg? number) (inc (* -2 number)) (* 2 number)) result ""]
-    (let [digit (bit-and value 31) remainder (unsigned-bit-shift-right value 5)]
-      (if (zero? remainder)
-        (str result (.charAt ^String base64-digits digit))
-        (recur remainder (str result (.charAt ^String base64-digits (bit-or digit 32))))))))
+(defn- append-vlq! [^StringBuilder mappings number]
+  (loop [value (if (neg? number) (inc (* -2 number)) (* 2 number))]
+    (let [digit (bit-and value 31)
+          remainder (unsigned-bit-shift-right value 5)
+          more? (not (zero? remainder))]
+      (.append mappings (.charAt ^String base64-digits (if more? (bit-or digit 32) digit)))
+      (when more?
+        (recur remainder)))))
 
 (defn source-map-source [program source-text emitted]
   (let [lines (:lines emitted)
@@ -230,19 +232,20 @@
         ;; The printer terminates its output with a newline, leaving a final empty line.
         final-line (inc (count lines))
         result (StringBuilder.)
-        mappings (loop [remaining (seq origins) generated-line 1 source-line 0 source-column 0]
+        mappings (loop [remaining (seq origins) previous-generated-line 1 source-line 0 source-column 0]
                    (let [origin (first remaining)
-                         next-generated-line (or (:generatedLine origin) final-line)]
+                         generated-line (or (:generatedLine origin) final-line)]
                      ;; Each separator advances one generated line. Only segments change source deltas.
-                     (dotimes [_ (- next-generated-line generated-line)]
+                     (dotimes [_ (- generated-line previous-generated-line)]
                        (.append result \;))
                      (if origin
                        (let [next-source-line (dec (:sourceLine origin))
                              next-source-column (:sourceColumn origin)]
-                         (.append result (str (vlq (:generatedColumn origin)) "A"
-                                              (vlq (- next-source-line source-line))
-                                              (vlq (- next-source-column source-column))))
-                         (recur (next remaining) next-generated-line next-source-line next-source-column))
+                         (append-vlq! result (:generatedColumn origin))
+                         (.append result \A)
+                         (append-vlq! result (- next-source-line source-line))
+                         (append-vlq! result (- next-source-column source-column))
+                         (recur (next remaining) generated-line next-source-line next-source-column))
                        (str result))))]
     (str (json-source
           {:version 3 :file "program.mjs" :sources [(get-in program [:source :path])]
