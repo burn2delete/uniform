@@ -210,7 +210,8 @@
         (recur remainder (str result (.charAt ^String base64-digits (bit-or digit 32))))))))
 
 (defn source-map-source [program source-text emitted]
-  (let [source-lines (str/split source-text #"\r\n|\r|\n" -1)
+  (let [lines (:lines emitted)
+        source-lines (str/split source-text #"\r\n|\r|\n" -1)
         origins (into []
                       (keep-indexed
                        (fn [index {:keys [text origin]}]
@@ -225,13 +226,14 @@
                              (assoc origin :generatedLine (inc index)
                                            :generatedColumn (- (count text) (count (str/triml text)))
                                            :sourceColumn column :sourceColumnUnit "utf16-code-unit")))))
-                      (:lines emitted))
+                      lines)
         ;; The printer terminates its output with a newline, leaving a final empty line.
-        final-line (inc (count (:lines emitted)))
+        final-line (inc (count lines))
         result (StringBuilder.)
         mappings (loop [remaining (seq origins) generated-line 1 source-line 0 source-column 0]
                    (let [origin (first remaining)
                          next-generated-line (or (:generatedLine origin) final-line)]
+                     ;; Each separator advances one generated line. Only segments change source deltas.
                      (dotimes [_ (- next-generated-line generated-line)]
                        (.append result \;))
                      (if origin

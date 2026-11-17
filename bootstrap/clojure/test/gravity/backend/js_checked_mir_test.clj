@@ -338,6 +338,7 @@
     (is (not= "source-unit-only" (get-in source-map ["x_gravity" "coverage"])))
     (let [origins (get-in source-map ["x_gravity" "generatedOrigins"])
           decoded (decoded-source-map (get source-map "mappings"))
+          final-line (count (str/split (slurp (:javascript paths)) #"\n" -1))
           core-ids (set (map :node-id (get-in application [:checked-core :core-nodes])))
           function-ids (set (map :fn-id (vals (get-in application [:mir-module :functions]))))
           addition (first (filter #(= :integer-add (:opcode %))
@@ -347,18 +348,22 @@
       (is (seq addition-origins) "A numeric failure maps to its original addition")
       (is (every? #(= 10 (get % "sourceLine")) addition-origins))
       (is (> (count (set (map #(get % "sourceLine") origins))) 1))
+      (is (= final-line (count decoded)))
+      (is (= [] (get decoded final-line)) "The final generated line is unmapped")
+      (is (= (for [origin origins]
+               {:generated-line (get origin "generatedLine")
+                :generated-column (get origin "generatedColumn")
+                :source 0 :source-line (get origin "sourceLine")
+                :source-column (get origin "sourceColumn")})
+             (for [[line segments] (sort-by key decoded)
+                   segment segments]
+               (assoc segment :generated-line line)))
+          "Standard v3 mappings agree with the complete ordered list of generated origins")
       (doseq [origin origins]
         (is (vector? (get origin "originChain")))
         (is (contains? core-ids (get origin "coreNodeId")))
         (is (contains? function-ids (get origin "functionId")))
-        (is (content-id? (get origin "syntaxId")))
-        (is (some #{(select-keys
-                     {:generated-column (get origin "generatedColumn")
-                      :source 0 :source-line (get origin "sourceLine")
-                      :source-column (get origin "sourceColumn")}
-                     [:generated-column :source :source-line :source-column])}
-                  (get decoded (get origin "generatedLine")))
-            "Generated-origin coordinates agree with the actual standard v3 mappings")))
+        (is (content-id? (get origin "syntaxId")))))
     (is (str/includes? (slurp (:typescript-declarations paths)) "bigint"))
     (is (str/includes? (slurp (:typescript-declarations paths)) "boolean"))
     (is (str/includes? (slurp (:typescript-declarations paths)) "score"))
