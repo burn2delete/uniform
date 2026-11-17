@@ -233,3 +233,25 @@ clojure -M tools/validate_full_language_roadmap.clj
 
 Build still needs an actual affected consumer reuse decision. The parent task
 remains open pending its full acceptance criteria and independent acceptance.
+
+### Standalone artifact projector repair
+
+For base `378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`5073db94eda2de03dc0c491605858dec1fe156f9`, tree
+`a1b636e52cde98634efb460750bdbd188a0a0caf`, review reported that the five
+checks above passed. Review also identified a private macro that the two
+Reader identity tests could not resolve when compiling the artifact projector
+in a fresh namespace.
+
+The repair writes the graph preimage directly in each projection. The
+invalidation fixture now supplies an edge with a kind, boundary, semantic
+span and physical source span to the existing independent digest comparison.
+The Reader fixtures exercise the actual standalone artifact form, compare its
+complete preimage and detect dropped or altered identity fields.
+
+Controller verification is pending for this repair. The selection includes
+the five commands above and the full Reader identity namespace:
+
+```bash
+clojure -M:dev-test --namespace gravity.reader.ci-identity-test --fail-fast
+```

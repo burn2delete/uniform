@@ -2059,13 +2059,6 @@
    {:lexical-scopes @scopes, :references @references})))
 
 
-;; Expand into the existing tracked callers without a replaceable runtime Var.
-(defmacro ^:private dependency-graph-preimage [graph]
-  `(let [graph# ~graph]
-     {:domain :gravity/sh06-dependency-graph-v1
-      :nodes (:nodes graph#)
-      :edges (mapv #(dissoc % :source-span) (:edges graph#))}))
-
 (defn
  product-projections
  [analysis operations]
@@ -2076,6 +2069,7 @@
    (.valAt
     ^clojure.lang.ILookup operations
     :sh06-resolution-order-compatibility)
+   graph (:dependency-graph analysis)
    compatibility-resolutions
    (mapv
     (fn*
@@ -2097,7 +2091,9 @@
       :inputs (:incremental-invalidation-inputs analysis),
       :dependency-graph-id
       (reader-canonical-hash
-       (dependency-graph-preimage (:dependency-graph analysis)))})},
+       {:domain :gravity/sh06-dependency-graph-v1
+        :nodes (:nodes graph)
+        :edges (mapv #(dissoc % :source-span) (:edges graph))})})},
    :import-export-table
    {:artifact :gravity/c5-import-export-table,
     :status :complete,
@@ -2105,7 +2101,7 @@
     :exports (:exports analysis)},
    :dependency-graph
    (assoc
-    (:dependency-graph analysis)
+    graph
     :artifact
     :gravity/c5-module-dependency-graph
     :status
@@ -2171,7 +2167,8 @@
  [artifact chunks operations]
  (let
   [reader-canonical-hash
-   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)]
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   graph (:dependency-graph artifact)]
   {:task (:task artifact),
    :upstream-syntax-stream-id
    (get-in artifact [:sh05-macro-artifact :expanded-syntax-stream-id]),
@@ -2190,7 +2187,9 @@
      :source-revision-id]),
    :dependency-graph-id
    (reader-canonical-hash
-    (dependency-graph-preimage (:dependency-graph artifact))),
+    {:domain :gravity/sh06-dependency-graph-v1
+     :nodes (:nodes graph)
+     :edges (mapv #(dissoc % :source-span) (:edges graph))}),
    :slice (:slice artifact),
    :kind (:kind artifact),
    :resolution-chunks (:resolution-chunks chunks),

@@ -123,6 +123,11 @@ v1 key on `:invalidation-current?`. The actual Build consumer reuse decision,
 remaining index criteria and independent acceptance of `resolve/4` are pending.
 [Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
 
+Review of candidate `5073db94eda2de03dc0c491605858dec1fe156f9` found that
+the Reader identity tests could no longer load the artifact projector in
+isolation. The standalone projector repair and its populated-edge fixture
+await [controller verification](evidence.md#standalone-artifact-projector-repair).
+
 <!-- macro-source-definition-index:start -->
 
 Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.

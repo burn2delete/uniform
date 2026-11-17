@@ -334,7 +334,10 @@
                   :alias-table [{:alias 'lib}]
                   :dependency-records [{:namespace 'library}]
                   :exports ['value] :lexical-scope-graph [{:scope-id "scope"}]
-                  :dependency-graph {:nodes ['consumer 'library] :edges []}
+                  :dependency-graph {:nodes ['consumer 'library]
+                                     :edges [{:from 'consumer :to 'library :kind :namespace
+                                              :boundary :pure-core-api :semantic-span {:dependency-edge 0}
+                                              :source-span {:line-start 4}}]}
                   :cross-profile-edge-report [{:boundary :pure-core-api}]
                   :incremental-invalidation-inputs {:imports ['library]}}
         product (resolution/product-projections analysis ops)]
