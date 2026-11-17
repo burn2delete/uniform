@@ -205,3 +205,80 @@ at `/tmp/finite-domain-ci-current-main`. The 53-command source-only projection
 CI observation above retains its earlier subject; it is not relabelled as
 fresh exact-head GitHub CI. Current exact-head CI remains required after the
 independent affected-composition review and before coordinator integration.
+
+## Compatibility pipeline reference consistency
+
+Date: 2026-11-06. Finding:
+`compiler.pipeline-manifest.registry-reference-consistency-v1`.
+Task: [pipeline](tasks.md#pipeline), still Open; implementation acceptance is
+unassessed. Worktree supplied by the controller: `increment-1271`. No exact
+commit/tree identity was supplied or inspected for this uncommitted increment;
+the controller must bind its actual check and review subject. Historical
+revision identities and results above are not current verification evidence.
+The local `speckit-implement` skill guided this bounded change.
+
+Authored changes are confined to the owned pipeline validator, new
+`bootstrap/clojure/test/gravity/compiler_pass_manifest/pipeline_references_test.clj`,
+and appendices in this evidence and [plan](plan.md#compatibility-pipeline-reference-consistency).
+`tasks.md` is unchanged, preserving all canonical predicates and statuses.
+The new validator checks the compatibility manifest's ordered stages and unique
+registry coverage only after existing refusals. New diagnostics select context
+without copying reference payloads and supply fixed field/reason values.
+
+Authored accepted fixtures: `default-manifest-preserved`,
+`reordered-contract-references`,
+`reordered-registry-with-matching-references`, and
+`additional-manifest-metadata-preserved`. Each exercises public validation and
+the actual artifact constructor and compares retained manifest/registry/profile
+metadata and upstream provenance fields.
+
+Authored rejected fixtures: `omitted-stage-reference`,
+`reordered-stage-reference`, `foreign-stage-reference`,
+`omitted-contract-reference`, `foreign-contract-reference`,
+`duplicate-contract-reference`, and `malformed-secret-marker-references`.
+Additional controls cover empty vectors, duplicate stages, duplicates replacing
+a required contract reference, coverage of an additional declared registry
+identity, simultaneous field errors and all earlier refusal classes. Malformed
+string/map/set/list collections and vector members carry a private marker;
+fixtures assert its absence from complete diagnostic data and exception text.
+Rejected constructor calls must throw the same diagnostic as public validation
+and return no artifact. These are authored expectations, not observed results.
+
+Actual observations: passive reads of current contracts, feature artifacts,
+validator, suite, constructor, diagnostic carrier and compatibility tests;
+manual source inspection after authoring. A combined patch preparation failed
+because its plan context did not match; the corrected patch used the actual
+append location. No executable verification, test count, exit status or passing
+check is claimed. No denied operation occurred during this increment.
+
+Verification is controller-owned: no test/build/check commands or Git commands
+were executed, including the otherwise requested `git status --short` and Git
+whitespace checks. No Git/cache inspection, retained candidate, process
+enumeration, network, credential, GitHub or ref operation was used. Retained
+the907/select23/review50/review53 denials (including B709/C5f5 and C154 snapshots
+and focused tests), Build1173 and environment-scope1176 remain restricted and
+must not be retried through these proposals or another runner. The following
+are unrun argument vectors for controller selection only, not authority to
+replay a retained denied job:
+
+```clojure
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.compiler-pass-manifest.pipeline-references-test"]
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The compiler facade remains bootstrap-hosted, compatibility-only and
+noncanonical. No actual stage execution, stage-content authentication, canonical
+content-addressed references, proof validation or whole-C1 completion is claimed.
+The D1/C1 order ambiguity is unchanged. Shared-file composition with retained
+registry work and PR1264/PR767, current independent acceptance and integration
+remain controller work with their own exact evidence. This increment grants no
+release, self-hosting, seed-retirement or integration authority and adds no
+project/input quotas.
