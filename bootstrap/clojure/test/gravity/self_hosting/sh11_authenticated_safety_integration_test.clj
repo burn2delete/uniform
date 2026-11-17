@@ -182,6 +182,46 @@
 (def ^:private sh08-qst
   (delay (authenticated-sh08-products ".qst")))
 
+(defn- current-type-products [extension]
+  ;; Use the authenticated current-source development entrypoints for these
+  ;; fixtures. Carry the same source selection into fresh SH-07 verification.
+  (let [source-path (sh08-call 'fixture-path "accepted" "primitive-if-join" extension)
+        reader-path (path bootstrap/sh03-reader-source-relative-path)
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection
+                    {:schema :gravity/sh04-development-syntax-selection-v1
+                     :source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
+                    :macro-source-mode :development-current}
+        resolution (bootstrap/compiler-c5-resolution-source-artifact
+                    source-path (bootstrap/read-gravity-source-text source-path)
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                    reader-path invocation)
+        core (bootstrap/sh07-core-from-resolution-artifact resolution invocation)
+        products (merge {:source-path source-path
+                         :sh07-artifact core
+                         :sh07-verification (bootstrap/sh07-core-artifact-verification core invocation)}
+                        (sh08-call 'c7-result core))
+        actual-path (str "/checkout-a/sh08-input" extension)
+        descriptor (sh08-call 'descriptor products actual-path)
+        authenticated (sh08-call 'authenticated-envelope descriptor)
+        request (sh08-call 'request products descriptor authenticated actual-path)
+        run (sh08-call 'run-bridge request)
+        verification (sh08-call 'invoke (sh08-value 'bridge-plan)
+                                'sh08-verify-authenticated-type-result
+                                [request (:c7-request run) (:type-template run)
+                                 (:type-verification run) (:result run)])
+        typed-products {:typed-core (:result run)
+                        :verification verification
+                        :source-extension extension}]
+    {:effect typed-products :ownership typed-products}))
+
+(def ^:private current-gravity-products
+  (delay (current-type-products ".gravity")))
+
+(def ^:private current-qst-products
+  (delay (current-type-products ".qst")))
+
 (defn- effect-products [sh08-products actual-path]
   (let [prepared
         (sh09-call
@@ -832,8 +872,8 @@
 
 (deftest sh11-classifies-all-four-safe1-outcomes
   (doseq [[extension sh08-products]
-          [[".gravity" @sh08-gravity]
-           [".qst" @sh08-qst]]]
+          [[".gravity" @current-gravity-products]
+           [".qst" @current-qst-products]]]
     (doseq [[operation expected-outcome expected-status
              expected-rule]
             [[:proven-overflow :proven-safe :accepted nil]
@@ -904,7 +944,7 @@
 (deftest sh11-rejects-cross-lineage-and-product-alteration
   (let [prepared
         (prepared-request
-         @sh08-gravity :proven-overflow
+         @current-gravity-products :proven-overflow
          "/checkout-a/safety-input.gravity")
         request (:request prepared)
         accepted (run-bridge prepared)
@@ -996,7 +1036,7 @@
       (is (= :rejected (:status result-rejection))))))
 
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
-  (let [sh08-products @sh08-gravity
+  (let [sh08-products @current-gravity-products
         short-path "/checkout-a/safety-input.gravity"
         long-path (str "/checkout-b/"
                        (apply str (repeat 160 "relocated-source-directory/"))

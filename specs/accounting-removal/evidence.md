@@ -2401,12 +2401,32 @@ controls using freshly built Effects and Ownership products with short paths.
 | Replace only the long-path request's envelope with the genuine short-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
 
 Source review confirmed the remaining nonempty text check follows envelope
-validation. The table records authored assertions. Execution results, an
-exact-revision receipt, and independent acceptance are pending with the
-controller. The affected namespace includes the existing SAFE1 outcome and
-lineage controls. Proposed controller commands follow.
+validation. The controller reported that the namespace command below exited 1
+with 5 tests, 21 assertions, 0 failures, and 3 errors on the pre-repair
+worktree. All three errors occurred while building the SH-08 fixture's Core
+input, before the affected SH-11 assertions. The pinned Reader rejected the
+regular source file with `C2-HASH` and
+`:exact-regular-pinned-sh03-reader-source` (expected 231,576 bytes, observed
+246,369). The supplied result has no commit or tree identity.
+
+The repair explicitly selects the current Reader, Syntax, and Macro sources
+for the SH-11 tests' paired `primitive-if-join` fixtures through the existing
+C5 development API. The same invocation goes to SH-07 construction and its
+fresh verifier. The fixture builds, seals, and verifies the SH-08 result using
+the existing type integration helpers. Both effect and ownership requests use
+that verified Typed Core and run their own builders and verifiers. Historical
+pinned fixture delays remain available to their existing callers. This is
+development composition under the [current source workflow][development].
+
+The table records authored assertions. The repaired run, exact-revision
+receipt, and independent acceptance are pending with the controller. The
+focused selector checks the path regression and the namespace command covers
+the existing SAFE1 outcome and lineage controls.
 
 ```clojure
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test" "--exact"
+ "sh11-identity-is-path-neutral-with-separate-provenance"]
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
  "gravity.self-hosting.sh11-authenticated-safety-integration-test"]
 ["clojure" "-M:test" "--namespace"
@@ -2414,3 +2434,5 @@ lineage controls. Proposed controller commands follow.
 ["clojure" "-M" "tools/validate_gravity_docs.clj"]
 ["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
 ```
+
+[development]: ../../docs/development-verification.md#current-reader-development

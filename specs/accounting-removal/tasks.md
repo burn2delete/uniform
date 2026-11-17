@@ -925,5 +925,8 @@ SH-11 envelope and request. It checks the exact path and provenance root,
 path-neutral semantic identity, fresh C10 verification, and rejection of
 invalid path values and a substituted envelope.
 
-Controller checks and independent acceptance are pending. See the
+The controller's first run stopped at the SH-03 Reader pin before reaching
+these controls. The SH-11 development tests now select the authenticated
+current Reader, Syntax, and Macro sources through C5 and fresh SH-07
+verification. Controller checks and independent acceptance are pending. See the
 [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path). ACC-13 stays open.
