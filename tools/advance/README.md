@@ -89,8 +89,12 @@ large task bodies stay intact in the repository and local source catalog.
 One issue inventory is reused within each synchronization pass. A merged child closes only its own issue. Parent task status changes
 only when its source authority changes; partial implementation and independently
 accepted completion remain distinct. Removed source outcomes are retained for
-attention rather than treated as completed. Source authority changes on main
-invalidate stale increment selection before authoring.
+attention rather than treated as completed. The immutable selected source base
+and whole-file digest remain recorded as the merge base advances. Changed,
+closed or removed selected task criteria invalidate stale selection. Changes
+to other tasks in the file preserve selection only when the selected task body,
+authority, region markers and file context outside task bodies match exactly at
+both published revisions.
 
 Before each selector job, the controller writes the complete retained increment
 records to an ignored, digest-addressed EDN snapshot under
