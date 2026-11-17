@@ -23,7 +23,7 @@
              b3-bounded-llvm-x86_64-linux-policy-record
              b3-build-bounded-llvm-x86_64-linux
              b3-build-bounded-arm64-macos-llvm])
-  (:effects #{})
+  (:effects #{:memory/allocate})
   (:capabilities #{})
   (:safety :safe)
   (:metadata {:bootstrap
@@ -89,7 +89,7 @@
                             :debug-maps :dependency-provenance
                             :backend-conformance-metadata}
                :authority {:ambient #{}
-                           :declared-effects #{}
+                           :declared-effects #{:memory/allocate}
                            :declared-capabilities #{}
                            :denies [:filesystem :network :shell
                                     :environment :clock :random
@@ -1434,9 +1434,27 @@
                 false)
               false)))))))
 
+; Keep the magnitude nonpositive so i64 minimum never needs negation.
+; Remainder is computed from the truncated quotient; only a digit is negated.
+; String construction allocates in the compiler, not in the emitted program.
+(defn llvm-integer-text
+  [value]
+  (if (integer? value)
+    (let [negative? (< value 0)
+          magnitude (if negative? value (- 0 value))
+          digits ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]]
+      (loop [remaining magnitude text ""]
+        (let [quotient (quot remaining 10)
+              remainder (- remaining (* quotient 10))
+              next-text (str (get digits (- 0 remainder)) text)]
+          (if (= quotient 0)
+            (if negative? (str "-" next-text) next-text)
+            (recur quotient next-text)))))
+    (b3-rejected "B3-NUMERIC" :integer-text-input {})))
+
 (defn b3-value-reference
   [operation-index operation-id]
-  (str "%v" (get operation-index operation-id)))
+  (str "%v" (llvm-integer-text (get operation-index operation-id))))
 
 (defn b3-constant-number
   [value]
@@ -1808,8 +1826,9 @@
         operands (get operation :operands)]
     (if (= opcode :constant)
       (str "  " result " = add i64 0, "
-           (b3-constant-number
-            (get (get operation :constant-payload) :value)))
+           (llvm-integer-text
+            (b3-constant-number
+             (get (get operation :constant-payload) :value))))
       (if (b3-forwarded-operation? opcode)
         (str "  " result " = add i64 0, "
              (b3-value-reference operation-index (b3-last operands)))
@@ -1830,7 +1849,9 @@
             (let [left (first operands)
                   right (first (rest operands))
                   comparison-result
-                  (str "%cmp" (get operation-index (get operation :op-id)))
+                  (str "%cmp"
+                       (llvm-integer-text
+                        (get operation-index (get operation :op-id))))
                   predicate
                   (if (= opcode :integer-eq)
                     "eq"
