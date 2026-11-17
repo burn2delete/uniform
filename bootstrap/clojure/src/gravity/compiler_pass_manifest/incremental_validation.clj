@@ -24,10 +24,12 @@
         (failures/compiler-pass-fail! "C16-ENTRY" source-path manifest entry
                              {:missing-fields missing-fields
                               :remediation "Cache entries are artifacts and must retain producer, inputs, facts, diagnostics, trust, and revalidation state."}))))
-  (doseq [proof (:proof-reuse-records suite)]
-    (when (and (= :stale (:status proof)) (= :accepted (:reuse proof)))
+  (doseq [[record-index proof] (map-indexed vector (:proof-reuse-records suite))]
+    (when (and (= :accepted (:reuse proof)) (not= :fresh (:status proof)))
       (failures/compiler-pass-fail! "C16-PROOF" source-path manifest proof
-                           {:remediation "Stale proofs and certificates must be rejected or regenerated before reuse."})))
+                           {:reason :accepted-proof-requires-fresh-status
+                            :record-index record-index
+                            :remediation "Accepted proof reuse requires explicit fresh status; reject or regenerate stale or incomplete proofs and certificates."})))
   (doseq [reuse (:speculative-reuse-records suite)]
     (when (and (= :speculative (:reuse reuse)) (:publishable? reuse))
       (failures/compiler-pass-fail! "C16-SPECULATIVE" source-path manifest reuse

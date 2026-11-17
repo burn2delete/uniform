@@ -205,3 +205,68 @@ at `/tmp/finite-domain-ci-current-main`. The 53-command source-only projection
 CI observation above retains its earlier subject; it is not relabelled as
 fresh exact-head GitHub CI. Current exact-head CI remains required after the
 independent affected-composition review and before coordinator integration.
+
+## Explicit proof-reuse freshness
+
+Attribution: bounded implementation worker, 2026-11-06, worktree
+`increment-1276`; user finding `compiler.proof-reuse.explicit-fresh-status-v1`
+under [`pipeline`](tasks.md#implementation-tasks). No immutable candidate identity was
+supplied for this increment; no Git inspection or commit was performed.
+Historical identities and results above retain their original subjects.
+The speckit-implement skill was read for this owned implementation/evidence
+workflow; controller restrictions supersede its check and publication steps.
+
+Authored change: only the proof-reuse loop in
+`bootstrap/clojure/src/gravity/compiler_pass_manifest/incremental_validation.clj`
+now requires `:status :fresh` when `:reuse :accepted`. Refusals retain
+`C16-PROOF`, with fixed reason `:accepted-proof-requires-fresh-status`,
+zero-based `:record-index` and fixed remediation. Status payloads are not copied
+into diagnostics. Existing cache-key/cache-entry checks still precede proofs;
+speculative-reuse checks still follow them. Public arities, default records,
+provenance and all other candidate implementations are untouched.
+The new test namespace `gravity.compiler-pass-manifest.proof-reuse-test` names
+the subsystem and behavior; no public API or compatibility identity is renamed.
+Task links use the existing implementation-tasks heading because the literal
+`pipeline` record has no Markdown heading anchor; task identity is unchanged.
+
+Authored fixtures in
+`bootstrap/clojure/test/gravity/compiler_pass_manifest/proof_reuse_test.clj`:
+
+| Disposition | Fixtures and assertions |
+| --- | --- |
+| Accept | `default-proof-reuse-unchanged`, `fresh-accepted-record-preserved`, `nonaccepted-record-unchanged`: public validation completes and actual construction preserves full records, including extension/provenance fields. |
+| Refuse | `accepted-stale-proof`, `accepted-missing-status`, `accepted-nil-status`, `accepted-unknown-status`, `accepted-secret-marker-status`: metadata overrides reach both public validation and actual construction; identical structured C16-PROOF diagnostics, no returned artifact and no malformed status/secret marker in diagnostics. |
+| Ordering | `deterministic-first-refusal` checks the first invalid record after a valid record and repeated identical diagnostics; `cache-refusals-precede-proof-refusal` checks C16-KEY then C16-ENTRY precedence with invalid proofs present. |
+
+Actual observations: passive source reads established the previous stale-only
+branch, fresh default, suite metadata replacement path and constructor validation
+before artifact construction. These are static observations, not executed
+results. One documentation patch failed to match its evidence-file context;
+it changed no files and was corrected using the current tail. No test, build,
+validator or Git command ran. No runtime pass result is claimed.
+
+Unrun, proposed controller check argument vectors (repository root):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest.proof-reuse-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.compiler-pass-manifest-test"]
+["clojure" "-M:dev-test" "--namespace" "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Restrictions: verification is controller-owned; worker execution of these
+commands and Git inspection is prohibited. No denied operation was attempted
+or replayed, including retained review50/53, B709/C5f5, C154, build1173,
+environment-scope1176, the907 or select23 actions. The proposed vectors do not
+grant authority to rerun any retained refusal. Unrun checks alone do not make
+the authored increment restricted.
+
+Ready means authored for permitted controller checking only. Independent
+acceptance, actual proof/Build composition and pipeline completion remain
+pending. This validates declared freshness consistency only; `:fresh` does not
+authenticate proofs, establish subject matching, analyze invalidation or invoke
+checkers. The governing D1 versus C1/C5/C6 order ambiguity is unresolved.
+Pipeline remains Open; no release, self-hosting, seed-retirement or integration
+authority or result is claimed.
