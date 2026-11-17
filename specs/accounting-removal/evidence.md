@@ -2390,8 +2390,8 @@ to the host's own constraints. This change deletes the request comparison and
 `:actual-path-bound` refusal. The upstream carrier contracts, envelope and
 lineage checks, and C10 verification remain in force.
 
-`sh11-identity-is-path-neutral-with-separate-provenance` now specifies these
-controls using freshly built Effects and Ownership products with short paths.
+`sh11-identity-is-path-neutral-with-separate-provenance` uses one verified
+Effects and Ownership pair built from short paths for both positive controls.
 
 | Control | Expected result |
 | --- | --- |
@@ -2409,7 +2409,7 @@ regular source file with `C2-HASH` and
 `:exact-regular-pinned-sh03-reader-source` (expected 231,576 bytes, observed
 246,369). The supplied result has no commit or tree identity.
 
-The repair explicitly selects the current Reader, Syntax, and Macro sources
+The first repair explicitly selects the current Reader, Syntax, and Macro sources
 for the SH-11 tests' paired `primitive-if-join` fixtures through the existing
 C5 development API. The same invocation goes to SH-07 construction and its
 fresh verifier. The fixture builds, seals, and verifies the SH-08 result using
@@ -2418,10 +2418,24 @@ that verified Typed Core and run their own builders and verifiers. Historical
 pinned fixture delays remain available to their existing callers. This is
 development composition under the [current source workflow][development].
 
-The table records authored assertions. The repaired run, exact-revision
-receipt, and independent acceptance are pending with the controller. The
-focused selector checks the path regression and the namespace command covers
-the existing SAFE1 outcome and lineage controls.
+The controller then reported exit 124 on the exact selector below. Stdout
+contained only the namespace's `Testing` line, stderr was empty, capture was
+complete, and the writer had ended. The controller classified it as
+unrestricted. No commit, tree, completed assertion count, or in-test stage
+was supplied for this attempt.
+
+The timeout repair builds and verifies the current short-path upstream pair
+once per source extension per JVM. Both path variants consume the exact same
+verified products, so only captured provenance varies. The fixture still
+builds, replays, and seals each SH-11 envelope independently. Both runs still
+classify and verify C10 afresh and bind the result through the bridge. The
+namespace's SAFE1 and lineage controls reuse the respective verified upstream
+fixtures while keeping their existing checks.
+
+The table records authored assertions. The timeout result does not locate
+the stall, and no post-repair execution result is available. The focused
+selector, namespace run, exact-revision receipt, and independent acceptance
+are pending with the controller.
 
 ```clojure
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"

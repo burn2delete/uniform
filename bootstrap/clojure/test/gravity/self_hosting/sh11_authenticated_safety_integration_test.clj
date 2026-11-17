@@ -216,12 +216,6 @@
                         :source-extension extension}]
     {:effect typed-products :ownership typed-products}))
 
-(def ^:private current-gravity-products
-  (delay (current-type-products ".gravity")))
-
-(def ^:private current-qst-products
-  (delay (current-type-products ".qst")))
-
 (defn- effect-products [sh08-products actual-path]
   (let [prepared
         (sh09-call
@@ -268,6 +262,16 @@
    (ownership-products
     (:ownership sh08-products)
     (str actual-path "/ownership"))})
+
+(defn- current-upstream-products [extension]
+  (upstream-products (current-type-products extension)
+                     (str "/checkout-a/safety-input" extension)))
+
+(def ^:private current-gravity-upstream
+  (delay (current-upstream-products ".gravity")))
+
+(def ^:private current-qst-upstream
+  (delay (current-upstream-products ".qst")))
 
 (defn- fact-links [upstream]
   (let [effected (get-in upstream [:effect :effected-core])
@@ -774,34 +778,28 @@
    :envelope-verification (:verification authenticated)
    :actual-source-path actual-path}))
 
-(defn- prepared-request
-  ([sh08-products operation actual-path]
-   (prepared-request sh08-products operation actual-path actual-path))
-  ([sh08-products operation upstream-path actual-path]
-   (let [upstream (upstream-products sh08-products upstream-path)
-         links (fact-links upstream)
-         safety-operation
-         (safety-operation operation links)
-         c10 (c10-products safety-operation)
-         descriptor
-         (descriptor
-          upstream safety-operation c10 operation links
-          actual-path)
-         authenticated
-         (authenticated-envelope
-          descriptor
-          (get-in upstream [:effect :verification])
-          (get-in upstream [:ownership :verification]))]
-     {:request
-      (request
-       upstream safety-operation c10 operation descriptor
-       authenticated actual-path)
-      :upstream upstream
-      :links links
-      :safety-operation safety-operation
-      :c10 c10
-      :descriptor descriptor
-      :authenticated authenticated})))
+(defn- prepare-safety-request [upstream operation actual-path]
+  (let [links (fact-links upstream)
+        safety-operation (safety-operation operation links)
+        c10 (c10-products safety-operation)
+        descriptor (descriptor upstream safety-operation c10 operation links
+                               actual-path)
+        authenticated (authenticated-envelope
+                       descriptor
+                       (get-in upstream [:effect :verification])
+                       (get-in upstream [:ownership :verification]))]
+    {:request (request upstream safety-operation c10 operation descriptor
+                       authenticated actual-path)
+     :upstream upstream
+     :links links
+     :safety-operation safety-operation
+     :c10 c10
+     :descriptor descriptor
+     :authenticated authenticated}))
+
+(defn- prepared-request [sh08-products operation actual-path]
+  (prepare-safety-request (upstream-products sh08-products actual-path)
+                          operation actual-path))
 
 (defn- run-bridge [prepared]
   (let [request (:request prepared)
@@ -871,9 +869,10 @@
        [:arity :params])))))
 
 (deftest sh11-classifies-all-four-safe1-outcomes
-  (doseq [[extension sh08-products]
-          [[".gravity" @current-gravity-products]
-           [".qst" @current-qst-products]]]
+  (doseq [[extension upstream-fixture]
+          [[".gravity" current-gravity-upstream]
+           [".qst" current-qst-upstream]]
+          :let [upstream @upstream-fixture]]
     (doseq [[operation expected-outcome expected-status
              expected-rule]
             [[:proven-overflow :proven-safe :accepted nil]
@@ -883,8 +882,8 @@
               "STD11-BRIDGE-SAFETY"]
              [:unsafe-overflow :unsafe-island :accepted nil]]]
       (let [prepared
-            (prepared-request
-             sh08-products operation
+            (prepare-safety-request
+             upstream operation
              (str "/checkout-a/safety-input" extension))
             run (run-bridge prepared)
             result (:result run)]
@@ -943,8 +942,8 @@
 
 (deftest sh11-rejects-cross-lineage-and-product-alteration
   (let [prepared
-        (prepared-request
-         @current-gravity-products :proven-overflow
+        (prepare-safety-request
+         @current-gravity-upstream :proven-overflow
          "/checkout-a/safety-input.gravity")
         request (:request prepared)
         accepted (run-bridge prepared)
@@ -1036,17 +1035,15 @@
       (is (= :rejected (:status result-rejection))))))
 
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
-  (let [sh08-products @current-gravity-products
+  (let [upstream @current-gravity-upstream
         short-path "/checkout-a/safety-input.gravity"
         long-path (str "/checkout-b/"
                        (apply str (repeat 160 "relocated-source-directory/"))
                        "safety-input.gravity")
         prepared-a
-        (prepared-request sh08-products :proven-overflow short-path)
+        (prepare-safety-request upstream :proven-overflow short-path)
         prepared-b
-        (prepared-request
-         sh08-products :proven-overflow
-         "/checkout-b/safety-input.gravity" long-path)
+        (prepare-safety-request upstream :proven-overflow long-path)
         run-a (run-bridge prepared-a)
         run-b (run-bridge prepared-b)
         result-a (:result run-a)
