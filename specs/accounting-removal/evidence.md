@@ -2517,10 +2517,37 @@ introduced only when sealing the second SH-11 request. Stage markers now
 include JVM uptime so a subsequent capture can distinguish time already
 spent in construction from time spent in replay.
 
-The table records authored assertions. No worker execution, exact-revision
-pass receipt, or independent acceptance is available for this repair.
+The controller reported exit 124 again for the exact path selector on the
+standalone source. JVM uptime at entry to Syntax, Macro, Resolution, Core
+construction and fresh Core verification was 132556, 302202, 482017, 826929
+and 1065246 ms, respectively. Stdout contained only the namespace banner.
+Capture was complete, the writer ended, and the controller classified the
+run as unrestricted. The report supplies neither a completed assertion
+count nor a commit/tree identity.
+
+Source inspection found a separate blocker after the last observed stage.
+`sh07-build-core-template` emits canonical Core template version 16, and
+`gravity.checked-core/canonical-artifact` preserves that version in the
+artifact passed to SH-08. The SH-08 bridge's `sh08-bridge-sh07-valid?`
+requires version 15 and its request builder returns
+`[:sh07 :invalid-canonical-core]` for that mismatch. This is a prediction
+from the producer and consumer code. The controller run ended before SH-08.
+Resolving support for current canonical Core belongs to the SH-08 owner.
+
+The new exact selector below exercises the path comparison that the SH-11
+request builder calls after envelope authentication. It builds, replays and
+seals an envelope from the SH-02 comparison fixture and checks a matching
+4098-character path, an equal-length substitution differing at the last
+character, empty text and a keyword. The full integration selector remains
+responsible for the two genuine upstream products, C10 verification, roots,
+bound results and public diagnostics. Both selectors await controller
+verification. The table above records expected outcomes. Independent
+acceptance remains pending.
 
 ```clojure
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test" "--exact"
+ "captured-path-matches-sealed-provenance"]
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
  "gravity.self-hosting.sh11-authenticated-safety-integration-test" "--exact"
  "sh11-identity-is-path-neutral-with-separate-provenance"]

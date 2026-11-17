@@ -954,3 +954,11 @@ authority sets. It also checks both upstream producer paths. The controller
 has yet to observe a completed path comparison. ACC-13 remains open pending
 verification and independent acceptance. See the
 [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
+
+The standalone-source run also timed out during fresh Core verification.
+Source inspection identified a separate composition dependency: SH-07 emits
+canonical Core schema 16 and the SH-08 type bridge requires schema 15.
+The SH-08 owner must reconcile that handoff before the real Effects and
+Ownership pair can reach SH-11. The SH-11 path comparison now has a focused
+selector using a replayed, sealed SH-02 fixture envelope. The full path
+selector and independent acceptance remain pending.

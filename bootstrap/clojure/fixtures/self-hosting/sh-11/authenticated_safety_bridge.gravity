@@ -978,6 +978,15 @@
 (defn sh11-bridge-safety-request [safety-operation]
   safety-operation)
 
+(defn captured-path-error [path envelope]
+  (if (string? path)
+    (if (> (count path) 0)
+      (if (= path (get (get envelope :actual-path-provenance) :source-path))
+        nil
+        [:envelope :invalid-authenticated-envelope])
+      [:schema :actual-path-required])
+    [:schema :actual-path-required]))
+
 (defn sh11-bridge-upstream-error [request]
   (if
    (= false
@@ -1094,24 +1103,9 @@
                                     :ownership-verification)))
                             [:envelope
                              :invalid-authenticated-envelope]
-                            (if
-                             (string?
-                              (get request :actual-source-path))
-                              (if
-                               (> (count
-                                   (get request
-                                        :actual-source-path))
-                                  0)
-                                (if
-                                 (= (get request :actual-source-path)
-                                    (get (get (get request :envelope)
-                                              :actual-path-provenance)
-                                         :source-path))
-                                  nil
-                                  [:envelope :invalid-authenticated-envelope])
-                                [:schema :actual-path-required])
-                              [:schema
-                               :actual-path-required]))))))))))))))))
+                            (captured-path-error
+                             (get request :actual-source-path)
+                             (get request :envelope)))))))))))))))))
 
 (defn sh11-bridge-rule [family]
   (if (= family :schema)

@@ -1068,6 +1068,21 @@
               [:diagnostics 0 :rule])))
       (is (= :rejected (:status result-rejection))))))
 
+(deftest captured-path-matches-sealed-provenance
+  (let [owner 'gravity.self-hosting.sh02-authenticated-envelope-test
+        fixture ((resolved-value owner 'fixture-case) "accepted/envelope-comparison.gravity")
+        descriptor ((resolved-value owner 'descriptor) fixture)
+        prefix (apply str (repeat 4096 "a"))
+        path (str prefix "/x")
+        sealed (authenticated-envelope
+                (assoc-in descriptor [:actual-path-provenance :source-path] path) {})]
+    (doseq [[candidate expected] [[path nil]
+                                  [(str prefix "/y") [:envelope :invalid-authenticated-envelope]]
+                                  ["" [:schema :actual-path-required]]
+                                  [:not-a-path [:schema :actual-path-required]]]]
+      (is (= expected (invoke bridge-plan 'captured-path-error
+                              [candidate (:envelope sealed)]))))))
+
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
   (let [upstream (path-control-upstream)
         short-path "/checkout-a/safety-input.gravity"
