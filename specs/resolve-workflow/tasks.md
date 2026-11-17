@@ -113,13 +113,14 @@ Done when (yes/no): Serialize scope/binding graphs and invalidate dependent refe
 
 The hosted C5 invalidation key now hashes the existing invalidation inputs and
 the semantic dependency graph under `:gravity/sh06-invalidation-identity-v2`.
-Authored controls cover equal graphs, relocated edge spans, endpoint and
-boundary changes with equal inputs, and fresh verification of a substituted
-v1 key. The latest controller run timed out before the first verification case.
-Fixture construction now has its own scope for the Macro owner's existing
-report reuse. The current-artifact and v1 cases each begin with empty receipts
-and run fresh Macro verification and direct Resolve replay. Controller recheck,
-independent acceptance, and the actual Build reuse decision remain pending.
+After earlier verifier timeouts, the controller reported all five checks passed
+for candidate `476082a75770f023589a154c4d1b193d3e0cb70a`, tree
+`35cf5773431672285077e94f162ca10bf6a78c39`. Equal graphs and physical-span
+relocation preserved the key and emitted origins matched each request. Changing
+an endpoint or boundary changed the key with the other inputs held equal.
+Fresh verification accepted the current artifact and rejected the substituted
+v1 key on `:invalidation-current?`. The actual Build consumer reuse decision,
+remaining index criteria and independent acceptance of `resolve/4` are pending.
 [Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
 
 <!-- macro-source-definition-index:start -->

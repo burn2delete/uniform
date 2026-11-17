@@ -146,17 +146,7 @@ and their origins. Fresh verification still compares emitted products and
 independently replays the analysis. The graph producer, legality decisions and
 binding identities retain their existing definitions.
 
-The authored pipeline controls check the exact v2 preimage and the existing
-artifact graph identity. They take explicit acyclic graph requests through the
-current Gravity producer and resolved verifier, then compare hosted projections.
-The controls expect equal graphs and path/line-only relocation to preserve the
-key, and an endpoint or boundary change to replace it with nodes and prior
-invalidation inputs held equal. They also compare the full emitted edges to the
-requests to check physical origins. The fresh verifier control substitutes the
-derived v1 key in a current source artifact and expects `:invalidation-current?`
-to fail along with the artifact identity and embedded proof checks. It expects
-the upstream owner, fresh replay, Gravity verification, resolved analysis,
-graph and authenticated envelope checks to pass.
+### Earlier controller attempts
 
 The controller reported exit 1 for the projection and graph selection below
 on the pre-repair worktree. The test namespace failed to compile at
@@ -189,7 +179,7 @@ the positive and v1 cases. The missing and altered proof controls, artifact
 identity control, combined provenance/template/envelope mutation, and injected
 owner failures remain. Case start and end events delimit the calls.
 
-The latest controller run of that exact verifier selection exited 124 with an
+A subsequent pre-repair run of that exact verifier selection exited 124 with an
 ended writer, empty stderr and untruncated capture. Its only test event was
 `{:event :resolution-test-start, :test verifier-requires-fresh-replay-current-products-and-public-proof}`.
 It timed out before the first verifier case marker, during test setup.
@@ -205,8 +195,27 @@ construction proof gates still run. The scoped route uses the full parent
 gate and ordinary authenticated request builder. The scope clears its
 receipts before the public verifier controls. Fixture start and end events
 record setup progress, and the end event records actual Macro owner executions
-and reuses. Runtime impact and the check results below are pending controller
-execution on this repair.
+and reuses.
+
+### Controller receipt for the reviewed candidate
+
+The controller reported that all five commands below passed for base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`476082a75770f023589a154c4d1b193d3e0cb70a`, tree
+`35cf5773431672285077e94f162ca10bf6a78c39`.
+
+- The projection and graph selection confirmed the v2 preimage and the existing
+  artifact graph identity. For acyclic requests through the Gravity graph
+  producer and resolved verifier, equal graphs and path/line-only relocation
+  preserved the key. Changing an endpoint or boundary changed the key with the
+  nodes and prior invalidation inputs held equal. Emitted edges retained the
+  physical origins from each request, including the relocated spans.
+- The fresh verifier accepted the current artifact. Substituting the derived
+  v1 key failed exactly `:invalidation-current?`, `:artifact-identity-current?`
+  and `:embedded-capability-proof-current?`. The upstream owner, fresh replay,
+  Gravity verification, resolved analysis, graph and envelope checks passed.
+- The three structural checks passed for the repository language boundary,
+  canonical document structure and full-language roadmap.
 
 ```bash
 clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
