@@ -2451,12 +2451,34 @@ then runs fresh C10 classification and verification through the bridge.
 The SH-11 bridge also compares the request path with the path in the sealed
 envelope before forwarding it to C10.
 
-The table records authored assertions. The earlier exit 124 supplied no
-stage information, so the cause of the timeout remains unverified. The
-fixture now emits stage markers from C5 resolution through the two SH-11
-requests and reports upstream rejections at their boundary. Post-repair
-execution, an exact-revision receipt, and independent acceptance are pending
-with the controller.
+The controller's next run of the exact selector below exited 124. Stdout
+contained only the namespace's `Testing` line and stderr contained only
+`SH-11 fixture stage :current-resolution`. Capture was complete, the writer
+ended, and the controller classified the result as unrestricted. That marker
+preceded a single call covering Reader/Syntax, Macro, and Resolution. The
+run supplied no narrower stage or assertion result and no commit or tree
+identity. The timeout's exact cause is unverified.
+
+The SH-11 fixture now scopes the existing `p15-s23-with-stage2-plan-emission-context`
+to each upstream fixture construction. Source inspection found that outside
+this context the SH-02 source-binding owner recompiles the same envelope plan
+for repeated frontend builds and verifications. Inside the context it first
+authenticates the source and emitter inputs on each call, and only reuses the
+compiled binding for matching inputs and policy. Envelope construction,
+verification, source checks, and fresh C10 checks still execute. The fixture
+reports entry to Reader/Syntax, Macro, and Resolution separately using the
+same owner calls as the combined C5 constructor.
+
+The C8 fixture's module bundle build and runtime reconstruction use the
+one-argument C5 verifier. The SH-11 fixture wraps those calls in the existing
+`sh06-resolution-with-reader-invocation` scope so the verifier uses the same
+current Reader, Syntax, and Macro selection as construction. Both verified
+upstream products still share one actual Typed Core for each source extension.
+The long-path assertion now compares the sealed envelope's provenance ID
+directly with the recomputed root and forwarded C10 ID.
+
+The table records authored assertions. No worker execution, exact-revision
+pass receipt, or independent acceptance is available for this repair.
 
 ```clojure
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"

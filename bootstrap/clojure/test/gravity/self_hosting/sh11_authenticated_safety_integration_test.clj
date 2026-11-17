@@ -203,20 +203,22 @@
   (authenticated-envelope (-> descriptor (assoc :schema-version 2) (dissoc :bounds))
                           context))
 
-(defn- current-type-products [extension]
-  ;; Use the authenticated current-source development entrypoints for these
-  ;; fixtures. Carry the same source selection into fresh SH-07 verification.
-  (let [source-path (sh08-call 'fixture-path "accepted" "primitive-if-join" extension)
-        reader-path (path bootstrap/sh03-reader-source-relative-path)
-        invocation {:reader-source-path reader-path
-                    :authenticated-envelope-options {:source :development-current}
-                    :syntax-source-selection
-                    {:schema :gravity/sh04-development-syntax-selection-v1
-                     :source-path (path bootstrap/sh04-syntax-source-relative-path)}
-                    :macro-source-mode :development-current}
+(defn- current-type-products [source-path extension invocation]
+  ;; Keep the public C5 composition's three authenticated owner boundaries
+  ;; visible so a timeout identifies the stage that was still running.
+  (let [reader-path (:reader-source-path invocation)
+        reader-invocation (dissoc invocation :macro-source-mode)
+        _ (fixture-stage :current-syntax)
+        syntax (bootstrap/compiler-c3-syntax-source-artifact
+                source-path (bootstrap/read-gravity-source-text source-path)
+                (bootstrap/reader-project-context-for-source source-path)
+                nil nil reader-path reader-invocation)
+        _ (fixture-stage :current-macro-expansion)
+        expanded (bootstrap/sh05-macro-artifact-from-c3-artifact
+                  source-path syntax reader-invocation (:macro-source-mode invocation))
         _ (fixture-stage :current-resolution)
-        resolution (bootstrap/compiler-c5-resolution-source-artifact
-                    source-path (bootstrap/read-gravity-source-text source-path)
+        resolution (bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                    source-path expanded
                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
                     reader-path invocation)
         _ (fixture-stage :checked-core)
@@ -239,14 +241,9 @@
         verification (sh08-call 'invoke (sh08-value 'bridge-plan)
                                 'sh08-verify-authenticated-type-result
                                 [request (:c7-request run) (:type-template run)
-                                 (:type-verification run) (:result run)])
-        typed-products {:typed-core (require-status! :typed-core :accepted (:result run))
-                        :verification (require-status! :typed-core-verification :passed verification)
-                        :source-extension extension}]
-    {:effect typed-products :ownership typed-products}))
-
-(def ^:private sh08-gravity (delay (current-type-products ".gravity")))
-(def ^:private sh08-qst (delay (current-type-products ".qst")))
+                                 (:type-verification run) (:result run)])]
+    {:typed-core (require-status! :typed-core :accepted (:result run))
+     :verification (require-status! :typed-core-verification :passed verification)}))
 
 (defn- effect-products [sh08-products actual-path]
   (fixture-stage :authenticated-effects)
@@ -296,21 +293,36 @@
     {:owned-core (require-status! :owned-core :accepted (:result run))
      :verification (require-status! :owned-core-verification :passed verification)}))
 
-(defn- upstream-products [sh08-products actual-path]
-  {:effect
-   (effect-products
-    (:effect sh08-products)
-    (str actual-path "/effect"))
-   :ownership
-   (ownership-products
-    (:ownership sh08-products)
-    (str actual-path "/ownership"))})
+(defn- current-upstream-products [extension]
+  (let [source-path (sh08-call 'fixture-path "accepted" "primitive-if-join" extension)
+        actual-path (str "/checkout-a/safety-input" extension)
+        invocation {:reader-source-path (path bootstrap/sh03-reader-source-relative-path)
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection
+                    {:schema :gravity/sh04-development-syntax-selection-v1
+                     :source-path (path bootstrap/sh04-syntax-source-relative-path)}
+                    :macro-source-mode :development-current}
+        with-emission-context (resolved-value 'gravity.bootstrap
+                                             'p15-s23-with-stage2-plan-emission-context)
+        with-reader-invocation (resolved-value 'gravity.bootstrap
+                                              'sh06-resolution-with-reader-invocation)]
+    ;; Reuse only the compiled SH-02 source binding. The owner authenticates
+    ;; the source inputs before each cache lookup and still replays each envelope.
+    (with-emission-context
+      (fn []
+        (let [typed (current-type-products source-path extension invocation)]
+          {:effect
+           ;; C8 bundle construction and runtime reconstruction call the
+           ;; one-argument C5 verifier. Keep the selected sources in its scope.
+           (with-reader-invocation source-path invocation
+             #(effect-products typed (str actual-path "/effect")))
+           :ownership (ownership-products typed (str actual-path "/ownership"))})))))
 
 (def ^:private current-gravity-upstream
-  (delay (upstream-products @sh08-gravity "/checkout-a/safety-input.gravity")))
+  (delay (current-upstream-products ".gravity")))
 
 (def ^:private current-qst-upstream
-  (delay (upstream-products @sh08-qst "/checkout-a/safety-input.qst")))
+  (delay (current-upstream-products ".qst")))
 
 (defn- fact-links [upstream]
   (let [effected (get-in upstream [:effect :effected-core])
@@ -806,10 +818,6 @@
       :descriptor (descriptor upstream safety-operation c10 operation links actual-path)}
      operation)))
 
-(defn- prepared-request [sh08-products operation actual-path]
-  (prepare-safety-request (upstream-products sh08-products actual-path)
-                          operation actual-path))
-
 (defn- run-bridge [prepared]
   (let [request (:request prepared)
         c10-request
@@ -1088,7 +1096,9 @@
             {:domain :gravity/authenticated-envelope-provenance-binding-v1
              :semantic-envelope-id (:semantic-envelope-id envelope-b)
              :actual-path-provenance (:actual-path-provenance envelope-b)})))
-    (is (= provenance-b (get-in run-b [:c10-request :provenance-binding-id])))
+    (is (= provenance-b
+           (:provenance-binding-id envelope-b)
+           (get-in run-b [:c10-request :provenance-binding-id])))
     (is (= {:actual-source-path short-path :provenance-binding-id provenance-a}
            (:provenance result-a)))
     (is (= {:actual-source-path long-path :provenance-binding-id provenance-b}

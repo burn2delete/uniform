@@ -934,7 +934,12 @@ version 1 envelope shape after the shared builder moved to version 2. The
 SH-11 fixture now uses version 2 and shares one compiled envelope plan across
 the upstream producers and both SH-11 requests. The fixture builds and replays
 each envelope with its complete semantic and provenance inputs. The upstream
-bridges still receive their existing request carriers. Stage output identifies
-where any subsequent run stops. Controller checks and independent acceptance
-are pending. See the [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
-ACC-13 stays open.
+bridges still receive their existing request carriers.
+
+The controller's next exact run timed out inside the combined current-source
+C5 call, before either path control. The fixture now uses the existing
+request-scoped SH-02 plan cache and reports Reader/Syntax, Macro, and Resolution
+separately. The C8 module bundle also carries the explicit current-source
+selection into its ordinary C5 replays at build and runtime. Post-repair
+controller checks and independent acceptance remain pending. ACC-13 stays
+open. See the [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
