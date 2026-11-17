@@ -111,26 +111,6 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Serialize scope/binding graphs and invalidate dependent references when export, profile, package or semantic identity changes.
 
-The hosted C5 invalidation key now hashes the existing invalidation inputs and
-the semantic dependency graph under `:gravity/sh06-invalidation-identity-v2`.
-After earlier verifier timeouts, the controller reported all five checks passed
-for candidate `476082a75770f023589a154c4d1b193d3e0cb70a`, tree
-`35cf5773431672285077e94f162ca10bf6a78c39`. Equal graphs and physical-span
-relocation preserved the key and emitted origins matched each request. Changing
-an endpoint or boundary changed the key with the other inputs held equal.
-Fresh verification accepted the current artifact and rejected the substituted
-v1 key on `:invalidation-current?`. The actual Build consumer reuse decision,
-remaining index criteria and independent acceptance of `resolve/4` are pending.
-[Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
-
-Review of candidate `5073db94eda2de03dc0c491605858dec1fe156f9` found that
-the Reader identity tests could no longer load the artifact projector in
-isolation. For the [standalone projector repair](evidence.md#standalone-artifact-projector-repair),
-the controller reported all six checks passed on candidate
-`75ae75679bdb30fcdaab4e2db1e6c05e38423594`, tree
-`50b77ddd01b40e617f4d87484fb229d792bb5d09`, including the populated-edge
-fixture and the full `gravity.reader.ci-identity-test` namespace.
-
 <!-- macro-source-definition-index:start -->
 
 Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.

@@ -264,3 +264,28 @@ boundary changed the key. Relocating a physical source span preserved the key
 and the emitted graph retained the new origin. Fresh verification rejected the
 prior v1 key. The remaining index criteria, an actual Build consumer reuse
 decision and independent acceptance of `resolve/4` are still open.
+
+### Contracts CI repair for Resolve/4
+
+The controller reported that the contracts job failed and the resolution
+pipeline job passed on head `27e3848737f8ce0c14ab63e1b0b21db254675350`.
+The job summary did not identify the failing child command.
+[Contracts job, run 44193760631](https://github.com/burn2delete/uniform/actions/runs/44193760631/job/134429895403).
+
+Source inspection identified two receipt paragraphs between the Resolve/4 exit
+criterion and `macro-source-definition-index:start`. They interrupted the
+exact task body required by `current-task-body!` and changed the complete
+ledger authenticated by `validate-current-source-transition!`. This repair
+removes those paragraphs. The candidate-specific projection and verifier
+receipts remain above, in the evidence file linked from the ledger.
+[Captured task bodies](../../tools/acceptance_dependencies.clj) and
+[current source contracts](../../tools/requirement_sources.clj).
+
+Controller verification is pending. The focused command below exercises the
+live ledger and the existing changed-body, duplicate-body and source-transition
+tampering controls. The second command runs the contracts job.
+
+```clojure
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-Srepro" "-M" "tools/ci/run.clj" "contracts"]
+```
