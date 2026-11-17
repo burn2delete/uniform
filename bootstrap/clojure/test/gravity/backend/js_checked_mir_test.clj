@@ -249,12 +249,15 @@
         earlier-origin (assoc later-origin :sourceLine 1 :sourceColumn 0
                               :sourceSpan {:start {:line 1 :column 1 :column-unit :unicode-scalar}}
                               :mirInstructionId "return")
+        utf16-origin (assoc later-origin :sourceColumn 4
+                            :sourceSpan {:start {:line 2 :column 5 :column-unit :utf16-code-unit}})
         lines [{:text "// preamble"}
                {:text "  first" :origin later-origin}
                {:text "second" :origin later-origin}
                {:text ""}
                {:text "// unmapped"}
                {:text "    third" :origin earlier-origin}
+               {:text "fourth" :origin utf16-origin}
                {:text "//# sourceMappingURL=program.mjs.map"}]
         expected-map {:version 3 :file "program.mjs" :sources ["fixture.gravity"]
                       :sourcesContent [source-text] :names []
@@ -266,9 +269,11 @@
             origins [(assoc converted-origin :generatedLine 2 :generatedColumn 2)
                      (assoc converted-origin :generatedLine 3 :generatedColumn 0)
                      (assoc earlier-origin :generatedLine 6 :generatedColumn 4
+                            :sourceColumnUnit "utf16-code-unit")
+                     (assoc utf16-origin :generatedLine 7 :generatedColumn 0
                             :sourceColumnUnit "utf16-code-unit")]
             expected (-> expected-map
-                         (assoc :mappings ";EACG;AAAA;;;IADH;;")
+                         (assoc :mappings ";EACG;AAAA;;;IADH;AACI;;")
                          (assoc-in [:x_gravity :generatedOrigins] origins))]
         (is (= (str (printer/json-source expected) "\n")
                (printer/source-map-source program source-text {:lines lines})))))
@@ -283,7 +288,7 @@
                (printer/source-map-source program source-text
                                           {:lines [{:text "                only" :origin origin}]})))))
     (testing "Unmapped output still includes the final empty line"
-      (let [expected (assoc expected-map :mappings ";;;;;;;")]
+      (let [expected (assoc expected-map :mappings ";;;;;;;;")]
         (is (= (str (printer/json-source expected) "\n")
                (printer/source-map-source program source-text
                                           {:lines (mapv #(dissoc % :origin) lines)})))))))
