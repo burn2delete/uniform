@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.5.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
+Version: 1.6.0 | Adopted: 2026-10-25 | Updated: 2026-11-07 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -142,3 +142,21 @@ native, model/provider/tool or other held operation. Actual implementation,
 independent source review, current-source authentication and `main` integration
 remain separate. Canonical STD13 wording clarification is separate follow-up
 work; the frozen 95bd author interpretation is preserved as historical scope.
+
+## Explicit numeric conversion modes
+
+Matt's 2026-11-07 decision permits explicitly declared wrapping and
+saturating conversions in safe code when reconciling SAFE9's checked-only
+narrowing wording with MATH1/MATH7's conversion classes and numeric modes.
+The [SAFE9 conversion contract](../../docs/phase-02-safety/038-safe9-numeric-safety.md#casts-and-conversions)
+retains concrete type, profile, width/bounds and selected-mode legality.
+Wrapping/saturating results do not claim representability of the original
+value; range-preserving conversions still need their check or proof.
+Implicit narrowing, hidden target defaults and safe target undefined
+behavior remain forbidden. D8's four safety outcomes, float exceptional
+and rounding policies, and audited unsafe boundaries remain in force.
+
+This decision changes no implementation or execution authority. Existing
+numeric source dispositions and review identities remain historical;
+current-source facet succession, independent acceptance, task/evidence
+applicability and main integration require their own exact evidence.

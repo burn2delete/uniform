@@ -9,7 +9,10 @@
   (apply str (map #(format "%02x" (bit-and 255 %))
                  (.digest (java.security.MessageDigest/getInstance "SHA-256") (.getBytes text "UTF-8")))))
 (def read-ref (memoize #(sources/git-source "." %1 %2 require!)))
-(def frame (edn/read-string (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn")))
+(def current-frame (edn/read-string (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn")))
+;; These earlier history tests retain their exact predecessor subject. The
+;; current reconciliation successor has separate conservation/forgery controls.
+(def frame (sources/validate-reconciliation-source-history! current-frame read-ref sha require!))
 
 (deftest current-composition-preserves-the-complete-previous-frame
   (is (= sources/source-composition-history-contract
@@ -142,6 +145,64 @@
           forged-frame (assoc-in frame [:source-composition-transition-history :auth-crypto-source-document-successor] forged-history)]
       (with-redefs [sources/auth-crypto-source-document-history-contract forged-history]
         (is (thrown? Exception (sources/validate-auth-crypto-source-document-history! forged-frame read-ref sha require!)))))))
+
+(deftest reconciliation-successor-conserves-the-exact-prior-frame
+  (is (= frame (sources/validate-reconciliation-source-history! current-frame read-ref sha require!)))
+  (let [before (:current-source-transitions frame)
+        after (:current-source-transitions current-frame)
+        changed (filterv (fn [[a b]] (not= a b)) (mapv vector before after))
+        stable #(mapv (fn [r] (select-keys r [:id :region :component :path :checked])) %)
+        old-future (:source-composition-future-task-records frame)
+        new-future (:reconciliation-future-task-records current-frame)]
+    (is (= 49 (count before) (count after)))
+    (is (= 10 (count changed)))
+    (doseq [[a b] changed] (is (= a (:successor-of b))))
+    (is (= 40 (count old-future) (count new-future)))
+    (is (= (stable old-future) (stable new-future)))
+    (is (= ["math/certified-implementation-synthesis"]
+           (vec (keep (fn [[a b]] (when (not= (:body-sha256 a) (:body-sha256 b)) (:id b)))
+                      (mapv vector old-future new-future)))))
+    (is (= frame (-> current-frame
+                     (dissoc :reconciliation-source-binding :reconciliation-future-task-records)
+                     (assoc :current-source-transitions before))))))
+
+(deftest reconciliation-successor-rejects-source-status-and-authority-forgeries
+  (doseq [forged [(dissoc current-frame :reconciliation-source-binding)
+                  (dissoc current-frame :reconciliation-future-task-records)
+                  (assoc-in current-frame [:reconciliation-source-binding :authority] :implementation)
+                  (assoc-in current-frame [:reconciliation-source-binding :review-state] :accepted)
+                  (assoc-in current-frame [:reconciliation-source-binding :predecessor-frame :sha256] (sha "other frame"))
+                  (assoc current-frame :source-snapshots {})
+                  (update current-frame :current-source-transitions pop)
+                  (update-in current-frame [:reconciliation-future-task-records 0 :checked] not)
+                  (assoc-in current-frame [:reconciliation-future-task-records 0 :id] "foreign/task")]]
+    (is (thrown? Exception (sources/validate-reconciliation-source-history! forged read-ref sha require!))))
+  (doseq [history [(assoc-in sources/reconciliation-current-source-history-contract [:predecessor-frame :commit]
+                            (get-in sources/reconciliation-current-source-history-contract [:predecessor-frame :tree]))
+                   (assoc sources/reconciliation-current-source-history-contract :authority :implementation)
+                   (assoc sources/reconciliation-current-source-history-contract :review-state :accepted)]]
+    (with-redefs [sources/reconciliation-current-source-history-contract history]
+      (is (thrown? Exception (sources/validate-reconciliation-source-history!
+                              (assoc current-frame :reconciliation-source-binding history) read-ref sha require!))))))
+
+(deftest current-plan-successor-authenticates-the-preceding-current-frame
+  (let [history (:reconciliation-source-binding current-frame)
+        descriptor (:predecessor-binding-frame history)
+        previous (edn/read-string (read-ref (:commit descriptor) (:path descriptor)))]
+    (is (= previous (sources/validate-reconciliation-plan-binding-predecessor!
+                     current-frame history read-ref sha require!)))
+    (is (= 9 (count (get-in history [:predecessor-binding :changed-source-paths]))))
+    (is (= 10 (count (:changed-source-paths history))))
+    (doseq [forged [(assoc-in history [:predecessor-binding-frame :sha256] (sha "foreign frame"))
+                    (assoc-in history [:predecessor-binding-frame :commit] (:tree descriptor))
+                    (assoc-in history [:predecessor-binding-crosswalk :blob] (apply str (repeat 40 "0")))
+                    (assoc history :predecessor-binding {})
+                    (assoc-in history [:pre-edit-plan :sha256] (sha "foreign plan"))
+                    (dissoc history :predecessor-binding-frame)]]
+      (with-redefs [sources/reconciliation-current-source-history-contract forged]
+        (is (thrown? Exception
+                     (sources/validate-reconciliation-source-history!
+                       (assoc current-frame :reconciliation-source-binding forged) read-ref sha require!)))))))
 
 (let [result (run-tests 'requirement-sources-test)]
   (shutdown-agents)

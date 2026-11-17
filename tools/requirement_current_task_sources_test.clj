@@ -296,6 +296,41 @@
       (is (thrown-with-msg? Exception #"predecessor model file digest drift"
             (current/validate-bridge-transition! forged forged-readers))))))
 
+(deftest separate-current-region-keeps-the-original-file-bridge
+  (let [text (str "<!-- parent:start -->\n- [ ] `parent/task` Parent\nStatus: Open\nClosing evidence: Parent result.\n<!-- parent:end -->\n"
+                  "<!-- producers:start -->\n- [ ] `producer/task` Producer\nStatus: Open\nClosing evidence: Independently checked producer result.\n<!-- producers:end -->\n")
+        start (str/index-of text "Independently checked producer result.")
+        finish (+ start (count "Independently checked producer result."))
+        record (evidence/task-record text "producers" "producer/task")
+        ref (assoc reference :path "fixture/tasks.md" :marker "producers" :bridge-marker "parent" :id "producer/task"
+                   :sha256 (rr/sha256 text) :source-record-sha256 (rr/task-record-digest record rr/sha256)
+                   :criterion-source {:start-byte start :end-byte finish
+                                      :sha256 (rr/sha256 (subs text start finish))})
+        b (assoc bridge :path "fixture/tasks.md" :marker "parent" :current-sha256 (rr/sha256 text))
+        fixture-readers (assoc readers :read-ref (fn [_ _] text) :read-current (constantly text))]
+    (is (= :current-task-source-interface-only (:authority (current/validate! ref b fixture-readers))))
+    (is (= :unassessed (:implementation-acceptance (current/validate! ref b fixture-readers))))
+    (doseq [forged [(dissoc ref :bridge-marker)
+                    (assoc ref :bridge-marker "forged-primary")
+                    (assoc ref :bridge-marker "")
+                    (assoc ref :bridge-marker :parent)
+                    (assoc ref :marker "parent")
+                    (assoc ref :marker "absent")
+                    (assoc ref :id "parent/task")
+                    (assoc ref :observed-checked? true)
+                    (assoc ref :detailed-acceptance :accepted)]]
+      (is (thrown? Exception (current/validate! forged b fixture-readers))))
+    (is (thrown? Exception (current/validate! ref nil fixture-readers)))
+    (is (thrown? Exception (current/validate! ref (assoc b :marker "forged-primary") fixture-readers)))
+    (let [duplicate (str text "<!-- producers:start -->\n<!-- producers:end -->\n")
+          forged (assoc ref :sha256 (rr/sha256 duplicate))
+          duplicated-readers (assoc fixture-readers :read-ref (fn [_ _] duplicate) :read-current (constantly duplicate))]
+      (is (thrown? Exception (current/validate! forged (assoc b :current-sha256 (rr/sha256 duplicate)) duplicated-readers))))
+    (let [a (str/index-of text "Parent result.")
+          forged (assoc ref :criterion-source {:start-byte a :end-byte (+ a (count "Parent result."))
+                                               :sha256 (rr/sha256 "Parent result.")})]
+      (is (thrown? Exception (current/validate! forged b fixture-readers))))))
+
 (let [result (run-tests 'requirement-current-task-sources-test)]
   (shutdown-agents)
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

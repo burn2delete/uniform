@@ -169,62 +169,102 @@
 
 (deftest task-source-bridges-bind-history-current-main-and-changed-records
   (let [manifest (edn/read-string (slurp "contracts/requirement-reconciliation.edn"))
-        bridges (rr/validate-task-source-versions! "." manifest)
+        predecessor-text (requirement-sources/git-source
+                          "." "1e683892ceb55126cc991b54f8f84981ed541d4d"
+                          rr/manifest-path rr/require!)
+        predecessor (edn/read-string predecessor-text)
+        bridges (vec (rr/validate-task-source-versions! "." manifest))
+        predecessor-bridges (vec (:task-source-version-bridges predecessor))
+        current-bridges (vec (:task-source-version-bridges manifest))
+        predecessor-history (vec (:source-view-review-history predecessor))
+        current-history (vec (:source-view-review-history manifest))
+        added-bridges (subvec current-bridges (count predecessor-bridges))
+        successor (first added-bridges)
+        predecessor-by-path (into {} (map (juxt :path identity) predecessor-bridges))
         by-path (into {} (map (juxt :path identity) bridges))
-        path-index (fn [path]
-                     (.indexOf (mapv :path bridges) path))
+        path-index (fn [path] (.indexOf (mapv :path bridges) path))
         refs (mapcat (fn [requirement]
                        (concat (when-let [task (:task-reference requirement)] [task])
                                (:additional-task-interfaces requirement)))
-                     (:requirements manifest))]
-    (is (= 19 (count bridges)))
-    (is (= 780 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
-    (is (= #{:navigation-only :acceptance-boundary-extension
-             :status-and-development-evidence
-             :current-candidate-composition}
+                     (:requirements manifest))
+        predecessor-refs (mapcat (fn [requirement]
+                                   (concat (when-let [task (:task-reference requirement)] [task])
+                                           (:additional-task-interfaces requirement)))
+                                 (:requirements predecessor))
+        historical-match-count
+        (fn [bridge-rows reference-rows]
+          (let [rows-by-path (into {} (map (juxt :path identity) bridge-rows))]
+            (count (filter #(= (:sha256 %)
+                               (:historical-sha256 (get rows-by-path (:path %))))
+                           reference-rows))))]
+    (is (= "5dfe5011bc8d73a37b55986628741ecf6b9219705b45ce8e0da32a05af86b359"
+           (rr/sha256 predecessor-text)))
+    (is (= (inc (count predecessor-bridges)) (count bridges)))
+    (is (= predecessor-bridges
+           (subvec current-bridges 0 (count predecessor-bridges))))
+    (is (= 1 (count added-bridges)))
+    (is (= (set (map :change-class predecessor-bridges))
            (set (map :change-class bridges))))
-    (is (= :acceptance-boundary-extension
-           (:change-class (get by-path "specs/stdlib-workflow/tasks.md"))))
-    (is (= {:stdlib {:current-ref "80d8a655cea00218799446986a976ca64043a1f8"}
-            :types {:change-class :current-candidate-composition
-                    :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
-                    :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
-                    :current-sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"
-                    :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
-                                         :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}
-            :runtime {:change-class :current-candidate-composition
-                      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
-                      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
-                      :current-sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
-                      :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
-                                           :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}
-            :domains {:change-class :current-candidate-composition
-                      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
-                      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
-                      :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
-                      :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
-                                           :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}}
-           {:stdlib (select-keys (get by-path "specs/stdlib-workflow/tasks.md") [:current-ref])
-            :types (assoc (select-keys (get by-path "specs/types-workflow/tasks.md")
-                                       [:change-class :current-ref :current-tree :current-sha256])
-                          :known-current-main
-                          (select-keys (:known-current-main (get by-path "specs/types-workflow/tasks.md"))
-                                       [:current-ref :current-tree]))
-            :runtime (assoc (select-keys (get by-path "specs/runtime-workflow/tasks.md")
-                                         [:change-class :current-ref :current-tree :current-sha256])
-                            :known-current-main
-                            (select-keys (:known-current-main (get by-path "specs/runtime-workflow/tasks.md"))
-                                         [:current-ref :current-tree]))
-            :domains (assoc (select-keys (get by-path "specs/domains-workflow/tasks.md")
-                                         [:change-class :current-ref :current-tree :current-sha256])
-                            :known-current-main
-                            (select-keys (:known-current-main (get by-path "specs/domains-workflow/tasks.md"))
-                                         [:current-ref :current-tree]))}))
-    (is (= 3 (count (:changed-records (get by-path "specs/compiler-api-workflow/tasks.md")))))
-    (is (= [{:id "domain-ir-boundaries"
-             :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}]
-           (:current-only-records (get by-path "specs/compiler-api-workflow/tasks.md"))))
-    (is (= 2 (count (:changed-records (get by-path "specs/reader-workflow/tasks.md")))))
+    (is (= (historical-match-count predecessor-bridges predecessor-refs)
+           (historical-match-count bridges refs)))
+    (is (= {:path "specs/evolution-workflow/tasks.md"
+            :marker "evolution-implementation-tasks"
+            :historical-ref "16c0f407a4b7923289808bea65d4f78d5a808b54"
+            :historical-tree "99cb19ded0ec128a3b44a72316261bb112ed5329"
+            :historical-sha256 "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31"
+            :change-class :qualified-current-task-source-successor
+            :current-ref "89849c8617f3215c49b39d63abe29e61f8a26b46"
+            :current-tree "d54d92aba27156a921e388eaed6a5d1a7b1d8df7"
+            :current-sha256 "65f9d349c92bf8fda7666c8d50d4be3e3b34c5d1e7a60297ae1eff5d806e37dd"
+            :predecessor-bridge nil}
+           (select-keys successor [:path :marker :historical-ref :historical-tree
+                                   :historical-sha256 :change-class :current-ref
+                                   :current-tree :current-sha256 :predecessor-bridge])))
+    (is (= [] (:current-only-records successor)))
+    (is (= 10 (count (:changed-records successor))))
+    (is (= #{"evolution/change-review"
+             "evolution/experiment-lifecycle"
+             "evolution/library-admission"
+             "evolution/namespace-decision"
+             "evolution/registry-yank"
+             "evolution/rfc-review"
+             "evolution/security-response"
+             "evolution/security-review"
+             "evolution/stabilization-decision"
+             "evolution/target-support-admission"}
+           (set (map :id (:changed-records successor)))))
+    (is (= (set (map :id (:changed-records successor)))
+           (set (map :id (:previously-declared-record-observations successor)))))
+    (is (= (inc (count predecessor-history)) (count current-history)))
+    (is (= predecessor-history
+           (subvec current-history 0 (count predecessor-history))))
+    (let [frame (last current-history)]
+      (is (= {:kind :qualified-task-source-version-transition-v1
+              :source-commit "1e683892ceb55126cc991b54f8f84981ed541d4d"
+              :source-tree "1725310700c6f89c4e574961ad9cdab23a14ce0e"
+              :manifest-sha256 "5dfe5011bc8d73a37b55986628741ecf6b9219705b45ce8e0da32a05af86b359"
+              :prior-task-source-version-bridges predecessor-bridges}
+             (select-keys frame [:kind :source-commit :source-tree :manifest-sha256
+                                 :prior-task-source-version-bridges])))
+      (is (= "Append-only successor from the authenticated Source1e model to the immutable Main898 current task snapshot. All prior bridges, source-view history, requirement records, statuses, checkboxes and nonclaims remain historical and unchanged."
+             (:qualification frame))))
+    (doseq [path ["specs/stdlib-workflow/tasks.md"
+                  "specs/types-workflow/tasks.md"
+                  "specs/runtime-workflow/tasks.md"
+                  "specs/domains-workflow/tasks.md"]]
+      (is (= (select-keys (get predecessor-by-path path)
+                          [:change-class :current-ref :current-tree :current-sha256
+                           :known-current-main])
+             (select-keys (get by-path path)
+                          [:change-class :current-ref :current-tree :current-sha256
+                           :known-current-main]))))
+    (doseq [path ["specs/compiler-api-workflow/tasks.md"
+                  "specs/reader-workflow/tasks.md"]]
+      (is (= (select-keys (get predecessor-by-path path)
+                          [:changed-records :current-only-records])
+             (select-keys (get by-path path)
+                          [:changed-records :current-only-records]))))
+    ;; Keep the three existing corruption negatives unchanged.
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
                   "." (assoc-in manifest [:task-source-version-bridges
@@ -695,7 +735,7 @@
              (requirement-sources/view (assoc declared :source-version-bridges [b]) document text rr/sha256 rr/require! options))}))
 
 (deftest canonical-policy-current-sources-preserve-baseline-and-explicit-pending-scope
-  (doseq [id ["L6" "STD13"]]
+  (doseq [id ["L6" "STD13" "SAFE9"]]
     (let [{:keys [bridge baseline live read-ref view]} (canonical-policy-fixture id)
           authenticated (requirement-sources/validate-snapshots! bridge read-ref rr/sha256 rr/require!)
           result (view bridge live)]
@@ -709,7 +749,7 @@
       (is (every? #(and (:owning-task %) (:source-commit %) (:span-sha256 %)) (:current-criteria bridge))))))
 
 (deftest canonical-policy-source-authority-hunks-and-current-criteria-reject-forgeries
-  (doseq [id ["L6" "STD13"]]
+  (doseq [id ["L6" "STD13" "SAFE9"]]
     (let [{:keys [bridge live read-ref view]} (canonical-policy-fixture id)]
       (doseq [altered [(dissoc bridge :human-decision)
                        (assoc bridge :human-decision :unrestricted-provider-access)
@@ -741,30 +781,110 @@
         (is (thrown? Exception (requirement-sources/validate-snapshots! bridge forged-read rr/sha256 rr/require!)))))))
 
 (deftest canonical-policy-records-preserve-every-existing-model-value
-  (let [before (edn/read-string (requirement-sources/git-source "." "67d05c761cad92d5e09f0f8cd2c6e692853887cb" rr/manifest-path rr/require!))
-        current (edn/read-string (slurp rr/manifest-path))
-        prior (:source-version-bridges before)
-        all (:source-version-bridges current)
-        added (subvec all (count prior))]
-    (is (= (dissoc before :source-version-bridges) (dissoc current :source-version-bridges)))
-    (is (= prior (subvec all 0 (count prior))))
-    (is (= #{"L6" "STD13"} (set (map :document-id added))))
-    (is (= 2 (count added)))
-    (is (= :open (:scope-state current)))
-    (is (every? #(= :proposed (:review-state %)) added))
-    (is (= (:source-baseline before) (:source-baseline current)))
-    (is (= (:original-documents before) (:original-documents current)))
-    (is (= (:requirements before) (:requirements current)))
-    (is (= (:source-dispositions before) (:source-dispositions current)))
-    (is (= (:bounded-evidence-assessments before) (:bounded-evidence-assessments current)))))
-
+  (letfn [(records-by-id [model]
+            (into {} (map (juxt :id identity) (:requirements model))))
+          (changed-fields [before-record current-record]
+            (set (for [key (set (concat (keys before-record) (keys current-record)))
+                       :when (not= (get before-record key) (get current-record key))]
+                   key)))
+          (restore-field [record before-record key]
+            (if (contains? before-record key)
+              (assoc record key (get before-record key))
+              (dissoc record key)))
+          (restore-reference-fields [record before-record]
+            (reduce #(restore-field %1 before-record %2)
+                    record [:task-reference :additional-task-interfaces]))]
+    (let [legacy (edn/read-string
+                  (requirement-sources/git-source
+                   "." "67d05c761cad92d5e09f0f8cd2c6e692853887cb"
+                   rr/manifest-path rr/require!))
+          before-text (requirement-sources/git-source
+                       "." "1e683892ceb55126cc991b54f8f84981ed541d4d"
+                       rr/manifest-path rr/require!)
+          before (edn/read-string before-text)
+          current (edn/read-string (slurp rr/manifest-path))
+          legacy-policy (vec (:source-version-bridges legacy))
+          predecessor-policy (vec (:source-version-bridges before))
+          current-policy (vec (:source-version-bridges current))
+          before-records (records-by-id before)
+          current-records (records-by-id current)
+          record-ids (vec (map :id (:requirements before)))
+          current-record-ids (vec (map :id (:requirements current)))
+          deltas (into {}
+                       (for [id record-ids
+                             :let [fields (changed-fields (get before-records id)
+                                                          (get current-records id))]
+                             :when (seq fields)]
+                         [id fields]))
+          task-reference-changes
+          (count (filter #(not= (:task-reference (get before-records %))
+                                (:task-reference (get current-records %)))
+                         record-ids))
+          additional-reference-pairs
+          (mapcat (fn [id]
+                    (map vector
+                         (vec (or (:additional-task-interfaces (get before-records id)) []))
+                         (vec (or (:additional-task-interfaces (get current-records id)) []))))
+                  record-ids)
+          additional-length-pairs
+          (map (fn [id]
+                 [(count (or (:additional-task-interfaces (get before-records id)) []))
+                  (count (or (:additional-task-interfaces (get current-records id)) []))])
+               record-ids)
+          additional-reference-changes
+          (count (filter (fn [[a b]] (not= a b)) additional-reference-pairs))
+          predecessor-task-bridges (vec (:task-source-version-bridges before))
+          current-task-bridges (vec (:task-source-version-bridges current))
+          predecessor-history (vec (:source-view-review-history before))
+          current-history (vec (:source-view-review-history current))
+          restored-requirements
+          (mapv (fn [record]
+                  (restore-reference-fields record (get before-records (:id record))))
+                (:requirements current))
+          restored
+          (-> current
+              (assoc :requirements restored-requirements)
+              (assoc :task-source-version-bridges
+                     (subvec current-task-bridges 0 (count predecessor-task-bridges)))
+              (assoc :source-view-review-history
+                     (subvec current-history 0 (count predecessor-history))))]
+      (is (= "5dfe5011bc8d73a37b55986628741ecf6b9219705b45ce8e0da32a05af86b359"
+             (rr/sha256 before-text)))
+      (is (= (vec (map :id (:requirements before))) current-record-ids))
+      (is (= (set (map :id (:requirements before))) (set (keys current-records))))
+      (is (= 25 (count deltas)))
+      (is (every? #(every? #{:task-reference :additional-task-interfaces} (val %)) deltas))
+      (is (every? (fn [[a b]] (= a b)) additional-length-pairs))
+      (is (= 25 task-reference-changes))
+      (is (= 1 additional-reference-changes))
+      (is (= 26 (+ task-reference-changes additional-reference-changes)))
+      (is (= (inc (count predecessor-task-bridges)) (count current-task-bridges)))
+      (is (= predecessor-task-bridges
+             (subvec current-task-bridges 0 (count predecessor-task-bridges))))
+      (is (= (inc (count predecessor-history)) (count current-history)))
+      (is (= predecessor-history
+             (subvec current-history 0 (count predecessor-history))))
+      (is (= legacy-policy
+             (subvec predecessor-policy 0 (count legacy-policy))))
+      (is (= #{"L6" "STD13" "SAFE9"}
+             (set (map :document-id
+                       (subvec predecessor-policy (count legacy-policy))))))
+      ;; SAFE9 is a real Source1e policy addition and remains unchanged in Root512.
+      (is (= predecessor-policy current-policy))
+      (doseq [key [:source-baseline :original-documents :source-dispositions
+                   :bounded-evidence-assessments]]
+        (is (= (get before key) (get current key))))
+      (is (= :open (:scope-state current)))
+      ;; Invert only the authenticated 26-reference transition and the two
+      ;; append-only task-source records; then require complete model equality.
+      (is (= before restored)))))
 
 (deftest canonical-policy-cli-source-maps-load-declared-baselines
   ;; The global task/evidence audit is a separate current-binding gate. Exercise
   ;; the real CLI branch and actual document/Git inputs while isolating that gate.
   (let [manifest (edn/read-string (slurp rr/manifest-path))
         read-ref #(requirement-sources/git-source "." %1 %2 rr/require!)]
-    (doseq [id ["L6" "STD13" "STD3" "L4" "C4" "MATH4" "MATH9"]]
+    (doseq [id ["L6" "STD13" "SAFE9" "STD3" "L4" "C4" "MATH4" "MATH9"]]
       (let [source (first (filter #(= id (:id %)) (:original-documents manifest)))
             bridge (first (filter #(= id (:document-id %)) (:source-version-bridges manifest)))
             baseline (read-ref (:baseline-ref bridge) (:path source))
@@ -796,15 +916,15 @@
           "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]])))
 
 (deftest current-task-metadata-clarification-preserves-every-clause-and-task-state
+  ;; The current 29-file source overlay is the authenticated Source1e snapshot.
+  ;; Do not normalize headings against the older 09bdb predecessor: that would
+  ;; erase legitimate intervening clause evolution.
   (doseq [path (distinct (map first task-metadata-clarification-cases))]
-    (let [before (requirement-sources/git-source "." "09bdb06de4f6c04376d66341547965cf46984e8b" path rr/require!)
-          current (slurp path)
-          restored (-> current
-                       (str/replace #"(?m)^Historical projected task block:" "Projected task block:")
-                       (str/replace #"(?m)^Prior proposed completion and remaining work:" "Declared completion and remaining work:")
-                       (str/replace #"(?m)^Historical declared completion and remaining work:" "Declared completion and remaining work:")
-                       (str/replace #"(?m)^Historical closing evidence:" "Closing evidence:"))]
-      (is (= before restored))))
+    (let [before (requirement-sources/git-source
+                  "." "1e683892ceb55126cc991b54f8f84981ed541d4d"
+                  path rr/require!)
+          current (slurp path)]
+      (is (= before current))))
   (doseq [[path marker id] task-metadata-clarification-cases]
     (let [record (requirement-evidence/task-record (slurp path) marker id)]
       (is (= id (:id record)))

@@ -1137,3 +1137,67 @@ Archive `auth-crypto-qualified-row-verdict`, SHA-256 `9bdb59a144fb15d373b0d8ea61
   "read-only EDN comparison of current, prior and qualified row wording and required phase order"]}
 ~~~~~~
 <!-- source-reference-review-archive:auth-crypto-qualified-row-verdict:end -->
+
+## Current nine-file reconciliation source successor
+
+The predecessor is commit `3fb71004364729f3616d09dd3e843ef6815cefd0`, tree
+`a958dc783d32b7a9f96b8749393ea9d77f1e9519`. Its complete frame, projection,
+49-file transition table, original future table and nested review subjects stay
+immutable. Nine current file bindings change: Diagnostics, Legality, Runtime,
+constitution 1.6, Compiler API, Domains, Lowering, Release and Build. Forty
+current bindings remain identical. The current future table retains all 40 task
+identities, owners and checked states; 29 file-metadata records change and only
+the Math certified-synthesis task body changes. These are observations of the
+already-authored criteria, not new tasks or accepted implementation.
+
+The generated projection retains all 180 requirement identities, current and
+future task ownership and checked states, and the exact 18 SH07 rows. Every one
+of the 578 prior raw snapshots is retained byte-for-byte; the new total is 590.
+The complete previous mapping review is nested at its original subject. The
+pending input fingerprint, derived from the actual source view, is
+`175e212e691f2609298556e8ec4335cbe4bc832b7cdbeaba4c8958c9370b2fed`.
+Source-history guards check commit, tree, blob and SHA identities, exact inverse
+restoration and conserved future identities. The dependency consumer also
+checks projected successor metadata against the authenticated full frame.
+
+The first full crosswalk test attempt failed with 64 failures and four errors
+(82 tests, 64,431 assertions). Its log is retained at
+`/tmp/uniform-current-criteria-projection-crosswalk-tests.log`. The affected
+historical tests had read newer task text or compared current observations
+against an older future table. They now read their declared immutable sources;
+current-file, current-body and negative controls remain in force. Later checks
+are recorded at their actual results, without relabeling that failed attempt.
+
+This is a pending source-version successor. Semantic scope, global nonoverlap,
+implementation, migration, release, self-hosting, seed retirement, main
+integration and full-240 verification remain unassessed. Stopped or restricted
+actions retain their dispositions. No first-landing gate is added.
+
+### Observed successor checks
+
+The source-history suite passed with 9 tests/141 assertions; the corrected full
+crosswalk suite passed with 83 tests/65,546 assertions; the dependency suite
+passed with 33 tests/7,801 assertions. All report zero failures and errors.
+The current dependency, normalized crosswalk and original SH inventory checks
+also completed with exit zero. The tested code is recorded by file SHA256 in
+`/tmp/uniform-current-criteria-projection-precommit-check-observations.edn`;
+subsequent documentation appends do not replace those tested inputs.
+
+The dependency report observes 240 canonical digests and 240 linked contracts,
+4,491 task/source graph nodes, 8,055 typed edges, no staged full-language or
+self-hosting cycles, and no structural source-route gaps. Its authority remains
+`:structural-only` and `:mapping-ready?` remains false. Those counts do not prove
+clause entailment, atomicity, global nonoverlap, primary accountability, actual
+implementation or full-240 acceptance. Final committed repository checks,
+independent exact-source review and coordinator-owned main integration remain
+separate requirements.
+
+## Settled numeric conversion plan source continuation
+
+The existing Math plan now follows Matt's recorded SAFE9/MATH1/MATH7 choice: explicit source-selected wrapping/saturating integer narrowing under declared width/bounds/mode and concrete type/profile legality. Range-preserving narrowing still needs its range check or representability proof. Retain float exceptional/rounding behavior, D8 outcomes, audited unsafe boundaries and rejection of implicit narrowing, hidden target defaults and safe target undefined behavior. This changes no task criteria, owner, checkbox, implementation or execution authority. The plan input is `36c4aa2d1e6efb957468e1b8d4bebfcfbaf166ff`, tree `b3ffc50efa922c75ea83dffc60bf9fc8cba88e0c`, parent `84b85b3d55eda0501f808be0acd80fd618079f26`.
+
+Within the existing 49-file source population, one Plan transition advances relative to the complete preceding current frame. The nine earlier reconciliation transitions remain unchanged, giving ten explicit successors relative to the original 3fb frame. The prior declared Plan, actual pre-edit Plan, full preceding frame/projection/binding/review and all 40 future task records remain distinct. All 590 prior raw snapshots survive byte-for-byte and their total remains 590. Authenticating the retained predecessor checks commit/tree/blob/SHA, actual Plan baseline and successor, other 48 current bindings and exact future observations. Generated review metadata reads its immutable previous review through the existing Git census reader rather than duplicating review literals in source.
+
+The pending source fingerprint is `99ac0053515633517c0e65331a4753e5e8b7db045be13aeb1e68589c017a1a3a`. Actual precommit tests report {:source-tests {:tests 10, :assertions 151}, :crosswalk-tests {:tests 83, :assertions 65548}, :dependency-tests {:tests 33, :assertions 7801}}; current crosswalk, dependency and original inventory checks passed. The first source test attempt reported one failed old nine-binding assertion (9 tests/142 assertions); it is preserved. The first crosswalk child ended with exit 143 after an own termination request for the material predecessor-guard change; it is not a pass. The first dependency suite passed 33 tests/7,801 assertions before that code change and is not the final tested subject. The v2 crosswalk suite then reported one stale direct-predecessor expectation (83 tests/65,546 assertions), while its other assertions and source/dependency suites passed. The fixture now checks both immutable historical reviews explicitly; final v3 runs bind the actual code and corrected fixtures. Failed private parsing/preparation attempts also retain their original outcomes.
+
+These source/evidence results confer no whole-clause entailment, primary allocation acceptance, global nonoverlap, implementation, migration, release, self-hosting, seed retirement or full240 acceptance. The requirement model and all task files are unchanged. Restricted/held compiler, Runtime, native, provider, model/tool, probe/oracle/replay, migration/store, signing and publication operations remain unrun. Final exact-commit validation, independent review and coordinator-owned Main integration remain separate.

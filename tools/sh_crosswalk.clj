@@ -256,6 +256,15 @@
   (vec (:current-source-transitions readiness-source-version)))
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
+(def evolution-current-source-transition
+  requirement-sources/evolution-current-source-transition)
+(def current-qualified-source-transition-paths
+  (conj current-source-transition-paths
+        (:path evolution-current-source-transition)))
+(def current-qualified-applying-source-pins
+  (assoc applying-source-pins
+         (:path evolution-current-source-transition)
+         (:applying-ref evolution-current-source-transition)))
 (def current-source-successor-paths
   (set (map :path (get-in readiness-source-version
                           [:source-successor-binding :source-census]))))
@@ -273,9 +282,13 @@
   (merge predecessor-pinned-evidence-hashes
          (:additional-pinned-evidence-hashes readiness-source-version)
          current-source-successor-evidence-hashes
-         (into {} (map (juxt :path :live-sha256) current-source-transition-contracts))))
+         (into {} (map (juxt :path :live-sha256) current-source-transition-contracts))
+         {(:path evolution-current-source-transition)
+          (:live-sha256 evolution-current-source-transition)}))
 (defn- current-source-transition-for-path [path]
-  (first (filter #(= path (:path %)) current-source-transition-contracts)))
+  (or (first (filter #(= path (:path %)) current-source-transition-contracts))
+      (when (= path (:path evolution-current-source-transition))
+        evolution-current-source-transition)))
 (defn current-source-commit
   "Return the authenticated applying ref for a transitioned current path.
 
@@ -621,7 +634,7 @@
                :authority :component-implementation-ledger
                :source-commit (cond
                                 historical-row-source? baseline
-                                (contains? current-source-transition-paths path)
+                                (contains? current-qualified-source-transition-paths path)
                                 (:applying-ref (current-source-transition-for-path path))
                                 (contains? historical-task-transition-paths path)
                                 (:source-input-commit readiness-source-version)
@@ -903,6 +916,15 @@
 ;; repository changes still require a fresh process, while repeated checks no
 ;; longer spawn thousands of identical `git show` processes.
 (def git-source (memoize read-git-source))
+(defn validate-evolution-current-source-transition! []
+  (requirement-sources/validate-current-source-transition!
+   evolution-current-source-transition
+   requirement-sources/evolution-current-source-transition
+   (fn [ref source-path]
+     (git-source ref source-path))
+   slurp sh-inventory/sha256 acceptance-dependencies/require!)
+  evolution-current-source-transition)
+
 (def ^:private read-source-census
   (memoize (fn [commit path]
              (edn/read-string (git-source commit path)))))
@@ -1006,7 +1028,7 @@
          :predecessor-current-source-review auth-crypto-predecessor-mapping-review
          :qualification "Explicit Auth/Crypto document identity successor only. The selected row consumes unadmitted declarative operation/value requests and policy/contract shapes; Auth independently derives a scoped grant before Crypto checked admission and action. Admitted descriptors, provider/state/neutrality results and execution/refusal/audit traces cannot authorize their own first action. Every complete prior review retains its original subject, all49 old file transitions and578 raw payloads are preserved, and all task/requirement dispositions remain unchanged. Exact current source/routing review, implementation, semantic scope, migration, release, Main and full240 verification remain separate and unassessed."))
 
-(def mapping-review
+(def reconciliation-predecessor-mapping-review
   (assoc published-main-helper-predecessor-mapping-review
          :status :pending-source-version-review
          :input-fingerprint "23e2b4cc2145d1daa93f4f2be371a5cce80dd8504a1cf5b30976dcd32c8af257"
@@ -1014,6 +1036,46 @@
          :predecessor-current-source-review published-main-helper-predecessor-mapping-review
          :dependency-helper-source-composition {:kind :published-main-dependency-helper-input-successor, :source-commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :published-main "7204d9b0b9c80011e637f8456deec558301127c1", :predecessor {:commit "e69bb936a350a052215a6bacbea5ae69f833254c", :path "tools/acceptance_dependencies.clj", :sha256 "9cc0e6e40807dd3d106e85ebe3fef7deaba152b71dd48df6d401f21d37d1bbe1"}, :current {:commit "c0d6e0987e2659884f1bdf748c06d1f0e93aa2ed", :path "tools/acceptance_dependencies.clj", :sha256 "7f83f33fcd777a8c7661d75ba25e0621b63875eab6a45fdeb242e3542773f8f4"}, :unchanged-source-view-replayed-fingerprint "c241ce6b8420d0cb481128f8b2d07a090cc6a8289c93da1ebbee16272ce17884", :scope :pending-input-identity-only, :implementation-acceptance :unassessed}
          :qualification "Explicit published-Main dependency-helper input successor only. The source/routing view reproduces the complete prior Auth/Crypto fingerprint when supplied with the preserved predecessor helper bytes; the current helper is the clean source/Main hunk union at c0d6e098. The full c241 prior review remains nested with its original subject. Source records, all raw payloads, task bindings, source frames, scope holds and acceptance dispositions are unchanged. This pending identity successor neither accepts the 18 preserved stale-review errors nor confers semantic scope, implementation, migration, release, Main publication, self-hosting, seed retirement or full240 acceptance; the affected current checks and exact independent review remain required."))
+
+(def
+ mapping-review-99ac-predecessor
+ (let
+  [previous
+   (:mapping-review
+    (read-source-census
+     "84b85b3d55eda0501f808be0acd80fd618079f26"
+     "specs/sh-family-crosswalk/crosswalk.edn"))]
+  (assoc
+   previous
+   :status
+   :pending-source-version-review
+   :input-fingerprint
+   "99ac0053515633517c0e65331a4753e5e8b7db045be13aeb1e68589c017a1a3a"
+   :predecessor-input-fingerprint
+   "175e212e691f2609298556e8ec4335cbe4bc832b7cdbeaba4c8958c9370b2fed"
+   :predecessor-current-source-review
+   previous
+   :reconciliation-source-binding
+   requirement-sources/reconciliation-current-source-history-contract
+   :qualification
+   "Exact current Math plan source successor after the recorded numeric decision. The complete predecessor mapping review retains its old subject, bindings and fingerprint. All Task identities/owners/statuses and historical snapshots survive; no semantic/implementation/execution/Main/full240 acceptance is renewed. The pending current fingerprint is derived from actual source inputs.")))
+(def
+ mapping-review
+ (assoc
+  mapping-review-99ac-predecessor
+  :status
+  :pending-source-version-review
+  :input-fingerprint
+  "9d6f6ceacfa66ba78eb4346431fedca72704b4171ec28c048e82d24661b92ade"
+  :predecessor-input-fingerprint
+  (:input-fingerprint mapping-review-99ac-predecessor)
+  :predecessor-current-source-review
+  mapping-review-99ac-predecessor
+  :evolution-current-source-transition
+  requirement-sources/evolution-current-source-transition
+  :qualification
+  "Explicit pending current-source/routing successor for the reviewed Source1e 1e683892ceb55126cc991b54f8f84981ed541d4d scope composed onto actual Main f1383f29f991b44a446c15091a75f5ac0d64e7da (tree 936d44e990e740799459d70bd118d091fe187356), including the authenticated Main898 Evolution task-file binding and the four owned Clojure consumer/test repairs. The immediate 99ac0053515633517c0e65331a4753e5e8b7db045be13aeb1e68589c017a1a3a mapping review remains verbatim predecessor history with its original subject, status and fingerprint. No implementation, migration, release, Main publication, seedless or full240 acceptance is renewed."))
+
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
@@ -1137,6 +1199,7 @@
         _ (when-not (= (:requirements inventory) (inventory-of-original-source original-source))
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         _ (validate-current-source-transitions! (:current-source-transitions readiness-source-version))
+        _ (validate-evolution-current-source-transition!)
         _ (requirement-sources/validate-std7-std9-library-io-criterion-joins!
             (:library-io-criterion-joins readiness-source-version)
             (fn [ref source-path]
@@ -1159,7 +1222,7 @@
                                  [region rows])))
         _ (let [current-successors [(get-in readiness-source-version [:error-refinement :future-task-source-successor :after])
                                      (get-in readiness-source-version [:protocol-refinement :future-task-source-successor :after])]
-                successors (if-let [current (:source-composition-future-task-records readiness-source-version)]
+                successors (if-let [current (or (:reconciliation-future-task-records readiness-source-version) (:source-composition-future-task-records readiness-source-version))]
                              [current]
                              (if (some some? current-successors)
                              (do (when-not (every? some? current-successors)
@@ -1256,7 +1319,8 @@
       (throw (ex-info "Incomplete original routing population" {})))
     {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
-     :applying-source-pins applying-source-pins
+     :applying-source-pins current-qualified-applying-source-pins
+     :evolution-current-source-transition evolution-current-source-transition
      :source-snapshots
      (merge (requirement-sources/source-composition-predecessor-snapshots
              git-source sh-inventory/sha256 acceptance-dependencies/require!)
@@ -1268,6 +1332,7 @@
                    :current-source-transition-successor-history :source-successor-binding
                    :source-composition-transition-history
                    :source-composition-future-task-records
+                   :reconciliation-source-binding :reconciliation-future-task-records
                    :current-source-frame-history :library-io-criterion-joins
                    :current-source-library-io-criterion-joins
                    :task-comparisons :source-criteria
@@ -1327,8 +1392,8 @@
      (into (sorted-map)
        (for [p sources]
          [p (sh-inventory/sha256
-              (if (contains? current-source-transition-paths p)
-                (git-source (or (get applying-source-pins p) (source-pin p)) p)
+              (if (contains? current-qualified-source-transition-paths p)
+                (git-source (or (get current-qualified-applying-source-pins p) (source-pin p)) p)
                 (if (acceptance-dependencies/historical-sh-source-path? p)
                   (git-source (source-pin p) p)
                   (slurp p))))]))
