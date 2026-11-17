@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh02-authenticated-envelope-test]
             [gravity.self-hosting.sh08-authenticated-type-integration-test]
             [gravity.self-hosting.sh09-authenticated-effect-integration-test]
             [gravity.self-hosting.sh10-authenticated-ownership-integration-test]))
@@ -134,23 +135,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions plan)))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- bridge-source-revision []
   (let [source-text (slurp (path bridge-source))
         plan @bridge-plan
@@ -170,17 +154,54 @@
       (get (:functions plan) builder))
      :function-shapes (function-shapes plan)}))
 
-(defn- authenticated-sh08-products [extension]
-  {:effect
-   (sh09-call 'authenticated-sh08-products extension)
-   :ownership
-   (sh10-call 'authenticated-sh08-products extension)})
+(defn- fixture-stage [stage]
+  (binding [*out* *err*]
+    (println "SH-11 fixture stage" stage)
+    (flush)))
 
-(def ^:private sh08-gravity
-  (delay (authenticated-sh08-products ".gravity")))
+(defn- require-status! [stage expected result]
+  (when-not (= expected (:status result))
+    (throw (ex-info "Unexpected authenticated fixture result"
+                    {:stage stage :expected expected :status (:status result)
+                     :failed-checks (:failed-checks result)
+                     :diagnostics (:diagnostics result)})))
+  result)
 
-(def ^:private sh08-qst
-  (delay (authenticated-sh08-products ".qst")))
+(defn- authenticated-envelope [descriptor context]
+  (let [raw (require-status!
+             :envelope-build :accepted
+             (invoke envelope-plan 'authenticated-envelope-build-template
+                     [descriptor]))
+        replay (require-status!
+                :envelope-replay :template-replay-passed
+                (invoke envelope-plan 'authenticated-envelope-verify-template
+                        [descriptor (:artifact-template raw) (:digest-requests raw)]))
+        seal (resolved-value 'gravity.self-hosting.sh02-authenticated-envelope-test
+                             'seal-builder-result!)
+        sealed (seal raw)]
+    {:envelope (:template sealed)
+     :template-replay replay
+     :verification
+     (assoc context
+            :status :contextual-verification-passed
+            :artifact-template (:template sealed)
+            :semantic-envelope-root (:semantic-root sealed)
+            :provenance-binding-root (:provenance-root sealed)
+            :identity-checks (:identity-checks sealed)
+            :identity-enforcement :passed
+            :eligible-for-contextual-acceptance? true
+            :host-digest-resolution :passed
+            :identity-subject-equality :passed
+            :fresh-envelope-reconstruction :passed)
+     :semantic-root (:semantic-root sealed)
+     :provenance-root (:provenance-root sealed)}))
+
+(defn- upstream-envelope [descriptor context]
+  ;; The upstream fixture bridges still consume their v1 descriptor carriers.
+  ;; Replay the same semantic and provenance inputs using the current envelope
+  ;; descriptor schema, which omits the retired accounting policy.
+  (authenticated-envelope (-> descriptor (assoc :schema-version 2) (dissoc :bounds))
+                          context))
 
 (defn- current-type-products [extension]
   ;; Use the authenticated current-source development entrypoints for these
@@ -191,67 +212,89 @@
                     :authenticated-envelope-options {:source :development-current}
                     :syntax-source-selection
                     {:schema :gravity/sh04-development-syntax-selection-v1
-                     :source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
+                     :source-path (path bootstrap/sh04-syntax-source-relative-path)}
                     :macro-source-mode :development-current}
+        _ (fixture-stage :current-resolution)
         resolution (bootstrap/compiler-c5-resolution-source-artifact
                     source-path (bootstrap/read-gravity-source-text source-path)
                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
                     reader-path invocation)
+        _ (fixture-stage :checked-core)
         core (bootstrap/sh07-core-from-resolution-artifact resolution invocation)
+        _ (fixture-stage :fresh-checked-core-verification)
+        core-verification (require-status!
+                           :checked-core :passed
+                           (bootstrap/sh07-core-artifact-verification core invocation))
+        _ (fixture-stage :authenticated-types)
         products (merge {:source-path source-path
                          :sh07-artifact core
-                         :sh07-verification (bootstrap/sh07-core-artifact-verification core invocation)}
+                         :sh07-verification core-verification}
                         (sh08-call 'c7-result core))
         actual-path (str "/checkout-a/sh08-input" extension)
         descriptor (sh08-call 'descriptor products actual-path)
-        authenticated (sh08-call 'authenticated-envelope descriptor)
+        authenticated (upstream-envelope
+                       descriptor {:artifact :gravity/sh08-envelope-contextual-verification})
         request (sh08-call 'request products descriptor authenticated actual-path)
         run (sh08-call 'run-bridge request)
         verification (sh08-call 'invoke (sh08-value 'bridge-plan)
                                 'sh08-verify-authenticated-type-result
                                 [request (:c7-request run) (:type-template run)
                                  (:type-verification run) (:result run)])
-        typed-products {:typed-core (:result run)
-                        :verification verification
+        typed-products {:typed-core (require-status! :typed-core :accepted (:result run))
+                        :verification (require-status! :typed-core-verification :passed verification)
                         :source-extension extension}]
     {:effect typed-products :ownership typed-products}))
 
+(def ^:private sh08-gravity (delay (current-type-products ".gravity")))
+(def ^:private sh08-qst (delay (current-type-products ".qst")))
+
 (defn- effect-products [sh08-products actual-path]
-  (let [prepared
-        (sh09-call
-         'prepared-request sh08-products :pure actual-path)
-        run (sh09-call 'run-bridge prepared)
+  (fixture-stage :authenticated-effects)
+  (let [operation :pure
+        c8 (sh09-call 'c8-products (:typed-core sh08-products) operation)
+        descriptor (sh09-call 'descriptor sh08-products c8 operation actual-path)
+        authenticated (upstream-envelope
+                       descriptor {:artifact :gravity/sh09-envelope-contextual-verification
+                                   :sh08-verification (:verification sh08-products)})
+        request (sh09-call 'request sh08-products c8 operation descriptor authenticated actual-path)
+        run (sh09-call 'run-bridge {:request request})
         verification
         (sh09-call
          'invoke
          (sh09-value 'bridge-plan)
          'sh09-verify-authenticated-effect-result
-         [(:request prepared)
+         [request
           (:c8-request run)
           (:effect-result run)
           (:effect-verification run)
           (:result run)])]
-    {:effected-core (:result run)
-     :verification verification}))
+    {:effected-core (require-status! :effected-core :accepted (:result run))
+     :verification (require-status! :effected-core-verification :passed verification)}))
 
 (defn- ownership-products [sh08-products actual-path]
-  (let [prepared
-        (sh10-call
-         'prepared-request
-         sh08-products :initialized-read actual-path)
-        run (sh10-call 'run-bridge prepared)
+  (fixture-stage :authenticated-ownership)
+  (let [typed (:typed-core sh08-products)
+        operation (sh10-call 'ownership-operation :initialized-read)
+        links (sh10-call 'ownership-links typed)
+        c9 (sh10-call 'c9-products typed operation links)
+        descriptor (sh10-call 'descriptor sh08-products c9 operation links actual-path)
+        authenticated (upstream-envelope
+                       descriptor {:artifact :gravity/sh10-envelope-contextual-verification
+                                   :sh08-verification (:verification sh08-products)})
+        request (sh10-call 'request sh08-products c9 operation links descriptor authenticated actual-path)
+        run (sh10-call 'run-bridge {:request request})
         verification
         (sh10-call
          'invoke
          (sh10-value 'bridge-plan)
          'sh10-verify-authenticated-ownership-result
-         [(:request prepared)
+         [request
           (:c9-request run)
           (:ownership-result run)
           (:ownership-verification run)
           (:result run)])]
-    {:owned-core (:result run)
-     :verification verification}))
+    {:owned-core (require-status! :owned-core :accepted (:result run))
+     :verification (require-status! :owned-core-verification :passed verification)}))
 
 (defn- upstream-products [sh08-products actual-path]
   {:effect
@@ -263,15 +306,11 @@
     (:ownership sh08-products)
     (str actual-path "/ownership"))})
 
-(defn- current-upstream-products [extension]
-  (upstream-products (current-type-products extension)
-                     (str "/checkout-a/safety-input" extension)))
-
 (def ^:private current-gravity-upstream
-  (delay (current-upstream-products ".gravity")))
+  (delay (upstream-products @sh08-gravity "/checkout-a/safety-input.gravity")))
 
 (def ^:private current-qst-upstream
-  (delay (current-upstream-products ".qst")))
+  (delay (upstream-products @sh08-qst "/checkout-a/safety-input.qst")))
 
 (defn- fact-links [upstream]
   (let [effected (get-in upstream [:effect :effected-core])
@@ -527,7 +566,7 @@
          fact-names)]
     {:artifact
      :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh11-authenticated-safety-bridge
      :artifact-kind
      :gravity/sh11-authenticated-safety-boundary
@@ -704,43 +743,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
-
-(defn- authenticated-envelope
-  [descriptor effect-verification ownership-verification]
-  (let [raw
-        (invoke
-         envelope-plan
-         'authenticated-envelope-build-template
-         [descriptor])
-        replay
-        (invoke
-         envelope-plan
-         'authenticated-envelope-verify-template
-         [descriptor
-          (:artifact-template raw)
-          (:digest-requests raw)])
-        sealed (sh08-call 'seal-builder-result! raw)]
-    {:envelope (:template sealed)
-     :template-replay replay
-     :verification
-     {:artifact
-      :gravity/sh11-envelope-contextual-verification
-      :status :contextual-verification-passed
-      :artifact-template (:template sealed)
-      :semantic-envelope-root (:semantic-root sealed)
-      :provenance-binding-root (:provenance-root sealed)
-      :identity-checks (:identity-checks sealed)
-      :identity-enforcement :passed
-      :eligible-for-contextual-acceptance? true
-      :host-digest-resolution :passed
-      :identity-subject-equality :passed
-      :fresh-envelope-reconstruction :passed
-      :effect-verification effect-verification
-      :ownership-verification ownership-verification}
-     :semantic-root (:semantic-root sealed)
-     :provenance-root (:provenance-root sealed)}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- request
   [upstream safety-operation c10 operation descriptor
@@ -778,24 +781,30 @@
    :envelope-verification (:verification authenticated)
    :actual-source-path actual-path}))
 
+(defn- seal-safety-request
+  [{:keys [upstream safety-operation c10 descriptor] :as prepared} operation]
+  (let [actual-path (get-in descriptor [:actual-path-provenance :source-path])
+        authenticated (authenticated-envelope
+                       descriptor
+                       {:artifact :gravity/sh11-envelope-contextual-verification
+                        :effect-verification (get-in upstream [:effect :verification])
+                        :ownership-verification (get-in upstream [:ownership :verification])})]
+    (assoc prepared
+           :request (request upstream safety-operation c10 operation descriptor
+                             authenticated actual-path)
+           :authenticated authenticated)))
+
 (defn- prepare-safety-request [upstream operation actual-path]
   (let [links (fact-links upstream)
         safety-operation (safety-operation operation links)
-        c10 (c10-products safety-operation)
-        descriptor (descriptor upstream safety-operation c10 operation links
-                               actual-path)
-        authenticated (authenticated-envelope
-                       descriptor
-                       (get-in upstream [:effect :verification])
-                       (get-in upstream [:ownership :verification]))]
-    {:request (request upstream safety-operation c10 operation descriptor
-                       authenticated actual-path)
-     :upstream upstream
-     :links links
-     :safety-operation safety-operation
-     :c10 c10
-     :descriptor descriptor
-     :authenticated authenticated}))
+        c10 (c10-products safety-operation)]
+    (seal-safety-request
+     {:upstream upstream
+      :links links
+      :safety-operation safety-operation
+      :c10 c10
+      :descriptor (descriptor upstream safety-operation c10 operation links actual-path)}
+     operation)))
 
 (defn- prepared-request [sh08-products operation actual-path]
   (prepare-safety-request (upstream-products sh08-products actual-path)
@@ -1040,15 +1049,20 @@
         long-path (str "/checkout-b/"
                        (apply str (repeat 160 "relocated-source-directory/"))
                        "safety-input.gravity")
+        _ (fixture-stage :short-path-envelope-and-safety)
         prepared-a
         (prepare-safety-request upstream :proven-overflow short-path)
-        prepared-b
-        (prepare-safety-request upstream :proven-overflow long-path)
         run-a (run-bridge prepared-a)
+        _ (fixture-stage :long-path-envelope-and-safety)
+        prepared-b
+        (seal-safety-request
+         (assoc-in prepared-a [:descriptor :actual-path-provenance :source-path] long-path)
+         :proven-overflow)
         run-b (run-bridge prepared-b)
         result-a (:result run-a)
         result-b (:result run-b)
         request-b (:request prepared-b)
+        envelope-b (:envelope request-b)
         provenance-a (get-in prepared-a [:authenticated :provenance-root])
         provenance-b (get-in prepared-b [:authenticated :provenance-root])]
     (is (> (count long-path) 4096))
@@ -1067,8 +1081,13 @@
     (is (= (:artifact-id result-a)
            (:artifact-id result-b)))
     (is (= long-path
-           (get-in request-b [:envelope :actual-path-provenance :source-path])
+           (get-in envelope-b [:actual-path-provenance :source-path])
            (get-in run-b [:c10-request :actual-source-path])))
+    (is (= provenance-b
+           (canonical-id
+            {:domain :gravity/authenticated-envelope-provenance-binding-v1
+             :semantic-envelope-id (:semantic-envelope-id envelope-b)
+             :actual-path-provenance (:actual-path-provenance envelope-b)})))
     (is (= provenance-b (get-in run-b [:c10-request :provenance-binding-id])))
     (is (= {:actual-source-path short-path :provenance-binding-id provenance-a}
            (:provenance result-a)))
@@ -1081,6 +1100,9 @@
              ["nontext captured path"
               (assoc request-b :actual-source-path :not-a-path)
               "STD11-BRIDGE-SCHEMA" :actual-path-required]
+             ["captured path substituted without resealing"
+              (assoc request-b :actual-source-path short-path)
+              "STD11-BRIDGE-ENVELOPE" :invalid-authenticated-envelope]
              ["short-path envelope substituted into the long-path request"
               (assoc request-b :envelope (get-in prepared-a [:request :envelope]))
               "STD11-BRIDGE-ENVELOPE" :invalid-authenticated-envelope]]]

@@ -918,19 +918,23 @@ C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.
 
 ## ACC-13 SH-11 captured source path
 
-The bridge request now admits captured source paths based on the existing
-nonempty text requirement. The integration control builds one genuine,
+The bridge request accepts nonempty captured source text that matches the
+authenticated envelope. The integration control builds one genuine,
 verified SH-09/SH-10 pair with short paths and uses it for independently
 sealed short and 4,352-character SH-11 envelopes. It checks the exact path
 and provenance root, path-neutral semantic identity, fresh C10 verification,
-and rejection of invalid path values and a substituted envelope.
+and rejection of invalid or substituted paths and a substituted envelope.
 
 The controller's first run stopped at the SH-03 Reader pin before reaching
 these controls. The SH-11 development tests now select the authenticated
 current Reader, Syntax, and Macro sources through C5 and fresh SH-07
 verification. The next focused run timed out before reporting an assertion
-result. Reusing the verified upstream pair removes the duplicate SH-09 and
-SH-10 construction and replay from the focused selector. Each SH-11 request
-still constructs and replays its own envelope and gets fresh C10 verification.
-Controller checks and independent acceptance are pending. See the [scoped
-evidence](evidence.md#acc-13-sh-11-captured-source-path). ACC-13 stays open.
+result. Source inspection found that the fixture descriptors still used the
+version 1 envelope shape after the shared builder moved to version 2. The
+SH-11 fixture now uses version 2 and shares one compiled envelope plan across
+the upstream producers and both SH-11 requests. The fixture builds and replays
+each envelope with its complete semantic and provenance inputs. The upstream
+bridges still receive their existing request carriers. Stage output identifies
+where any subsequent run stops. Controller checks and independent acceptance
+are pending. See the [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
+ACC-13 stays open.

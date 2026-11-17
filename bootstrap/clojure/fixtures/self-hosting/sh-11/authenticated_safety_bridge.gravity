@@ -843,11 +843,11 @@
         :semantic-projections :fact-transitions
         :effect-capability-relation :proof-composite
         :preservation :identity-subjects :lineage
-        :reference-closure :actual-path-provenance :bounds})
+        :reference-closure :actual-path-provenance})
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh11-authenticated-safety-bridge
                (get descriptor :stage))
           (if
@@ -1102,7 +1102,13 @@
                                    (get request
                                         :actual-source-path))
                                   0)
-                                nil
+                                (if
+                                 (= (get request :actual-source-path)
+                                    (get (get (get request :envelope)
+                                              :actual-path-provenance)
+                                         :source-path))
+                                  nil
+                                  [:envelope :invalid-authenticated-envelope])
                                 [:schema :actual-path-required])
                               [:schema
                                :actual-path-required]))))))))))))))))

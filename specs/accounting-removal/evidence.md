@@ -2395,9 +2395,10 @@ Effects and Ownership pair built from short paths for both positive controls.
 
 | Control | Expected result |
 | --- | --- |
-| Short baseline and independently sealed SH-11 envelope with 4,352 ASCII characters of captured path text | Both bridge requests and bound results accepted with fresh C10 verification `:passed` and outcome `:proven-safe`. Semantic envelope root, safety identity input, and artifact ID agree. The provenance roots differ, and the long path and its root survive in the C10 request and bound result. |
+| Short baseline and independently sealed SH-11 envelope with 4,352 ASCII characters of captured path text | Both bridge requests and bound results accepted with fresh C10 verification `:passed` and outcome `:proven-safe`. Semantic envelope root, safety identity input, and artifact ID agree. The provenance roots differ. The long path and the independently recomputed provenance root match the C10 request and bound result. |
 | Replace the long-path request's `:actual-source-path` with `""` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
 | Replace the long-path request's `:actual-source-path` with `:not-a-path` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
+| Replace the long-path request's `:actual-source-path` with the valid short path while retaining the long-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
 | Replace only the long-path request's envelope with the genuine short-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
 
 Source review confirmed the remaining nonempty text check follows envelope
@@ -2432,10 +2433,30 @@ classify and verify C10 afresh and bind the result through the bridge. The
 namespace's SAFE1 and lineage controls reuse the respective verified upstream
 fixtures while keeping their existing checks.
 
-The table records authored assertions. The timeout result does not locate
-the stall, and no post-repair execution result is available. The focused
-selector, namespace run, exact-revision receipt, and independent acceptance
-are pending with the controller.
+The current repair also resolves a source-confirmed incompatibility. The
+shared builder's `ae-descriptor-shape-valid?` and `ae-descriptor-validation`
+require descriptor version 2 and a key set without `:bounds`. The previous
+SH-08 through SH-11 fixtures all passed version 1 with `:bounds` to the
+current builder. The SH-11 descriptor and its bridge validation now use the
+current shape. For SH-08, SH-09, and SH-10, the SH-11 fixture projects the
+same semantic and provenance fields to version 2 for the shared Gravity
+builder and its fresh replay. It passes each original version 1 descriptor
+to its existing upstream bridge and uses the current SH-02 digest graph
+sealer for the resulting envelopes. All stages share a single compiled
+envelope plan. The SH-08 source fixtures, fresh Core verification, and
+upstream bridge builders and verifiers remain part of the composition.
+The two path variants share the prepared semantic descriptor and expected C10
+products. Each variant still constructs, replays, and seals its own envelope,
+then runs fresh C10 classification and verification through the bridge.
+The SH-11 bridge also compares the request path with the path in the sealed
+envelope before forwarding it to C10.
+
+The table records authored assertions. The earlier exit 124 supplied no
+stage information, so the cause of the timeout remains unverified. The
+fixture now emits stage markers from C5 resolution through the two SH-11
+requests and reports upstream rejections at their boundary. Post-repair
+execution, an exact-revision receipt, and independent acceptance are pending
+with the controller.
 
 ```clojure
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
