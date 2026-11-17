@@ -29,13 +29,18 @@
      :acyclic true :status :complete}))
 
 (defn c5-cross-profile-edge-report [module dependency-graph]
-  {:artifact :gravity/c5-cross-profile-edge-report
-   :edges (mapv (fn [dependency]
-                  {:from (:module module) :to (:namespace dependency) :from-profile (:profile module)
-                   :to-profile (or (some (fn [dep] (when (= (:module dep) (:namespace dependency)) (:profile dep)))
-                                          (concat (:requires module) (:imports module))) (:profile module))
-                   :boundary (:profile-boundary dependency) :accepted? (not= :missing (:profile-boundary dependency))})
-                (:dependencies dependency-graph)) :status :complete})
+  (let [profiles-by-namespace (reduce (fn [profiles {:keys [profile] dependency-module :module}]
+                                        (if (and profile (not (contains? profiles dependency-module)))
+                                          (assoc profiles dependency-module profile)
+                                          profiles))
+                                      {}
+                                      (concat (:requires module) (:imports module)))]
+    {:artifact :gravity/c5-cross-profile-edge-report
+     :edges (mapv (fn [dependency]
+                    {:from (:module module) :to (:namespace dependency) :from-profile (:profile module)
+                     :to-profile (get profiles-by-namespace (:namespace dependency) (:profile module))
+                     :boundary (:profile-boundary dependency) :accepted? (not= :missing (:profile-boundary dependency))})
+                  (:dependencies dependency-graph)) :status :complete}))
 
 (defn c5-incremental-invalidation-keys [module c4-artifact binding-table dependency-graph]
   {:artifact :gravity/c5-incremental-invalidation-keys
