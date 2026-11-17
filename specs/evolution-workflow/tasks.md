@@ -283,3 +283,80 @@ captured task region; preserve historical receipts and coordinate later merges
 with PR767/1291 and retained Evolution work without adopting their changes.
 Controller-owned verification will run the focused namespace, applicable
 acceptance-dependency controls, language boundary and document validators.
+
+## Owned change sketch carrier
+
+Finding `evolution.change-sketches.owner-scope-production-v1` implements only
+initial GOV1 record construction under `evolution/change-review`, still Open.
+This appendix is outside `evolution-implementation-tasks:end`; the captured
+task bodies, source criteria and historical receipts retain their authority.
+The authenticated plan.md must remain byte-for-byte unchanged.
+
+Implement pure Clojure `gravity.evolution.change-sketches/create-sketch` in
+`bootstrap/clojure/src/gravity/evolution/change_sketches.clj`, with fixtures in
+`bootstrap/clojure/test/gravity/evolution/change_sketches_test.clj`. GOV1
+Requirements, Process States, Change Record, Outputs and Diagnostics govern
+the behavior; D1/D3/D9 govern explicit artifacts and provenance. The two
+arguments are already decoded, disclosure-safe public data:
+
+- `change`: a Clojure map excluding records, with nonblank strings `:id`,
+  `:revision`, `:title`, `:owner`, `:problem-statement`; nonempty keyword sets
+  `:scope` and `:affected-surfaces`; and a nonempty vector of nonblank document
+  reference strings in `:affected-documents`. Strings are retained exactly.
+  Document order is retained; scope/surface sets carry declarations, not
+  legality, authority or support verdicts. GOV1 supplies no closed scope enum,
+  revision grammar or identity registry here: labels are opaque and no lookup,
+  normalization, uniqueness assertion or later lifecycle rule is invented.
+- `provenance`: a Clojure map excluding records, with nonblank public strings
+  `:source-id`, `:input-id`, `:policy-id`, `:tool-id`. These identify the supplied
+  source, authoring input, policy and tool; their authenticity and availability
+  are not established by a nonblank reference.
+
+Success is `{:status :sketch, :diagnostics [], :artifact ...}`. The artifact
+contains `:schema :gravity.evolution/change-sketch-v1`,
+`:kind :gravity/language-change-record`, `:state :sketch`,
+`:authority :non-admitting`, exactly the eight declared change fields and the
+four selected references in `:provenance`. Its `:decision-history` is a vector
+with one constructed event: `:event :authored`, `:actor` equal to owner,
+`:state :sketch`, `:subject {:id id, :revision revision}` and the same
+`:provenance`. This event records authoring only, with no fabricated review,
+approval, timestamp or transition. No clock, IO or mutable state is used.
+Maps and keyword sets are rebuilt in natural sorted order; vectors keep order.
+Complete products and their readable EDN rendering under the same printer
+settings must be independent of input map/set insertion order. Input metadata
+is not projected. Unrecognized fields, including caller `:state`, `:status`,
+`:approval`, `:authority` and `:decision-history`, are ignored, never interpreted
+or retained. Only validated immutable declared values enter the artifact.
+
+Failure is `{:status :rejected, :diagnostics [...]}` without an artifact.
+Every diagnostic is `{:id "GOV1001", :message "Invalid explicit change sketch input",
+:path [...], :reason ...}`. Paths contain only known argument/field names;
+no input payload, unknown keys or provenance are echoed. Reasons distinguish
+`:missing-field`, `:invalid-type`, `:blank-field`, `:empty-field` and
+`:invalid-member`. A malformed argument map yields one `:invalid-type` at
+`[:change]` or `[:provenance]`. Field diagnostics follow the change field order
+listed above, then the provenance field order above. A collection with an
+invalid member yields one `:invalid-member` at its field path. This is a narrow
+data/type contract, with no work, accounting or input-size quota.
+
+Required accepted fixtures: `complete-owned-sketch`,
+`changed-problem-changes-product`, `reordered-map-determinism`,
+`initial-history-and-provenance-retained`. Required rejected fixtures:
+`missing-owner`, `missing-problem`, `empty-affected-documents`, `malformed-scope`.
+Add `caller-approved-state-cannot-promote-sketch` and
+`mutable-host-input-rejected` controls. Compare complete expected products and
+diagnostics plus unchanged inputs; cover missing/malformed identity, references,
+collections and blank text, stable diagnostic order, and mutable host values
+before/after caller mutation. A constant catalog or schema-only test gives no
+operation evidence.
+
+Start requires explicit inputs and no predecessor increment. Composition still
+requires authentic subject/owner/reference evidence, applicable GOV2/GOV4 and
+GOV6-GOV10 decisions and affected-component artifacts. This creates no RFC or
+experiment producer, stable-change admission, implementation or release grant.
+Independent acceptance remains separate. The parent stays Open until all its
+criteria and independent acceptance exist. Coordinate these additive appendices
+with PR1308 and retained documentation candidates at controller integration;
+do not adopt their edits or acceptance. Controller verification owns the focused
+namespace, applicable acceptance-dependency controls, language-boundary gate
+and document validators, with actual results recorded in evidence.md.

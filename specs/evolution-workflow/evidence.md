@@ -329,3 +329,144 @@ historical rebuild execution and independent acceptance remain separate unrun
 composition/acceptance obligations. The parent remains Open. No integration,
 yank issuance, approval, grant, release, self-hosting or seed retirement is
 claimed, and every retained refused operation remains prohibited.
+
+## Owned GOV1 change sketch production
+
+Finding: `evolution.change-sketches.owner-scope-production-v1`.
+Owning task: `evolution/change-review`, still Open. Authored on 2026-11-06 in
+the supplied `increment-1309` worktree; no base/commit/tree identity was supplied
+or inferred. No Git command, including `git status --short`, was attempted.
+The controller owns verification and candidate identity binding for this
+uncommitted increment.
+
+Applied the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md) within
+the four explicitly owned paths. Read repository and Spec Kit instructions,
+the constitution and semantic naming, owning spec/plan/tasks/evidence,
+development verification, phase navigation, GOV1 and D0/D1/D2/D3/D6/D8/D9.
+This is a new semantic producer and public artifact carrier, not a private
+rename. `gravity.evolution.change-sketches/create-sketch` names its subsystem
+and behavior; the finding and GOV identities remain traceability metadata.
+
+Specified the [narrow carrier](tasks.md#owned-change-sketch-carrier) before
+authoring the producer and its fixtures. It constructs an individual change
+record from explicit identity/revision, title, owner, problem, scope, affected
+documents/surfaces and source/input/policy/tool references. The artifact always
+has `:state :sketch`, `:authority :non-admitting` and one initial authoring
+history event bound to the exact subject, owner and references. It neither
+reads the historical stage0 catalog nor copies its generic `:implemented`
+verdicts. Caller approval, later states, authority and decision history are
+ignored and cannot become a transition or grant. Maps/keyword sets are rebuilt
+in sorted order, document vectors retain order, and input metadata is omitted.
+
+Authored the required `complete-owned-sketch`, `changed-problem-changes-product`,
+`reordered-map-determinism`, `initial-history-and-provenance-retained`,
+`missing-owner`, `missing-problem`, `empty-affected-documents`,
+`malformed-scope`, `caller-approved-state-cannot-promote-sketch` and
+`mutable-host-input-rejected` fixtures. They compare complete expected products
+or payload-free GOV1001 diagnostics and input renderings before/after calls.
+Additional cases exercise changed declared surfaces/documents, missing/blank/
+malformed text and references, malformed collections/maps, stable multi-field
+diagnostic order, metadata non-disclosure and construction under truncated
+printer bindings. Mutable controls cover Java HashMap, HashSet, ArrayList,
+StringBuilder and AtomicLong before and after caller mutation; earlier
+diagnostics must remain unchanged and contain no secret-marker payload.
+
+Actual worker activity: passive source/document reads, four owned-path edits
+and textual review of the authored source and fixtures. Result: authored for
+native controller checking only. No Clojure execution, test, build, validator,
+Git/cache inspection, consumer execution or independent acceptance ran. There
+are no observed test counters, exit codes or successful-check receipts for this
+increment. Verification is controller-owned and was not attempted or transferred.
+No new refusal occurred; all retained refusals and restricted operations remain
+binding. Unrun controller checks alone do not restrict authored readiness.
+
+Proposed controller Clojure argument vectors (all unrun here):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.change-sketches-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+The existing acceptance-dependency controls cover captured-span preservation,
+historical-source non-promotion, conditional edges and current-source identity,
+including `current-source-transition-authenticates-file-and-span-identities`
+and `acceptance-owner-rejects-current-transition-population-drift`. They retain
+their own scope and cannot establish operation implementation or independent
+acceptance. Record actual controller commands, identities, results and any
+unrun behavior against the resulting candidate; no historical receipt is renewed.
+
+Missing authority and semantic limits: the parent's accountable individual
+remains unassigned. Fixture owners and reference strings are public test data,
+not owner authentication, verified source identity or governance review.
+GOV1 does not define a closed scope vocabulary, revision grammar or identity
+allocation service for sketches. The narrow carrier explicitly chooses keyword
+sets and opaque exact labels; it makes no registry lookup, identity-uniqueness,
+content-hash or revision-progression claim. The caller supplies disclosure-safe
+inputs; this producer does not discover/redact secrets, verify signatures or
+retrieve references. No material ambiguity remains for this declared carrier;
+later consumer schemas and review/admission authority remain separate work.
+
+Start needs only explicit inputs, with no predecessor increment. Later
+composition requires authentic owner/subject/reference evidence and applicable
+GOV2/GOV4/GOV6-GOV10 plus affected-component artifacts. No restricted RFC or
+experiment producer was implemented, renamed, restarted or routed around.
+Independent acceptance, integration and release remain distinct and unrun.
+The parent task, captured task region, source criteria, historical receipts and
+authenticated Evolution plan.md were not edited. Only additive task/evidence
+appendices accompany the two new Clojure files. Controller integration must
+coordinate these appendices with PR1308 and retained documentation candidates;
+none of their edits, authority or acceptance was adopted here. No accounting
+or input quota was added. No commit, admission, release, self-hosting or
+seed-retirement claim is made.
+
+## Change sketch CI feedback disposition
+
+Follow-up for `evolution.change-sketches.owner-scope-production-v1`,
+2026-11-07. Supplied CI feedback identifies head
+`05393417cbbf0709552ad2b72200a0db299eaaca`, run `42348084392`, and a failed
+`darwin-unsupported-host` job `128330167973`. These are reported input
+identities and results, not locally authenticated identities or a result for
+this evidence edit. The supplied feedback contains no failed-step log,
+exception, assertion output or failure receipt. Its other pending/queued jobs
+are not reported as passing.
+
+Passive source review found the requested producer, carrier appendix and named
+positive/negative fixtures already present in the four owned paths. The failed
+job is configured in `.github/workflows/ci.yml` for macos-15 and JDK 26.0.1+8.
+Its Clojure refusal assertion in `tools/ci/darwin_unsupported_test.clj` loads
+Darwin publication, not change sketch construction, and requires native
+preflight refusal before publication I/O. The job also performs setup, host
+probes and receipt handling. A job-level FAILURE alone does not identify which
+step failed or justify changing its expected refusal. No causal defect in the
+owned producer or fixtures was established from this feedback.
+
+Only this additive evidence entry was edited. No assertion, selector, workflow,
+host guard, producer or fixture was weakened or skipped. The captured task
+region, Open parent, authenticated plan and historical evidence are unchanged.
+Actual activity was passive source reads and an evidence edit; no Git, network,
+test, build, validator or native operation ran. Controller-owned verification
+remains unrun; no check success or independent acceptance is claimed.
+
+Repair needs the failed step's log and available `target/ci` failure receipt
+from the supplied job. If those locate the defect outside the four owned
+paths, the controller must route it to the appropriate owner; this increment
+has no authority to edit CI or Darwin publication. No material ambiguity in
+the declared GOV1 carrier was found, and the previously recorded missing owner
+authentication and later composition/acceptance obligations remain.
+
+The five controller Clojure argument vectors in the preceding section remain
+proposed and unrun. For the existing unsupported-host assertion, its direct
+controller vector on the configured host/JDK is also unrun here:
+
+```clojure
+["clojure" "-Srepro" "-J-Xmx256m" "-J--enable-native-access=ALL-UNNAMED"
+ "-M" "tools/ci/darwin_unsupported_test.clj"]
+```
+
+This direct assertion does not replace the complete CI job or establish that
+its setup, host probes and receipt steps succeeded. No retained refusal was
+retried or transferred, and no commit or release authority is claimed.
