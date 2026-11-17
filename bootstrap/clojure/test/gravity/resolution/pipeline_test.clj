@@ -1214,8 +1214,9 @@
                  (get-in changed-product [:dependency-graph :nodes])))
           (is (= (:dependency-edges changed-request) (get-in changed-product [:dependency-graph :edges])))
           (is (= (:inputs invalidation) (:inputs changed-invalidation)))
-          (is (= preserves-key? (= (:invalidation-id invalidation)
-                                   (:invalidation-id changed-invalidation))))))))
+          (is (= preserves-key?
+                 (= (:invalidation-id invalidation)
+                    (:invalidation-id changed-invalidation)))))))
     (is (= "C5-UNRESOLVED" (:id (ex-data error))))
     (is (= 'missing (:symbol (ex-data error))))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id (ex-data error))))

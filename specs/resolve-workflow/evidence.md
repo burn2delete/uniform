@@ -156,9 +156,15 @@ requests to check physical origins. The fresh verifier control substitutes the
 derived v1 key in a current source artifact and expects `:invalidation-current?`
 to fail while fresh replay, resolved analysis and graph checks pass.
 
-Runtime results and exact checked revision are pending controller execution.
-The authored controls have no observed pass or failure yet. Run the verifier
-selector when its current-source route is eligible.
+The controller reported exit 1 for the first command below on the pre-repair
+worktree. The test namespace failed to compile at `pipeline_test.clj:1219:33`
+with `Unable to resolve symbol: error in this context`. An extra closing
+parenthesis in the graph comparison ended the enclosing `let` before the
+unresolved-reference assertions. The repair keeps those assertions within the
+original `error` binding and preserves the graph comparisons. The failed
+compile produced no test results. Post-repair results and exact checked revision
+are pending controller execution. The verifier selector uses the existing
+current-source route and requires that route to be eligible when run.
 
 ```bash
 clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
