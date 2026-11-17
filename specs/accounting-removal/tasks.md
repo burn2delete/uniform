@@ -940,6 +940,11 @@ The controller's next exact run timed out inside the combined current-source
 C5 call, before either path control. The fixture now uses the existing
 request-scoped SH-02 plan cache and reports Reader/Syntax, Macro, and Resolution
 separately. The C8 module bundle also carries the explicit current-source
-selection into its ordinary C5 replays at build and runtime. Post-repair
-controller checks and independent acceptance remain pending. ACC-13 stays
+selection into its ordinary C5 replays at build and runtime.
+
+The next exact run reached checked-Core construction and timed out before
+fresh Core verification. The path selector now builds both upstream products
+from one exported integer definition through the existing verified pipeline.
+The broader SAFE1 and lineage selectors retain the paired primitive fixtures.
+Controller checks of this revision and independent acceptance remain pending. ACC-13 stays
 open. See the [scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).

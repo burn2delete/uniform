@@ -2477,6 +2477,25 @@ upstream products still share one actual Typed Core for each source extension.
 The long-path assertion now compares the sealed envelope's provenance ID
 directly with the recomputed root and forwarded C10 ID.
 
+The controller's next exact run exited 124. Stderr recorded entry to
+`:current-syntax`, `:current-macro-expansion`, `:current-resolution`, and
+`:checked-core`, in that order. The `:fresh-checked-core-verification` marker
+did not appear. Stdout contained the namespace's `Testing` line. The capture
+was complete, the writer ended, and the controller marked the timeout
+unrestricted. The run identifies the active call as
+`sh07-core-from-resolution-artifact`. It supplies no timing breakdown within
+that call, assertion result, commit, or tree.
+
+The path selector now builds its upstream pair from the repository's
+[`profile-accepted-meta.gravity`](../../bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity),
+which exports one integer literal definition. SH-09 selects the first type
+fact for its pure operation and SH-10 selects fact index zero for its
+initialized read. The 13 definitions in `primitive-if-join` were unnecessary
+for that shared lineage. This reduces the source that checked-Core constructs
+and replays. The selector still requires fresh Core, Type, Effect, Ownership,
+envelope and C10 verification. The broader SAFE1 and tamper selectors continue
+to use their original upstream fixtures.
+
 The table records authored assertions. No worker execution, exact-revision
 pass receipt, or independent acceptance is available for this repair.
 

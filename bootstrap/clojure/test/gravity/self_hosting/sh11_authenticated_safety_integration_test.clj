@@ -293,9 +293,8 @@
     {:owned-core (require-status! :owned-core :accepted (:result run))
      :verification (require-status! :owned-core-verification :passed verification)}))
 
-(defn- current-upstream-products [extension]
-  (let [source-path (sh08-call 'fixture-path "accepted" "primitive-if-join" extension)
-        actual-path (str "/checkout-a/safety-input" extension)
+(defn- current-upstream-products [source-path extension]
+  (let [actual-path (str "/checkout-a/safety-input" extension)
         invocation {:reader-source-path (path bootstrap/sh03-reader-source-relative-path)
                     :authenticated-envelope-options {:source :development-current}
                     :syntax-source-selection
@@ -318,11 +317,13 @@
              #(effect-products typed (str actual-path "/effect")))
            :ownership (ownership-products typed (str actual-path "/ownership"))})))))
 
-(def ^:private current-gravity-upstream
-  (delay (current-upstream-products ".gravity")))
+(defn- primitive-upstream [extension]
+  (delay (current-upstream-products
+          (sh08-call 'fixture-path "accepted" "primitive-if-join" extension)
+          extension)))
 
-(def ^:private current-qst-upstream
-  (delay (current-upstream-products ".qst")))
+(def ^:private current-gravity-upstream (primitive-upstream ".gravity"))
+(def ^:private current-qst-upstream (primitive-upstream ".qst"))
 
 (defn- fact-links [upstream]
   (let [effected (get-in upstream [:effect :effected-core])
@@ -1052,7 +1053,11 @@
       (is (= :rejected (:status result-rejection))))))
 
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
-  (let [upstream @current-gravity-upstream
+  ;; Both upstream producers consume the first type fact. One literal definition
+  ;; supplies it through the same checked-Core build and fresh verification.
+  (let [upstream (current-upstream-products
+                  (path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity")
+                  ".gravity")
         short-path "/checkout-a/safety-input.gravity"
         long-path (str "/checkout-b/"
                        (apply str (repeat 160 "relocated-source-directory/"))
