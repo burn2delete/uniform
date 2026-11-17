@@ -2377,3 +2377,186 @@ run retains its original source identity; no combined fresh suite is claimed.
 Current-head CI, independent review and exact integration preflight remain
 necessary. No typed conversion, authenticated-source, backend, release or
 whole accounting completion is claimed.
+
+## ACC-13 SH-11 captured source path
+
+Source inspection in the current worktree identified the bridge request's
+4,096-character test as an admission quota on provenance text. The bridge
+passes this field through to the C10 request and the accepted result. The
+shared envelope's `ae-actual-path-provenance-valid?` requires nonempty text,
+and the provenance digest includes that text separately from the semantic
+root. The field is data at this boundary. Filesystem access remains subject
+to the host's own constraints. This change deletes the request comparison and
+`:actual-path-bound` refusal. The upstream carrier contracts, envelope and
+lineage checks, and C10 verification remain in force.
+
+`sh11-identity-is-path-neutral-with-separate-provenance` uses one verified
+Effects and Ownership pair built from short paths for both positive controls.
+
+| Control | Expected result |
+| --- | --- |
+| Short baseline and independently sealed SH-11 envelope with 4,352 ASCII characters of captured path text | Both bridge requests and bound results accepted with fresh C10 verification `:passed` and outcome `:proven-safe`. Semantic envelope root, safety identity input, and artifact ID agree. The provenance roots differ. The long path and the independently recomputed provenance root match the C10 request and bound result. |
+| Replace the long-path request's `:actual-source-path` with `""` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
+| Replace the long-path request's `:actual-source-path` with `:not-a-path` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
+| Replace the long-path request's `:actual-source-path` with the valid short path while retaining the long-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
+| Replace only the long-path request's envelope with the genuine short-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
+
+Source review confirmed the remaining nonempty text check follows envelope
+validation. The controller reported that the namespace command below exited 1
+with 5 tests, 21 assertions, 0 failures, and 3 errors on the pre-repair
+worktree. All three errors occurred while building the SH-08 fixture's Core
+input, before the affected SH-11 assertions. The pinned Reader rejected the
+regular source file with `C2-HASH` and
+`:exact-regular-pinned-sh03-reader-source` (expected 231,576 bytes, observed
+246,369). The supplied result has no commit or tree identity.
+
+The first repair explicitly selects the current Reader, Syntax, and Macro sources
+for the SH-11 tests' paired `primitive-if-join` fixtures through the existing
+C5 development API. The same invocation goes to SH-07 construction and its
+fresh verifier. The fixture builds, seals, and verifies the SH-08 result using
+the existing type integration helpers. Both effect and ownership requests use
+that verified Typed Core and run their own builders and verifiers. Historical
+pinned fixture delays remain available to their existing callers. This is
+development composition under the [current source workflow][development].
+
+The controller then reported exit 124 on the exact selector below. Stdout
+contained only the namespace's `Testing` line, stderr was empty, capture was
+complete, and the writer had ended. The controller classified it as
+unrestricted. No commit, tree, completed assertion count, or in-test stage
+was supplied for this attempt.
+
+The timeout repair builds and verifies the current short-path upstream pair
+once per source extension per JVM. Both path variants consume the exact same
+verified products, so only captured provenance varies. The fixture still
+builds, replays, and seals each SH-11 envelope independently. Both runs still
+classify and verify C10 afresh and bind the result through the bridge. The
+namespace's SAFE1 and lineage controls reuse the respective verified upstream
+fixtures while keeping their existing checks.
+
+The current repair also resolves a source-confirmed incompatibility. The
+shared builder's `ae-descriptor-shape-valid?` and `ae-descriptor-validation`
+require descriptor version 2 and a key set without `:bounds`. The previous
+SH-08 through SH-11 fixtures all passed version 1 with `:bounds` to the
+current builder. The SH-11 descriptor and its bridge validation now use the
+current shape. For SH-08, SH-09, and SH-10, the SH-11 fixture projects the
+same semantic and provenance fields to version 2 for the shared Gravity
+builder and its fresh replay. It passes each original version 1 descriptor
+to its existing upstream bridge and uses the current SH-02 digest graph
+sealer for the resulting envelopes. All stages share a single compiled
+envelope plan. The SH-08 source fixtures, fresh Core verification, and
+upstream bridge builders and verifiers remain part of the composition.
+The two path variants share the prepared semantic descriptor and expected C10
+products. Each variant still constructs, replays, and seals its own envelope,
+then runs fresh C10 classification and verification through the bridge.
+The SH-11 bridge also compares the request path with the path in the sealed
+envelope before forwarding it to C10.
+
+The controller's next run of the exact selector below exited 124. Stdout
+contained only the namespace's `Testing` line and stderr contained only
+`SH-11 fixture stage :current-resolution`. Capture was complete, the writer
+ended, and the controller classified the result as unrestricted. That marker
+preceded a single call covering Reader/Syntax, Macro, and Resolution. The
+run supplied no narrower stage or assertion result and no commit or tree
+identity. The timeout's exact cause is unverified.
+
+The SH-11 fixture now scopes the existing `p15-s23-with-stage2-plan-emission-context`
+to each upstream fixture construction. Source inspection found that outside
+this context the SH-02 source-binding owner recompiles the same envelope plan
+for repeated frontend builds and verifications. Inside the context it first
+authenticates the source and emitter inputs on each call, and only reuses the
+compiled binding for matching inputs and policy. Envelope construction,
+verification, source checks, and fresh C10 checks still execute. The fixture
+reports entry to Reader/Syntax, Macro, and Resolution separately using the
+same owner calls as the combined C5 constructor.
+
+The C8 fixture's module bundle build and runtime reconstruction use the
+one-argument C5 verifier. The SH-11 fixture wraps those calls in the existing
+`sh06-resolution-with-reader-invocation` scope so the verifier uses the same
+current Reader, Syntax, and Macro selection as construction. Both verified
+upstream products still share one actual Typed Core for each source extension.
+The long-path assertion now compares the sealed envelope's provenance ID
+directly with the recomputed root and forwarded C10 ID.
+
+The controller's next exact run exited 124. Stderr recorded entry to
+`:current-syntax`, `:current-macro-expansion`, `:current-resolution`, and
+`:checked-core`, in that order. The `:fresh-checked-core-verification` marker
+did not appear. Stdout contained the namespace's `Testing` line. The capture
+was complete, the writer ended, and the controller marked the timeout
+unrestricted. The run identifies the active call as
+`sh07-core-from-resolution-artifact`. It supplies no timing breakdown within
+that call, assertion result, commit, or tree.
+
+For that run's repair, the path selector built its upstream pair from the repository's
+[`profile-accepted-meta.gravity`](../../bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity),
+which exports one integer literal definition. SH-09 selects the first type
+fact for its pure operation and SH-10 selects fact index zero for its
+initialized read. The 13 definitions in `primitive-if-join` were unnecessary
+for that shared lineage. This reduces the source that checked-Core constructs
+and replays. The selector still requires fresh Core, Type, Effect, Ownership,
+envelope and C10 verification. The broader SAFE1 and tamper selectors continue
+to use their original upstream fixtures.
+
+The controller's exact selector on the single-definition repository fixture
+exited 124. Stderr recorded entry to `:current-syntax`,
+`:current-macro-expansion`, `:current-resolution`, `:checked-core`, and
+`:fresh-checked-core-verification`. Stdout contained only the namespace's
+`Testing` line. Capture was complete, the writer ended, and the controller
+marked the result unrestricted. No assertion count, stage durations, commit,
+or tree were supplied.
+
+The fresh Core verifier verifies the supplied resolution artifact and
+reconstructs the expected Core from it. Both operations process the source
+form and token evidence. The revised path selector writes a standalone UTF-8
+`input.gravity` with one exported integer and only the profile, export and
+safety clauses. The module parser supplies the JVM target and empty effect
+and capability sets. Both upstream producers consume the verified result
+before the fixture removes the temporary file. Assertions check their exact
+captured paths, `/checkout-a/safety-input.gravity/effect` and
+`/checkout-a/safety-input.gravity/ownership`. The 4,352-character path is
+introduced only when sealing the second SH-11 request. Stage markers now
+include JVM uptime so a subsequent capture can distinguish time already
+spent in construction from time spent in replay.
+
+The controller reported exit 124 again for the exact path selector on the
+standalone source. JVM uptime at entry to Syntax, Macro, Resolution, Core
+construction and fresh Core verification was 132556, 302202, 482017, 826929
+and 1065246 ms, respectively. Stdout contained only the namespace banner.
+Capture was complete, the writer ended, and the controller classified the
+run as unrestricted. The report supplies neither a completed assertion
+count nor a commit/tree identity.
+
+Source inspection found a separate blocker after the last observed stage.
+`sh07-build-core-template` emits canonical Core template version 16, and
+`gravity.checked-core/canonical-artifact` preserves that version in the
+artifact passed to SH-08. The SH-08 bridge's `sh08-bridge-sh07-valid?`
+requires version 15 and its request builder returns
+`[:sh07 :invalid-canonical-core]` for that mismatch. This is a prediction
+from the producer and consumer code. The controller run ended before SH-08.
+Resolving support for current canonical Core belongs to the SH-08 owner.
+
+The new exact selector below exercises the path comparison that the SH-11
+request builder calls after envelope authentication. It builds, replays and
+seals an envelope from the SH-02 comparison fixture and checks a matching
+4098-character path, an equal-length substitution differing at the last
+character, empty text and a keyword. The full integration selector remains
+responsible for the two genuine upstream products, C10 verification, roots,
+bound results and public diagnostics. Both selectors await controller
+verification. The table above records expected outcomes. Independent
+acceptance remains pending.
+
+```clojure
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test" "--exact"
+ "captured-path-matches-sealed-provenance"]
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test" "--exact"
+ "sh11-identity-is-path-neutral-with-separate-provenance"]
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test"]
+["clojure" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+[development]: ../../docs/development-verification.md#current-reader-development

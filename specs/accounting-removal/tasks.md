@@ -915,3 +915,50 @@ runtime policy, PMK and ANE still require their own coherent migrations and
 acceptance. DSE and the separate historical mode operation remain unresolved.
 This finite integration does not establish authenticated-source, runtime, Core,
 C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.
+
+## ACC-13 SH-11 captured source path
+
+The bridge request accepts nonempty captured source text that matches the
+authenticated envelope. The integration control builds one genuine,
+verified SH-09/SH-10 pair with short paths and uses it for independently
+sealed short and 4,352-character SH-11 envelopes. It checks the exact path
+and provenance root, path-neutral semantic identity, fresh C10 verification,
+and rejection of invalid or substituted paths and a substituted envelope.
+
+The controller's first run stopped at the SH-03 Reader pin before reaching
+these controls. The SH-11 development tests now select the authenticated
+current Reader, Syntax, and Macro sources through C5 and fresh SH-07
+verification. The next focused run timed out before reporting an assertion
+result. Source inspection found that the fixture descriptors still used the
+version 1 envelope shape after the shared builder moved to version 2. The
+SH-11 fixture now uses version 2 and shares one compiled envelope plan across
+the upstream producers and both SH-11 requests. The fixture builds and replays
+each envelope with its complete semantic and provenance inputs. The upstream
+bridges still receive their existing request carriers.
+
+The controller's next exact run timed out inside the combined current-source
+C5 call, before either path control. The fixture now uses the existing
+request-scoped SH-02 plan cache and reports Reader/Syntax, Macro, and Resolution
+separately. The C8 module bundle also carries the explicit current-source
+selection into its ordinary C5 replays at build and runtime.
+
+The next exact run reached checked-Core construction and timed out before
+fresh Core verification. The path selector now builds both upstream products
+from one exported integer definition through the existing verified pipeline.
+The broader SAFE1 and lineage selectors retain the paired primitive fixtures.
+
+With that definition the controller reached fresh Core verification and timed
+out there (exit 124). The path selector now uses a standalone module with the
+same exported integer, explicit safe mode, and default JVM target and empty
+authority sets. It also checks both upstream producer paths. The controller
+has yet to observe a completed path comparison. ACC-13 remains open pending
+verification and independent acceptance. See the
+[scoped evidence](evidence.md#acc-13-sh-11-captured-source-path).
+
+The standalone-source run also timed out during fresh Core verification.
+Source inspection identified a separate composition dependency: SH-07 emits
+canonical Core schema 16 and the SH-08 type bridge requires schema 15.
+The SH-08 owner must reconcile that handoff before the real Effects and
+Ownership pair can reach SH-11. The SH-11 path comparison now has a focused
+selector using a replayed, sealed SH-02 fixture envelope. The full path
+selector and independent acceptance remain pending.

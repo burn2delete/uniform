@@ -843,11 +843,11 @@
         :semantic-projections :fact-transitions
         :effect-capability-relation :proof-composite
         :preservation :identity-subjects :lineage
-        :reference-closure :actual-path-provenance :bounds})
+        :reference-closure :actual-path-provenance})
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh11-authenticated-safety-bridge
                (get descriptor :stage))
           (if
@@ -978,6 +978,15 @@
 (defn sh11-bridge-safety-request [safety-operation]
   safety-operation)
 
+(defn captured-path-error [path envelope]
+  (if (string? path)
+    (if (> (count path) 0)
+      (if (= path (get (get envelope :actual-path-provenance) :source-path))
+        nil
+        [:envelope :invalid-authenticated-envelope])
+      [:schema :actual-path-required])
+    [:schema :actual-path-required]))
+
 (defn sh11-bridge-upstream-error [request]
   (if
    (= false
@@ -1094,25 +1103,9 @@
                                     :ownership-verification)))
                             [:envelope
                              :invalid-authenticated-envelope]
-                            (if
-                             (string?
-                              (get request :actual-source-path))
-                              (if
-                               (> (count
-                                   (get request
-                                        :actual-source-path))
-                                  0)
-                                (if
-                                 (<=
-                                  (count
-                                   (get request
-                                        :actual-source-path))
-                                  4096)
-                                  nil
-                                  [:schema :actual-path-bound])
-                                [:schema :actual-path-required])
-                              [:schema
-                               :actual-path-required]))))))))))))))))
+                            (captured-path-error
+                             (get request :actual-source-path)
+                             (get request :envelope)))))))))))))))))
 
 (defn sh11-bridge-rule [family]
   (if (= family :schema)
