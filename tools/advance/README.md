@@ -48,9 +48,13 @@ their recorded base/candidate/tree identities plus compact check and review
 evidence. Each evidence item reports `missing`, `matching` or `stale` identity
 status and preserves its recorded result or verdict separately. Matching
 identity does not claim a passed check, approved review, completed CI or live
-activity. Local pause control is separate from execution status; unavailable
-GitHub controls and unverified process/service liveness are explicit. Missing
-or malformed state fails; missing and malformed local controls remain visible.
+activity. Local pause control is separate from execution status; its
+operator-controls.local-control.sha256 value identifies the exact bytes read
+for a readable control snapshot. Missing, non-file and unreadable controls keep
+that identity nil; readable malformed snapshots retain their digest while
+remaining visibly malformed. Unavailable GitHub controls and unverified
+process/service liveness are explicit. Missing and malformed state fails;
+missing and malformed local controls remain visible.
 This command starts no workers and performs no provider calls, coordination
 imports, native state writes or startup logging. The existing `status` command
 still prints the complete retained state.

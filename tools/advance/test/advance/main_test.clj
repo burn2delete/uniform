@@ -17,6 +17,13 @@
    :repository "fixture/repo"
    :campaign "Fixture campaign"})
 
+(defn- control-source? [source control-file]
+  (try
+    (= (.getCanonicalPath ^java.io.File control-file)
+       (.getCanonicalPath (io/file source)))
+    (catch Exception _
+      false)))
+
 (defn state-fixture []
   {:schema 1
    :repository "fixture/repo"
@@ -215,6 +222,105 @@
     (is (.contains rendered "[REDACTED]"))
     (is (= :active (get-in first-summary [:operator-controls :local-control :status])))))
 
+(deftest status-summary-control-identity-follows-raw-active-paused-bytes
+  (let [dir (temp-dir)
+        cfg (config dir)
+        state-file (io/file dir "state.edn")
+        control-file (io/file dir "control.edn")
+        state-raw (pr-str (state-fixture))
+        variants [["{:paused false}\n" :active false]
+                  ["{:paused false}\n\n" :active false]
+                  ["{:paused true}\n" :paused true]]]
+    (spit state-file state-raw)
+    (let [observations
+          (mapv (fn [[raw expected-status expected-paused]]
+                  (spit control-file raw)
+                  (let [before-state (slurp state-file)
+                        before-control (slurp control-file)
+                        local-control (get-in (main/status-summary! cfg)
+                                              [:operator-controls :local-control])]
+                    (is (= {:available true
+                            :status expected-status
+                            :paused expected-paused
+                            :sha256 (rt/digest raw)}
+                           (select-keys local-control
+                                        [:available :status :paused :sha256])))
+                    (is (= before-state (slurp state-file)))
+                    (is (= before-control (slurp control-file)))
+                    local-control))
+                variants)]
+      (is (not= (:sha256 (first observations))
+                (:sha256 (second observations))))
+      (is (not= (:sha256 (second observations))
+                (:sha256 (last observations)))))))
+
+(deftest status-summary-control-identity-retains-readable-malformed-and-nils-unavailable
+  (let [dir (temp-dir)
+        cfg (config dir)
+        state-file (io/file dir "state.edn")
+        control-file (io/file dir "control.edn")
+        state-raw (pr-str (state-fixture))]
+    (spit state-file state-raw)
+    (let [missing (get-in (main/status-summary! cfg)
+                          [:operator-controls :local-control])]
+      (is (= {:available false :status :unavailable :sha256 nil}
+             (select-keys missing [:available :status :sha256]))))
+    (Files/createDirectory (.toPath control-file)
+                           (make-array java.nio.file.attribute.FileAttribute 0))
+    (let [non-file (get-in (main/status-summary! cfg)
+                           [:operator-controls :local-control])]
+      (is (= {:available false :status :unavailable :sha256 nil}
+             (select-keys non-file [:available :status :sha256]))))
+    (Files/delete (.toPath control-file))
+    (doseq [raw ["{:paused \"false\"}\n" "{:paused\n"]]
+      (spit control-file raw)
+      (let [before-control (slurp control-file)
+            local-control (get-in (main/status-summary! cfg)
+                                  [:operator-controls :local-control])]
+        (is (= :malformed (:status local-control)))
+        (is (= true (:available local-control)))
+        (is (= (rt/digest raw) (:sha256 local-control)))
+        (is (map? (:error local-control)))
+        (is (= before-control (slurp control-file)))))
+    (let [original-input-stream io/input-stream]
+      (spit control-file "{:paused false}\n")
+      (with-redefs [io/input-stream
+                    (fn [source & options]
+                      (if (control-source? source control-file)
+                        (throw (java.io.IOException. "synthetic control read failure"))
+                        (apply original-input-stream source options)))]
+        (let [local-control (get-in (main/status-summary! cfg)
+                                    [:operator-controls :local-control])]
+          (is (= {:available true :status :malformed :sha256 nil}
+                 (select-keys local-control [:available :status :sha256])))
+          (is (map? (:error local-control))))))))
+
+(deftest status-summary-control-read-and-digest-share-one-byte-snapshot
+  (let [dir (temp-dir)
+        cfg (config dir)
+        state-file (io/file dir "state.edn")
+        control-file (io/file dir "control.edn")
+        raw "{:paused false}\n"
+        alternate "{:paused true}\n"
+        opens (atom 0)
+        original-input-stream io/input-stream]
+    (spit state-file (pr-str (state-fixture)))
+    (spit control-file raw)
+    (with-redefs [io/input-stream
+                  (fn [source & options]
+                    (if (control-source? source control-file)
+                      (let [read-number (swap! opens inc)
+                            bytes (.getBytes (if (= 1 read-number) raw alternate) "UTF-8")]
+                        (java.io.ByteArrayInputStream. bytes))
+                      (apply original-input-stream source options)))]
+      (let [local-control (get-in (main/status-summary! cfg)
+                                  [:operator-controls :local-control])]
+        (is (= 1 @opens))
+        (is (= :active (:status local-control)))
+        (is (= false (:paused local-control)))
+        (is (= (rt/digest raw) (:sha256 local-control)))
+        (is (= raw (slurp control-file)))))))
+
 (deftest status-summary-file-reader-distinguishes-control-and-state-failures
   (let [dir (temp-dir)
         cfg (config dir)
@@ -313,9 +419,12 @@
         cfg (config dir)
         config-path (str (io/file dir "config.edn"))
         state-file (io/file dir "state.edn")
+        control-file (io/file dir "control.edn")
         raw-state (pr-str (state-fixture))
+        raw-control "{:paused false}\n"
         forbidden (fn [& _] (throw (AssertionError. "status-summary invoked a mutable/provider path")))]
     (spit state-file raw-state)
+    (spit control-file raw-control)
     (spit config-path "{}")
     (with-redefs [base/config! (fn [_ _] cfg)
                   base/context! forbidden
@@ -326,7 +435,13 @@
       (let [output (with-out-str (main/-main "status-summary" config-path))
             parsed (edn/read-string output)]
         (is (= :running (get-in parsed [:state :recorded-status])))
-        (is (= (rt/digest raw-state) (get-in parsed [:state :sha256])))))
+        (is (= (rt/digest raw-state) (get-in parsed [:state :sha256])))
+        (is (= :active
+               (get-in parsed [:operator-controls :local-control :status])))
+        (is (= (rt/digest raw-control)
+               (get-in parsed [:operator-controls :local-control :sha256])))))
+    (is (= raw-state (slurp state-file)))
+    (is (= raw-control (slurp control-file)))
     (with-redefs [base/dispatch! (fn [_ctx command args]
                                    (is (= "status" command))
                                    (is (= [] args))
