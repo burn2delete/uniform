@@ -915,3 +915,15 @@ runtime policy, PMK and ANE still require their own coherent migrations and
 acceptance. DSE and the separate historical mode operation remain unresolved.
 This finite integration does not establish authenticated-source, runtime, Core,
 C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.
+
+## ACC-13 SH-11 captured source path
+
+The bridge request now admits captured source paths based on the existing
+nonempty text requirement. The integration control builds genuine SH-09 and
+SH-10 products with short paths and exercises a 4,352-character path in the
+SH-11 envelope and request. It checks the exact path and provenance root,
+path-neutral semantic identity, fresh C10 verification, and rejection of
+invalid path values and a substituted envelope.
+
+Controller checks and independent acceptance are pending. See the
+[scoped evidence](evidence.md#acc-13-sh-11-captured-source-path). ACC-13 stays open.

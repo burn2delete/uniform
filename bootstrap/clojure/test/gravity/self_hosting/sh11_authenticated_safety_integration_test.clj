@@ -735,31 +735,33 @@
    :actual-source-path actual-path}))
 
 (defn- prepared-request
-  [sh08-products operation actual-path]
-  (let [upstream (upstream-products sh08-products actual-path)
-        links (fact-links upstream)
-        safety-operation
-        (safety-operation operation links)
-        c10 (c10-products safety-operation)
-        descriptor
-        (descriptor
-         upstream safety-operation c10 operation links
-         actual-path)
-        authenticated
-        (authenticated-envelope
+  ([sh08-products operation actual-path]
+   (prepared-request sh08-products operation actual-path actual-path))
+  ([sh08-products operation upstream-path actual-path]
+   (let [upstream (upstream-products sh08-products upstream-path)
+         links (fact-links upstream)
+         safety-operation
+         (safety-operation operation links)
+         c10 (c10-products safety-operation)
          descriptor
-         (get-in upstream [:effect :verification])
-         (get-in upstream [:ownership :verification]))]
-    {:request
-     (request
-      upstream safety-operation c10 operation descriptor
-      authenticated actual-path)
-     :upstream upstream
-     :links links
-     :safety-operation safety-operation
-     :c10 c10
-     :descriptor descriptor
-     :authenticated authenticated}))
+         (descriptor
+          upstream safety-operation c10 operation links
+          actual-path)
+         authenticated
+         (authenticated-envelope
+          descriptor
+          (get-in upstream [:effect :verification])
+          (get-in upstream [:ownership :verification]))]
+     {:request
+      (request
+       upstream safety-operation c10 operation descriptor
+       authenticated actual-path)
+      :upstream upstream
+      :links links
+      :safety-operation safety-operation
+      :c10 c10
+      :descriptor descriptor
+      :authenticated authenticated})))
 
 (defn- run-bridge [prepared]
   (let [request (:request prepared)
@@ -995,32 +997,63 @@
 
 (deftest sh11-identity-is-path-neutral-with-separate-provenance
   (let [sh08-products @sh08-gravity
+        short-path "/checkout-a/safety-input.gravity"
+        long-path (str "/checkout-b/"
+                       (apply str (repeat 160 "relocated-source-directory/"))
+                       "safety-input.gravity")
         prepared-a
-        (prepared-request
-         sh08-products :proven-overflow
-         "/checkout-a/safety-input.gravity")
+        (prepared-request sh08-products :proven-overflow short-path)
         prepared-b
         (prepared-request
          sh08-products :proven-overflow
-         "/checkout-b/safety-input.gravity")
-        result-a (:result (run-bridge prepared-a))
-        result-b (:result (run-bridge prepared-b))]
+         "/checkout-b/safety-input.gravity" long-path)
+        run-a (run-bridge prepared-a)
+        run-b (run-bridge prepared-b)
+        result-a (:result run-a)
+        result-b (:result run-b)
+        request-b (:request prepared-b)
+        provenance-a (get-in prepared-a [:authenticated :provenance-root])
+        provenance-b (get-in prepared-b [:authenticated :provenance-root])]
+    (is (> (count long-path) 4096))
+    (doseq [run [run-a run-b]]
+      (is (= :accepted (get-in run [:c10-request :status])))
+      (is (= :passed (get-in run [:safety-verification :status])))
+      (is (= :accepted (get-in run [:result :status])))
+      (is (= :proven-safe (get-in run [:result :outcome]))))
     (is (= (get-in
             prepared-a [:authenticated :semantic-root])
            (get-in
             prepared-b [:authenticated :semantic-root])))
-    (is
-     (not=
-      (get-in
-       prepared-a [:authenticated :provenance-root])
-      (get-in
-       prepared-b [:authenticated :provenance-root])))
+    (is (not= provenance-a provenance-b))
     (is (= (:identity-input result-a)
            (:identity-input result-b)))
     (is (= (:artifact-id result-a)
            (:artifact-id result-b)))
-    (is (not= (:provenance result-a)
-              (:provenance result-b)))))
+    (is (= long-path
+           (get-in request-b [:envelope :actual-path-provenance :source-path])
+           (get-in run-b [:c10-request :actual-source-path])))
+    (is (= provenance-b (get-in run-b [:c10-request :provenance-binding-id])))
+    (is (= {:actual-source-path short-path :provenance-binding-id provenance-a}
+           (:provenance result-a)))
+    (is (= {:actual-source-path long-path :provenance-binding-id provenance-b}
+           (:provenance result-b)))
+    (doseq [[label candidate rule reason]
+            [["empty captured path"
+              (assoc request-b :actual-source-path "")
+              "STD11-BRIDGE-SCHEMA" :actual-path-required]
+             ["nontext captured path"
+              (assoc request-b :actual-source-path :not-a-path)
+              "STD11-BRIDGE-SCHEMA" :actual-path-required]
+             ["short-path envelope substituted into the long-path request"
+              (assoc request-b :envelope (get-in prepared-a [:request :envelope]))
+              "STD11-BRIDGE-ENVELOPE" :invalid-authenticated-envelope]]]
+      (testing label
+        (let [result (invoke bridge-plan
+                             'sh11-build-authenticated-safety-request
+                             [candidate])]
+          (is (= :rejected (:status result)))
+          (is (= rule (get-in result [:diagnostics 0 :rule])))
+          (is (= reason (get-in result [:diagnostics 0 :facts :reason]))))))))
 
 (deftest sh11-authenticated-safety-bridge-fails-closed-on-malformed-input
   (doseq [value

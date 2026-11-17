@@ -2377,3 +2377,40 @@ run retains its original source identity; no combined fresh suite is claimed.
 Current-head CI, independent review and exact integration preflight remain
 necessary. No typed conversion, authenticated-source, backend, release or
 whole accounting completion is claimed.
+
+## ACC-13 SH-11 captured source path
+
+Source inspection in the current worktree identified the bridge request's
+4,096-character test as an admission quota on provenance text. The bridge
+passes this field through to the C10 request and the accepted result. The
+shared envelope's `ae-actual-path-provenance-valid?` requires nonempty text,
+and the provenance digest includes that text separately from the semantic
+root. The field is data at this boundary. Filesystem access remains subject
+to the host's own constraints. This change deletes the request comparison and
+`:actual-path-bound` refusal. The upstream carrier contracts, envelope and
+lineage checks, and C10 verification remain in force.
+
+`sh11-identity-is-path-neutral-with-separate-provenance` now specifies these
+controls using freshly built Effects and Ownership products with short paths.
+
+| Control | Expected result |
+| --- | --- |
+| Short baseline and independently sealed SH-11 envelope with 4,352 ASCII characters of captured path text | Both bridge requests and bound results accepted with fresh C10 verification `:passed` and outcome `:proven-safe`. Semantic envelope root, safety identity input, and artifact ID agree. The provenance roots differ, and the long path and its root survive in the C10 request and bound result. |
+| Replace the long-path request's `:actual-source-path` with `""` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
+| Replace the long-path request's `:actual-source-path` with `:not-a-path` | `:rejected`, `STD11-BRIDGE-SCHEMA`, `:actual-path-required`. |
+| Replace only the long-path request's envelope with the genuine short-path envelope | `:rejected`, `STD11-BRIDGE-ENVELOPE`, `:invalid-authenticated-envelope`. |
+
+Source review confirmed the remaining nonempty text check follows envelope
+validation. The table records authored assertions. Execution results, an
+exact-revision receipt, and independent acceptance are pending with the
+controller. The affected namespace includes the existing SAFE1 outcome and
+lineage controls. Proposed controller commands follow.
+
+```clojure
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace"
+ "gravity.self-hosting.sh11-authenticated-safety-integration-test"]
+["clojure" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
