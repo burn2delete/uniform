@@ -115,12 +115,11 @@ The hosted C5 invalidation key now hashes the existing invalidation inputs and
 the semantic dependency graph under `:gravity/sh06-invalidation-identity-v2`.
 Authored controls cover equal graphs, relocated edge spans, endpoint and
 boundary changes with equal inputs, and fresh verification of a substituted
-v1 key. The latest controller run reached the current-artifact verifier and
-timed out there. The control now uses the existing scoped Macro owner reuse
-for the identical parent. The current artifact and the v1 substitution each
-start with fresh Macro verification, and each case runs its applicable Resolve
-checks directly. Controller recheck, independent acceptance, and the actual
-Build reuse decision remain pending.
+v1 key. The latest controller run timed out before the first verification case.
+Fixture construction now has its own scope for the Macro owner's existing
+report reuse. The current-artifact and v1 cases each begin with empty receipts
+and run fresh Macro verification and direct Resolve replay. Controller recheck,
+independent acceptance, and the actual Build reuse decision remain pending.
 [Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
 
 <!-- macro-source-definition-index:start -->

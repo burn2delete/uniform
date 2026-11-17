@@ -1031,7 +1031,18 @@
     (is (true? (second observed)))))
 
 (deftest verifier-requires-fresh-replay-current-products-and-public-proof
-  (let [artifact @real-artifact
+  (let [artifact (with-report-context
+                   (fn [ctx]
+                     ;; Scope the owner's existing receipts to fixture construction.
+                     ;; Public verification below starts with empty receipts.
+                     (prn {:event :resolution-fixture-start})
+                     (flush)
+                     (let [artifact @real-artifact]
+                       (prn {:event :resolution-fixture-end
+                             :sh05-executions (get-in @ctx [:executions :sh05] 0)
+                             :sh05-reuses (get-in @ctx [:reuses :sh05] 0)})
+                       (flush)
+                       artifact)))
         ops (operations)
         verify (fn [case-name value construction? ops]
                  (prn {:event :resolution-verifier-start :case case-name})
@@ -1065,10 +1076,13 @@
                   report (verify :v1-invalidation-key stale false ops)]
               (is (pos? (get-in @stale-ctx [:executions :sh05] 0)))
               (is (= :failed (:status report)))
-              (is (some #{:invalidation-current?} (:failed-checks report)))
+              (is (= #{:invalidation-current? :artifact-identity-current?
+                       :embedded-capability-proof-current?}
+                     (set (:failed-checks report))))
               (is (every? (comp true? (:checks report))
                           [:fresh-upstream-sh05-verification? :fresh-gravity-request-replay?
-                           :resolved-analysis-current? :dependency-graph-current? :fresh-sh02-envelope-verified?])))))
+                           :fresh-gravity-verification? :resolved-analysis-current?
+                           :dependency-graph-current? :fresh-sh02-envelope-verified?])))))
         (let [without-proof (assoc artifact :capability-based-proof nil)]
           (is (= :passed (:status (verify :construction-without-proof without-proof true ops))))
           (let [report (verify :public-without-proof without-proof false ops)]

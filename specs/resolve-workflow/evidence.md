@@ -154,8 +154,9 @@ key, and an endpoint or boundary change to replace it with nodes and prior
 invalidation inputs held equal. They also compare the full emitted edges to the
 requests to check physical origins. The fresh verifier control substitutes the
 derived v1 key in a current source artifact and expects `:invalidation-current?`
-to fail while the upstream owner, fresh replay, resolved analysis, graph and
-authenticated envelope checks pass.
+to fail along with the artifact identity and embedded proof checks. It expects
+the upstream owner, fresh replay, Gravity verification, resolved analysis,
+graph and authenticated envelope checks to pass.
 
 The controller reported exit 1 for the projection and graph selection below
 on the pre-repair worktree. The test namespace failed to compile at
@@ -186,10 +187,26 @@ execution in each. Each case still enters the Resolve stage verifier directly
 and exercises the same applicable checks, including real request replay for
 the positive and v1 cases. The missing and altered proof controls, artifact
 identity control, combined provenance/template/envelope mutation, and injected
-owner failures remain. Case start and end events delimit the calls. No
-production verifier, owner policy, or watchdog configuration changed in this
-timeout repair. The effect on runtime and the post-repair check results are
-pending controller execution on the exact worktree revision.
+owner failures remain. Case start and end events delimit the calls.
+
+The latest controller run of that exact verifier selection exited 124 with an
+ended writer, empty stderr and untruncated capture. Its only test event was
+`{:event :resolution-test-start, :test verifier-requires-fresh-replay-current-products-and-public-proof}`.
+It timed out before the first verifier case marker, during test setup.
+The capture does not identify the inner operation or contain an assertion result.
+The controller classified the timeout as unrestricted.
+
+The repair gives the cold `real-artifact` dereference its own existing
+proof-transaction test scope. Macro construction, Resolve's parent admission,
+module-request construction and the Resolve construction proof can share the
+Macro owner's successful final report for the identical immutable parent under
+the same verifier epoch. The normal parent, source, request, envelope and
+construction proof gates still run. The scoped route uses the full parent
+gate and ordinary authenticated request builder. The scope clears its
+receipts before the public verifier controls. Fixture start and end events
+record setup progress, and the end event records actual Macro owner executions
+and reuses. Runtime impact and the check results below are pending controller
+execution on this repair.
 
 ```bash
 clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
