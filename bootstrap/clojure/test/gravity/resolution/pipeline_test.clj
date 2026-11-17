@@ -349,6 +349,11 @@
     (is (= (:lexical-scope-graph analysis) (get-in product [:lexical-scope-graph :scopes])))
     (is (= (:cross-profile-edge-report analysis) (get-in product [:cross-profile-edge-report :records])))
     (is (= (:incremental-invalidation-inputs analysis) (get-in product [:incremental-invalidation-keys :inputs])))
+    (is (= ((:reader-canonical-hash ops)
+            {:domain :gravity/sh06-invalidation-identity-v2
+             :inputs (:incremental-invalidation-inputs analysis)
+             :dependency-graph-id (:dependency-graph-id (expected/resolution-preimage product))})
+           (get-in product [:incremental-invalidation-keys :invalidation-id])))
     (is (not= (get-in product [:incremental-invalidation-keys :invalidation-id])
               (get-in (resolution/product-projections (assoc analysis :incremental-invalidation-inputs {}) ops)
                       [:incremental-invalidation-keys :invalidation-id])))))
@@ -1039,6 +1044,16 @@
     (is (nil? ((ns-publics 'gravity.resolution) 'verify-current*)))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify*)))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify-contained*)))
+    (let [prior-id ((:reader-canonical-hash ops)
+                    {:domain :gravity/sh06-invalidation-identity-v1
+                     :inputs (get-in artifact [:incremental-invalidation-keys :inputs])})
+          stale (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] prior-id)
+          report (verify stale false ops)]
+      (is (= :failed (:status report)))
+      (is (some #{:invalidation-current?} (:failed-checks report)))
+      (is (= [true true true]
+             ((juxt :fresh-gravity-request-replay? :resolved-analysis-current? :dependency-graph-current?)
+              (:checks report)))))
     (let [without-proof (assoc artifact :capability-based-proof nil)]
       (is (= :passed (:status (verify without-proof true ops))))
       (let [report (verify without-proof false ops)]
@@ -1152,25 +1167,55 @@
   ;; Execute the actual current Gravity leaf on explicit normalized requests.
   ;; Source authentication and publication remain with their owning boundaries.
   (let [id #(format "sha256:%064x" %)
+        edges [{:from 'stage.execution :to 'stage.library :kind :namespace
+                :boundary :pure-core-api :semantic-span {:explicit-edge 0}
+                :source-span {:source source :line-start 2}}
+               {:from 'stage.execution :to 'stage.support :kind :generated
+                :boundary :schema :semantic-span {:explicit-edge 1}
+                :source-span {:source source :line-start 3}}]
         request {:artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1
                  :module {:namespace 'stage.execution :package 'stage :profile :hosted :target :jvm
                           :safety :safe :effects [] :capabilities [] :exports []
                           :source-revision-id (id 1) :c4-artifact-id (id 2)}
                  :definitions [] :imports [] :import-bindings [] :lexical-scopes []
-                 :references [] :core-bindings [] :dependency-edges []
+                 :references [] :core-bindings [] :dependency-edges edges
                  :macro-expansion-binding {:artifact :gravity/sh05-macro-expansion-binding :schema-version 1
                                            :source-revision-id (id 1) :c4-artifact-id (id 2)
                                            :macro-result-id (id 3) :authenticated-envelope-id (id 4)}
                  :provenance {:actual-source-path source}}
         binding (real-binding)
-        run (resolution/run-request! source binding request (operations))
+        ops (operations)
+        run (resolution/run-request! source binding request ops)
+        analysis (:resolved-analysis run)
+        product (resolution/product-projections analysis ops)
+        invalidation (:incremental-invalidation-keys product)
         rejected (assoc request :references [{:syntax-id (id 9) :symbol 'missing :qualifier nil :name 'missing
                                               :position :expression :scope-chain [] :semantic-span {} :source-span nil}])
-        error (caught #(resolution/run-request! source binding rejected (operations)))]
+        error (caught #(resolution/run-request! source binding rejected ops))]
     (is (= :accepted (get-in run [:raw-template-result :status])))
     (is (= :passed (get-in run [:template-verification :status])))
     (is (= :passed (get-in run [:resolved-verification :status])))
-    (is (re-matches #"sha256:[0-9a-f]{64}" (get-in run [:resolved-analysis :artifact-id])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id analysis)))
+    (is (= edges (get-in product [:dependency-graph :edges])))
+    (is (= invalidation (:incremental-invalidation-keys
+                         (resolution/product-projections
+                          (update analysis :dependency-graph #(into {} %)) ops))))
+    (doseq [[field value preserves-key?]
+            [[:source-span {:source "relocated.gravity" :line-start 20} true]
+             [:from 'stage.library false]
+             [:boundary :pure-core-api false]]]
+      (test/testing (str "Dependency edge change to " field)
+        (let [changed-request (assoc-in request [:dependency-edges 1 field] value)
+              changed-run (resolution/run-request! source binding changed-request ops)
+              changed-product (resolution/product-projections (:resolved-analysis changed-run) ops)
+              changed-invalidation (:incremental-invalidation-keys changed-product)]
+          (is (= :passed (get-in changed-run [:resolved-verification :status])))
+          (is (= (get-in product [:dependency-graph :nodes])
+                 (get-in changed-product [:dependency-graph :nodes])))
+          (is (= (:dependency-edges changed-request) (get-in changed-product [:dependency-graph :edges])))
+          (is (= (:inputs invalidation) (:inputs changed-invalidation)))
+          (is (= preserves-key? (= (:invalidation-id invalidation)
+                                   (:invalidation-id changed-invalidation))))))))
     (is (= "C5-UNRESOLVED" (:id (ex-data error))))
     (is (= 'missing (:symbol (ex-data error))))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id (ex-data error))))

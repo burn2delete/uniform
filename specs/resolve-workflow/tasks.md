@@ -111,6 +111,13 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Serialize scope/binding graphs and invalidate dependent references when export, profile, package or semantic identity changes.
 
+The hosted C5 invalidation key now hashes the existing invalidation inputs and
+the semantic dependency graph under `:gravity/sh06-invalidation-identity-v2`.
+Authored controls cover equal graphs, relocated edge spans, endpoint and
+boundary changes with equal inputs, and fresh verification of a substituted
+v1 key. Controller checks, independent acceptance, and the actual Build reuse
+decision remain pending. [Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
+
 <!-- macro-source-definition-index:start -->
 
 Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.

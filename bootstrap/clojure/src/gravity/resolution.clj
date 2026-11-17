@@ -2059,6 +2059,13 @@
    {:lexical-scopes @scopes, :references @references})))
 
 
+;; Expand into the existing tracked callers without a replaceable runtime Var.
+(defmacro ^:private dependency-graph-preimage [graph]
+  `(let [graph# ~graph]
+     {:domain :gravity/sh06-dependency-graph-v1
+      :nodes (:nodes graph#)
+      :edges (mapv #(dissoc % :source-span) (:edges graph#))}))
+
 (defn
  product-projections
  [analysis operations]
@@ -2086,8 +2093,11 @@
     :inputs (:incremental-invalidation-inputs analysis),
     :invalidation-id
     (reader-canonical-hash
-     {:domain :gravity/sh06-invalidation-identity-v1,
-      :inputs (:incremental-invalidation-inputs analysis)})},
+     {:domain :gravity/sh06-invalidation-identity-v2,
+      :inputs (:incremental-invalidation-inputs analysis),
+      :dependency-graph-id
+      (reader-canonical-hash
+       (dependency-graph-preimage (:dependency-graph analysis)))})},
    :import-export-table
    {:artifact :gravity/c5-import-export-table,
     :status :complete,
@@ -2180,12 +2190,7 @@
      :source-revision-id]),
    :dependency-graph-id
    (reader-canonical-hash
-    {:domain :gravity/sh06-dependency-graph-v1,
-     :nodes (get-in artifact [:dependency-graph :nodes]),
-     :edges
-     (mapv
-      (fn* [p1__241#] (dissoc p1__241# :source-span))
-      (get-in artifact [:dependency-graph :edges]))}),
+    (dependency-graph-preimage (:dependency-graph artifact))),
    :slice (:slice artifact),
    :kind (:kind artifact),
    :resolution-chunks (:resolution-chunks chunks),

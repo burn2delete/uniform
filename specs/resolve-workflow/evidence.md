@@ -130,3 +130,49 @@ release, dependency readiness or overall completion percentage is claimed.
 Other feature packages, compiler implementation and dashboard behavior remain
 unchanged. Future implementation updates change the authoritative record and
 regenerate the roadmap table together; the five outcomes remain open.
+
+## Hosted dependency graph invalidation
+
+Finding `resolve.invalidation.semantic-dependency-graph-v1` implements the
+import-change portion of C5 incremental invalidation for the open `resolve/4`
+task. [C5 incremental invalidation](../../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md#incremental-invalidation).
+
+Source inspection confirms that `product-projections` hashes the preimage
+`{:domain :gravity/sh06-invalidation-identity-v2, :inputs <analysis inputs>, :dependency-graph-id <graph digest>}`.
+Both hosted identity callers use the existing
+`:gravity/sh06-dependency-graph-v1` preimage of ordered nodes and edges with each
+edge's physical `:source-span` removed. The emitted graph retains complete edges
+and their origins. Fresh verification still compares emitted products and
+independently replays the analysis. The graph producer, legality decisions and
+binding identities retain their existing definitions.
+
+The authored pipeline controls check the exact v2 preimage and the existing
+artifact graph identity. They take explicit acyclic graph requests through the
+current Gravity producer and resolved verifier, then compare hosted projections.
+The controls expect equal graphs and path/line-only relocation to preserve the
+key, and an endpoint or boundary change to replace it with nodes and prior
+invalidation inputs held equal. They also compare the full emitted edges to the
+requests to check physical origins. The fresh verifier control substitutes the
+derived v1 key in a current source artifact and expects `:invalidation-current?`
+to fail while fresh replay, resolved analysis and graph checks pass.
+
+Runtime results and exact checked revision are pending controller execution.
+The authored controls have no observed pass or failure yet. Run the verifier
+selector when its current-source route is eligible.
+
+```bash
+clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
+  --exact gravity.resolution.pipeline-test/product-projections-retain-analysis-and-compatibility-records \
+  --exact gravity.resolution.pipeline-test/artifact-identities-and-summaries-retain-the-existing-semantic-boundary \
+  --exact gravity.resolution.pipeline-test/stage-execution-emits-real-verified-analysis-and-real-unresolved-rejection \
+  --fail-fast
+clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
+  --exact gravity.resolution.pipeline-test/verifier-requires-fresh-replay-current-products-and-public-proof \
+  --fail-fast
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
+```
+
+Build still needs an actual affected consumer reuse decision. The parent task
+remains open pending its full acceptance criteria and independent acceptance.
