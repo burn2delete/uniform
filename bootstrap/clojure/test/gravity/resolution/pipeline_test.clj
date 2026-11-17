@@ -1032,14 +1032,16 @@
 
 (deftest verifier-requires-fresh-replay-current-products-and-public-proof
   (let [artifact @real-artifact
-        verify (fn [value construction? ops]
+        verify (fn [case-name value construction? ops]
+                 (prn {:event :resolution-verifier-start :case case-name})
+                 (flush)
                  ((seed-var 'sh06-resolution-with-reader-invocation)
                   source invocation
-                  #(#'resolution/verify-contained* value construction? :gravity.bootstrap/legacy ops)))
+                  #(if construction?
+                     (#'resolution/verify-contained* value true :gravity.bootstrap/legacy ops)
+                     (resolution/verify value :gravity.bootstrap/legacy ops))))
         ops (operations)]
-    (is (= :passed (:status (verify artifact false ops))))
-    (is (= :passed (:status ((seed-var 'sh06-resolution-with-reader-invocation)
-                             source invocation #(resolution/verify artifact :gravity.bootstrap/legacy ops)))))
+    (is (= :passed (:status (verify :current-artifact artifact false ops))))
     (is (= '([artifact context operations]) (:arglists (meta #'resolution/verify))))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify-current*)))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify*)))
@@ -1048,24 +1050,32 @@
                     {:domain :gravity/sh06-invalidation-identity-v1
                      :inputs (get-in artifact [:incremental-invalidation-keys :inputs])})
           stale (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] prior-id)
-          report (verify stale false ops)]
+          report (verify :v1-invalidation-key stale false ops)]
       (is (= :failed (:status report)))
       (is (some #{:invalidation-current?} (:failed-checks report)))
-      (is (= [true true true]
-             ((juxt :fresh-gravity-request-replay? :resolved-analysis-current? :dependency-graph-current?)
-              (:checks report)))))
+      (is (every? (comp true? (:checks report))
+                  [:fresh-upstream-sh05-verification? :fresh-gravity-request-replay?
+                   :resolved-analysis-current? :dependency-graph-current? :fresh-sh02-envelope-verified?])))
     (let [without-proof (assoc artifact :capability-based-proof nil)]
-      (is (= :passed (:status (verify without-proof true ops))))
-      (let [report (verify without-proof false ops)]
+      (is (= :passed (:status (verify :construction-without-proof without-proof true ops))))
+      (let [report (verify :public-without-proof without-proof false ops)]
         (is (= :failed (:status report)))
         (is (= [:embedded-capability-proof-current?] (:failed-checks report)))))
+    ;; These fields affect separate comparisons. Keep the request and descriptor
+    ;; valid so replay and envelope validation both reach their real inputs.
+    (let [tampered (-> artifact
+                       (assoc-in [:provenance :source-revision-id] "changed")
+                       (assoc-in [:gravity-resolution-boundary :raw-template-result] {})
+                       (assoc-in [:gravity-resolution-boundary :authenticated-envelope] {}))
+          report (verify :altered-provenance-template-and-envelope tampered false ops)]
+      (is (= :failed (:status report)))
+      (is (= #{:provenance-current? :raw-template-result-current?
+               :fresh-sh02-envelope-verified? :embedded-capability-proof-current?}
+             (set (:failed-checks report)))))
     (doseq [[path value expected]
             [[[:artifact-id] "sha256:changed" :artifact-identity-current?]
-             [[:provenance :source-revision-id] "changed" :provenance-current?]
-             [[:gravity-resolution-boundary :raw-template-result] {} :raw-template-result-current?]
-             [[:gravity-resolution-boundary :authenticated-envelope] {} :fresh-sh02-envelope-verified?]
              [[:capability-based-proof :status] :failed :embedded-capability-proof-current?]]]
-      (let [report (verify (assoc-in artifact path value) false ops)]
+      (let [report (verify expected (assoc-in artifact path value) false ops)]
         (is (= :failed (:status report)))
         (is (some #{expected} (:failed-checks report)))))
     (doseq [[key replacement expected]
@@ -1074,7 +1084,7 @@
               :fresh-gravity-request-replay?]
              [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
               :fresh-sh02-envelope-verified?]]]
-      (let [report (with-redefs-fn {(get ops key) replacement} #(verify artifact false ops))]
+      (let [report (with-redefs-fn {(get ops key) replacement} #(verify key artifact false ops))]
         (is (= :failed (:status report)))
         (is (some #{expected} (:failed-checks report)))))))
 

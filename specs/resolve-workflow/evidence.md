@@ -154,17 +154,35 @@ key, and an endpoint or boundary change to replace it with nodes and prior
 invalidation inputs held equal. They also compare the full emitted edges to the
 requests to check physical origins. The fresh verifier control substitutes the
 derived v1 key in a current source artifact and expects `:invalidation-current?`
-to fail while fresh replay, resolved analysis and graph checks pass.
+to fail while the upstream owner, fresh replay, resolved analysis, graph and
+authenticated envelope checks pass.
 
-The controller reported exit 1 for the first command below on the pre-repair
-worktree. The test namespace failed to compile at `pipeline_test.clj:1219:33`
-with `Unable to resolve symbol: error in this context`. An extra closing
-parenthesis in the graph comparison ended the enclosing `let` before the
-unresolved-reference assertions. The repair keeps those assertions within the
-original `error` binding and preserves the graph comparisons. The failed
-compile produced no test results. Post-repair results and exact checked revision
-are pending controller execution. The verifier selector uses the existing
-current-source route and requires that route to be eligible when run.
+The controller reported exit 1 for the projection and graph selection below
+on the pre-repair worktree. The test namespace failed to compile at
+`pipeline_test.clj:1219:33` with `Unable to resolve symbol: error in this context`.
+An extra closing parenthesis in the graph comparison ended the enclosing `let`
+before the unresolved-reference assertions. The repair keeps those assertions
+within the original `error` binding and preserves the graph comparisons. The
+failed compile produced no test results.
+
+The controller subsequently ran the exact verifier selection below and
+reported exit 124, an ended writer, empty stderr and untruncated capture. The
+last stdout line was
+`{:event :resolution-test-start, :test verifier-requires-fresh-replay-current-products-and-public-proof}`.
+The run reported no assertion result or completed test. The capture leaves the
+time spent in cold artifact construction versus verification undetermined.
+
+Source inspection showed that the test verified the unchanged artifact twice
+through the same contained verifier and ran three separate replays for altered
+provenance, raw template and envelope. The repair uses the public verification
+function for the single positive assertion and verifies the three altered
+fields in a single artifact. It requires exactly their three failure checks and
+the resulting embedded-proof failure. The v1 substitution, missing and altered
+proofs, altered artifact identity and three injected owner failures still each
+exercise their own applicable verifier calls. The ten calls retain fresh
+verification and emit a case marker before invocation, after cold artifact
+construction. Post-repair results and the exact checked revision are pending
+controller execution on the eligible current-source route.
 
 ```bash
 clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \

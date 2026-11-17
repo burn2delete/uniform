@@ -115,10 +115,12 @@ The hosted C5 invalidation key now hashes the existing invalidation inputs and
 the semantic dependency graph under `:gravity/sh06-invalidation-identity-v2`.
 Authored controls cover equal graphs, relocated edge spans, endpoint and
 boundary changes with equal inputs, and fresh verification of a substituted
-v1 key. The controller reported a test compilation failure. The fixture now
-keeps the unresolved-reference assertions inside the `let` that binds `error`.
-Controller recheck, independent acceptance, and the actual Build reuse decision
-remain pending. [Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
+v1 key. After the fixture compilation repair, the controller's fresh verifier
+selection timed out before reporting an assertion result. The selector now
+uses ten verifier calls instead of thirteen and marks the start of each case.
+The v1 substitution still gets its own real replay. Controller recheck,
+independent acceptance, and the actual Build reuse decision remain pending.
+[Scoped evidence](evidence.md#hosted-dependency-graph-invalidation).
 
 <!-- macro-source-definition-index:start -->
 
