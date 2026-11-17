@@ -191,6 +191,35 @@
     (is (= :passed (get-in artifact [:resolution-verification-report :status])))
     (is (= :complete (:status (:capability-based-proof artifact))))))
 
+(deftest cross-profile-report-preserves-precedence-and-graph-edges
+  (let [requesting-module (assoc module
+                                 :requires [{:module 'shared.core}
+                                            {:module 'shared.core :profile :core}
+                                            {:module 'shared.core :profile :native}
+                                            {:module 'foreign.api :profile false}
+                                            {:module 'unprofiled.api}]
+                                 :imports [{:module 'shared.core :profile :native}
+                                           {:module 'foreign.api :profile :native}])
+        shared-edge {:namespace 'shared.core :profile-boundary :pure-core}
+        dependency-graph {:dependencies [{:namespace 'foreign.api :profile-boundary :interop}
+                                         shared-edge
+                                         {:namespace 'unknown.api :profile-boundary :missing}
+                                         {:namespace 'unprofiled.api :profile-boundary :compatible}
+                                         shared-edge]}
+        shared-report {:from 'demo.main :to 'shared.core :from-profile :hosted
+                       :to-profile :core :boundary :pure-core :accepted? true}]
+    (is (= {:artifact :gravity/c5-cross-profile-edge-report
+            :edges [{:from 'demo.main :to 'foreign.api :from-profile :hosted
+                     :to-profile :native :boundary :interop :accepted? true}
+                    shared-report
+                    {:from 'demo.main :to 'unknown.api :from-profile :hosted
+                     :to-profile :hosted :boundary :missing :accepted? false}
+                    {:from 'demo.main :to 'unprofiled.api :from-profile :hosted
+                     :to-profile :hosted :boundary :compatible :accepted? true}
+                    shared-report]
+            :status :complete}
+           (c5/c5-cross-profile-edge-report requesting-module dependency-graph)))))
+
 (deftest override-driven-diagnostics-retain-c5-identities
   (doseq [[fail-kind diagnostic message]
           [[:unresolved "C5-UNRESOLVED" "symbol has no resolvable binding"]
