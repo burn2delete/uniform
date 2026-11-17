@@ -8,6 +8,7 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [w5-b13-policy
+             w5-b13-linux-elf-header-prefix-valid?
              w5-b13-diagnostic-catalog
              w5-b13-request-shape-valid?
              w5-b13-target-coherent?
@@ -162,10 +163,14 @@
     :release-attempt? :provenance :clojure-seed-boundary? :self-hosted?
     :release? :public-authority? :authority :non-authority})
 
+; Module-development def initializers are inert literals, not expressions.
+; Keep this exported value self-contained rather than embedding var references.
 (def w5-b13-diagnostic-catalog
   {:artifact :gravity/w5-b13-diagnostic-catalog
    :schema-version 1
-   :diagnostics w5-b13-diagnostic-ids
+   :diagnostics ["B13-SCHEMA" "B13-HASH" "B13-PROVENANCE" "B13-SOURCEMAP"
+                 "B13-EVIDENCE" "B13-TARGET" "B13-CONFORMANCE"
+                 "B13-REPRODUCIBILITY" "B13-RELEASE" "B13-GRAPH"]
    :remediation
    {"B13-SCHEMA" :emit-supported-common-manifest-schema
     "B13-HASH" :recompute-content-hash-and-manifest-digest
@@ -177,7 +182,12 @@
     "B13-REPRODUCIBILITY" :record-environment-inputs-nondeterminism-and-timestamp-policy
     "B13-RELEASE" :block-release-grade-output-until-release-evidence-is-present
     "B13-GRAPH" :repair-artifact-graph-nodes-and-edges}
-   :non-authority w5-b13-non-authority})
+   :non-authority {:clojure-seed-boundary? true
+                   :self-hosted? false
+                   :release? false
+                   :public-authority? false
+                   :full-language? false
+                   :authority :non-authority}})
 
 (defn w5-b13-policy []
   {:artifact :gravity/w5-b13-artifact-emission-policy
@@ -262,6 +272,53 @@
              :packaging
              :deployment
              :seed-retirement]})
+
+; SH-20 implementation only: octet data, no file, hash or artifact authority.
+; Scan the entire carrier, but inspect ELF fields only in its 20-byte prefix.
+; The octet and u16 widths are format requirements, not input allowances.
+; Vector reads, comparisons and integer arithmetic require no build effects
+; or capabilities. Compilation, execution and native byte transport stay hosted.
+(defn w5-b13-octets-valid? [octets]
+  (loop [index 0]
+    (if (= index (count octets))
+      true
+      (let [octet (get octets index)]
+        (if (integer? octet)
+          (if (>= octet 0)
+            (if (<= octet 255)
+              (recur (+ index 1))
+              false)
+            false)
+          false)))))
+
+(defn w5-b13-u16-le [octets offset]
+  (+ (get octets offset) (* 256 (get octets (+ offset 1)))))
+
+(defn w5-b13-linux-elf-header-prefix-valid? [octets kind]
+  (if (vector? octets)
+    (if (>= (count octets) 20)
+      (if (w5-b13-octets-valid? octets)
+        (if (= 127 (get octets 0))
+          (if (= 69 (get octets 1))
+            (if (= 76 (get octets 2))
+              (if (= 70 (get octets 3))
+                (if (= 2 (get octets 4))
+                  (if (= 1 (get octets 5))
+                    (if (= 1 (get octets 6))
+                      (if (= (if (= :object kind) 1 2)
+                             (w5-b13-u16-le octets 16))
+                        (= 62 (w5-b13-u16-le octets 18))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
 
 (defn w5-b13-present? [value]
   (if (= nil value) false true))
@@ -650,7 +707,9 @@
             false)
           false)
         false)
-      false)))))
+        false)
+      false)
+    false)))
 
 (defn w5-b13-hash-valid? [request]
   (let [manifest (get request :manifest)
@@ -901,7 +960,9 @@
             false)
           false)
         false)
-      false)))))
+        false)
+      false)
+    false)))
 
 (defn w5-b13-conformance-valid? [request]
   (let [conformance (get request :conformance-evidence-reference)
@@ -1236,7 +1297,7 @@
    :non-authority w5-b13-non-authority
    :static-only? true
    :target :llvm-x86_64-linux
-   :residual-boundaries (:residual-boundaries (w5-b13-policy))})
+   :residual-boundaries (get (w5-b13-policy) :residual-boundaries)})
 
 (defn w5-b13-emit [request]
   (if (w5-b13-request-shape-valid? request)
@@ -1345,7 +1406,7 @@
                          :blocked? true
                          :non-authority w5-b13-non-authority
                          :residual-boundaries
-                         (:residual-boundaries (w5-b13-policy))}
+                         (get (w5-b13-policy) :residual-boundaries)}
                         (w5-b13-rejected
                          request
                          (w5-b13-diagnostic
