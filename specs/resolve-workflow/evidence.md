@@ -165,24 +165,31 @@ before the unresolved-reference assertions. The repair keeps those assertions
 within the original `error` binding and preserves the graph comparisons. The
 failed compile produced no test results.
 
-The controller subsequently ran the exact verifier selection below and
-reported exit 124, an ended writer, empty stderr and untruncated capture. The
-last stdout line was
-`{:event :resolution-test-start, :test verifier-requires-fresh-replay-current-products-and-public-proof}`.
-The run reported no assertion result or completed test. The capture leaves the
-time spent in cold artifact construction versus verification undetermined.
+The controller's first exact verifier run exited 124 after the test-start
+marker. The earlier repair consolidated redundant Resolve cases and added case
+start markers. The controller reran the exact verifier selection below on
+that worktree. It again reported exit 124, an ended writer, empty stderr and
+untruncated capture. The final stdout line was
+`{:event :resolution-verifier-start, :case :current-artifact}`. Cold artifact
+construction had returned. The capture contains no completed verification or
+assertion result and does not identify which inner operation was in progress.
+The controller reported this as an unrestricted timeout.
 
-Source inspection showed that the test verified the unchanged artifact twice
-through the same contained verifier and ran three separate replays for altered
-provenance, raw template and envelope. The repair uses the public verification
-function for the single positive assertion and verifies the three altered
-fields in a single artifact. It requires exactly their three failure checks and
-the resulting embedded-proof failure. The v1 substitution, missing and altered
-proofs, altered artifact identity and three injected owner failures still each
-exercise their own applicable verifier calls. The ten calls retain fresh
-verification and emit a case marker before invocation, after cold artifact
-construction. Post-repair results and the exact checked revision are pending
-controller execution on the eligible current-source route.
+Source inspection found two calls to the same Macro owner in each successful
+legacy Resolve verification. The first supplies the upstream report. The
+second authenticates the same parent when reconstructing the ordinary module
+request. The verifier test now runs those calls inside the existing isolated
+proof-transaction test scope, where the owner may reuse a successful report for
+the identical immutable parent and matching verifier epoch. The positive and
+v1 cases start in separate empty scopes and assert an actual Macro owner
+execution in each. Each case still enters the Resolve stage verifier directly
+and exercises the same applicable checks, including real request replay for
+the positive and v1 cases. The missing and altered proof controls, artifact
+identity control, combined provenance/template/envelope mutation, and injected
+owner failures remain. Case start and end events delimit the calls. No
+production verifier, owner policy, or watchdog configuration changed in this
+timeout repair. The effect on runtime and the post-repair check results are
+pending controller execution on the exact worktree revision.
 
 ```bash
 clojure -J-Xmx2g -M:language-test --namespace gravity.resolution.pipeline-test \
