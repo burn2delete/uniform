@@ -125,8 +125,11 @@ remaining index criteria and independent acceptance of `resolve/4` are pending.
 
 Review of candidate `5073db94eda2de03dc0c491605858dec1fe156f9` found that
 the Reader identity tests could no longer load the artifact projector in
-isolation. The standalone projector repair and its populated-edge fixture
-await [controller verification](evidence.md#standalone-artifact-projector-repair).
+isolation. For the [standalone projector repair](evidence.md#standalone-artifact-projector-repair),
+the controller reported all six checks passed on candidate
+`75ae75679bdb30fcdaab4e2db1e6c05e38423594`, tree
+`50b77ddd01b40e617f4d87484fb229d792bb5d09`, including the populated-edge
+fixture and the full `gravity.reader.ci-identity-test` namespace.
 
 <!-- macro-source-definition-index:start -->
 

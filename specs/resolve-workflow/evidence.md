@@ -249,9 +249,18 @@ span and physical source span to the existing independent digest comparison.
 The Reader fixtures exercise the actual standalone artifact form, compare its
 complete preimage and detect dropped or altered identity fields.
 
-Controller verification is pending for this repair. The selection includes
-the five commands above and the full Reader identity namespace:
+For base `378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`75ae75679bdb30fcdaab4e2db1e6c05e38423594`, tree
+`50b77ddd01b40e617f4d87484fb229d792bb5d09`, the controller reported that
+all six commands passed. These were the five commands above and the full
+Reader identity namespace that exposed the standalone projector defect.
 
 ```bash
 clojure -M:dev-test --namespace gravity.reader.ci-identity-test --fail-fast
 ```
+
+With the other invalidation inputs held equal, changing an edge endpoint or
+boundary changed the key. Relocating a physical source span preserved the key
+and the emitted graph retained the new origin. Fresh verification rejected the
+prior v1 key. The remaining index criteria, an actual Build consumer reuse
+decision and independent acceptance of `resolve/4` are still open.
