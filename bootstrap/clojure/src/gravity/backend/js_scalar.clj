@@ -211,33 +211,40 @@
 
 (defn source-map-source [program source-text emitted]
   (let [source-lines (str/split source-text #"\r\n|\r|\n" -1)
-        origins (keep-indexed
-                 (fn [index {:keys [text origin]}]
-                   (when origin
-                     (let [line (get source-lines (dec (:sourceLine origin)))
-                           column (:sourceColumn origin)
-                           ;; C2 columns count Unicode scalar values. Source
-                           ;; Map v3 original columns count UTF-16 code units.
-                           column (if (= :unicode-scalar (or (get-in origin [:sourceSpan :start :column-unit])
-                                                           (get-in origin [:sourceSpan :column-unit])))
-                                    (.offsetByCodePoints ^String line 0 column) column)]
-                       (assoc origin :generatedLine (inc index)
-                                     :generatedColumn (- (count text) (count (str/triml text)))
-                                     :sourceColumn column :sourceColumnUnit "utf16-code-unit"))))
-                 (:lines emitted))
-        by-line (into {} (map (juxt :generatedLine identity)) origins)
-        mappings (loop [line 1 source-line 0 source-column 0 result []]
-                   (if (> line (inc (count (:lines emitted)))) (str/join ";" result)
-                     (if-let [origin (get by-line line)]
-                       (let [next-line (dec (:sourceLine origin)) next-column (:sourceColumn origin)]
-                         (recur (inc line) next-line next-column
-                                (conj result (str (vlq (:generatedColumn origin)) "A"
-                                                  (vlq (- next-line source-line))
-                                                  (vlq (- next-column source-column))))))
-                       (recur (inc line) source-line source-column (conj result "")))))]
+        origins (into []
+                      (keep-indexed
+                       (fn [index {:keys [text origin]}]
+                         (when origin
+                           (let [line (get source-lines (dec (:sourceLine origin)))
+                                 column (:sourceColumn origin)
+                                 ;; C2 columns count Unicode scalar values. Source
+                                 ;; Map v3 original columns count UTF-16 code units.
+                                 column (if (= :unicode-scalar (or (get-in origin [:sourceSpan :start :column-unit])
+                                                                 (get-in origin [:sourceSpan :column-unit])))
+                                          (.offsetByCodePoints ^String line 0 column) column)]
+                             (assoc origin :generatedLine (inc index)
+                                           :generatedColumn (- (count text) (count (str/triml text)))
+                                           :sourceColumn column :sourceColumnUnit "utf16-code-unit")))))
+                      (:lines emitted))
+        ;; The printer terminates its output with a newline, leaving a final empty line.
+        final-line (inc (count (:lines emitted)))
+        result (StringBuilder.)
+        mappings (loop [remaining (seq origins) generated-line 1 source-line 0 source-column 0]
+                   (let [origin (first remaining)
+                         next-generated-line (or (:generatedLine origin) final-line)]
+                     (dotimes [_ (- next-generated-line generated-line)]
+                       (.append result \;))
+                     (if origin
+                       (let [next-source-line (dec (:sourceLine origin))
+                             next-source-column (:sourceColumn origin)]
+                         (.append result (str (vlq (:generatedColumn origin)) "A"
+                                              (vlq (- next-source-line source-line))
+                                              (vlq (- next-source-column source-column))))
+                         (recur (next remaining) next-generated-line next-source-line next-source-column))
+                       (str result))))]
     (str (json-source
           {:version 3 :file "program.mjs" :sources [(get-in program [:source :path])]
            :sourcesContent [source-text] :names [] :mappings mappings
            :x_gravity {:coverage "functions-operations-guards-and-terminators"
                        :sourceContentHash (get-in program [:source :content-hash])
-                       :perFormOriginPreserved true :generatedOrigins (vec origins)}}) "\n")))
+                       :perFormOriginPreserved true :generatedOrigins origins}}) "\n")))

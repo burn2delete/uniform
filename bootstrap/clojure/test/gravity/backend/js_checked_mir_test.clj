@@ -6,6 +6,7 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.backend.js :as js]
             [gravity.backend.js-checked-mir :as backend]
+            [gravity.backend.js-scalar :as printer]
             [gravity.bootstrap :as bootstrap]
             [gravity.bootstrap-free-leaf-test-runner :as json]
             [gravity.compiler.application :as application])
@@ -236,6 +237,46 @@
                                              :source-column (:column origin)})))))
                   result))])
            (str/split mappings #";" -1)))))
+
+(deftest scalar-source-map-preserves-ordered-origins-and-gaps
+  (let [source-text "ab\r\n\uD835\uDC99cd\n"
+        program {:source {:path "fixture.gravity" :content-hash "fixture-hash"}}
+        later-origin {:sourceLine 2 :sourceColumn 2
+                      :sourceSpan {:start {:line 2 :column 3 :column-unit :unicode-scalar}}
+                      :functionId "fn" :mirInstructionId "guard" :coreNodeId "add"
+                      :originChain [{:kind :macro :id "expansion"}]
+                      :syntaxId "syntax" :originId "origin"}
+        earlier-origin (assoc later-origin :sourceLine 1 :sourceColumn 0
+                              :sourceSpan {:start {:line 1 :column 1 :column-unit :unicode-scalar}}
+                              :mirInstructionId "return")
+        lines [{:text "// preamble"}
+               {:text "  first" :origin later-origin}
+               {:text "second" :origin later-origin}
+               {:text ""}
+               {:text "// unmapped"}
+               {:text "    third" :origin earlier-origin}
+               {:text "//# sourceMappingURL=program.mjs.map"}]
+        expected-map {:version 3 :file "program.mjs" :sources ["fixture.gravity"]
+                      :sourcesContent [source-text] :names []
+                      :x_gravity {:coverage "functions-operations-guards-and-terminators"
+                                  :sourceContentHash "fixture-hash"
+                                  :perFormOriginPreserved true :generatedOrigins []}}]
+    (testing "Mapped lines preserve exact VLQ deltas and all origin metadata"
+      (let [converted-origin (assoc later-origin :sourceColumn 3 :sourceColumnUnit "utf16-code-unit")
+            origins [(assoc converted-origin :generatedLine 2 :generatedColumn 2)
+                     (assoc converted-origin :generatedLine 3 :generatedColumn 0)
+                     (assoc earlier-origin :generatedLine 6 :generatedColumn 4
+                            :sourceColumnUnit "utf16-code-unit")]
+            expected (-> expected-map
+                         (assoc :mappings ";EACG;AAAA;;;IADH;;")
+                         (assoc-in [:x_gravity :generatedOrigins] origins))]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text {:lines lines})))))
+    (testing "Unmapped output still includes the final empty line"
+      (let [expected (assoc expected-map :mappings ";;;;;;;")]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text
+                                          {:lines (mapv #(dissoc % :origin) lines)})))))))
 
 (def ^:private scalar-execution-script
   (str "const inputs = [[true,3n,7n],[false,7n,3n],"
