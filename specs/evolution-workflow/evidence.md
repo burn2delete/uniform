@@ -329,3 +329,113 @@ historical rebuild execution and independent acceptance remain separate unrun
 composition/acceptance obligations. The parent remains Open. No integration,
 yank issuance, approval, grant, release, self-hosting or seed retirement is
 claimed, and every retained refused operation remains prohibited.
+
+## Deprecation proposal production
+
+Finding: `evolution.deprecation-proposals.migration-payload-v1`.
+Owning task: `evolution/stabilization-decision`, still Open. Authored on
+2026-11-07 in the supplied `increment-1324` worktree. No current base, candidate
+commit or tree identity was supplied or inferred; no Git inspection was used
+to obtain one. Historical identities above remain scoped to their subjects.
+
+Applied the local
+[speckit-implement skill](../../.agents/skills/speckit-implement/SKILL.md)
+within the four owned paths and the controller-owned verification boundary.
+Consulted the repository/Spec Kit instructions, constitution, semantic naming,
+development verification, owning spec/plan/tasks/evidence, phase navigation,
+foundation contracts and GOV1/GOV2/GOV3/GOV4/GOV7/GOV8/STD20. This is semantic
+proposal production, outside the private rename fast path. New names
+`gravity.evolution.deprecation-proposals/create-proposal` and its test namespace
+identify the subsystem and behavior; GOV8003/GOV8004 remain normative diagnostic
+identities. No existing implementation was adopted from another candidate.
+
+Passive source reads locate the fixed `:stabilization-evidence` and
+`:deprecation-schedule` lists in `p17-artifact-values` at
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00501-p17-governance-validate-source-overrides.clj`.
+That catalog is unchanged. The new producer constructs concrete, input-sensitive
+records from explicit exact contract/revision, affected surfaces, owner,
+replacement or rationale, diagnostic, warning/error/removal declarations,
+migration artifacts, retained-test references, history and public provenance.
+Its status and authority remain proposed/non-admitting, including when the
+caller supplies removed/approved/emergency claims. Schedule labels are retained
+opaquely and do not establish an approved or elapsed removal window.
+
+Specified the [carrier appendix](tasks.md#deprecation-proposal-carrier) before
+source implementation, outside `evolution-implementation-tasks:end`. Only
+appended to shared tasks/evidence, sequentially in this worker. The authenticated
+plan.md, canonical task region/criteria, Open statuses and historical evidence
+were not edited. No whole-file source transition or task hash was rebound.
+The earlier historical task hashes describe their earlier complete files.
+Later composition must serialize these appendices with PR767/1291 and other
+Evolution work without importing their implementations or acceptance.
+
+Authored the pure Clojure producer in
+`bootstrap/clojure/src/gravity/evolution/deprecation_proposals.clj` and fixtures
+in `bootstrap/clojure/test/gravity/evolution/deprecation_proposals_test.clj`.
+Required accepted fixtures are `complete-deprecation-proposal`,
+`explicit-no-replacement-rationale`, `changed-migration-changes-product`,
+`retained-history-and-test-references` and `reordered-input-determinism`.
+They compare complete expected products and unchanged inputs, including
+historical safety/review metadata and ordered test/migration references.
+Further fixtures vary exact subject, owner, diagnostic, schedule and provenance
+inputs; compare deterministic products/rendering for reordered maps/keyword
+sets and caller printer bindings; and retain supported immutable numeric leaves.
+
+Required rejected fixtures are `missing-replacement-and-rationale` (GOV8003)
+and `missing-diagnostic-or-schedule` (GOV8004). Additional complete-diagnostic
+fixtures cover missing/blank carrier fields, empty migration/test references,
+malformed guidance, Java collections/records, atoms, callbacks, unrealized lazy
+inputs, mutable Number leaves and payload-free multi-error ordering. Mutable
+number/map controls require rejection to remain unchanged after caller mutation;
+inputs are not mutated by construction. `caller-removed-state-cannot-promote`
+retains historical removal data while projecting no caller approval/grant or
+top-level removal state. No consumer execution is implied by these fixtures.
+
+Actual worker activity: passive file reads, four owned-file edits and textual
+review only. No test/build/check command, Clojure execution, Git command,
+network access, publication or consumer composition ran. In particular,
+`git status --short` was not attempted: the controller-owned Git prohibition
+takes precedence over the repository's ordinary status instruction. No refused
+action was retried, transferred or routed around. No new tool refusal occurred.
+
+Exact proposed controller argument vectors and current results (executable is
+the first element):
+
+```clojure
+["clojure" "-M:dev-test" "--namespace" "gravity.evolution.deprecation-proposals-test"]
+["clojure" "-M" "tools/acceptance_dependencies_test.clj"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+["clojure" "-M" "tools/validate_gravity_docs.clj"]
+["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
+```
+
+Result for every vector: unrun here; no exit code, test count or passing receipt
+exists for this increment. Ready means authored for native controller checking.
+The acceptance-dependency script includes captured-span preservation,
+`current-source-transition-authenticates-file-and-span-identities`,
+`acceptance-owner-rejects-current-transition-population-drift`, historical
+source non-promotion, conditional edges and real source audit controls. Their
+actual results must be recorded against the exact resulting controller
+candidate; no previous candidate's success validates these appended artifacts.
+Unrun controller checks alone are not a restricted outcome.
+
+Missing authority and semantic limits: the parent accountable individual
+remains unassigned. Explicit fixture owner/public-reference strings prove no
+authentication, signatures, content availability, actual retained executable
+test coverage or review authority. GOV8 defines schedule declarations but no
+version grammar/window-ordering algorithm for this producer; labels remain
+opaque, with no invented removal decision. GOV8 has no dedicated diagnostic
+for generic malformed proposal carriers, so the appendix defines the local
+`DEPRECATION-INPUT` code without assigning GOV8005-GOV8008 to unperformed
+removal/coverage/package/release operations. No unresolved ambiguity prevents
+this declared construction slice; those actual decisions remain with owners.
+
+Start is independent of final library admission or stabilization. Composition
+still needs actual GOV1/GOV2 review, applicable GOV3/STD20/GOV4/GOV7 evidence,
+approved removal-window evaluation, retained executable tests and exact
+diagnostic/docs/package/migration/release consumer results. Emergency removal
+requires actual GOV4 and GOV2 records. Genuine library-admission/stabilization
+feedback dependencies remain; independent acceptance and integration remain
+pending. No task closure, approval, publication, commit, merge, release,
+self-hosting or seed-retirement authority is claimed. All retained operation
+restrictions, including Build1173/environment-scope1176, remain effective.
