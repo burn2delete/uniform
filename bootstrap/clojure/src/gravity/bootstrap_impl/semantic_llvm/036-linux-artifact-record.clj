@@ -1,3 +1,77 @@
+(declare ^:private p15-s23-sh02-component-safe-source-path!)
+
+(defn- p15-s23-b3-llvm-linux-differential-binding!
+  [request-source]
+  ;; BOOT4/BOOT8: observe current source without refreshing migration pins.
+  (let [relative "bootstrap/gravity/src/gravity/backend/w5_b14_backend_conformance_verifier.gravity"
+        root (loop [directory (.getParentFile
+                               (java.io.File. (p15-s23-c11-mir-resolve-source-path)))]
+               (cond
+                 (nil? directory)
+                 (p15-s23-b3-llvm-fail!
+                  "B1-INPUT" request-source {}
+                  {:missing-fact :current-b14-evidence-source})
+                 (.isFile (java.io.File. directory relative)) directory
+                 :else (recur (.getParentFile directory))))
+        path (.toPath (java.io.File. root relative))
+        _ (p15-s23-sh02-component-safe-source-path!
+           request-source (.toPath root) path)
+        before (p15-s23-sh07-b51-compatibility-source-record (str path))
+        source-module (parse-module
+                       (:path before)
+                       (mapv :form (read-source-form-records
+                                    (:path before) (:text before))))
+        rule (c-backend-stage2-plan-emitter-source-rule! request-source :jvm)
+        plan (p15-s23-stage2-compiler-artifact-plan
+              (:emitter rule) (:path before) (:text before))
+        after (p15-s23-sh07-b51-compatibility-source-record (str path))
+        _ (p15-s23-sh02-component-safe-source-path!
+           request-source (.toPath root) path)
+        function 'w5-b14-linux-differential-evidence-input]
+    (when-not (and (= (:path before) (:path after))
+                   (java.util.Arrays/equals ^bytes (:bytes before) ^bytes (:bytes after))
+                   (= (str "sha256:" (sha256-bytes-hex (:bytes before)))
+                      (get-in plan [:source :sha256]))
+                   (= (:plan-id plan) (p15-s23-c11-mir-digest (dissoc plan :plan-id)))
+                   (= {:module 'gravity.backend.w5-b14-backend-conformance-verifier
+                       :profile :meta :target :jvm :effects #{:memory/allocate}
+                       :capabilities #{} :safety :safe}
+                      (select-keys (:module plan)
+                                   [:module :profile :target :effects :capabilities :safety])
+                      (select-keys source-module
+                                   [:module :profile :target :effects :capabilities :safety]))
+                   ;; The raw compiler's macro projection omits exports.
+                   ;; Check the retained source header, not an invented plan field.
+                   (not (contains? (:module plan) :exports))
+                   (some #{function} (:exports source-module))
+                   (= {:arity 3 :params '[process-result elf-object elf-executable]}
+                      (select-keys (get-in plan [:functions function]) [:arity :params])))
+      (p15-s23-b3-llvm-fail!
+       "B1-INPUT" request-source {}
+       {:missing-fact :current-b14-evidence-source-binding}))
+    plan))
+
+(defn- p15-s23-b3-llvm-linux-differential-evidence-input!
+  [source-path toolchain]
+  (let [plan (p15-s23-b3-llvm-linux-differential-binding! source-path)
+        result (p15-s23-stage2-runtime-execute-function
+                {:engine :gravity-b14-linux-evidence-input-current-source
+                 :compiler-artifact-plan? true}
+                plan 'w5-b14-linux-differential-evidence-input
+                [(:process-result toolchain) (:elf-object toolchain)
+                 (:elf-executable toolchain)])
+        ;; B13/B14/D9 independent verification only, never a host fallback.
+        fields [:content-hash :byte-count :format :architecture :header]
+        expected {:kind :gravity/b14-bounded-llvm-differential-record
+                  :process-result (:process-result toolchain)
+                  :elf-object (select-keys (:elf-object toolchain) fields)
+                  :elf-executable (select-keys (:elf-executable toolchain) fields)}]
+    (when-not (= expected result)
+      (p15-s23-b3-llvm-fail!
+       "B3-PASS" source-path {}
+       {:missing-fact :independent-b14-evidence-input-reconstruction}))
+    result))
+
 (defn- p15-s23-b3-llvm-linux-artifact-record
   [c11-artifact checked-core context bridge-packet lowering binding options]
   (let [source-path (:source-path context)
@@ -88,14 +162,8 @@
          :evidence-id
          (when toolchain-complete?
            (p15-s23-c11-mir-digest
-            {:kind :gravity/b14-bounded-llvm-differential-record
-             :process-result (:process-result toolchain)
-             :elf-object (select-keys (:elf-object toolchain)
-                                      [:content-hash :byte-count :format
-                                       :architecture :header])
-             :elf-executable (select-keys (:elf-executable toolchain)
-                                          [:content-hash :byte-count :format
-                                           :architecture :header])}))
+            (p15-s23-b3-llvm-linux-differential-evidence-input!
+             source-path toolchain)))
          :target (p15-s23-b3-llvm-expected-b13-target)
          :process-result
          (if toolchain-complete?

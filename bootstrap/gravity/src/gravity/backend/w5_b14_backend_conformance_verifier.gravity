@@ -23,6 +23,7 @@
              w5-b14-evidence-pack
              w5-b14-diagnostic-stream
              w5-b14-identity-input
+             w5-b14-linux-differential-evidence-input
              w5-b14-differential-entry-valid?
              w5-b14-differential-entries-valid?
              w5-b14-record-links-valid?
@@ -34,7 +35,7 @@
              w5-b14-verify
              w5-b14-recompute
              w5-b14-verify-result])
-  (:effects #{})
+  (:effects #{:memory/allocate})
   (:capabilities #{})
   (:safety :safe)
   (:metadata
@@ -117,6 +118,29 @@
                       :darwin-support
                       :release-readiness
                       :self-hosting-completion]}}))
+
+; B13/B14 evidence preimage only. The caller owns completeness, hashing and
+; observation status. Retain presence separately from value (including nil).
+; Allocation constructs persistent maps; no process capability is required.
+(defn w5-b14-linux-evidence-fields
+  [record fields index result]
+  (if (= index (count fields))
+    result
+    (let [field (get fields index)]
+      (w5-b14-linux-evidence-fields
+       record fields (+ index 1)
+       (if (contains? record field)
+         (assoc result field (get record field))
+         result)))))
+
+(defn w5-b14-linux-differential-evidence-input
+  [process-result elf-object elf-executable]
+  (let [fields [:content-hash :byte-count :format :architecture :header]]
+    {:kind :gravity/b14-bounded-llvm-differential-record
+     :process-result process-result
+     :elf-object (w5-b14-linux-evidence-fields elf-object fields 0 {})
+     :elf-executable
+     (w5-b14-linux-evidence-fields elf-executable fields 0 {})}))
 
 (def w5-b14-required-backend-values
   [:c :llvm :wasm :jvm :js-ts :mlir :gpu :hdl
@@ -608,13 +632,14 @@
                      (get entry :observed-id))
                 (if (= :matched (get entry :status))
                   (= :not-required-static-only (get entry :execution))
+                  false)
                 false)
               false)
             false)
           false)
         false)
       false)
-    false)))
+    false))
 
 (defn w5-b14-differential-entries-valid?
   [entries index]
@@ -1023,11 +1048,12 @@
                                                        (get provenance
                                                            :compiler-source-path)
                                                        ".gravity")
-                                                    (if (or
+                                                    (if (if
                                                          (w5-b14-path-ends-with?
                                                           (get provenance
                                                               :actual-source-path)
                                                           ".gravity")
+                                                         true
                                                          (w5-b14-path-ends-with?
                                                           (get provenance
                                                               :actual-source-path)
