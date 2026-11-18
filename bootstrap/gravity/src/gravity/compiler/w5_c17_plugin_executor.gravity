@@ -777,12 +777,12 @@
 (defn w5-c17-facts-preserved? [request]
   (let [input-facts (get (get request :input-artifact) :facts)
         output-facts (get (get request :output-artifact) :facts)
-        preserves (get (get request :pass-contract) :preserves)]
-    (if (w5-c17-all-present? (get w5-c17-policy :required-pass-facts)
-                             preserves)
+        preserves (get (get request :pass-contract) :preserves)
+        required-facts (get w5-c17-policy :required-pass-facts)]
+    (if (w5-c17-all-present? required-facts preserves)
       (if (map? input-facts)
-        (if (= input-facts output-facts)
-          true
+        (if (w5-c17-all-present? required-facts input-facts)
+          (= input-facts output-facts)
           false)
         false)
       false)))

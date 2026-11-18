@@ -189,6 +189,24 @@
     (is (true? (:non-authoritative? sandboxed-result)))
     (is (= :incomplete (:completion sandboxed-result)))))
 
+(deftest rejects-required-fact-missing-from-both-artifacts
+  (let [request (accepted-request
+                 accepted-gravity-plan
+                 'w5-c17-sandboxed-request
+                 "/checkout-a/self-hosting/w5-c17/accepted/plugin-execution.gravity")]
+    (doseq [fact [:source-spans :origin-chain :type-facts
+                  :effect-facts :capability-facts]]
+      (testing (str "Missing " fact)
+        (let [result (execute (-> request
+                                  (update-in [:input-artifact :facts] dissoc fact)
+                                  (update-in [:output-artifact :facts] dissoc fact)))
+              diagnostic (first (:diagnostics result))]
+          (is (= :rejected (:status result)))
+          (is (= "C17-PASS-CONTRACT" (:rule diagnostic)))
+          (is (= :preserved-facts-dropped (:reason diagnostic)))
+          (is (nil? (:execution-trace result)))
+          (is (nil? (:verifier-report result))))))))
+
 (deftest w5-c17-qst-request-retains-qst-provenance
   (let [request (accepted-request
                  accepted-qst-plan
