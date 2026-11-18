@@ -19,6 +19,27 @@
 (defn- source-delta [ctx cwd base candidate]
   (rt/git ctx cwd "diff-tree" "--no-commit-id" "-r" "--raw" "--no-renames" "--no-abbrev" base candidate))
 
+(def full-pr-jobs
+  (merge (zipmap ["fresh-leaf-regressions / portable" "fresh-leaf-regressions / darwin" "darwin-unsupported-host"]
+                 ["leaves-portable" "leaves-darwin" "leaves-unsupported"])
+         (into {} (map (juxt identity identity)
+                       ["static" "contracts" "bootstrap" "macro" "checked-core-runtime"
+                        "resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"]))))
+
+(defn- full-selection? [ci jobs]
+  (let [by-name (group-by :name jobs)
+        required (conj (set (keys full-pr-jobs)) "select CI checks")
+        artifacts (:required-artifacts ci)]
+    (and (= :full (get-in ci [:selection :kind])) (= (:base ci) (get-in ci [:selection :base]))
+         (every? #(= 1 (count %)) (vals by-name))
+         (every? #(= "success" (get-in by-name [% 0 :conclusion])) required)
+         (every? (fn [job] (or (required (:name job))
+                               (and (#{"experimental-source-snapshot" "experimental-prerelease"} (:name job))
+                                    (= "skipped" (:conclusion job))))) jobs)
+         (= (set (vals full-pr-jobs)) (set (map :name artifacts))) (= (count full-pr-jobs) (count artifacts))
+         (every? #(and (= (:name %) (get full-pr-jobs (:job-name %)))
+                       (seq (:children %)) (every? (fn [c] (and (= :passed (:status c)) (= 0 (:exit-code c)))) (:children %))) artifacts))))
+
 (defn- same-job-execution? [ctx jobs artifact run]
   ;; A single-job rerun copies successful jobs to new check IDs. Their original
   ;; runner, timestamps and step results still identify the producing execution.
@@ -27,10 +48,20 @@
                      (gh/api ctx (gh/repo-path ctx (str "actions/jobs/" (:producing-job artifact)))))
         fields [:run_id :name :conclusion :runner_id :started_at :completed_at :steps]]
     (and (= run (:run_id current) (:run_id original))
-         (= (:name artifact) (:name current)) (= "success" (:conclusion current))
+         (= (:job-name artifact) (:name current)) (= "success" (:conclusion current))
          (= (:attempt artifact) (:run_attempt original)) (= (:producing-job artifact) (:id original))
          (pos-int? (:runner_id current)) (string? (:started_at current)) (string? (:completed_at current))
          (seq (:steps current)) (= (select-keys original fields) (select-keys current fields)))))
+
+(defn- live-selection? [ctx ci jobs]
+  (let [selector (:selector ci)]
+    (when (and (pos-int? (:producing-job selector)) (= "select CI checks" (:job-name selector))
+               (same-job-execution? ctx jobs selector (:run ci)))
+      (let [log (rt/run! ctx (get-in ctx [:config :repo-dir])
+                         ["gh" "api" (gh/repo-path ctx (str "actions/jobs/" (:producing-job selector) "/logs"))])
+            selections (keep #(some-> (re-find #" CI selection (\{.*\})\s*$" %) second edn/read-string)
+                             (str/split-lines log))]
+        (= [(:selection ci)] (vec selections))))))
 
 (defn finish! [ctx task-key authority-file authority-digest ci-file ci-digest]
   (recovery/require! (and (true? @(:coordinator-owner ctx)) (= {:paused true} (rt/read-edn (:control-file ctx))))
@@ -75,8 +106,9 @@
             (= (:branch t) (get-in info [:head :ref])) (= (get-in ctx [:config :repository]) (get-in info [:head :repo :full_name]))
             (= :passed (:state workflows)) (= "success" (:conclusion run)) (= (:attempt ci) (:run_attempt run))
             (= ".github/workflows/ci.yml" (:path run) (:workflow ci)) (= "pull_request" (:event run))
-            (= (:total_count jobs) (count scopes)) (= (set scopes) (set (:jobs ci)))
-            (every? #(same-job-execution? ctx (:jobs jobs) % (:run ci)) (:required-artifacts ci))
+            (= (:total_count jobs) (count scopes)) (= (set scopes) (set (:jobs ci))) (full-selection? ci (:jobs jobs))
+            (live-selection? ctx ci (:jobs jobs))
+            (every? #(and (pos-int? (:producing-job %)) (same-job-execution? ctx (:jobs jobs) % (:run ci))) (:required-artifacts ci))
             (every? (fn [{:keys [name artifact sha256 attempt]}]
                       (and (pos-int? attempt) (<= attempt (:attempt ci)) (re-matches #"[a-z0-9-]+" name)
                            (some #(and (= artifact (:id %)) (= (str "sha256:" sha256) (:digest %))
