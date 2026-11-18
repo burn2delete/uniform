@@ -72,6 +72,11 @@
    "  :packaged-jvm-cli? " (if packaged? "true" "false") "\n"
    "  :seedless-release? false\n"
    "  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged\n"
+   "  :delegates-to \""
+   (if packaged?
+     "java -Dgravity.packaged.jvm.cli=true -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar:<clojure-runtime-classpath> clojure.main -m gravity.cli.launcher"
+     "clojure -M:gravity")
+   "\"\n"
    "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    "  :experimental-verified-mir-c-route \"implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication\"\n"))
 
@@ -115,6 +120,19 @@
   (testing "the compatibility wrappers retain their zero-arity surface"
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-version-record))))
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-help-text))))))
+
+(deftest checked-in-shell-help-is-rendered-by-the-cli-presentation
+  (let [renderer (var-get (ns-resolve 'gravity.cli 'shell-p18-cli-help-text))
+        source (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
+        archived (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")]
+    (is (= (renderer false) source))
+    (is (= (renderer true) archived))
+    (is (= (cli/p18-cli-help-text false) source))
+    (is (str/includes? source "gravity compile <file.qst|file.gravity> --target js|js-ts"))
+    (is (str/includes? source ":delegates-to \"clojure -M:gravity\""))
+    (is (str/includes? archived ":packaged-jvm-cli? true"))
+    (is (str/includes? archived
+                       ":delegates-to \"java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main\""))))
 
 (deftest usage-text-remains-the-entrypoint-compatibility-value
   (let [usage (cli/cli-usage-text)]

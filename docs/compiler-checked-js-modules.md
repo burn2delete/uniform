@@ -124,9 +124,12 @@ Require clean initial status, the intended candidate SHA, the documented
 toolchain and successful current-source launch before recording acceptance.
 Explicit target/lowering commands already bypass a historical packaged JAR in
 `bin/gravity`. Run `clojure -M:gravity help` for the current checked JavaScript
-command and explicit legacy lowering. The historical shell launcher's static
-help is frozen by the repository language-boundary contract; its bytes and
-current-source selection remain unchanged.
+command and explicit legacy lowering. The shell wrapper reads checked-in help
+resources rendered by the Clojure CLI presentation. Source and archived
+packaged-JVM help share the command forms while reporting their selected
+launcher metadata. This help path works without Clojure and independently of
+the caller's working directory; other wrapper behavior remains behind the
+existing frozen-shell boundary.
 
 ## Exact public source-to-module invocation
 

@@ -87,8 +87,11 @@
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 
-(defn p18-cli-help-text
-  [packaged-jvm-cli?]
+(def ^:private archived-packaged-jvm-cli-delegate
+  "java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main")
+
+(defn- render-p18-cli-help-text
+  [packaged-jvm-cli? delegates-to]
   (str
    "gravity bootstrap-hosted command\n\n"
    "Usage:\n"
@@ -128,8 +131,23 @@
    "\n"
    "  :seedless-release? false\n"
    "  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged\n"
+   "  :delegates-to \"" delegates-to "\"\n"
    "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    experimental-c-route-help))
+
+(defn- shell-p18-cli-help-text
+  [packaged-jvm-cli?]
+  (render-p18-cli-help-text
+   packaged-jvm-cli?
+   (if packaged-jvm-cli?
+     archived-packaged-jvm-cli-delegate
+     (:delegates-to (p18-cli-version-record false)))))
+
+(defn p18-cli-help-text
+  [packaged-jvm-cli?]
+  (render-p18-cli-help-text
+   packaged-jvm-cli?
+   (:delegates-to (p18-cli-version-record packaged-jvm-cli?))))
 
 (defn cli-usage-text
   "Return the stable usage text for a command-line shape failure.

@@ -76,7 +76,7 @@
  {:classification :frozen-removal-only-shell-launcher-debt,
   :entries
   [["bin/gravity"
-    "990d1dc11079df9fa1fbc267e49153be3c00239e0659843a0cfeaec542fc00a5"]
+    "1d7cc278fe85b5930b7d50d62eb0fef059f3eb49818f8e19bfeef1b0084e9eff"]
    ["bin/gravity-bootstrap"
     "97d796548093e845255dc4ffc766cf50831f5a1a1712155e3b3804e0a6b2a118"]]},
  :policy
