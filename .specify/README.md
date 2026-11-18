@@ -14,6 +14,12 @@ This is a work-artifact layer for implementation increments. The 240 contracts u
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
 
+Before selecting a feature directory, use the [ordinary PR workflow](../AGENTS.md#working-discipline)
+for fixes within an existing contract. Use the bounded Spec Kit workflow
+when requested or when the change needs a specification or plan. The live
+[constitution](memory/constitution.md#exact-outcomes-and-evidence-ownership)
+describes how to record evidence for each kind of change.
+
 ## Project-wide implementation coverage
 
 Matt's 2026-11-01 request expands the initial bounded adoption to reconcile the
@@ -47,12 +53,10 @@ The canonical classification and fast-path instructions are in
 [semantic-names.md](semantic-names.md). Apply them before selecting a feature
 directory: a private rename-only change returns to the ordinary branch/PR
 workflow, records its old/new name map, complete reference search and focused
-owner checks, and creates no feature directory or Spec Kit artifact. Public or
-serialized identity, protocol/schema/diagnostic IDs, ownership, semantic
-changes and new acceptance evidence remain outside that fast path. Use only
-the established bounded-workflow artifacts applicable to the change; no
-substantive edit implicitly requires all four. Historical packages remain
-authoritative for their original scope and are not rewritten.
+owner checks, and creates no feature directory or Spec Kit artifact. Changes
+to compatibility-bearing identities or language contracts follow their owning
+contracts. An implementation fix within those contracts uses the ordinary PR
+workflow above. Historical packages retain their original scope.
 
 ## Official version and supported customization
 
@@ -173,8 +177,10 @@ checks inventories, regenerates via supported `preset update --dev`, and compare
 generated skills byte-for-byte, all in a fresh disposable directory. It does not
 run `workflow run`, Codex, compiler tests, network installation or scripts in
 Uniform. `--ignore-agent-tools` discloses the unavailable executable check.
-The [results](validation/results.edn) and [pilot evidence](../specs/001-paired-source-core/evidence.md)
-separate observed, reported and unrun behavior.
+The verifier prints the current result and exits nonzero on a failed check.
+The [original results](validation/results.edn) and
+[pilot evidence](../specs/001-paired-source-core/evidence.md) document the
+adoption run.
 
 [ASCII adaptations](validation/ascii-adaptations.json) record original and adapted
 core-template digests. Local presets/overrides are Uniform-authored text; the
@@ -195,8 +201,8 @@ never run it against live shared work to test a replacement.
 | Implementation PR356 | Its code, validation and integration disposition | A dated reference workflow, no duplicated implementation |
 
 Old documents remain in place and feature artifacts link their owning sections.
-The pilot is a historical reference, not a living replacement language contract.
-New work gets its own bounded directory. Later adoption decisions for Deus:
+The pilot is a historical reference. A selected feature that needs new Spec Kit
+artifacts gets its own bounded directory. Later adoption decisions for Deus:
 which future slices use Spec Kit, collision-free feature naming across workers,
 historical versus living spec persistence, CLI/dependency upgrade policy, and
 whether external CLI maintenance remains useful. Broader conversion, issue

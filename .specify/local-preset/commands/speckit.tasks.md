@@ -8,15 +8,12 @@ description: Create evidence-linked Uniform tasks
 $ARGUMENTS
 ```
 
-Before selecting a feature directory, classify the request with
-`.specify/semantic-names.md`. For private rename-only changes, return to the
-ordinary branch/PR workflow there and stop: record the old/new map, complete
-reference search, focused owner checks and required manifest/digest updates;
-create no feature directory or Spec Kit artifact. Otherwise continue only with
-this command's applicable bounded workflow. Public/serialized identity,
-protocol/schema/diagnostic IDs, ownership, semantics and new evidence are
-explicitly not private-only; no substantive edit implicitly requires all four
-artifacts.
+Before selecting a feature directory, apply the ordinary fix workflow in
+`.specify/README.md` and the private rename guidance in `.specify/semantic-names.md`.
+If the request is a routine fix and neither the user nor the owning contract
+calls for Spec Kit artifacts, use the diff and focused regression checks through
+normal PR review and CI, then return before feature selection. Otherwise,
+continue with the bounded Spec Kit workflow below.
 
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization

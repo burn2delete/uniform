@@ -1,6 +1,7 @@
 (ns simplify.github
   "GitHub Projects v2 plus repository issues/milestones. Uses the existing gh login."
   (:require [clojure.data.json :as json]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [simplify.runtime :as rt]))
 
@@ -21,41 +22,158 @@
           (:errors payload)))
       (catch Exception _ nil))))
 
+(def ^:private review-threads-query
+  "query($owner:String!,$name:String!,$number:Int!,$after:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100,after:$after){nodes{isResolved}pageInfo{hasNextPage endCursor}}}}}")
+
+(def ^:private update-status-mutation
+  "mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}")
+
+(def ^:private ready-mutation
+  "mutation($id:ID!){markPullRequestReadyForReview(input:{pullRequestId:$id}){pullRequest{id}}}")
+
+(def ^:private draft-mutation
+  "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id}){pullRequest{id}}}")
+
+(def ^:private issue-membership-query
+  "query($id:ID!,$after:String){node(id:$id){... on Issue{projectItems(first:100,after:$after,includeArchived:false){nodes{id project{id}} pageInfo{hasNextPage endCursor}}}}}")
+
+(def ^:private add-item-mutation
+  "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}")
+
+(defn settled-controls-guard? [ctx key local hold]
+  (and (map? local) (not (contains? local :failed-request))
+       (= :project-controls-pagination (:kind hold)) (= :all-cursors (:scope hold))
+       (= (:project hold) (get-in @(:state ctx) [:project :id]))
+       (= (:state-file ctx) (:state-file hold)) (= key (:legacy-api-key hold))
+       (= local (:retained-local-guard hold))))
+
+(defn- tracked-request? [ctx key local {:keys [query variables]}]
+  (let [s @(:state ctx) project (:project s) p (:id project) repo (:repository s)
+        hold (rt/shared-restriction ctx :project-controls p)]
+    (when (and (:local-scheduling ctx) (true? (some-> (:coordinator-owner ctx) deref))
+               (= {:repository repo :project p} (:local-scheduling ctx))
+               (= repo (get-in ctx [:config :repository])) (settled-controls-guard? ctx key local hold))
+      (let [prs (keep :pr (vals (:tasks s)))
+            issues (cons (:campaign-issue s) (keep :issue (concat (vals (:tasks s)) (vals (:source-tasks s)))))
+            member-key #(str "project-item/" p "/" %)
+            pending? #(= :pending (get-in s [:effects % :status]))
+            known-issue? (fn [id] (and (string? id) (some #(= id (:node_id %)) issues)))
+            cursor? #(or (nil? %) (string? %))]
+        (cond
+          (= query issue-membership-query)
+          (and (= #{:id :after} (set (keys variables))) (cursor? (:after variables))
+               (known-issue? (:id variables)) (pending? (member-key (:id variables))))
+          (= query add-item-mutation)
+          (and (= {:project p :content (:content variables)} variables) (known-issue? (:content variables))
+               (pending? (member-key (:content variables))))
+          (= query update-status-mutation)
+          (and (string? (get-in project [:workflow :id])) (string? (:item variables))
+               (some #(and (string? (:id %)) (= (:option variables) (:id %))) (get-in project [:workflow :options]))
+               (= variables {:project p :item (:item variables) :field (get-in project [:workflow :id]) :option (:option variables)})
+               (some (fn [{id :node_id}]
+                       (let [item (get-in s [:effects (member-key id)])]
+                         (and (string? id) (= :done (:status item)) (= (:item variables) (:result item))
+                              (pending? (get-in s [:tracking-intents (str "project-status/" p "/" id)]))))) issues))
+          (= query review-threads-query)
+          (let [[owner name] (str/split repo #"/")]
+            (and (pos-int? (:number variables)) (some #(= (:number variables) (:number %)) prs)
+                 (= variables {:owner owner :name name :number (:number variables) :after (:after variables)})
+                 (cursor? (:after variables))))
+          (#{draft-mutation ready-mutation} query)
+          (some (fn [{:keys [candidate pr]}]
+                  (and (string? candidate) (string? (:node_id pr)) (= variables {:id (:node_id pr)})
+                       (pending? (str (if (= query draft-mutation) "draft/" "ready/") candidate)))) (vals (:tasks s)))
+          :else false)))))
+
+(defn- graphql-request [method endpoint payload]
+  (when (= "graphql" endpoint)
+    {:method method :endpoint endpoint :body-sha256 (rt/digest (or payload ""))}))
+
+(defn- reviewed-pr-request? [ctx key local {:keys [query variables]}]
+  (when-let [{:keys [task-key candidate authority-sha256 authority-raw]} (:pr-integration ctx)]
+    (let [s @(:state ctx) t (get-in s [:tasks task-key]) pr (:pr t) issue (:issue t)
+          project (:project s) p (:id project) scope (:pr-composition t) auth (:authority scope)
+          repo (get-in ctx [:config :repository]) [owner name] (str/split repo #"/")
+          hold (rt/shared-restriction ctx :project-controls p)
+          item (get-in s [:effects (str "project-item/" p "/" (:node_id issue)) :result])
+          field (get-in project [:workflow :id])]
+      (and (not (contains? local :failed-request))
+           (true? (some-> (:coordinator-owner ctx) deref))
+           (= :single-pr-composition (:kind auth)) (string? authority-sha256)
+           (string? authority-raw) (= authority-sha256 (:authority-sha256 scope) (rt/digest authority-raw))
+           (= auth (edn/read-string authority-raw))
+           (= :approved (:stage scope)) (= repo (:repo auth))
+           (pos-int? (:pr auth)) (= (:pr auth) (:number pr))
+           (string? candidate) (= candidate (:candidate t) (get-in t [:checks :candidate]))
+           (= :passed (get-in t [:checks :result])) (= (:tree t) (get-in t [:checks :tree]))
+           (= :passed (get-in t [:checks :hosted-ci :result]))
+           (= (select-keys t [:base :candidate :tree]) (select-keys (get-in t [:checks :hosted-ci]) [:base :candidate :tree]))
+           (= "approved" (get-in t [:review :verdict]))
+           (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
+           (= :project-controls-pagination (:kind hold)) (= :all-cursors (:scope hold))
+           (= (:state-file ctx) (:state-file hold)) (= key (:legacy-api-key hold)) (= local (:retained-local-guard hold))
+           (cond
+             (= query ready-mutation) (and (string? (:node_id pr)) (= variables {:id (:node_id pr)}))
+             (= query review-threads-query)
+             (and (= #{:owner :name :number :after} (set (keys variables)))
+                  (= [owner name (:number pr)] ((juxt :owner :name :number) variables))
+                  (or (nil? (:after variables)) (string? (:after variables))))
+             (= query update-status-mutation)
+             (and (string? field) (string? item)
+                  (= (get-in auth [:active-issues :increment]) (:number issue))
+                  (some (fn [{:keys [name id]}]
+                          (and (#{"CI" "Merge queue" "Done"} name) (string? id)
+                               (= variables {:project p :item item :field field :option id})))
+                        (get-in project [:workflow :options])))
+             :else false)))))
+
 (defn api
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
    (let [key (rt/digest (pr-str [method endpoint]))
-         _ (when (or (get-in @(:state ctx) [:restricted-actions key])
-                     (rt/shared-restriction ctx :api key))
-             (rt/fail! "Restricted GitHub action cannot be retried" {:endpoint endpoint :restricted true}))
+         payload (when body (json/write-str body))
+         request (graphql-request method endpoint payload)
+         local (get-in @(:state ctx) [:restricted-actions key])
+         _ (when (or (rt/shared-restriction ctx :api key)
+                     (and local (not (and (= [method endpoint] ["POST" "graphql"])
+                                          (or (reviewed-pr-request? ctx key local body)
+                                              (tracked-request? ctx key local body))))))
+             (rt/fail! "Restricted GitHub action cannot be retried"
+                       (cond-> {:endpoint endpoint :restricted true}
+                         request (assoc :failed-request (assoc request :phase :before-call)))))
          result (rt/command ctx (get-in ctx [:config :repo-dir])
                             (cond-> ["gh" "api" "--method" method endpoint]
                               body (into ["--input" "-"]))
-                            (when body (json/write-str body)))]
+                            payload)]
      (when-not (zero? (:exit result))
        (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))
              errors (graphql-errors-from-output endpoint (:out result))]
          (when restricted
-           (let [refusal {:method method :endpoint endpoint :error (:err result)}]
+           (let [refusal (cond-> {:method method :endpoint endpoint :error (:err result)}
+                           request (assoc :failed-request (assoc request :phase :provider-returned)))]
              (rt/update! ctx assoc-in [:restricted-actions key] refusal)
              (rt/shared-restrict! ctx :api key refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    (cond-> {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted}
-                     (seq errors) (assoc :errors errors)))))
+                     (seq errors) (assoc :errors errors)
+                     request (assoc :failed-request (assoc request :phase :provider-returned))))))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
 
 (defn graphql [ctx query variables]
-  (let [response (api ctx "POST" "graphql" {:query query :variables variables})]
+  (let [body {:query query :variables variables}
+        response (api ctx "POST" "graphql" body)]
     (when (seq (:errors response))
       (let [restricted (boolean (some #(or (#{"FORBIDDEN" "UNAUTHORIZED" "RATE_LIMITED"} (:type %))
                                            (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
-                                                    (or (:message %) ""))) (:errors response)))]
+                                                    (or (:message %) ""))) (:errors response)))
+            request (assoc (graphql-request "POST" "graphql" (json/write-str body)) :phase :provider-returned)]
         (when restricted
           (let [key (rt/digest (pr-str ["POST" "graphql"]))
-                refusal {:method "POST" :endpoint "graphql" :errors (:errors response)}]
+                refusal {:method "POST" :endpoint "graphql" :errors (:errors response) :failed-request request}]
             (rt/update! ctx assoc-in [:restricted-actions key] refusal)
             (rt/shared-restrict! ctx :api key refusal)))
-        (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
+        (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted
+                                           :failed-request request})))
     (:data response)))
 
 (defn pages [ctx endpoint]
@@ -108,7 +226,7 @@
 (defn review-threads-clear? [ctx pr-number]
   (let [[owner repository] (str/split (get-in ctx [:config :repository]) #"/")]
     (loop [cursor nil]
-      (let [connection (get-in (graphql ctx "query($owner:String!,$name:String!,$number:Int!,$after:String){repository(owner:$owner,name:$name){pullRequest(number:$number){reviewThreads(first:100,after:$after){nodes{isResolved}pageInfo{hasNextPage endCursor}}}}}"
+      (let [connection (get-in (graphql ctx review-threads-query
                                        {:owner owner :name repository :number pr-number :after cursor})
                                [:repository :pullRequest :reviewThreads])]
         (when-not (and (vector? (:nodes connection)) (boolean? (get-in connection [:pageInfo :hasNextPage])))
@@ -265,6 +383,23 @@
           (recur next-cursor))
         :else nil))))
 
+(defn- issue-item [ctx project content]
+  (loop [cursor nil]
+    (let [items (get-in (graphql ctx issue-membership-query {:id content :after cursor}) [:node :projectItems])
+          next? (get-in items [:pageInfo :hasNextPage])
+          next-cursor (get-in items [:pageInfo :endCursor])]
+      (when-not (and (vector? (:nodes items)) (boolean? next?)
+                     (every? #(and (string? (:id %)) (string? (get-in % [:project :id]))) (:nodes items)))
+        (rt/fail! "Issue project membership is unavailable" {:content content}))
+      (or (some #(when (= project (get-in % [:project :id])) (:id %)) (:nodes items))
+          (when next?
+            (when-not (and (string? next-cursor) (not= next-cursor cursor))
+              (rt/fail! "Issue membership cursor did not advance" {:content content}))
+            (recur next-cursor))))))
+
+(defn- find-item [ctx project content]
+  ((if (:local-scheduling ctx) issue-item existing-item) ctx project content))
+
 (defn- duplicate-project-item-error? [error]
   (let [{:keys [errors restricted]} (ex-data error)]
     (and (false? restricted)
@@ -275,12 +410,12 @@
 
 (defn- add-item! [ctx project content]
   (try
-    (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
+    (get-in (graphql ctx add-item-mutation
                      {:project project :content content})
             [:addProjectV2ItemById :item :id])
     (catch Exception error
       (if (duplicate-project-item-error? error)
-        (or (existing-item ctx project content)
+        (or (find-item ctx project content)
             (rt/fail! "Duplicate Project membership has no verified readback"
                       {:project project :content content :duplicate true}))
         (throw error)))))
@@ -288,7 +423,7 @@
 (defn item! [ctx issue]
   ;; Sub-issue admission can add membership independently of this controller.
   (rt/effect! ctx (str "project-item/" (get-in @(:state ctx) [:project :id]) "/" (:node_id issue))
-              #(or (existing-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
+              #(or (find-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
                    (add-item! ctx (get-in @(:state ctx) [:project :id]) (:node_id issue)))))
 
 (defn status! [ctx issue status]
@@ -296,7 +431,7 @@
         option (first (filter #(= status (:name %)) (get-in project [:workflow :options])))]
     (when-not (:id option) (rt/fail! "Unknown workflow status" {:status status}))
     (rt/tracking-effect! ctx (str "project-status/" (:id project) "/" (:node_id issue))
-                         #(graphql ctx "mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}"
+                         #(graphql ctx update-status-mutation
                                    {:project (:id project) :item (item! ctx issue) :field (get-in project [:workflow :id]) :option (:id option)}))))
 
 (defn relation! [ctx issue endpoint id]
@@ -313,7 +448,5 @@
 
 (defn draft! [ctx pr draft? candidate]
   (rt/effect! ctx (str (if draft? "draft/" "ready/") candidate)
-    #(graphql ctx (if draft?
-                    "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id}){pullRequest{id}}}"
-                    "mutation($id:ID!){markPullRequestReadyForReview(input:{pullRequestId:$id}){pullRequest{id}}}")
+    #(graphql ctx (if draft? draft-mutation ready-mutation)
               {:id (:node_id pr)})))

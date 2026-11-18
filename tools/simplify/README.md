@@ -13,7 +13,8 @@ AGENTS.md supersedes historical AI cost/accounting requirements.
 ## Run
 
 Requires Clojure CLI, Git, GitHub CLI and a signed-in Codex CLI. It uses the
-existing Codex login and model default; it does not read or provision API keys.
+existing Codex login. The supplied configuration uses Luna to propose audit
+findings, Sol to implement them and Astra for independent review.
 Tested protocol baseline: Codex CLI 0.165.0-alpha.1.2. Pin the CLI and inspect
 its generated JSON schemas when upgrading.
 
@@ -116,10 +117,11 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    fresh thread. Requested changes return to implementation; no-change repairs
    require attention. The reviewer returns the exact base/commit/tree, and
    worktree identity is checked across workers, checks, review and publication.
-5. Push without force; create/reuse the PR. Failed CI returns to repair. Skipped
-   checks remain skipped, not executed-test evidence. Required GitHub human
-   reviews remain required. A rollup containing only skipped/neutral checks
-   does not provide successful-check evidence.
+5. Push without force and create or reuse the PR. Report passed local checks
+   and independent review on the PR for the exact candidate. Failed CI returns
+   to repair. Count only executed tests as test evidence. Required GitHub human
+   reviews remain required. A rollup with successful checks provides the CI
+   evidence.
 6. Serialize merges. When main moves, compose it into the candidate, rerun checks,
    obtain fresh review and await the new head's CI. Run the repository's exact
    integration preflight immediately before merging.
@@ -168,10 +170,18 @@ other main writers and separate clones explicitly.
 
 ```text
 clojure -M:run status config.edn
+clojure -M:run holds config.edn
 clojure -M:run pause config.edn
 clojure -M:run resume config.edn
 clojure -M:run retry config.edn FINDING-KEY
 ```
+
+`holds` reads saved findings and current shared writer records while the
+controller runs. It lists outstanding dependencies, conflicting paths and their
+recorded owners, and the worker's reason for requesting attention. Timeout
+receipts include elapsed command time and available development-runner test
+progress. Older records may have only the worker's description or partial
+progress. An entered test counts as completed only after a return frame.
 
 Pause stops dispatch and merges at scheduler boundaries; active workers finish.
 Resume preserves existing PRs, commits, threads and dispositions. Interrupted

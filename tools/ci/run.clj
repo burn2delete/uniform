@@ -30,18 +30,35 @@
 (def macro-receipt-test-vars
   ["public-receipt-reuse-requires-current-stage-and-seed-operations"
    "source-backed-operation-interpositions-stay-live"
-   "identical-value-thread-binding-disables-receipt-reuse"])
+   "identical-value-thread-binding-disables-receipt-reuse"
+   "artifact-forgeries-and-physical-provenance-drift-fail-verification"])
 (def macro-pipeline-cohort-regex
   (str "^(?!.*(?:" (str/join "|" (map #(java.util.regex.Pattern/quote %) macro-receipt-test-vars)) ")$).+"))
-
-(def public-js-receipt-path
-  "docs/compiler-public-js-cli-receipt.edn")
 
 (def c7-source-path
   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (def b6-source-path
   "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
+
+(def ^:private b6-guard-test-paths
+  #{"bootstrap/clojure/test/gravity/backend/js_checked_guard_test.clj"
+    "bootstrap/clojure/test/gravity/backend/js_guard_seed.clj"})
+
+(def ^:private public-js-smoke-paths
+  #{"bin/gravity"
+    "bootstrap/clojure/src/gravity/cli/launcher.clj"
+    "bootstrap/clojure/src/gravity/cli/entrypoint.clj"
+    "bootstrap/clojure/src/gravity/cli/dispatch.clj"
+    "bootstrap/clojure/src/gravity/cli/compile_request.clj"
+    "bootstrap/clojure/src/gravity/cli/compile_command.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00916-p18-t04-parse-compile-request.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00927-p18-t04-compile-js-ts-target-file.clj"
+    "bootstrap/clojure/src/gravity/compiler/application.clj"
+    "bootstrap/clojure/src/gravity/backend/js_checked_mir.clj"
+    "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj"
+    "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj"
+    "examples/checked-js/acceptance.gravity"})
 
 (def leaf-stage-consumer-paths
   "Exact paths whose consumer runs in checked-core-runtime and is outside the leaf catalog."
@@ -115,21 +132,22 @@
                  "bootstrap/clojure/test/gravity/self_hosting/sh06_"
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
-   "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
-                           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
-                           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
-                           "bootstrap/clojure/src/gravity/checked_core.clj"
-                           "bootstrap/clojure/src/gravity/checked_core"
-                           "bootstrap/clojure/src/gravity/c6_core_lowering"
-                           "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
-                           "bootstrap/clojure/test/gravity/checked_core"
-                           "bootstrap/clojure/test/gravity/c6_"
-                           "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
-                           "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
-                           "bootstrap/clojure/fixtures/self-hosting/sh-07"
-                           c7-source-path
-                           b6-source-path]})
+   "checked-core-runtime" (into ["language/compiler/src/gravity/checked_core.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                                 "bootstrap/clojure/src/gravity/checked_core.clj"
+                                 "bootstrap/clojure/src/gravity/checked_core"
+                                 "bootstrap/clojure/src/gravity/c6_core_lowering"
+                                 "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
+                                 "bootstrap/clojure/test/gravity/checked_core"
+                                 "bootstrap/clojure/test/gravity/c6_"
+                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
+                                 "bootstrap/clojure/fixtures/self-hosting/sh-07"
+                                 c7-source-path
+                                 b6-source-path]
+                                b6-guard-test-paths)})
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
@@ -387,13 +405,6 @@
          "M" (= "100644" old-mode)
          false)))
 
-(defn- public-js-receipt-only? [changes]
-  (let [changes (vec changes)]
-    (and (some #(= public-js-receipt-path (:path %)) changes)
-         (every? #(or (= public-js-receipt-path (:path %))
-                      (docs-only-record? %))
-                 changes))))
-
 (defn prefix-path? [path prefix]
   (and (string? path)
        (or (= path prefix)
@@ -427,7 +438,14 @@
 (defn- checked-js-owner-required? [selection]
   (boolean (or (nil? selection)
                (= :full (:kind selection))
-               (b6-source-change? selection))))
+               (b6-source-change? selection)
+               (some b6-guard-test-paths (selection-paths selection)))))
+
+(defn- public-js-smoke-required? [selection]
+  (let [paths (selection-paths selection)]
+    (or (nil? selection)
+        (and (= :full (:kind selection)) (empty? paths))
+        (some public-js-smoke-paths paths))))
 
 ;; The historical bootstrap-input check consumes an immutable source snapshot.
 ;; Ordinary stage source edits cannot affect that snapshot, but the current
@@ -562,13 +580,6 @@
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
 
-      (public-js-receipt-only? changes)
-      {:kind :selected
-       :reason :public-js-receipt-only
-       :paths paths
-       :stages []
-       :modes always-pr-modes}
-
       unknown-path?
       {:kind :full :reason :unknown-or-cross-stage-path :paths paths}
 
@@ -622,17 +633,14 @@
 (defn selection-output-lines [selection]
   (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
         seedless-tests-only? (= :seedless-tests-only (:reason selection))
-        public-js-receipt-only? (= :public-js-receipt-only (:reason selection))
         modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (or (= :docs-only (:kind selection)) lint-tooling-only?
-                      public-js-receipt-only? seedless-tests-only?)
+                  (or (= :docs-only (:kind selection)) lint-tooling-only? seedless-tests-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
                   (and (not= :docs-only (:kind selection))
                        (not lint-tooling-only?)
-                       (not public-js-receipt-only?)
                        (not seedless-tests-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
@@ -997,9 +1005,6 @@
                  (seq paths)
                  (every? string? paths)
                  (or (= :lint-tooling-only (:reason selection))
-                     (and (= :public-js-receipt-only (:reason selection))
-                          (every? #(or (= public-js-receipt-path %)
-                                       (docs-only-path? %)) paths))
                      (every? #(some? (stage-owner %)) paths))
                  (or (not= :lint-tooling-only (:reason selection))
                      (every? #(contains? static-control-selector-paths %) paths)))
@@ -1060,11 +1065,7 @@
                            (command "256m" "-M" "tools/ci/snapshot_test.clj")]])
                        (when (seq paths)
                          [["changed-clojure-lint" 120
-                           (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])
-                       (when (some #{public-js-receipt-path} paths)
-                         [["public-js-cli-receipt-shape" 60
-                           (command "256m" "-M" "tools/ci/run_test.clj" "--exact"
-                                    "ci.run-test/public-js-cli-receipt-shape-control")]])))
+                           (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
     "public-release" [(public-conformance-command)]
     "bootstrap"
@@ -1169,9 +1170,17 @@
                  (conj ["checked-js-b6-owner-regression" 900
                         (command "2g" "-M:dev-test"
                                  "--namespace" "gravity.backend.js-checked-mir-test"
+                                 "--namespace" "gravity.backend.js-checked-guard-test"
                                  "--exact" "scalar-module-target-execution"
+                                 "--exact" "gravity.backend.js-checked-mir-test/checked-add-requires-original-guard"
+                                 "--exact" "gravity.backend.js-checked-guard-test/checked-add-requires-original-guard"
                                  "--progress")]))]
       (cond-> base
+        (public-js-smoke-required? selection)
+        (conj ["public-js-compiler-smoke" 900
+               (command "1g" "-M:dev-test"
+                        "--namespace" "gravity.compiler.public-js-smoke-test"
+                        "--exact" "public-js-compiler-smoke")])
         (c7-source-change? selection)
         (conj ["c7-gravity-source-consumers" 1800
                (apply command "2g" "-M:dev-test"

@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.backend.js :as js]
+            [gravity.backend.js-checked-guard-test :as guard]
             [gravity.backend.js-checked-mir :as backend]
             [gravity.backend.js-scalar :as printer]
             [gravity.bootstrap :as bootstrap]
@@ -136,6 +137,10 @@
       (bootstrap/p15-s23-stage2-runtime-execute-function
        {:engine :gravity-js-target-rules-test :compiler-artifact-plan? true}
        plan function arguments))))
+
+(deftest checked-add-requires-original-guard
+  (let [path (.getCanonicalPath (io/file "examples/checked-js/acceptance.gravity"))]
+    (guard/assert-original-guard path (target-owner-invoker path guard/b6-owner))))
 
 (defn- assert-owned-rejection [path expected-id result]
   (is (= :rejected (:status result)) (pr-str result))

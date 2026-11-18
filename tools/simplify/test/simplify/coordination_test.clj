@@ -24,6 +24,20 @@
   (let [common (fixture/temp-dir)] [(campaign common "Simplify") (campaign common "Seedless")]))
 
 (defn shared-state [ctx] (rt/read-edn (:coordination-file ctx)))
+
+(deftest scoped-project-hold-retains-the-owner-compatibility-record
+  (let [[owner other] (pair) key (rt/digest (pr-str ["POST" "graphql"]))
+        original {:method "POST" :endpoint "graphql" :error "rate limited"}
+        hold {:state-file (:state-file owner) :kind :project-controls-pagination
+              :legacy-api-key key :retained-local-guard original}]
+    (rt/update! owner assoc :project {:id "project"} :restricted-actions {key original})
+    (rt/shared-restrict! owner :project-controls "project" hold)
+    (rt/import-state-coordination! owner)
+    (is (= original (get-in @(:state owner) [:restricted-actions key])))
+    (is (nil? (rt/shared-restriction other :api key)))
+    (rt/update! owner assoc-in [:restricted-actions key :error] "new episode")
+    (rt/import-state-coordination! owner)
+    (is (= "new episode" (:error (rt/shared-restriction other :api key))))))
 (def base (apply str (repeat 40 "a")))
 (def candidate (apply str (repeat 40 "b")))
 (def tree (apply str (repeat 40 "c")))

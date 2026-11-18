@@ -3,6 +3,7 @@
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
             [advance.main :as main]
+            [advance.pr-recovery :as pr-recovery]
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.data.json :as json]
@@ -11,17 +12,104 @@
             [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
+            [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
             [simplify.schema :as schema]
             [simplify.workflow :as flow]
-            [simplify.workflow-test :as git-fixture]))
+            [simplify.workflow-test :as git-fixture])
+  (:import [java.util.zip ZipEntry ZipOutputStream]))
 
 (use-fixtures :each fixture/no-github-network)
 
 (def source-path "specs/demo/tasks.md")
+
+(defn- ci-archive [ctx mode attempt]
+  (let [file (io/file (:state-dir ctx) (str mode ".zip"))
+        stages (case mode "leaves-darwin" [mode "darwin-probe"] "leaves-unsupported" ["darwin-unsupported"] [mode])
+        child (fn [stage] {:id stage :status :passed :exit-code 0})
+        entries (into {"checkout.txt" "checkout\ntree\n"}
+                      (for [stage stages]
+                        [(str stage "-summary.edn")
+                         (pr-str [(assoc (child stage) :run-id "42" :run-attempt (str attempt) :commit "checkout")])]))]
+    (with-open [zip (ZipOutputStream. (io/output-stream file))]
+      (doseq [[path content] entries]
+        (.putNextEntry zip (ZipEntry. path))
+        (.write zip (.getBytes ^String content "UTF-8"))
+        (.closeEntry zip)))
+    {:sha256 (recovery/file-digest file) :children (mapv child stages)}))
+
+(deftest explicit-pr-scope-spans-publication-and-integration-only-after-fresh-review
+  (let [ctx (-> (fixture/context) (assoc :coordinator-owner (atom true)) (assoc-in [:config :repository] "owner/repo")
+                (assoc-in [:config :base-branch] "main"))
+        native [["clojure" "-M:test"]] tuple {:base "base" :candidate "head" :tree "tree"}
+        auth {:kind :single-pr-composition :repo "owner/repo" :pr 7 :from "old" :native native
+              :required-hosted ["contracts"] :hosted :normal-pr-ci :require-all-selected-jobs-and-fresh-independent-review true
+              :active-issues {:campaign 1 :parent 2 :increment 3}}
+        job {:name "contracts" :id 99 :conclusion "success" :run_attempt 2 :run_id 42 :runner_id 21
+             :started_at "start" :completed_at "end" :steps [{:name "contracts" :conclusion "success"}]}
+        producing (atom (assoc job :id 98 :run_attempt 1))
+        others (vec (for [[i job-name] (map-indexed vector (keys (dissoc pr-recovery/full-pr-jobs "contracts")))]
+                      (assoc job :id (+ 110 i) :name job-name)))
+        jobs (into [job (assoc job :id 101 :name "select CI checks")] others)
+        details (fn [j] (let [mode (get pr-recovery/full-pr-jobs (:name j)) attempt (if (= 99 (:id j)) 1 2)]
+                          (assoc (ci-archive ctx mode attempt) :name mode :job-name (:name j)
+                                 :job (:id j) :producing-job (if (= 99 (:id j)) 98 (:id j))
+                                 :attempt attempt :artifact (+ 1000 (:id j)))))
+        ci (merge tuple {:result :passed :attempt 2 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
+                         :selection {:kind :full :base "base"} :selector {:job 101 :producing-job 101 :attempt 2 :job-name "select CI checks"}
+                         :required-artifacts (mapv details (cons job others))
+                         :jobs (mapv #(select-keys % [:name :id :conclusion :run_attempt]) jobs)})
+        digest (rt/digest (pr-str auth)) key "candidate-task" calls (atom [])
+        af (io/file (:state-dir ctx) "authority.edn") cf (io/file (:state-dir ctx) "ci.edn")
+        t (merge tuple {:key key :task "parent" :issue {:number 3} :pr {:number 7} :branch "branch" :status :attention
+                        :worktree "wt" :checks (assoc tuple :commands native :result :passed)
+                        :pr-composition {:stage :native-passed :authority auth :authority-sha256 digest :parents ["old" "base"]
+                                         :original-task {:base "old-base" :candidate "old"}}})
+        finish (fn [sha] (pr-recovery/finish! ctx key af sha cf (rt/digest (pr-str ci))))
+        scope (fn [c] (let [p (:pr-integration c)] [(:task-key p) (:candidate p) (rt/digest (:authority-raw p))]))]
+    (rt/write-edn! af auth) (rt/write-edn! cf ci) (rt/write-edn! (:control-file ctx) {:paused true})
+    (rt/update! ctx assoc :tasks {key t} :campaign-issue {:number 1} :source-tasks {"parent" {:issue {:number 2}}})
+    (is (thrown-with-msg? Exception #"receipt changed" (finish "invalid")))
+    (with-redefs [flow/assert-identity! (fn [& _]) flow/assert-clean! (fn [& _])
+                  rt/run! (fn [& _] "time CI selection {:kind :full :base \"base\"}")
+                  flow/fresh-main! (constantly "base") rt/git (fn [_ _ cmd & _] (if (= cmd "show") "old base" "immutable raw diff"))
+                  gh/api (fn [_ path] (cond (str/ends-with? path "/jobs/98") @producing
+                                           (str/includes? path "/jobs?") {:total_count (count jobs) :jobs jobs}
+                                           (str/includes? path "/artifacts") {:artifacts (mapv (fn [{:keys [name artifact attempt sha256]}]
+                                                                                                 {:id artifact :digest (str "sha256:" sha256)
+                                                                                                  :name (str "ci-" name "-checkout-" attempt)
+                                                                                                  :workflow_run {:head_sha "head" :id 42}}) (:required-artifacts ci))}
+                                           (str/includes? path "/git/commits/") {:sha "checkout" :parents [{:sha "base"} {:sha "head"}] :tree {:sha "tree"}}
+                                           :else {:state "open" :draft true :base {:ref "main"} :head {:ref "branch" :sha "head" :repo {:full_name "owner/repo"}}}))
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs [{:id 42 :head_sha "head" :run_attempt 2
+                                                                         :path ".github/workflows/ci.yml" :event "pull_request" :conclusion "success"}]})
+                  flow/review! (fn [c task]
+                                 (is (nil? (:pr-integration c)))
+                                 (is (= :passed (get-in task [:checks :hosted-ci :result])))
+                                 (let [answer (assoc tuple :verdict "approved" :findings [] :summary "Reviewed")]
+                                   (rt/update! c assoc-in [:jobs "review"] {:status :completed :turn-terminal? true :output answer})
+                                   (flow/task! c key :review (assoc answer :job "review"))
+                                   answer))
+                  flow/publish! (fn [c _] (swap! calls conj [:publish (scope c)]) (flow/task! c key :status :ci))
+                  flow/integrate! (fn [c _] (swap! calls conj [:integrate (scope c)]) (flow/task! c key :merged "merge" :status :done))]
+      (swap! producing assoc :runner_id 22)
+      (is (thrown-with-msg? Exception #"live workflow" (finish digest)))
+      (swap! producing assoc :runner_id 21)
+      (let [incomplete (update ci :required-artifacts pop)]
+        (rt/write-edn! cf incomplete)
+        (is (thrown-with-msg? Exception #"live workflow" (pr-recovery/finish! ctx key af digest cf (rt/digest (pr-str incomplete)))))
+        (rt/write-edn! cf ci))
+      (let [forged (assoc-in ci [:required-artifacts 0 :children 0 :id] "never-ran")]
+        (rt/write-edn! cf forged)
+        (is (thrown-with-msg? Exception #"live workflow" (pr-recovery/finish! ctx key af digest cf (rt/digest (pr-str forged)))))
+        (rt/write-edn! cf ci))
+      (finish digest)
+      (is (= [[:publish [key "head" digest]] [:integrate [key "head" digest]]] @calls))
+      (is (= :done (:status (flow/task ctx key)))))))
 (def source-key (str source-path "#demo/value"))
 
 (deftest provider-context-is-lossless-without-repeating-navigation-metadata
@@ -55,6 +143,56 @@
     (is (nil? (:base (second presented))))
     (is (= "Provider navigation" (get-in raw [0 :head :repo :description])))
     (is (nil? (get-in presented [0 :head :repo :description])))))
+
+(deftest restricted-project-controls-hold-before-provider-setup-or-pagination
+  (let [ctx (fixture/context)
+        events (atom [])]
+    (rt/update! ctx assoc :project {:id "held"})
+    (with-redefs [rt/shared-restriction (fn [_ kind project] (when (= [:project-controls "held"] [kind project]) {:scope :all-cursors}))
+                  gh/graphql (fn [& _] (throw (AssertionError. "Restricted page reached GitHub")))
+                  workflow/campaign! (fn [& _] (throw (AssertionError. "Campaign entered setup")))
+                  coordination/register! (fn [_])
+                  coordination/unregister! (fn [_])
+                  rt/event! (fn [_ _ data] (swap! events conj (:reason data)))
+                  simplify.workflow/paused? (constantly true)]
+      (is (thrown-with-msg? Exception #"pagination remains restricted" (project/settings ctx)))
+      (main/run-or-hold! ctx)
+      (is (= [:restricted-project-controls :local-pause] @events)))))
+
+(deftest local-controls-reload-and-fail-closed-without-provider-reads
+  (let [ctx (fixture/context) file (str (io/file (:state-dir ctx) "project-controls.edn"))
+        ctx (update ctx :config assoc :repository "owner/repo" :local-controls-file file)
+        policy {:repository "owner/repo" :project "p" :defaults {"Control" "Active" "Priority" "Normal"}
+                :issues {12 {"Control" "Paused"} 34 {"Priority" "High"}}}]
+    (rt/update! ctx assoc :repository "owner/repo" :project {:id "p" :workflow {:id "status"}}
+                :campaign-issue {:number 12} :campaign-tracked true :effects {"link-project" {:status :done}})
+    (with-redefs [gh/graphql (fn [& _] (throw (AssertionError. "Local scheduling attempted a project read")))]
+      (rt/write-edn! file policy)
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (is (= 1 (project/priority (project/settings ctx) 34)))
+      (is (= 2 (project/priority (project/settings ctx) 99)))
+      (rt/write-edn! file (assoc policy :issues {}))
+      (is (project/runnable? (project/settings ctx) 12))
+      (let [s @(:state ctx) config (assoc (:config ctx) :state-dir (:state-dir ctx))
+            key (rt/digest (pr-str ["POST" "graphql"])) local {:method "POST" :endpoint "graphql" :error "original"}
+            s (assoc s :restricted-actions {key local})
+            hold {:kind :project-controls-pagination :scope :all-cursors :project "p"
+                  :state-file (str (io/file (:state-dir ctx) "state.edn")) :legacy-api-key key :retained-local-guard local}
+            registry (atom {:restrictions {:project-controls {"p" hold}}})]
+        (with-redefs [diagnostics/coordination-snapshot (fn [_] @registry)]
+          (is (= :no-recorded-blocker (:status (main/restart-check config s))))
+          (is (= [:restricted-project-controls] (:blockers (main/restart-check config (assoc-in s [:restricted-actions key :failed-request] {})))))
+          (swap! registry assoc-in [:restrictions :api key] local)
+          (is (= [:retained-graphql-restriction] (:blockers (main/restart-check config s))))))
+      (doseq [invalid [(assoc policy :project "foreign") (assoc policy :repository "foreign/repo")
+                       (assoc policy :issues {1 {"Control" "Typo"}}) (assoc policy :issues {"1" {}})
+                       (dissoc policy :defaults) (assoc policy :unknown true)]]
+        (rt/write-edn! file invalid)
+        (is (not (project/runnable? (project/settings ctx) 12))))
+      (spit file (str (pr-str policy) " {}"))
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (io/delete-file file)
+      (is (not (project/runnable? (project/settings ctx) 12))))))
 
 (deftest selector-reaches-the-api-with-complete-scope-and-external-message-sized-input
   (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
@@ -700,9 +838,9 @@
       (is (= 2 (count @reads)))
       (is (empty? (:tasks @(:state ctx)))))))
 (def increment {:key "preserve-value" :task source-key :title "Implement the value increment"
-                :evidence "Current value has duplicate representation" :proposal "Preserve one value and record scoped progress"
+                :evidence "Current value has duplicate representation" :proposal "Preserve one value"
                 :preserve "The value remains one; the broader parent remains open"
-                :paths ["work.edn" source-path] :dependencies []})
+                :paths ["work.edn"] :dependencies []})
 
 (defn run-loop! [local-failure? & [composition-failure?]]
   (let [ctx (fixture/context)
@@ -794,7 +932,6 @@
                       (str/starts-with? job "implement-")
                       (do (swap! implementations inc)
                           (spit (io/file cwd "work.edn") (str "{:value 1 :revision " @implementations "}\n"))
-                          (spit (io/file cwd source-path) (str "\nScoped increment " @implementations " implemented; parent acceptance remains open.\n") :append true)
                           {:outcome "ready" :summary "Actual scoped implementation" :checks []})
                       :else
                       (do (is (:isDraft @pr) "PR remains draft during independent review")
@@ -814,6 +951,7 @@
     (is (= :paused (:status state)))
     (is (= 2 selections) "Continues selecting after the verified increment")
     (is (not (get-in state [:source-tasks source-key :checked])))
+    (is (= "work.edn" (rt/git ctx (:worktree t) "diff" "--name-only" (:base t) (:candidate t))))
     (is (= 1 (count closed)) "Only the increment closes")
     (is (empty? (coordination/claims ctx)))
     (is (= (:candidate t) (get-in t [:checks :candidate]) (get-in t [:review :candidate])))))
