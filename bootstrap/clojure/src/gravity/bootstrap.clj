@@ -36,6 +36,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-artifact-identity.canonical :as c2-artifact-canonical]
             [gravity.c2-reader-product-projection :as c2-reader-product-projection]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-source-identity :as c2-source-identity]

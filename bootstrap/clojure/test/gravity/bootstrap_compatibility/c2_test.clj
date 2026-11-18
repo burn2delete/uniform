@@ -968,11 +968,10 @@
     (is (= "sha256:interposed" explicit-hash))
     (is (= [preimage] @calls)))
   (let [value [{:token-id :tok-0 :kind :symbol :raw "alpha" :trivia-before []}]
-        legacy-hash
-        (str "sha256:"
-             (bootstrap/sha256-hex
-              (binding [*print-length* nil *print-level* nil *print-meta* true]
-                (pr-str (bootstrap/reader-canonical-value value)))))
+        legacy-preimage
+        (binding [*print-length* nil *print-level* nil *print-meta* true]
+          (pr-str (bootstrap/reader-canonical-value value)))
+        legacy-hash (str "sha256:" (bootstrap/sha256-hex legacy-preimage))
         original-vector-hash c2-artifact-canonical/reader-canonical-vector-hash]
     (let [visited (atom [])
           original-value bootstrap/reader-canonical-value
@@ -998,7 +997,19 @@
                   (bootstrap/reader-canonical-hash value)))
               :printer]]]
       (let [stream-results (atom [])
+            callback-calls (atom [])
             original-pr-str pr-str
+            callback
+            (case expected-result
+              :digest-sha (fn [text]
+                            (swap! callback-calls conj text)
+                            "interposed-digest")
+              :digest-output (fn [_write-bytes!]
+                               (swap! callback-calls conj :output)
+                               "interposed-digest")
+              :printer (fn [& values]
+                         (swap! callback-calls conj (vec values))
+                         (apply original-pr-str values)))
             actual
             (with-redefs [c2-artifact-canonical/reader-canonical-vector-hash
                           (fn [sha256-hex canonical-value input]
@@ -1007,13 +1018,14 @@
                               (swap! stream-results conj result)
                               result))]
               (interposition
-               (fn [text]
-                 (if (= expected-result :printer)
-                   (original-pr-str text)
-                   "interposed-digest"))))]
+               callback))]
         (is (= [nil] @stream-results) (name expected-result))
         (is (= (if (= expected-result :digest-sha)
                  "sha256:interposed-digest"
                  legacy-hash)
                actual)
-            (name expected-result))))))
+            (name expected-result))
+        (case expected-result
+          :digest-sha (is (= [legacy-preimage] @callback-calls))
+          :digest-output (is (empty? @callback-calls))
+          :printer (is (seq @callback-calls)))))))

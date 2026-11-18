@@ -13,7 +13,7 @@
                        c2-artifact-identity-default-digest-sha256-hex)
            (identical? digest/sha256-output-hex
                        c2-artifact-identity-default-digest-sha256-output-hex))
-    gravity.c2-artifact-identity.canonical/streaming-sha256-hex
+    c2-artifact-canonical/streaming-sha256-hex
     sha256-hex))
 
 (defn- c2-artifact-identity-ops
