@@ -518,17 +518,19 @@
                     source (:source term)
                     candidate (assoc-in mir [:functions 'main :blocks pred :terminator :successor-arguments 0]
                                         values)
-                    report (invoke 'c11-verify-scalar-functions-mir [core candidate])
-                    diagnostic (first (:diagnostics report))
-                    run (invoke 'sh13-run-scalar-functions-mir [core candidate 'main [false true 33]])]
+                    run (invoke 'sh13-run-scalar-functions-mir [core candidate 'main [false true 33]])
+                    report (:verification run)
+                    diagnostic (first (:diagnostics report))]
                 (is (= :rejected (:status report)))
+                (is (= [:gravity/c11-scalar-functions-report (:artifact-id core) (:module-id mir)]
+                       ((juxt :artifact :checked-core-artifact-id :mir-module-id) report)))
                 (is (= [rule 'main pred (:terminator-id term) expected actual]
                        ((juxt :diagnostic-id :function :block :operation-id :expected :actual) diagnostic)))
                 (is (= (assoc (:span source) :file path :source path) (:source-span diagnostic)))
                 (is (= (:origin-id source) (:origin-id diagnostic)))
                 (is (= (:generated-origin source) (:origin-chain diagnostic)))
                 (is (= :rejected (:status run)))
-                (is (= report (:verification run)))
+                (is (= [diagnostic] (:diagnostics report) (:diagnostics run)))
                 (is (nil? (:execution run)))))))))))
 
 (deftest scalar-functions-resolve-shadowed-addition
@@ -818,9 +820,9 @@
         (is (= :passed (:status (invoke 'c11-verify-scalar-functions-mir [core mir]))))
         (doseq [[label candidate-core candidate-mir] cases]
           (testing label
-            (let [verification (invoke 'c11-verify-scalar-functions-mir [candidate-core candidate-mir])
-                  execution (invoke 'sh13-run-scalar-functions-mir
+            (let [execution (invoke 'sh13-run-scalar-functions-mir
                                     [candidate-core candidate-mir 'score [true 3 7]])
+                  verification (:verification execution)
                   diagnostic (first (:diagnostics verification))]
               (is (= :rejected (:status verification)) (str label " " (pr-str verification)))
               (is (= (get rules label) (:diagnostic-id diagnostic)) (pr-str diagnostic))
@@ -829,6 +831,7 @@
               (is (string? (:operation-id diagnostic)) (pr-str diagnostic))
               (is (not= (:expected diagnostic) (:actual diagnostic)) (pr-str diagnostic))
               (is (= :rejected (:status execution)))
+              (is (= [diagnostic] (:diagnostics verification) (:diagnostics execution)))
               (is (nil? (:execution execution)) "Rejected MIR must not execute")
               (when (= label "MIR call signature")
                 (let [data (failure #((ns-resolve 'gravity.bootstrap 'p15-s23-application-c11-result!)

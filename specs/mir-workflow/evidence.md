@@ -151,10 +151,26 @@ only one predecessor's outgoing argument vector.
 Each rejection also requires SH13 to return the verifier report and a nil
 execution, even when the selected path bypasses the malformed edge.
 
-Controller checks are pending. No execution or independent acceptance receipt
-exists for this increment. Proposed commands from the repository root are
+The controller reported exit 124 for the combined command below. Stdout
+contained only `Testing gravity.compiler.application-test`, stderr was empty
+and the capture was complete. The timeout identifies neither the active
+fixture nor a failing assertion.
 
 ```sh
 clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.application-test --exact scalar-join-successor-arguments --exact scalar-functions-reject-tampered-products
+```
+
+The repair materializes the expected and candidate operation vectors once for
+the four diagnostic comparisons. Both fixtures now inspect the fresh C11
+report returned by SH13 for each mutation. This removes 20 duplicate verifier
+invocations across the two fixtures. Every mutation still reaches the execution
+gate, which must return the owning diagnostic and nil execution.
+
+The repaired fixtures await controller execution and independent acceptance.
+Run each selector separately to attribute its outcome.
+
+```sh
+clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.application-test --exact scalar-join-successor-arguments --progress
+clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.application-test --exact scalar-functions-reject-tampered-products --progress
 clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 ```

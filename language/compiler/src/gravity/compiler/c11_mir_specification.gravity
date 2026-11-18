@@ -12453,8 +12453,8 @@
           (if (= family :origin) (get operation :source)
             [(get operation :operands) (get operation :block-id)]))))))
 
-(defn c11-scalar-operation-mismatch [expected actual family]
-  (loop [left (c11-scalar-operations expected) right (c11-scalar-operations actual)]
+(defn c11-scalar-operation-mismatch [expected-operations actual-operations family]
+  (loop [left expected-operations right actual-operations]
     (if (= 0 (count left))
       (if (= 0 (count right)) nil (first right))
       (if (= 0 (count right)) (first left)
@@ -12625,7 +12625,8 @@
         (if (= expected mir) (c11-scalar-functions-passed core mir)
           (c11-scalar-mismatch-report core mir expected
             "C11-VERIFY" :fresh-source-derived-mir
-            (c11-scalar-operation-mismatch expected mir :operands) :operands []
+            (c11-scalar-operation-mismatch (c11-scalar-operations expected)
+              (c11-scalar-operations mir) :operands) :operands []
             :original-construction :altered-construction))
         (c11-scalar-mismatch-report core mir expected
           "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow nil :operands
@@ -12637,10 +12638,12 @@
     (if (= nil problem)
       (if (if (map? mir) (= :gravity/mir-module (get mir :artifact)) false)
         (let [expected (c11-scalar-construct checked-core)
-              type-mismatch (c11-scalar-operation-mismatch expected mir :type)
-              effect-mismatch (c11-scalar-operation-mismatch expected mir :effect)
-              safety-mismatch (c11-scalar-operation-mismatch expected mir :safety)
-              origin-mismatch (c11-scalar-operation-mismatch expected mir :origin)]
+              expected-operations (c11-scalar-operations expected)
+              actual-operations (c11-scalar-operations mir)
+              type-mismatch (c11-scalar-operation-mismatch expected-operations actual-operations :type)
+              effect-mismatch (c11-scalar-operation-mismatch expected-operations actual-operations :effect)
+              safety-mismatch (c11-scalar-operation-mismatch expected-operations actual-operations :safety)
+              origin-mismatch (c11-scalar-operation-mismatch expected-operations actual-operations :origin)]
           (if (= [(get expected :source-core) (get expected :module-id) :hosted
                   (get expected :source-target) (get expected :target-request)
                   (get expected :function-order) (get expected :exports)]
