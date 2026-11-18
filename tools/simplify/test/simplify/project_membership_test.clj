@@ -99,14 +99,16 @@
 (deftest project-controls-settlement-can-scope-an-approved-pr-integration
   (let [ctx (assoc-in (context) [:config :repository] "owner/repo") k (rt/digest (pr-str ["POST" "graphql"]))
         local {:method "POST" :endpoint "graphql" :error "rate limit exceeded"}
-        scope {:task-key "finding" :candidate "head" :authority-sha256 (rt/digest "accepted scope")}
+        auth {:kind :single-pr-composition :pr 5 :repo "owner/repo" :active-issues {:increment 4}}
+        raw (pr-str auth)
+        scope {:task-key "finding" :candidate "head" :authority-raw raw :authority-sha256 (rt/digest raw)}
         ctx (assoc ctx :pr-integration scope :coordinator-owner (atom true))
         tuple {:base "base" :candidate "head" :tree "tree"}
         task (merge tuple {:pr {:node_id "PR" :number 5} :issue {:node_id "issue" :number 4}
                            :checks (assoc tuple :result :passed :hosted-ci (assoc tuple :result :passed))
                            :review (assoc tuple :verdict "approved")
                            :pr-composition {:stage :approved :authority-sha256 (:authority-sha256 scope)
-                                            :authority {:kind :single-pr-composition :pr 5 :repo "owner/repo" :active-issues {:increment 4}}}})
+                                            :authority auth}})
         hold {:kind :project-controls-pagination :scope :all-cursors :state-file (:state-file ctx)
               :legacy-api-key k :retained-local-guard local}
         calls (atom [])]

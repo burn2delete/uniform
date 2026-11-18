@@ -1,6 +1,7 @@
 (ns simplify.github
   "GitHub Projects v2 plus repository issues/milestones. Uses the existing gh login."
   (:require [clojure.data.json :as json]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [simplify.runtime :as rt]))
 
@@ -35,7 +36,7 @@
     {:method method :endpoint endpoint :body-sha256 (rt/digest (or payload ""))}))
 
 (defn- reviewed-pr-request? [ctx key local {:keys [query variables]}]
-  (when-let [{:keys [task-key candidate authority-sha256]} (:pr-integration ctx)]
+  (when-let [{:keys [task-key candidate authority-sha256 authority-raw]} (:pr-integration ctx)]
     (let [s @(:state ctx) t (get-in s [:tasks task-key]) pr (:pr t) issue (:issue t)
           project (:project s) p (:id project) scope (:pr-composition t) auth (:authority scope)
           repo (get-in ctx [:config :repository]) [owner name] (str/split repo #"/")
@@ -44,7 +45,8 @@
           field (get-in project [:workflow :id])]
       (and (true? (some-> (:coordinator-owner ctx) deref))
            (= :single-pr-composition (:kind auth)) (string? authority-sha256)
-           (= authority-sha256 (:authority-sha256 scope))
+           (string? authority-raw) (= authority-sha256 (:authority-sha256 scope) (rt/digest authority-raw))
+           (= auth (edn/read-string authority-raw))
            (= :approved (:stage scope)) (= repo (:repo auth))
            (pos-int? (:pr auth)) (= (:pr auth) (:number pr))
            (string? candidate) (= candidate (:candidate t) (get-in t [:checks :candidate]))

@@ -182,7 +182,7 @@ After a native check refusal, an operator may explicitly accept a previously
 completed hosted receipt for one candidate. Verify the hosted artifact, run,
 checkout tree and selected commands before accepting its digest. After the
 writer has an inspected release, pause and drain Advance. On the clean candidate
-the following command records the approved packet and requests passive review:
+the following command records the approved packet and requests passive review.
 
 ```text
 clojure -M:run review-preexisting-validation CONFIG.edn TASK-KEY RECEIPT.edn ACCEPTED-SHA256
@@ -191,6 +191,13 @@ clojure -M:run review-preexisting-validation CONFIG.edn TASK-KEY RECEIPT.edn ACC
 Keep the receipt inside the campaign state directory. The task retains the
 original refusal, historical checks and review. Head-bound CI and integration
 checks still apply.
+
+For a separately authorized PR composition that already passed its selected
+native checks, `finish-pr-composition CONFIG.edn TASK-KEY AUTHORITY.edn
+AUTHORITY-SHA256 CI.edn CI-SHA256` verifies the retained authority, hosted
+artifacts, live GitHub run and feature delta. It obtains a fresh independent
+review before publishing the result and entering the existing integration
+preflight. The scope ends at that candidate.
 
 The inherited recovery commands preserve state and mutation intents:
 

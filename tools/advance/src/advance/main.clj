@@ -1,6 +1,7 @@
 (ns advance.main
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
+            [advance.pr-recovery :as pr-recovery]
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
@@ -233,6 +234,11 @@
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
+    "finish-pr-composition"
+    (do (when-not (= 5 (count args)) (rt/fail! "Expected task key, authority file and digest, CI file and digest" {}))
+        (rt/with-lock ctx #(do (coordination/register! ctx)
+                               (try (apply pr-recovery/finish! ctx args)
+                                    (finally (coordination/unregister! ctx))))))
     "review-preexisting-validation"
     (let [[key path digest] args]
       (when-not (= 3 (count args)) (rt/fail! "Expected task key, verified receipt path and accepted SHA-256" {}))
@@ -252,7 +258,7 @@
 
 (defn -main [& [command config-path & args]]
   (try
-    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation CONFIG.edn [ARGS]" {}))
+    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation|finish-pr-composition CONFIG.edn [ARGS]" {}))
     (let [config (base/config! config-path defaults)]
       (if (= command "status-summary")
         (do

@@ -3,6 +3,7 @@
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
             [advance.main :as main]
+            [advance.pr-recovery :as pr-recovery]
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.data.json :as json]
@@ -22,6 +23,49 @@
 (use-fixtures :each fixture/no-github-network)
 
 (def source-path "specs/demo/tasks.md")
+
+(deftest explicit-pr-scope-spans-publication-and-integration-only-after-fresh-review
+  (let [ctx (-> (fixture/context) (assoc :coordinator-owner (atom true)) (assoc-in [:config :repository] "owner/repo"))
+        native [["clojure" "-M:test"]] tuple {:base "base" :candidate "head" :tree "tree"}
+        auth {:kind :single-pr-composition :repo "owner/repo" :pr 7 :from "old" :native native
+              :required-hosted ["contracts"] :hosted :normal-pr-ci :require-all-selected-jobs-and-fresh-independent-review true
+              :active-issues {:campaign 1 :parent 2 :increment 3}}
+        job {:name "contracts" :id 99 :conclusion "success"}
+        ci (merge tuple {:result :passed :attempt 1 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
+                         :required-artifacts [{:name "contracts" :job 99 :artifact 50 :sha256 (rt/digest "fixture artifact")}] :jobs [job]})
+        digest (rt/digest (pr-str auth)) key "candidate-task" calls (atom [])
+        af (io/file (:state-dir ctx) "authority.edn") cf (io/file (:state-dir ctx) "ci.edn")
+        t (merge tuple {:key key :task "parent" :issue {:number 3} :pr {:number 7} :branch "branch" :status :attention
+                        :worktree "wt" :checks (assoc tuple :commands native :result :passed)
+                        :pr-composition {:stage :native-passed :authority auth :authority-sha256 digest :parents ["old" "base"]
+                                         :original-task {:base "old-base" :candidate "old"}}})
+        finish (fn [sha] (pr-recovery/finish! ctx key af sha cf (rt/digest (pr-str ci))))
+        scope (fn [c] (let [p (:pr-integration c)] [(:task-key p) (:candidate p) (rt/digest (:authority-raw p))]))]
+    (rt/write-edn! af auth) (rt/write-edn! cf ci) (rt/write-edn! (:control-file ctx) {:paused true})
+    (spit (io/file (:state-dir ctx) "contracts.zip") "fixture artifact")
+    (rt/update! ctx assoc :tasks {key t} :campaign-issue {:number 1} :source-tasks {"parent" {:issue {:number 2}}})
+    (is (thrown-with-msg? Exception #"receipt changed" (finish "invalid")))
+    (with-redefs [flow/assert-identity! (fn [& _]) flow/assert-clean! (fn [& _])
+                  flow/fresh-main! (constantly "base") rt/git (fn [_ _ cmd & _] (if (= cmd "show") "old base" "immutable raw diff"))
+                  gh/api (fn [_ path] (cond (str/includes? path "/jobs") {:total_count 1 :jobs [job]}
+                                           (str/includes? path "/artifacts") {:artifacts [{:id 50 :digest (str "sha256:" (rt/digest "fixture artifact"))
+                                                                                        :name "ci-contracts-checkout-1" :workflow_run {:head_sha "head" :id 42}}]}
+                                           (str/includes? path "/git/commits/") {:sha "checkout" :parents [{:sha "base"} {:sha "head"}] :tree {:sha "tree"}}
+                                           :else {:state "open" :draft true :head {:ref "branch" :sha "head" :repo {:full_name "owner/repo"}}}))
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs [{:id 42 :head_sha "head" :run_attempt 1
+                                                                         :path ".github/workflows/ci.yml" :event "pull_request" :conclusion "success"}]})
+                  flow/review! (fn [c task]
+                                 (is (nil? (:pr-integration c)))
+                                 (is (= :passed (get-in task [:checks :hosted-ci :result])))
+                                 (let [answer (assoc tuple :verdict "approved" :findings [] :summary "Reviewed")]
+                                   (rt/update! c assoc-in [:jobs "review"] {:status :completed :turn-terminal? true :output answer})
+                                   (flow/task! c key :review (assoc answer :job "review"))
+                                   answer))
+                  flow/publish! (fn [c _] (swap! calls conj [:publish (scope c)]) (flow/task! c key :status :ci))
+                  flow/integrate! (fn [c _] (swap! calls conj [:integrate (scope c)]) (flow/task! c key :merged "merge" :status :done))]
+      (finish digest)
+      (is (= [[:publish [key "head" digest]] [:integrate [key "head" digest]]] @calls))
+      (is (= :done (:status (flow/task ctx key)))))))
 (def source-key (str source-path "#demo/value"))
 
 (deftest provider-context-is-lossless-without-repeating-navigation-metadata
