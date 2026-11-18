@@ -633,6 +633,7 @@
              (:source-content-hash reader-revision)))
       (is (= (byte-count reader-text)
              (:source-byte-count reader-revision))))
+    (is (= 16 (:schema-version (core (:sh07-artifact gravity)))))
     (is (true?
          (invoke
           bridge-plan 'sh08-bridge-type-result-valid?
@@ -650,6 +651,7 @@
            (:status (:sh07-verification gravity))
            (:status (:sh07-verification qst))))
     (is (= :accepted (:status (:c7-request run-gravity))))
+    (is (= [] (:diagnostics (:c7-request run-gravity))))
     (is (= :accepted (:status (:type-template run-gravity))))
     (is (= :passed (:status (:type-verification run-gravity))))
     (is (= :accepted (:status result)))
@@ -723,6 +725,12 @@
          [:sh07-artifact :gravity-core-boundary
           :canonical-core-artifact :artifact-id]
          (str "sha256:" (apply str (repeat 64 "f"))))
+        altered-core-schema
+        (assoc-in
+         request
+         [:sh07-artifact :gravity-core-boundary
+          :canonical-core-artifact :schema-version]
+         15)
         altered-sh07-verification
         (assoc-in
          request
@@ -748,6 +756,7 @@
         (assoc (:result accepted) :status :rejected)]
     (doseq [[label candidate expected-rule]
             [[:core altered-core "STD08-BRIDGE-SH07"]
+             [:core-schema altered-core-schema "STD08-BRIDGE-SH07"]
              [:sh07-verification
               altered-sh07-verification
               "STD08-BRIDGE-SH07"]

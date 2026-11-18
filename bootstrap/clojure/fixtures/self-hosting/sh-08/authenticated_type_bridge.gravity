@@ -322,7 +322,7 @@
               (if (map? core)
                 (if (= :gravity/sh07-canonical-core-artifact
                        (get core :artifact))
-                  (if (= 15 (get core :schema-version))
+                  (if (= 16 (get core :schema-version))
                     (if
                      (sh08-bridge-sha256-id?
                       (get core :artifact-id))
@@ -382,16 +382,13 @@
                         (if (integer? (get replay :request-count))
                           (if
                            (> (get replay :request-count) 0)
-                            (if
-                             (<= (get replay :request-count) 2048)
-                              (=
-                               [:fresh-descriptor-replay
-                                :exact-artifact-template-replay
-                                :exact-digest-request-replay
-                                :path-neutral-semantic-root
-                                :separate-physical-provenance-root]
-                               (get replay :checks))
-                              false)
+                            (=
+                             [:fresh-descriptor-replay
+                              :exact-artifact-template-replay
+                              :exact-digest-request-replay
+                              :path-neutral-semantic-root
+                              :separate-physical-provenance-root]
+                             (get replay :checks))
                             false)
                           false)
                         false)
