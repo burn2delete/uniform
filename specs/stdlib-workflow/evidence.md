@@ -341,7 +341,27 @@ reversed, noninteger or out-of-range endpoints. Malformed bytes outside the
 slice and false validation facts expect STD4001. Other fixtures cover request
 authority, provenance, replay and substitution of another valid scalar.
 
-Controller execution and independent acceptance are pending. Proposed checks:
+The controller reported exit 1 for `gravity.self-hosting.sh22-standard-library-test`:
+29 tests, 7882 assertions, 28 failures and 0 errors. Two assertions expected
+25 operations and exports. The new slice brings each inventory to 26. The
+other 26 failures expected one observed `quot` call on accepted operands.
+The quotient values matched, but each observed call list was empty.
+
+Source inspection traced the empty lists to the test observer. The generic
+runtime call passes `[runtime plan function args instruction public-invocation-scope]`.
+The observer inspects the last two arguments for the function and operands.
+Its empty lists therefore also fail to establish that rejected inputs avoid
+division. The observer needs to capture the actual function and operands while
+forwarding the complete call to the original builtin. Keep the one-call and
+zero-call assertions for accepted and rejected inputs respectively.
+
+Both repairs require ownership of
+`bootstrap/clojure/test/gravity/self_hosting/sh22_standard_library_test.clj`.
+The separate inventory assertion in
+`bootstrap/clojure/test/gravity/self_hosting/sh22_integer_set_equality_test.clj`
+also expects 25 and needs the same inventory update. The supplied run covered
+only the standard-library namespace. Controller checks after repair and
+independent acceptance remain pending.
 
 ```clojure
 ["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-utf8-byte-slice-test"]
@@ -350,6 +370,3 @@ Controller execution and independent acceptance are pending. Proposed checks:
 ["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
 ```
 
-Source inspection found that the standard-library and integer-set-equality
-tests above assert an inventory of 25. The additional export makes 26.
-Updating those assertions requires ownership outside this finding.

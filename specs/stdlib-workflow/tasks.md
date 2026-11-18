@@ -169,8 +169,9 @@ Expose every actual module/export stability entry: experimental explicit source/
 Status: Open
 
 The experimental STD4 validated UTF-8 byte slice and its request/replay
-fixtures are authored. Controller checks and independent acceptance are
-pending. See [UTF-8 byte slice evidence](evidence.md#validated-utf-8-byte-slice).
+fixtures are authored. The controller's standard-library check failed on the
+export count and quotient call observer. The affected test files require
+additional path ownership. See [UTF-8 byte slice evidence](evidence.md#validated-utf-8-byte-slice).
 
 Evidence baseline: [Library architecture](../../docs/phase-16-standard-library/211-std1-standard-library-architecture.md)
 
