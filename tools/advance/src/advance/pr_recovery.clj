@@ -19,6 +19,19 @@
 (defn- source-delta [ctx cwd base candidate]
   (rt/git ctx cwd "diff-tree" "--no-commit-id" "-r" "--raw" "--no-renames" "--no-abbrev" base candidate))
 
+(defn- same-job-execution? [ctx jobs artifact run]
+  ;; A single-job rerun copies successful jobs to new check IDs. Their original
+  ;; runner, timestamps and step results still identify the producing execution.
+  (let [current (first (filter #(= (:job artifact) (:id %)) jobs))
+        original (if (= (:job artifact) (:producing-job artifact)) current
+                     (gh/api ctx (gh/repo-path ctx (str "actions/jobs/" (:producing-job artifact)))))
+        fields [:run_id :name :conclusion :runner_id :started_at :completed_at :steps]]
+    (and (= run (:run_id current) (:run_id original))
+         (= (:name artifact) (:name current)) (= "success" (:conclusion current))
+         (= (:attempt artifact) (:run_attempt original)) (= (:producing-job artifact) (:id original))
+         (pos-int? (:runner_id current)) (string? (:started_at current)) (string? (:completed_at current))
+         (seq (:steps current)) (= (select-keys original fields) (select-keys current fields)))))
+
 (defn finish! [ctx task-key authority-file authority-digest ci-file ci-digest]
   (recovery/require! (and (true? @(:coordinator-owner ctx)) (= {:paused true} (rt/read-edn (:control-file ctx))))
                      "Pause and drain the coordinator before scoped integration")
@@ -63,8 +76,7 @@
             (= :passed (:state workflows)) (= "success" (:conclusion run)) (= (:attempt ci) (:run_attempt run))
             (= ".github/workflows/ci.yml" (:path run) (:workflow ci)) (= "pull_request" (:event run))
             (= (:total_count jobs) (count scopes)) (= (set scopes) (set (:jobs ci)))
-            (every? (fn [a] (some #(= [(:job a) (:name a) "success" (:attempt a)] ((juxt :id :name :conclusion :run_attempt) %)) scopes))
-                    (:required-artifacts ci))
+            (every? #(same-job-execution? ctx (:jobs jobs) % (:run ci)) (:required-artifacts ci))
             (every? (fn [{:keys [name artifact sha256 attempt]}]
                       (and (pos-int? attempt) (<= attempt (:attempt ci)) (re-matches #"[a-z0-9-]+" name)
                            (some #(and (= artifact (:id %)) (= (str "sha256:" sha256) (:digest %))

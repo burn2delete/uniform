@@ -31,9 +31,12 @@
         auth {:kind :single-pr-composition :repo "owner/repo" :pr 7 :from "old" :native native
               :required-hosted ["contracts"] :hosted :normal-pr-ci :require-all-selected-jobs-and-fresh-independent-review true
               :active-issues {:campaign 1 :parent 2 :increment 3}}
-        job {:name "contracts" :id 99 :conclusion "success" :run_attempt 1}
+        job {:name "contracts" :id 99 :conclusion "success" :run_attempt 2 :run_id 42 :runner_id 21
+             :started_at "start" :completed_at "end" :steps [{:name "contracts" :conclusion "success"}]}
+        producing (atom (assoc job :id 98 :run_attempt 1))
         ci (merge tuple {:result :passed :attempt 2 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
-                         :required-artifacts [{:name "contracts" :job 99 :attempt 1 :artifact 50 :sha256 (rt/digest "fixture artifact")}] :jobs [job]})
+                         :required-artifacts [{:name "contracts" :job 99 :producing-job 98 :attempt 1 :artifact 50 :sha256 (rt/digest "fixture artifact")}]
+                         :jobs [(select-keys job [:name :id :conclusion :run_attempt])]})
         digest (rt/digest (pr-str auth)) key "candidate-task" calls (atom [])
         af (io/file (:state-dir ctx) "authority.edn") cf (io/file (:state-dir ctx) "ci.edn")
         t (merge tuple {:key key :task "parent" :issue {:number 3} :pr {:number 7} :branch "branch" :status :attention
@@ -48,7 +51,8 @@
     (is (thrown-with-msg? Exception #"receipt changed" (finish "invalid")))
     (with-redefs [flow/assert-identity! (fn [& _]) flow/assert-clean! (fn [& _])
                   flow/fresh-main! (constantly "base") rt/git (fn [_ _ cmd & _] (if (= cmd "show") "old base" "immutable raw diff"))
-                  gh/api (fn [_ path] (cond (str/includes? path "/jobs") {:total_count 1 :jobs [job]}
+                  gh/api (fn [_ path] (cond (str/ends-with? path "/jobs/98") @producing
+                                           (str/includes? path "/jobs?") {:total_count 1 :jobs [job]}
                                            (str/includes? path "/artifacts") {:artifacts [{:id 50 :digest (str "sha256:" (rt/digest "fixture artifact"))
                                                                                         :name "ci-contracts-checkout-1" :workflow_run {:head_sha "head" :id 42}}]}
                                            (str/includes? path "/git/commits/") {:sha "checkout" :parents [{:sha "base"} {:sha "head"}] :tree {:sha "tree"}}
@@ -64,6 +68,9 @@
                                    answer))
                   flow/publish! (fn [c _] (swap! calls conj [:publish (scope c)]) (flow/task! c key :status :ci))
                   flow/integrate! (fn [c _] (swap! calls conj [:integrate (scope c)]) (flow/task! c key :merged "merge" :status :done))]
+      (swap! producing assoc :runner_id 22)
+      (is (thrown-with-msg? Exception #"live workflow" (finish digest)))
+      (swap! producing assoc :runner_id 21)
       (finish digest)
       (is (= [[:publish [key "head" digest]] [:integrate [key "head" digest]]] @calls))
       (is (= :done (:status (flow/task ctx key)))))))
