@@ -46,6 +46,8 @@
      source-map
      source-map-hash]}
    state
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? shared-packet)
    manifest-input
    (cond->
     {:source-content-hash source-hash,
@@ -61,7 +63,24 @@
      :oracle
      (when
       runtime-derived?
-      {:runtime-engine (:runtime-engine stage2-runtime-rule),
+      (if current-runtime-development?
+       {:runtime-engine (:runtime-engine stage2-runtime-rule),
+        :runtime-artifact-source
+        (c-backend-current-runtime-development-source-record stage2-runtime-rule),
+        :runtime-artifact-host-runner :gravity-current-runtime-development-host-runner,
+        :purpose :development-output-equivalence,
+        :runtime-kernel-rule-hash (:runtime-kernel-rule-hash stage2-runtime-rule),
+        :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule),
+        :clojure-instruction-runner-comparison
+        {:boundary :comparison-only, :authoritative-runtime? false},
+        :kind :gravity/current-runtime-development-execution,
+        :authoritative-runtime? false,
+        :runtime-artifact-hash (:runtime-artifact-hash stage2-runtime-rule),
+        :revision-status :development-unadmitted,
+        :effects :not-checked,
+        :clojure-seed-boundary? true,
+        :self-hosted? false}
+       {:runtime-engine (:runtime-engine stage2-runtime-rule),
        :runtime-artifact-generic-bridge-residual?
        (:runtime-artifact-generic-bridge-residual? stage2-runtime-rule),
        :runtime-artifact-host-runner :gravity-stage2-runtime-artifact-host-runner,
@@ -82,11 +101,11 @@
        (:runtime-artifact-println-over-two-boundary stage2-runtime-rule),
        :runtime-artifact-function (:runtime-artifact-function stage2-runtime-rule),
        :runtime-artifact-println-function (:runtime-artifact-println-function stage2-runtime-rule),
-       :runtime-kernel-engine (:runtime-kernel-engine stage2-runtime-rule)}),
+       :runtime-kernel-engine (:runtime-kernel-engine stage2-runtime-rule)})),
      :instruction-summary (:instruction-summary plan),
      :stage2-compiler-driver-record
      (when
-      runtime-derived?
+      (and runtime-derived? (not current-runtime-development?))
       {:artifact :gravity/p15-s23-stage2-compiler-driver-run-record,
        :driver-engine (:driver-engine stage2-driver-rule),
        :driver-rule-hash (:driver-rule-hash stage2-driver-rule),
@@ -95,6 +114,8 @@
        (get-in stage2-driver-run [:stage2-runtime-execution-record :status]),
        :accepted-output-equivalent? (:accepted-output-equivalent? stage2-driver-run),
        :status (:status stage2-driver-run)}),
+     :current-runtime-development-comparison-record
+     (when current-runtime-development? stage2-driver-run),
      :runtime :hosted-libc-stdout,
      :kind :gravity/c-backend-manifest,
      :c-source-hash c-source-hash,
@@ -102,7 +123,9 @@
      :stage2-runtime-execution-record
      (when
       runtime-derived?
-      {:artifact :gravity/p15-s23-stage2-runtime-execution-record,
+      {:artifact (if current-runtime-development?
+                   :gravity/current-runtime-development-execution-record
+                   :gravity/p15-s23-stage2-runtime-execution-record),
        :runtime-engine (:runtime-engine stage2-runtime-rule),
        :plan-id (:plan-id stage2-runtime-execution-record),
        :stdout-hash output-hash,
@@ -117,7 +140,9 @@
     runtime-derived?
     (assoc
      :compiler-stage
-     :p15-s23-stage2-compiler-driver
+     (if current-runtime-development?
+       :p15-s23-stage2-plan-emitter
+       :p15-s23-stage2-compiler-driver)
      :expression-lowering-artifact-hash
      (:artifact-hash stage2-compiler-artifact-record)
      :expression-lowering-source-content-hash
@@ -141,7 +166,7 @@
      :plan-assembly-generic-bridge-residual?
      (:plan-assembly-generic-bridge-residual? stage2-compiler-artifact-record)
      :compiler-engine
-     (:driver-engine stage2-driver-rule)
+     (when-not current-runtime-development? (:driver-engine stage2-driver-rule))
      :plan-emitter-stage
      :p15-s23-stage2-plan-emitter
      :plan-emitter-engine
@@ -149,11 +174,11 @@
      :compiler-source-rule-hash
      (:source-rule-hash stage2-rule)
      :compiler-driver-rule-hash
-     (:driver-rule-hash stage2-driver-rule)
+     (when-not current-runtime-development? (:driver-rule-hash stage2-driver-rule))
      :compiler-driver-rule-source
-     (:driver-rule-source stage2-driver-rule)
+     (when-not current-runtime-development? (:driver-rule-source stage2-driver-rule))
      :stage2-compiler-driver-used?
-     true
+     (not current-runtime-development?)
      :runtime-engine
      (:runtime-engine stage2-runtime-rule)
      :runtime-kernel-engine
@@ -193,16 +218,74 @@
      :runtime-artifact-generic-bridge-residual?
      (:runtime-artifact-generic-bridge-residual? stage2-runtime-rule)
      :runtime-artifact-source
-     {:kind :gravity-source,
+     (if current-runtime-development?
+       (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+       {:kind :gravity-source,
       :sha256 (:runtime-artifact-source-content-hash stage2-runtime-rule),
       :artifact-hash (:runtime-artifact-hash stage2-runtime-rule),
       :function (:runtime-artifact-function stage2-runtime-rule),
       :concat-function (:runtime-artifact-concat-function stage2-runtime-rule),
       :println-function (:runtime-artifact-println-function stage2-runtime-rule),
       :println-two-function (:runtime-artifact-println-two-function stage2-runtime-rule),
-      :println-over-two-boundary (:runtime-artifact-println-over-two-boundary stage2-runtime-rule)}
+      :println-over-two-boundary (:runtime-artifact-println-over-two-boundary stage2-runtime-rule)})
      :runtime-artifact-host-runner
-     :gravity-stage2-runtime-artifact-host-runner))
+     (if current-runtime-development?
+       :gravity-current-runtime-development-host-runner
+       :gravity-stage2-runtime-artifact-host-runner)
+     :current-runtime-development? current-runtime-development?
+     :runtime-artifact-helper-owner
+     (when current-runtime-development? :p15-compatibility-facade)
+     :runtime-artifact-helpers-invoked-by-evaluator?
+     (when current-runtime-development? false)
+     :revision-status
+     (when current-runtime-development? :development-unadmitted)
+     :effects
+     (when current-runtime-development? :not-checked)))
+   manifest-input
+   (if current-runtime-development?
+     (-> manifest-input
+         (dissoc :stage2-compiler-driver-record
+                 :compiler-driver-rule-hash
+                 :compiler-driver-rule-source)
+         (assoc :oracle
+                {:runtime-engine (:runtime-engine stage2-runtime-rule)
+                 :runtime-artifact-source
+                 (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+                 :runtime-artifact-host-runner
+                 :gravity-current-runtime-development-host-runner
+                 :purpose :development-output-equivalence
+                 :runtime-kernel-rule-hash
+                 (:runtime-kernel-rule-hash stage2-runtime-rule)
+                 :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+                 :clojure-instruction-runner-comparison
+                 {:boundary :comparison-only :authoritative-runtime? false}
+                 :kind :gravity/current-runtime-development-execution
+                 :authoritative-runtime? false
+                 :runtime-artifact-hash (:runtime-artifact-hash stage2-runtime-rule)
+                 :revision-status :development-unadmitted
+                 :effects :not-checked
+                 :clojure-seed-boundary? true
+                 :self-hosted? false}
+                :compiler-stage :p15-s23-stage2-plan-emitter
+                :compiler-engine (get-in plan [:compiler :rule-engine])
+                :stage2-compiler-driver-used? false
+                :current-runtime-development-comparison-record stage2-driver-run
+                :runtime-artifact-source
+                (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+                :runtime-artifact-host-runner
+                :gravity-current-runtime-development-host-runner
+                :current-runtime-development? true
+                :runtime-artifact-helper-owner :p15-compatibility-facade
+                :runtime-artifact-helpers-invoked-by-evaluator? false
+                :revision-status :development-unadmitted
+                :effects :not-checked))
+     (dissoc manifest-input
+             :current-runtime-development-comparison-record
+             :current-runtime-development?
+             :runtime-artifact-helper-owner
+             :runtime-artifact-helpers-invoked-by-evaluator?
+             :revision-status
+             :effects))
    manifest-hash
    (str
     "sha256:"

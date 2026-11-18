@@ -29,8 +29,13 @@
      stage2-driver-rule
      plan]}
    state
+   current-runtime-development?
+   (= :gravity/current-source-runtime-development-packet
+      (:kind shared-packet))
    stage2-driver-run
-   (:stage2-compiler-driver-record shared-packet)
+   (if current-runtime-development?
+     (:current-runtime-development-comparison-record shared-packet)
+     (:stage2-compiler-driver-record shared-packet))
    stage2-runtime-execution
    (:stage2-runtime-execution-record shared-packet)
    closed-plan-validation
@@ -40,15 +45,24 @@
    closed-plan-invocation
    (:closed-plan-invocation-record shared-packet)
    closed-plan-target-record
-   (when runtime-derived? (p15-s23-closed-runtime-target-record shared-packet))
+   (when runtime-derived?
+     (if current-runtime-development?
+       (current-runtime-development-target-record-from-authenticated-packet
+        shared-packet)
+       (p15-s23-closed-runtime-target-record shared-packet)))
    _
    (when
     (and
      runtime-derived?
      (not
-      (p15-s23-closed-runtime-target-record-authentic?
-       closed-plan-target-record
-       (p15-s23-closed-runtime-target-context shared-packet))))
+      (if current-runtime-development?
+        (current-runtime-development-target-record-authentic?
+         closed-plan-target-record
+         (current-runtime-development-target-context
+          shared-packet source-path source-text target))
+        (p15-s23-closed-runtime-target-record-authentic?
+         closed-plan-target-record
+         (p15-s23-closed-runtime-target-context shared-packet)))))
     (c-backend-fail!
      "C14-INPUT"
      "C backend received an unauthenticated closed runtime target record"

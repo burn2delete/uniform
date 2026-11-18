@@ -51,6 +51,8 @@
      provenance-hash
      identity-input]}
    state
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? shared-packet)
    artifact-base
    {:runtime-artifact-source-path
     (when runtime-derived? (:runtime-artifact-source-path stage2-runtime-rule)),
@@ -66,19 +68,26 @@
     :runtime-artifact-generic-bridge-residual?
     (when runtime-derived? (:runtime-artifact-generic-bridge-residual? stage2-runtime-rule)),
     :closed-runtime-validation-context
-    (when runtime-derived? (p15-s23-closed-runtime-target-context shared-packet)),
+    (when
+     runtime-derived?
+     (if current-runtime-development?
+       (current-runtime-development-target-context
+        shared-packet source-path source-text target)
+       (p15-s23-closed-runtime-target-context shared-packet))),
     :runtime-artifact-source
     (when
      runtime-derived?
-     {:println-function (:runtime-artifact-println-function stage2-runtime-rule),
-      :concat-function (:runtime-artifact-concat-function stage2-runtime-rule),
-      :function (:runtime-artifact-function stage2-runtime-rule),
-      :kind :gravity-source,
-      :sha256 (:runtime-artifact-source-content-hash stage2-runtime-rule),
-      :println-two-function (:runtime-artifact-println-two-function stage2-runtime-rule),
-      :println-over-two-boundary (:runtime-artifact-println-over-two-boundary stage2-runtime-rule),
-      :artifact-hash (:runtime-artifact-hash stage2-runtime-rule),
-      :generic-bridge-residual? (:runtime-artifact-generic-bridge-residual? stage2-runtime-rule)}),
+     (if current-runtime-development?
+       (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+       {:println-function (:runtime-artifact-println-function stage2-runtime-rule),
+        :concat-function (:runtime-artifact-concat-function stage2-runtime-rule),
+        :function (:runtime-artifact-function stage2-runtime-rule),
+        :kind :gravity-source,
+        :sha256 (:runtime-artifact-source-content-hash stage2-runtime-rule),
+        :println-two-function (:runtime-artifact-println-two-function stage2-runtime-rule),
+        :println-over-two-boundary (:runtime-artifact-println-over-two-boundary stage2-runtime-rule),
+        :artifact-hash (:runtime-artifact-hash stage2-runtime-rule),
+        :generic-bridge-residual? (:runtime-artifact-generic-bridge-residual? stage2-runtime-rule)})),
     :input-plan-id (:plan-id plan),
     :task "HOSTED-C-TARGET",
     :runtime-artifact-host-runner
@@ -106,7 +115,10 @@
     :instruction-summary (:instruction-summary plan),
     :closed-plan-runtime-target-record (when runtime-derived? closed-plan-target-record),
     :manifest-hash manifest-hash,
-    :stage2-compiler-driver-record (when runtime-derived? stage2-driver-run),
+    :stage2-compiler-driver-record
+    (when (and runtime-derived? (not current-runtime-development?)) stage2-driver-run),
+    :current-runtime-development-comparison-record
+    (when current-runtime-development? stage2-driver-run),
     :runtime-rule-source-path (when runtime-derived? (:runtime-source-path stage2-runtime-rule)),
     :runtime-artifact-effects
     (when runtime-derived? (get-in stage2-runtime-rule [:runtime-artifact-plan :module :effects])),
@@ -133,10 +145,19 @@
      runtime-derived?
      (assoc
       :actual-paths
-      {:stage2-expression-lowering-source stage2-compiler-artifact-source-path,
-       :stage2-runtime-artifact-source (:runtime-artifact-source-path stage2-runtime-rule)})),
+      (cond->
+       {:stage2-expression-lowering-source stage2-compiler-artifact-source-path,
+        :stage2-runtime-artifact-source (:runtime-artifact-source-path stage2-runtime-rule)}
+        current-runtime-development?
+        (assoc :runtime-owner
+               (get-in stage2-runtime-rule
+                       [:current-runtime-development-binding :runtime-source-path])
+               :runtime-compatibility-facade
+               (get-in stage2-runtime-rule
+                       [:current-runtime-compatibility-link :source-path]))))),
     :c-source-hash c-source-hash,
-    :stage2-compiler-driver-used? (when runtime-derived? true),
+    :stage2-compiler-driver-used?
+    (when runtime-derived? (not current-runtime-development?)),
     :target
     (cond->
      {:backend :c, :dialect dialect, :target target, :runtime :hosted-libc-stdout}
@@ -154,5 +175,39 @@
     :runtime-kernel-engine (when runtime-derived? (:runtime-kernel-engine stage2-runtime-rule)),
     :compiler-engine (when runtime-derived? (:driver-engine stage2-driver-rule)),
     :stdout stdout,
-    :compiler-stage (when runtime-derived? :p15-s23-stage2-compiler-driver)}]
+    :compiler-stage
+    (when runtime-derived?
+      (if current-runtime-development?
+        :p15-s23-stage2-plan-emitter
+        :p15-s23-stage2-compiler-driver)),
+    :current-runtime-development?
+    (when current-runtime-development? true),
+    :runtime-artifact-helper-owner
+    (when current-runtime-development? :p15-compatibility-facade),
+    :runtime-artifact-helpers-invoked-by-evaluator?
+    (when current-runtime-development? false),
+    :revision-status
+    (when current-runtime-development? :development-unadmitted),
+    :effects
+    (when current-runtime-development? :not-checked)}
+   artifact-base
+   (if current-runtime-development?
+     (-> artifact-base
+         (dissoc :stage2-compiler-driver-record)
+         (dissoc :runtime-artifact-source-path
+                 :runtime-rule-source-path)
+         (assoc :compiler-engine (get-in plan [:compiler :rule-engine])
+                :current-runtime-development-comparison-record stage2-driver-run
+                :current-runtime-development? true
+                :runtime-artifact-helper-owner :p15-compatibility-facade
+                :runtime-artifact-helpers-invoked-by-evaluator? false
+                :revision-status :development-unadmitted
+                :effects :not-checked))
+     (dissoc artifact-base
+             :current-runtime-development-comparison-record
+             :current-runtime-development?
+             :runtime-artifact-helper-owner
+             :runtime-artifact-helpers-invoked-by-evaluator?
+             :revision-status
+             :effects))]
   (clojure.core/assoc state :artifact-base artifact-base)))
