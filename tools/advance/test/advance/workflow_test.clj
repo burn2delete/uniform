@@ -34,7 +34,7 @@
         job {:name "contracts" :id 99 :conclusion "success" :run_attempt 2 :run_id 42 :runner_id 21
              :started_at "start" :completed_at "end" :steps [{:name "contracts" :conclusion "success"}]}
         producing (atom (assoc job :id 98 :run_attempt 1))
-        others (vec (for [[i [job-name mode]] (map-indexed vector (dissoc pr-recovery/full-pr-jobs "contracts"))]
+        others (vec (for [[i job-name] (map-indexed vector (keys (dissoc pr-recovery/full-pr-jobs "contracts")))]
                       (assoc job :id (+ 110 i) :name job-name)))
         jobs (into [job (assoc job :id 101 :name "select CI checks")] others)
         details (fn [j] (let [mode (get pr-recovery/full-pr-jobs (:name j))]
