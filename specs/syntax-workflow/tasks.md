@@ -97,6 +97,11 @@ Done when (yes/no): Round-trip all required form kinds and generated graphs, inc
 Apply the [complete syntax source criteria](plan.md#complete-syntax-source-criteria) within this existing task. Preserve its original status, accepted evidence scope and historical criteria.
 
 Complete C3 verification and serialization criterion (Open): Before expansion or analysis, execute the real verifier for required fields, stable semantic ids, spans resolving to actual source units, valid generated producers/origin references, scoped hygiene/declared capture, metadata shape, structurally valid namespace context, allowed phase transitions and actual serialization round-trip. Reconstruct every required source/generated form and shared-origin graph with the same semantic identity and preserved fields; stable serialization serves actual incremental and self-hosting comparison without forcing every representation to share a physical encoding. Reject malformed, substituted, stale, disconnected or non-round-tripping products and prevent downstream use. Exercise all nine C3 diagnostics against actual bad subjects; a projected payload round-trip, fixture-requested failure or passed report alone does not verify the full syntax artifact. Preserve legitimate graph sharing, semantic validation, source authentication and actual host restrictions without project node/depth/width/byte/work quotas or mandatory replacement proof admission.
+
+The hosted verifier now checks generated input links against earlier syntax
+objects. The [generated-origin fixtures and evidence](evidence.md#hosted-generated-origin-inputs)
+cover the report and the existing C3-ORIGIN validation route. Controller
+execution and independent acceptance are pending. Syntax/4 remains open.
 <!-- syntax-source-verification:end -->
 
 - [ ] `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers` syntax/5: Integrate consumers

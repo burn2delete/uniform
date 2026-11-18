@@ -78,6 +78,31 @@
       transaction-serialization
       (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
+(defn- generated-origin-valid? [prior-ids origin]
+  (and (:producer origin)
+       (or (:span origin) (:generated-span origin))
+       (let [input-fields (select-keys origin [:input-syntax-ids :inputs])]
+         (and (seq input-fields)
+              (every? (fn [ids]
+                        (and (coll? ids) (seq ids) (every? prior-ids ids)))
+                      (vals input-fields))))))
+
+(defn- generated-origins-valid? [syntax-stream]
+  (loop [remaining (seq syntax-stream) prior-ids #{}]
+    (if remaining
+      (let [{:keys [form origin] syntax-id :syntax/id} (first remaining)
+            generated-form? (= :generated-form (:kind form))
+            origins (when (sequential? origin) origin)
+            generated (if generated-form?
+                        (remove #(= :source (:kind %)) origins)
+                        (filter #(= :generated (:kind %)) origins))
+            available (disj prior-ids syntax-id)]
+        (if (and (or (not generated-form?) (seq generated))
+                 (every? #(generated-origin-valid? available %) generated))
+          (recur (next remaining) (conj prior-ids syntax-id))
+          false))
+      true)))
+
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
    (c3-syntax-verification-report syntax-stream serialization nil nil))
@@ -98,13 +123,7 @@
             :source-spans-resolve?
             (every? #(invoke :c3-resolvable-span? (:span %)) syntax-stream)
             :generated-origins-valid?
-            (every? #(and (get-in % [:origin 0 :producer])
-                          (seq (or (get-in % [:origin 0 :input-syntax-ids])
-                                   (get-in % [:origin 0 :inputs])))
-                          (or (get-in % [:origin 0 :span])
-                              (get-in % [:origin 0 :generated-span])))
-                    (filter #(= :generated-form (get-in % [:form :kind]))
-                            syntax-stream))
+            (generated-origins-valid? syntax-stream)
             :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
             :metadata-valid? (every? #(map? (:metadata %)) syntax-stream)
             :namespace-context-valid?
@@ -179,10 +198,9 @@
                     (count (set (map :syntax/id syntax-stream))))))
            :source-and-generated-origins?
            (boolean
-            (and (every? #(some (comp #{:source} :kind) (:origin %))
-                         (remove #(= :generated-form
-                                      (get-in % [:form :kind]))
-                                 syntax-stream))
+            (and (true? (:generated-origins-valid? fresh-verifier))
+                 (every? #(some (comp #{:source} :kind) (:origin %))
+                         source-syntax)
                  (seq (:generated generated-report))))
            :hygiene-propagated?
            (boolean

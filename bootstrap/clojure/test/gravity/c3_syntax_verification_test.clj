@@ -1,5 +1,6 @@
 (ns gravity.c3-syntax-verification-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is testing]]
             [gravity.c3-syntax-verification :as verification]))
 
 (def diagnostic-ids
@@ -82,6 +83,104 @@
           (is (= :passed (:status with-reader)))
           (is (= [[syntax-stream c2 boundary]] @authentication-calls)))))))
 
+(defn- verification-artifact [stream serialized]
+  (let [ownership {:owner :gravity-source
+                   :module 'gravity.bootstrap.syntax
+                   :syntax-ownership (mapv :ownership stream)}
+        result {:hygiene-context-map {:artifact :gravity/hygiene}
+                :metadata-ledger {:artifact :gravity/metadata}
+                :fact-invalidation-ledger {:artifact :gravity/facts}
+                :origin-chain-graph {:artifact :gravity/origins}
+                :ownership-product ownership
+                :syntax-object-stream stream}
+        boundary {:slice :SH-04 :resolved-syntax-result result}
+        c2 {:syntax-seed-stream [{:syntax-id "sha256:seed"}]}]
+    {:syntax-object-stream stream
+     :c2-reader-artifact c2
+     :gravity-syntax-boundary boundary
+     :gravity-syntax-ownership-product ownership
+     :gravity-hygiene-context-map (:hygiene-context-map result)
+     :gravity-metadata-ledger (:metadata-ledger result)
+     :gravity-fact-invalidation-ledger (:fact-invalidation-ledger result)
+     :gravity-origin-chain-graph (:origin-chain-graph result)
+     :hygiene-context-map {:status :complete}
+     :metadata-ledger {:source-metadata [{:syntax-id "sha256:source"}]
+                       :explicit-changes [{:syntax-id "sha256:generated"}]}
+     :fact-ledger {:attached [{}] :invalidated [{}]}
+     :generated-syntax-report {:generated [{:syntax-id "sha256:generated"}]}
+     :syntax-serialization-fixture serialized
+     :syntax-verification-report
+     (verification/c3-syntax-verification-report stream serialized c2 boundary)
+     :rejected-design-coverage (mapv (fn [id] {:diagnostic id}) diagnostic-ids)}))
+
+(defn- serialize-stream [stream]
+  (let [serialized (pr-str stream)]
+    {:canonical serialized :roundtrip? (= stream (edn/read-string serialized))}))
+
+(def origin-operations
+  (assoc base-operations
+         :c3-syntax-serialization-fixture serialize-stream
+         :c3-syntax-fail! (fn [id path subject extra]
+                            (throw (ex-info id (merge {:id id :source path}
+                                                      subject extra))))))
+
+(defn shared-origin-report []
+  (let [origin (first (:origin generated-syntax))
+        sibling (assoc generated-syntax :syntax/id "sha256:sibling"
+                       :origin [{:kind :generated :producer (:producer origin)
+                                 :inputs [(:syntax/id source-syntax)]
+                                 :span (:generated-span origin)}])
+        successor (assoc generated-syntax :syntax/id "sha256:successor"
+                         :origin [origin (assoc origin :input-syntax-ids
+                                                [(:syntax/id sibling)])])
+        stream [source-syntax generated-syntax sibling successor]]
+    (verification/with-operations
+      origin-operations
+      #(verification/c3-syntax-verification-report stream (serialize-stream stream)))))
+
+(deftest shared-generated-origins-resolve-to-preceding-syntax
+  (let [report (shared-origin-report)]
+    (is (true? (:generated-origins-valid? report)))
+    (is (= :passed (:status report)))))
+
+(defn origin-validation-results []
+  (let [origin (first (:origin generated-syntax))
+        later (dissoc origin :input-syntax-ids)
+        with-origin (fn [entry] (update-in syntax-stream [1 :origin] conj entry))
+        streams {:prior syntax-stream
+                 :missing (with-origin (assoc later :inputs ["sha256:source" "sha256:missing"]))
+                 :self (with-origin (assoc origin :input-syntax-ids ["sha256:generated"]))
+                 :forward [generated-syntax source-syntax]
+                 :second-spelling (with-origin (assoc origin :inputs ["sha256:missing"]))
+                 :mixed-chain (update-in syntax-stream [0 :origin] conj
+                                         (assoc later :inputs ["sha256:missing"]))
+                 :empty-inputs (with-origin (assoc later :inputs []))
+                 :missing-producer (with-origin (dissoc origin :producer))
+                 :missing-span (with-origin (dissoc origin :generated-span))}]
+    (verification/with-operations
+      origin-operations
+      (fn []
+        (into {}
+              (for [[example stream] streams
+                    :let [artifact (verification-artifact stream (serialize-stream stream))]]
+                [example {:report (:syntax-verification-report artifact)
+                          :validation
+                          (try (verification/c3-syntax-validate! "source.gravity" artifact)
+                               (catch clojure.lang.ExceptionInfo e (ex-data e)))}]))))))
+
+(deftest validation-rejects-broken-generated-origins-with-current-serialization
+  (doseq [[example {:keys [report validation]}] (origin-validation-results)]
+    (testing (name example)
+      (is (true? (:serialization-current? report)))
+      (is (true? (:serialization-round-trips? report)))
+      (if (= :prior example)
+        (do (is (= :passed (:status report)))
+            (is (= :complete validation)))
+        (do (is (= :failed (:status report)))
+            (is (false? (:generated-origins-valid? report)))
+            (is (= "C3-ORIGIN" (:id validation)))
+            (is (= [:source-and-generated-origins?] (:missing-fields validation))))))))
+
 (deftest capability-proof-recomputes-every-hosted-check
   (let [serialization-calls (atom 0)
         report-calls (atom [])
@@ -101,46 +200,12 @@
                               stream supplied-serialization c2 boundary)))]
     (verification/with-operations
      operations
-     #(let [gravity-ownership
-          {:owner :gravity-source
-           :module 'gravity.bootstrap.syntax
-           :syntax-ownership (mapv :ownership syntax-stream)}
-          gravity-result
-          {:hygiene-context-map {:artifact :gravity/hygiene}
-           :metadata-ledger {:artifact :gravity/metadata}
-           :fact-invalidation-ledger {:artifact :gravity/facts}
-           :origin-chain-graph {:artifact :gravity/origins}
-           :ownership-product gravity-ownership
-           :syntax-object-stream syntax-stream}
-          boundary {:slice :SH-04 :resolved-syntax-result gravity-result}
-          c2 {:syntax-seed-stream [{:syntax-id "sha256:seed"}]}
-          verifier
-          (verification/c3-syntax-verification-report
-           syntax-stream serialization c2 boundary)
-          artifact
-          {:syntax-object-stream syntax-stream
-           :c2-reader-artifact c2
-           :gravity-syntax-boundary boundary
-           :gravity-syntax-ownership-product gravity-ownership
-           :gravity-hygiene-context-map (:hygiene-context-map gravity-result)
-           :gravity-metadata-ledger (:metadata-ledger gravity-result)
-           :gravity-fact-invalidation-ledger
-           (:fact-invalidation-ledger gravity-result)
-           :gravity-origin-chain-graph (:origin-chain-graph gravity-result)
-           :hygiene-context-map {:status :complete}
-           :metadata-ledger
-           {:source-metadata [{:syntax-id "sha256:source"}]
-            :explicit-changes [{:syntax-id "sha256:generated"}]}
-           :fact-ledger {:attached [{}] :invalidated [{}]}
-           :generated-syntax-report
-           {:generated [{:syntax-id "sha256:generated"}]}
-           :syntax-serialization-fixture serialization
-           :syntax-verification-report verifier
-           :rejected-design-coverage
-           (mapv (fn [id] {:diagnostic id}) diagnostic-ids)}
-          _ (do (reset! serialization-calls 0)
-                (reset! report-calls []))
-          proof (verification/c3-syntax-capability-proof artifact)]
+     #(let [artifact (verification-artifact syntax-stream serialization)
+            c2 (:c2-reader-artifact artifact)
+            boundary (:gravity-syntax-boundary artifact)
+            _ (do (reset! serialization-calls 0)
+                  (reset! report-calls []))
+            proof (verification/c3-syntax-capability-proof artifact)]
        (doseq [[field value] proof
                :when (not= field :status)]
          (is (true? value) (str field " should be recomputed as true")))

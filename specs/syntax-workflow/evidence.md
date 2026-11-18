@@ -81,3 +81,48 @@ validation passed. These are workflow/tooling checks, not Syntax semantics.
 
 Independent exact-candidate review and integration remain pending at this
 preparation checkpoint. The five implementation checkboxes remain unchecked.
+
+## Hosted generated-origin inputs
+
+Finding `syntax.origins.hosted-generated-input-closure-v1` belongs to
+`syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify`.
+[C3](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md#origin-chain)
+requires links to prior syntax. The Gravity reference is
+`c3-syntax-graph-verify-template` in
+[syntax.gravity](../../bootstrap/gravity/src/gravity/bootstrap/syntax.gravity).
+
+Source inspection found that the hosted serialization fixture records origin
+kinds but omits input IDs. The [hosted report](../../bootstrap/clojure/src/gravity/c3_syntax_verification.clj)
+now resolves both `:input-syntax-ids` and `:inputs` on generated origins
+before adding the current object's `:syntax/id` to the set of prior IDs.
+If both fields occur, each must contain inputs and every link must resolve.
+The capability proof consumes the fresh report's `:generated-origins-valid?`
+in its existing `:source-and-generated-origins?` check. The validation order
+still gives construction and ID failures precedence over `C3-ORIGIN`.
+
+The [hosted fixtures](../../bootstrap/clojure/test/gravity/c3_syntax_verification_test.clj)
+exercise two siblings sharing a source and a successor referencing the second
+sibling through a later origin. The validation cases use one generated object
+and one source, matching the artifact's existing construction check. Each
+case serializes and reads back its full stream, including the altered links.
+The fixtures call the report, capability proof and validation code directly.
+They supply the reader authentication callback and capture the diagnostic ID,
+stage, source and missing field at the hosted failure callback.
+
+| Fixture | Expected report | Expected validation |
+| --- | --- | --- |
+| Shared source and generated sibling | `:passed`, origins valid | Report entry point only |
+| Prior source | `:passed`, serialization current | `:complete` |
+| Missing later input, self or forward link | `:failed`, origins invalid, serialization current | `C3-ORIGIN`, `[:source-and-generated-origins?]` |
+| Broken second spelling, mixed source/generated chain, empty inputs, missing producer or span | Same failed report checks | Same origin diagnostic |
+
+Controller execution and independent acceptance are pending. The following
+argument vectors exercise the fixtures and print the returned reports and
+validation payloads for the controller's evidence record.
+
+```clojure
+["clojure" "-M:leaf-test" "--namespace" "gravity.c3-syntax-verification-test"]
+["clojure" "-Sdeps" "{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}" "-M" "-e"
+ "(require '[gravity.c3-syntax-verification-test :as t]) (prn {:shared (t/shared-origin-report) :validation-cases (t/origin-validation-results)})"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+```
