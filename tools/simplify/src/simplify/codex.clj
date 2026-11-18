@@ -3,6 +3,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [simplify.diagnostics :as diagnostics]
             [simplify.runtime :as rt]
             [simplify.schema :as schema])
   (:import [java.io ByteArrayOutputStream]
@@ -118,7 +119,10 @@
         ended? (and (number? (:exitCode result)) (not (re-find #"(?i)owned process cleanup failed" output)))]
     (when (or restricted (not (zero? (:exitCode result))))
       (when restricted (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :result result}))
-      (rt/fail! "Sandboxed check failed" {:command argv :result result :restricted restricted :writer-ended? ended?})))
+      (let [timeout (diagnostics/timeout-progress result)]
+        (rt/fail! "Sandboxed check failed"
+                  (cond-> {:command argv :result result :restricted restricted :writer-ended? ended?}
+                    timeout (assoc :timeout-progress timeout))))))
   result)
 
 (defn command!
@@ -128,10 +132,12 @@
   (let [client (open! ctx job-id cwd)]
     (try
       (initialize! client)
-      (let [response (request! client "command/exec"
+      (let [started (System/nanoTime)
+            response (request! client "command/exec"
                              {:command argv :cwd cwd :processId job-id :streamStdoutStderr true
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
                               :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})
+            elapsed-ms (quot (- (System/nanoTime) started) 1000000)
             _ (when-not (and (map? response) (integer? (:exitCode response))
                              (every? #(or (nil? %) (string? %)) [(:stdout response) (:stderr response)]))
                 (rt/fail! "App-server command returned a malformed result"
@@ -144,6 +150,7 @@
                          (.write out ^bytes (:bytes chunk) 0 (alength ^bytes (:bytes chunk))))
                        (.toString out "UTF-8")))
             result (assoc response
+                          :elapsed-ms elapsed-ms
                           :stdout (if (seq (:stdout response)) (:stdout response) (stream "stdout"))
                           :stderr (if (seq (:stderr response)) (:stderr response) (stream "stderr"))
                           :capture-truncated @(:capture-truncated client))
@@ -242,6 +249,11 @@
                                  (rt/fail! "Agent returned no final output" {})))
                            (recur messages))
         (recur messages)))))
+
+(defn for-role [ctx role]
+  (if-let [model (get-in ctx [:config :models role])]
+    (assoc-in ctx [:config :model] model)
+    ctx))
 
 (defn job! [ctx job-id cwd mode instructions prompt output-schema]
   (let [client (open! ctx job-id cwd)]

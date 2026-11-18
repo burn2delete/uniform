@@ -118,7 +118,7 @@
             (rt/fail! "Cannot capture the review patch" {:finding (:key t) :result patch-result}))
         patch (:out patch-result)
         job (next-job! ctx :review)
-        result (codex/job! ctx job (:worktree t) :read
+        result (codex/job! (codex/for-role ctx :review) job (:worktree t) :read
                           (str (worker-instructions ctx)
                                " You are a passive independent reviewer. Use the supplied immutable patch and check receipts with their recorded provenance. "
                                "Only passive file reads/searches are permitted; do not run Git, Clojure, tests, builds or interpreter wrappers. "
@@ -420,8 +420,9 @@
             inspected? (= :queued (get-in t [:inspected-authored :stage]))
             job (if inspected? (get-in t [:inspected-authored :job]) (next-job! ctx :implement))
             _ (transition! ctx key :implementing)
+            simplify? (= "simplify" (get-in ctx [:config :harness-id] "simplify"))
             output (if inspected? (get-in @(:state ctx) [:jobs job :output])
-                     (codex/job! ctx job (:worktree t) :write
+                     (codex/job! (codex/for-role ctx :implement) job (:worktree t) :write
                                (str (worker-instructions ctx)
                                     " Verification is controller-owned: do not execute test/build/check commands or Git. "
                                     "Ready means authored and ready for controller checking, not that checks passed. "
@@ -431,8 +432,10 @@
                                (str "Implement this finding in the current worktree. Do not commit.\n"
                                     (pr-str (select-keys t [:key :task :task-path :title :evidence :proposal :preserve :paths :feedback]))
                                     "\nOnly edit owned paths. Add meaningful positive/negative fixtures where required. "
-                                    "Return specific Clojure check argument vectors, and report missing authority or semantic ambiguity explicitly.")
-                               schema/implementation))
+                                    "Return specific Clojure check argument vectors, and report missing authority or semantic ambiguity explicitly."
+                                    (when simplify?
+                                      " List exact repository-relative blocking paths or an empty list. Request --progress for new dev-test checks."))
+                               (if simplify? schema/simplify-implementation schema/implementation)))
             checking? (atom false)]
         (try
           (when (and (not inspected?)
@@ -743,7 +746,7 @@
         _ (when-not (= base (rt/git ctx (:worktree wt) "rev-parse" "HEAD"))
             (rt/fail! "Audit worktree does not match current main snapshot" {:base base :worktree (:worktree wt)}))
         job (next-job! ctx :audit)
-        output (codex/job! ctx job (:worktree wt) :read instructions
+        output (codex/job! (codex/for-role ctx :audit) job (:worktree wt) :read instructions
                            (str "Audit latest main at " base " for remaining over-engineering or unnecessary work. Read governing docs and actual implementation. "
                                 "Return only justified actionable improvements, with stable semantic keys, evidence, concrete preserved behavior and owned paths. "
                                 "Do not invent a fixed number of findings. An empty findings array is valid. Use dependencies only for real incompatible interfaces. "
