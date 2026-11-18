@@ -101,9 +101,13 @@ Complete C3 verification and serialization criterion (Open): Before expansion or
 The controller checked the hosted C3 link fixtures on candidate
 `ed1eb059e8fc4b29d6567fc9c960a11ab362bdae`. Shared links passed and broken
 links reached `C3-ORIGIN` with current serialization. Review requested a
-repair for hosted Reader abbreviations. The repair and its quote fixture
-await controller execution and independent acceptance. Syntax/4 remains
-open. [Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
+repair for hosted Reader abbreviations. All three controller checks passed
+on that repair, candidate `9938a8f8f0fae2108d32f74124b9136b199705ac`.
+Review found that a bare leading source origin on a generated form passed
+the hosted origin check. The current repair restores the leading producer
+and span checks and adds mixed-chain fixtures. Controller results for this
+change and independent acceptance remain pending. Syntax/4 remains open.
+[Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
 <!-- syntax-source-verification:end -->
 
 - [ ] `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers` syntax/5: Integrate consumers

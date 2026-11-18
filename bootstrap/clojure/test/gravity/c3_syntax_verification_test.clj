@@ -197,7 +197,15 @@
   (let [origin (first (:origin generated-syntax))
         later (dissoc origin :input-syntax-ids)
         with-origin (fn [entry] (update-in syntax-stream [1 :origin] conj entry))
+        source-origin {:kind :source :producer 'gravity.stage0/reader
+                       :span (get-in source-syntax [:span :primary])
+                       :input-syntax-ids []}
+        source-first (fn [entry] (assoc-in syntax-stream [1 :origin] [entry origin]))
         streams {:prior syntax-stream
+                 :source-first (source-first source-origin)
+                 :bare-leading-source (source-first {:kind :source})
+                 :leading-source-without-producer (source-first (dissoc source-origin :producer))
+                 :leading-source-without-span (source-first (dissoc source-origin :span))
                  :missing (with-origin (assoc later :inputs ["sha256:source" "sha256:missing"]))
                  :self (with-origin (assoc origin :input-syntax-ids ["sha256:generated"]))
                  :forward [generated-syntax source-syntax]
@@ -223,8 +231,9 @@
     (testing (name example)
       (is (true? (:serialization-current? report)))
       (is (true? (:serialization-round-trips? report)))
-      (if (= :prior example)
-        (do (is (= :passed (:status report)))
+      (if (#{:prior :source-first} example)
+        (do (is (true? (:generated-origins-valid? report)))
+            (is (= :passed (:status report)))
             (is (= :complete validation)))
         (do (is (= :failed (:status report)))
             (is (false? (:generated-origins-valid? report)))

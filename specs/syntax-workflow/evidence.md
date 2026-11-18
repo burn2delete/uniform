@@ -159,6 +159,26 @@ successor. It exercises the hosted Reader reconstruction with fixture C2
 integrity, revision and top-level product inputs. Its negative cases omit
 the Reader artifact, substitute the seed link, and add an unresolved C3 link
 to the Reader origin. Each altered stream has fresh serialization.
-Controller execution of the repair and independent acceptance are pending.
-For the repair, repeat the two namespace checks and include
-`:abbreviations (t/hosted-abbreviation-reports)` in the report command's map.
+
+The supplied controller receipt for base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`9938a8f8f0fae2108d32f74124b9136b199705ac`, tree
+`35326512b6b17c666b3721bf600b253dbfa55619` reports that all three
+controller checks passed. Review requested changes after observing
+`:generated-origins-valid? true` on a generated form whose first origin was
+`{:kind :source}` and whose second origin was valid.
+
+### Leading source origin on a generated form
+
+The verifier now requires a producer and span on the leading origin of a
+generated form, including when that origin describes the source. The
+`:source-first` fixture supplies both fields and an empty input vector,
+followed by a generated origin that links to the preceding syntax object.
+It expects a passed report and `:complete` validation. Three variants use
+a bare leading source, omit just the producer, or omit just the span. Each
+regenerates serialization and expects a failed origin check and `C3-ORIGIN`
+with `:missing-fields [:source-and-generated-origins?]`.
+
+Controller results for these fixtures and independent acceptance are pending.
+The proposed checks are the two namespace checks above and the report command
+with `:abbreviations (t/hosted-abbreviation-reports)` included in its map.

@@ -78,9 +78,12 @@
       transaction-serialization
       (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
-(defn- generated-origin-valid? [prior-ids hosted-source? c2-artifact origin]
+(defn- origin-has-producer-and-span? [origin]
   (and (:producer origin)
-       (or (:span origin) (:generated-span origin))
+       (or (:span origin) (:generated-span origin))))
+
+(defn- generated-origin-valid? [prior-ids hosted-source? c2-artifact origin]
+  (and (origin-has-producer-and-span? origin)
        (let [input-fields (select-keys origin [:input-syntax-ids :inputs])
              abbreviation? (and hosted-source?
                                 (= {:kind :reader
@@ -107,7 +110,9 @@
                         (filter #(= :generated (:kind %)) origins))
             available (disj prior-ids syntax-id)
             hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
-        (if (and (or (not generated-form?) (seq generated))
+        (if (and (or (not generated-form?)
+                     (and (origin-has-producer-and-span? (first origins))
+                          (seq generated)))
                  (every? #(generated-origin-valid? available hosted-source? c2-artifact %)
                          generated))
           (recur (next remaining) (conj prior-ids syntax-id))
