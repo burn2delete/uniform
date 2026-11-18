@@ -102,10 +102,6 @@
         duplicate-reference (reference [root-id])
         first-binding {:binding-class :lexical :scope-id root-id :name 'value
                        :binding-id :first}
-        bindings [{:binding-class :lexical :scope-id root-id :name 'value
-                   :binding-id :outer}
-                  {:binding-class :lexical :scope-id child-id :name 'value
-                   :binding-id :inner}]
         shadow-request (assoc (request) :lexical-scopes
                               [(assoc (first scope-rows) :bindings [first-local])
                                (assoc (second scope-rows) :bindings [second-local])]
