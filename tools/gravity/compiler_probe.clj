@@ -4,7 +4,8 @@
   Executes the ordinary authenticated typed frontend on the complete six-owner
   cohort already selected by the SH07 plan. This is a prerequisite of the staged
   Linux LLVM candidate, not a native build, migration admission or release verifier."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as str])
   (:import [java.nio.file Files]
@@ -54,8 +55,8 @@
       (sha256 (Files/readAllBytes (.toPath file))))))
 
 (def input-paths
-  ;; Bind the complete seed and current owner sources, not only the failing
-  ;; function. Retain runtime/library/build inputs even at this frontend edge.
+  ;; Live planning and ownership context. These bytes remain current for
+  ;; admission, but do not invalidate an already executed frontend result.
   ["deps.edn" "AGENTS.md" "bootstrap/clojure/src" "bootstrap/gravity"
    "language/compiler/src" "language/runtime/src" catalog-path
    "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
@@ -66,8 +67,237 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_kernel_support.clj"
    "tools/gravity/compiler_probe.clj"])
 
+(def frontend-support-input-paths
+  ;; Explicit Gravity compiler/support owners for the executed frontend. The
+  ;; authenticated source import closure contributes the selected modules.
+  ["deps.edn" "tools/gravity/compiler_probe.clj"
+   catalog-path reader-path syntax-path emitter-path
+   "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+   "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "language/compiler/src/gravity/checked_core.gravity"
+   "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"])
+
+(def ^:private frontend-host-namespaces
+  ['gravity.bootstrap 'gravity.self-hosting.sh08-function-call-kernel-support])
+
+(def ^:private frontend-host-source-roots
+  ["bootstrap/clojure/src" "bootstrap/clojure/test" "tools"])
+
+(def ^:private bootstrap-load-manifest
+  "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn")
+
+(def ^:private bootstrap-loader-source
+  "bootstrap/clojure/src/gravity/bootstrap_impl/loader.clj")
+
+(defn- namespace-source-path [root namespace]
+  (let [relative (-> (str namespace)
+                     (str/replace "." "/")
+                     (str/replace "-" "_"))]
+    (some (fn [source-root]
+            (some (fn [extension]
+                    (let [path (str source-root "/" relative extension)]
+                      (when (.isFile (io/file root path)) path)))
+                  [".clj" ".cljc"]))
+          frontend-host-source-roots)))
+
+(defn- bootstrap-component-paths [root]
+  (let [manifest (io/file root bootstrap-load-manifest)]
+    (if (.isFile manifest)
+      (let [resources (mapv #(str "bootstrap/clojure/src/" (:resource %))
+                            (edn/read-string {:readers {}} (slurp manifest :encoding "UTF-8")))
+            paths (into [bootstrap-load-manifest bootstrap-loader-source] resources)
+            missing (remove #(.isFile (io/file root %)) paths)]
+        (when (seq missing)
+          (throw (ex-info "Bootstrap load manifest names missing source resources"
+                          {:paths (vec missing)})))
+        paths)
+      [])))
+
+(defn- top-level-source-forms [root path]
+  (try
+    (with-open [reader (java.io.PushbackReader.
+                        (io/reader (io/file root path) :encoding "UTF-8"))]
+      (binding [*read-eval* false]
+        (let [eof (Object.)
+              options {:read-cond :allow :features #{:clj} :readers {}}]
+          (loop [forms []]
+            (let [form (read (assoc options :eof eof) reader)]
+              (if (identical? eof form)
+                forms
+                (recur (conj forms form))))))))
+    (catch Exception exception
+      (throw (ex-info "Frontend host dependencies cannot be read"
+                      {:source-path path} exception)))))
+
+(defn- source-dependencies [root path]
+  (let [forms (top-level-source-forms root path)
+        namespace-form (first forms)
+        namespace-requirements (when (and (seq? namespace-form)
+                                          (= 'ns (first namespace-form)))
+                                 (->> (drop 2 namespace-form)
+                                      (filter #(and (seq? %) (= :require (first %))))
+                                      (mapcat rest)
+                                      (map #(if (vector? %) (first %) %))
+                                      (filter symbol?)))
+        top-level-forms (if namespace-requirements (rest forms) forms)
+        top-level-requirements (->> top-level-forms
+                                    (filter #(and (seq? %) (symbol? (first %))
+                                                  (#{"require" "clojure.core/require"}
+                                                   (str (first %)))))
+                                    (mapcat rest)
+                                    (map (fn [argument]
+                                           (if (and (seq? argument)
+                                                    (= 'quote (first argument)))
+                                             (second argument) argument)))
+                                    (map #(if (vector? %) (first %) %))
+                                    (filter symbol?))
+        load-forms (filter #(and (seq? %) (symbol? (first %))
+                                 (#{"load" "clojure.core/load"} (str (first %))))
+                           top-level-forms)
+        load-resources (mapcat (fn [form]
+                                 (let [resources (rest form)]
+                                   (when-not (and (seq resources) (every? string? resources))
+                                     (throw (ex-info "Frontend host load resource is not a static string"
+                                                     {:source-path path :form form})))
+                                   resources))
+                               load-forms)]
+    {:namespaces (vec (concat namespace-requirements top-level-requirements))
+     :loads (vec load-resources)}))
+
+(defn- resource-path-candidates [resource]
+  (let [classpath-resource? (str/starts-with? resource "/")
+        relative (if classpath-resource? (subs resource 1) resource)
+        normalized (.normalize (java.nio.file.Paths/get relative (make-array String 0)))
+        normalized (str normalized)]
+    (when (or (str/blank? relative)
+              (.isAbsolute (java.nio.file.Paths/get normalized (make-array String 0)))
+              (and classpath-resource?
+                   (or (= ".." normalized)
+                       (str/starts-with? normalized (str ".." java.io.File/separator)))))
+      (throw (ex-info "Frontend host load resource escapes its source root"
+                      {:resource resource})))
+    (let [with-extension (if (re-find #"\.(clj|cljc)$" normalized)
+                           [normalized]
+                           [(str normalized ".clj") (str normalized ".cljc")])]
+      (if classpath-resource?
+        (mapv vector (repeat nil) with-extension)
+        (vec (concat (map #(vector :owner %) with-extension)
+                    (map #(vector nil %) with-extension)))))))
+
+(defn- resolve-load-resource-path [root owner-path resource]
+  (some (fn [[owner-relative? candidate]]
+          (some (fn [source-root]
+                  (let [absolute-root (.normalize (.toAbsolutePath
+                                                   (.toPath (io/file root))))
+                        root-path (.normalize (.resolve absolute-root source-root))
+                        base (if owner-relative?
+                               (.getParent
+                                (.normalize (.resolve absolute-root owner-path)))
+                               root-path)
+                        resolved (.normalize (.resolve base candidate))]
+                    (when (and (.startsWith resolved root-path)
+                               (.isFile (.toFile resolved)))
+                      (str (.relativize absolute-root resolved)))))
+                frontend-host-source-roots))
+        (resource-path-candidates resource)))
+
+(defn- resolve-load-paths [root path resources]
+  (mapv (fn [resource]
+          (or (resolve-load-resource-path root path resource)
+              (throw (ex-info "Frontend host load resource has no source path"
+                              {:source-path path :resource resource}))))
+        resources))
+
+(defn frontend-host-input-paths
+  "Exact source files loaded by the probe's Clojure namespace and bootstrap
+  component loaders, including statically named load resources. Individual
+  files avoid hashing unrelated siblings."
+  [root]
+  (let [components (bootstrap-component-paths root)
+        manifest-resources (filter #(.endsWith ^String % ".clj") components)]
+    (loop [pending-namespaces (vec frontend-host-namespaces)
+           pending-paths (vec manifest-resources)
+           seen-namespaces #{}
+           seen-paths #{}
+           source-paths []]
+      (cond
+        (seq pending-namespaces)
+        (let [namespace (first pending-namespaces)]
+          (if (contains? seen-namespaces namespace)
+            (recur (subvec pending-namespaces 1) pending-paths seen-namespaces
+                   seen-paths source-paths)
+            (let [path (namespace-source-path root namespace)]
+              (when (and (nil? path) (str/starts-with? (str namespace) "gravity."))
+                (throw (ex-info "Frontend Gravity namespace has no source path"
+                                {:namespace namespace})))
+              (recur (subvec pending-namespaces 1)
+                     (cond-> pending-paths path (conj path))
+                     (conj seen-namespaces namespace)
+                     seen-paths
+                     source-paths))))
+
+        (seq pending-paths)
+        (let [path (first pending-paths)]
+          (if (contains? seen-paths path)
+            (recur pending-namespaces (subvec pending-paths 1) seen-namespaces
+                   seen-paths source-paths)
+            (let [{:keys [namespaces loads]} (source-dependencies root path)
+                  load-paths (resolve-load-paths root path loads)]
+              (recur (into pending-namespaces namespaces)
+                     (into (subvec pending-paths 1) load-paths)
+                     seen-namespaces
+                     (conj seen-paths path)
+                     (conj source-paths path)))))
+
+        :else
+        (->> (concat source-paths components)
+             distinct
+             vec)))))
+
+(defn frontend-input-paths [_root closure]
+  (->> (concat frontend-support-input-paths (keep :source-path closure))
+       distinct
+       vec))
+
 (defn inputs [root]
   (mapv (fn [path] {:path path :sha256 (input-sha256 root path)}) input-paths))
+
+(defn- input-records [root paths]
+  (mapv (fn [path] {:path path :sha256 (input-sha256 root path)}) paths))
+
+(defn frontend-host-input-id [root]
+  (digest {:inputs (input-records root (frontend-host-input-paths root))}))
+
+(defn execution-inputs [root observation]
+  (input-records root (frontend-input-paths root (get-in observation [:route :closure]))))
+
+(defn- captured-execution-inputs [root closure initial-inputs source-identities]
+  (let [initial-by-path (into {} (map (juxt :path identity)) initial-inputs)
+        source-by-path @source-identities]
+    (mapv (fn [path]
+            (or (get initial-by-path path)
+                (get source-by-path path)
+                (throw (ex-info "Frontend source was not captured during route discovery"
+                                {:path path}))))
+          (frontend-input-paths root closure))))
+
+(def ^:dynamic ^:private *frontend-source-identities* nil)
+(def ^:dynamic ^:private *frontend-source-changed?* nil)
+
+(defn- capture-frontend-source! [path bytes]
+  (when *frontend-source-identities*
+    (let [record {:path path :sha256 (sha256 bytes)}]
+      (swap! *frontend-source-identities*
+             (fn [identities]
+               (if-let [previous (get identities path)]
+                 (do
+                   (when (not= previous record)
+                     (reset! *frontend-source-changed?* true))
+                   identities)
+                 (assoc identities path record))))
+      record)))
 
 (defn- api [name & arguments]
   (apply (requiring-resolve (symbol "gravity.bootstrap" (str name))) arguments))
@@ -101,7 +331,9 @@
   ;; Header routing only. The actual C2/C3/SH05/SH06 route below rereads and
   ;; authenticates complete source; this host declaration is not a C5 product.
   (let [path (canonical root (:source-path component))
-        records (api 'read-source-form-records path (slurp path :encoding "UTF-8"))]
+        bytes (Files/readAllBytes (.toPath (io/file path)))
+        _ (capture-frontend-source! (:source-path component) bytes)
+        records (api 'read-source-form-records path (String. bytes "UTF-8"))]
     (api 'parse-module path (mapv :form records))))
 
 (defn- module-source-name [component]
@@ -262,20 +494,32 @@
                          (re-matches #"[0-9a-f]{40}" source-revision))
             (throw (ex-info "Compiler source revision is unavailable"
                             {:id "COMPILER-PROBE-SOURCE" :terminal revision-result})))
-        source-inputs (inputs root)
         stage (atom :catalog)
         current (atom nil)
         completed (atom [])
         type-requests (atom {})
         subject (atom nil)
         closure (atom [])
+        source-identities (atom {})
+        source-changed? (atom false)
+        execution-inputs* (atom (execution-inputs root {:route {:closure []}}))
+        frontend-host-input-id* (atom (frontend-host-input-id root))
         outcome
         (try
           (reset! closure (catalog root))
           (when-not (and (vector? @closure) (seq @closure)
                          (every? #(and (:component-id %) (string? (:source-path %))) @closure))
             (throw (ex-info "Existing SH25 source catalog is malformed" {:id "COMPILER-PROBE-CATALOG"})))
-          (reset! closure (source-closure root @closure))
+          (reset! closure (binding [*frontend-source-identities* source-identities
+                                    *frontend-source-changed?* source-changed?]
+                            (source-closure root @closure)))
+          (when (some (fn [{:keys [path] :as source}]
+                        (when-let [initial (some #(when (= path (:path %)) %) @execution-inputs*)]
+                          (not= initial source)))
+                      (vals @source-identities))
+            (reset! source-changed? true))
+          (reset! execution-inputs* (captured-execution-inputs root @closure
+                                                               @execution-inputs* source-identities))
           (reset! stage :current-emitter)
           (let [emitter (current-emitter root)
                 reader (canonical root reader-path)
@@ -288,7 +532,11 @@
               (loop [remaining @closure resolved {}]
                 (if-let [component (first remaining)]
                   (let [path (canonical root (:source-path component))
-                        text (slurp path :encoding "UTF-8")
+                        bytes (Files/readAllBytes (.toPath (io/file path)))
+                        _ (binding [*frontend-source-identities* source-identities
+                                    *frontend-source-changed?* source-changed?]
+                            (capture-frontend-source! (:source-path component) bytes))
+                        text (String. bytes "UTF-8")
                         _ (reset! current component)
                         _ (reset! subject {:source-path (:source-path component)
                                            :source-sha256 (sha256 (.getBytes text "UTF-8"))})
@@ -345,15 +593,22 @@
           (catch Exception exception
             (classify-failure @current @stage exception)))
         observation-route (route @closure)
-        unchanged? (= source-inputs (inputs root))
+        unchanged? (and (not @source-changed?)
+                        (= @execution-inputs*
+                           (execution-inputs root {:route observation-route}))
+                        (= @frontend-host-input-id* (frontend-host-input-id root)))
         outcome (if unchanged?
                   outcome
                   {:status :blocked
                    :failure {:id "COMPILER-PROBE-INPUT-CHANGED" :kind :stale-evidence
                              :reason "Relevant source bytes changed during execution."}})]
     (merge {:source-revision source-revision
-            :inputs source-inputs :route observation-route
-            :input-id (digest {:inputs source-inputs :route observation-route})
+            :inputs @execution-inputs*
+            :frontend-host-input-id @frontend-host-input-id*
+            :route observation-route
+            :input-id (digest {:inputs @execution-inputs*
+                               :frontend-host-input-id @frontend-host-input-id*
+                               :route observation-route})
             :completed @completed
             :subject @subject
             :position {:component (count @completed) :stage @stage}
