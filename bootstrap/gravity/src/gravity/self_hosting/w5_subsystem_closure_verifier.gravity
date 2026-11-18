@@ -283,9 +283,7 @@
 
 (defn w5-sc-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 4096)
-      false)
+    (> (count value) 0)
     false))
 
 (defn w5-sc-id? [value]
