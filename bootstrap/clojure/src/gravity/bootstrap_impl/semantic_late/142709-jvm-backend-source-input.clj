@@ -6,38 +6,7 @@
  [state]
  (clojure.core/let
   [{:keys
-    [source-path
-     source-text
-     output-path
-     emit?
-     output
-     parent
-     javac-version
-     java-version
-     packet
-     trusted-emitter-rule
-     trusted-driver-rule
-     trusted-runtime-rule
-     trusted-plan
-     plan
-     writes-stdout?
-     java-source
-     module-source
-     source-map
-     plan-hash
-     source-hash
-     compiler-record
-     closed-plan-runtime
-     stage-directory
-     staged-paths
-     class-path
-     module-class-path
-     class-major
-     jar-record
-     expected-entries
-     execution
-     expected-output
-     expected-bytes]}
+    [packet plan source-map plan-hash source-hash staged-paths]}
    state
    source-map-text
    (pr-str (c-backend-canonical-value source-map))

@@ -5,7 +5,7 @@
  semantic-late-jvm-backend-source-artifact-packet
  [state]
  (clojure.core/let
-  [{:keys [source-path source-text output-path emit? output parent javac-version java-version current-runtime-development?]}
+  [{:keys [source-path source-text current-runtime-development?]}
    state
    candidate-packet
    (stage2-runtime-derived-packet

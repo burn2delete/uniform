@@ -106,7 +106,6 @@
            source-path (:source-path runtime-context)
            source-text (:source-text runtime-context)
            plan (:plan packet)
-           compiler-record (:stage2-compiler-artifact-record packet)
            runtime-rule (:stage2-runtime-rule packet)
            target-record
            (current-runtime-development-target-record-from-authenticated-packet
@@ -412,7 +411,7 @@
    :passed)))
 
 (defn jvm-backend-validate-manifest!
-  ([source-path manifest]
+  ([source-path _manifest]
    (jvm-backend-fail!
     "B5-MANIFEST"
     "JVM manifest validation requires trusted artifact context"
