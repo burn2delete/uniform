@@ -17,6 +17,11 @@ Historical migration checkboxes below remain separate from implementation status
 
 Status: Open
 
+The [Node ESM packaging increment](evidence.md#backend-interface-node-esm-packaging)
+checks C14's bundler, tree-shaking and module initialization assumptions before
+B1 admits checked scalar input. The controller's tampering check timed out.
+Verification of the revised fixture and independent acceptance are pending.
+
 Projected task block:
 Remaining tasks: implement required-input/version validation; define per-target
 ABI/layout mappings and reject unrepresentable values; connect runtime/provider
