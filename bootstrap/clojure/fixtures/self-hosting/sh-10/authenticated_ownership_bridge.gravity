@@ -261,7 +261,7 @@
                 nil)
                 (if
                  (sh10-bridge-identity-pair-valid?
-                 checks subjects :sh10-ownership-result
+                  checks subjects :sh10-ownership-result
                   :gravity/sh10-ownership-result-v2
                   ownership-result
                   expected-ownership-artifact-id)
@@ -289,7 +289,8 @@
                          operation operation-id)
                         false)
                       false)
-                    false))
+                    false)
+                  false)
                 false))
             false)
           false)

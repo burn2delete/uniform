@@ -601,6 +601,68 @@
         'sh10-verify-authenticated-ownership-result)
        [:arity :params])))))
 
+(deftest sh10-identity-checks-require-every-authenticated-pair
+  (let [names [:sh08-typed-core :sh10-ownership-result
+               :sh10-type-fact-link :sh10-effect-fact-link
+               :sh10-capability-proof-link
+               :sh10-ownership-operation]
+        domains [:gravity/sh10-sh08-typed-core-v1
+                 :gravity/sh10-ownership-result-v2
+                 :gravity/sh10-type-fact-link-v1
+                 :gravity/sh10-effect-fact-link-v1
+                 :gravity/sh10-capability-proof-link-v1
+                 :gravity/sh10-ownership-operation-v1]
+        fact {:effects [] :capabilities []}
+        typed {:artifact-id
+               (identity-id :gravity/sh10-test-typed-artifact
+                            {:test true})
+               :identity-input {:module :test}
+               :type-facts [fact]}
+        ownership-result
+        {:status :accepted
+         :state {:availability :available}}
+        operation {:operation :initialized-read}
+        preimages
+        [{:typed-artifact-id (:artifact-id typed)
+          :identity-input (:identity-input typed)}
+         ownership-result
+         {:fact fact}
+         {:effects (:effects fact)}
+         {:capabilities (:capabilities fact)}
+         operation]
+        observed-ids (mapv identity-id domains preimages)
+        checks
+        (mapv
+         (fn [name domain observed-id]
+           {:name name :domain domain
+            :computed-id observed-id
+            :observed-id observed-id})
+         names domains observed-ids)
+        subjects
+        (mapv
+         (fn [name domain preimage observed-id]
+           {:name name :domain domain
+            :preimage preimage :observed-id observed-id})
+         names domains preimages observed-ids)
+        arguments
+        [checks subjects typed ownership-result operation
+         (nth observed-ids 1) (nth observed-ids 5)
+         (nth observed-ids 2) (nth observed-ids 3)
+         (nth observed-ids 4)]
+        accepted
+        (invoke
+         bridge-plan 'sh10-bridge-identity-checks-valid?
+         arguments)
+        altered-subjects
+        (assoc-in subjects [3 :preimage]
+                  {:effects [:changed]})
+        rejected
+        (invoke
+         bridge-plan 'sh10-bridge-identity-checks-valid?
+         (assoc arguments 1 altered-subjects))]
+    (is (true? accepted))
+    (is (false? rejected))))
+
 (deftest sh10-accepts-authenticated-read-borrow-and-move
   (doseq [[extension sh08-products]
           [[".gravity" @sh08-gravity]
