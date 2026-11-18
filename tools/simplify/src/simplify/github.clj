@@ -21,41 +21,54 @@
           (:errors payload)))
       (catch Exception _ nil))))
 
+(defn- graphql-request [method endpoint payload]
+  (when (= "graphql" endpoint)
+    {:method method :endpoint endpoint :body-sha256 (rt/digest (or payload ""))}))
+
 (defn api
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
    (let [key (rt/digest (pr-str [method endpoint]))
+         payload (when body (json/write-str body))
+         request (graphql-request method endpoint payload)
          _ (when (or (get-in @(:state ctx) [:restricted-actions key])
                      (rt/shared-restriction ctx :api key))
-             (rt/fail! "Restricted GitHub action cannot be retried" {:endpoint endpoint :restricted true}))
+             (rt/fail! "Restricted GitHub action cannot be retried"
+                       (cond-> {:endpoint endpoint :restricted true}
+                         request (assoc :failed-request (assoc request :phase :before-call)))))
          result (rt/command ctx (get-in ctx [:config :repo-dir])
                             (cond-> ["gh" "api" "--method" method endpoint]
                               body (into ["--input" "-"]))
-                            (when body (json/write-str body)))]
+                            payload)]
      (when-not (zero? (:exit result))
        (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))
              errors (graphql-errors-from-output endpoint (:out result))]
          (when restricted
-           (let [refusal {:method method :endpoint endpoint :error (:err result)}]
+           (let [refusal (cond-> {:method method :endpoint endpoint :error (:err result)}
+                           request (assoc :failed-request (assoc request :phase :provider-returned)))]
              (rt/update! ctx assoc-in [:restricted-actions key] refusal)
              (rt/shared-restrict! ctx :api key refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    (cond-> {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted}
-                     (seq errors) (assoc :errors errors)))))
+                     (seq errors) (assoc :errors errors)
+                     request (assoc :failed-request (assoc request :phase :provider-returned))))))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
 
 (defn graphql [ctx query variables]
-  (let [response (api ctx "POST" "graphql" {:query query :variables variables})]
+  (let [body {:query query :variables variables}
+        response (api ctx "POST" "graphql" body)]
     (when (seq (:errors response))
       (let [restricted (boolean (some #(or (#{"FORBIDDEN" "UNAUTHORIZED" "RATE_LIMITED"} (:type %))
                                            (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
-                                                    (or (:message %) ""))) (:errors response)))]
+                                                    (or (:message %) ""))) (:errors response)))
+            request (assoc (graphql-request "POST" "graphql" (json/write-str body)) :phase :provider-returned)]
         (when restricted
           (let [key (rt/digest (pr-str ["POST" "graphql"]))
-                refusal {:method "POST" :endpoint "graphql" :errors (:errors response)}]
+                refusal {:method "POST" :endpoint "graphql" :errors (:errors response) :failed-request request}]
             (rt/update! ctx assoc-in [:restricted-actions key] refusal)
             (rt/shared-restrict! ctx :api key refusal)))
-        (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
+        (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted
+                                           :failed-request request})))
     (:data response)))
 
 (defn pages [ctx endpoint]

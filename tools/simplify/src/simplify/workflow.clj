@@ -82,14 +82,24 @@
   (let [n (:job-sequence (rt/update! ctx update :job-sequence (fnil inc 0)))]
     (str (name role) "-" n)))
 
+(defn- passed-checks [t]
+  (let [checks (:checks t)]
+    (when (and (:candidate t) (:tree t) (= :passed (:result checks))
+               (= (:candidate t) (:candidate checks)) (= (:tree t) (:tree checks)))
+      checks)))
+
+(defn- candidate-review [t]
+  (when (and (:base t) (:candidate t) (:tree t)
+             (= (select-keys t [:base :candidate :tree])
+                (select-keys (:review t) [:base :candidate :tree])))
+    (:review t)))
+
 (defn review! [ctx t]
   (when (or (and (get-in t [:error :details :restricted]) (not (recovery/review-permitted? t)))
             (let [current (task ctx (:key t))]
               (and (get-in current [:error :details :restricted]) (not (recovery/review-permitted? current)))))
     (rt/fail! "Restricted findings cannot obtain a new review snapshot" {:finding (:key t) :restricted true}))
-  (when-not (and (= :passed (get-in t [:checks :result]))
-                 (= (select-keys t [:candidate :tree]) (select-keys (:checks t) [:candidate :tree]))
-                 (seq (get-in t [:checks :commands])))
+  (when-not (seq (:commands (passed-checks t)))
     (rt/fail! "Independent review needs exact native check evidence" {:finding (:key t)}))
   (assert-identity! ctx t)
   (let [argv ["git" "diff" "--no-ext-diff" "--no-textconv" "--no-renames" "--binary" (:base t) (:candidate t) "--"]
@@ -136,7 +146,11 @@
       (when-not (and (vector? argv) (seq argv) (every? string? argv)
                      (contains? (get-in ctx [:config :check-executables]) (first argv)))
         (rt/fail! "Check command is outside the configured toolset" {:argv argv :writer-ended? true}))
-      (codex/command! ctx (next-job! ctx :check) (:worktree t) argv))
+      (let [job (next-job! ctx :check)]
+        (codex/command! ctx job (:worktree t) argv)
+        (assert-identity! ctx t)
+        (rt/event! ctx :check-passed (assoc (select-keys t [:key :base :candidate :tree])
+                                           :job job :command argv))))
     (assert-identity! ctx t)
     (let [result {:candidate (:candidate t) :tree (:tree t) :commands commands :result :passed}]
       (task! ctx (:key t) :checks result)
@@ -174,6 +188,8 @@
   (assert-identity! ctx t)
   (let [{:keys [remote repository base-branch]} (:config ctx)
         publication-branch (or (:publication-branch t) (:branch t))
+        review (candidate-review t)
+        checks (passed-checks t)
         owner (first (str/split repository #"/"))
         _ (rt/effect! ctx (str "push/" (:candidate t))
                       #(rt/git ctx (:worktree t) "push" remote (str (:candidate t) ":refs/heads/" publication-branch)))
@@ -191,15 +207,14 @@
                                                 "\n\nValidation and exact revision evidence are recorded on the issue.\n\n" (gh/marker ctx (:key t)))})))]
     (task! ctx (:key t) :pr (select-keys pr [:number :html_url :node_id]))
     (when (get-in ctx [:config :early-draft])
-      (let [approved? (and (= "approved" (get-in t [:review :verdict]))
-                           (= (select-keys t [:base :candidate :tree])
-                              (select-keys (:review t) [:base :candidate :tree])))]
+      (let [approved? (boolean (and checks (= "approved" (:verdict review))))]
         (when (= (boolean (:draft pr)) approved?)
           (gh/draft! ctx (select-keys pr [:node_id]) (not approved?) (:candidate t)))))
-    (gh/comment! ctx (:issue t) (str (if (:review t) "candidate/" "draft/") (:candidate t))
+    (gh/comment! ctx (:issue t) (str (if review "candidate/" "draft/") (:candidate t))
                  (str "Candidate `" (:candidate t) "`, tree `" (:tree t) "`, base `" (:base t) "`.\n\n"
-                      "Independent review: " (or (get-in t [:review :summary]) "Pending for this candidate")
-                      "\n\nChecks: `" (pr-str (get-in t [:checks :commands])) "`.\n\nPR: " (:html_url pr)))
+                      "Independent review: " (or (:summary review) "Pending for this candidate")
+                      "\n\nChecks: " (if checks (str "`" (pr-str (:commands checks)) "`")
+                                        "Pending for this candidate") ".\n\nPR: " (:html_url pr)))
     (transition! ctx (:key t) :ci)))
 
 (defn prepare-base! [ctx t]
@@ -548,11 +563,7 @@
         (rt/fail! "Composition review requires input" {:review review})))))
 
 (defn assert-evidence! [t]
-  (when-not (and (= "approved" (get-in t [:review :verdict]))
-                 (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
-                 (= (:candidate t) (get-in t [:checks :candidate]))
-                 (= (:tree t) (get-in t [:checks :tree]))
-                 (= :passed (get-in t [:checks :result])))
+  (when-not (and (passed-checks t) (= "approved" (:verdict (candidate-review t))))
     (rt/fail! "Review/check evidence does not match candidate" {:key (:key t)})))
 
 (defn assert-pr-identity! [ctx t info]

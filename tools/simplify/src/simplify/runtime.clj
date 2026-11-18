@@ -168,8 +168,10 @@
             (update! ctx update-in [:effects id] assoc :status :done :result result)
             result)
           (catch Exception e
-            (update! ctx update-in [:effects id] assoc :status (if (:restricted (ex-data e)) :restricted :uncertain)
-                     :message (.getMessage e))
+            (update! ctx update-in [:effects id] merge
+                     {:status (if (:restricted (ex-data e)) :restricted :uncertain)
+                      :message (.getMessage e)}
+                     (select-keys (ex-data e) [:failed-request]))
             (throw (ex-info (.getMessage e)
                             (assoc (or (ex-data e) {}) :effect id
                                    :effect-status (get-in @(:state ctx) [:effects id :status])) e))))))))

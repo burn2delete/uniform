@@ -96,6 +96,24 @@
       (is (= 2 (count (calls-of calls :read))))
       (is (= :done (get-in @(:state ctx) [:effects "project-item/project/issue" :status]))))))
 
+(deftest recovery-can-distinguish-a-provider-refusal-from-a-later-blocked-request
+  (doseq [response [{:exit 1 :err "HTTP 403: rate limit exceeded" :out ""}
+                    {:exit 0 :err "" :out (json/write-str {:errors [{:type "RATE_LIMITED"}]})}]]
+    (let [ctx (context) calls (atom [])
+          attempt (fn [id arguments]
+                    (rt/effect! ctx id #(gh/graphql ctx "query Fixture { viewer { login } }" arguments)))
+          failure (fn [id] (get-in @(:state ctx) [:effects id :failed-request]))]
+      (with-redefs [rt/command (fn [_ _ _ input] (swap! calls conj input) response)]
+        (is (thrown? Exception (attempt "first" {:cursor "A"})))
+        (is (thrown? Exception (attempt "second" {:cursor "B"})))
+        (is (= 1 (count @calls)))
+        (is (= (rt/digest (first @calls)) (:body-sha256 (failure "first"))))
+        (is (= :provider-returned (:phase (failure "first"))))
+        (is (= :before-call (:phase (failure "second"))))
+        (is (not= (:body-sha256 (failure "first")) (:body-sha256 (failure "second"))))
+        (is (= (failure "first")
+               (:failed-request (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"]))))))))))
+
 (deftest malformed-or-mixed-graphql-output-does-not-admit-membership
   (doseq [[label output error-text]
           [["invalid JSON" "not-json" "GraphQL: Content already exists in this project"]
