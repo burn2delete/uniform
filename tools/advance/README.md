@@ -16,7 +16,8 @@ D0/D1/D2/D3/D6/D8/D9 and T13, not the Gravity AI runtime or conformance evidence
 
 Requires Clojure CLI, Git, authenticated GitHub CLI with repository and Project
 access, and the same signed-in Codex CLI used by `../simplify`. Reuses its
-app-server client and installed model default; no API key is provisioned.
+app-server client and existing Codex login. The supplied configuration uses
+Astra for selection and independent reviews and Sol for implementation.
 The inherited protocol baseline is Codex CLI 0.165.0-alpha.1.2; inspect generated
 schemas and fixture compatibility before upgrading.
 
@@ -27,6 +28,7 @@ clojure -M:test
 clojure -M:run doctor config.edn
 clojure -M:run catalog config.edn
 clojure -M:run status-summary config.edn
+clojure -M:run restart-check config.edn
 clojure -M:run setup config.edn
 clojure -M:run run config.edn
 ```
@@ -39,6 +41,12 @@ including issue/PR writes and normal squash merges. It does not take over
 desktop chats or install a service, schedule or global agent configuration.
 Credentials are never changed or escalated by the harness. Denied operations
 are recorded and never retried or transferred.
+
+Run `restart-check` from the proposed controller checkout against the existing
+campaign configuration before pausing a service. It compares the required GitHub
+Project setup reads with campaign and shared restrictions using local files.
+It prints the blocked step and restriction sources and exits nonzero for a
+blocker or unavailable evidence. A zero exit covers only these setup reads.
 
 `status-summary` reads one existing local state snapshot and reports its digest,
 recorded catalog identity, task counts, every Attention item, linked effect
@@ -59,6 +67,26 @@ Paths resolve relative to config.edn. Local state, schema outputs, prompt
 artifacts and timestamped event logs live under `target/validation/advance`.
 Worktrees live outside the checkout. The `parallelism` setting controls host
 process concurrency, not work admission or task/attempt allowances.
+
+An established campaign can use a local operator file for scheduling. Set
+`:local-controls-file` to its absolute path in the active configuration. For
+example, a file for Project `PROJECT_ID` can contain this single EDN map:
+
+```clojure
+{:repository "burn2delete/uniform" :project "PROJECT_ID"
+ :defaults {"Control" "Active" "Priority" "Normal"}
+ :issues {123 {"Control" "Paused"} 456 {"Priority" "High"}}}
+```
+
+Issue numbers may identify the campaign, a parent, or an increment. Omitted
+fields use the defaults for existing and new work. Replace the file atomically
+when editing it. Advance reads it each scheduling cycle. A missing, malformed
+or mismatched file holds new dispatch and integration. Active workers finish.
+The controller reuses the campaign's recorded Project setup. Workflow status
+and PR tracking continue through their journaled operations. Project control
+pagination and previously refused actions stay blocked.
+With this file configured, `restart-check` inspects the local scheduling
+prerequisites and the saved restrictions without contacting GitHub.
 
 ## Task selection and progress
 
@@ -178,6 +206,29 @@ and an independent assessment of canonical coverage, full-language, self-hosting
 and seed-retirement evidence on still-current main. Default completion checks
 include the document/roadmap validators and `gravity self-host verify`, whose
 current fail-closed result is not a completion pass.
+
+After a native check refusal, an operator may explicitly accept a previously
+completed hosted receipt for one candidate. Verify the hosted artifact, run,
+checkout tree and selected commands before accepting its digest. After the
+writer has an inspected release, pause and drain Advance. On the clean candidate
+the following command records the approved packet and requests passive review.
+
+```text
+clojure -M:run review-preexisting-validation CONFIG.edn TASK-KEY RECEIPT.edn ACCEPTED-SHA256
+```
+
+Keep the receipt inside the campaign state directory. The task retains the
+original refusal, historical checks and review. Head-bound CI and integration
+checks still apply.
+
+For a separately authorized PR composition that already passed its selected
+native checks, `finish-pr-composition CONFIG.edn TASK-KEY AUTHORITY.edn
+AUTHORITY-SHA256 CI.edn CI-SHA256` verifies the retained authority, hosted
+artifacts, live GitHub run and feature delta. It obtains a fresh independent
+review before publishing the result and entering the existing integration
+preflight. The scope ends at that candidate. The eligible local guard is the
+legacy endpoint-only record bound to the settled project-controls incident.
+A recorded request-specific refusal or shared API refusal still blocks dispatch.
 
 The inherited recovery commands preserve state and mutation intents:
 

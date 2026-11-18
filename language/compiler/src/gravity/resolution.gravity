@@ -314,7 +314,7 @@
       false)
     false))
 
-(defn sh06-request-binding-valid? [request]
+(defn sh06-request-binding-valid-indexed? [request scope-index]
   (let [module (get request :module)
         macro-binding (get request :macro-expansion-binding)
         scope-ids
@@ -331,8 +331,10 @@
           (if (sh06-sha256-id?
                (get macro-binding :authenticated-envelope-id))
             (if (sh06-all-unique? scope-ids)
-              (sh06-scope-graph-valid? (get request :lexical-scopes)
-                                       (get request :references))
+              (sh06-scope-graph-valid-indexed?
+               (get request :lexical-scopes)
+               (get request :references)
+               scope-index)
               false)
             false)
           false)
@@ -397,62 +399,94 @@
        (sh06-path-get request [:module :c4-artifact-id]))
     false))
 
-(defn sh06-find-scope [scopes scope-id]
-  (loop [remaining scopes]
+(defn sh06-index-scopes-by-id [scopes]
+  (loop [remaining scopes indexed {}]
     (if (= (count remaining) 0)
-      nil
-      (if (= (get (first remaining) :scope-id) scope-id)
-        (first remaining)
-        (recur (rest remaining))))))
+      indexed
+      (let [scope (first remaining)
+            scope-id (get scope :scope-id)]
+        (recur (rest remaining)
+               (if (contains? indexed scope-id)
+                 indexed
+                 (assoc indexed scope-id scope)))))))
 
-(defn sh06-scope-ancestry-valid? [scopes scope-id]
-  (loop [current scope-id visited []]
+(defn sh06-index-local-bindings [bindings]
+  (loop [remaining bindings indexed {}]
+    (if (= (count remaining) 0)
+      indexed
+      (let [binding (first remaining)]
+        (if (= (get binding :binding-class) :lexical)
+          (let [key [(get binding :scope-id) (get binding :name)]]
+            (recur (rest remaining)
+                   (if (contains? indexed key)
+                     indexed
+                     (assoc indexed key binding))))
+          (recur (rest remaining) indexed))))))
+
+(defn sh06-lookup-context [scope-index bindings]
+  {:scope-index scope-index
+   :local-binding-index (sh06-index-local-bindings bindings)})
+
+(defn sh06-lookup-context-for-request [request bindings]
+  (sh06-lookup-context
+   (sh06-index-scopes-by-id (get request :lexical-scopes)) bindings))
+
+(defn sh06-scope-ancestry-valid-indexed? [scope-index scope-id]
+  (loop [current scope-id visited {}]
     (if (= current nil)
       true
-      (if (sh06-vector-contains? visited current)
+      (if (contains? visited current)
         false
-        (let [scope (sh06-find-scope scopes current)]
+        (let [scope (get scope-index current)]
           (if (= scope nil)
             false
-            (recur (get scope :parent-scope-id) (conj visited current))))))))
+            (recur (get scope :parent-scope-id)
+                   (assoc visited current true))))))))
 
-(defn sh06-scope-chain-valid? [scopes chain]
+(defn sh06-scope-chain-valid-indexed? [scope-index chain]
   (loop [remaining chain]
     (if (= (count remaining) 0)
       true
-      (let [scope (sh06-find-scope scopes (first remaining))]
+      (let [scope (get scope-index (first remaining))]
         (if (= scope nil)
           false
           (if (= (get scope :parent-scope-id) (first (rest remaining)))
             (recur (rest remaining))
             false))))))
 
-(defn sh06-scope-graph-valid? [scopes references]
+(defn sh06-scope-graph-valid-indexed? [scopes references scope-index]
   (if (loop [remaining scopes]
         (if (= (count remaining) 0)
           true
-          (if (sh06-scope-ancestry-valid? scopes (get (first remaining) :scope-id))
+          (if (sh06-scope-ancestry-valid-indexed?
+               scope-index (get (first remaining) :scope-id))
             (recur (rest remaining))
             false)))
     (loop [remaining references]
       (if (= (count remaining) 0)
         true
-        (if (sh06-scope-chain-valid? scopes (get (first remaining) :scope-chain))
+        (if (sh06-scope-chain-valid-indexed?
+             scope-index (get (first remaining) :scope-chain))
           (recur (rest remaining))
           false)))
     false))
 
-(defn sh06-find-lexical-candidates [scopes scope-chain name]
+(defn sh06-scope-graph-valid? [scopes references]
+  (sh06-scope-graph-valid-indexed?
+   scopes references (sh06-index-scopes-by-id scopes)))
+
+(defn sh06-find-lexical-candidate-scope-indexed
+  [scope-index scope-chain name]
   (loop [remaining scope-chain]
     (if (= (count remaining) 0)
-      []
-      (let [scope (sh06-find-scope scopes (first remaining))
+      nil
+      (let [scope (get scope-index (first remaining))
             candidates
             (if (= scope nil)
               []
               (sh06-find-definitions (get scope :bindings) name))]
         (if (> (count candidates) 0)
-          candidates
+          {:scope-id (first remaining) :candidates candidates}
           (recur (rest remaining)))))))
 
 (defn sh06-binding-preimage [module binding binding-class]
@@ -583,18 +617,8 @@
             (recur (rest remaining)))
           (recur (rest remaining)))))))
 
-(defn sh06-local-binding [bindings scope-id local]
-  (loop [remaining bindings]
-    (if (= (count remaining) 0)
-      nil
-      (let [binding (first remaining)]
-        (if (= (get binding :binding-class) :lexical)
-          (if (= (get binding :scope-id) scope-id)
-            (if (= (get binding :name) (get local :name))
-              binding
-              (recur (rest remaining)))
-            (recur (rest remaining)))
-          (recur (rest remaining)))))))
+(defn sh06-local-binding [local-binding-index scope-id local]
+  (get local-binding-index [scope-id (get local :name)]))
 
 (defn sh06-reference-name [reference]
   (if (= (get reference :name) nil)
@@ -629,37 +653,30 @@
                     (if (sh06-vector-contains? accumulated (first records)) accumulated
                       (conj accumulated (first records)))))))))))
 
-(defn sh06-reference-candidates-base [request bindings reference]
+(defn sh06-reference-candidates-base-indexed
+  [request bindings reference lookup-context]
   (let [module (get request :module)
+        scope-index (get lookup-context :scope-index)
+        local-binding-index (get lookup-context :local-binding-index)
         qualifier (get reference :qualifier)
         name (sh06-reference-name reference)
         imports (get request :imports)
         namespace-definitions (get request :definitions)
         core-definitions (get request :core-bindings)]
     (if (= qualifier nil)
-      (let [local-records
-            (sh06-find-lexical-candidates
-             (get request :lexical-scopes)
-             (get reference :scope-chain) name)]
+      (let [lexical-candidates
+            (sh06-find-lexical-candidate-scope-indexed
+             scope-index (get reference :scope-chain) name)
+            local-records (get lexical-candidates :candidates)
+            scope-id (get lexical-candidates :scope-id)]
         (if (> (count local-records) 0)
           (loop [remaining local-records found []]
             (if (= (count remaining) 0)
               found
-              (let [local (first remaining)
-                    scope-id
-                    (loop [scopes (get reference :scope-chain)]
-                      (if (= (count scopes) 0)
-                        nil
-                        (let [scope (sh06-find-scope
-                                     (get request :lexical-scopes)
-                                     (first scopes))]
-                          (if (sh06-vector-contains?
-                               (get scope :bindings) local)
-                            (first scopes)
-                            (recur (rest scopes))))))]
-                (recur (rest remaining)
-                       (conj found
-                             (sh06-local-binding bindings scope-id local))))))
+              (recur (rest remaining)
+                     (conj found
+                           (sh06-local-binding
+                            local-binding-index scope-id (first remaining))))))
           (let [namespace-records
                 (sh06-find-definitions-in-namespace
                  namespace-definitions (get module :namespace) name)]
@@ -741,7 +758,8 @@
              (if (sh06-vector-contains? [:type :protocol] (get (first remaining) :kind))
                (conj values (first remaining)) values)))))
 
-(defn sh06-reference-candidates [request bindings reference]
+(defn sh06-reference-candidates-indexed
+  [request bindings reference lookup-context]
   (if (= (get reference :position) :type)
     (let [typed-request
           (assoc (assoc (assoc (assoc request :lexical-scopes [])
@@ -752,8 +770,16 @@
         (sh06-materialize-definitions bindings
           (sh06-find-definitions-in-namespace (get typed-request :core-bindings)
                                              'gravity.core (sh06-reference-name reference)))
-        (sh06-reference-candidates-base typed-request bindings reference)))
-    (sh06-reference-candidates-base request bindings reference)))
+        (sh06-reference-candidates-base-indexed
+         typed-request bindings reference
+         {:scope-index {} :local-binding-index {}})))
+    (sh06-reference-candidates-base-indexed
+     request bindings reference lookup-context)))
+
+(defn sh06-reference-candidates [request bindings reference]
+  (sh06-reference-candidates-indexed
+   request bindings reference
+   (sh06-lookup-context-for-request request bindings)))
 
 (defn sh06-edge-nodes [edges]
   (loop [remaining edges nodes []]
@@ -974,8 +1000,11 @@
         {:rule "C5-UNRESOLVED" :reason :malformed-core-binding-availability}))
     nil))
 
-(defn sh06-reference-check [request bindings reference]
-  (let [candidates (sh06-reference-candidates request bindings reference)
+(defn sh06-reference-check-indexed
+  [request bindings reference lookup-context]
+  (let [candidates
+        (sh06-reference-candidates-indexed
+         request bindings reference lookup-context)
         candidate (if (= (count candidates) 1) (first candidates) nil)
         availability
         (if (= candidate nil) nil
@@ -1035,24 +1064,21 @@
                     :profile-set (get candidate :profile-set))
                     :target-set (get candidate :target-set))))})))
 
+(defn sh06-reference-check [request bindings reference]
+  (sh06-reference-check-indexed
+   request bindings reference
+   (sh06-lookup-context-for-request request bindings)))
+
 (defn sh06-reference-rule [request bindings reference]
   (get (sh06-reference-check request bindings reference) :rule))
 
-(defn sh06-first-reference-rule [request bindings]
+(defn sh06-first-reference-check-indexed
+  [request bindings lookup-context]
   (loop [remaining (get request :references)]
     (if (= (count remaining) 0)
       nil
-      (let [rule (sh06-reference-rule request bindings (first remaining))]
-        (if (= rule nil)
-          (recur (rest remaining))
-          rule)))))
-
-(defn sh06-first-reference-check [request bindings]
-  (loop [remaining (get request :references)]
-    (if (= (count remaining) 0)
-      nil
-      (let [check (sh06-reference-check
-                   request bindings (first remaining))]
+      (let [check (sh06-reference-check-indexed
+                   request bindings (first remaining) lookup-context)]
         (if (= check nil)
           (recur (rest remaining))
           check)))))
@@ -1077,7 +1103,8 @@
                      :alias alias}}
             (recur (rest remaining) (conj observed alias))))))))
 
-(defn sh06-first-rejection-check [request numbered]
+(defn sh06-first-rejection-check-indexed
+  [request numbered lookup-context]
   (if (= (sh06-request-shape? request) false)
     {:rule "C5-UNRESOLVED" :reference nil :candidate-bindings []
      :dependency-edge nil
@@ -1086,7 +1113,8 @@
       {:rule "C5-UNRESOLVED" :reference nil :candidate-bindings []
        :dependency-edge nil
        :facts {:reason :malformed-authoritative-record}}
-      (if (= (sh06-request-binding-valid? request) false)
+      (if (= (sh06-request-binding-valid-indexed?
+              request (get lookup-context :scope-index)) false)
         {:rule "C5-UNRESOLVED" :reference nil :candidate-bindings []
          :dependency-edge nil
          :facts {:reason :c4-resolution-input-binding-mismatch}}
@@ -1106,27 +1134,23 @@
                            (get request :dependency-edges)}}
                   (let [import-check (sh06-invalid-import-check request)]
                     (if (= import-check nil)
-                      (sh06-first-reference-check
-                       request (get numbered :bindings))
+                      (sh06-first-reference-check-indexed
+                       request (get numbered :bindings) lookup-context)
                       import-check)))
                 shadow-check))
             alias-check))))))
 
-(defn sh06-first-rejection-rule [request numbered]
-  (if (= (sh06-request-shape? request) false)
-    "C5-UNRESOLVED"
-    (if (= (sh06-all-record-shapes? request) false)
-      "C5-UNRESOLVED"
-      (if (sh06-duplicate-alias? (get request :imports))
-        "C5-ALIAS"
-        (if (sh06-illegal-shadow? request)
-          "C5-SHADOW"
-          (if (sh06-dependency-cycle? (get request :dependency-edges))
-            "C5-CYCLE"
-            (let [import-rule (sh06-first-invalid-import-rule request)]
-              (if (= import-rule nil)
-                (sh06-first-reference-rule request (get numbered :bindings))
-                import-rule))))))))
+(defn sh06-first-rejection-check [request numbered]
+  (let [shape-valid?
+        (if (sh06-request-shape? request)
+          (sh06-all-record-shapes? request)
+          false)]
+    (sh06-first-rejection-check-indexed
+     request numbered
+     (if shape-valid?
+       (sh06-lookup-context-for-request
+        request (get numbered :bindings))
+       {}))))
 
 (defn sh06-remediation [rule]
   (if (= rule "C5-UNRESOLVED")
@@ -1213,8 +1237,11 @@
       :artifact-binding :forbidden
       :clojure-seed-boundary? true}}))
 
-(defn sh06-resolution-record [request bindings reference]
-  (let [candidates (sh06-reference-candidates request bindings reference)
+(defn sh06-resolution-record-indexed
+  [request bindings reference lookup-context]
+  (let [candidates
+        (sh06-reference-candidates-indexed
+         request bindings reference lookup-context)
         binding (first candidates)]
     {:syntax-id (get reference :syntax-id)
      :symbol (get reference :symbol)
@@ -1245,14 +1272,14 @@
                :alias-qualified-required-binding)))))
      :binding-id (get binding :binding-id)}))
 
-(defn sh06-resolve-all [request bindings]
+(defn sh06-resolve-all-indexed [request bindings lookup-context]
   (loop [remaining (get request :references) resolved []]
     (if (= (count remaining) 0)
       resolved
       (recur (rest remaining)
              (conj resolved
-                   (sh06-resolution-record
-                    request bindings (first remaining)))))))
+                   (sh06-resolution-record-indexed
+                    request bindings (first remaining) lookup-context))))))
 
 (defn sh06-alias-table [imports]
   (loop [remaining imports table []]
@@ -1362,9 +1389,9 @@
                        :boundary (get edge :boundary)
                        :semantic-span (get edge :semantic-span)})))))} )
 
-(defn sh06-accepted-result [request numbered]
+(defn sh06-accepted-result-indexed [request numbered lookup-context]
   (let [bindings (get numbered :bindings)
-        resolutions (sh06-resolve-all request bindings)
+        resolutions (sh06-resolve-all-indexed request bindings lookup-context)
         dependencies (sh06-dependency-records request)
         artifact-ordinal (get numbered :next-ordinal)
         preimage
@@ -1436,6 +1463,12 @@
       :digest-resolution :clojure-stage0
       :artifact-binding :clojure-stage0
       :clojure-seed-boundary? true}}))
+
+(defn sh06-accepted-result [request numbered]
+  (sh06-accepted-result-indexed
+   request numbered
+   (sh06-lookup-context-for-request
+    request (get numbered :bindings))))
 
 (defn sh06-module-check [rule reason dependency candidates]
   {:rule rule
@@ -1649,7 +1682,9 @@
 (defn sh06-build-resolution-template-v1 [request]
   (if (sh06-request-shape? request)
     (if (sh06-all-record-shapes? request)
-      (let [all-definitions
+      (let [scope-index
+            (sh06-index-scopes-by-id (get request :lexical-scopes))
+            all-definitions
             (loop [remaining
                    (loop [imports (get request :import-bindings)
                           values (get request :core-bindings)]
@@ -1667,9 +1702,13 @@
                     (get request :lexical-scopes))
             numbered (sh06-number-bindings
                       (get request :module) all-definitions locals)
-            check (sh06-first-rejection-check request numbered)]
+            lookup-context
+            (sh06-lookup-context scope-index (get numbered :bindings))
+            check
+            (sh06-first-rejection-check-indexed
+             request numbered lookup-context)]
         (if (= check nil)
-          (sh06-accepted-result request numbered)
+          (sh06-accepted-result-indexed request numbered lookup-context)
           (sh06-rejected-result request check)))
       (sh06-rejected-result
        request

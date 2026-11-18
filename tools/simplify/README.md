@@ -13,7 +13,8 @@ AGENTS.md supersedes historical AI cost/accounting requirements.
 ## Run
 
 Requires Clojure CLI, Git, GitHub CLI and a signed-in Codex CLI. It uses the
-existing Codex login and model default; it does not read or provision API keys.
+existing Codex login. The supplied configuration uses Luna to propose audit
+findings, Sol to implement them and Astra for independent review.
 Tested protocol baseline: Codex CLI 0.165.0-alpha.1.2. Pin the CLI and inspect
 its generated JSON schemas when upgrading.
 
@@ -169,10 +170,18 @@ other main writers and separate clones explicitly.
 
 ```text
 clojure -M:run status config.edn
+clojure -M:run holds config.edn
 clojure -M:run pause config.edn
 clojure -M:run resume config.edn
 clojure -M:run retry config.edn FINDING-KEY
 ```
+
+`holds` reads saved findings and current shared writer records while the
+controller runs. It lists outstanding dependencies, conflicting paths and their
+recorded owners, and the worker's reason for requesting attention. Timeout
+receipts include elapsed command time and available development-runner test
+progress. Older records may have only the worker's description or partial
+progress. An entered test counts as completed only after a return frame.
 
 Pause stops dispatch and merges at scheduler boundaries; active workers finish.
 Resume preserves existing PRs, commits, threads and dispositions. Interrupted

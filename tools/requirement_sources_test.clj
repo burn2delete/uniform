@@ -42,7 +42,8 @@
     (is (thrown? Exception (sources/validate-source-composition-history! forged read-ref sha require!)))))
 
 (deftest current-files-require-exact-commits-spans-and-live-source
-  (doseq [contract sources/current-source-transition-contracts]
+  (doseq [contract sources/current-source-transition-contracts
+          :when (not= sources/constitution-path (:path contract))]
     (is (= (:path contract)
            (:path (sources/validate-current-source-transition! contract contract read-ref slurp sha require!)))))
   (let [contract (first sources/source-composition-transition-contracts)
@@ -54,6 +55,35 @@
     (is (thrown? Exception (sources/validate-current-source-transition! contract contract read-ref #(str (slurp %) "\nUnbound source") sha require!)))
     (is (thrown? Exception (sources/validate-current-source-transition!
                            (assoc contract :authority :implementation) contract read-ref slurp sha require!)))))
+
+(deftest crosswalk-authenticates-the-reviewed-instructions-at-their-git-revisions
+  (let [path sources/constitution-path
+        contract (first (filter #(= path (:path %)) (:current-source-transitions frame)))
+        reviewed (read-ref (:applying-ref contract) path)
+        edited (str reviewed "\nUpdated working instructions.\n")
+        inspect (fn [record read-version current]
+                  (sources/validate-crosswalk-source-transition!
+                   record contract read-version (constantly current) sha require!))]
+    (doseq [[text state] [[reviewed :same-bytes-as-inspection] [edited :changed-since-inspection]]]
+      (let [result (inspect contract read-ref text)]
+        (is (= :git-bytes-verified (:snapshot-provenance result)))
+        (is (= :git-byte-and-line-spans-verified (:span-provenance result)))
+        (is (= [state (sha reviewed) (sha text)]
+               ((juxt :state :inspected-sha256 :current-sha256) result)))
+        (is (= :historical-source-transition-only (:authority result)))
+        (is (= :unassessed (:current-applicability result) (:implementation-acceptance result)))))
+    (doseq [ref [(:baseline-ref contract) (:applying-ref contract)]]
+      (is (thrown? Exception
+                   (inspect contract #(if (= %1 ref) edited (read-ref %1 %2)) edited))))
+    (doseq [record [(assoc contract :applying-ref (:applying-tree contract))
+                    (assoc contract :applying-blob (:baseline-blob contract))
+                    (assoc-in contract [:changed-spans 0 :after :end-byte] 0)
+                    (assoc contract :authority :implementation-accepted)]]
+      (is (thrown? Exception (inspect record read-ref edited))))
+    (let [validate #(sources/validate-current-source-transition!
+                     contract contract read-ref (constantly %) sha require!)]
+      (is (= :current-source-interface-only (:authority (validate reviewed))))
+      (is (thrown? Exception (validate edited))))))
 
 (deftest current-library-io-keeps-exact-predicates-and-owners
   (let [joins (:current-source-library-io-criterion-joins frame)]

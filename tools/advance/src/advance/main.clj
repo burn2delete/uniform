@@ -1,13 +1,17 @@
 (ns advance.main
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
+            [advance.pr-recovery :as pr-recovery]
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.main :as base]
-            [simplify.runtime :as rt])
+            [simplify.recovery :as recovery]
+            [simplify.runtime :as rt]
+            [simplify.workflow :as flow])
   (:gen-class))
 
 (def defaults
@@ -213,25 +217,74 @@
   (let [{:keys [state digest]} (read-status-state! config)]
     (status-summary config state digest (read-status-control config))))
 
+(defn restart-check [config state]
+  (if-let [file (:local-controls-file config)]
+    (let [ctx {:state (atom state) :state-file (str (io/file (:state-dir config) "state.edn")) :config config}
+          shared (:restrictions (diagnostics/coordination-snapshot config))
+          _ (when-not (every? map? [(get state :restricted-actions {}) (get shared :api {}) (get shared :project-controls {})])
+              (rt/fail! "Cannot inspect recorded scheduling restrictions" {}))
+          hold (project/startup-hold ctx (project/hold-reason ctx #(get-in shared [%1 %2])))]
+      {:scope :local-project-scheduling :campaign (:campaign config) :file file
+       :status (if hold :blocked :no-recorded-blocker) :blockers (if hold [hold] [])})
+    (diagnostics/restart-check config state)))
+
+(defn run-or-hold! [ctx]
+  (let [file (get-in ctx [:config :local-controls-file])
+        reason #(project/startup-hold ctx (project/hold-reason ctx))]
+    (when-let [initial (reason)]
+      (coordination/register! ctx)
+      (try
+        (rt/event! ctx :operational-holding-start {:reason initial :provider-dispatch false})
+        (while (and (not (flow/paused? ctx)) (reason)) (Thread/sleep (get-in ctx [:config :poll-ms])))
+        (rt/event! ctx :operational-holding-end {:reason (if (flow/paused? ctx) :local-pause :controls-available)
+                                                 :provider-dispatch false})
+        (finally (coordination/unregister! ctx))))
+    (when-not (flow/paused? ctx)
+      (workflow/campaign!
+       (if file
+         (let [identity {:repository (get-in ctx [:config :repository]) :project (get-in @(:state ctx) [:project :id])}]
+           (rt/event! ctx :local-scheduling-controls (assoc identity :file file :defaults {"Control" "Active" "Priority" "Normal"}))
+           (assoc ctx :local-scheduling identity))
+         ctx)))))
+
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
+    "finish-pr-composition"
+    (do (when-not (= 5 (count args)) (rt/fail! "Expected task key, authority file and digest, CI file and digest" {}))
+        (rt/with-lock ctx #(do (when-not (= {:paused true} (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+                               (coordination/register! ctx)
+                               (try (apply pr-recovery/finish! ctx args)
+                                    (finally (coordination/unregister! ctx))))))
+    "review-preexisting-validation"
+    (let [[key path digest] args]
+      (when-not (= 3 (count args)) (rt/fail! "Expected task key, verified receipt path and accepted SHA-256" {}))
+      (rt/with-lock ctx
+        #(do (when-not (:paused (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+             (flow/assert-identity! ctx (flow/task ctx key))
+             (flow/assert-clean! ctx (:worktree (flow/task ctx key)))
+             (recovery/record-preexisting-validation! ctx key path digest)
+             (prn (flow/review! ctx (flow/task ctx key))))))
     "setup" (rt/with-lock ctx #(do (coordination/register! ctx)
                                  (try (project/setup! ctx) (workflow/ensure-campaign! ctx)
                                       (finally (coordination/unregister! ctx)))))
-    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
+    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (run-or-hold! ctx)))
     "resume" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx)))
-                                 (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
+                                 (rt/write-edn! (:control-file ctx) {:paused false}) (run-or-hold! ctx)))
     (base/dispatch! ctx command args)))
 
 (defn -main [& [command config-path & args]]
   (try
-    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile CONFIG.edn [ARGS]" {}))
+    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation|finish-pr-composition CONFIG.edn [ARGS]" {}))
     (let [config (base/config! config-path defaults)]
-      (if (= command "status-summary")
+      (if (#{"status-summary" "restart-check"} command)
         (do
-          (when (seq args) (rt/fail! "status-summary takes no additional arguments" {:args args}))
-          (println (pr-str (status-summary! config))))
+          (when (seq args) (rt/fail! (str command " takes no additional arguments") {:args args}))
+          (if (= command "restart-check")
+            (let [report (restart-check config (:state (read-status-state! config)))]
+              (prn report)
+              (when (= :blocked (:status report)) (rt/fail! "Advance startup is held" {})))
+            (prn (status-summary! config))))
         (let [ctx (assoc (base/context! config) :before-implement workflow/validate-source! :command command)]
           (.addShutdownHook (Runtime/getRuntime)
             (Thread. ^Runnable

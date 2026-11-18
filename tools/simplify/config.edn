@@ -6,11 +6,11 @@
  :worktree-root "../../../uniform-simplify-worktrees"
  :scope ["."]
  ;; Host concurrency, not an allowance on findings or attempts.
- :parallelism 3
+ :parallelism 6
+ :models {:audit "gpt-6-luna" :implement "gpt-6.2-sol" :review "gpt-6.2-astra"}
  :poll-ms 15000
  ;; Process watchdog for check commands, matching the CI job's host window.
  :check-timeout-ms 1200000
- ;; Use the installed Codex model default and existing Codex login.
  :codex-command ["codex" "app-server" "--listen" "stdio://"]
  :check-executables #{"clojure"}
  :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]}

@@ -63,16 +63,23 @@ jobs:
     needs: select
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    # Macro runs three sequential fresh children with independent 900-second
-    # watchdogs. Checked-Core can run the B6 owner tests, C7 source consumers,
-    # public JS smoke and its existing regressions within the same job. Their
-    # watchdogs total 75 minutes. Allow ten more for setup, cleanup and upload.
-    timeout-minutes: ${{ (matrix.mode == 'macro' && 50) || (matrix.mode == 'checked-core-runtime' && 85) || 20 }}
+    # Leave time after the sequential child watchdogs for setup, cleanup and upload.
+    timeout-minutes: ${{ matrix.timeout }}
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mode: [static, contracts, bootstrap, macro, checked-core-runtime]
+        include:
+          - mode: static
+            timeout: 20
+          - mode: contracts
+            timeout: 20
+          - mode: bootstrap
+            timeout: 20
+          - mode: macro
+            timeout: 50
+          - mode: checked-core-runtime
+            timeout: 85
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:

@@ -13,6 +13,38 @@
 
 (use-fixtures :each fixture/no-github-network)
 
+(deftest preexisting-contracts-only-admit-a-passive-review-of-the-approved-tree
+  (let [ctx (fixture/context) key "held" command ["clojure" "contracts"] focused ["clojure" "focused"]
+        tuple (zipmap [:base :candidate :tree] (map #(apply str (repeat 40 %)) ["a" "b" "c"]))
+        error {:message "Sandboxed check failed" :details {:restricted true :command command}}
+        task (merge tuple {:key key :status :attention :pr {:number 7} :error error :implementation-job "implement-2"})
+        receipt (merge tuple {:kind :preexisting-validation :operator-authorization {:scope :this-tree-only :item "approved"}
+                              :key key :pr 7 :native [{:job "check-1" :command focused :exit 0}]
+                              :native-denial {:job "check-2" :restricted true :exit 1 :command command :began "2025-01-01T00:01:00Z"}
+                              :hosted {:tree (:tree tuple) :result :passed :command command :completed "2025-01-01T00:00:00Z"
+                                       :run 1 :job 2 :attempt 1 :artifact 3 :sha256 (rt/digest "artifact")}
+                              :integration-authority false})
+        file (io/file (:state-dir ctx) "receipt.edn")
+        ctx (assoc-in ctx [:config :checks] [focused])
+        owns {:state-file (:state-file ctx) :key key :error error}
+        record! (fn [r] (rt/write-edn! file r)
+                  (recovery/record-preexisting-validation! ctx key file (recovery/file-digest file)))]
+    (rt/update! ctx assoc :tasks {key task} :jobs {"implement-2" {:output {:checks [command]}}})
+    (with-redefs [rt/shared-restriction (fn [& _] {:state-file (:state-file ctx) :command command})
+                  rt/coordinate! (fn [_ f] (second (f {:history [{:kind :writer-inspected :lease owns}]})))]
+      (doseq [invalid [(assoc receipt :candidate (:base tuple)) (assoc receipt :native [])
+                       (assoc-in receipt [:hosted :completed] "2025-01-01T00:02:00Z")
+                       (assoc-in receipt [:native 0 :command] ["clojure" "other"])]]
+        (is (thrown? Exception (record! invalid)))
+        (is (= task (flow/task ctx key))))
+      (record! receipt)
+      (let [saved (flow/task ctx key)]
+        (is (= [:attention error] ((juxt :status :error) saved)))
+        (is (= receipt (get-in saved [:checks :preexisting-validation])))
+        (is (recovery/review-permitted? saved))
+        (is (not (recovery/review-permitted? (assoc saved :base (:tree tuple)))))
+        (is (thrown? Exception (record! receipt)))))))
+
 (def review-extra-check ["clojure" "-M" "fixture-extra-check.clj"])
 
 (defn held-review-fixture! []

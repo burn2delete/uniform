@@ -14,6 +14,7 @@
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
 (binding [*command-line-args* nil] (load-file "tools/ci/lint_context_test.clj"))
+(load-file "bootstrap/clojure/test/gravity/development_test_runner.clj")
 
 (def ^:private exact-selector "--exact")
 
@@ -491,7 +492,6 @@
     (is (str/includes? workflow "node-version: 20.20.2"))
     (is (str/includes? workflow "checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}"))
     (is (str/includes? workflow "needs.select.outputs.checked-js-owner-required != 'false'"))
-    (is (str/includes? workflow "matrix.mode == 'checked-core-runtime' && 85"))
     (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
     (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
 
@@ -679,24 +679,44 @@
                       {:option option :argv argv})))
     (nth argv (inc index))))
 
-(defn- option-values [argv option]
-  (mapv second (filter #(= option (first %)) (partition 2 1 argv))))
+(defn- dev-test-command-options [argv]
+  (let [index (.indexOf ^java.util.List argv "-M:dev-test")
+        options (when (pos? index)
+                  ((ns-resolve 'gravity.development-test-runner 'parse-args)
+                   (drop (inc index) argv)))]
+    (when (or (nil? options) (some options [:help? :catalog? :list?]))
+      (throw (ex-info "Expected a command that executes development tests" {:argv argv})))
+    options))
 
-(defn- macro-selected-vars
-  ([argv source-vars]
-   (macro-selected-vars argv source-vars "gravity.macro.pipeline-test"))
-  ([argv source-vars namespace]
-   (let [pairs (partition 2 1 argv)
-         exact (set (map second (filter #(= "--exact" (first %)) pairs)))
-         patterns (map #(re-pattern (second %)) (filter #(= "--regex" (first %)) pairs))]
-     (if (some #{namespace} (option-values argv "--namespace"))
-       (set (filter (fn [name]
-                      (let [qualified (str namespace "/" name)]
-                        (or (and (empty? exact) (empty? patterns))
-                            (contains? exact name) (contains? exact qualified)
-                            (some #(or (re-find % name) (re-find % qualified)) patterns))))
-                    source-vars))
-       #{}))))
+(defn- dev-test-var-records [namespace names]
+  (map (fn [name]
+         {:name name :namespace namespace :qualified-name (str namespace "/" name)})
+       names))
+
+(defn- select-dev-test-vars [records options]
+  ((ns-resolve 'gravity.development-test-runner 'select-test-vars) records options))
+
+(defn- selected-names-in-namespace [argv source-vars namespace]
+  (let [options (dev-test-command-options argv)]
+    (if (some #{(symbol namespace)} (:namespaces options))
+      (into #{} (map :name)
+            (select-dev-test-vars (dev-test-var-records namespace source-vars) options))
+      #{})))
+
+(defn- dev-test-source-records [namespaces]
+  (for [namespace namespaces
+        :let [resource (-> (str namespace) (str/replace "." "/") (str/replace "-" "_"))]
+        record (dev-test-var-records
+                namespace
+                (binding [*read-eval* false]
+                  (source-deftest-names (str "bootstrap/clojure/test/" resource ".clj"))))]
+    record))
+
+(defn- dev-test-command-selection [argv]
+  (let [options (dev-test-command-options argv)]
+    (assoc options :selected
+           (mapv :qualified-name
+                 (select-dev-test-vars (dev-test-source-records (distinct (:namespaces options))) options)))))
 
 (def expected-contract-command-ids
   ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
@@ -1325,9 +1345,9 @@
         (is (= 180 timeout))
         (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
         (is (seq source-vars))
-        (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-        (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-        (is (empty? (macro-selected-vars
+        (is (= source-vars (selected-names-in-namespace argv source-vars namespace)))
+        (is (empty? (selected-names-in-namespace (vec (drop-last 2 argv)) source-vars namespace)))
+        (is (empty? (selected-names-in-namespace
                      (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))))
 
 (deftest public-release-command-is-separate-from-ordinary-contracts
@@ -2168,9 +2188,9 @@
     (is (= 180 timeout))
     (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
     (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-    (is (empty? (macro-selected-vars
+    (is (= source-vars (selected-names-in-namespace argv source-vars namespace)))
+    (is (empty? (selected-names-in-namespace (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (selected-names-in-namespace
                  (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
 
 (deftest contracts-include-the-complete-native-c-namespace
@@ -2182,9 +2202,9 @@
     (is (= 180 timeout))
     (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
     (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-    (is (empty? (macro-selected-vars
+    (is (= source-vars (selected-names-in-namespace argv source-vars namespace)))
+    (is (empty? (selected-names-in-namespace (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (selected-names-in-namespace
                  (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace)))))
 
 (deftest contracts-include-the-complete-native-runtime-effects-and-types-namespaces
@@ -2202,9 +2222,9 @@
       (is (= 180 timeout))
       (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
       (is (seq source-vars))
-      (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-      (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-      (is (empty? (macro-selected-vars
+      (is (= source-vars (selected-names-in-namespace argv source-vars namespace)))
+      (is (empty? (selected-names-in-namespace (vec (drop-last 2 argv)) source-vars namespace)))
+      (is (empty? (selected-names-in-namespace
                    (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
 
 (deftest contracts-include-the-complete-c7-set-equality-routing-namespace
@@ -2216,9 +2236,9 @@
     (is (= 180 timeout))
     (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
     (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
-    (is (empty? (macro-selected-vars
+    (is (= source-vars (selected-names-in-namespace argv source-vars namespace)))
+    (is (empty? (selected-names-in-namespace (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (empty? (selected-names-in-namespace
                  (assoc argv (dec (count argv)) "gravity.types.pipeline-test") source-vars namespace)))))
 
 (deftest checked-core-cohort-includes-the-complete-native-mir-namespace
@@ -2226,104 +2246,56 @@
                 :status "M" :path "language/compiler/src/gravity/checked_core.gravity"}
         ordinary-selection (ci/stage-selection [change])
         ordinary-commands (ci/commands-for-selection "checked-core-runtime" ordinary-selection)
-        full-commands (ci/commands-for-selection "checked-core-runtime"
-                                                 {:kind :full :reason :non-pull-request :paths []})
         mir-command (some #(when (= "mir-native-validation" (first %)) %) ordinary-commands)
-        source-vars (binding [*read-eval* false]
-                      (source-deftest-names "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"))
-        namespace "gravity.mir.pipeline-test"]
-    (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
-            "checked-core-projection-kernel-regression" "mir-native-validation"]
-           (mapv first ordinary-commands)))
-    (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
-            "checked-core-projection-kernel-regression" "mir-native-validation"
-            "checked-js-b6-owner-regression" "public-js-compiler-smoke"]
-           (mapv first full-commands)))
-    (is (= "mir-native-validation" (first mir-command)))
-    (is (= 180 (second mir-command)))
-    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace)
-           (nth mir-command 2)))
+        source-vars (into #{} (map :qualified-name)
+                          (dev-test-source-records ['gravity.mir.pipeline-test]))
+        selection (dev-test-command-selection (nth mir-command 2))]
     (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars (nth mir-command 2) source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 (nth mir-command 2))) source-vars namespace)))
-    (is (empty? (macro-selected-vars
-                 (assoc (nth mir-command 2)
-                        (dec (count (nth mir-command 2)))
-                        "gravity.checked-core.pipeline-test")
-                 source-vars namespace)))))
+    (is (:progress? selection))
+    (is (= source-vars (set (:selected selection))))))
 
 (deftest macro-children-preserve-complete-disjoint-source-selection
-  (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
-        source-vars (binding [*read-eval* false]
-                      (source-deftest-names "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"))
-        compatibility-vars (binding [*read-eval* false]
-                             (source-deftest-names "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"))
-        native-vars (binding [*read-eval* false]
-                      (source-deftest-names "bootstrap/clojure/test/gravity/macro/native_reports_test.clj"))
-        owner-vars (binding [*read-eval* false]
-                     (source-deftest-names "bootstrap/clojure/test/gravity/macro/owner_calls_test.clj"))
-        cohort-argv (nth cohort 2) receipt-argv (nth receipt 2) compatibility-argv (nth compatibility 2)
-        cohort-vars (macro-selected-vars cohort-argv source-vars)
-        receipt-vars (macro-selected-vars receipt-argv source-vars)
-        partition? (fn [left right]
-                     (and (seq left) (seq right) (empty? (set/intersection left right))
-                          (= source-vars (set/union left right))))]
-    (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
-           (mapv first commands)))
-    (is (= [900 900 900] (mapv second commands)))
-    (is (= [["gravity.macro.pipeline-test" "gravity.macro.native-reports-test" "gravity.macro.owner-calls-test"]
-            ["gravity.macro.pipeline-test"]
-            ["gravity.bootstrap-compatibility.c4-test"]]
-           (mapv #(option-values (nth % 2) "--namespace") commands)))
-    (is (seq native-vars))
-    (is (= native-vars (macro-selected-vars cohort-argv native-vars "gravity.macro.native-reports-test")))
-    (let [index (.indexOf ^java.util.List cohort-argv "gravity.macro.native-reports-test")
-          omitted (vec (concat (take (dec index) cohort-argv) (drop (inc index) cohort-argv)))]
-      (is (empty? (macro-selected-vars omitted native-vars "gravity.macro.native-reports-test"))))
-    (is (seq owner-vars))
-    (is (= owner-vars (macro-selected-vars cohort-argv owner-vars "gravity.macro.owner-calls-test")))
-    (let [index (.indexOf ^java.util.List cohort-argv "gravity.macro.owner-calls-test")
-          omitted (vec (concat (take (dec index) cohort-argv) (drop (inc index) cohort-argv)))]
-      (is (empty? (macro-selected-vars omitted owner-vars "gravity.macro.owner-calls-test"))))
-    (is (every? #(some #{"--progress"} (nth % 2)) commands))
-    (is (not-any? #(some #{"--fail-fast"} (nth % 2)) commands))
-    (is (contains? receipt-vars "artifact-forgeries-and-physical-provenance-drift-fail-verification"))
-    (is (every? source-vars ci/macro-receipt-test-vars))
-    (is (= (set ci/macro-receipt-test-vars) receipt-vars))
-    (is (partition? cohort-vars receipt-vars))
-    (is (seq compatibility-vars))
-    (is (not-any? #{"--regex" "--exact" "--prefix"} compatibility-argv))
-    ;; A lost selector, omitted control, or overlapping cohort is a real
-    ;; coverage defect even when every remaining child would pass.
-    (is (not (partition? #{} receipt-vars)))
-    (is (not (partition? source-vars receipt-vars)))
-    (is (not (partition? cohort-vars
-                         (macro-selected-vars (vec (drop-last 2 receipt-argv)) source-vars))))
-    (let [pattern (re-pattern (option-value cohort-argv "--regex"))]
-      (doseq [name ci/macro-receipt-test-vars]
-        (is (not (re-find pattern name)))
-        (is (not (re-find pattern (str "gravity.macro.pipeline-test/" name))))))))
+  (let [commands (ci/commands-for-selection "macro" {:kind :full})
+        selections (mapv (fn [[id _ argv]] (assoc (dev-test-command-selection argv) :id id)) commands)
+        compatibility 'gravity.bootstrap-compatibility.c4-test
+        namespaces ['gravity.macro.pipeline-test 'gravity.macro.native-reports-test
+                    'gravity.macro.owner-calls-test compatibility]
+        expected (map :qualified-name (dev-test-source-records namespaces))
+        compatibility-tests (into #{} (map :qualified-name) (dev-test-source-records [compatibility]))
+        receipt-tests (set (:selected (some #(when (= "macro-receipt-controls" (:id %)) %) selections)))]
+    (is (not-any? :fail-fast? selections))
+    (is (every? (comp seq :selected) selections))
+    (is (= (zipmap expected (repeat 1))
+           (frequencies (mapcat :selected selections))))
+    (is (= (into #{} (map #(str "gravity.macro.pipeline-test/" %)) ci/macro-receipt-test-vars)
+           receipt-tests))
+    (is (contains? receipt-tests
+                   "gravity.macro.pipeline-test/artifact-forgeries-and-physical-provenance-drift-fail-verification"))
+    (is (seq compatibility-tests))
+    (is (= compatibility-tests
+           (into #{} (mapcat :selected) (filter #(= [compatibility] (:namespaces %)) selections))))))
 
 (deftest macro-child-failure-does-not-hide-later-evidence-or-become-success
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-macro-cohort-failure-"
                             (make-array java.nio.file.attribute.FileAttribute 0)))
-        calls (atom [])]
+        expected-ids ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]]
     (try
-      (with-redefs [ci/output (.getPath directory)
-                    ci/pull-request-selection (constantly {:kind :full})
-                    ci/execute!
-                    (fn [id timeout argv]
-                      (swap! calls conj [id timeout argv])
-                      {:id id :timeout-seconds timeout :argv argv
-                       :status (if (= id "macro-pipeline-cohort") :failed :passed)
-                       :exit-code (if (= id "macro-pipeline-cohort") 17 0)})]
-        (is (= 1 (ci/run-mode! "macro"))))
-      (let [rows (edn/read-string (slurp (io/file directory "macro-summary.edn")))]
-        (is (= ["macro-pipeline-cohort" "macro-receipt-controls" "macro-bootstrap-compatibility"]
-               (mapv :id rows) (mapv first @calls)))
-        (is (= [:failed :passed :passed] (mapv :status rows)))
-        (is (= [17 0 0] (mapv :exit-code rows))))
+      (doseq [[status exit-code] [[:failed 17] [:timeout 124] [:launch-error 125]]]
+        (let [calls (atom [])]
+          (with-redefs [ci/output (.getPath directory)
+                        ci/pull-request-selection (constantly {:kind :full})
+                        ci/execute!
+                        (fn [id _timeout _argv]
+                          (swap! calls conj id)
+                          (if (= id (first expected-ids))
+                            {:id id :status status :exit-code exit-code}
+                            {:id id :status :passed :exit-code 0}))]
+            (is (= 1 (ci/run-mode! "macro")) (str status)))
+          (let [rows (edn/read-string (slurp (io/file directory "macro-summary.edn")))]
+            (is (= expected-ids (mapv :id rows) @calls))
+            (is (= [status :passed :passed] (mapv :status rows)))
+            (is (= [exit-code 0 0] (mapv :exit-code rows))))))
       (finally (delete-fixture-tree! directory)))))
 
 (deftest macro-diagnostic-report-preserves-full-order-later-child-and-safe-projection
@@ -2739,31 +2711,71 @@
           (finally
             (delete-fixture-tree! root)))))))
 
-(deftest macro-hosted-envelope-covers-all-child-watchdogs
-  (let [workflow (slurp ".github/workflows/ci.yml")
-        checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
-        [_ macro-minutes checked-core-minutes other-minutes]
-        (re-find #"timeout-minutes: \$\{\{ \(matrix.mode == 'macro' && (\d+)\) \|\| \(matrix.mode == 'checked-core-runtime' && (\d+)\) \|\| (\d+) \}\}" checks)
+(defn- read-workflow-checks [path]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-workflow-checks-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        result-path (str (io/file directory "checks.edn"))
+        ;; Keep the YAML reader on this test child's classpath only.
+        deps (assoc-in (edn/read-string ci/runtime-deps)
+                       [:deps 'org.snakeyaml/snakeyaml-engine] {:mvn/version "2.10"})
+        form `(let [loader# (org.snakeyaml.engine.v2.api.Load.
+                             (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))
+                    workflow# (.loadFromString loader# (slurp ~path))
+                    checks# (get-in workflow# ["jobs" "checks"])]
+                (spit ~result-path
+                      (pr-str {:timeout (get checks# "timeout-minutes")
+                               :rows (mapv #(into {} %)
+                                           (get-in checks# ["strategy" "matrix" "include"]))})))
+        argv ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str deps) "-M" "-e" (pr-str form)]]
+    (try
+      (let [receipt (with-redefs [ci/output (.getPath directory)]
+                      (ci/execute! "read-workflow-checks" 20 argv))]
+        (when-not (= :passed (:status receipt))
+          (throw (ex-info "Could not read the CI workflow" receipt)))
+        (edn/read-string (slurp result-path)))
+      (finally (delete-fixture-tree! directory)))))
+
+(defn- matrix-timeout-minutes [timeout row]
+  (if (integer? timeout)
+    timeout
+    (let [[_ dot-field bracket-field]
+          (when (string? timeout)
+            (re-matches #"\$\{\{\s*matrix(?:\.([\w-]+)|\[\s*'([^']+)'\s*\])\s*\}\}"
+                        (str/trim timeout)))]
+      (when-let [field (or dot-field bracket-field)]
+        (get row field)))))
+
+(deftest hosted-timeout-expression-uses-the-complete-value
+  (let [row {"limit" 90}]
+    (is (= 80 (matrix-timeout-minutes 80 row)))
+    (is (= 90 (matrix-timeout-minutes "${{ matrix.limit }}" row)))
+    (is (= 90 (matrix-timeout-minutes "${{ matrix['limit'] }}" row)))
+    (is (nil? (matrix-timeout-minutes "${{ matrix.limit }} + 1" row)))))
+
+(deftest hosted-envelope-leaves-setup-and-cleanup-time-after-child-watchdogs
+  (let [{:keys [timeout rows]} (read-workflow-checks ".github/workflows/ci.yml")
+        minutes-by-mode (into {} (map (juxt #(get % "mode") #(matrix-timeout-minutes timeout %))) rows)
         change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
-        full-owner-selection
+        all-checked-consumers
         (ci/stage-selection
          [(change "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
           (change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
           (change "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj")])
-        macro-watchdog-seconds
-        (reduce + (map second (ci/commands-for-selection "macro" {:kind :full})))
-        checked-core-watchdog-seconds
-        (reduce + (map second
-                       (ci/commands-for-selection "checked-core-runtime" full-owner-selection)))]
-    (is (some? macro-minutes))
-    (is (= "50" macro-minutes))
-    (is (= "85" checked-core-minutes))
-    (is (= "20" other-minutes))
-    (is (> (* 60 (Long/parseLong macro-minutes)) macro-watchdog-seconds))
-    (is (= 4500 checked-core-watchdog-seconds))
-    (is (> (* 60 (Long/parseLong checked-core-minutes)) checked-core-watchdog-seconds))
-    (is (str/includes? checks "mode: [static, contracts, bootstrap, macro, checked-core-runtime]"))))
+        overhead-seconds (* 5 60)]
+    (is (= (zipmap ["static" "contracts" "bootstrap" "macro" "checked-core-runtime"] (repeat 1))
+           (frequencies (map #(get % "mode") rows))))
+    (is (every? #(and (integer? %) (pos? %)) (vals minutes-by-mode)))
+    (doseq [[mode selection] [["macro" {:kind :full}]
+                              ["checked-core-runtime" all-checked-consumers]
+                              ["checked-core-runtime" (assoc all-checked-consumers :kind :full)]]
+            :let [watchdogs (mapv second (ci/commands-for-selection mode selection))
+                  minutes (get minutes-by-mode mode)]]
+      (is (and (seq watchdogs) (every? pos-int? watchdogs)) mode)
+      (is (and (integer? minutes)
+               (<= (+ (reduce + watchdogs) overhead-seconds) (* 60 minutes)))
+          (str mode " must leave five minutes for setup, cleanup and upload")))))
 
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
@@ -3066,27 +3078,29 @@
         (ci/stage-selection
          [(change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
           (change "README.md")])
+        guard-test-paths ["bootstrap/clojure/test/gravity/backend/js_checked_guard_test.clj"
+                          "bootstrap/clojure/test/gravity/backend/js_guard_seed.clj"]
         full-selection {:kind :full :reason :non-pull-request :paths []}
         checked-ids
         (fn [selection]
-          (mapv first (ci/commands-for-selection "checked-core-runtime" selection)))]
-    (is (= ["checked-core-runtime-regression"
-            "checked-core-current-binding-regression"
-            "checked-core-projection-kernel-regression"
-            "mir-native-validation"
-            "checked-js-b6-owner-regression"
-            "b6-gravity-source-check"]
+          (into #{} (map first) (ci/commands-for-selection "checked-core-runtime" selection)))]
+    (is (= #{"checked-core-runtime-regression"
+             "checked-core-current-binding-regression"
+             "checked-core-projection-kernel-regression"
+             "mir-native-validation"
+             "checked-js-b6-owner-regression"
+             "b6-gravity-source-check"}
            (checked-ids b6-selection)))
-    (is (= ["checked-core-runtime-regression"
-            "checked-core-current-binding-regression"
-            "checked-core-projection-kernel-regression"
-            "mir-native-validation"
-            "c7-gravity-source-consumers"]
+    (is (= #{"checked-core-runtime-regression"
+             "checked-core-current-binding-regression"
+             "checked-core-projection-kernel-regression"
+             "mir-native-validation"
+             "c7-gravity-source-consumers"}
            (checked-ids c7-selection)))
-    (is (= ["checked-core-runtime-regression"
-            "checked-core-current-binding-regression"
-            "checked-core-projection-kernel-regression"
-            "mir-native-validation"]
+    (is (= #{"checked-core-runtime-regression"
+             "checked-core-current-binding-regression"
+             "checked-core-projection-kernel-regression"
+             "mir-native-validation"}
            (checked-ids checked-core-only-selection)))
     (is (= :selected (:kind mixed-b6-markdown-selection)))
     (is (some #{"checked-js-b6-owner-regression"}
@@ -3106,29 +3120,36 @@
            (mapv first (ci/commands-for-selection "contracts" c7-selection))))
     (is (not (ci/skip-for-stage-selection? "contracts" c7-selection)))
     (let [b6-commands (ci/commands-for-selection "checked-core-runtime" b6-selection)
-          owner-command (some #(when (= "checked-js-b6-owner-regression" (first %)) %) b6-commands)
+          owner-selection (fn [selection]
+                            (some (fn [[id _ argv]]
+                                    (when (= "checked-js-b6-owner-regression" id)
+                                      (dev-test-command-selection argv)))
+                                  (ci/commands-for-selection "checked-core-runtime" selection)))
           source-command (some #(when (= "b6-gravity-source-check" (first %)) %) b6-commands)
           c7-command (some #(when (= "c7-gravity-source-consumers" (first %)) %)
-                           (ci/commands-for-selection "checked-core-runtime" c7-selection))]
-      (is (= 900 (second owner-command)))
-      (is (= (ci/command "2g" "-M:dev-test"
-                         "--namespace" "gravity.backend.js-checked-mir-test"
-                         "--exact" "scalar-module-target-execution"
-                         "--exact" "checked-add-requires-original-guard"
-                         "--progress")
-             (nth owner-command 2)))
-      (is (= 180 (second source-command)))
-      (is (= (ci/command "2g" "-M:dev-test"
-                         "--namespace" "gravity.bootstrap-test"
-                         "--exact" "public-check-accepts-gravity-authored-b6-javascript-typescript-backend-design")
-             (nth source-command 2)))
-      (is (= 1800 (second c7-command)))
-      (is (= (apply ci/command "2g" "-M:dev-test" "--progress"
-                    "--namespace" "gravity.self-hosting.sh08-function-call-type-test"
-                    (mapcat #(vector "--exact" %)
-                            ["sh08-function-arity-current-source-composition"
-                             "sh08-function-argument-type-current-source-composition"]))
-             (nth c7-command 2)))
+                           (ci/commands-for-selection "checked-core-runtime" c7-selection))
+          c7-tests (dev-test-command-selection (nth c7-command 2))
+          required-owner-tests #{"gravity.backend.js-checked-mir-test/scalar-module-target-execution"
+                                 "gravity.backend.js-checked-mir-test/checked-add-requires-original-guard"
+                                 "gravity.backend.js-checked-guard-test/checked-add-requires-original-guard"}]
+      (is (:progress? c7-tests))
+      (let [{:keys [progress? selected]} (owner-selection b6-selection)]
+        (is progress?)
+        (is (set/subset? required-owner-tests (set selected))))
+      (doseq [path guard-test-paths
+              status ["A" "M"]
+              :let [record (cond-> (assoc (change path) :status status)
+                             (= "A" status) (assoc :old-mode "000000"))
+                    selection (ci/stage-selection [record])]]
+        (is (= :selected (:kind selection)) path)
+        (is (= (:modes b6-selection) (:modes selection)) path)
+        (is (contains? (set (ci/selection-output-lines selection)) "checked-js-owner-required=true") path)
+        (is (set/subset? required-owner-tests (set (:selected (owner-selection selection)))) path))
+      (is (set/subset? #{"gravity.bootstrap-test/public-check-accepts-gravity-authored-b6-javascript-typescript-backend-design"}
+                       (set (:selected (dev-test-command-selection (nth source-command 2))))))
+      (is (set/subset? #{"gravity.self-hosting.sh08-function-call-type-test/sh08-function-arity-current-source-composition"
+                         "gravity.self-hosting.sh08-function-call-type-test/sh08-function-argument-type-current-source-composition"}
+                       (set (:selected c7-tests))))
       (doseq [selection [b6-selection full-b6-selection full-c7-selection full-selection nil]]
         (is (= "true"
                (some #(when (str/starts-with? % "checked-js-owner-required=")
@@ -3145,11 +3166,11 @@
                         (ci/stage-selection [{:path path :status "M"
                                               :old-mode "100644" :new-mode "100644"}]))
         smoke (fn [selection]
-                (some #(when (= "public-js-compiler-smoke" (first %)) (nth % 2))
-                      (ci/commands-for-selection "checked-core-runtime" selection)))
-        expected (ci/command "1g" "-M:dev-test"
-                             "--namespace" "gravity.compiler.public-js-smoke-test"
-                             "--exact" "public-js-compiler-smoke")]
+                (mapcat (fn [[id _ argv]]
+                          (when (= "public-js-compiler-smoke" id)
+                            (:selected (dev-test-command-selection argv))))
+                        (ci/commands-for-selection "checked-core-runtime" selection)))
+        expected ["gravity.compiler.public-js-smoke-test/public-js-compiler-smoke"]]
     (doseq [path ["bin/gravity"
                   "bootstrap/clojure/src/gravity/cli/compile_command.clj"
                   "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj"
@@ -3159,9 +3180,13 @@
                   outputs (set (ci/selection-output-lines selection))]]
       (is (= expected (smoke selection)) path)
       (is (every? outputs ["checked-core-runtime=true" "checked-js-owner-required=true"]) path))
-    (is (= expected (smoke {:kind :full :reason :path-discovery-failed :paths []})))
-    (is (nil? (smoke (selection-for "tools/advance/src/advance/workflow.clj"))))
-    (is (nil? (smoke (selection-for "language/compiler/src/gravity/checked_core.gravity"))))))
+    (doseq [selection [{:kind :full :reason :path-discovery-failed :paths []}
+                       {:kind :full :reason :non-pull-request}]]
+      (is (= expected (smoke selection)))
+      (is (every? (set (ci/selection-output-lines selection))
+                  ["checked-core-runtime=true" "checked-js-owner-required=true"])))
+    (is (empty? (smoke (selection-for "tools/advance/src/advance/workflow.clj"))))
+    (is (empty? (smoke (selection-for "language/compiler/src/gravity/checked_core.gravity"))))))
 
 (deftest stage-selection-falls-back-for-cross-cutting-and-unknown-inputs
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
