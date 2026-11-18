@@ -2287,7 +2287,7 @@
       (is (empty? (macro-selected-vars omitted owner-vars "gravity.macro.owner-calls-test"))))
     (is (every? #(some #{"--progress"} (nth % 2)) commands))
     (is (not-any? #(some #{"--fail-fast"} (nth % 2)) commands))
-    (is (= 3 (count (set ci/macro-receipt-test-vars))))
+    (is (contains? receipt-vars "artifact-forgeries-and-physical-provenance-drift-fail-verification"))
     (is (every? source-vars ci/macro-receipt-test-vars))
     (is (= (set ci/macro-receipt-test-vars) receipt-vars))
     (is (partition? cohort-vars receipt-vars))

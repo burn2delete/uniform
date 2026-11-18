@@ -35,7 +35,7 @@ use the explicit CLI route for focused execution.
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
-| macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
+| macro | Always | Always | Three fresh processes run the ordinary pipeline tests, the receipt and artifact verification controls, and the Bootstrap C4 compatibility namespace. Each has a 900-second watchdog. |
 | checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions. The Node 20 checks cover B6 scalar execution, checked-add guard identity and the public CLI smoke test as described below. The job has an 85-minute ceiling. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
@@ -265,12 +265,12 @@ full catalog.
 ### Macro execution cohorts
 
 The Macro mode retains all pipeline and Bootstrap compatibility test bodies and
-normal fixtures. It selects the three receipt/callback controls by exact name,
+normal fixtures. It selects the receipt/callback controls and the artifact
+forgery and physical provenance test by exact name,
 the complement of those names in the same pipeline namespace by regex, and the
 whole compatibility namespace. Source-inventory controls prove exhaustive,
 disjoint selection; new ordinary pipeline tests join the complement rather than
-being omitted. The reviewed source contains twenty ordinary, three control and
-five compatibility tests. Each fresh child retains a 900-second watchdog.
+being omitted. Each fresh child retains a 900-second watchdog.
 The three watchdogs allow up to 2,700 seconds in aggregate; they are different
 from the old single combined 900-second command.
 Only the Macro matrix job has a 50-minute hosted envelope, covering three

@@ -30,7 +30,8 @@
 (def macro-receipt-test-vars
   ["public-receipt-reuse-requires-current-stage-and-seed-operations"
    "source-backed-operation-interpositions-stay-live"
-   "identical-value-thread-binding-disables-receipt-reuse"])
+   "identical-value-thread-binding-disables-receipt-reuse"
+   "artifact-forgeries-and-physical-provenance-drift-fail-verification"])
 (def macro-pipeline-cohort-regex
   (str "^(?!.*(?:" (str/join "|" (map #(java.util.regex.Pattern/quote %) macro-receipt-test-vars)) ")$).+"))
 
