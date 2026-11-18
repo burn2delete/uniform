@@ -120,23 +120,6 @@
    (:functions (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
                  (body-effects/module-root-plan plan) plan))))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- bridge-source-revision
   []
   (let [source-text (slurp (path bridge-source))
@@ -339,7 +322,7 @@
          #(fact-transition % (get fact-values %) evidence-id)
          fact-names)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh09-authenticated-effect-bridge
      :artifact-kind :gravity/sh09-authenticated-effect-boundary
      :source-revision (bridge-source-revision)
@@ -470,8 +453,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor sh08-verification]
@@ -800,8 +782,7 @@
              {:artifact
               :gravity/sh09-authenticated-effect-bridge-request
               :schema-version 1
-              :unexpected true}
-             over-depth-carrier]]
+              :unexpected true}]]
       (let [result
             (invoke
              bridge-plan
@@ -809,4 +790,46 @@
              [value])]
         (is (= :rejected (:status result)))
         (is (= "STD09-BRIDGE-SCHEMA"
-               (get-in result [:diagnostics 0 :rule])))))))
+               (get-in result [:diagnostics 0 :rule])))))
+    (let [result
+          (invoke
+           bridge-plan
+           'sh09-build-authenticated-effect-request
+           [over-depth-carrier])]
+      (is (= :rejected (:status result)))
+      (is (= "STD09-BRIDGE-SCHEMA"
+             (get-in result [:diagnostics 0 :rule])))
+      (is (= :request-keys
+             (get-in result [:diagnostics 0 :facts :reason]))))))
+
+(deftest sh09-long-captured-path-retains-provenance-and-authentication
+  (let [path (str "/checkout-a/" (apply str (repeat 4096 "a")) ".gravity")
+        prepared (prepared-request @sh08-gravity :pure path)
+        request (:request prepared)
+        result (:result (run-bridge prepared))
+        substituted
+        (invoke bridge-plan 'sh09-build-authenticated-effect-request
+                [(assoc request :actual-source-path (str path "/substituted"))])]
+    (is (> (count path) 4096))
+    (is (= :accepted (:status result)))
+    (is (= path (get-in request [:envelope :actual-path-provenance :source-path])))
+    (is (= path (get-in result [:provenance :actual-source-path])))
+    (is (= :rejected (:status substituted)))
+    (is (= :invalid-authenticated-envelope
+           (get-in substituted [:diagnostics 0 :facts :reason])))))
+
+(deftest sh09-captured-path-validation-has-no-size-quota
+  (let [path (apply str (repeat 16777217 "a"))
+        envelope {:actual-path-provenance {:source-path path}}
+        malformed
+        (invoke bridge-plan 'sh09-build-authenticated-effect-request
+                [{:actual-source-path path}])]
+    (is (> (count path) 16777216))
+    (is (nil? (invoke bridge-plan 'sh09-bridge-captured-path-error
+                      [path envelope])))
+    (is (= [:envelope :invalid-authenticated-envelope]
+           (invoke bridge-plan 'sh09-bridge-captured-path-error
+                   [(str path "x") envelope])))
+    (is (= :rejected (:status malformed)))
+    (is (= :request-keys
+           (get-in malformed [:diagnostics 0 :facts :reason])))))
