@@ -928,6 +928,53 @@
      :cache cache
      :elapsed-ms 1}))
 
+(deftest delegate-contract-accepts-current-iteration-cache-and-projects-stage3-counters
+  (let [selector 'gravity.synthetic/current-cache-test
+        iteration-cache
+        {:sh06-hits 1 :sh06-misses 0
+         :core-hits 0 :core-misses 1
+         :verification-hits 2 :verification-misses 0
+         :semantic-hits 3 :semantic-misses 4 :semantic-joined 5
+         :semantic-published 6 :semantic-evictions 7
+         :semantic-failed-producers 8 :semantic-rejected-hits 9}
+        stage3-cache (select-keys iteration-cache
+                                  [:sh06-hits :sh06-misses
+                                   :core-hits :core-misses
+                                   :verification-hits :verification-misses])
+        delegate (assoc (successful-delegate [selector])
+                        :cache iteration-cache
+                        :test-var-results
+                        [(assoc (passing-result selector 0)
+                                :cache iteration-cache)])
+        result (synthetic-batch-run
+                :synthetic-current-iteration-cache [selector] delegate)
+        unknown-counter (assoc delegate
+                               :cache (assoc iteration-cache :unknown 1))
+        negative-counter (assoc delegate
+                                :cache (assoc iteration-cache
+                                              :semantic-failed-producers -1))
+        mismatched-var (assoc delegate
+                              :test-var-results
+                              [(assoc (passing-result selector 0)
+                                      :cache (update iteration-cache
+                                                     :semantic-misses inc))])]
+    (is (= :passed (:status result)))
+    (is (= stage3-cache (:cache result)))
+    (is (= stage3-cache (:delegate-cache result)))
+    (is (= stage3-cache
+           (get-in result [:test-var-results 0 :cache])))
+    (is (= iteration-cache
+           (get-in result [:delegate-result :cache])))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-unknown-iteration-counter
+                              [selector] unknown-counter)))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-negative-iteration-counter
+                              [selector] negative-counter)))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-iteration-counter-total-mismatch
+                              [selector] mismatched-var)))))
+
 (deftest multi-var-batches-delegate-with-one-entry-and-fail-fast-tail
   (let [calls (atom [])
         selectors ['gravity.synthetic/first-test

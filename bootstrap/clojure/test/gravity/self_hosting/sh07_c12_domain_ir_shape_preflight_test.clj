@@ -10,22 +10,11 @@
 (def ^:private source-relative-path
   "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 
-;; Keep this admission lane independent of the C12 compiler and bounded before
-;; decoding/parsing.  512 KiB permits the moving source while remaining a
-;; small source-only check.  Reader nodes, depth, collection width, lexical
-;; tokens, and delimiters have separate finite bounds; traversal is iterative
-;; so pathological nesting cannot consume the host call stack.
-(def ^:private maximum-source-bytes (* 512 1024))
-(def ^:private maximum-top-level-forms 4096)
-(def ^:private maximum-reader-tree-nodes 250000)
-(def ^:private maximum-reader-tree-depth 256)
-(def ^:private maximum-collection-width 1024)
-(def ^:private maximum-diagnostics 64)
-(def ^:private maximum-lexical-tokens 250000)
-(def ^:private maximum-lexical-delimiters 250000)
+;; Keep this source-only check independent of the C12 compiler.  Its iterative
+;; lexical and shape walks validate syntax without imposing size quotas.
 
 (def ^:dynamic *source-snapshot-loader*
-  "Test seam for bounded byte snapshots; production leaves nil."
+  "Test seam for byte snapshots; production leaves nil."
   nil)
 
 (def ^:dynamic *snapshot-before-open-hook*
@@ -116,7 +105,7 @@
 (defn- safe-contained-source-path
   "Observe every source path component without following symlinks.
 
-  Rechecking these states around the bounded read is a pathname-integrity
+  Rechecking these states around the read is a pathname-integrity
   check, not a held-descriptor or SecureDirectoryStream race proof."
   [repository relative]
   (let [root-path (.toAbsolutePath (.normalize ^java.nio.file.Path repository))
@@ -151,10 +140,10 @@
           (recur (inc index) next (conj states state)))))))
 
 (defn- read-source-snapshot
-  "Read one bounded stable-path snapshot.
+  "Read one stable-path snapshot.
 
   The final path and each intermediate component are nofollow regular
-  observations before/open/after, with an EOF growth probe.  This is a
+  observations before/open/after, with a one-byte growth probe.  This is a
   pathname-integrity check, not an adversarial open-descriptor identity proof."
   [location]
   (let [path (:path location)
@@ -165,11 +154,6 @@
     (when (nil? (:file-key state-before))
       (failure "SH07-C12-SHAPE-SOURCE-IDENTITY"
                "C12 source file identity is unavailable"))
-    (when (> (:size state-before) maximum-source-bytes)
-      (failure "SH07-C12-SHAPE-SOURCE-BOUND"
-               "C12 source exceeds bounded input"
-               {:observed (:size state-before)
-                :maximum maximum-source-bytes}))
     (when *snapshot-before-open-hook*
       (*snapshot-before-open-hook*))
     (let [location-open
@@ -191,12 +175,16 @@
                     (not= channel-size-before (:size state-before)))
             (failure "SH07-C12-SHAPE-SOURCE-MUTATED"
                      "C12 source changed before descriptor read"))
-          ;; Read one byte beyond the admitted ceiling.  Exact-bound files hit
-          ;; EOF; a growth race is rejected without unbounded allocation.
-          (let [buffer (java.nio.ByteBuffer/allocate (inc maximum-source-bytes))]
+          (let [expected-size (:size state-before)
+                probe-size (inc expected-size)
+                buffer (java.nio.ByteBuffer/allocate 8192)
+                output (java.io.ByteArrayOutputStream.)]
             (loop [zero-reads 0]
-              (if (= (.position buffer) (.capacity buffer))
-                nil
+              (when (< (.size output) probe-size)
+                (.clear buffer)
+                (.limit buffer
+                        (int (min (.capacity buffer)
+                                  (- probe-size (.size output)))))
                 (let [read-count (.read channel buffer)]
                   (cond
                     (= -1 read-count) nil
@@ -206,15 +194,20 @@
                     (failure "SH07-C12-SHAPE-SOURCE-READ"
                              "C12 source channel made no progress")
                     :else
-                    (recur 0)))))
-            (let [observed-bytes (.position buffer)
+                    (do
+                      (.flip buffer)
+                      (let [chunk (byte-array (.remaining buffer))]
+                        (.get buffer chunk)
+                        (.write output chunk 0 (alength chunk)))
+                      (recur 0))))))
+            (let [observed-bytes (.size output)
                   channel-size-after (.size channel)
                   state-after (basic-attributes path)
                   location-after
                   (when (and (:root location) (:relative location))
                     (safe-contained-source-path (:root location)
                                                 (:relative location)))]
-              (when (or (> observed-bytes maximum-source-bytes)
+              (when (or (> observed-bytes expected-size)
                         (not= channel-size-before channel-size-after)
                         (not= channel-size-before observed-bytes)
                         (not (same-file-state? state-before state-after))
@@ -222,18 +215,15 @@
                              (not= (:components location)
                                    (:components location-after))))
                 (failure "SH07-C12-SHAPE-SOURCE-MUTATED"
-                         "C12 source changed during bounded descriptor read"
+                         "C12 source changed during descriptor read"
                          {:observed-bytes observed-bytes}))
-              (.flip buffer)
-              (let [bytes (byte-array observed-bytes)]
-                (.get buffer bytes)
-                {:path path
-                 :bytes bytes
-                 :file-key (:file-key state-before)
-                 :size observed-bytes
-                 :modified (:modified state-before)
-                 :owner (:owner state-before)
-                 :attributes (attributes-signature state-before)}))))))))
+              {:path path
+               :bytes (.toByteArray output)
+               :file-key (:file-key state-before)
+               :size observed-bytes
+               :modified (:modified state-before)
+               :owner (:owner state-before)
+               :attributes (attributes-signature state-before)})))))))
 
 (defn- strict-utf8
   [bytes]
@@ -262,11 +252,6 @@
     (when-not (instance? (Class/forName "[B") bytes)
       (failure "SH07-C12-SHAPE-SOURCE-BYTES"
                "C12 source snapshot did not provide byte data"))
-    (when (> (alength ^bytes bytes) maximum-source-bytes)
-      (failure "SH07-C12-SHAPE-SOURCE-BOUND"
-               "C12 source snapshot exceeds bounded input"
-               {:observed (alength ^bytes bytes)
-                :maximum maximum-source-bytes}))
     (assoc loaded
            :bytes bytes
            :text (strict-utf8 bytes)
@@ -279,26 +264,8 @@
   []
   @source-snapshot-cache)
 
-(defn- lexical-token
-  [count]
-  (let [next-count (inc count)]
-    (when (> next-count maximum-lexical-tokens)
-      (failure "SH07-C12-SHAPE-LEXICAL-BOUND"
-               "C12 source exceeds bounded lexical token count"
-               {:maximum maximum-lexical-tokens}))
-    next-count))
-
-(defn- lexical-delimiter
-  [count]
-  (let [next-count (inc count)]
-    (when (> next-count maximum-lexical-delimiters)
-      (failure "SH07-C12-SHAPE-LEXICAL-BOUND"
-               "C12 source exceeds bounded lexical delimiter count"
-               {:maximum maximum-lexical-delimiters}))
-    next-count))
-
 (defn- lexical-delimiter-depth!
-  "Validate source delimiters before invoking the recursive host reader.
+  "Validate source delimiters iteratively before invoking the host reader.
 
   Strings, regexes, comments, and character literals are skipped
   conservatively.  This is a lexical guard, not a replacement for reading."
@@ -310,9 +277,7 @@
            delimiters []
            maximum-seen 0
            mode :normal
-           escaped? false
-           token-count 0
-           delimiter-count 0]
+           escaped? false]
       (if (= index length)
         (do
           (when-not (#{:normal :comment} mode)
@@ -321,95 +286,66 @@
           (when (seq delimiters)
             (failure "SH07-C12-SHAPE-LEXICAL-DELIMITERS"
                      "C12 source has unclosed delimiters"))
-          {:maximum-depth maximum-seen
-           :token-count token-count
-           :delimiter-count delimiter-count})
+          {:maximum-depth maximum-seen})
         (let [character (.charAt ^String source index)
               next-character (when (< (inc index) length)
                                (.charAt ^String source (inc index)))]
           (case mode
             :comment
             (if (or (= character \newline) (= character \return))
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
-              (recur (inc index) delimiters maximum-seen :comment false
-                     token-count delimiter-count))
+              (recur (inc index) delimiters maximum-seen :normal false)
+              (recur (inc index) delimiters maximum-seen :comment false))
 
             :string
             (cond
               escaped?
-              (recur (inc index) delimiters maximum-seen :string false
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :string false)
               (= character \\)
-              (recur (inc index) delimiters maximum-seen :string true
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :string true)
               (= character \")
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :normal false)
               :else
-              (recur (inc index) delimiters maximum-seen :string false
-                     token-count delimiter-count))
+              (recur (inc index) delimiters maximum-seen :string false))
 
             :regex
             (cond
               escaped?
-              (recur (inc index) delimiters maximum-seen :regex false
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :regex false)
               (= character \\)
-              (recur (inc index) delimiters maximum-seen :regex true
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :regex true)
               (= character \")
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :normal false)
               :else
-              (recur (inc index) delimiters maximum-seen :regex false
-                     token-count delimiter-count))
+              (recur (inc index) delimiters maximum-seen :regex false))
 
             :character
-            ;; One codepoint is enough to hide a delimiter.  Named literals
-            ;; continue as ordinary letters, conservatively bounded by tokens.
-            (recur (inc index) delimiters maximum-seen :normal false
-                   (lexical-token token-count) delimiter-count)
+            ;; One codepoint is enough to hide a delimiter in a character literal.
+            (recur (inc index) delimiters maximum-seen :normal false)
 
             ;; :normal
             (cond
               (= character \;)
-              (recur (inc index) delimiters maximum-seen :comment false
-                     token-count delimiter-count)
+              (recur (inc index) delimiters maximum-seen :comment false)
               (= character \")
-              (recur (inc index) delimiters maximum-seen :string false
-                     (lexical-token token-count) delimiter-count)
+              (recur (inc index) delimiters maximum-seen :string false)
               (and (= character \#) (= next-character \"))
-              (recur (+ index 2) delimiters maximum-seen :regex false
-                     (lexical-token token-count) delimiter-count)
+              (recur (+ index 2) delimiters maximum-seen :regex false)
               (= character \\)
-              (recur (inc index) delimiters maximum-seen :character false
-                     (lexical-token token-count) delimiter-count)
+              (recur (inc index) delimiters maximum-seen :character false)
               (contains? matching-delimiter character)
               (let [next-delimiters (conj delimiters character)
-                    next-depth (count next-delimiters)
-                    next-count (lexical-delimiter delimiter-count)]
-                (when (> next-depth maximum-reader-tree-depth)
-                  (failure "SH07-C12-SHAPE-LEXICAL-DEPTH"
-                           "C12 source exceeds bounded lexical delimiter depth"
-                           {:maximum maximum-reader-tree-depth}))
+                    next-depth (count next-delimiters)]
                 (recur (inc index) next-delimiters
-                       (max maximum-seen next-depth) :normal false
-                       token-count next-count))
+                       (max maximum-seen next-depth) :normal false))
               (contains? closing character)
               (if (or (empty? delimiters)
                       (not= character
                             (matching-delimiter (peek delimiters))))
                 (failure "SH07-C12-SHAPE-LEXICAL-DELIMITERS"
                          "C12 source has an unmatched or mismatched delimiter")
-                (recur (inc index) (pop delimiters) maximum-seen :normal false
-                       token-count (lexical-delimiter delimiter-count)))
-              (Character/isWhitespace character)
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
+                (recur (inc index) (pop delimiters) maximum-seen :normal false))
               :else
-              (recur (inc index) delimiters maximum-seen :normal false
-                     (lexical-token token-count) delimiter-count))))))))
+              (recur (inc index) delimiters maximum-seen :normal false))))))))
 
 (defn- read-forms
   [text]
@@ -421,101 +357,31 @@
         (let [form (read {:eof reader-eof-marker} reader)]
           (if (identical? reader-eof-marker form)
             forms
-            (do
-              (when (>= (count forms) maximum-top-level-forms)
-                (failure "SH07-C12-SHAPE-FORM-COUNT"
-                         "C12 source has too many top-level forms"
-                         {:maximum maximum-top-level-forms}))
-              (recur (conj forms form)))))))))
-
-(defn- bounded-elements
-  [value maximum id message]
-  (loop [remaining (seq value)
-         result []]
-    (cond
-      (nil? remaining) result
-      (>= (count result) maximum)
-      (failure id message {:maximum maximum})
-      :else
-      (recur (next remaining) (conj result (first remaining))))))
+            (recur (conj forms form))))))))
 
 (defn- reader-children
   [value]
-  (let [children
-        (cond
-          (map? value)
-          (vec (mapcat (fn [[key value]] [key value])
-                       (bounded-elements
-                        value maximum-collection-width
-                        "SH07-C12-SHAPE-COLLECTION-WIDTH"
-                        "C12 source map is wider than the bounded gate")))
+  (when (instance? clojure.lang.LazySeq value)
+    (failure "SH07-C12-SHAPE-LAZY-SEQ"
+             "C12 source reader produced a lazy sequence"))
+  (cond
+    (map? value)
+    (vec (mapcat (fn [[key child]] [key child]) value))
 
-          (vector? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C12-SHAPE-COLLECTION-WIDTH"
-                            "C12 source collection is wider than the bounded gate")
+    (or (vector? value) (set? value) (seq? value))
+    (vec value)
 
-          (set? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C12-SHAPE-COLLECTION-WIDTH"
-                            "C12 source collection is wider than the bounded gate")
+    :else
+    []))
 
-          (seq? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C12-SHAPE-COLLECTION-WIDTH"
-                            "C12 source collection is wider than the bounded gate")
-
-          :else
-          [])]
-    (when (> (count children) maximum-collection-width)
-      (failure "SH07-C12-SHAPE-COLLECTION-WIDTH"
-               "C12 source collection is wider than the bounded gate"
-               {:maximum maximum-collection-width}))
-    children))
-
-(defn- reader-tree-stats
+(defn- validate-reader-values!
   [forms]
-  (loop [frontier (list [forms 0])
-         nodes 0
-         maximum-depth 0
-         maximum-width 0]
-    (if (empty? frontier)
-      {:nodes nodes
-       :maximum-depth maximum-depth
-       :maximum-width maximum-width
-       :bounded? true
-       :lazy? false}
-      (let [[value depth] (peek frontier)
+  (loop [frontier (list forms)]
+    (if (seq frontier)
+      (let [value (peek frontier)
             frontier (pop frontier)]
-        (cond
-          (instance? clojure.lang.LazySeq value)
-          {:nodes nodes
-           :maximum-depth maximum-depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? true}
-
-          (> (inc nodes) maximum-reader-tree-nodes)
-          {:nodes (inc nodes)
-           :maximum-depth maximum-depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? false}
-
-          (> depth maximum-reader-tree-depth)
-          {:nodes (inc nodes)
-           :maximum-depth depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? false}
-
-          :else
-          (let [children (reader-children value)]
-            (recur
-             (into frontier (map #(vector % (inc depth)) children))
-             (inc nodes)
-             (max maximum-depth depth)
-             (max maximum-width (count children)))))))))
+        (recur (into frontier (reader-children value))))
+      forms)))
 
 (defn- ns-form?
   [form]
@@ -573,30 +439,24 @@
               frontier (pop frontier)]
           (when (and (seq? value) (= 'if (first value)))
             (when-not (= 4 (count value))
-              (when (>= (count @bad) maximum-diagnostics)
-                (failure "SH07-C12-SHAPE-DIAGNOSTICS"
-                         "C12 source produced too many shape diagnostics"
-                         {:maximum maximum-diagnostics}))
               (swap! bad conj value)))
           (recur (into frontier (reader-children value))))
         @bad))))
 
 (defn- parse-source-shape
-  []
-  (let [{:keys [text] :as snapshot} (source-snapshot)
-        forms (read-forms text)
-        tree (reader-tree-stats forms)
+  [snapshot]
+  (let [{:keys [text]} snapshot
+        forms (validate-reader-values! (read-forms text))
         ns-form (first forms)
         exports (exports-vector ns-form)]
     (assoc snapshot
            :forms forms
-           :tree tree
            :ns-form ns-form
            :exports exports
            :if-shape-errors (if-shapes forms))))
 
 (def ^:private parsed-source-cache
-  (delay (parse-source-shape)))
+  (delay (parse-source-shape (source-snapshot))))
 
 (defn- parse-shape
   []
@@ -607,8 +467,7 @@
 
 (deftest sh07-c12-domain-ir-source-shape-and-control
   (testing non-authority-note
-    (let [{:keys [size forms ns-form tree if-shape-errors]} (parse-shape)]
-      (is (<= size maximum-source-bytes))
+    (let [{:keys [forms ns-form if-shape-errors]} (parse-shape)]
       (is (seq forms))
       (let [namespace-forms (filter #(and (seq? %)
                                           (= 'ns (first %)))
@@ -619,36 +478,59 @@
       (is (= 1 (count (exports-clauses ns-form))))
       (is (= 2 (count (first (exports-clauses ns-form)))))
       (is (vector? (exports-vector ns-form)))
-      (is (:bounded? tree))
-      (is (not (:lazy? tree)))
-      (is (<= (:nodes tree) maximum-reader-tree-nodes))
-      (is (<= (:maximum-depth tree) maximum-reader-tree-depth))
       (is (empty? if-shape-errors))
       (testing "lexical guard handles strings, regexes, comments, and chars"
         (is (= 1
                (:maximum-depth
                 (lexical-delimiter-depth!
                  "(\"}\" #\"[\" ; )\n \\( )")))))
-      (testing "reader evaluation and recursive-depth inputs fail closed"
+      (testing "reader evaluation is disabled and deeper legal forms are read"
         (is (thrown? Throwable
                      (read-forms "#=(+ 1 2)")))
-        (let [deep-text
-              (str (apply str (repeat (inc maximum-reader-tree-depth) "("))
-                   (apply str (repeat (inc maximum-reader-tree-depth) ")")))]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (lexical-delimiter-depth! deep-text)))))
+        (let [depth 257
+              deep-text (str (apply str (repeat depth "("))
+                             "value"
+                             (apply str (repeat depth ")")))]
+          (is (= depth
+                 (:maximum-depth (lexical-delimiter-depth! deep-text))))
+          (is (= 1 (count (validate-reader-values!
+                           (read-forms deep-text)))))))
       (testing "lexical malformed delimiters and literals fail before reading"
         (doseq [invalid [")" "([)]" "(" "\"unterminated"
                         "#\"unterminated" "\\"]]
           (is (thrown? clojure.lang.ExceptionInfo
                        (lexical-delimiter-depth! invalid)))))
-      (testing "collection and duplicate-definition bounds are source-only"
-        (is (thrown? clojure.lang.ExceptionInfo
-                     (reader-children
-                      (vec (repeat (inc maximum-collection-width) :x)))))
+      (testing "former form, collection, node, token, and delimiter ceilings do not refuse input"
+        (is (= 4097 (count (read-forms (apply str (repeat 4097 "nil\n"))))))
+        (is (= 1025 (count (reader-children (vec (repeat 1025 :x))))))
+        (is (= 250001
+               (count (validate-reader-values!
+                       (vec (repeat 250001 :x))))))
+        (is (= 0
+               (:maximum-depth
+                (lexical-delimiter-depth! (apply str (repeat 250001 "x "))))))
+        (is (= 1
+               (:maximum-depth
+                (lexical-delimiter-depth! (apply str (repeat 125001 "()"))))))
         (is (= '#{hidden}
                (duplicate-definition-names
                 '[(def hidden 1) (def hidden 2) (def exported 1)]))))
+      (testing "lazy reader values are rejected without realization"
+        (let [realized? (atom false)
+              lazy-value (lazy-seq
+                           (do
+                             (reset! realized? true)
+                             (list :hidden)))
+              error (try
+                      (validate-reader-values! [lazy-value])
+                      nil
+                      (catch clojure.lang.ExceptionInfo exception
+                        exception))]
+          (is (= "SH07-C12-SHAPE-LAZY-SEQ" (:id (ex-data error))))
+          (is (false? @realized?))))
+      (testing "malformed reader structures still fail"
+        (doseq [invalid ["#=(+ 1 2)" "{:unpaired}" "([)]" "\"unterminated"]]
+          (is (thrown? Throwable (read-forms invalid)))))
       (testing "injected bytes are decoded, not injected source text"
         (let [text "(ns synthetic (:exports [x])) (def x 1)"
               bytes (.getBytes text "UTF-8")
@@ -656,6 +538,58 @@
                                (fn [] {:bytes bytes :text "wrong text"})]
                        (load-source-snapshot))]
           (is (= text (:text loaded)))))
+      (testing "invalid UTF-8 remains rejected"
+        (let [bytes (byte-array [(unchecked-byte 195) (byte 40)])
+              error (try
+                      (binding [*source-snapshot-loader*
+                                (fn [] {:bytes bytes})]
+                        (load-source-snapshot))
+                      nil
+                      (catch clojure.lang.ExceptionInfo exception
+                        exception))]
+          (is (= "SH07-C12-SHAPE-SOURCE-UTF8"
+                 (:id (ex-data error))))))
+      (testing "actual current source above the former byte ceiling keeps its shape and exports"
+        (let [baseline (parse-shape)
+              original (source-snapshot)
+              target-size 524289
+              padding-size (- target-size (alength ^bytes (:bytes original)) 2)
+              extended-text (str (:text original)
+                                 "\n;"
+                                 (apply str (repeat padding-size \x)))
+              extended-bytes (.getBytes extended-text "UTF-8")
+              temporary (java.nio.file.Files/createTempDirectory
+                         "sh07-c12-large-source"
+                         (make-array java.nio.file.attribute.FileAttribute 0))
+              path (.resolve temporary "source.gravity")]
+          (try
+            (is (pos? padding-size))
+            (is (= target-size (alength ^bytes extended-bytes)))
+            (java.nio.file.Files/write
+             path extended-bytes (make-array java.nio.file.OpenOption 0))
+            (let [location (safe-contained-source-path temporary "source.gravity")
+                  snapshot (read-source-snapshot location)
+                  loaded (binding [*source-snapshot-loader* (fn [] snapshot)]
+                           (load-source-snapshot))
+                  parsed (parse-source-shape loaded)
+                  forms (:forms parsed)
+                  namespace-forms (filter #(and (seq? %)
+                                                (= 'ns (first %)))
+                                          forms)
+                  definitions (top-level-definitions forms)]
+              (is (= target-size (:size snapshot)))
+              (is (= target-size (:size loaded)))
+              (is (= 1 (count namespace-forms)))
+              (is (ns-form? (:ns-form parsed)))
+              (is (= (second (:ns-form baseline))
+                     (second (:ns-form parsed))))
+              (is (= (:exports baseline) (:exports parsed)))
+              (is (every? #(contains? definitions %) (:exports parsed)))
+              (is (empty? (duplicate-definition-names forms)))
+              (is (empty? (:if-shape-errors parsed))))
+            (finally
+              (java.nio.file.Files/deleteIfExists path)
+              (java.nio.file.Files/deleteIfExists temporary)))))
       (testing "path replacement is rejected by the explicit race seam"
         (let [temporary
               (java.nio.file.Files/createTempDirectory
