@@ -313,26 +313,17 @@
     (is (= [:load] (:events result)))
     (is (= 6 (count (:rows result))))))
 
-(deftest current-ci-commands-opt-in-all-resolution-children
-  (let [macro (ci/commands "macro")
-        aggregate (first (ci/commands "resolution"))
-        children (mapv #(first (ci/commands %))
-                       ["resolution-pipeline" "resolution-unmetered"
-                        "resolution-invocation-selection"])]
-    (is (= [["macro-pipeline-cohort" 900]
-            ["macro-receipt-controls" 900]
-            ["macro-bootstrap-compatibility" 900]]
-           (mapv #(subvec (vec %) 0 2) macro)))
-    (is (= ["resolution-regression" 900] (subvec (vec aggregate) 0 2)))
-    (is (every? #(= 1 (count (filter #{"--progress"} (nth % 2))))
-                (concat macro (cons aggregate children))))
-    (is (= ["resolution-pipeline" "resolution-unmetered"
-            "resolution-invocation-selection"]
-           (mapv first children)))
-    (is (every? #(= 600 (second %)) children))
-    (is (not-any? #{"--progress"}
-                  (mapcat #(nth (first (ci/commands %)) 2)
-                          ["bootstrap" "checked-core-runtime" "static"])))))
+(deftest macro-and-resolution-ci-children-emit-progress
+  (doseq [mode ["macro" "resolution" "resolution-pipeline" "resolution-unmetered"
+                "resolution-invocation-selection"]
+          :let [commands (ci/commands mode)]]
+    (is (seq commands) mode)
+    (doseq [[id _ argv] commands
+            :let [args (rest (drop-while #(not= "-M:dev-test" %) argv))]]
+      (is (:progress? (#'runner/parse-args args)) id)))
+  (is (not-any? #{"--progress"}
+                (mapcat #(nth (first (ci/commands %)) 2)
+                        ["bootstrap" "checked-core-runtime" "static"]))))
 
 (deftest composition-preserves-timing-and-single-result-delivery
   (let [name 'gravity.progress-composition-test

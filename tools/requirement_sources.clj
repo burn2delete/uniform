@@ -3534,15 +3534,15 @@
          replacement
          (String. (java.util.Arrays/copyOfRange bytes end (alength bytes)) "UTF-8"))))
 
-(defn validate-current-source-transition!
-  "Authenticate one exact current-source file transition.
+(defn- validate-pinned-source-transition!
+  "Authenticate the two committed versions of one recorded file transition.
 
   The expected contract is deliberately supplied by code, while the EDN
   record supplies the review payload. Equality against that contract prevents
   a caller from relabeling a foreign source, role, span or authority. The
   whole-file identities and a byte-level replacement check then ensure the
   named spans account for the complete before/after delta."
-  [transition expected read-ref read-text sha256 require!]
+  [transition expected read-ref sha256 require!]
   (require! (= transition expected)
             (str "Current source transition identity or qualification changed: "
                  (:path transition)))
@@ -3558,14 +3558,11 @@
   (let [path (:path transition)
         before-source (read-ref (:baseline-ref transition) path)
         after-source (read-ref (:applying-ref transition) path)
-        current (read-text path)
         spans (:changed-spans transition)]
     (require! (= (:baseline-sha256 transition) (sha256 before-source))
               "Current source transition baseline bytes changed")
     (require! (= (:live-sha256 transition) (sha256 after-source))
               "Current source transition applying bytes changed")
-    (require! (= after-source current)
-              "Current source transition is not bound to the checked-out current source")
     (require! (and (vector? spans) (seq spans)
                    (= (count spans) (count (set (map :id spans)))))
               "Current source transition changed-span identities are incomplete")
@@ -3616,8 +3613,43 @@
      :changed-span-ids (mapv :id spans)
      :snapshot-provenance :git-bytes-verified
      :span-provenance :git-byte-and-line-spans-verified
-     :authority :current-source-interface-only
+     :authority :historical-source-transition-only
      :implementation-acceptance :unassessed}))
+
+(defn validate-current-source-transition!
+  [transition expected read-ref read-text sha256 require!]
+  (let [pinned (validate-pinned-source-transition! transition expected read-ref sha256 require!)]
+    (require! (= (:live-sha256 transition) (sha256 (read-text (:path transition))))
+              "Current source transition is not bound to the checked-out current source")
+    (assoc pinned :authority :current-source-interface-only)))
+
+(def constitution-path ".specify/memory/constitution.md")
+
+(defn evidence-source-state
+  [{:keys [path source-commit current-applicability] inspected :sha256}
+   read-text sha256 require!]
+  (let [current (try (sha256 (read-text path))
+                     (catch java.io.IOException _ nil))]
+    (when-not (= :unassessed current-applicability)
+      (require! (and current (= inspected current)) (str "Changed current-applicable evidence source: " path)))
+    {:path path :inspected-commit source-commit :inspected-sha256 inspected
+     :current-sha256 current :current-applicability current-applicability
+     :state (cond (nil? current) :absent-from-current-checkout
+                  (= inspected current) :same-bytes-as-inspection
+                  :else :changed-since-inspection)}))
+
+(defn validate-crosswalk-source-transition!
+  "The SH crosswalk inspected a constitution revision. Its review describes
+  those instructions even when the working rules have since changed."
+  [transition expected read-ref read-text sha256 require!]
+  (if (= constitution-path (:path expected))
+    (merge (validate-pinned-source-transition! transition expected read-ref sha256 require!)
+           (evidence-source-state {:path constitution-path
+                                   :source-commit (:applying-ref transition)
+                                   :sha256 (:live-sha256 transition)
+                                   :current-applicability :unassessed}
+                                  read-text sha256 require!))
+    (validate-current-source-transition! transition expected read-ref read-text sha256 require!)))
 
 ;; STD7-STD9 adds 23 exact criterion-to-owner/consumer joins to the current
 ;; source frame.  The eight `*-existing` rows are carried predicates, not new

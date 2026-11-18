@@ -742,27 +742,29 @@
   historical/applying pin or granting implementation authority."
   [transitions read-text]
   (let [expected current-source-transition-contracts
-        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))
+        contracts (by-path expected)
+        records (by-path transitions)]
     (require! (and (vector? transitions)
                    (= (set (map :path transitions))
                       (set (map :path expected)))
                    (= (count transitions) (count expected)))
               "Current source transition population changed")
-    (doseq [path (sort (keys (by-path expected)))]
-      (let [actual (get (by-path transitions) path)
-            contract (get (by-path expected) path)]
-        (require! (= actual contract)
-                  (str "Current source transition contract changed: " path))
-        (requirement-sources/validate-current-source-transition!
-         actual contract
-         (fn [ref source-path]
-           (requirement-sources/git-source "." ref source-path require!))
-         read-text sha256 require!)))
-    {:kind requirement-sources/current-source-transition-kind
-     :paths (vec (sort (keys (by-path transitions))))
-     :review-state :pending-independent-source-version-review
-     :authority :current-source-interface-only
-     :implementation-acceptance :unassessed}))
+    (let [verified (into (sorted-map)
+                         (for [path (sort (keys contracts))
+                               :let [actual (records path) contract (contracts path)
+                                     _ (require! (= actual contract)
+                                                 (str "Current source transition contract changed: " path))]]
+                           [path (requirement-sources/validate-crosswalk-source-transition!
+                                  actual contract
+                                  #(requirement-sources/git-source "." %1 %2 require!)
+                                  read-text sha256 require!)]))]
+      {:kind requirement-sources/current-source-transition-kind
+       :paths (vec (keys (dissoc verified requirement-sources/constitution-path)))
+       :historical-source-applicability (select-keys verified [requirement-sources/constitution-path])
+       :review-state :pending-independent-source-version-review
+       :authority :current-source-interface-only
+       :implementation-acceptance :unassessed})))
 
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
@@ -831,20 +833,8 @@
   (let [id (get-in routing [component (dec ordinal)]) row (task-map id)]
     (require! (= component (:component row)) "Missing semantic task route") id))
 
-(defn evidence-source-state [{:keys [path sha256 source-commit current-applicability]} read-text]
-  (let [current (try (acceptance-dependencies/sha256 (read-text path))
-                    (catch java.io.IOException _ nil))
-        state (cond (nil? current) :absent-from-current-checkout
-                    (= sha256 current) :same-bytes-as-inspection
-                    :else :changed-since-inspection)]
-    ;; These records are explicitly pinned source inspections, not current
-    ;; execution evidence. Preserve the old commit/hash and expose drift; a
-    ;; normal compiler edit cannot silently become acceptance or invalidate
-    ;; that historical source identity. Current-applicable claims stay strict.
-    (when-not (= :unassessed current-applicability)
-      (require! (= sha256 current) (str "Changed current-applicable evidence source: " path)))
-    {:path path :inspected-commit source-commit :inspected-sha256 sha256
-     :current-sha256 current :state state :current-applicability current-applicability}))
+(defn evidence-source-state [record read-text]
+  (requirement-sources/evidence-source-state record read-text sha256 require!))
 
 ;; These selected-output composition requirements come from the consuming
 ;; task's own acceptance block, never from Markdown cross-reference counts.

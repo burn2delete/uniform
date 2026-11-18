@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.5.0 | Adopted: 2026-10-25 | Updated: 2026-11-04 | Change authority: Matt; integration coordinator: Deus (parent)
+Version: 1.5.1 | Adopted: 2026-10-25 | Updated: 2026-11-18 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -63,14 +63,18 @@ integration decisions; the former master is an execution/integration delegate.
 
 ## Exact outcomes and evidence ownership
 
-Each change names its owner, exact paths, acceptance and rejection behavior,
-input revision/tree, commands, result/exit, artifact identities and limits.
-Distinguish locally observed evidence from another owner's reported evidence;
-name unrun checks and stale inputs. Implementation owners own their source and
-raw evidence; reviewers own review dispositions; Deus owns integration.
-Use the existing [development workflow](../../docs/development-verification-workflow.md)
-for proof, reuse and authority decisions. Spec Kit is a work-artifact layer,
-not a competing evidence authority or a second roadmap.
+For a fix within an existing contract, follow the
+[ordinary PR workflow](../../AGENTS.md#working-discipline). The source diff,
+focused regressions, review and CI record the result. For a governed admission
+or a claim under a canonical contract, record the exact subject, commands,
+results, artifact identities and limits required by that contract. Distinguish
+observed results from reported or unrun checks.
+
+Implementation owners maintain source and raw evidence. Reviewers own review
+dispositions. Deus coordinates integration subject to the delegation below.
+Historical reviews apply to the revisions they inspected. Use the
+[development workflow](../../docs/development-verification.md) for current
+verification and migration decisions.
 
 ## Scope and changes
 

@@ -268,10 +268,14 @@ repository root with Node 20 on `PATH` for tests that execute the target.
 
 | Change | Focused command |
 | --- | --- |
-| Checked addition and its original overflow guard in B6 lowering | `clojure -J-Xmx2g -M:dev-test --namespace gravity.backend.js-checked-mir-test --exact checked-add-requires-original-guard` |
+| Checked addition and its original overflow guard in B6 lowering | `clojure -J-Xmx2g -M:dev-test --namespace gravity.backend.js-checked-guard-test --exact checked-add-requires-original-guard` |
 | Public CLI dispatch through module execution | `clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.public-js-smoke-test --exact public-js-compiler-smoke` |
 | Backend artifact, reference execution and standalone module guarantees | `clojure -J-Xmx2g -M:dev-test --namespace gravity.backend.js-checked-mir-test --exact scalar-module-target-execution` |
 | Full public command acceptance, including alias, diagnostic and publication behavior | `clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.application-test --exact public-js-compiler-acceptance` |
+
+The focused guard test loads the Stage2 seed components needed to execute the
+current B6 lowering rule. CI also runs the same fixtures through the full
+bootstrap and executes the emitted scalar module in Node 20.
 
 When changing the wrapper help, regenerate its two resources from the Clojure
 CLI presentation and run `checked-in-shell-help-is-rendered-by-the-cli-presentation`
