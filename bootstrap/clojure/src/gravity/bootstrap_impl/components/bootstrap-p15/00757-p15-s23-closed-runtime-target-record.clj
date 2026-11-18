@@ -1,3 +1,4 @@
+(declare jvm-backend-validate-plan!)
 
 
 (defn p15-s23-closed-runtime-target-record
@@ -283,7 +284,7 @@
                     (:schema context))
                  (string? (:source-path context))
                  (string? (:source-text context))
-                 (= :c (:requested-target context))
+                 (contains? #{:c :jvm} (:requested-target context))
                  (= (str "sha256:" (sha256-hex (:source-text context)))
                     (:source-content-hash context))
                  (= context
@@ -337,7 +338,7 @@
         (:schema context))
      (string? (:source-path context))
      (string? (:source-text context))
-     (= :c (:requested-target context))
+     (contains? #{:c :jvm} (:requested-target context))
      (= (str "sha256:" (sha256-hex (:source-text context)))
         (:source-content-hash context))
      (let [source-path (:source-path context)
@@ -345,8 +346,11 @@
            target (:requested-target context)
            validate-plan!
            (fn [candidate]
-             (c-backend-validate-plan! source-path target candidate)
-             (c-backend-validate-runtime-plan! source-path target candidate))
+             (case target
+               :c (do
+                    (c-backend-validate-plan! source-path target candidate)
+                    (c-backend-validate-runtime-plan! source-path target candidate))
+               :jvm (jvm-backend-validate-plan! source-path candidate)))
            rebuilt
            (stage2-runtime-derived-current-runtime-development-packet
             source-path source-text target

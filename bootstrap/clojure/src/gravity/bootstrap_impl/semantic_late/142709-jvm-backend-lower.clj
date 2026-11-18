@@ -37,12 +37,18 @@
    compiler-record
    (:stage2-compiler-artifact-record packet)
    closed-plan-runtime
-   (p15-s23-closed-runtime-target-record packet)
+   (if (c-backend-current-runtime-development-packet? packet)
+     (current-runtime-development-target-record-from-authenticated-packet
+      packet)
+     (p15-s23-closed-runtime-target-record packet))
    _
    (when-not
-    (p15-s23-closed-runtime-target-record-authentic?
-     closed-plan-runtime
-     (p15-s23-closed-runtime-target-context packet))
+    (if (c-backend-current-runtime-development-packet? packet)
+      (= :gravity/current-runtime-development-target-record
+         (:artifact closed-plan-runtime))
+      (p15-s23-closed-runtime-target-record-authentic?
+       closed-plan-runtime
+       (p15-s23-closed-runtime-target-context packet)))
     (jvm-backend-fail!
      "C14-INPUT"
      "JVM backend received an unauthenticated closed runtime target record"

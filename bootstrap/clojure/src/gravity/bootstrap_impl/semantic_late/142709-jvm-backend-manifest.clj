@@ -27,6 +27,7 @@
      plan-hash
      source-hash
      compiler-record
+     current-runtime-development-authenticated-reference
      closed-plan-runtime
      stage-directory
      staged-paths
@@ -44,8 +45,11 @@
      expected-effects
      expected-capabilities]}
    state
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? packet)
    manifest-input
-   {:release-grade? false,
+   (cond->
+    {:release-grade? false,
     :capabilities expected-capabilities,
     :diagnostics [],
     :closed-plan-runtime closed-plan-runtime,
@@ -97,8 +101,23 @@
     :target
     {:classfile 65, :runtime :jvm-21, :module-system :named, :packaging :modular-executable-jar},
     :backend :gravity.backend/jvm,
-    :profile :hosted,
-    :clojure-seed-boundary? true}
+     :profile :hosted,
+     :clojure-seed-boundary? true}
+    current-runtime-development?
+    (assoc :current-runtime-development? true
+           :compiler-stage :p15-s23-stage2-plan-emitter
+           :stage2-compiler-driver-used? false
+           :runtime-artifact-source
+           (c-backend-current-runtime-development-source-record
+            (:stage2-runtime-rule packet))
+           :runtime-revision-status :development-unadmitted
+           :runtime-effects-status :not-checked
+           :current-runtime-development-comparison-record
+           (select-keys
+            (:current-runtime-development-comparison-record packet)
+            [:artifact :source-id :stage2-plan-id :accepted-output-equivalent?
+             :status :comparison-boundary :revision-status :effects
+             :clojure-seed-boundary? :self-hosted?])) )
    manifest-hash
    (str
     "sha256:"
@@ -116,9 +135,18 @@
     :effects expected-effects,
     :capabilities expected-capabilities,
     :content-hashes content-hashes,
-    :closed-runtime-context (p15-s23-closed-runtime-target-context packet)}
+    :closed-runtime-context
+    (if (c-backend-current-runtime-development-packet? packet)
+      (current-runtime-development-target-context
+       packet source-path source-text jvm-backend-target)
+      (p15-s23-closed-runtime-target-context packet))}
    _
-   (jvm-backend-validate-manifest! source-path manifest validation-context)
+   (if current-runtime-development?
+     (jvm-backend-validate-current-runtime-development-manifest!
+      source-path manifest validation-context
+      current-runtime-development-authenticated-reference)
+     (jvm-backend-validate-manifest!
+      source-path manifest validation-context))
    _
    (jvm-backend-validate-content-hashes! source-path manifest staged-paths)]
   (clojure.core/assoc

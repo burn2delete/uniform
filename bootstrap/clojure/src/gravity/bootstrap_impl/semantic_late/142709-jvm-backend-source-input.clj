@@ -57,28 +57,7 @@
      staged-paths
      [:java-source :module-source :class-file :module-class :jar :source-map]))
    expected-input
-   {:source-content-hash source-hash,
-    :plan-assembly-invoked? (:plan-assembly-invoked? compiler-record),
-    :source-declared-target (get-in packet [:target-eligibility :source-declared-target]),
-    :plan-assembly-artifact-hash (:plan-assembly-artifact-hash compiler-record),
-    :expression-lowering-artifact-hash (:artifact-hash compiler-record),
-    :compiler-driver-rule-hash (get-in packet [:stage2-compiler-driver-rule :driver-rule-hash]),
-    :runtime-rule-hash (get-in packet [:stage2-runtime-rule :runtime-rule-hash]),
-    :expression-lowering-semantic-hash (:semantic-hash compiler-record),
-    :expression-lowering-generic-bridge-residual? (:generic-bridge-residual? compiler-record),
-    :plan-assembly-generic-bridge-residual?
-    (:plan-assembly-generic-bridge-residual? compiler-record),
-    :instruction-summary (:instruction-summary plan),
-    :plan-emitter-source-rule-hash (get-in packet [:stage2-plan-emitter-rule :source-rule-hash]),
-    :stage2-plan-hash plan-hash,
-    :requested-backend-target :jvm,
-    :plan-assembly-function (:plan-assembly-function compiler-record),
-    :expression-lowering-invoked? (:invoked? compiler-record),
-    :runtime-artifact-hash (get-in packet [:stage2-runtime-rule :runtime-artifact-hash]),
-    :expression-lowering-source-content-hash (:source-content-hash compiler-record),
-    :plan-assembly-semantic-hash (:plan-assembly-semantic-hash compiler-record),
-    :plan-assembly-source-content-hash (:plan-assembly-source-content-hash compiler-record),
-    :target-eligibility (:target-eligibility packet)}
+   (jvm-backend-source-input-projection packet source-hash plan-hash)
    expected-effects
    (:effect-summary plan)
    expected-capabilities

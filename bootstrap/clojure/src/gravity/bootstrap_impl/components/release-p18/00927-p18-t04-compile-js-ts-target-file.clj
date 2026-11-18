@@ -137,7 +137,9 @@
       "Use --target jvm --lowering runtime-derived -o <artifact-directory>."}))
   (let [artifact
         (jvm-backend-file-artifact
-         source-path {:output-path output-path :emit? true})]
+         source-path {:output-path output-path
+                      :emit? true
+                      :current-runtime-development? true})]
     (assoc artifact
            :command-boundary
            {:compile-command
