@@ -122,3 +122,39 @@ transfer establishes no complete checked-Core producer, verified final artifact,
 report acceptance, domain conformance, downstream release, self-hosting, seed
 retirement, dependency readiness or overall completion percentage. All existing
 admission holds remain in force and all five MIR outcomes remain open.
+
+## Scalar join successor arguments
+
+Finding `mir.scalar-joins.verify-successor-arguments-v1` implements part of
+`mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality` in
+worktree `increment-1458`. C11 requires definitions to dominate uses and
+operand types to match. [MIR verification](../../docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md#mir-verification)
+
+The scalar verifier checks the outgoing argument vector, the definitions
+available at the predecessor terminator, the destination parameter type and
+the incoming value recorded for that predecessor. Edge failures use the
+existing C11 report with the supplying block, terminator and source origin.
+Fresh reconstruction from checked Core still gates success.
+
+The `scalar-join-successor-arguments` fixture compiles
+`(if outer (if inner 11 22) fallback)`. It expects I64 results 11 and 22
+from the inner arms and 33 from the outer fallback. Each mutation changes
+only one predecessor's outgoing argument vector.
+
+| Mutation | Expected verifier evidence |
+| --- | --- |
+| Omit the right argument | C11-BLOCK with the required arity and the empty vector |
+| Supply the available Bool parameter on the left | C11-TYPE with expected I64 and actual Bool |
+| Supply the right arm's I64 on the left | C11-DOMINANCE with the required predecessor and actual defining block |
+| Substitute the available I64 fallback on the right | C11-BLOCK with the recorded and supplied incoming values |
+
+Each rejection also requires SH13 to return the verifier report and a nil
+execution, even when the selected path bypasses the malformed edge.
+
+Controller checks are pending. No execution or independent acceptance receipt
+exists for this increment. Proposed commands from the repository root are
+
+```sh
+clojure -J-Xmx2g -M:dev-test --namespace gravity.compiler.application-test --exact scalar-join-successor-arguments --exact scalar-functions-reject-tampered-products
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+```

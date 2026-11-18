@@ -12535,7 +12535,36 @@
                 (if (> (count types) 0) (= type (c11-last-value types)) false)
                 false))))))))
 
-(defn c11-scalar-block-valid? [mir function block]
+(defn c11-singleton-vector? [values]
+  (if (vector? values) (= 1 (count values)) false))
+
+(defn c11-scalar-join-problem [core mir function block definitions available]
+  (let [term (get block :terminator) predecessor (get block :block-id)
+        targets (get term :successors) target (get targets 0)
+        arguments (get (get (get function :blocks) target) :arguments)
+        parameter (get arguments 0) edges (get term :successor-arguments)
+        values (get edges 0) value (get values 0) definition (get definitions value)
+        subject {:name (get function :name) :block-id predecessor :op-id (get term :terminator-id)
+                 :core-node-id (get parameter :source-core-node-id) :source (get term :source)}]
+    ; Scalar arm exits supply one value to the sole parameter of one join.
+    (if (sh12-c6p-all? [(c11-singleton-vector? targets) (c11-singleton-vector? arguments)
+                        (map? parameter) (c11-singleton-vector? edges) (c11-singleton-vector? values)])
+      (if (if (contains? available value) (map? definition) false)
+        (if (= (get parameter :type) (get definition :type))
+          (let [incoming (get parameter :incoming)
+                record (if (vector? incoming) (sh13-find-by-key incoming :predecessor predecessor 0) nil)]
+            (if (= value (get record :value-id)) nil
+              (c11-scalar-rejected core mir "C11-BLOCK" :scalar-join-incoming-value subject
+                record {:predecessor predecessor :value-id value})))
+          (c11-scalar-rejected core mir "C11-TYPE" :scalar-join-argument-type subject
+            (get parameter :type) (get definition :type)))
+        (c11-scalar-rejected core mir "C11-DOMINANCE" :scalar-join-argument-definition subject
+          {:value-id value :available-at predecessor} {:value-id value :defined-in (get definition :block-id)}))
+      (c11-scalar-rejected core mir "C11-BLOCK" :scalar-join-argument-shape subject
+        {:destination target :parameter-count 1 :argument-count 1}
+        {:successors targets :parameters arguments :successor-arguments edges}))))
+
+(defn c11-scalar-block-problem [core mir function block]
   (let [definitions (get (get mir :data-flow-graph) :definitions)
         initial (loop [arguments (get block :arguments) available (set (get block :available-at-entry))]
                   (if (= 0 (count arguments)) available
@@ -12543,27 +12572,33 @@
     (loop [operations (get block :instructions) available initial previous nil]
       (if (= 0 (count operations))
         (let [term (get block :terminator) ids (get term :operands)
-              types (c11-scalar-operand-types definitions ids)]
-          (if (sh13-vector-values-present? ids available 0)
-            (if (= :return (get term :kind)) (= [(get function :returns)] types)
-              (if (= :conditional-branch (get term :kind)) (= [:gravity/bool] types)
-                (= :branch (get term :kind)))) false))
+              types (c11-scalar-operand-types definitions ids)
+              kind (get term :kind)
+              edge-problem (if (= :branch kind)
+                             (c11-scalar-join-problem core mir function block definitions available) nil)]
+          (if (= nil edge-problem)
+            (if (if (sh13-vector-values-present? ids available 0)
+                  (if (= :return kind) (= [(get function :returns)] types)
+                    (if (= :conditional-branch kind) (= [:gravity/bool] types) (= :branch kind))) false)
+              nil :invalid-graph)
+            edge-problem))
         (let [operation (first operations) id (get operation :result)]
           (if (if (contains? available id) false
                 (sh13-vector-values-present? (get operation :operands) available 0))
             (if (c11-scalar-operation-types-valid? mir operation definitions previous)
-              (recur (rest operations) (conj available id) operation) false)
-            false))))))
+              (recur (rest operations) (conj available id) operation) :invalid-graph)
+            :invalid-graph))))))
 
-(defn c11-scalar-graphs-valid? [mir]
+(defn c11-scalar-graph-problem [core mir]
   (loop [names (get mir :function-order)]
-    (if (= 0 (count names)) true
+    (if (= 0 (count names)) nil
       (let [function (get (get mir :functions) (first names))
-            valid (loop [ids (get function :block-order)]
-                    (if (= 0 (count ids)) true
-                      (if (c11-scalar-block-valid? mir function (get (get function :blocks) (first ids)))
-                        (recur (rest ids)) false)))]
-        (if valid (recur (rest names)) false)))))
+            problem (loop [ids (get function :block-order)]
+                      (if (= 0 (count ids)) nil
+                        (let [block (get (get function :blocks) (first ids))
+                              issue (c11-scalar-block-problem core mir function block)]
+                          (if (= nil issue) (recur (rest ids)) issue))))]
+        (if (= nil problem) (recur (rest names)) problem)))))
 
 (defn c11-scalar-functions-passed [checked-core mir]
   {:artifact :gravity/c11-scalar-functions-report :schema-version 1
@@ -12578,6 +12613,24 @@
    :preserves [:functions :exports :declaration-binding-identities :lexical-bindings
                :types :effects :ownership :capabilities :safety :source-origins]
    :diagnostics [] :nonclaims [:target-emission :self-hosted? :seed-retirement :whole-c11]})
+
+(defn c11-scalar-verify-graphs [core mir expected]
+  (let [problem (if (= (get (get expected :data-flow-graph) :definitions)
+                       (get (get mir :data-flow-graph) :definitions))
+                  (c11-scalar-graph-problem core mir) :invalid-graph)]
+    (if (map? problem) problem
+      (if (if (= nil problem)
+            (= [(get expected :control-flow-graph) (get expected :data-flow-graph)]
+               [(get mir :control-flow-graph) (get mir :data-flow-graph)]) false)
+        (if (= expected mir) (c11-scalar-functions-passed core mir)
+          (c11-scalar-mismatch-report core mir expected
+            "C11-VERIFY" :fresh-source-derived-mir
+            (c11-scalar-operation-mismatch expected mir :operands) :operands []
+            :original-construction :altered-construction))
+        (c11-scalar-mismatch-report core mir expected
+          "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow nil :operands
+          [[:data-flow-graph :definitions] [:control-flow-graph :dominance]]
+          :source-derived-dominance :altered-graph)))))
 
 (defn c11-verify-scalar-functions-mir [checked-core mir]
   (let [problem (c11-scalar-core-problem checked-core)]
@@ -12608,18 +12661,7 @@
                          [(get mir :ownership-table) (get mir :capability-table)
                           (get mir :profile-target-table)])
                     (if (if (= nil origin-mismatch) (= (get expected :source-map) (get mir :source-map)) false)
-                      (if (if (= [(get expected :control-flow-graph) (get expected :data-flow-graph)]
-                                 [(get mir :control-flow-graph) (get mir :data-flow-graph)])
-                            (c11-scalar-graphs-valid? mir) false)
-                        (if (= expected mir) (c11-scalar-functions-passed checked-core mir)
-                          (c11-scalar-mismatch-report checked-core mir expected
-                            "C11-VERIFY" :fresh-source-derived-mir
-                            (c11-scalar-operation-mismatch expected mir :operands) :operands []
-                            :original-construction :altered-construction))
-                        (c11-scalar-mismatch-report checked-core mir expected
-                          "C11-DOMINANCE" :scalar-definitions-uses-and-control-flow nil :operands
-                          [[:data-flow-graph :definitions] [:control-flow-graph :dominance]]
-                          :source-derived-dominance :altered-graph))
+                      (c11-scalar-verify-graphs checked-core mir expected)
                       (c11-scalar-mismatch-report checked-core mir expected
                         "C11-ORIGIN" :scalar-source-origin-preservation origin-mismatch :origin
                         [[:source-map]] :source-bound-origin :altered-origin))

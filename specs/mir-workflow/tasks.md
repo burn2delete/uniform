@@ -45,6 +45,11 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence.
 
+Scalar join increment `mir.scalar-joins.verify-successor-arguments-v1` checks
+the value supplied by each arm at its branch terminator. The nested-branch
+fixture and execution refusals are authored. Controller checks and independent
+acceptance are pending. [Scalar join evidence](evidence.md#scalar-join-successor-arguments)
+
 <!-- mir-canonical-verification:start -->
 Apply the [complete MIR source criteria](plan.md#complete-mir-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.
 
