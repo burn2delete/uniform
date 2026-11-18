@@ -2750,7 +2750,7 @@
         (ci/stage-selection
          [(change "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
           (change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
-          (change "bootstrap/clojure/src/gravity/not-in-catalog.clj")])
+          (change "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj")])
         macro-watchdog-seconds
         (reduce + (map second (ci/commands-for-selection "macro" {:kind :full})))
         checked-core-watchdog-seconds
@@ -2758,10 +2758,10 @@
                        (ci/commands-for-selection "checked-core-runtime" full-owner-selection)))]
     (is (some? macro-minutes))
     (is (= "50" macro-minutes))
-    (is (= "70" checked-core-minutes))
+    (is (= "85" checked-core-minutes))
     (is (= "20" other-minutes))
     (is (> (* 60 (Long/parseLong macro-minutes)) macro-watchdog-seconds))
-    (is (= 3600 checked-core-watchdog-seconds))
+    (is (= 4500 checked-core-watchdog-seconds))
     (is (> (* 60 (Long/parseLong checked-core-minutes)) checked-core-watchdog-seconds))
     (is (str/includes? checks "mode: [static, contracts, bootstrap, macro, checked-core-runtime]"))))
 
