@@ -36,6 +36,7 @@
      :ordered-set-equal-keyword
      :ordered-set-equal-integer
      :utf8-validate
+     :utf8-byte-slice
      :checked-add-i64
      :checked-sub-i64
      :checked-mul-i64
@@ -49,7 +50,7 @@
    :experimental-opt-in-required true
    :diagnostics
    #{"STD1001" "STD1002" "STD1003" "STD2004" "STD3002"
-     "STD4001" "STD5001" "STD5002" "STD8001" "STD8003"
+     "STD4001" "STD4002" "STD5001" "STD5002" "STD8001" "STD8003"
      "STD10003" "STD15001" "STD20001"}
    :pending
    [:authenticated-sh13-control-flow
@@ -146,6 +147,10 @@
      "(Vector Byte) -> (Result ValidatedUtf8 TextError)"
      #{:memory/allocate} #{}
      :bounded-by-input ["STD4001"] #{:meta})
+    (sh22-export
+     :utf8-byte-slice :text
+     "ValidatedUtf8 Integer Integer -> (Result ValidatedUtf8 TextError)"
+     #{:memory/allocate} #{} :bounded-by-result ["STD4001" "STD4002"] #{:meta})
     (sh22-export
      :checked-add-i64 :numeric
      "I64 I64 -> (Result I64 NumericError)"
@@ -974,25 +979,65 @@
           (recur
            (+ current-index step) (+ current-result 1)))))))
 
+(defn validated-utf8 [bytes]
+  (let [scalar-count (sh22-utf8-scalar-count bytes 0 0)]
+    (if (= nil scalar-count)
+      nil
+      {:artifact :gravity/validated-utf8
+       :bytes bytes
+       :byte-count (count bytes)
+       :scalar-count scalar-count
+       :encoding :utf-8})))
+
 (defn sh22-utf8-validate [request]
   (let [arguments (get request :arguments)
         bytes (get arguments 0)]
     (if (= 1 (count arguments))
       (if (vector? bytes)
-        (let [scalar-count (sh22-utf8-scalar-count bytes 0 0)]
-          (if (= nil scalar-count)
+        (let [value (validated-utf8 bytes)]
+          (if (= nil value)
             (sh22-rejected request "STD4001" :invalid-utf8)
             (sh22-accepted
              request
-             {:artifact :gravity/validated-utf8
-              :bytes bytes
-              :byte-count (count bytes)
-              :scalar-count scalar-count
-              :encoding :utf-8}
+             value
              {:text-kind :validated-utf8
               :boundary-policy :unicode-scalar
               :allocation :bounded-by-input})))
         (sh22-rejected request "STD4001" :expected-byte-vector))
+      (sh22-rejected request "STD1001" :invalid-arity))))
+
+(defn utf8-byte-boundary? [bytes offset]
+  ; On validated bytes an in-range offset starts a scalar or is the end.
+  (if (= offset (count bytes))
+    true
+    (if (sh22-continuation-byte? (get bytes offset)) false true)))
+
+(defn utf8-byte-range-valid? [bytes start end]
+  (if (sh22-vector-slice-bounds? bytes start end)
+    (if (utf8-byte-boundary? bytes start) (utf8-byte-boundary? bytes end) false)
+    false))
+
+(defn validated-utf8-value? [value]
+  (if (map? value)
+    (let [bytes (get value :bytes)]
+      (if (vector? bytes) (= (validated-utf8 bytes) value) false))
+    false))
+
+(defn utf8-byte-slice [request]
+  (let [arguments (get request :arguments)]
+    (if (= 3 (count arguments))
+      (let [value (get arguments 0)
+            start (get arguments 1)
+            end (get arguments 2)]
+        (if (validated-utf8-value? value)
+          (let [bytes (get value :bytes)]
+            (if (utf8-byte-range-valid? bytes start end)
+              (sh22-accepted
+               request (validated-utf8 (sh22-vector-slice-values bytes start end))
+               {:text-kind :validated-utf8 :index-unit :byte
+                :boundary-policy :unicode-scalar :allocation :bounded-by-result})
+              (sh22-rejected request "STD4002" :invalid-byte-range)))
+          (sh22-rejected request "STD4001" :validated-text-required)))
       (sh22-rejected request "STD1001" :invalid-arity))))
 
 (defn sh22-checked-add [request]
@@ -1582,8 +1627,10 @@
               (if (= operation :ordered-set-conj)
                 (sh22-ordered-set-conj request)
                 (sh22-ordered-set-contains-keyword request))
-              (if (= operation :utf8-validate)
-                (sh22-utf8-validate request)
+              (if (sh22-member? #{:utf8-validate :utf8-byte-slice} operation)
+                (if (= operation :utf8-validate)
+                  (sh22-utf8-validate request)
+                  (utf8-byte-slice request))
                 (if (sh22-member? #{:checked-add-i64 :checked-sub-i64 :checked-mul-i64} operation)
                   (if (= operation :checked-add-i64)
                     (sh22-checked-add request)
@@ -1612,6 +1659,7 @@
       :ordered-map-dissoc-keyword
       :ordered-set-conj
       :utf8-validate
+      :utf8-byte-slice
       :error-context
       :artifact-data
       :meta-view
@@ -1627,7 +1675,7 @@
 (defn sh22-operation-allocation [operation]
   (if (= operation :ordered-map-get-default-keyword)
     :none
-  (if (= operation :vector-slice)
+  (if (sh22-member? #{:vector-slice :utf8-byte-slice} operation)
     :bounded-by-result
   (if (= operation :ordered-set-equal-integer)
     :none

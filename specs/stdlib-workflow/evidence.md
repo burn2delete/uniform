@@ -324,3 +324,32 @@ and Safety `56b119414d255696883af9ca15a01d6380a2d5b92bb7ecaad1dd32ad13290265`.
 This bridge records source reconciliation only; it confers no implementation,
 canonical-adoption, release, self-hosting, denominator, or integration
 authority.
+
+## Validated UTF-8 byte slice
+
+Finding `stdlib.text.validated-utf8-byte-slice-v1` implements the byte-offset
+case of [STD4](../../docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md)
+in the experimental `:meta` library request path. The operation rebuilds the
+validated value from all input bytes and compares its facts before checking
+the half-open range. On valid UTF-8 each endpoint must be at the end of the
+vector or at a non-continuation byte. The result owns a copied byte vector.
+
+The [focused fixtures](../../bootstrap/clojure/test/gravity/self_hosting/sh22_utf8_byte_slice_test.clj)
+consume validator output for `[65 240 159 152 128 66]`. They expect one
+four-byte scalar for `[1,5)`, empty text for `[6,6)`, and STD4002 for split,
+reversed, noninteger or out-of-range endpoints. Malformed bytes outside the
+slice and false validation facts expect STD4001. Other fixtures cover request
+authority, provenance, replay and substitution of another valid scalar.
+
+Controller execution and independent acceptance are pending. Proposed checks:
+
+```clojure
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-utf8-byte-slice-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-standard-library-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-integer-set-equality-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+```
+
+Source inspection found that the standard-library and integer-set-equality
+tests above assert an inventory of 25. The additional export makes 26.
+Updating those assertions requires ownership outside this finding.

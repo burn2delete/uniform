@@ -168,6 +168,10 @@ Expose every actual module/export stability entry: experimental explicit source/
 
 Status: Open
 
+The experimental STD4 validated UTF-8 byte slice and its request/replay
+fixtures are authored. Controller checks and independent acceptance are
+pending. See [UTF-8 byte slice evidence](evidence.md#validated-utf-8-byte-slice).
+
 Evidence baseline: [Library architecture](../../docs/phase-16-standard-library/211-std1-standard-library-architecture.md)
 
 Closing evidence: Compiled examples and type/arity/value rejection through real APIs; STD2-STD5 and STD14 fixtures preserve evaluation order, transfers, inert stored values, original persistent values, Unicode boundaries, explicit numeric modes and structured test evidence. Retain each operation's proven-presence/nonempty/in-range premise without invented fallback, coercion, static facts or provider guarantees. Reject invalid UTF-8, implicit locale/lossy conversion, unchecked partial operations, unproved math transformations, free-text-only diagnostic matching and ungranted live-service tests. Compile documentation under every claimed profile; require the exact outputs and negative cases in plan.md.
