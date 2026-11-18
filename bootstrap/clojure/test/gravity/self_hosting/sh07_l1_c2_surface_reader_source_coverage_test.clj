@@ -285,6 +285,8 @@
                  (:artifact package)))
           (is (= :compatible (:compatibility-status package)))
           (is (= expected-status (:reader-result-status package)))
+          (when (= :rejected expected-status)
+            (is (= [] (:reader-extension-invocation-records package))))
           (is (true? (:compatibility-only? package)))
           (is (false? (:authentication-credit? package)))
           (is (false? (:authoritative-reader-result? package)))
@@ -333,6 +335,49 @@
       (is (false? (:authentication-credit? substituted-package)))
       (is (false? (:authoritative-reader-result?
                    substituted-package))))))
+
+(deftest reader-facade-binds-extension-records-to-enabled-tags
+  (doseq [extension ["gravity" "qst"]]
+    (testing extension
+      (let [inputs (sh03-facade-inputs
+                    (path (str sh03-fixture-root "/accepted/newline-lf."
+                               extension)))
+            [source-unit reader-policy reader-result verification-report] inputs
+            record-key :reader-extension-invocation-records
+            records (get reader-result record-key)
+            package (invoke 'l1-c2-package-reader-result inputs)]
+        (is (= :compatible (:compatibility-status package)))
+        (is (= :accepted (:reader-result-status package)))
+        (is (= records (get package record-key)))
+        (is (= (:enabled-reader-tags reader-policy)
+               (mapv :tag-codepoints records)))
+        (is (= [[:registered-not-invoked []] [:registered-not-invoked []]]
+               (mapv (juxt :status :invocations) records)))
+        (doseq [[mutation changed-records]
+                [["duplicate tag" (assoc records 1 (first records))]
+                 ["missing tag" (pop records)]
+                 ["reordered tags" (vec (reverse records))]]]
+          (testing mutation
+            (let [template (assoc (:semantic-reader-template reader-result)
+                                  :reader-extension-record-count
+                                  (count changed-records))
+                  changed-result (assoc reader-result
+                                        record-key changed-records
+                                        :semantic-reader-template template)
+                  changed-report (assoc verification-report
+                                        :semantic-reader-template template)
+                  rejected-package
+                  (invoke 'l1-c2-package-reader-result
+                          [source-unit reader-policy changed-result
+                           changed-report])]
+              (is (= :rejected (:compatibility-status rejected-package)))
+              (is (= ["C2-HASH"]
+                     (mapv :id (:reader-diagnostics rejected-package))))
+              (doseq [product [:token-stream :form-tree
+                               :semantic-value-table :top-level-form-ids
+                               :top-level-parsed-records :parsed-semantic-values
+                               :literal-decoding-records record-key]]
+                (is (= [] (get rejected-package product)) (name product))))))))))
 
 (deftest sh07-b39-l1-c2-claim-boundary-remains-explicit
   (let [definitions (into {} (map (juxt second identity))

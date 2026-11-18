@@ -509,7 +509,17 @@
       false)
     false))
 
-(defn l1-c2-reader-result-products-valid? [reader-result]
+(defn reader-extension-tags-match? [records tags]
+  (if (= (count tags) 0)
+    (= (count records) 0)
+    (let [record (first records)]
+      (if (map? record)
+        (if (= (get record :tag-codepoints) (first tags))
+          (reader-extension-tags-match? (rest records) (rest tags))
+          false)
+        false))))
+
+(defn l1-c2-reader-result-products-valid? [reader-result reader-policy]
   (let [status (get reader-result :status)
         tokens (get reader-result :token-stream)
         forms (get reader-result :form-tree)
@@ -543,7 +553,11 @@
                                         :semantic-error-deferment-record)
                                    (count forms))
                                 (if (vector? extensions)
-                                  (if (<= (count extensions) 32)
+                                  (if (if (= status :accepted)
+                                        (reader-extension-tags-match?
+                                         extensions
+                                         (get reader-policy :enabled-reader-tags))
+                                        (= (count extensions) 0))
                                     (if (l1-c2-reader-source-map-valid?
                                          (get reader-result
                                               :reader-source-map)
@@ -574,13 +588,11 @@
                                                         (if (= (count top-level-records) 0)
                                                           (if (= (count parsed-values) 0)
                                                             (if (= (count literals) 0)
-                                                              (if (= (count extensions) 0)
-                                                                (if (= (count diagnostics) 1)
-                                                                  (if (= (count requests) 2)
-                                                                    (l1-c2-rejected-semantic-template-valid?
-                                                                     (get reader-result
-                                                                          :semantic-reader-template))
-                                                                    false)
+                                                              (if (= (count diagnostics) 1)
+                                                                (if (= (count requests) 2)
+                                                                  (l1-c2-rejected-semantic-template-valid?
+                                                                   (get reader-result
+                                                                        :semantic-reader-template))
                                                                   false)
                                                                 false)
                                                               false)
@@ -636,7 +648,8 @@
                      (l1-c2-reader-bounds-record))
                 (if (= (get reader-result :execution-boundary)
                        (l1-c2-reader-execution-boundary-record))
-                  (if (l1-c2-reader-result-products-valid? reader-result)
+                  (if (l1-c2-reader-result-products-valid?
+                       reader-result reader-policy)
                     (l1-c2-reader-digest-requests-valid?
                      (get reader-result :digest-requests)
                      source-unit 0)
