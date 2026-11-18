@@ -330,7 +330,7 @@
                       "\nTree: " tree
                       "\nCatalog: " (pr-str (catalog/index catalog))
                       "\nExplicit priorities: " (pr-str (get-in ctx [:config :priorities]))
-                      "\nGitHub controls by issue: " (pr-str settings)
+                      "\nOperator controls by issue: " (pr-str settings)
                       "\nSource issue identities: " (pr-str (into {} (map (fn [[k v]] [k (get-in v [:issue :number])]) (:source-tasks @(:state ctx)))))
                       "\nExisting increment index (complete records are in the supplied read-only snapshot): "
                       (pr-str (:index history))
@@ -355,7 +355,7 @@
                                             :effects task-effects :settings task-settings}
                                            (:path (:snapshot history))
                                            (:digest (:snapshot history)))
-                 (let [output (codex/job! ctx job worktree :read selector-instructions prompt output-schema)]
+                 (let [output (codex/job! (codex/for-role ctx :select) job worktree :read selector-instructions prompt output-schema)]
                    (vreset! response output)
                    (schema/validate! output-schema output)
                    (doseq [increment (:increments output)]
@@ -373,11 +373,14 @@
                                                      :job job :identity (select-keys (get-in @(:state ctx) [:jobs job]) [:thread :turn])}
                                 :message (.getMessage e) :details (ex-data e)})
                    (throw e)))]
-    (rt/update! ctx assoc :selection {:base base :output output})
-    (gh/comment! ctx (:campaign-issue @(:state ctx)) (str "selection/" (flow/next-job! ctx :record))
-                 (str "Selection at `" base "`: " (:summary output) "\n\nBlockers: " (pr-str (:blockers output))))
-    (admit! ctx base catalog (:increments output))
-    output))
+    (if (and (:local-scheduling ctx) (not= settings (project/settings ctx)))
+      (do (rt/event! ctx :selection-deferred {:base base :job job :reason :controls-changed})
+          (assoc output :deferred true))
+      (do (rt/update! ctx assoc :selection {:base base :output output})
+          (gh/comment! ctx (:campaign-issue @(:state ctx)) (str "selection/" (flow/next-job! ctx :record))
+                       (str "Selection at `" base "`: " (:summary output) "\n\nBlockers: " (pr-str (:blockers output))))
+          (admit! ctx base catalog (:increments output))
+          output))))
 
 (defn complete! [ctx {:keys [base worktree catalog]}]
   (when (and (seq (:tasks catalog)) (every? :checked (:tasks catalog))
@@ -394,7 +397,7 @@
         (codex/command! ctx (flow/next-job! ctx :completion-check) worktree argv))
       (flow/assert-clean! ctx worktree)
       (when-not (= base (rt/git ctx worktree "rev-parse" "HEAD")) (rt/fail! "Completion checks changed source identity" {}))
-      (let [review (codex/job! ctx (flow/next-job! ctx :completion-review) worktree :read instructions
+      (let [review (codex/job! (codex/for-role ctx :completion-review) (flow/next-job! ctx :completion-review) worktree :read instructions
                      (str "Independently assess full project completion at exact base " base ", tree " tree
                           ". Read all roadmap/reconciliation, 240-contract, Phase 18, self-hosting and seed-retirement evidence. "
                           "All catalog checkboxes and configured checks passed; those facts alone do not prove completion. "
@@ -418,12 +421,14 @@
 (defn campaign! [ctx]
   (coordination/register! ctx)
   (try
-  (project/setup! ctx)
+  (when-not (:local-scheduling ctx) (project/setup! ctx))
   (ensure-campaign! ctx)
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
     (try
       (rt/update! ctx assoc :status :running)
-      (gh/status! ctx (:campaign-issue @(:state ctx)) "Implementing")
+      (when (or (not (:local-scheduling ctx))
+                (project/runnable? (project/settings ctx) (get-in @(:state ctx) [:campaign-issue :number])))
+        (gh/status! ctx (:campaign-issue @(:state ctx)) "Implementing"))
       (loop [selection-input nil]
         (doseq [[key job] @running :when (.isDone ^Future job)]
           (try (.get ^Future job) (catch Exception e (flow/attention! ctx key (or (.getCause e) e))))
@@ -441,7 +446,8 @@
             (doseq [t (flow/tasks ctx) :when (and (active? t) (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
               (try (flow/integrate! ctx t)
                    (catch Exception e (when-not (:ownership-wait (ex-data e)) (failure! ctx (:key t) e)))))
-            (doseq [t (sort-by (fn [t] [(project/priority settings (get-in @(:state ctx) [:source-tasks (:task t) :issue :number])) (:key t)]) (flow/tasks ctx))]
+            (doseq [t (sort-by (fn [t] [(project/priority settings (get-in @(:state ctx) [:source-tasks (:task t) :issue :number]))
+                                         (project/priority settings (get-in t [:issue :number])) (:key t)]) (flow/tasks ctx))]
               (when (and (active? t) (< (count @running) (get-in ctx [:config :parallelism]))
                          (not (contains? @running (:key t))) (flow/eligible? ctx t [])
                          (coordination/claim! ctx (:key t) (:paths t)))
@@ -455,12 +461,12 @@
               (if (and base (not= fingerprint selection-input))
                 (let [snapshot (snapshot! ctx)
                       output (select! ctx snapshot settings pulls)]
-                  (if (and (empty? (:increments output)) (complete! ctx snapshot))
+                  (if (and (not (:deferred output)) (empty? (:increments output)) (complete! ctx snapshot))
                     (do (rt/update! ctx assoc :status :complete)
                         (gh/status! ctx (:campaign-issue @(:state ctx)) "Done")
                         (rt/effect! ctx "close-campaign"
                                     #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in @(:state ctx) [:campaign-issue :number]))) {:state "closed" :state_reason "completed"})))
-                    (do (when (empty? (:increments output))
+                    (do (when (and (not (:deferred output)) (empty? (:increments output)))
                           (rt/update! ctx assoc :status :waiting)
                           (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
                         (Thread/sleep (get-in ctx [:config :poll-ms])) (recur fingerprint))))

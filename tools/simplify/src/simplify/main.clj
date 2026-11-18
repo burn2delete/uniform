@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.github :as gh]
             [simplify.runtime :as rt]
             [simplify.workflow :as workflow])
@@ -275,13 +276,19 @@
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Provide a command and a configuration path; see README.md" {}))
-    (let [ctx (cond-> (assoc (context! (config! config-path)) :command command)
-                (= "queue-recovery" command) (dissoc :log-file))]
-      (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
-      (try (dispatch! ctx command args)
-           (catch Exception e
-             (rt/event! ctx :fatal {:message (.getMessage e) :data (ex-data e)})
-             (throw e))))
+    (if (= "holds" command)
+      (let [config (config! config-path)
+            path (io/file (:state-dir config) "state.edn")]
+        (when (seq args) (rt/fail! "holds takes no additional arguments" {}))
+        (when-not (.isFile path) (rt/fail! "holds requires an existing campaign" {:file (str path)}))
+        (prn (rt/redact (vec (diagnostics/holds (read-state! config path) (diagnostics/coordination-snapshot config))))))
+      (let [ctx (cond-> (assoc (context! (config! config-path)) :command command)
+                  (= "queue-recovery" command) (dissoc :log-file))]
+        (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :model)})
+        (try (dispatch! ctx command args)
+             (catch Exception e
+               (rt/event! ctx :fatal {:message (.getMessage e) :data (ex-data e)})
+               (throw e)))))
     (catch Exception e
       (binding [*out* *err*] (println (.getMessage e)))
       (shutdown-agents)
