@@ -14,14 +14,11 @@ This is a work-artifact layer for implementation increments. The 240 contracts u
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
 
-Before selecting a feature directory, use the ordinary PR workflow in
-[AGENTS.md](../AGENTS.md#working-discipline) for fixes within an existing
-contract. Keep focused regression tests with the implementation and record
-the checks on the PR. Review and CI live with that diff. Existing task status
-may be updated when the outcome changes. Use the bounded Spec Kit workflow
-when requested or when the change needs an actual specification or plan.
-Create separate acceptance evidence only when the owning contract or the
-governed admission requires it.
+Before selecting a feature directory, use the [ordinary PR workflow](../AGENTS.md#working-discipline)
+for fixes within an existing contract. Use the bounded Spec Kit workflow
+when requested or when the change needs a specification or plan. The live
+[constitution](memory/constitution.md#exact-outcomes-and-evidence-ownership)
+describes how to record evidence for each kind of change.
 
 ## Project-wide implementation coverage
 

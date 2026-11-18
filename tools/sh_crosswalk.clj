@@ -343,21 +343,15 @@
              (set requirement-sources/current-source-transition-paths))
           (= (set (map :path transitions)) (set (map :path expected))))
      "Current source transitions must cover exactly the authenticated paths")
-    (doseq [path (sort (keys (by-path expected)))]
-      (let [actual (get (by-path transitions) path)
-            contract (get (by-path expected) path)]
-        (acceptance-dependencies/require!
-         (= actual contract)
-         (str "Current source transition metadata differs from its contract: " path))
-        (requirement-sources/validate-current-source-transition!
-         actual contract
-         (fn [ref source-path]
-           (git-source ref source-path))
-         slurp sh-inventory/sha256 acceptance-dependencies/require!)))
-    (mapv #(select-keys % [:document-id :path :baseline-ref :baseline-tree
-                           :applying-ref :applying-tree :changed-spans
-                           :review-state :authority])
-          (sort-by :path transitions))))
+    (let [contracts (by-path expected)]
+      (mapv (fn [record]
+              (let [path (:path record) contract (contracts path)]
+                (acceptance-dependencies/require!
+                 (= record contract)
+                 (str "Current source transition metadata differs from its contract: " path))
+                (requirement-sources/validate-crosswalk-source-transition!
+                 record contract git-source slurp sh-inventory/sha256 acceptance-dependencies/require!)))
+            (sort-by :path transitions)))))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -603,9 +597,22 @@
   (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
         historical-row-source? (and (contains? historical-task-transition-paths path)
                                     (= region (str component "-implementation-tasks")))
+        source-commit (cond
+                        historical-row-source? baseline
+                        (contains? current-source-transition-paths path)
+                        (:applying-ref (current-source-transition-for-path path))
+                        (contains? historical-task-transition-paths path)
+                        (:source-input-commit readiness-source-version)
+                        :else (source-pin path))
         source-text (if historical-row-source?
                       (git-source baseline path)
                       text)
+        recorded (if (contains? current-source-transition-paths path) source-text (git-source source-commit path))
+        ;; A task ledger can grow past its captured region. Keep parsing the
+        ;; live markers/rows and preserve the file identity of the inspected revision.
+        _ (when-not (str/starts-with? source-text recorded)
+            (throw (ex-info "Task ledger differs within its recorded source" {:path path})))
+        file-digest (sh-inventory/sha256 recorded)
         source-index (source-span-index source-text)
         marker (str "<!-- " region ":")
         start (+ (.indexOf source-text (str marker "start -->")) (count (str marker "start -->")))
@@ -619,20 +626,19 @@
             (let [stop (or (:start next-row) end) raw (str/trimr (subs source-text (:start row) stop))]
               (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
-               :source-commit (cond
-                                historical-row-source? baseline
-                                (contains? current-source-transition-paths path)
-                                (:applying-ref (current-source-transition-for-path path))
-                                (contains? historical-task-transition-paths path)
-                                (:source-input-commit readiness-source-version)
-                                :else (source-pin path))
-               :file-sha256 (sh-inventory/sha256 source-text)
+               :source-commit source-commit :file-sha256 file-digest
                :source (indexed-source-span path source-text source-index
                                             (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}
                 (not= region (str component "-implementation-tasks"))
                 (assoc :region region :authority :component-future-task-ledger))))
           positions (concat (rest positions) [nil])))))
+
+(defn- task-files-without-transition [tasks]
+  (into {} (for [[_ [row]] tasks
+                 :when (not (contains? current-source-transition-paths (:path row)))]
+             [(:path row) (:file-sha256 row)])))
+
 (defn task-ref [tasks [component selector]]
   (let [id (if (integer? selector) (get-in stable-task-routing-keys [component (dec selector)]) selector)
         row (first (filter #(= id (:id %)) (tasks component)))]
@@ -670,12 +676,6 @@
     (when-not (= [36 7 9 4] (mapv count [fl p18 sh contexts]))
       (throw (ex-info "Changed finish-line source population" {})))
     (vec (concat fl p18 sh contexts))))
-(defn review-fingerprint [result]
-  (sh-inventory/sha256
-    (pr-str [(dissoc result :requirements :source-digests :source-snapshots)
-             (mapv #(dissoc % :mapping-review :coverage) (:requirements result))
-             (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
-             (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
 (def predecessor-mapping-review
   {:status :accepted-mapping-only
    :input-fingerprint "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"
@@ -1149,6 +1149,7 @@
             slurp sh-inventory/sha256 acceptance-dependencies/require!)
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        task-file-digests (task-files-without-transition tasks)
         _ (validate-library-refinement! (:library-refinement readiness-source-version))
         finish-sources (finish-line-sources)
         future-tasks (into (sorted-map)
@@ -1326,12 +1327,12 @@
      :source-digests
      (into (sorted-map)
        (for [p sources]
-         [p (sh-inventory/sha256
-              (if (contains? current-source-transition-paths p)
-                (git-source (or (get applying-source-pins p) (source-pin p)) p)
-                (if (acceptance-dependencies/historical-sh-source-path? p)
-                  (git-source (source-pin p) p)
-                  (slurp p))))]))
+         [p (or (task-file-digests p)
+                (sh-inventory/sha256
+                 (cond (contains? current-source-transition-paths p)
+                       (git-source (or (get applying-source-pins p) (source-pin p)) p)
+                       (acceptance-dependencies/historical-sh-source-path? p) (git-source (source-pin p) p)
+                       :else (slurp p))))]))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
@@ -1415,18 +1416,40 @@
                         :missing-coverage "Task entailment and owner review pending; do not infer complete coverage from a nonempty route."
                         :denial "Restricted C12 work remains with its existing owner; no execution or transfer authorized by this mapping."}}))
 
+(defn review-fingerprint [result]
+  (let [{:keys [commit path sha256]} (get-in mapping-review [:dependency-helper-source-composition :current])
+        helper-digest (sh-inventory/sha256 (git-source commit path))]
+    (acceptance-dependencies/require! (= sha256 helper-digest)
+                                      "Dependency helper differs from its recorded Git revision")
+    (sh-inventory/sha256
+     (pr-str [(dissoc result :requirements :source-digests :source-snapshots)
+              (mapv #(dissoc % :mapping-review :coverage) (:requirements result))
+              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
+              helper-digest]))))
+
 (defn adopt-review [result review]
   (when-not (and (#{:accepted-mapping-only :pending-source-version-review} (:status review))
+                 (= (:dependency-helper-source-composition mapping-review)
+                    (:dependency-helper-source-composition review))
                  (= (:input-fingerprint review) (review-fingerprint result)))
     (throw (ex-info "Source/routing inputs differ from accepted review; preserve the old receipt and obtain an explicit successor disposition" {})))
   (if (= :pending-source-version-review (:status review))
     (assoc result :mapping-review review)
-    (-> result
-      (assoc :mapping-review review)
-      (update :requirements (fn [rows] (mapv #(assoc % :coverage :owner-and-independent-reviewed
-                                                     :mapping-review :independently-reviewed) rows)))
-      (assoc-in [:scope-boundaries :missing-coverage]
-                "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed."))))
+    (let [{:keys [path sha256]} (get-in review [:dependency-helper-source-composition :current])
+          constitution (current-source-transition-for-path requirement-sources/constitution-path)]
+      (acceptance-dependencies/require! (= sha256 (sh-inventory/sha256 (slurp path)))
+                                        "Accepted mapping requires the inspected dependency helper")
+      (doseq [[file digest] (task-files-without-transition (:task-authorities result))]
+        (acceptance-dependencies/require! (= digest (sh-inventory/sha256 (slurp file)))
+                                          (str "Accepted mapping requires the inspected task ledger: " file)))
+      (requirement-sources/validate-current-source-transition!
+       constitution constitution git-source slurp sh-inventory/sha256 acceptance-dependencies/require!)
+      (-> result
+        (assoc :mapping-review review)
+        (update :requirements (fn [rows] (mapv #(assoc % :coverage :owner-and-independent-reviewed
+                                                       :mapping-review :independently-reviewed) rows)))
+        (assoc-in [:scope-boundaries :missing-coverage]
+                  "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed.")))))
 
 (defn- map-has-key? [value key]
   (some #(= key (clojure.core/key %)) value))

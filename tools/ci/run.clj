@@ -41,6 +41,10 @@
 (def b6-source-path
   "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
 
+(def ^:private b6-guard-test-paths
+  #{"bootstrap/clojure/test/gravity/backend/js_checked_guard_test.clj"
+    "bootstrap/clojure/test/gravity/backend/js_guard_seed.clj"})
+
 (def ^:private public-js-smoke-paths
   #{"bin/gravity"
     "bootstrap/clojure/src/gravity/cli/launcher.clj"
@@ -128,21 +132,22 @@
                  "bootstrap/clojure/test/gravity/self_hosting/sh06_"
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
-   "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
-                           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
-                           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
-                           "bootstrap/clojure/src/gravity/checked_core.clj"
-                           "bootstrap/clojure/src/gravity/checked_core"
-                           "bootstrap/clojure/src/gravity/c6_core_lowering"
-                           "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
-                           "bootstrap/clojure/test/gravity/checked_core"
-                           "bootstrap/clojure/test/gravity/c6_"
-                           "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
-                           "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
-                           "bootstrap/clojure/fixtures/self-hosting/sh-07"
-                           c7-source-path
-                           b6-source-path]})
+   "checked-core-runtime" (into ["language/compiler/src/gravity/checked_core.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+                                 "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                                 "bootstrap/clojure/src/gravity/checked_core.clj"
+                                 "bootstrap/clojure/src/gravity/checked_core"
+                                 "bootstrap/clojure/src/gravity/c6_core_lowering"
+                                 "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
+                                 "bootstrap/clojure/test/gravity/checked_core"
+                                 "bootstrap/clojure/test/gravity/c6_"
+                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
+                                 "bootstrap/clojure/fixtures/self-hosting/sh-07"
+                                 c7-source-path
+                                 b6-source-path]
+                                b6-guard-test-paths)})
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
@@ -433,7 +438,8 @@
 (defn- checked-js-owner-required? [selection]
   (boolean (or (nil? selection)
                (= :full (:kind selection))
-               (b6-source-change? selection))))
+               (b6-source-change? selection)
+               (some b6-guard-test-paths (selection-paths selection)))))
 
 (defn- public-js-smoke-required? [selection]
   (let [paths (selection-paths selection)]
@@ -1164,8 +1170,10 @@
                  (conj ["checked-js-b6-owner-regression" 900
                         (command "2g" "-M:dev-test"
                                  "--namespace" "gravity.backend.js-checked-mir-test"
+                                 "--namespace" "gravity.backend.js-checked-guard-test"
                                  "--exact" "scalar-module-target-execution"
-                                 "--exact" "checked-add-requires-original-guard"
+                                 "--exact" "gravity.backend.js-checked-mir-test/checked-add-requires-original-guard"
+                                 "--exact" "gravity.backend.js-checked-guard-test/checked-add-requires-original-guard"
                                  "--progress")]))]
       (cond-> base
         (public-js-smoke-required? selection)
