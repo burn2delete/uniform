@@ -63,9 +63,16 @@
            (not (contains? efir-supported-elementary-ops
                            (:elementary-op node))))))
 
+(defn- efir-semantic-reference?
+  [reference]
+  (cond
+    (string? reference) (not (str/blank? reference))
+    (keyword? reference) (not (str/blank? (name reference)))
+    :else false))
+
 (defn- efir-semantic-anchor-present?
   [anchor]
-  (some #(and (sequential? %) (some perf-present? %))
+  (some #(and (sequential? %) (some efir-semantic-reference? %))
         [(:typed-core anchor) (:mir-ops anchor)]))
 
 (defn efir-validate-math3!

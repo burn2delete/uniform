@@ -20,7 +20,8 @@
 
 (deftest efir-emits-either-kind-of-semantic-reference
   (doseq [anchor [(:semantic-anchor graph)
-                  {:mir-ops ["mir-op-sigmoid-call"]}]]
+                  {:mir-ops ["mir-op-sigmoid-call"]}
+                  {:mir-ops [:op/sigmoid-call]}]]
     (testing (pr-str anchor)
       (let [candidate (assoc graph :semantic-anchor anchor)
             artifact (emit-graph candidate)]
@@ -37,6 +38,12 @@
             (assoc graph :semantic-anchor {:unrelated [:typed/math-sigmoid-call]})]
            ["a reference vector contains only nil"
             (assoc graph :semantic-anchor {:typed-core [nil] :mir-ops []})]
+           ["the MIR reference is an empty string"
+            (assoc graph :semantic-anchor {:mir-ops [""]})]
+           ["the Core reference is a whitespace-only string"
+            (assoc graph :semantic-anchor {:typed-core [" "]})]
+           ["the reference vector contains unsupported values"
+            (assoc graph :semantic-anchor {:mir-ops [false 42 {:op-id "mir-op-sigmoid-call"}]})]
            ["the reference field is scalar"
             (assoc graph :semantic-anchor {:mir-ops "mir-op-sigmoid-call"})]
            ["a Core reference is present and the source anchor is missing"
