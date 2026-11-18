@@ -25,7 +25,8 @@
 (def source-path "specs/demo/tasks.md")
 
 (deftest explicit-pr-scope-spans-publication-and-integration-only-after-fresh-review
-  (let [ctx (-> (fixture/context) (assoc :coordinator-owner (atom true)) (assoc-in [:config :repository] "owner/repo"))
+  (let [ctx (-> (fixture/context) (assoc :coordinator-owner (atom true)) (assoc-in [:config :repository] "owner/repo")
+                (assoc-in [:config :base-branch] "main"))
         native [["clojure" "-M:test"]] tuple {:base "base" :candidate "head" :tree "tree"}
         auth {:kind :single-pr-composition :repo "owner/repo" :pr 7 :from "old" :native native
               :required-hosted ["contracts"] :hosted :normal-pr-ci :require-all-selected-jobs-and-fresh-independent-review true
@@ -51,7 +52,7 @@
                                            (str/includes? path "/artifacts") {:artifacts [{:id 50 :digest (str "sha256:" (rt/digest "fixture artifact"))
                                                                                         :name "ci-contracts-checkout-1" :workflow_run {:head_sha "head" :id 42}}]}
                                            (str/includes? path "/git/commits/") {:sha "checkout" :parents [{:sha "base"} {:sha "head"}] :tree {:sha "tree"}}
-                                           :else {:state "open" :draft true :head {:ref "branch" :sha "head" :repo {:full_name "owner/repo"}}}))
+                                           :else {:state "open" :draft true :base {:ref "main"} :head {:ref "branch" :sha "head" :repo {:full_name "owner/repo"}}}))
                   gh/head-workflow-state (fn [& _] {:state :passed :runs [{:id 42 :head_sha "head" :run_attempt 1
                                                                          :path ".github/workflows/ci.yml" :event "pull_request" :conclusion "success"}]})
                   flow/review! (fn [c task]

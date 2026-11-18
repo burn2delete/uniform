@@ -58,6 +58,7 @@
             (= parents (:parents scope)) (= (:checkout ci) (:sha checkout))
             (= [(:base t) (:candidate t)] (mapv :sha (:parents checkout))) (= (:tree t) (get-in checkout [:tree :sha]))
             (= (:base t) (flow/fresh-main! ctx)) (= "open" (:state info)) (true? (:draft info))
+            (= (get-in ctx [:config :base-branch]) (get-in info [:base :ref]))
             (= (:branch t) (get-in info [:head :ref])) (= (get-in ctx [:config :repository]) (get-in info [:head :repo :full_name]))
             (= :passed (:state workflows)) (= "success" (:conclusion run)) (= (:attempt ci) (:run_attempt run))
             (= ".github/workflows/ci.yml" (:path run) (:workflow ci)) (= "pull_request" (:event run))

@@ -236,7 +236,8 @@
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
     "finish-pr-composition"
     (do (when-not (= 5 (count args)) (rt/fail! "Expected task key, authority file and digest, CI file and digest" {}))
-        (rt/with-lock ctx #(do (coordination/register! ctx)
+        (rt/with-lock ctx #(do (when-not (= {:paused true} (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+                               (coordination/register! ctx)
                                (try (apply pr-recovery/finish! ctx args)
                                     (finally (coordination/unregister! ctx))))))
     "review-preexisting-validation"
