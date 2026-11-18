@@ -10,7 +10,8 @@
 (defn p15-s23-stage2-plan-emitter-compile-source
   ([emitter source-path source-text]
    (p15-s23-stage2-plan-emitter-compile-source emitter source-path source-text nil))
-     (p15-s23-with-stage2-plan-emission-context
+  ([emitter source-path source-text invocation]
+   (p15-s23-with-stage2-plan-emission-context
     (fn []
       (let [_ (validate-stage0-source-profile! source-path source-text)
             _ (validate-stage0-source-safety! source-path source-text)
@@ -42,6 +43,7 @@
           (p15-s23-stage2-emitted-core-plan
            emitter source-path source-text module)))))))
 
+(defn p15-s23-stage2-plan-emitter-accepted-record
   [emitter]
   (let [source-path p15-s23-accepted-app-source-path
         source-text (slurp source-path)
