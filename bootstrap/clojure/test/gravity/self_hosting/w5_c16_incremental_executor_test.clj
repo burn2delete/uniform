@@ -325,6 +325,47 @@
     (is (= :rejected (:status recomputed)))
     (is (= "C16-STALE" (get-in recomputed [:diagnostics 0 :rule])))))
 
+(deftest w5-c16-source-change-invalidates-syntax-and-downstream-records
+  (doseq [[plan extension kind] [[accepted-gravity-plan ".gravity" :gravity]
+                                [accepted-qst-plan ".qst" :qst]]]
+    (testing extension
+      (let [base (request plan 'w5-c16-incremental-execution-request
+                          "/checkout-a" extension kind)
+            source-change (first (filter #(= :source-change (:cause %))
+                                         (:changes base)))
+            input (assoc base :changes [source-change])
+            result (run-request input)
+            changed (second (:operations result))
+            trace (:invalidation-trace changed)]
+        (is (= :accepted (:status result)))
+        (is (= [:unchanged-reuse :source-change]
+               (mapv :operation-id (:operations result))))
+        (is (= :invalidated (:decision changed)))
+        (is (= :rejected (:proof-reuse changed) (:diagnostic-reuse changed)))
+        (is (= (:cache-key base) (get-in changed [:before-key :semantic-input])))
+        (is (= (assoc (:cache-key base) :source (:after source-change))
+               (get-in changed [:after-key :semantic-input])))
+        (is (= (:after-key changed) (:current-cache-key trace)))
+        (is (= (get-in base [:source :source-span]) (:source-span trace)))
+        (is (= (mapv :node-id (get-in base [:dependency-graph :nodes]))
+               (:affected-nodes trace)))
+        (is (some #{:syntax-stream} (:affected-nodes trace)))
+        (is (= [:reader :macro-expansion :namespace-analysis :type-check :effect-check
+                :safety-analysis :mir :target-lowering :diagnostics]
+               (:downstream-stages trace)))
+        (is (= [trace] (:invalidation-traces result)))
+        (is (= :passed (:status (invoke engine-plan 'w5-c16-verify-result
+                                         [input result]))))
+        (let [altered (update-in result [:invalidation-traces 0 :affected-nodes]
+                                 #(filterv (complement #{:syntax-stream}) %))
+              verification (invoke engine-plan 'w5-c16-verify-result [input altered])]
+          (is (= :rejected (:status verification)))
+          (is (= "C16-VERIFY" (get-in verification [:diagnostics 0 :rule]))))
+        (let [unchanged (run-request (assoc base :changes []))]
+          (is (= :accepted (:status unchanged)))
+          (is (= [:reused] (mapv :decision (:operations unchanged))))
+          (is (= [] (:invalidation-traces unchanged))))))))
+
 (deftest w5-c16-reader-change-invalidates-syntax-and-downstream-records
   ;; Supplied cache-record execution only, not a cache store, source compiler,
   ;; actual artifact rebuild, or external proof/diagnostic recomputation.

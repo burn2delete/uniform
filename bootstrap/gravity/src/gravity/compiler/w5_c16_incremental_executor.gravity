@@ -1004,7 +1004,7 @@
                         :after (get change :after)}
    :changed-field (get change :field)
    :affected-nodes
-   (if (= :reader-change (get change :cause))
+   (if (contains? #{:source-change :reader-change} (get change :cause))
      ; The executor has validated that every graph node is root-reachable.
      ; Conservatively invalidate all of them, including the syntax stream.
      (let [nodes (get (get request :dependency-graph) :nodes)]
@@ -1015,7 +1015,7 @@
      [:source-unit :typed-core :diagnostic-stream
       :proof-certificate :target-artifact])
    :downstream-stages
-   (if (= :reader-change (get change :cause))
+   (if (contains? #{:source-change :reader-change} (get change :cause))
      [:reader :macro-expansion :namespace-analysis :type-check :effect-check
       :safety-analysis :mir :target-lowering :diagnostics]
      [:type-check :effect-check :safety-analysis :mir
