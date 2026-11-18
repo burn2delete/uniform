@@ -63,6 +63,11 @@
            (not (contains? efir-supported-elementary-ops
                            (:elementary-op node))))))
 
+(defn- efir-semantic-anchor-present?
+  [anchor]
+  (some #(and (sequential? %) (some perf-present? %))
+        [(:typed-core anchor) (:mir-ops anchor)]))
+
 (defn efir-validate-math3!
   [source-path manifest suite]
   (let [graphs (:efir-graphs suite)]
@@ -95,7 +100,7 @@
         (efir-fail! "MATH3-PRECISION" source-path manifest graph
                     {:remediation "EFIR graphs need numeric mode and precision contract facts."}))
       (when (or (not (perf-present? (:source-anchors graph)))
-                (not (perf-present? (:semantic-anchor graph))))
+                (not (efir-semantic-anchor-present? (:semantic-anchor graph))))
         (efir-fail! "MATH3-SOURCE" source-path manifest graph
                     {:remediation "EFIR graphs need source anchors and typed-core or MIR semantic anchors."}))
       (when (and (perf-present? (:runtime-anchor graph))
@@ -128,7 +133,7 @@
    :semantic-runtime-separated? true
    :efir-graphs-anchored?
    (every? #(and (perf-present? (:source-anchors %))
-                 (perf-present? (:semantic-anchor %)))
+                 (efir-semantic-anchor-present? (:semantic-anchor %)))
            (:efir-graphs suite))
    :numeric-mode-and-precision-attached?
    (every? #(and (perf-present? (:numeric-mode %))
