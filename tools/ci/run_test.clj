@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test :refer [deftest is run-tests]]
+            [ci.maven-dependencies :as maven]
             [ci.public-diagnostic-report :as diagnostic-report]
             [ci.public-release-subset :as public]))
 
@@ -504,6 +505,123 @@
     (is (str/includes? workflow "matrix.mode == 'checked-core-runtime' && 70"))
     (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
     (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
+
+(deftest maven-cache-hit-prefetches-pinned-basis-without-running-tests
+  (let [command (maven/prefetch-command "test")
+        runs (atom [])
+        delays (atom [])
+        result (maven/retry-prefetch-with!
+                command "tools/seedless"
+                (fn [argv directory]
+                  (swap! runs conj [argv directory])
+                  {:exit 0 :out "dependencies already present" :err ""})
+                #(swap! delays conj %)
+                (fn [_]))]
+    (is (= ["clojure" "-Srepro" "-P" "-M:test"] command))
+    (is (= {:attempts 1 :retried? false} result))
+    (is (= [[command "tools/seedless"]] @runs))
+    (is (empty? @delays))))
+
+(deftest maven-cache-miss-retries-transient-429-before-tests
+  (let [command (maven/prefetch-command "test")
+        runs (atom 0)
+        delays (atom [])
+        events (atom [])
+        result (maven/retry-prefetch-with!
+                command "tools/seedless"
+                (fn [_ _]
+                  (if (= 1 (swap! runs inc))
+                    {:exit 1
+                     :out "Could not transfer artifact org.clojure:data.json:pom:2.5.2"
+                     :err "status code: 429, reason phrase: Too Many Requests"}
+                    {:exit 0 :out "dependencies prepared" :err ""}))
+                #(swap! delays conj %)
+                #(swap! events conj %))]
+    (is (= {:attempts 2 :retried? true} result))
+    (is (= 2 @runs))
+    (is (= [2000] @delays))
+    (is (= [:process-result :retry :process-result] (mapv :type @events)))
+    (is (some #(= "-P" %) command))
+    (is (not-any? #(str/includes? % "test-runner") command))))
+
+(deftest maven-retry-classifier-requires-a-transient-dependency-transfer
+  (doseq [failure ["Could not transfer artifact a:b:pom:1: status code: 408"
+                   "Could not transfer artifact a:b:pom:1: status code: 503"
+                   "Could not transfer artifact a:b:pom:1: java.net.SocketTimeoutException: Read timed out"]]
+    (is (maven/transient-dependency-fetch-failure? failure) failure))
+  (doseq [failure ["Could not find artifact a:b:jar:1"
+                   "Could not transfer artifact a:b:pom:1: status code: 404"
+                   "Could not transfer artifact a:b:pom:1: status code: 429; status code: 404"
+                   "HTTP 429 without a dependency transfer"]]
+    (is (not (maven/transient-dependency-fetch-failure? failure)) failure)))
+
+(deftest maven-transient-retry-count-is-bounded
+  (let [runs (atom 0)
+        delays (atom [])
+        error (try
+                (maven/retry-prefetch-with!
+                 (maven/prefetch-command "") "."
+                 (fn [_ _]
+                   (swap! runs inc)
+                   {:exit 1
+                    :out "Could not transfer artifact a:b:pom:1: status code: 429"
+                    :err ""})
+                 #(swap! delays conj %)
+                 (fn [_]))
+                nil
+                (catch clojure.lang.ExceptionInfo error error))]
+    (is (= 3 (:attempts (ex-data error))))
+    (is (= 3 @runs))
+    (is (= [2000 5000] @delays))))
+
+(deftest maven-prefetch-does-not-retry-permanent-or-test-failures
+  (doseq [failure ["Could not find artifact uniform:missing:jar:1.0"
+                   "Could not transfer artifact uniform:missing:pom:1.0: status code: 404"
+                   "Tests failed: expected 2, received 1"]]
+    (let [runs (atom 0)
+          delays (atom [])
+          error (try
+                  (maven/retry-prefetch-with!
+                   (maven/prefetch-command "test") "tools/seedless"
+                   (fn [_ _]
+                     (swap! runs inc)
+                     {:exit 1 :out failure :err ""})
+                   #(swap! delays conj %)
+                   (fn [_]))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is (instance? clojure.lang.ExceptionInfo error) failure)
+      (is (= 1 @runs) failure)
+      (is (empty? @delays) failure))))
+
+(deftest maven-cache-covers-all-pinned-roots-and-prefetches-before-hosted-tests
+  (let [toolchain (slurp ".github/actions/clojure/action.yml")
+        ci (slurp ".github/workflows/ci.yml")
+        seedless (slurp ".github/workflows/seedless-harness.yml")
+        simplify (slurp ".github/workflows/simplify-harness.yml")]
+    (doseq [workflow [ci seedless simplify]]
+      (is (str/includes? workflow "permissions:\n  contents: read"))
+      (is (not (str/includes? workflow "pull_request_target"))))
+    (is (str/includes? toolchain "cache: maven"))
+    (is (str/includes? toolchain "cache-dependency-path: ${{ inputs.dependency-cache-files }}"))
+    (is (str/includes? toolchain
+                       "deps.edn\n      tools/ci/run.clj\n      tools/ci/lint_facade_test.clj\n      .github/actions/clojure/action.yml"))
+    (is (str/includes? toolchain "-m ci.maven-dependencies"))
+    (is (str/includes? toolchain "java -cp"))
+    (is (< (.indexOf ci "uses: ./.github/actions/clojure")
+           (.indexOf ci "run: clojure -Srepro -M tools/ci/run.clj select")))
+    (is (str/includes? seedless "dependency-directory: tools/seedless"))
+    (is (str/includes? seedless "dependency-alias: test"))
+    (is (= 2 (count (re-seq #"tools/ci/maven_dependencies\.clj" seedless))))
+    (is (< (.indexOf seedless "uses: ./.github/actions/clojure")
+           (.indexOf seedless "run: clojure -Srepro -M:test")))
+    (is (str/includes? seedless "tools/seedless/deps.edn\n            tools/simplify/deps.edn"))
+    (is (str/includes? simplify "dependency-directory: tools/advance"))
+    (is (str/includes? simplify "dependency-alias: test"))
+    (is (= 2 (count (re-seq #"tools/ci/maven_dependencies\.clj" simplify))))
+    (is (< (.indexOf simplify "uses: ./.github/actions/clojure")
+           (.indexOf simplify "run: clojure -Srepro -M:test")))
+    (is (str/includes? simplify "tools/advance/deps.edn\n            tools/simplify/deps.edn"))))
 
 (deftest public-release-workflow-is-manual-read-only-pinned-and-provenanced
   (let [workflow (slurp ".github/workflows/public-release.yml")
