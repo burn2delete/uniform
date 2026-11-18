@@ -1,5 +1,40 @@
 # Evidence: Backends workflow migration
 
+## Backend interface Node ESM packaging
+
+Finding `backend.js-input.verify-module-packaging-assumptions-v1` belongs to
+the open `backend-interface` task. In
+`language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity`,
+`b1-js-runtime-valid?` now requires the three packaging values produced by
+`c14-js-runtime` before B1 constructs an eligible input packet.
+
+The fixtures in `bootstrap/clojure/test/gravity/backend/js_checked_mir_test.clj`
+cover two paths:
+
+- `scalar-module-rejects-genuine-product-tampering` builds C14 lowering from
+  checked scalar source, compares its runtime with the accepted B1 packet and
+  verifies that packet. Six single-field mutations remove or replace each of
+  `:bundler`, `:tree-shaking` and `:initialization`, including module-load
+  effects. Each requires a rejected result with the original source path,
+  diagnostic `B1-INPUT` and no eligibility record.
+- `scalar-module-target-execution` reads back the emitted `manifest.edn` and
+  checks its runtime against the accepted B1 packet. It requires bundler
+  `:none`, tree-shaking `:preserve-exports-and-checks` and initialization
+  `:definitions-only`, alongside JSON boolean `false` for `sideEffects` in
+  the emitted ESM `package.json`.
+
+Controller checks proposed for this increment (unrun):
+
+```clojure
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace" "gravity.backend.js-checked-mir-test" "--exact" "scalar-module-rejects-genuine-product-tampering"]
+["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace" "gravity.backend.js-checked-mir-test" "--exact" "scalar-module-target-execution"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+```
+
+Independent acceptance is pending.
+
+## Historical migration evidence
+
 Inspected source: `017b541d678c6acb93eb5e843b1eda5a66babc32` (2026-10-26).
 
 ## Status dimensions

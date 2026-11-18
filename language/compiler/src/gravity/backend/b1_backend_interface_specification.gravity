@@ -3116,7 +3116,10 @@
     (= #{:error/raise} (get runtime :boundary-effects))
     (= :invalid-host-input-before-source-entry (get runtime :boundary-effect-scope))
     (= #{} (get runtime :external-capabilities)) (= [] (get runtime :package-imports))
-    (= [] (get runtime :polyfills)) (= :synchronous-only (get runtime :event-loop))]))
+    (= [] (get runtime :polyfills)) (= :synchronous-only (get runtime :event-loop))
+    (= :none (get runtime :bundler))
+    (= :preserve-exports-and-checks (get runtime :tree-shaking))
+    (= :definitions-only (get runtime :initialization))]))
 
 (defn b1-build-checked-js-input [application lowering]
   (let [mir (get application :mir-module) core (get application :checked-core)

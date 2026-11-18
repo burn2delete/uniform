@@ -161,6 +161,7 @@
         proof-id (get-in proof-operation [:facts :safety-proof-id])
         entry (get-in mir [:functions 'add :entry])]
     (is (= :accepted (:status lowering) (:status packet) (:status program)))
+    (is (= (:runtime lowering) (:runtime packet)))
     (is (= :passed (:status (invoke-c14 'c14-verify-checked-js-lowering [product request lowering]))))
     (is (= :passed (:status (invoke-b1 'b1-verify-checked-js-input [product lowering packet]))))
     (is (= :passed (:status (invoke-b6 'b6-verify-checked-js-program [product lowering packet program]))))
@@ -185,6 +186,16 @@
                               (invoke-c14 'c14-build-checked-js-lowering [candidate request])))
     (assert-owned-rejection path "B6-TARGET"
                             (invoke-c14 'c14-build-checked-js-lowering [product (assoc request :runtime :browser)]))
+    (doseq [[field replacement] [[:bundler :required]
+                                 [:tree-shaking :remove-checks]
+                                 [:initialization :module-load-effects]]
+            runtime [(dissoc (:runtime lowering) field)
+                     (assoc (:runtime lowering) field replacement)]]
+      (testing (str field " " (get runtime field :missing))
+        (let [rejection (invoke-b1 'b1-build-checked-js-input
+                                   [product (assoc lowering :runtime runtime)])]
+          (assert-owned-rejection path "B1-INPUT" rejection)
+          (is (not (contains? rejection :eligibility))))))
     (doseq [candidate [(assoc-in lowering [:abi :exports 0 :parameters 0] :gravity/i64)
                        (assoc-in lowering [:runtime :host-globals] [])
                        (update lowering :evidence dissoc :proof-certificate-table)]]
@@ -290,6 +301,11 @@
            (get-in application [:source :content-hash])))
     (is (= path (get-in application [:source :path])))
     (is (= "module" (get package-data "type")))
+    (is (= {:bundler :none :tree-shaking :preserve-exports-and-checks
+            :initialization :definitions-only}
+           (select-keys (get-in result [:manifest :runtime]) [:bundler :tree-shaking :initialization])))
+    (is (= (get-in result [:backend-input :runtime]) (get-in result [:manifest :runtime])))
+    (is (false? (get package-data "sideEffects")))
     (is (= ">=20 <21" (get-in package-data ["engines" "node"])))
     (is (= 3 (get source-map "version")))
     (is (= [text] (get source-map "sourcesContent")))
