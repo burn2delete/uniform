@@ -283,3 +283,121 @@ captured task region; preserve historical receipts and coordinate later merges
 with PR767/1291 and retained Evolution work without adopting their changes.
 Controller-owned verification will run the focused namespace, applicable
 acceptance-dependency controls, language boundary and document validators.
+
+## Security advisory draft carrier
+
+Finding `evolution.advisory-drafts.required-payload-production-v1` implements
+one producer under `evolution/security-response`, which remains Open. This
+appendix is outside `evolution-implementation-tasks:end`; the captured tasks,
+source criteria, historical receipts and authenticated plan.md are unchanged.
+The source basis is GOV10 Requirements/Diagnostics (`GOV10006`) and GOV4
+vulnerability-evidence retention. This carrier constructs a distinct advisory
+payload; it performs no security assessment or disclosure decision.
+
+Implement pure Clojure `gravity.evolution.advisory-drafts/create-draft` in
+`bootstrap/clojure/src/gravity/evolution/advisory_drafts.clj`, with fixtures in
+`bootstrap/clojure/test/gravity/evolution/advisory_drafts_test.clj`. Its one
+argument is an explicit decoded public-data map with these required fields,
+in diagnostic order:
+
+- `:id`, `:revision`, `:owner`: nonblank strings identifying the advisory,
+  exact revision and accountable owner. Presence does not authenticate ownership.
+- `:subject`: map with nonblank `:package` and `:registry` strings.
+- `:affected-versions`: nonempty vector of nonblank declaration strings.
+- `:patched-versions`: explicit vector of nonblank declaration strings. An
+  empty vector declares that no patched version is supplied; omission is invalid.
+- `:severity`, `:impact`: nonblank strings. Severity vocabulary and assessment
+  are supplied; this producer does not infer, rank or certify them.
+- `:mitigations`: nonempty vector of nonblank strings. A caller may explicitly
+  describe the absence of a known mitigation with rationale.
+- `:provenance`: map with nonblank `:source-id`, `:input-id`, `:policy-id`,
+  `:tool-id` strings and a nonempty `:references` vector of nonblank public
+  reference strings. References are not fetched or authenticated.
+- `:history`: explicit vector of public-data maps, possibly empty. Preserve
+  full records, extension fields and vector order, including supplied embargo,
+  disclosure, patch, backport and release evidence references. This is retained
+  history, not a validated transition log or evidence of those operations.
+
+This narrow carrier admits nil, booleans, strings, keywords, exact immutable
+numeric classes Byte, Short, Integer, Long, Float, Double, java.math.BigInteger,
+java.math.BigDecimal, clojure.lang.BigInt and clojure.lang.Ratio, keyword-keyed
+Clojure array/hash/tree maps and persistent vectors/subvectors recursively.
+Maps/vectors must have no Clojure metadata. Records, host collections, mutable
+numbers, callbacks, lazy sequences, symbols, lists and sets are outside this
+decoded carrier. These are representation rules, not input quotas. All supplied
+values, including extensions, must satisfy the carrier. All data must already
+be disclosure-safe: ordinary strings are neither secret-scanned nor redacted.
+
+Accepted map entries must be copied into comparator-independent maps before
+field lookup or projection. Traversing an accepted tree map must never invoke
+its caller-supplied comparator, including on malformed inputs. Comparator
+state is not advisory data and must not affect the product or diagnostics.
+
+Before traversing a subvector, inspect its native backing links and validate
+each extent against its immediate backing's legal extent. Every link must be
+an exact native persistent vector or subvector, terminating without a cycle.
+Reject foreign backing and invalid extents without invoking foreign methods,
+even for an empty view. Only visible elements are advisory data; unused backing
+payload and backing metadata are not traversed. Visible vectors still require
+nil metadata. Ordinary and nested legal native views retain acceptance.
+
+Success is `{:status :draft, :diagnostics [], :artifact ...}`. The artifact is
+`{:schema :gravity.evolution/advisory-draft-v1,
+:kind :gravity/security-advisory-draft, :status :draft,
+:authority :non-admitting, :version-declarations :unauthenticated-claims,
+:advisory ...}`. Its `:advisory` contains exactly the required top-level fields;
+subject/provenance extensions and complete history are retained. Unknown
+top-level fields, including caller status, published state, authority, approval
+or grants, are never projected. Recursive sorted maps and rebuilt vectors make
+the complete product and complete EDN rendering independent of map insertion
+order and caller printer bindings during construction. Input content, version
+declarations and vector order are preserved without version-range parsing,
+ordering, normalization, deduplication or inferred disclosure policy.
+
+Failure is `{:status :rejected, :diagnostics [...]}` with no artifact. Each
+diagnostic has `:id "GOV10006"`, constant
+`:message "Invalid explicit advisory draft input"`,
+a known field `:path` rooted at `[:advisory]`, and `:reason`
+`:missing-field` for an absent required key or `:invalid-field` for malformed,
+blank or wrongly typed data. Nested subject/provenance fields follow their
+listed order immediately after their containing field. Invalid history is
+reported at `[:advisory :history]`. Malformed root maps or otherwise valid
+fields with invalid extension data yield a root `:invalid-field`. Never echo
+values, unknown keys, host objects or reference strings on rejection.
+
+Required accepted fixtures: `complete-advisory-payload`,
+`changed-impact-changes-product`, `retained-history-and-provenance`,
+`reordered-map-determinism`. Required rejected fixtures:
+`missing-affected-versions`, `missing-patched-version-declaration`,
+`missing-severity`, `missing-impact`, `missing-mitigations`,
+`missing-provenance`. Controls include `malformed-secret-marker`,
+`mutable-host-input`, `caller-published-state-cannot-promote-draft`, malformed
+required fields, explicit empty patched declarations/history, full diagnostic
+order and supported immutable leaves. Compare complete products/diagnostics
+and unchanged inputs, including after caller mutation of refused host values.
+Armed stateful and throwing tree-map comparators must receive zero callbacks
+for root, subject, provenance and retained nested maps. Compare full draft
+products, deterministic rendering, payload-free rejections and unchanged inputs
+across repeated calls and reversed entry ordering.
+Subvector controls require complete payload-free GOV10006 rejections for
+invalid extents and armed foreign backing, with zero callbacks and unchanged
+native view links/bounds. Include nonempty, empty and nested backing views,
+and full accepted products for ordinary and nested legal subvectors.
+The host SubVector constructor flattens nested views. Tests for retained native
+links must construct those links explicitly and assert their identity before
+calling the producer; an empty outer view normalized to a legal root extent
+must be accepted. An invalid inner link that construction discarded is not
+part of the decoded input. Retained invalid inner extents must still reject,
+including behind an empty outer view or inside a larger legal root extent.
+
+Start requires only explicit draft inputs and no predecessor increment.
+Composition requires actual GOV4 assessment, authenticated patch/backport and
+release evidence, GOV2 compatibility/migration and emergency exceptions where
+applicable, accountable embargo/disclosure decisions, registry publication and
+package enforcement. Retain the genuine producer/consumer feedback: assessment
+and patch findings can revise the draft; consumer findings can require corrected
+versions, mitigation and provenance. Independent acceptance and release remain
+separate. Coordinate additive task/evidence deltas with PR1308/1310 and retained
+reconciliation candidates; none of their implementation or acceptance is
+adopted here. Controller checks and unrun composition are recorded in
+[the owning evidence](evidence.md#substantive-security-advisory-drafts).
