@@ -1,6 +1,6 @@
 (ns gravity.self-hosting.sh06-unmetered-resolution-test
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is testing]]
             [gravity.development-test-runner :as development]
             [gravity.bootstrap :as b]))
 
@@ -228,12 +228,53 @@
   (let [original (assoc (request) :definitions [(definition 0)] :references [(reference [])])]
     (is (= :accepted (:status (run 'sh06-build-resolution-template original))))
     (is (= :rejected (:status (run 'sh06-build-resolution-template
-                                  (assoc-in original [:module :source-revision-id] (id 99)))))))
-  (let [edges [{:from 'a :to 'b :kind :namespace :boundary nil :semantic-span {} :source-span nil}
-               {:from 'b :to 'a :kind :namespace :boundary nil :semantic-span {} :source-span nil}]
-        result (run 'sh06-build-resolution-template (assoc (request) :dependency-edges edges))]
-    (is (= :rejected (:status result)))
-    (is (= "C5-CYCLE" (get-in result [:diagnostics 0 :rule])))))
+                                  (assoc-in original [:module :source-revision-id] (id 99))))))))
+
+(deftest namespace-cycle-diagnostics-report-participating-edges
+  (let [edge (fn [from to ordinal]
+               {:from from :to to :kind :namespace :boundary nil
+                :semantic-span {:ordinal ordinal}
+                :source-span {:source (str from ".gravity") :form-index ordinal}})
+        unrelated (edge 'x 'y 1)
+        a-to-b (edge 'a 'b 2)
+        b-to-a (edge 'b 'a 3)
+        tail (edge 'b 'c 4)
+        self-loop (edge 'a 'a 5)
+        original (assoc (request) :definitions [(definition 0)]
+                        :references [(assoc (reference [])
+                                            :semantic-span {:ordinal 6}
+                                            :source-span {:source "unmetered.gravity"
+                                                          :form-index 6})])
+        resolve-edges (fn [edges]
+                        (run 'sh06-build-resolution-template
+                             (assoc original :dependency-edges edges)))
+        chain [a-to-b tail]
+        cyclic [unrelated a-to-b b-to-a tail]]
+    (testing "an acyclic chain is emitted unchanged"
+      (let [result (resolve-edges chain)]
+        (is (= :accepted (:status result)))
+        (is (= chain (get-in result [:namespace-analysis-template :dependency-graph :edges])))))
+    (doseq [[label edges participating]
+            [["unrelated edge before a cycle with a tail" cyclic #{a-to-b b-to-a}]
+             ["the tail precedes the cycle edges" [unrelated tail a-to-b b-to-a] #{a-to-b b-to-a}]
+             ["self-loop" [unrelated self-loop] #{self-loop}]]]
+      (testing label
+        (let [result (resolve-edges edges)
+              diagnostic (first (:diagnostics result))]
+          (is (= :rejected (:status result)))
+          (is (nil? (:namespace-analysis-template result)))
+          (is (true? (get-in result [:containment :downstream-artifacts-forbidden])))
+          (is (= "C5-CYCLE" (:rule diagnostic)))
+          (is (contains? participating (:dependency-edge diagnostic)))
+          (is (= {:reason :namespace-dependency-cycle :dependency-edges edges}
+                 (get-in diagnostic [:facts :rule-specific])))
+          (is (= {:source "unmetered.gravity" :form-index 0} (:source-span diagnostic)))
+          (is (nil? (:syntax-id diagnostic)))
+          (is (nil? (:symbol diagnostic)))
+          (is (nil? (get-in diagnostic [:facts :semantic-span]))))))
+    (testing "repeating the same graph produces the same diagnostic"
+      (is (= (:diagnostics (resolve-edges cyclic))
+             (:diagnostics (resolve-edges cyclic)))))))
 
 (deftest current-binding-retains-actual-source-without-historical-admission
   (is (= :development-unadmitted (:revision-status @resolver-binding)))
