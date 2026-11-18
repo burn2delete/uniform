@@ -345,9 +345,11 @@
     (let [read-ref (fn [ref path]
                      (requirement-sources/git-source "." ref path dependencies/require!))
           validate (fn [transition]
-                     (requirement-sources/validate-current-source-transition!
+                     (requirement-sources/validate-crosswalk-source-transition!
                       transition contract read-ref slurp dependencies/sha256 dependencies/require!))]
-      (is (= :current-source-interface-only (:authority (validate contract))))
+      (is (= (if (= requirement-sources/constitution-path (:path contract))
+               :historical-source-transition-only :current-source-interface-only)
+             (:authority (validate contract))))
       (doseq [mutated [(assoc contract :role :migration-authority)
                        (assoc contract :path "specs/core-workflow/tasks.md")
                        (assoc-in contract [:changed-spans 0 :after :sha256] "forged")
@@ -356,10 +358,19 @@
         (is (thrown? Exception (validate mutated)))))))
 
 (deftest acceptance-owner-rejects-current-transition-population-drift
-  (let [contracts requirement-sources/current-source-transition-contracts
+  (let [path requirement-sources/constitution-path
+        contracts requirement-sources/current-source-transition-contracts
         view (dependencies/current-source-transition-view contracts slurp)]
     (is (= requirement-sources/current-source-transition-kind (:kind view)))
-    (is (= (set (map :path contracts)) (set (:paths view))))
+    (is (= (disj (set (map :path contracts)) path) (set (:paths view))))
+    (is (= #{path} (set (keys (:historical-source-applicability view)))))
+    (let [history (get-in view [:historical-source-applicability path])
+          current (dependencies/sha256 (slurp path))]
+      (is (= (if (= (:inspected-sha256 history) current)
+               :same-bytes-as-inspection :changed-since-inspection)
+             (:state history)))
+      (is (= current (:current-sha256 history)))
+      (is (= :unassessed (:current-applicability history))))
     (doseq [mutated [(vec (butlast contracts))
                      (assoc-in contracts [0 :role] :migration-authority)
                      (assoc-in contracts [1 :path] "specs/core-workflow/tasks.md")
@@ -523,7 +534,7 @@
 (deftest structural-refusals-precede-stale-or-missing-current-source
   (let [read-text slurp
         source (edn/read-string (read-text dependencies/sh-crosswalk-path))
-        path (first (sort (map :path requirement-sources/current-source-transition-contracts)))
+        path "docs/acceptance-dependencies.md"
         foreign-paths #{"/untrusted-task-source" "../untrusted-task-source"}
         original-transition-view dependencies/current-source-transition-view
         observe
