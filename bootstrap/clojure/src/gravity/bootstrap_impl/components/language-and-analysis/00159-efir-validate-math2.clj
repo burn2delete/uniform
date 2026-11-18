@@ -63,6 +63,21 @@
            (not (contains? efir-supported-elementary-ops
                            (:elementary-op node))))))
 
+(defn- efir-semantic-reference?
+  [reference]
+  (cond
+    (string? reference) (not (str/blank? reference))
+    (keyword? reference) (not (str/blank? (name reference)))
+    :else false))
+
+(defn- efir-graph-anchored?
+  [graph]
+  (let [anchor (:semantic-anchor graph)]
+    (and (perf-present? (:source-anchors graph))
+         (boolean
+          (some #(and (sequential? %) (some efir-semantic-reference? %))
+                [(:typed-core anchor) (:mir-ops anchor)])))))
+
 (defn efir-validate-math3!
   [source-path manifest suite]
   (let [graphs (:efir-graphs suite)]
@@ -94,10 +109,11 @@
                 (not (perf-present? (:precision graph))))
         (efir-fail! "MATH3-PRECISION" source-path manifest graph
                     {:remediation "EFIR graphs need numeric mode and precision contract facts."}))
-      (when (or (not (perf-present? (:source-anchors graph)))
-                (not (perf-present? (:semantic-anchor graph))))
-        (efir-fail! "MATH3-SOURCE" source-path manifest graph
-                    {:remediation "EFIR graphs need source anchors and typed-core or MIR semantic anchors."}))
+      (when-not (efir-graph-anchored? graph)
+        (efir-fail! "MATH3-SOURCE" source-path manifest
+                    (update graph :source-span
+                            #(or % (get-in graph [:source-anchors 0 :span])))
+                    {:remediation "EFIR graphs need a source or generated origin and at least one typed Core or MIR reference."}))
       (when (and (perf-present? (:runtime-anchor graph))
                  (not (some #(and (= (:runtime-anchor graph) (:provider %))
                                   (= (:graph-id graph) (:efir-anchor %)))
@@ -127,9 +143,7 @@
            (:provider-manifest suite))
    :semantic-runtime-separated? true
    :efir-graphs-anchored?
-   (every? #(and (perf-present? (:source-anchors %))
-                 (perf-present? (:semantic-anchor %)))
-           (:efir-graphs suite))
+   (every? efir-graph-anchored? (:efir-graphs suite))
    :numeric-mode-and-precision-attached?
    (every? #(and (perf-present? (:numeric-mode %))
                  (perf-present? (:precision %)))
