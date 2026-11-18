@@ -23,7 +23,8 @@
      (:source-unit result)
      {:expected-source-content-id (:bytes-hash source-unit)}))
    scalar-boundaries
-   (sh03-reader-source-scalar-boundaries! source-path source-text source-bytes)
+   (sh03-reader-source-scalar-boundary-index!
+    source-path source-text source-bytes)
    raw-tokens
    (:token-stream result)
    raw-forms

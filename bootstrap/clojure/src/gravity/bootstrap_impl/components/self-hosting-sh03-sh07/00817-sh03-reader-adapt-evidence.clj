@@ -1,10 +1,26 @@
 
 
+(defn- sh03-reader-reusable-adapted-span
+  [projected-span adapted-span]
+  (if (and (map? projected-span)
+           (map? adapted-span)
+           (identical? (class projected-span) (class adapted-span))
+           (identical? (meta projected-span) (meta adapted-span))
+           (= (count projected-span) (count adapted-span))
+           (every? true?
+                   (map (fn [projected-entry adapted-entry]
+                          (and (identical? (key projected-entry)
+                                           (key adapted-entry))
+                               (identical? (val projected-entry)
+                                           (val adapted-entry))))
+                        projected-span adapted-span)))
+    adapted-span
+    projected-span))
+
 (defn sh03-reader-adapt-evidence!
   [source-path source-id source-bytes source-content-id scalar-boundaries result
    form-id-map token-id-map token-stream form-tree]
-  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))
-        literal-records (c2-literal-records form-tree)
+  (let [literal-records (c2-literal-records form-tree)
         literal-by-form (into {} (map (juxt :form-id identity)
                                      literal-records))
         gravity-literal-projection
@@ -120,29 +136,49 @@
              {:expected-extension-records extension-records}))
         source-map (:reader-source-map result)
         projected-token-spans
-        (mapv (fn [record]
-                {:token-id (token-id-map (:token-id record))
-                 :span (sh03-reader-path-span source-path source-id
-                                               (:span record))})
+        (mapv (fn [ordinal record]
+                (let [projected-span
+                      (sh03-reader-path-span source-path source-id
+                                             (:span record))
+                      adapted-span (:span (get token-stream ordinal))]
+                  {:token-id (token-id-map (:token-id record))
+                   :span (sh03-reader-reusable-adapted-span
+                          projected-span adapted-span)}))
+              (range)
               (:token-spans source-map))
-        expected-token-spans
-        (mapv #(select-keys % [:token-id :span]) token-stream)
         projected-form-spans
-        (mapv (fn [record]
-                {:form-id (form-id-map (:form-id record))
-                 :span (sh03-reader-path-span source-path source-id
-                                               (:span record))
-                 :parent-form-id
-                 (form-id-map (:parent-form-id record))})
+        (mapv (fn [ordinal record]
+                (let [projected-span
+                      (sh03-reader-path-span source-path source-id
+                                             (:span record))
+                      adapted-span (:span (get form-tree ordinal))]
+                  {:form-id (form-id-map (:form-id record))
+                   :span (sh03-reader-reusable-adapted-span
+                          projected-span adapted-span)
+                   :parent-form-id
+                   (form-id-map (:parent-form-id record))}))
+              (range)
               (:form-spans source-map))
-        expected-form-spans
-        (mapv #(select-keys % [:form-id :span :parent-form-id]) form-tree)]
-    (when-not (and (= expected-token-spans projected-token-spans)
-                   (= expected-form-spans projected-form-spans))
+        source-map-matches-adapted?
+        (and (= (count projected-token-spans) (count token-stream))
+             (= (count projected-form-spans) (count form-tree))
+             (every? true?
+                     (map (fn [projected adapted]
+                            (and (= (:token-id projected) (:token-id adapted))
+                                 (= (:span projected) (:span adapted))))
+                          projected-token-spans token-stream))
+             (every? true?
+                     (map (fn [projected adapted]
+                            (and (= (:form-id projected) (:form-id adapted))
+                                 (= (:span projected) (:span adapted))
+                                 (= (:parent-form-id projected)
+                                    (:parent-form-id adapted))))
+                          projected-form-spans form-tree)))]
+    (when-not source-map-matches-adapted?
       (sh03-reader-boundary-fail!
        source-path :complete-sh03-reader-source-map-projection source-map
-       {:expected-token-span-count (count expected-token-spans)
-        :expected-form-span-count (count expected-form-spans)}))
+       {:expected-token-span-count (count token-stream)
+        :expected-form-span-count (count form-tree)}))
     {:literal-decoding-records literal-records
      :deferred-literal-records deferred-records
      :reader-extension-invocation-records extension-records
@@ -259,6 +295,12 @@
       ;; shape is not a compatible occurrence and must fail closed.
       :else nil)))
 
+(defn- sh03-reader-occurrence-rows-by-id [id-key ids rows]
+  (if (seq ids)
+    ;; Keep every match, including duplicate rows rejected by the join below.
+    (group-by id-key (filter #(contains? ids (id-key %)) rows))
+    {}))
+
 (defn sh03-reader-decimal-occurrence-projection!
   "Construct the authenticated SH03-to-C2 decimal occurrence join.
 
@@ -269,14 +311,18 @@
    token-stream form-tree adapted-evidence]
   (let [entries (:semantic-value-table result)
         decimal-entries (filterv #(= :decimal (:kind %)) entries)
-        raw-forms-by-id (group-by :form-id raw-forms)
-        raw-tokens-by-id (group-by :token-id raw-tokens)
-        forms-by-id (group-by :form-id form-tree)
-        tokens-by-id (group-by :token-id token-stream)
+        raw-form-ids (into #{} (map :form-id) decimal-entries)
+        raw-token-ids (into #{} (map :token-id) decimal-entries)
+        form-ids (into #{} (map #(get form-id-map %)) raw-form-ids)
+        token-ids (into #{} (map #(get token-id-map %)) raw-token-ids)
+        raw-forms-by-id (sh03-reader-occurrence-rows-by-id :form-id raw-form-ids raw-forms)
+        raw-tokens-by-id (sh03-reader-occurrence-rows-by-id :token-id raw-token-ids raw-tokens)
+        forms-by-id (sh03-reader-occurrence-rows-by-id :form-id form-ids form-tree)
+        tokens-by-id (sh03-reader-occurrence-rows-by-id :token-id token-ids token-stream)
         literals-by-form
-        (group-by :form-id (:literal-decoding-records adapted-evidence))
+        (sh03-reader-occurrence-rows-by-id :form-id form-ids (:literal-decoding-records adapted-evidence))
         deferred-by-form
-        (group-by :form-id (:deferred-literal-records adapted-evidence))
+        (sh03-reader-occurrence-rows-by-id :form-id form-ids (:deferred-literal-records adapted-evidence))
         occurrences
         (mapv
          (fn [ordinal entry]

@@ -64,7 +64,7 @@
 
 (defn- invoke-c8
   [function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
+  (body-effects/invoke-current-c8-module-bundle
    {:engine :gravity-sh09-authenticated-compiler-read-test
     :compiler-artifact-plan? true}
    @c8-plan function arguments))

@@ -63,10 +63,13 @@
 
 (defn- invoke
   [plan function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
-   {:engine :gravity-sh09-authenticated-effect-integration
-    :compiler-artifact-plan? true}
-   @plan function arguments))
+  (let [runtime {:engine :gravity-sh09-authenticated-effect-integration
+                 :compiler-artifact-plan? true}
+        artifact @plan]
+    (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind artifact))
+      (body-effects/invoke-current-c8-module-bundle runtime artifact function arguments)
+      (bootstrap/p15-s23-stage2-runtime-execute-function
+       runtime artifact function arguments))))
 
 (defn- sh08-var
   [name]

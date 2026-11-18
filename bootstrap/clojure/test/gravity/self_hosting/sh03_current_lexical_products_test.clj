@@ -249,6 +249,14 @@
       (assoc-in raw [:form-tree abbreviation :generated-origin 0 :child-form-id] missing)]
      [:substituted-source-map-token (assoc-in raw [:reader-source-map :token-spans 0 :token-id] missing)]
      [:substituted-source-map-form (assoc-in raw [:reader-source-map :form-spans 0 :form-id] missing)]
+     [:truncated-form-spans (update-in raw [:reader-source-map :form-spans] pop)]
+     [:extra-span-field (assoc-in raw [:reader-source-map :token-spans 0 :extra] true)]
+     [:coherent-token-substitution
+      (let [last-token (dec (count (:token-stream raw)))]
+        (-> raw
+            (assoc-in [:token-stream last-token :token-id] missing)
+            (assoc-in [:reader-source-map :token-spans last-token :token-id] missing)
+            (assoc-in [:digest-requests 2 :preimage :tokens last-token :token-id] missing)))]
      [:substituted-literal-reference (assoc-in raw [:literal-decoding-records 0 :form-id] missing)]
      [:stale-form-hash (assoc-in raw [:incremental-reader-hashes :form-tree] {:digest-ref 2})]
      [:stale-source-digest (assoc-in raw [:digest-requests 0 :observed-id]

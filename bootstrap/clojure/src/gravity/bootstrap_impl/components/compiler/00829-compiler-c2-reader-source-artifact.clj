@@ -75,8 +75,9 @@
                invocation (conj invocation)))
             (if (reader-resource-options? reader-options)
               (reader-resource-products! source-path source-text reader-options project-context)
-              (c2-reader-products source-path source-text
-                                  reader-options project-context reader-source-path)))
+              (binding [*sh03-return-replay-input?* false]
+                (c2-reader-products source-path source-text
+                                    reader-options project-context reader-source-path))))
           source-unit (:source-unit products)
           token-stream (:token-stream products)
           form-tree (:form-tree products)

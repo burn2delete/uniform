@@ -1252,6 +1252,20 @@
 (def ^:private effects-source-relative-path
   "language/compiler/src/gravity/effects.gravity")
 
+(defn- c8-current-reader-invocation
+  []
+  {:reader-source-path (path bootstrap/sh03-reader-source-relative-path)
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection
+   {:schema :gravity/sh04-development-syntax-selection-v1
+    :source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
+   :macro-source-mode :development-current})
+
+(defn invoke-current-c8-module-bundle
+  [runtime bundle function arguments]
+  (bootstrap/p15-s23-stage2-module-execute-function
+   runtime bundle function arguments (c8-current-reader-invocation)))
+
 (defn module-root-entry
   [bundle]
   (let [entries (filterv #(= (:root-module-id bundle) (:module-id %)) (:modules bundle))]
@@ -1276,13 +1290,8 @@
 (defn compile-c8-module-bundle
   [source-path]
   (let [effects-path (path effects-source-relative-path)
-        reader-path (path bootstrap/sh03-reader-source-relative-path)
-        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
-        invocation {:reader-source-path reader-path
-                    :authenticated-envelope-options {:source :development-current}
-                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
-                                              :source-path syntax-path}
-                    :macro-source-mode :development-current}
+        invocation (c8-current-reader-invocation)
+        reader-path (:reader-source-path invocation)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
         ;; Development fixtures select current Reader, Syntax, and Macro source
         ;; explicitly; public file APIs keep their historical pinned contracts.
@@ -1301,7 +1310,8 @@
      (bootstrap/p15-s23-stage2-compiler-artifact-plan
       emitter source-path (slurp source-path)
       {:caller-resolution-artifact caller
-       :dependency-plans [dependency-plan]}))))
+       :dependency-plans [dependency-plan]}
+      invocation))))
 
 (def ^:private c8-source-relative-path
   "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
@@ -1311,7 +1321,7 @@
 
 (defn invoke-c8
   [function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
+  (invoke-current-c8-module-bundle
    {:engine :gravity-sh09-c7-effect-adapter-test
     :compiler-artifact-plan? true}
    @c8-plan function arguments))
