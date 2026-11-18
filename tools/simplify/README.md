@@ -116,10 +116,11 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    fresh thread. Requested changes return to implementation; no-change repairs
    require attention. The reviewer returns the exact base/commit/tree, and
    worktree identity is checked across workers, checks, review and publication.
-5. Push without force; create/reuse the PR. Failed CI returns to repair. Skipped
-   checks remain skipped, not executed-test evidence. Required GitHub human
-   reviews remain required. A rollup containing only skipped/neutral checks
-   does not provide successful-check evidence.
+5. Push without force and create or reuse the PR. Report passed local checks
+   and independent review on the PR for the exact candidate. Failed CI returns
+   to repair. Count only executed tests as test evidence. Required GitHub human
+   reviews remain required. A rollup with successful checks provides the CI
+   evidence.
 6. Serialize merges. When main moves, compose it into the candidate, rerun checks,
    obtain fresh review and await the new head's CI. Run the repository's exact
    integration preflight immediately before merging.

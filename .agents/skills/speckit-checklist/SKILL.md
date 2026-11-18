@@ -15,6 +15,10 @@ metadata:
 $ARGUMENTS
 ```
 
+For an ordinary fix under `.specify/README.md`, put relevant review criteria
+on the PR and return before feature selection unless a separate checklist
+was requested or required by the owning contract.
+
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
 and current coordination remain authoritative. Use the selected feature directory

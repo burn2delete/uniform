@@ -113,12 +113,13 @@ provider context remains available through its existing raw-record reference.
 Candidate snapshot integrity is checked before model dispatch; missing or
 tampered body evidence fails closed.
 
-Authors own only declared paths, including their source task file for scoped
-evidence. The controller commits the first meaningful change and opens a draft
-before running local checks and independent review. New checked/reviewed heads
-are promoted to ready; repairs preserve the PR and return changed heads to
-draft. Exact base/commit/tree and check commands are recorded. CI failures and
-actionable GitHub review requests return to repair. Missing/skipped CI provides
+Authors own only declared paths and include a source task file when an actual
+task outcome needs updating. The controller commits the first meaningful
+change and opens a draft before running local checks and independent review.
+New checked/reviewed heads are promoted to ready. Repairs preserve the PR and
+return changed heads to draft. The PR records the exact base/commit/tree,
+passed local checks, and independent review. CI failures and actionable GitHub
+review requests return to repair. Missing/skipped CI provides
 no successful-check evidence. No-change repairs, ambiguity, interrupted workers,
 restricted operations and uncertain effects retain their evidence for inspection.
 

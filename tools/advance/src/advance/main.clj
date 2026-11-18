@@ -31,7 +31,7 @@
                      ["Outcomes" "TABLE_LAYOUT" "label:implementation:task"]
                      ["Attention" "TABLE_LAYOUT" "label:implementation status:Attention"]]
      :worker-instructions workflow/instructions
-     :review-focus "Check the selected source task, declared increment, task/evidence updates, actual dependencies and completion nonclaims. "
+     :review-focus "Check the selected source task, declared increment, focused regression results, required task or admission updates, actual dependencies and completion nonclaims. "
      :completion-checks [["clojure" "-M" "tools/validate_gravity_docs.clj"]
                          ["clojure" "-M" "tools/validate_full_language_roadmap.clj"]
                          ["clojure" "-M:gravity" "self-host" "verify"]]}))

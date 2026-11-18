@@ -32,9 +32,10 @@
         source {:tasks rows}
         increment {:key "implement-one" :task (:key (first rows)) :paths ["specs/reader/tasks.md" "src"]}]
     (is (= [increment] (catalog/validate-selection! source [increment] {})))
+    (let [source-only (assoc increment :paths ["src"])]
+      (is (= [source-only] (catalog/validate-selection! source [source-only] {}))))
     (doseq [bad [(assoc increment :task "invented")
-                 (assoc increment :task (:key (second rows)))
-                 (assoc increment :paths ["src"])]]
+                 (assoc increment :task (:key (second rows)))]]
       (is (thrown? Exception (catalog/validate-selection! source [bad] {}))))
     (is (thrown? Exception (catalog/validate-selection! source [increment] {"implement-one" {:status :done}})))))
 

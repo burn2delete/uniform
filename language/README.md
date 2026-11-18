@@ -119,14 +119,14 @@ Explicit `--lowering runtime-derived` preserves the legacy route. The compiler
 host remains Clojure/JVM, and unsupported programs receive owned diagnostics.
 Use `clojure -M:gravity help` for the current command forms.
 
-See the [compiler guide](../docs/compiler-checked-js-modules.md) for tested
-Java/Clojure/Node prerequisites, ABI and numeric errors, artifact identities
-and fresh-checkout evidence. This subset does not establish full-language
-support, self-hosting, seed retirement or production release readiness.
+The [compiler guide](../docs/compiler-checked-js-modules.md) covers toolchain
+setup, the exported ABI, numeric errors, and emitted artifacts. Its
+[verification commands](../docs/compiler-checked-js-modules.md#verification)
+exercise individual lowering rules, public dispatch, and broader acceptance.
 
 ### Existing development catalogs
 
-Use the [implementation roadmap](../docs/implementation-roadmap.md),
+Use the [current implementation roadmap](../docs/current-roadmap.md),
 [full-language gap map](../docs/full-language-implementation-gap-map.md),
 [component roadmaps](../docs/component-roadmaps/README.md), and [compiler
 architecture phase](../docs/phase-06-compiler-architecture/README.md) for

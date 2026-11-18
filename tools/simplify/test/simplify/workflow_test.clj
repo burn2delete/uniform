@@ -32,11 +32,9 @@
                   gh/draft! (fn [_ _ draft? _] (swap! draft-changes conj draft?))
                   gh/comment! (fn [_ _ key body] (reset! comment [key body]))
                   flow/transition! (constantly nil)]
-      (flow/publish! (assoc-in ctx [:config :repository] "fixture/repo")
-                     (-> current (assoc-in [:review :candidate] "old") (assoc-in [:checks :tree] "old-tree")))
-      (is (= "draft/new" (first @comment)))
-      (is (str/includes? (second @comment) "Checks: Pending for this candidate"))
-      (is (not (str/includes? (second @comment) "Reviewed this tree")))
+      (doseq [stale [(assoc-in current [:review :candidate] "old") (assoc-in current [:checks :tree] "old-tree")]]
+        (flow/publish! (assoc-in ctx [:config :repository] "fixture/repo") stale)
+        (is (nil? @comment)))
       (is (empty? @draft-changes))
       (flow/publish! (assoc-in ctx [:config :repository] "fixture/repo") current)
       (is (= "candidate/new" (first @comment)))
@@ -69,6 +67,34 @@
     (rt/git ctx repo "commit" "-m" "Fixture")
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
+
+(deftest publishes-one-exact-check-and-review-summary-on-the-pr
+  (let [ctx (assoc (fixture/context) :config {:repository "fixture/repo" :campaign "fixture"})
+        pr {:number 3 :state "open"}
+        t (merge finding {:issue {:number 2} :branch "fix" :base "base" :candidate "candidate" :tree "tree"})
+        checked (-> (evidenced t)
+                    (assoc-in [:checks :commands] [["clojure" "-M:test"]])
+                    (assoc-in [:review :summary] "Approved exact diff"))
+        posted (atom {})]
+    (with-redefs [flow/assert-clean! (fn [& _]) flow/assert-identity! (fn [& _])
+                  rt/git (fn [& _] "") gh/status! (fn [& _])
+                  gh/pages (fn [_ path] (get @posted path []))
+                  gh/api (fn
+                           ([_ _] [pr])
+                           ([_ _ path body] (swap! posted update path (fnil conj []) body)))]
+      (flow/publish! ctx checked)
+      (flow/publish! ctx checked)
+      (flow/publish! ctx (-> checked
+                             (assoc :candidate "new-candidate")
+                             (assoc-in [:checks :candidate] "new-candidate")))
+      (let [comments (get @posted "repos/fixture/repo/issues/3/comments")]
+        (is (= 1 (count comments)))
+        (is (str/includes? (:body (first comments)) "Approved exact diff"))
+        (is (str/includes? (:body (first comments)) "**Passed local checks**\n\n`[[\"clojure\" \"-M:test\"]]`")))
+      (let [legacy (evidenced (assoc t :candidate "legacy"))]
+        (rt/update! ctx assoc-in [:effects "comment/2/candidate/legacy"] {:status :restricted})
+        (is (thrown-with-msg? Exception #"Restricted effect cannot be retried" (flow/publish! ctx legacy)))
+        (is (= #{"repos/fixture/repo/issues/3/comments"} (set (keys @posted))))))))
 
 (deftest nul-delimited-git-paths-remain-exact
   (let [ctx (fixture/context) {:keys [repo]} (repository! ctx)

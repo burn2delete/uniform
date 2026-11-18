@@ -1,9 +1,11 @@
 # Gravity
 
-Gravity/Uniform is a self-hosting, homoiconic language platform with one
-semantic model and multiple compilation profiles. The repository contains the
-normative design contracts, the current Clojure stage0 bootstrap, and the
-incremental Gravity implementation.
+Gravity/Uniform is a homoiconic language platform with one semantic model and
+multiple compilation profiles. The Clojure/JVM bootstrap runs hosted programs
+and compiles a checked scalar subset to JavaScript that runs in Node 20. The
+compiler self-build and seedless release are still open. See the
+[implementation roadmap](docs/current-roadmap.md) for runnable examples,
+expected diagnostics, and the remaining self-build requirements.
 
 The implementation boundary is Lisp-only: Clojure is the temporary bootstrap,
 seed and tooling language, while Gravity/Uniform is the destination language.
@@ -20,10 +22,6 @@ New Python source, bytecode and executable shebangs are prohibited. See
   edit-to-test workflow.
 - [Stage-owned namespaces](docs/bootstrap/stage-owned-namespaces.md) - current
   extraction boundaries and implementation ownership.
-- [Implementation roadmap](docs/implementation-roadmap.md) - milestone order
-  and capability gates.
-- [Roadmap capability audit](docs/roadmap-capability-audit.md) - current
-  executable reachability and release limitations.
 - [Repository reference archive](README-reference-archive.md) - historical
   command inventories and detailed validation notes retained from the former
   long-form README.
@@ -58,10 +56,9 @@ gravity test
 gravity self-host verify
 ```
 
-`gravity test` covers the current public subset. `gravity self-host verify` is
-fail-closed while final self-hosting and seed retirement remain incomplete; an
-exit status of `P18T04007` records that limitation rather than a successful
-self-hosting claim.
+`gravity test` covers the current public subset. `gravity self-host verify`
+exits 1 with diagnostic `P18T04007` while the Clojure seed boundary remains
+active.
 
 Inspect a hosted artifact when its evidence is relevant:
 
@@ -112,10 +109,9 @@ Explicit `--lowering runtime-derived` retains the legacy route and its genuine
 results or refusals. Other lowering requests receive structured refusals.
 
 See [Checked scalar JavaScript modules](docs/compiler-checked-js-modules.md)
-for source launch, both aliases, ABI errors, independent execution and exact
-acceptance evidence. Full-language support, native standalone compilation,
-self-hosting, seed retirement and production release readiness remain outside
-this scalar-module result.
+for source launch, both aliases, ABI errors, and independent execution. The
+guide gives focused backend and public smoke tests and the full acceptance
+command. [Verification](docs/compiler-checked-js-modules.md#verification)
 
 ## Normal compiler development
 
