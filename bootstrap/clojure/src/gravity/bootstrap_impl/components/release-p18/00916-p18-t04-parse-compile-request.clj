@@ -8,132 +8,36 @@
   target is routed through the real C backend. JS aliases select the checked
   module producer unless legacy runtime-derived lowering is explicit."
   [args]
-  (let [[_ source-path & options] args]
-    (when-not (and (string? source-path) (not (str/blank? source-path))
-                   (not (str/starts-with? source-path "-")))
+  (let [{:keys [source-path target-argument output-path output-option
+                lowering-argument]}
+        ((requiring-resolve 'gravity.cli.compile-request/parse-shape!)
+         args
+         (fn [facts]
+           (p18-t04-fail! "P18T04002" facts)))
+        target (some-> target-argument str/lower-case keyword
+                       js-ts-backend-canonical-target)
+        lowering-mode (some-> lowering-argument str/lower-case keyword)]
+    (when (and lowering-mode
+               (not= :verified-mir lowering-mode)
+               (not (or (contains? c-backend-supported-targets target)
+                        (= js-ts-backend-target target)
+                        (= jvm-backend-target target))))
       (p18-t04-fail! "P18T04002"
-                     {:source "bin/gravity"
+                     {:source source-path
                       :command args
-                      :missing-fields [:source-path]}))
-    (loop [remaining (vec options)
-           target nil
-           output-path nil
-           lowering-mode nil
-           output-option nil]
-      (if (empty? remaining)
-        (let [target-argument target
-              lowering-argument lowering-mode
-              target (some-> target str/lower-case keyword
-                             js-ts-backend-canonical-target)
-              lowering-mode (some-> lowering-mode str/lower-case keyword)]
-          (when (and lowering-mode
-                     (not= :verified-mir lowering-mode)
-                     (not (or (contains? c-backend-supported-targets target)
-                              (= js-ts-backend-target target)
-                              (= jvm-backend-target target))))
-            (p18-t04-fail! "P18T04002"
-                           {:source source-path
-                            :command args
-                            :target target
-                            :lowering-mode lowering-mode
-                            :missing-fields [:runtime-derived-target]
-                            :remediation "Use --target c, jvm, js, or js-ts with --lowering runtime-derived; the verified-MIR C candidate is not publicly exposed."}))
-          {:source-path source-path
-           :target target
-           :target-argument target-argument
-           :target-requested? (some? target)
-           :output-path output-path
-           :output-option output-option
-           :lowering-mode lowering-mode
-           :lowering-argument lowering-argument
-           :lowering-requested? (some? lowering-mode)})
-        (let [option (first remaining)
-              rest-options (subvec remaining 1)]
-          (cond
-            (#{"-o" "--output"} option)
-            (do
-              (when (or (empty? rest-options) output-path)
-                (p18-t04-fail! "P18T04002"
-                               {:source source-path
-                                :command args
-                                :option option
-                                :missing-fields (if (empty? rest-options)
-                                                  [:output-path]
-                                                  [:duplicate-output-option])}))
-              (let [candidate (first rest-options)]
-                (when (or (str/blank? (str candidate))
-                          (str/starts-with? (str candidate) "-"))
-                  (p18-t04-fail! "P18T04002"
-                                 {:source source-path :command args :option option
-                                  :missing-fields [:output-path]}))
-                (when-not (p18-t04-output-path-allowed? candidate)
-                  (p18-t04-fail! "P18T04002"
-                                 {:source source-path
-                                  :command args
-                                  :option option
-                                  :output-path candidate
-                                  :allowed-output-roots ["target/"
-                                                          "<current-directory>"]}))
-                (recur (subvec rest-options 1) target candidate
-                       lowering-mode option)))
-
-            (= "--target" option)
-            (do
-              (when (or (empty? rest-options) target)
-                (p18-t04-fail! "P18T04002"
-                               {:source source-path
-                                :command args
-                                :option option
-                                :missing-fields (if (empty? rest-options)
-                                                  [:target]
-                                                  [:duplicate-target-option])}))
-              (let [candidate (first rest-options)]
-                (when (or (str/blank? (str candidate))
-                          (str/starts-with? (str candidate) "-"))
-                  (p18-t04-fail! "P18T04002"
-                                 {:source source-path :command args :option option
-                                  :missing-fields [:target]}))
-                (recur (subvec rest-options 1) candidate output-path
-                       lowering-mode output-option)))
-
-            (= "--lowering" option)
-            (do
-              (when (or (empty? rest-options) lowering-mode)
-                (p18-t04-fail! "P18T04002"
-                               {:source source-path
-                                :command args
-                                :option option
-                                :missing-fields (if (empty? rest-options)
-                                                  [:lowering-mode]
-                                                  [:duplicate-lowering-option])}))
-              (let [candidate (first rest-options)]
-                (when (or (str/blank? (str candidate))
-                          (str/starts-with? (str candidate) "-"))
-                  (p18-t04-fail! "P18T04002"
-                                 {:source source-path :command args :option option
-                                  :missing-fields [:lowering-mode]}))
-                (recur (subvec rest-options 1) target output-path
-                       candidate output-option)))
-
-            :else
-            (p18-t04-fail! "P18T04002"
-                           {:source source-path
-                            :command args
-                            :unsupported-option option
-                            :expected-forms [["compile"
-                                              "<file.qst|file.gravity>"]
-                                             ["compile"
-                                              "<file.qst|file.gravity>"
-                                              "-o" "<executable>"]
-                                             ["compile"
-                                              "<file.qst|file.gravity>"
-                                              "--target" "c"
-                                              "-o" "<executable>"]
-                                             ["compile"
-                                              "<file.qst|file.gravity>"
-                                             "--target" "c"
-                                             "--lowering" "runtime-derived"
-                                              "-o" "<executable>"]]})))))))
+                      :target target
+                      :lowering-mode lowering-mode
+                      :missing-fields [:runtime-derived-target]
+                      :remediation "Use --target c, jvm, js, or js-ts with --lowering runtime-derived; the verified-MIR C candidate is not publicly exposed."}))
+    {:source-path source-path
+     :target target
+     :target-argument target-argument
+     :target-requested? (some? target)
+     :output-path output-path
+     :output-option output-option
+     :lowering-mode lowering-mode
+     :lowering-argument lowering-argument
+     :lowering-requested? (some? lowering-mode)}))
 
 (defn p18-t04-parse-compile-output-path
   [args]
