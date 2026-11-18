@@ -3139,13 +3139,14 @@
           (= :passed (get report :status) (get (get application :core-verification) :status))
           (= (get core :artifact-id) (get report :checked-core-artifact-id) (get mir :source-core))
           (= (get mir :module-id) (get report :mir-module-id))
-          (= (b1-js-evidence application) (get lowering :evidence))
-          (= (b1-js-abi mir) (get lowering :abi))
           (= {:mode :checked :representation :bigint :width 64 :signed true
               :minimum "-9223372036854775808" :maximum "9223372036854775807"
               :overflow :raise-error-numeric :number-mixing :rejected
               :check-elision :forbidden :operation :add} (get lowering :numeric))
-          (b1-js-runtime-valid? application (get lowering :runtime))])
+          (if (b1-js-runtime-valid? application (get lowering :runtime))
+            (b1-js-all? [(= (b1-js-evidence application) (get lowering :evidence))
+                         (= (b1-js-abi mir) (get lowering :abi))])
+            false)])
       {:artifact :gravity/b1-checked-js-input :schema-version 1 :status :accepted
        :backend :gravity.backend/js-ts :profile :hosted :source-target :js-ts
        :target (get lowering :target) :input input :source (get application :source)

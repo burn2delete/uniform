@@ -125,17 +125,6 @@
     (is (some? path) (str "Genuine MIR must contain " opcode))
     (if path (update-in mir path transform) mir)))
 
-(defn- target-owner-invoker [source-path relative-path]
-  (let [project-root (bootstrap/reader-project-root-path
-                       (bootstrap/p15-s23-c11-mir-resolve-source-path))
-        path (.getCanonicalPath (io/file project-root relative-path))
-        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path :encoding "UTF-8"))]
-    (fn [function arguments]
-      (bootstrap/p15-s23-stage2-runtime-execute-function
-       {:engine :gravity-js-target-rules-test :compiler-artifact-plan? true}
-       plan function arguments))))
-
 (defn- assert-owned-rejection [path expected-id result]
   (is (= :rejected (:status result)) (pr-str result))
   (is (= expected-id (get-in result [:diagnostics 0 :diagnostic-id])))
@@ -143,28 +132,15 @@
   (println "checked scalar Uniform target rule rejection" (pr-str {:id expected-id
                                                                    :missing-fact (get-in result [:diagnostics 0 :missing-fact])})))
 
-(defn- assert-target-owner-rejections [path product]
-  ;; These are actual current Uniform owners executed on genuine production
-  ;; products. Pure target-rule tests do not confer construction authority.
-  (let [invoke-c14 (target-owner-invoker path "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
-        invoke-b1 (target-owner-invoker path "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity")
-        invoke-b6 (target-owner-invoker path "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
-        request {:target :js-ts :runtime :node20 :language :es2022 :module-format :esm}
-        lowering (invoke-c14 'c14-build-checked-js-lowering [product request])
-        packet (invoke-b1 'b1-build-checked-js-input [product lowering])
-        program (invoke-b6 'b6-build-checked-js-program [product lowering packet])
-        mir (:mir-module product)
+(defn- assert-c14-rejections [path invoke-c14 [product request lowering]]
+  (let [mir (:mir-module product)
         addition (first (filter #(= :integer-add (:opcode %)) (function-operations mir 'add)))
         effect-id (get-in addition [:facts :effect-fact-id])
         proof-operation (first (filter #(string? (get-in % [:facts :safety-proof-id]))
                                        (function-operations mir 'add)))
         proof-id (get-in proof-operation [:facts :safety-proof-id])
         entry (get-in mir [:functions 'add :entry])]
-    (is (= :accepted (:status lowering) (:status packet) (:status program)))
-    (is (= (:runtime lowering) (:runtime packet)))
-    (is (= :passed (:status (invoke-c14 'c14-verify-checked-js-lowering [product request lowering]))))
-    (is (= :passed (:status (invoke-b1 'b1-verify-checked-js-input [product lowering packet]))))
-    (is (= :passed (:status (invoke-b6 'b6-verify-checked-js-program [product lowering packet program]))))
+    (is (= :accepted (:status lowering)))
     (is (contains? (:effect-table mir) effect-id))
     (is (contains? (get-in mir [:proof-certificate-table :safety-proofs]) proof-id))
     (doseq [[expected candidate]
@@ -185,28 +161,36 @@
       (assert-owned-rejection path expected
                               (invoke-c14 'c14-build-checked-js-lowering [candidate request])))
     (assert-owned-rejection path "B6-TARGET"
-                            (invoke-c14 'c14-build-checked-js-lowering [product (assoc request :runtime :browser)]))
-    (doseq [[field replacement] [[:bundler :required]
-                                 [:tree-shaking :remove-checks]
-                                 [:initialization :module-load-effects]]
-            runtime [(dissoc (:runtime lowering) field)
-                     (assoc (:runtime lowering) field replacement)]]
-      (testing (str field " " (get runtime field :missing))
-        (let [rejection (invoke-b1 'b1-build-checked-js-input
-                                   [product (assoc lowering :runtime runtime)])]
-          (assert-owned-rejection path "B1-INPUT" rejection)
-          (is (not (contains? rejection :eligibility))))))
-    (doseq [candidate [(assoc-in lowering [:abi :exports 0 :parameters 0] :gravity/i64)
-                       (assoc-in lowering [:runtime :host-globals] [])
-                       (update lowering :evidence dissoc :proof-certificate-table)]]
-      (is (not= lowering candidate))
-      (assert-owned-rejection path "B1-INPUT" (invoke-b1 'b1-build-checked-js-input [product candidate])))
-    (assert-owned-rejection path "B1-INPUT"
-                            (invoke-b6 'b6-build-checked-js-program
-                                       [product lowering (assoc-in packet [:abi :exports 0 :parameters 0] :gravity/i64)]))
-    (assert-owned-rejection path "B6-MANIFEST"
-                            (invoke-b6 'b6-verify-checked-js-program
-                                       [product lowering packet (assoc program :exports [])]))))
+                            (invoke-c14 'c14-build-checked-js-lowering [product (assoc request :runtime :browser)]))))
+
+(defn- assert-b1-rejections [path invoke-b1 [product lowering packet]]
+  (is (= :accepted (:status packet)))
+  (is (= (:runtime lowering) (:runtime packet)))
+  (doseq [[field replacement] [[:bundler :required]
+                               [:tree-shaking :remove-checks]
+                               [:initialization :module-load-effects]]
+          runtime [(dissoc (:runtime lowering) field)
+                   (assoc (:runtime lowering) field replacement)]]
+    (testing (str field " " (get runtime field :missing))
+      (let [rejection (invoke-b1 'b1-build-checked-js-input
+                                 [product (assoc lowering :runtime runtime)])]
+        (assert-owned-rejection path "B1-INPUT" rejection)
+        (is (= (:artifact-id product) (get-in rejection [:diagnostics 0 :input-artifact])))
+        (is (not (contains? rejection :eligibility))))))
+  (doseq [candidate [(assoc-in lowering [:abi :exports 0 :parameters 0] :gravity/i64)
+                     (assoc-in lowering [:runtime :host-globals] [])
+                     (update lowering :evidence dissoc :proof-certificate-table)]]
+    (is (not= lowering candidate))
+    (assert-owned-rejection path "B1-INPUT" (invoke-b1 'b1-build-checked-js-input [product candidate]))))
+
+(defn- assert-b6-rejections [path invoke-b6 [product lowering packet program]]
+  (is (= :accepted (:status program)))
+  (assert-owned-rejection path "B1-INPUT"
+                          (invoke-b6 'b6-build-checked-js-program
+                                     [product lowering (assoc-in packet [:abi :exports 0 :parameters 0] :gravity/i64)]))
+  (assert-owned-rejection path "B6-MANIFEST"
+                          (invoke-b6 'b6-verify-checked-js-program
+                                     [product lowering packet (assoc program :exports [])])))
 
 (defn- copy-artifacts! [source destination]
   (doseq [file (.listFiles (io/file (str source)))]
@@ -533,8 +517,13 @@
           (is (not (.exists (.toFile output))) "Rejection cannot publish partial artifacts")
           (println "checked scalar source/target rejection" (pr-str {:case label :id (:id data)})))))))
 
+(def ^:private tamper-source
+  (module-source 'tamper.scalar '[score] #{:error/raise}
+    (str "(defn add [n :- I64] (+ n 1))\n"
+         "(defn score [enabled :- Bool] (if enabled (add 1) 0))")))
+
 (deftest scalar-module-rejects-genuine-product-tampering
-  (with-source "tamper.gravity" scalar-source
+  (with-source "tamper.gravity" tamper-source
     (fn [path directory]
       (let [captured (atom nil)
             replaced-constructor? (atom false)
@@ -555,28 +544,30 @@
          path scalar-policy
          (fn [product authenticate!]
            (reset! captured [product authenticate!])
-           (assert-target-owner-rejections path product)
            (let [execute bootstrap/p15-s23-stage2-runtime-execute-function]
-             (doseq [[label verifier change]
+             (doseq [[label verifier change assert-rejections]
                      [["c14-verifier-application" 'c14-verify-checked-js-lowering
-                       #(assoc % :application-id "sha256:substituted")]
+                       #(assoc % :application-id "sha256:substituted") assert-c14-rejections]
                       ["b1-verifier-artifact" 'b1-verify-checked-js-input
-                       #(assoc % :artifact :caller/substituted-verifier)]
+                       #(assoc % :artifact :caller/substituted-verifier) assert-b1-rejections]
                       ["b6-verifier-checks" 'b6-verify-checked-js-program
-                       #(assoc % :checks [])]]]
-               (let [substituted? (atom false)]
+                       #(assoc % :checks []) assert-b6-rejections]]]
+               (let [verified-call (atom nil)]
                  (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
                                (fn [runtime plan function arguments]
                                  (let [report (execute runtime plan function arguments)]
                                    (if (= verifier function)
                                      (do (is (= :passed (:status report)))
-                                         (reset! substituted? true)
+                                         (reset! verified-call [runtime plan arguments])
                                          (change report))
                                      report)))]
                    (let [data (refuse! label authenticate! product)]
                      (is (= :current-target-verifier-result-binding (:missing-fact data))
                          "The host binds the genuine target owner's exact fresh verifier report")))
-                 (is @substituted? "The mutation must reach the actual target verifier result"))))
+                 ;; Exercise the owner's negative cases on the inputs it just verified.
+                 (if-let [[runtime plan arguments] @verified-call]
+                   (assert-rejections path (partial execute runtime plan) arguments)
+                   (is false (str "Emitter did not invoke " verifier))))))
            (let [core (:checked-core product) mir (:mir-module product)
                  caller (get-in core [:functions 'score])
                  addition (first (filter #(= :integer-add (:opcode %)) (function-operations mir 'add)))
@@ -614,9 +605,9 @@
                    "Emitter authentication must use the original authority rather than a replaceable public Var"))
              (refuse! "substituted-authority-callback" (constantly :passed) product)
              (try
-               (spit path (str scalar-source "\n") :encoding "UTF-8")
+               (spit path (str tamper-source "\n") :encoding "UTF-8")
                (refuse! "changed-source-bytes" authenticate! product)
-               (finally (spit path scalar-source :encoding "UTF-8")))))))
+               (finally (spit path tamper-source :encoding "UTF-8")))))))
         (is (false? @replaced-constructor?)
             "Backend authority must capture the genuine constructor rather than a replaceable public Var")
         (let [[product authenticate!] @captured]

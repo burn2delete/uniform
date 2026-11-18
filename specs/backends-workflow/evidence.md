@@ -6,7 +6,9 @@ Finding `backend.js-input.verify-module-packaging-assumptions-v1` belongs to
 the open `backend-interface` task. In
 `language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity`,
 `b1-js-runtime-valid?` now requires the three packaging values produced by
-`c14-js-runtime` before B1 constructs an eligible input packet.
+`c14-js-runtime` before B1 constructs an eligible input packet. A runtime
+mismatch takes the existing rejection path before B1 reconstructs the ABI and
+compares the MIR evidence. Every accepted packet requires both comparisons.
 
 The fixtures in `bootstrap/clojure/test/gravity/backend/js_checked_mir_test.clj`
 cover two paths:
@@ -15,15 +17,27 @@ cover two paths:
   checked scalar source, compares its runtime with the accepted B1 packet and
   verifies that packet. Six single-field mutations remove or replace each of
   `:bundler`, `:tree-shaking` and `:initialization`, including module-load
-  effects. Each requires a rejected result with the original source path,
-  diagnostic `B1-INPUT` and no eligibility record.
+  effects. Each requires a rejected result with the original source path and
+  application artifact ID, diagnostic `B1-INPUT` and no eligibility record.
 - `scalar-module-target-execution` reads back the emitted `manifest.edn` and
   checks its runtime against the accepted B1 packet. It requires bundler
   `:none`, tree-shaking `:preserve-exports-and-checks` and initialization
   `:definitions-only`, alongside JSON boolean `false` for `sideEffects` in
   the emitted ESM `package.json`.
 
-Controller checks proposed for this increment (unrun):
+The controller's pre-repair run of the first command below exited 124. Stdout
+contained only the namespace announcement and stderr was empty. It produced
+no assertion result or timing for an individual stage.
+
+The repaired tampering fixture uses a Boolean export parameter, a direct call
+and a checked I64 addition. During each existing verifier-report substitution
+case, it captures the actual owner plan and arguments after the genuine verifier
+returns. The direct owner mutations use those inputs with the original executor.
+This removes a second compilation, build and verification of all three owners
+from the fixture. The host must still reject each substituted report before
+publishing files.
+
+Controller checks for the repaired worktree (pending):
 
 ```clojure
 ["clojure" "-J-Xmx2g" "-M:dev-test" "--namespace" "gravity.backend.js-checked-mir-test" "--exact" "scalar-module-rejects-genuine-product-tampering"]
