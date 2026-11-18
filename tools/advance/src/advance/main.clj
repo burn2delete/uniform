@@ -1,13 +1,16 @@
 (ns advance.main
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
+            [advance.pr-recovery :as pr-recovery]
             [advance.workflow :as workflow]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [simplify.coordination :as coordination]
             [simplify.main :as base]
-            [simplify.runtime :as rt])
+            [simplify.recovery :as recovery]
+            [simplify.runtime :as rt]
+            [simplify.workflow :as flow])
   (:gen-class))
 
 (def defaults
@@ -213,20 +216,50 @@
   (let [{:keys [state digest]} (read-status-state! config)]
     (status-summary config state digest (read-status-control config))))
 
+(defn run-or-hold! [ctx]
+  (let [key (rt/digest (pr-str ["POST" "graphql"]))
+        project (get-in @(:state ctx) [:project :id])
+        reason (cond (rt/shared-restriction ctx :project-controls project) :restricted-project-controls
+                     (or (get-in @(:state ctx) [:restricted-actions key]) (rt/shared-restriction ctx :api key))
+                     :retained-graphql-restriction)]
+    (if reason
+      (do (coordination/register! ctx)
+          (try
+            (rt/event! ctx :operational-holding-start {:reason reason :provider-dispatch false})
+            (while (not (flow/paused? ctx)) (Thread/sleep (get-in ctx [:config :poll-ms])))
+            (rt/event! ctx :operational-holding-end {:reason :local-pause :provider-dispatch false})
+            (finally (coordination/unregister! ctx))))
+      (workflow/campaign! ctx))))
+
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
+    "finish-pr-composition"
+    (do (when-not (= 5 (count args)) (rt/fail! "Expected task key, authority file and digest, CI file and digest" {}))
+        (rt/with-lock ctx #(do (when-not (= {:paused true} (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+                               (coordination/register! ctx)
+                               (try (apply pr-recovery/finish! ctx args)
+                                    (finally (coordination/unregister! ctx))))))
+    "review-preexisting-validation"
+    (let [[key path digest] args]
+      (when-not (= 3 (count args)) (rt/fail! "Expected task key, verified receipt path and accepted SHA-256" {}))
+      (rt/with-lock ctx
+        #(do (when-not (:paused (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+             (flow/assert-identity! ctx (flow/task ctx key))
+             (flow/assert-clean! ctx (:worktree (flow/task ctx key)))
+             (recovery/record-preexisting-validation! ctx key path digest)
+             (prn (flow/review! ctx (flow/task ctx key))))))
     "setup" (rt/with-lock ctx #(do (coordination/register! ctx)
                                  (try (project/setup! ctx) (workflow/ensure-campaign! ctx)
                                       (finally (coordination/unregister! ctx)))))
-    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
+    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (run-or-hold! ctx)))
     "resume" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx)))
-                                 (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
+                                 (rt/write-edn! (:control-file ctx) {:paused false}) (run-or-hold! ctx)))
     (base/dispatch! ctx command args)))
 
 (defn -main [& [command config-path & args]]
   (try
-    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile CONFIG.edn [ARGS]" {}))
+    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation|finish-pr-composition CONFIG.edn [ARGS]" {}))
     (let [config (base/config! config-path defaults)]
       (if (= command "status-summary")
         (do
