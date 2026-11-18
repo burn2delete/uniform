@@ -543,6 +543,8 @@
     :else :pending))
 
 (defn compose! [ctx t base]
+  (when (:pr-integration ctx)
+    (rt/fail! "Main changed after this scoped candidate was approved" {:candidate (:candidate t) :base base}))
   (when-let [lease (rt/claim-paths! ctx (:key t) (:paths t) :checking)]
     (rt/with-claimed-paths
      ctx lease

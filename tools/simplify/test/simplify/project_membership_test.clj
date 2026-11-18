@@ -96,6 +96,39 @@
       (is (= 2 (count (calls-of calls :read))))
       (is (= :done (get-in @(:state ctx) [:effects "project-item/project/issue" :status]))))))
 
+(deftest project-controls-settlement-can-scope-an-approved-pr-integration
+  (let [ctx (assoc-in (context) [:config :repository] "owner/repo") k (rt/digest (pr-str ["POST" "graphql"]))
+        local {:method "POST" :endpoint "graphql" :error "rate limit exceeded"}
+        scope {:task-key "finding" :candidate "head" :authority-sha256 (rt/digest "accepted scope")}
+        ctx (assoc ctx :pr-integration scope :coordinator-owner (atom true))
+        tuple {:base "base" :candidate "head" :tree "tree"}
+        task (merge tuple {:pr {:node_id "PR" :number 5} :issue {:node_id "issue" :number 4}
+                           :checks (assoc tuple :result :passed :hosted-ci (assoc tuple :result :passed))
+                           :review (assoc tuple :verdict "approved")
+                           :pr-composition {:stage :approved :authority-sha256 (:authority-sha256 scope)
+                                            :authority {:kind :single-pr-composition :pr 5 :repo "owner/repo" :active-issues {:increment 4}}}})
+        hold {:kind :project-controls-pagination :scope :all-cursors :state-file (:state-file ctx)
+              :legacy-api-key k :retained-local-guard local}
+        calls (atom [])]
+    (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:name "Merge queue" :id "queue"}]}}
+                :tasks {"finding" task} :restricted-actions {k local}
+                :effects {"project-item/project/issue" {:status :done :result "item"}})
+    (rt/shared-restrict! ctx :project-controls "project" hold)
+    (with-redefs [rt/command (fn [_ _ _ body] (swap! calls conj body)
+                               {:exit 0 :out (json/write-str {:data {:repository {:pullRequest {:reviewThreads
+                                              {:nodes [] :pageInfo {:hasNextPage false}}}}}})})]
+      (is (gh/review-threads-clear? ctx 5))
+      (gh/draft! ctx (:pr task) false "head")
+      (gh/status! ctx (:issue task) "Merge queue")
+      (is (= 3 (count @calls)))
+      (is (thrown? Exception (gh/review-threads-clear? ctx 6)))
+      (is (thrown? Exception (gh/graphql ctx "query{viewer{login}}" {})))
+      (is (thrown? Exception (gh/review-threads-clear? (dissoc ctx :pr-integration) 5)))
+      (is (thrown? Exception (gh/review-threads-clear? (assoc-in ctx [:pr-integration :candidate] "other") 5)))
+      (rt/shared-restrict! ctx :api k {:method "POST" :endpoint "graphql" :error "new episode"})
+      (is (thrown? Exception (gh/review-threads-clear? ctx 5)))
+      (is (= 3 (count @calls))))))
+
 (deftest recovery-can-distinguish-a-provider-refusal-from-a-later-blocked-request
   (doseq [response [{:exit 1 :err "HTTP 403: rate limit exceeded" :out ""}
                     {:exit 0 :err "" :out (json/write-str {:errors [{:type "RATE_LIMITED"}]})}]]

@@ -252,7 +252,7 @@
 
 (defn -main [& [command config-path & args]]
   (try
-    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile CONFIG.edn [ARGS]" {}))
+    (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation CONFIG.edn [ARGS]" {}))
     (let [config (base/config! config-path defaults)]
       (if (= command "status-summary")
         (do
