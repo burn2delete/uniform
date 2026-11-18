@@ -172,6 +172,17 @@
       (is (= 2 (project/priority (project/settings ctx) 99)))
       (rt/write-edn! file (assoc policy :issues {}))
       (is (project/runnable? (project/settings ctx) 12))
+      (let [s @(:state ctx) config (assoc (:config ctx) :state-dir (:state-dir ctx))
+            key (rt/digest (pr-str ["POST" "graphql"])) local {:method "POST" :endpoint "graphql" :error "original"}
+            s (assoc s :restricted-actions {key local})
+            hold {:kind :project-controls-pagination :scope :all-cursors :project "p"
+                  :state-file (str (io/file (:state-dir ctx) "state.edn")) :legacy-api-key key :retained-local-guard local}
+            registry (atom {:restrictions {:project-controls {"p" hold}}})]
+        (with-redefs [simplify.diagnostics/coordination-snapshot (fn [_] @registry)]
+          (is (= :no-recorded-blocker (:status (main/restart-check config s))))
+          (is (= [:restricted-project-controls] (:blockers (main/restart-check config (assoc-in s [:restricted-actions key :failed-request] {})))))
+          (swap! registry assoc-in [:restrictions :api key] local)
+          (is (= [:retained-graphql-restriction] (:blockers (main/restart-check config s))))))
       (doseq [invalid [(assoc policy :project "foreign") (assoc policy :repository "foreign/repo")
                        (assoc policy :issues {1 {"Control" "Typo"}}) (assoc policy :issues {"1" {}})
                        (dissoc policy :defaults) (assoc policy :unknown true)]]

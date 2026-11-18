@@ -85,6 +85,8 @@ or mismatched file holds new dispatch and integration. Active workers finish.
 The controller reuses the campaign's recorded Project setup. Workflow status
 and PR tracking continue through their journaled operations. Project control
 pagination and previously refused actions stay blocked.
+With this file configured, `restart-check` inspects the local scheduling
+prerequisites and the saved restrictions without contacting GitHub.
 
 ## Task selection and progress
 

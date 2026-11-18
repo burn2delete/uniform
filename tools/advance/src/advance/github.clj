@@ -80,17 +80,24 @@
           (rt/fail! "Invalid local scheduling controls" {:file (str file)}))
         overrides))))
 
-(defn hold-reason [ctx]
+(defn hold-reason
+  ([ctx] (hold-reason ctx #(rt/shared-restriction ctx %1 %2)))
+  ([ctx restriction]
   (let [s @(:state ctx) p (get-in s [:project :id]) key (rt/digest (pr-str ["POST" "graphql"]))
-        hold (rt/shared-restriction ctx :project-controls p) local (get-in s [:restricted-actions key])
+        hold (restriction :project-controls p) local (get-in s [:restricted-actions key])
         file (get-in ctx [:config :local-controls-file])]
     (cond
-      (rt/shared-restriction ctx :api key) :retained-graphql-restriction
+      (restriction :api key) :retained-graphql-restriction
       (and (or local hold) (not (and file (gh/settled-controls-guard? ctx key local hold))))
       (if hold :restricted-project-controls :retained-graphql-restriction)
       (and file (not (and (:campaign-tracked s) (pos-int? (get-in s [:campaign-issue :number]))
                           (string? (get-in s [:project :workflow :id]))
-                          (= :done (get-in s [:effects "link-project" :status]))))) :unverified-project-setup)))
+                          (= :done (get-in s [:effects "link-project" :status]))))) :unverified-project-setup))))
+
+(defn startup-hold [ctx provider-hold]
+  (or provider-hold
+      (when (get-in ctx [:config :local-controls-file])
+        (try (local-settings ctx) nil (catch Exception _ :invalid-local-controls)))))
 
 (defn settings [ctx]
   (if (:local-controls-file (:config ctx))

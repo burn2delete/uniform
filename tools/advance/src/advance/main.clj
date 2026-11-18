@@ -217,11 +217,20 @@
   (let [{:keys [state digest]} (read-status-state! config)]
     (status-summary config state digest (read-status-control config))))
 
+(defn restart-check [config state]
+  (if-let [file (:local-controls-file config)]
+    (let [ctx {:state (atom state) :state-file (str (io/file (:state-dir config) "state.edn")) :config config}
+          shared (:restrictions (diagnostics/coordination-snapshot config))
+          _ (when-not (every? map? [(get state :restricted-actions {}) (get shared :api {}) (get shared :project-controls {})])
+              (rt/fail! "Cannot inspect recorded scheduling restrictions" {}))
+          hold (project/startup-hold ctx (project/hold-reason ctx #(get-in shared [%1 %2])))]
+      {:scope :local-project-scheduling :campaign (:campaign config) :file file
+       :status (if hold :blocked :no-recorded-blocker) :blockers (if hold [hold] [])})
+    (diagnostics/restart-check config state)))
+
 (defn run-or-hold! [ctx]
   (let [file (get-in ctx [:config :local-controls-file])
-        reason #(or (project/hold-reason ctx)
-                    (when file (try (project/local-settings ctx) nil
-                                    (catch Exception _ :invalid-local-controls))))]
+        reason #(project/startup-hold ctx (project/hold-reason ctx))]
     (when-let [initial (reason)]
       (coordination/register! ctx)
       (try
@@ -272,7 +281,9 @@
         (do
           (when (seq args) (rt/fail! (str command " takes no additional arguments") {:args args}))
           (if (= command "restart-check")
-            (diagnostics/report-restart! config (:state (read-status-state! config)))
+            (let [report (restart-check config (:state (read-status-state! config)))]
+              (prn report)
+              (when (= :blocked (:status report)) (rt/fail! "Advance startup is held" {})))
             (prn (status-summary! config))))
         (let [ctx (assoc (base/context! config) :before-implement workflow/validate-source! :command command)]
           (.addShutdownHook (Runtime/getRuntime)
