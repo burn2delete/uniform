@@ -133,7 +133,7 @@
     (is (= [{:digest-ref 1}]
            (mapv :binding-id
                  (get-in accepted-shadow
-                         [:namespace-analysis-template :resolution-table])))))
+                         [:namespace-analysis-template :resolution-table]))))))
 
 (deftest reference-lookup-keeps-nearest-lexical-binding-first
   (let [scope-rows (scopes 2)
