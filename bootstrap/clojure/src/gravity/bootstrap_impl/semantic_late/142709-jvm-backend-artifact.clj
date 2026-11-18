@@ -52,6 +52,8 @@
      final-paths
      provenance]}
    state
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? packet)
    identity
    {:source-content-hash source-hash,
     :closed-plan-target-record-hash (:record-hash closed-plan-runtime),
@@ -63,7 +65,8 @@
     :manifest-hash manifest-hash,
     :kind :gravity/jvm-backend-artifact}
    artifact
-   {:capabilities (get-in plan [:module :capabilities]),
+   (cond->
+    {:capabilities (get-in plan [:module :capabilities]),
     :seed-boundary {:clojure-seed-boundary? true, :self-hosted? false, :final-release? false},
     :input-plan-hash plan-hash,
     :diagnostics [],
@@ -93,6 +96,16 @@
     :compiled-execution-output-bytes (:stdout-bytes execution),
     :stage2-runtime-execution-record (:stage2-runtime-execution-record packet),
     :java-source java-source,
-    :compiled-execution-output expected-output,
-    :target-eligibility (:target-eligibility packet)}]
+     :compiled-execution-output expected-output,
+     :target-eligibility (:target-eligibility packet)}
+    current-runtime-development?
+    (-> (dissoc :stage2-compiler-driver-record)
+        (assoc :current-runtime-development? true
+               :current-runtime-development-comparison-record
+               (:current-runtime-development-comparison-record packet)
+               :runtime-artifact-source
+               (c-backend-current-runtime-development-source-record
+                (:stage2-runtime-rule packet))
+               :revision-status :development-unadmitted
+               :runtime-effects-status :not-checked))) ]
   (clojure.core/assoc state :identity identity :artifact artifact)))

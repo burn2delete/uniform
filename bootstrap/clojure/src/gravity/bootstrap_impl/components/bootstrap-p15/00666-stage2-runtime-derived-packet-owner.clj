@@ -4,6 +4,8 @@
 (declare sh03-reader-resolve-source-path
          sh04-syntax-resolve-source-path)
 
+(declare jvm-backend-validate-plan!)
+
 (defn stage2-runtime-derived-packet
   "Build the target-neutral, verified stage2 packet shared by executable\n  backends.  The packet owns source/front-end/plan/runtime authenticity and\n  differential execution; concrete backends only validate and emit their\n  target instruction subset.\n\n  `:jvm` remains the bootstrap seed target and may be explicitly overridden by\n  a backend lowering request.  A non-seed source target is a real constraint\n  and must equal the requested target.  The eligibility decision is carried as\n  evidence rather than erased or relabelled."
   ([source-path source-text requested-target]
@@ -109,13 +111,14 @@
 
 (defn stage2-runtime-derived-current-runtime-development-packet
   [source-path source-text requested-target {:keys [validate-plan!]}]
-  (when-not (= :c requested-target)
+  (when-not (contains? #{:c :jvm} requested-target)
     (stage2-runtime-derived-packet-fail!
      "C14-UNSUPPORTED"
-     "current-source runtime development lowering is currently bound to C"
+     "current-source runtime development lowering does not support this target"
      source-path requested-target nil
      {:requested-target requested-target
-      :missing-fact :current-runtime-development-c-target}))
+      :supported-targets [:c :jvm]
+      :missing-fact :current-runtime-development-target}))
   (let [emitter-rule (c-backend-stage2-plan-emitter-source-rule!
                       source-path requested-target)
         reader-invocation (stage2-runtime-current-reader-invocation)
