@@ -2,7 +2,9 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c2-artifact-identity :as c2-artifact-identity]
+            [gravity.c2-artifact-identity.canonical :as c2-artifact-canonical]
             [gravity.c2-source-identity :as c2-source-identity]
+            [gravity.digest :as digest]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-reader-product-projection :as c2-reader-product-projection]
             [gravity.c2-lexical-validation :as c2-lexical-validation]))
@@ -889,3 +891,129 @@
     (is (not (contains? (:facts error) :maximum-form-depth)))
     (is (= (assoc (bootstrap/source-span path 0) :file (:source-id error)) (:source-span error)))
     (is (= bootstrap/standard-reader-options (:reader-options error)))))
+
+(deftest c2-canonical-vector-hash-streams-default-token-and-form-projections
+  (let [token-stream
+        (mapv (fn [index]
+                {:token-id (keyword (str "tok-" index))
+                 :kind :symbol
+                 :raw "alpha"
+                 :source-id "sha256:source"
+                 :source-path "src/demo.gravity"
+                 :span {:file "sha256:source"
+                        :byte-start index
+                        :byte-end (inc index)}
+                 :trivia-before []})
+              (range 108))
+        form-tree
+        (mapv (fn [index]
+                {:form-id (keyword (str "form-" index))
+                 :kind :symbol
+                 :collection-kind nil
+                 :children []
+                 :parent-form-id nil
+                 :value 'alpha
+                 :metadata {:line (inc index)}})
+              (range 108))
+        token-input (bootstrap/c2-token-hash-input token-stream)
+        form-input (bootstrap/c2-semantic-form-hash-input form-tree)
+        legacy-hash
+        (fn [value]
+          (str "sha256:"
+               (bootstrap/sha256-hex
+                (binding [*print-length* nil *print-level* nil *print-meta* true]
+                  (pr-str (bootstrap/reader-canonical-value value))))))
+        streamed-calls (atom [])
+        original-vector-hash c2-artifact-canonical/reader-canonical-vector-hash
+        actual-hashes
+        (with-redefs [c2-artifact-canonical/reader-canonical-vector-hash
+                      (fn [sha256-hex canonical-value value]
+                        (let [result (original-vector-hash
+                                      sha256-hex canonical-value value)]
+                          (swap! streamed-calls conj
+                                 {:sha256-hex sha256-hex
+                                  :canonical-value canonical-value
+                                  :value value
+                                  :result result})
+                          result))]
+          [(bootstrap/reader-canonical-hash token-input)
+           (bootstrap/reader-canonical-hash form-input)])]
+    (is (= clojure.lang.PersistentVector
+           (class (:trivia-before (first token-stream)))))
+    (is (= [token-input form-input] (mapv :value @streamed-calls)))
+    (is (= [c2-artifact-canonical/streaming-sha256-hex
+            c2-artifact-canonical/streaming-sha256-hex]
+           (mapv :sha256-hex @streamed-calls)))
+    (is (= [c2-artifact-canonical/reader-canonical-value-default
+            c2-artifact-canonical/reader-canonical-value-default]
+           (mapv :canonical-value @streamed-calls)))
+    (is (every? string? (map :result @streamed-calls)))
+    (is (= [(legacy-hash token-input) (legacy-hash form-input)] actual-hashes))))
+
+(deftest c2-canonical-vector-hash-preserves-explicit-callbacks-and-falls-back
+  (let [value [{:token-id :tok-0 :kind :symbol :raw "alpha" :trivia-before []}
+               {:token-id :tok-1 :kind :symbol :raw "beta" :trivia-before []}]
+        preimage (binding [*print-length* nil *print-level* nil *print-meta* true]
+                   (pr-str (bootstrap/reader-canonical-value value)))
+        calls (atom [])
+        metadata-callback
+        (with-meta (fn [text]
+                     (swap! calls conj text)
+                     "interposed")
+          {:c2/streaming-sha256? true})
+        explicit-hash
+        (c2-artifact-identity/with-operations
+         {:sha256-hex metadata-callback}
+         #(c2-artifact-identity/reader-canonical-hash value))]
+    (is (= "sha256:interposed" explicit-hash))
+    (is (= [preimage] @calls)))
+  (let [value [{:token-id :tok-0 :kind :symbol :raw "alpha" :trivia-before []}]
+        legacy-hash
+        (str "sha256:"
+             (bootstrap/sha256-hex
+              (binding [*print-length* nil *print-level* nil *print-meta* true]
+                (pr-str (bootstrap/reader-canonical-value value)))))
+        original-vector-hash c2-artifact-canonical/reader-canonical-vector-hash]
+    (let [visited (atom [])
+          original-value bootstrap/reader-canonical-value
+          actual
+          (with-redefs [bootstrap/reader-canonical-value
+                        (fn [input]
+                          (swap! visited conj input)
+                          (original-value input))]
+            (bootstrap/reader-canonical-hash value))]
+      (is (= legacy-hash actual))
+      (is (= value (first @visited))))
+    (doseq [[interposition expected-result]
+            [[(fn [callback]
+                (with-redefs [digest/sha256-hex callback]
+                  (bootstrap/reader-canonical-hash value)))
+              :digest-sha]
+             [(fn [callback]
+                (with-redefs [digest/sha256-output-hex callback]
+                  (bootstrap/reader-canonical-hash value)))
+              :digest-output]
+             [(fn [callback]
+                (with-redefs [clojure.core/pr-str callback]
+                  (bootstrap/reader-canonical-hash value)))
+              :printer]]]
+      (let [stream-results (atom [])
+            original-pr-str pr-str
+            actual
+            (with-redefs [c2-artifact-canonical/reader-canonical-vector-hash
+                          (fn [sha256-hex canonical-value input]
+                            (let [result (original-vector-hash
+                                          sha256-hex canonical-value input)]
+                              (swap! stream-results conj result)
+                              result))]
+              (interposition
+               (fn [text]
+                 (if (= expected-result :printer)
+                   (original-pr-str text)
+                   "interposed-digest"))))]
+        (is (= [nil] @stream-results) (name expected-result))
+        (is (= (if (= expected-result :digest-sha)
+                 "sha256:interposed-digest"
+                 legacy-hash)
+               actual)
+            (name expected-result))))))

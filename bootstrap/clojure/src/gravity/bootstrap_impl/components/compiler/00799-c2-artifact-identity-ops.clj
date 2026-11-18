@@ -1,8 +1,24 @@
 (declare ^:private c2-artifact-identity-canonical-defaults)
 
+(def ^:private c2-artifact-identity-default-sha256-hex sha256-hex)
+(def ^:private c2-artifact-identity-default-digest-sha256-hex
+  digest/sha256-hex)
+(def ^:private c2-artifact-identity-default-digest-sha256-output-hex
+  digest/sha256-output-hex)
+
+(defn- c2-artifact-identity-sha256-hex-operation
+  []
+  (if (and (identical? sha256-hex c2-artifact-identity-default-sha256-hex)
+           (identical? digest/sha256-hex
+                       c2-artifact-identity-default-digest-sha256-hex)
+           (identical? digest/sha256-output-hex
+                       c2-artifact-identity-default-digest-sha256-output-hex))
+    gravity.c2-artifact-identity.canonical/streaming-sha256-hex
+    sha256-hex))
+
 (defn- c2-artifact-identity-ops
   []
-  (cond-> {:sha256-hex sha256-hex
+  (cond-> {:sha256-hex (c2-artifact-identity-sha256-hex-operation)
    :c2-form-graph-metrics c2-form-graph-metrics
    :c2-reader-fail! c2-reader-fail!
    :source-span source-span

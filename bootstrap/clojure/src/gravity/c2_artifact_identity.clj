@@ -133,8 +133,20 @@
 (definterposable reader-canonical-value :reader-canonical-value [value]
   (canonical/reader-canonical-value reader-canonical-value value))
 
+(def ^:private default-reader-canonical-value reader-canonical-value)
+
 (definterposable reader-canonical-hash :reader-canonical-hash [value]
-  (canonical/reader-canonical-hash #(invoke :sha256-hex %) reader-canonical-value value))
+  (or (when (and (nil? (current-operation :reader-canonical-value))
+                 (identical? reader-canonical-value
+                             default-reader-canonical-value))
+        (canonical/reader-canonical-vector-hash
+         (current-operation :sha256-hex)
+         canonical/reader-canonical-value-default
+         value))
+      (canonical/reader-canonical-hash
+       #(invoke :sha256-hex %)
+       reader-canonical-value
+       value)))
 
 (definterposable c2-semantic-form-hash-input :c2-semantic-form-hash-input [form-tree]
   (projections/semantic-form-hash-input form-tree))
