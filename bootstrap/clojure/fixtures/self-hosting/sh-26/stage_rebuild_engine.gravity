@@ -1955,11 +1955,9 @@
 (defn sh26-stage-lineage-valid? [lineage]
   (if (vector? lineage)
     (if (>= (count lineage) 2)
-      (if (<= (count lineage) 16)
-        (if (sh26-lineage-identities-unique-from?
-             lineage 0 [])
-          (sh26-lineage-from? lineage 0)
-          false)
+      (if (sh26-lineage-identities-unique-from?
+           lineage 0 [])
+        (sh26-lineage-from? lineage 0)
         false)
       false)
     false))

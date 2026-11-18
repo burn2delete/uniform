@@ -980,6 +980,58 @@
     (is (= :pending
            (get-in manifest [:build-logs :execution-status])))))
 
+(deftest sh26-validates-lineage-beyond-sixteen-stages
+  (let [base (accepted-request)
+        [root terminal] (:stage-lineage base)
+        prefix
+        (reduce
+         (fn [lineage ordinal]
+           (let [parent (peek lineage)
+                 stage (str "intermediate-" ordinal)]
+             (conj lineage
+                   {:stage-id (keyword "stage" stage)
+                    :ordinal ordinal
+                    :compiler-id (str "gravityc:" stage)
+                    :compiler-content-id (str "sha256:" stage "-compiler")
+                    :source-id (str "sha256:" stage "-source")
+                    :parent-compiler-id (:compiler-id parent)
+                    :input-stage-output-id (:stage-output-id parent)
+                    :stage-output-id (str "sha256:" stage "-output")
+                    :transition :compiled-by-prior-stage})))
+         [root] (range 1 16))
+        parent (peek prefix)
+        terminal-index (count prefix)
+        lineage (conj prefix
+                      (assoc terminal
+                             :ordinal terminal-index
+                             :parent-compiler-id (:compiler-id parent)
+                             :input-stage-output-id (:stage-output-id parent)))
+        request (assoc base :stage-lineage lineage)
+        result (build request)]
+    (is (= :accepted (:status result)))
+    (is (= 17 (count (:prior-stage-lineage result))))
+    (is (= lineage (:prior-stage-lineage result)))
+    (is (= (:stage-output-id terminal)
+           (get-in result [:stage-transition :input-stage-output-id])))
+    (is (= :passed (:status (verify request result))))
+    (doseq [[label invalid-lineage]
+            [["last input skips its predecessor"
+              (assoc-in lineage [terminal-index :input-stage-output-id]
+                        (:stage-output-id root))]
+             ["last output repeats the root output"
+              (assoc-in lineage [terminal-index :stage-output-id]
+                        (:stage-output-id root))]
+             ["one stage"
+              [(assoc terminal :ordinal 0 :parent-compiler-id nil
+                      :input-stage-output-id nil)]]]]
+      (testing label
+        (let [rejection (build (assoc request :stage-lineage invalid-lineage))
+              diagnostic (get-in rejection [:diagnostics 0])]
+          (is (= :rejected (:status rejection)))
+          (is (= "BOOT6002" (:rule diagnostic)))
+          (is (= :invalid-compiler-lineage
+                 (get-in diagnostic [:facts :reason]))))))))
+
 (deftest sh26-identities-are-path-neutral
   (let [left (build (accepted-request))
         right
