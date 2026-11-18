@@ -205,17 +205,24 @@
         lineage (:lineage request)
         parents (mapv :rebuild-parent-ids lineage)
         root-index (dec (count lineage))
+        last-ancestor-index (dec root-index)
         result (build request)]
     (is (> (apply max (map count parents)) 8))
     (is (> (reduce + (map count parents)) 1024))
     (is (= :accepted (:status result)))
+    (is (= :acyclic-and-traversable (:lineage-status result)))
     (is (= parents (mapv :rebuild-parent-ids
                          (get-in result [:identity-input :lineage]))))
+    (is (= (mapv :actual-artifact-path lineage)
+           (get-in result [:provenance :actual-artifact-paths])))
     (is (= :passed (:status (verify request result))))
     (doseq [[label candidate]
             [["forward parent alongside the actual compiler"
-              (assoc-in request [:lineage (dec root-index) :rebuild-parent-ids 0]
+              (assoc-in request [:lineage last-ancestor-index :rebuild-parent-ids 0]
                         (:root-artifact-id request))]
+             ["duplicate earlier parent alongside the actual compiler"
+              (assoc-in request [:lineage last-ancestor-index :rebuild-parent-ids 0]
+                        (get-in parents [last-ancestor-index 1]))]
              ["shared ancestry disconnected from the root"
               (update-in request [:lineage root-index :rebuild-parent-ids] pop)]]]
       (testing label
