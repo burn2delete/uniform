@@ -29857,7 +29857,7 @@
       (is (= :authenticated-target-neutral-stage2-packet
              (:missing-fact data))))))
 
-(deftest p15-s23-reference-runtime-pin-refuses-relocated-compatibility-source
+(deftest p15-s23-reference-runtime-pin-rejects-measured-mismatched-source-fixture
   (with-temp-source
     ".gravity" "historical pin mismatch fixture\n"
     (fn [runtime-source]
