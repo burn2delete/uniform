@@ -110,7 +110,7 @@
             generated-form? (= :generated-form (:kind form))
             entries (if generated-form?
                       origins
-                      (filter #(= :generated (:kind %)) origins))
+                      (filter #(#{:source :generated} (:kind %)) origins))
             available (disj prior-ids syntax-id)
             hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
         (if (and (sequential? origins)

@@ -112,8 +112,11 @@ three controller checks passed on the source-input repair, candidate
 the empty-input control passed validation and all three nonempty source-input
 cases failed the origin check with `C3-ORIGIN`. Review requested changes for
 a mixed chain supplied as a set. The hosted verifier now requires a sequential
-chain. Controller checks on this repair and independent acceptance are pending.
-Syntax/4 remains open.
+chain. All three controller checks passed on candidate
+`0417791292b27265648afc88cc3c492a1655fd03`. Review found that retagging
+the unresolved entry as `:source` on a non-generated form bypassed the input
+check. The verifier now checks source entries on both form kinds. Controller
+checks for this repair and independent acceptance are pending. Syntax/4 remains open.
 [Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
 <!-- syntax-source-verification:end -->
 

@@ -223,6 +223,27 @@ isolate the carrier failure. Both fixtures regenerate serialization and assert
 a current round-trip, a failed report, a false origin check and `C3-ORIGIN`
 with `:missing-fields [:source-and-generated-origins?]`.
 
-Controller checks on the set fixtures and independent acceptance are pending.
-The proposed checks are the two namespace checks above and the report command
-with `:abbreviations (t/hosted-abbreviation-reports)` included in its map.
+The controller reports that all three checks passed on base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`0417791292b27265648afc88cc3c492a1655fd03`, tree
+`39dc65db2e5037f1c5a841647c30a3237e81dfdf`, including the shared-origin
+and non-sequential-chain fixtures.
+
+### Source inputs on a non-generated form
+
+Static review of that candidate found that changing only the appended
+`:mixed-chain` entry's kind to `:source` let the two-argument report accept
+`:inputs ["sha256:missing"]`. The verifier now applies the hosted source
+entry's zero-input rule on both form kinds.
+
+The `:source-chain-input` fixture reproduces that edit. With serialization
+regenerated from the altered stream, it expects a current round-trip, a
+`:failed` two-argument report with `:generated-origins-valid? false`, and
+`C3-ORIGIN` with `:missing-fields [:source-and-generated-origins?]` from
+validation. The paired `:source-chain-empty` fixture changes only `:inputs`
+to `[]` and expects a passed report and `:complete` validation.
+
+Execution results for these two fixtures and independent acceptance are
+pending. The controller can collect the reports and diagnostics with the
+report command above, including `:abbreviations (t/hosted-abbreviation-reports)`
+in its map, alongside the two namespace checks.

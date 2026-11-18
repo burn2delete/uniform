@@ -198,6 +198,7 @@
         later (dissoc origin :input-syntax-ids)
         mixed-chain (update-in syntax-stream [0 :origin] conj
                                (assoc later :inputs ["sha256:missing"]))
+        source-chain (assoc-in mixed-chain [0 :origin 1 :kind] :source)
         with-origin (fn [entry] (update-in syntax-stream [1 :origin] conj entry))
         source-origin {:kind :source :producer 'gravity.stage0/reader
                        :span (get-in source-syntax [:span :primary])
@@ -219,6 +220,8 @@
                  :forward [generated-syntax source-syntax]
                  :second-spelling (with-origin (assoc origin :inputs ["sha256:missing"]))
                  :mixed-chain mixed-chain
+                 :source-chain-input source-chain
+                 :source-chain-empty (assoc-in source-chain [0 :origin 1 :inputs] [])
                  :mixed-chain-set (update-in mixed-chain [0 :origin] set)
                  :source-only-set (update-in syntax-stream [0 :origin] set)
                  :empty-inputs (with-origin (assoc later :inputs []))
@@ -229,8 +232,9 @@
       (fn []
         (into {}
               (for [[example stream] streams
-                    :let [artifact (verification-artifact stream (serialize-stream stream))]]
-                [example {:report (:syntax-verification-report artifact)
+                    :let [serialized (serialize-stream stream)
+                          artifact (verification-artifact stream serialized)]]
+                [example {:report (verification/c3-syntax-verification-report stream serialized)
                           :validation
                           (try (verification/c3-syntax-validate! "source.gravity" artifact)
                                (catch clojure.lang.ExceptionInfo e (ex-data e)))}]))))))
@@ -240,7 +244,7 @@
     (testing (name example)
       (is (true? (:serialization-current? report)))
       (is (true? (:serialization-round-trips? report)))
-      (if (#{:prior :source-first} example)
+      (if (#{:prior :source-first :source-chain-empty} example)
         (do (is (true? (:generated-origins-valid? report)))
             (is (= :passed (:status report)))
             (is (= :complete validation)))
