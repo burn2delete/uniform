@@ -194,6 +194,11 @@
         _ (rt/effect! ctx (str "push/" (:candidate t))
                       #(rt/git ctx (:worktree t) "push" remote (str (:candidate t) ":refs/heads/" publication-branch)))
         existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" publication-branch))))
+        _ (when (and (:pr-integration ctx)
+                     (not= [(get-in t [:pr :number]) (:candidate t) repository base-branch]
+                           [(:number existing) (get-in existing [:head :sha]) (get-in existing [:head :repo :full_name])
+                            (get-in existing [:base :ref])]))
+            (rt/fail! "The scoped publication no longer identifies its approved PR" {:finding (:key t)}))
         _ (when (and (:composition-recovery t) (not= (get-in t [:pr :number]) (:number existing)))
             (rt/fail! "The original composition PR is not the published branch's PR" {:writer-ended? true}))
         _ (when (and existing (not= "open" (:state existing))) (rt/fail! "Existing PR is terminal; preserving its history" {:pr (:html_url existing)}))
