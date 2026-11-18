@@ -198,11 +198,31 @@ and the [Gravity origin predicate](../../bootstrap/gravity/src/gravity/bootstrap
 `:leading-source-inputs` adds the same missing ID under `:inputs` alongside
 the empty `:input-syntax-ids`. `:later-source-with-prior-input` puts a source
 entry after a generated entry and gives it an otherwise resolvable ID.
-Each fixture regenerates serialization and expects a current, round-tripping
-payload, a `:failed` report with `:generated-origins-valid? false`, and
-`C3-ORIGIN` with `:missing-fields [:source-and-generated-origins?]`.
-The empty-vector `:source-first` case still expects `:passed` and `:complete`.
+The supplied controller receipt for base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`ca827e6af247e26dc11a35835d1a1bfa3dcb16e3`, tree
+`69762319781fa35c33c7e437b29ae7fa15e58ef1` reports that all three checks
+passed. The fixture assertions establish that serialization was current and
+round-tripped for all three source-input variants. Each report returned
+`:status :failed` and `:generated-origins-valid? false`. Validation returned
+`C3-ORIGIN` with `:missing-fields [:source-and-generated-origins?]`. With an
+empty input vector, `:source-first` passed the origin check and report, and
+validation returned `:complete`.
 
-Controller results for this repair and independent acceptance are pending.
+### Non-sequential origin chains
+
+Review requested changes on that tree. Replacing the source object's origin
+vector in `:mixed-chain` with a set kept both entries, including the unresolved
+generated input. The hosted report treated the set as an empty sequence and
+returned `:generated-origins-valid? true`.
+
+The repair requires a sequential origin chain before validating its entries.
+`:mixed-chain-set` changes only the carrier of the reviewed mixed chain.
+`:source-only-set` makes the same change to the valid `:prior` stream to
+isolate the carrier failure. Both fixtures regenerate serialization and assert
+a current round-trip, a failed report, a false origin check and `C3-ORIGIN`
+with `:missing-fields [:source-and-generated-origins?]`.
+
+Controller checks on the set fixtures and independent acceptance are pending.
 The proposed checks are the two namespace checks above and the report command
 with `:abbreviations (t/hosted-abbreviation-reports)` included in its map.

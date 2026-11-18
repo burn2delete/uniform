@@ -106,15 +106,15 @@
 (defn- generated-origins-valid? [syntax-stream c2-artifact gravity-boundary]
   (loop [remaining (seq syntax-stream) prior-ids #{}]
     (if remaining
-      (let [{:keys [form origin] syntax-id :syntax/id} (first remaining)
+      (let [{:keys [form] origins :origin syntax-id :syntax/id} (first remaining)
             generated-form? (= :generated-form (:kind form))
-            origins (when (sequential? origin) origin)
             entries (if generated-form?
                       origins
                       (filter #(= :generated (:kind %)) origins))
             available (disj prior-ids syntax-id)
             hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
-        (if (and (or (not generated-form?)
+        (if (and (sequential? origins)
+                 (or (not generated-form?)
                      (and (origin-has-producer-and-span? (first origins))
                           (some #(not= :source (:kind %)) origins)))
                  (every? (fn [entry]

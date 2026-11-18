@@ -106,9 +106,13 @@ on that repair, candidate `9938a8f8f0fae2108d32f74124b9136b199705ac`.
 Review found that a bare leading source origin on a generated form passed
 the hosted origin check. All three controller checks passed on the leading
 producer and span repair, candidate `072dec774bd3040f342a41fb3111eeedbd168ba3`.
-Review then found that a source entry could carry an unresolved input. The
-current repair checks both input spellings on every source entry in a generated
-form's chain. Its fixture results and independent acceptance are pending.
+Review then found that a source entry could carry an unresolved input. All
+three controller checks passed on the source-input repair, candidate
+`ca827e6af247e26dc11a35835d1a1bfa3dcb16e3`. With current serialization,
+the empty-input control passed validation and all three nonempty source-input
+cases failed the origin check with `C3-ORIGIN`. Review requested changes for
+a mixed chain supplied as a set. The hosted verifier now requires a sequential
+chain. Controller checks on this repair and independent acceptance are pending.
 Syntax/4 remains open.
 [Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
 <!-- syntax-source-verification:end -->

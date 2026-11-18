@@ -196,6 +196,8 @@
 (defn origin-validation-results []
   (let [origin (first (:origin generated-syntax))
         later (dissoc origin :input-syntax-ids)
+        mixed-chain (update-in syntax-stream [0 :origin] conj
+                               (assoc later :inputs ["sha256:missing"]))
         with-origin (fn [entry] (update-in syntax-stream [1 :origin] conj entry))
         source-origin {:kind :source :producer 'gravity.stage0/reader
                        :span (get-in source-syntax [:span :primary])
@@ -216,8 +218,9 @@
                  :self (with-origin (assoc origin :input-syntax-ids ["sha256:generated"]))
                  :forward [generated-syntax source-syntax]
                  :second-spelling (with-origin (assoc origin :inputs ["sha256:missing"]))
-                 :mixed-chain (update-in syntax-stream [0 :origin] conj
-                                         (assoc later :inputs ["sha256:missing"]))
+                 :mixed-chain mixed-chain
+                 :mixed-chain-set (update-in mixed-chain [0 :origin] set)
+                 :source-only-set (update-in syntax-stream [0 :origin] set)
                  :empty-inputs (with-origin (assoc later :inputs []))
                  :missing-producer (with-origin (dissoc origin :producer))
                  :missing-span (with-origin (dissoc origin :generated-span))}]
