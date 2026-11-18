@@ -494,6 +494,32 @@
 (defn selected-modes [stages]
   (into always-pr-modes (mapcat stage-closure stages)))
 
+;; The Seedless harness is a dedicated deterministic test workflow. Only its
+;; enumerated test namespaces and input fixtures can select that workflow plus
+;; ordinary static and contract checks; Seedless implementation, dependency,
+;; probe, and workflow files remain cross-cutting.
+(def seedless-test-paths
+  #{"tools/seedless/test/fixtures/compiler-envelope-map-keys.edn"
+    "tools/seedless/test/fixtures/compiler-envelope-multiple-self.edn"
+    "tools/seedless/test/fixtures/compiler-envelope-mutual.edn"
+    "tools/seedless/test/seedless/compiler_diagnosis_test.clj"
+    "tools/seedless/test/seedless/compiler_observation_test.clj"
+    "tools/seedless/test/seedless/controller_invariants_test.clj"
+    "tools/seedless/test/seedless/diagnosis_recovery_test.clj"
+    "tools/seedless/test/seedless/diagnosis_workflow_test.clj"
+    "tools/seedless/test/seedless/main_invariants_test.clj"
+    "tools/seedless/test/seedless/project_identity_test.clj"
+    "tools/seedless/test/seedless/test_runner.clj"
+    "tools/seedless/test/seedless/workflow_test.clj"})
+
+(defn seedless-tests-only? [changes]
+  (let [changes (vec changes)
+        paths (mapv :path changes)]
+    (and (seq changes)
+         (= (count paths) (count (set paths)))
+         (every? regular-added-or-modified? changes)
+         (every? seedless-test-paths paths))))
+
 (defn stage-selection [changes]
   (let [changes (vec changes)
         paths (mapv :path changes)
@@ -511,6 +537,13 @@
 
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
+
+      (seedless-tests-only? changes)
+      {:kind :selected
+       :reason :seedless-tests-only
+       :paths paths
+       :stages []
+       :modes always-pr-modes}
 
       (advance-status-only? changes)
       {:kind :selected
@@ -588,17 +621,19 @@
 
 (defn selection-output-lines [selection]
   (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
+        seedless-tests-only? (= :seedless-tests-only (:reason selection))
         public-js-receipt-only? (= :public-js-receipt-only (:reason selection))
         modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
                   (or (= :docs-only (:kind selection)) lint-tooling-only?
-                      public-js-receipt-only?)
+                      public-js-receipt-only? seedless-tests-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
                   (and (not= :docs-only (:kind selection))
                        (not lint-tooling-only?)
-                       (not public-js-receipt-only?))
+                       (not public-js-receipt-only?)
+                       (not seedless-tests-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
     (into (mapv #(str % "=" (boolean (contains? modes %)))
