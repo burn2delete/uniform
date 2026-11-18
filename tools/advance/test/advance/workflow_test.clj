@@ -12,6 +12,7 @@
             [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
@@ -178,7 +179,7 @@
             hold {:kind :project-controls-pagination :scope :all-cursors :project "p"
                   :state-file (str (io/file (:state-dir ctx) "state.edn")) :legacy-api-key key :retained-local-guard local}
             registry (atom {:restrictions {:project-controls {"p" hold}}})]
-        (with-redefs [simplify.diagnostics/coordination-snapshot (fn [_] @registry)]
+        (with-redefs [diagnostics/coordination-snapshot (fn [_] @registry)]
           (is (= :no-recorded-blocker (:status (main/restart-check config s))))
           (is (= [:restricted-project-controls] (:blockers (main/restart-check config (assoc-in s [:restricted-actions key :failed-request] {})))))
           (swap! registry assoc-in [:restrictions :api key] local)
