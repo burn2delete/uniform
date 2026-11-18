@@ -102,40 +102,6 @@
                   [".clj" ".cljc"]))
           frontend-host-source-roots)))
 
-(defn- required-namespaces [root source-path]
-  (try
-    (with-open [reader (java.io.PushbackReader.
-                        (io/reader (io/file root source-path) :encoding "UTF-8"))]
-      (binding [*read-eval* false]
-        (let [form (read {:read-cond :allow :features #{:clj} :readers {}} reader)]
-          (when-not (and (seq? form) (= 'ns (first form)))
-            (throw (ex-info "Frontend namespace source has no readable ns form"
-                            {:source-path source-path})))
-          (->> (drop 2 form)
-               (filter #(and (seq? %) (= :require (first %))))
-               (mapcat rest)
-               (map #(if (vector? %) (first %) %))
-               (filter symbol?)
-               vec))))
-    (catch Exception exception
-      (throw (ex-info "Frontend namespace dependencies cannot be read"
-                      {:source-path source-path} exception)))))
-
-(defn- namespace-dependency-paths [root namespaces]
-  (loop [pending namespaces visited #{} paths []]
-    (if-let [namespace (first pending)]
-      (if (contains? visited namespace)
-        (recur (next pending) visited paths)
-        (let [path (namespace-source-path root namespace)
-              _ (when (and (nil? path) (str/starts-with? (str namespace) "gravity."))
-                  (throw (ex-info "Frontend Gravity namespace has no source path"
-                                  {:namespace namespace})))
-              dependencies (if path (required-namespaces root path) [])]
-          (recur (concat (next pending) dependencies)
-                 (conj visited namespace)
-                 (cond-> paths path (conj path)))))
-      paths)))
-
 (defn- bootstrap-component-paths [root]
   (let [manifest (io/file root bootstrap-load-manifest)]
     (if (.isFile manifest)
@@ -149,47 +115,146 @@
         paths)
       [])))
 
-(defn- top-level-required-namespaces [root path]
-  (let [source (slurp (io/file root path) :encoding "UTF-8")]
-    (if-not (or (str/includes? source "(require")
-                (str/includes? source "(clojure.core/require"))
-      []
-      (try
-        (with-open [reader (java.io.PushbackReader. (java.io.StringReader. source))]
-          (binding [*read-eval* false]
-            (let [eof (Object.)
-                  options {:read-cond :allow :features #{:clj} :readers {}}]
-              (loop [namespaces []]
-                (let [form (read (assoc options :eof eof) reader)]
-                  (if (identical? eof form)
-                    namespaces
-                    (if (and (seq? form)
-                             (symbol? (first form))
-                             (#{"require" "clojure.core/require"} (str (first form))))
-                      (let [specs (map (fn [argument]
-                                         (if (and (seq? argument) (= 'quote (first argument)))
-                                           (second argument) argument))
-                                       (rest form))
-                            required (map (fn [spec]
-                                            (if (vector? spec) (first spec) spec)) specs)]
-                        (recur (into namespaces (filter symbol? required))))
-                      (recur namespaces))))))))
-        (catch Exception exception
-          (throw (ex-info "Bootstrap component dependencies cannot be read"
-                          {:source-path path} exception)))))))
+(defn- top-level-source-forms [root path]
+  (try
+    (with-open [reader (java.io.PushbackReader.
+                        (io/reader (io/file root path) :encoding "UTF-8"))]
+      (binding [*read-eval* false]
+        (let [eof (Object.)
+              options {:read-cond :allow :features #{:clj} :readers {}}]
+          (loop [forms []]
+            (let [form (read (assoc options :eof eof) reader)]
+              (if (identical? eof form)
+                forms
+                (recur (conj forms form))))))))
+    (catch Exception exception
+      (throw (ex-info "Frontend host dependencies cannot be read"
+                      {:source-path path} exception)))))
+
+(defn- source-dependencies [root path]
+  (let [forms (top-level-source-forms root path)
+        namespace-form (first forms)
+        namespace-requirements (when (and (seq? namespace-form)
+                                          (= 'ns (first namespace-form)))
+                                 (->> (drop 2 namespace-form)
+                                      (filter #(and (seq? %) (= :require (first %))))
+                                      (mapcat rest)
+                                      (map #(if (vector? %) (first %) %))
+                                      (filter symbol?)))
+        top-level-forms (if namespace-requirements (rest forms) forms)
+        top-level-requirements (->> top-level-forms
+                                    (filter #(and (seq? %) (symbol? (first %))
+                                                  (#{"require" "clojure.core/require"}
+                                                   (str (first %)))))
+                                    (mapcat rest)
+                                    (map (fn [argument]
+                                           (if (and (seq? argument)
+                                                    (= 'quote (first argument)))
+                                             (second argument) argument)))
+                                    (map #(if (vector? %) (first %) %))
+                                    (filter symbol?))
+        load-forms (filter #(and (seq? %) (symbol? (first %))
+                                 (#{"load" "clojure.core/load"} (str (first %))))
+                           top-level-forms)
+        load-resources (mapcat (fn [form]
+                                 (let [resources (rest form)]
+                                   (when-not (and (seq resources) (every? string? resources))
+                                     (throw (ex-info "Frontend host load resource is not a static string"
+                                                     {:source-path path :form form})))
+                                   resources))
+                               load-forms)]
+    {:namespaces (vec (concat namespace-requirements top-level-requirements))
+     :loads (vec load-resources)}))
+
+(defn- resource-path-candidates [resource]
+  (let [classpath-resource? (str/starts-with? resource "/")
+        relative (if classpath-resource? (subs resource 1) resource)
+        normalized (.normalize (java.nio.file.Paths/get relative (make-array String 0)))
+        normalized (str normalized)]
+    (when (or (str/blank? relative)
+              (.isAbsolute (java.nio.file.Paths/get normalized (make-array String 0)))
+              (and classpath-resource?
+                   (or (= ".." normalized)
+                       (str/starts-with? normalized (str ".." java.io.File/separator)))))
+      (throw (ex-info "Frontend host load resource escapes its source root"
+                      {:resource resource})))
+    (let [with-extension (if (re-find #"\.(clj|cljc)$" normalized)
+                           [normalized]
+                           [(str normalized ".clj") (str normalized ".cljc")])]
+      (if classpath-resource?
+        (mapv vector (repeat nil) with-extension)
+        (vec (concat (map #(vector :owner %) with-extension)
+                    (map #(vector nil %) with-extension)))))))
+
+(defn- resolve-load-resource-path [root owner-path resource]
+  (some (fn [[owner-relative? candidate]]
+          (some (fn [source-root]
+                  (let [absolute-root (.normalize (.toAbsolutePath
+                                                   (.toPath (io/file root))))
+                        root-path (.normalize (.resolve absolute-root source-root))
+                        base (if owner-relative?
+                               (.getParent
+                                (.normalize (.resolve absolute-root owner-path)))
+                               root-path)
+                        resolved (.normalize (.resolve base candidate))]
+                    (when (and (.startsWith resolved root-path)
+                               (.isFile (.toFile resolved)))
+                      (str (.relativize absolute-root resolved)))))
+                frontend-host-source-roots))
+        (resource-path-candidates resource)))
+
+(defn- resolve-load-paths [root path resources]
+  (mapv (fn [resource]
+          (or (resolve-load-resource-path root path resource)
+              (throw (ex-info "Frontend host load resource has no source path"
+                              {:source-path path :resource resource}))))
+        resources))
 
 (defn frontend-host-input-paths
   "Exact source files loaded by the probe's Clojure namespace and bootstrap
-  component loaders. Individual files avoid hashing unrelated siblings."
+  component loaders, including statically named load resources. Individual
+  files avoid hashing unrelated siblings."
   [root]
   (let [components (bootstrap-component-paths root)
-        manifest-resources (remove #{bootstrap-load-manifest bootstrap-loader-source} components)
-        dynamic-requires (mapcat #(top-level-required-namespaces root %)
-                                 (filter #(.endsWith ^String % ".clj") manifest-resources))]
-    (->> (concat (namespace-dependency-paths root (concat frontend-host-namespaces dynamic-requires))
-                 components)
-         distinct
-         vec)))
+        manifest-resources (filter #(.endsWith ^String % ".clj") components)]
+    (loop [pending-namespaces (vec frontend-host-namespaces)
+           pending-paths (vec manifest-resources)
+           seen-namespaces #{}
+           seen-paths #{}
+           source-paths []]
+      (cond
+        (seq pending-namespaces)
+        (let [namespace (first pending-namespaces)]
+          (if (contains? seen-namespaces namespace)
+            (recur (subvec pending-namespaces 1) pending-paths seen-namespaces
+                   seen-paths source-paths)
+            (let [path (namespace-source-path root namespace)]
+              (when (and (nil? path) (str/starts-with? (str namespace) "gravity."))
+                (throw (ex-info "Frontend Gravity namespace has no source path"
+                                {:namespace namespace})))
+              (recur (subvec pending-namespaces 1)
+                     (cond-> pending-paths path (conj path))
+                     (conj seen-namespaces namespace)
+                     seen-paths
+                     source-paths))))
+
+        (seq pending-paths)
+        (let [path (first pending-paths)]
+          (if (contains? seen-paths path)
+            (recur pending-namespaces (subvec pending-paths 1) seen-namespaces
+                   seen-paths source-paths)
+            (let [{:keys [namespaces loads]} (source-dependencies root path)
+                  load-paths (resolve-load-paths root path loads)]
+              (recur (into pending-namespaces namespaces)
+                     (into (subvec pending-paths 1) load-paths)
+                     seen-namespaces
+                     (conj seen-paths path)
+                     (conj source-paths path)))))
+
+        :else
+        (->> (concat source-paths components)
+             distinct
+             vec)))))
 
 (defn frontend-input-paths [_root closure]
   (->> (concat frontend-support-input-paths (keep :source-path closure))

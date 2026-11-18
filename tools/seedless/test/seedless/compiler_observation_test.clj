@@ -16,9 +16,9 @@
   (fn [test]
     (with-redefs [rt/event! (fn [& _])
                   probe/input-paths ["module.clj"]
-                  probe/frontend-support-input-paths []
-                  probe/frontend-host-input-paths (constantly [])]
-      (test))))
+                  probe/frontend-support-input-paths []]
+      (with-redefs-fn {(ns-resolve 'gravity.compiler-probe 'frontend-host-namespaces) []}
+        test))))
 
 (defn context []
   (assoc-in (fixture/repository! (fixture/context))
@@ -948,6 +948,44 @@
         (let [tampered (assoc raw :frontend-host-input-id (apply str (repeat 64 "0")))
               tampered (assoc tampered :input-id (compiler/input-id tampered))]
           (is (not (compiler/current? cwd tampered compiler/command)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest frontend-host-inputs-follow-owner-relative-and-multi-resource-loads
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        source-root "bootstrap/clojure/src"
+        fixture-file (io/file cwd source-root "gravity/fixture.clj")
+        outer-file (io/file cwd source-root "gravity/host_fixture/outer.clj")
+        nested-file (io/file cwd source-root "gravity/host_fixture/nested.clj")
+        sibling-file (io/file cwd source-root "gravity/host_fixture/sibling.clj")]
+    (try
+      (doseq [[file source] [[fixture-file
+                              (str "(ns gravity.fixture)\n"
+                                   "(load \"/gravity/host_fixture/outer\" "
+                                   "\"/gravity/host_fixture/sibling\")\n")]
+                             [outer-file "(load \"nested\")\n"]
+                             [nested-file "(def nested-value :before)\n"]
+                             [sibling-file "(def sibling-value true)\n"]]]
+        (io/make-parents file)
+        (spit file source))
+      (with-redefs-fn {(ns-resolve 'gravity.compiler-probe 'frontend-host-namespaces)
+                       ['gravity.fixture]
+                       (ns-resolve 'gravity.compiler-probe 'frontend-host-source-roots)
+                       [source-root]}
+        (fn []
+          (let [paths (probe/frontend-host-input-paths cwd)
+                before (probe/frontend-host-input-id cwd)]
+            (is (every? (set paths) ["bootstrap/clojure/src/gravity/fixture.clj"
+                                     "bootstrap/clojure/src/gravity/host_fixture/outer.clj"
+                                     "bootstrap/clojure/src/gravity/host_fixture/nested.clj"
+                                     "bootstrap/clojure/src/gravity/host_fixture/sibling.clj"]))
+            (spit nested-file "(def nested-value :after)\n")
+            (is (not= before (probe/frontend-host-input-id cwd)))
+            (spit fixture-file "(ns gravity.fixture)\n")
+            (let [after-removal (probe/frontend-host-input-paths cwd)]
+              (is (not (some #{"bootstrap/clojure/src/gravity/host_fixture/outer.clj"
+                               "bootstrap/clojure/src/gravity/host_fixture/nested.clj"}
+                             after-removal)))
+              (is (not= before (probe/frontend-host-input-id cwd)))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest changing-watchdog-cannot-replay-an-uncertain-execution
