@@ -3,7 +3,9 @@
   (:require [gravity.cli :as cli]
             [gravity.cli.commands.bootstrap :as bootstrap-commands]
             [gravity.cli.commands.compiler :as compiler-commands]
-            [gravity.cli.commands.platform :as platform-commands]))
+            [gravity.cli.commands.platform :as platform-commands]
+            [gravity.cli.compile-request :as compile-request]
+            [gravity.cli.diagnostic-presentation :as diagnostic-presentation]))
 
 (def ^:private bootstrap-command-names
   (into #{"--assert-seedless-release" "assert-seedless-release"
@@ -35,6 +37,16 @@
     (println (cli/cli-usage-text)))
   (exit! 2))
 
+(defn- print-compile-argument-error!
+  [arguments]
+  (try
+    (compile-request/validate! arguments)
+    false
+    (catch clojure.lang.ExceptionInfo exception
+      (diagnostic-presentation/print-diagnostic! (constantly nil) exception)
+      (exit! 1)
+      true)))
+
 (defn- run-build!
   [arguments]
   ;; Keep the presentation and shape-error paths independent of the larger
@@ -54,6 +66,9 @@
     nil (usage-error!)
     (if (= "build" (first arguments))
       (run-build! arguments)
-      (if (contains? bootstrap-command-names (first arguments))
-        (apply (bootstrap-main) arguments)
-        (usage-error!)))))
+      (if (= "compile" (first arguments))
+        (when-not (print-compile-argument-error! arguments)
+          (apply (bootstrap-main) arguments))
+        (if (contains? bootstrap-command-names (first arguments))
+          (apply (bootstrap-main) arguments)
+          (usage-error!))))))

@@ -15,13 +15,13 @@ I64 arguments and results use JavaScript BigInt with signed 64-bit checks.
 
 Use `bin/gravity compile <source> --target js -o <fresh-directory>`, or the
 explicit current-source launcher `clojure -J-Xmx2g -M:gravity compile` with
-the same arguments. The CLI reads source policy through the existing current
-Reader/Syntax and module machinery, then calls
+the same arguments. The CLI derives source policy from the actual source during
+the first authoritative Reader/Syntax and module ingress, then calls
 `gravity.compiler.application/current-source-to-js-module`. Users supply no
 Clojure API expression, policy map, intermediate IR or compilation harness.
-Fresh construction and verification remain authoritative; preliminary policy
-discovery does not accept the program. The producer accepts no supplied Core,
-MIR, verifier report, construction token or target eligibility certificate.
+The constructor replays those inputs before verification; policy extraction
+alone does not accept the program. The producer accepts no supplied Core, MIR,
+verifier report, construction token or target eligibility certificate.
 
 The public integration source candidate is
 `dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
