@@ -959,12 +959,25 @@
         (or (pos? error) (pos? fail)) :failed
         :else :passed))))
 
+(def ^:private cache-counter-keys
+  [:sh06-hits :sh06-misses
+   :core-hits :core-misses
+   :verification-hits :verification-misses])
+
+(def ^:private iteration-cache-counter-keys
+  [:semantic-hits :semantic-misses :semantic-joined
+   :semantic-published :semantic-evictions
+   :semantic-failed-producers :semantic-rejected-hits])
+
+(def ^:private delegate-cache-counter-schemas
+  [cache-counter-keys
+   (into cache-counter-keys iteration-cache-counter-keys)])
+
 (defn- cache-map
   [cache]
-  (or cache
-      {:sh06-hits 0 :sh06-misses 0
-       :core-hits 0 :core-misses 0
-       :verification-hits 0 :verification-misses 0}))
+  (let [cache (or cache {})]
+    (merge (zipmap cache-counter-keys (repeat 0))
+           (select-keys cache cache-counter-keys))))
 
 (defn- merge-cache
   [left right]
@@ -1055,21 +1068,22 @@
 (def ^:private summary-counter-keys
   [:test :pass :fail :error])
 
-(def ^:private cache-counter-keys
-  [:sh06-hits :sh06-misses
-   :core-hits :core-misses
-   :verification-hits :verification-misses])
-
 (defn- required-nonnegative-counters?
   [value keys]
   (and (map? value)
        (every? #(nonnegative-integer? (get value %)) keys)))
 
+(defn- delegate-cache-counter-schema
+  [value]
+  (when (map? value)
+    (let [actual (set (keys value))]
+      (some #(when (= actual (set %)) %)
+            delegate-cache-counter-schemas))))
+
 (defn- exact-cache-counters?
   [value]
-  (and (map? value)
-       (= (set cache-counter-keys) (set (keys value)))
-       (required-nonnegative-counters? value cache-counter-keys)))
+  (when-let [keys (delegate-cache-counter-schema value)]
+    (required-nonnegative-counters? value keys)))
 
 (defn- delegate-contract-error
   [message data]
@@ -1136,7 +1150,9 @@
      "SH-07 delegate cache maximum disagrees with fixed bound"
      {:expected maximum-cache-entries
       :actual (:maximum-entries delegate-result)}))
-  (let [completed (:test-var-results delegate-result)
+  (let [aggregate-cache-keys
+        (delegate-cache-counter-schema (:cache delegate-result))
+        completed (:test-var-results delegate-result)
         skipped (:skipped-test-vars delegate-result)
         completed-count (count completed)
         expected-skipped (vec (drop completed-count selectors))
@@ -1208,11 +1224,12 @@
        "SH-07 aggregate result must provide exact non-negative summary counters"
        {:aggregate (:test-result delegate-result)
         :required summary-counter-keys}))
-    (when-not (exact-cache-counters? (:cache delegate-result))
+    (when-not (and aggregate-cache-keys
+                   (exact-cache-counters? (:cache delegate-result)))
       (delegate-contract-error
-       "SH-07 aggregate cache must provide exactly six non-negative counters"
+       "SH-07 aggregate cache must provide one exact supported counter schema"
        {:cache (:cache delegate-result)
-        :required cache-counter-keys}))
+        :supported-schemas delegate-cache-counter-schemas}))
     (when-not (nonnegative-integer? (:elapsed-ms delegate-result))
       (delegate-contract-error
        "SH-07 aggregate elapsed-ms must be a non-negative integer"
@@ -1236,11 +1253,14 @@
           (require-equal-when-present! result field (get summary field)
                                        {:position position}))
         (when-not (and (nonnegative-integer? (:elapsed-ms result))
+                       (= aggregate-cache-keys
+                          (delegate-cache-counter-schema (:cache result)))
                        (exact-cache-counters? (:cache result)))
           (delegate-contract-error
-           "SH-07 delegate elapsed/cache evidence is malformed"
+           "SH-07 delegate elapsed/cache evidence is malformed or uses a different counter schema"
            {:position position :result result
-            :required-cache-keys cache-counter-keys}))
+            :aggregate-cache-keys aggregate-cache-keys
+            :supported-cache-schemas delegate-cache-counter-schemas}))
         (when (and (contains? result :authoritative?)
                    (true? (:authoritative? result)))
           (delegate-contract-error
@@ -1277,7 +1297,7 @@
           (reduce
            (fn [totals result]
              (merge-with + totals (:cache result)))
-           (zipmap cache-counter-keys (repeat 0))
+           (zipmap aggregate-cache-keys (repeat 0))
            completed)
           _ (when-not (= expected-cache (:cache delegate-result))
               (delegate-contract-error
@@ -1395,7 +1415,7 @@
        :skipped-test-vars skipped-tail
        :stopped-early? (boolean (seq skipped-tail))
        :cache cache
-       :delegate-cache (:cache delegate-result)
+       :delegate-cache (cache-map (:cache delegate-result))
        :elapsed-ms (long (or (:elapsed-ms delegate-result) elapsed))
        :delegate-elapsed-ms (:elapsed-ms delegate-result)
        :authority :non-authoritative
