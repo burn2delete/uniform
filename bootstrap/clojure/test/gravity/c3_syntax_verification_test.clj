@@ -1,7 +1,9 @@
 (ns gravity.c3-syntax-verification-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing]]
-            [gravity.c3-syntax-verification :as verification]))
+            [gravity.c3-syntax-construction :as construction]
+            [gravity.c3-syntax-verification :as verification]
+            [gravity.syntax :as syntax]))
 
 (def diagnostic-ids
   ["C3-SHAPE" "C3-ID" "C3-SPAN" "C3-ORIGIN" "C3-HYGIENE"
@@ -142,6 +144,54 @@
   (let [report (shared-origin-report)]
     (is (true? (:generated-origins-valid? report)))
     (is (= :passed (:status report)))))
+
+(defn hosted-abbreviation-reports []
+  (let [span {:source "source.gravity" :form-index 0 :byte-start 0 :byte-end 2}
+        seed {:syntax-id "sha256:quote-seed" :form '(quote x) :span span
+              :reader-origin {:raw-excerpt "'x"}
+              :namespace 'demo.core :phase :read :metadata {}
+              :generated-origin [{:reader-abbreviation :quote :from span}]}
+        unit {:source-id "source.gravity"}
+        c2 {:source-unit-record unit :syntax-seed-stream [seed]}
+        products [{:form-record {:form-id :quote} :token-record {:token-id :quote}}]
+        integrity {:authentic? true}
+        reader-ops {:c3-current-reader-revision-authentic? (constantly true)
+                    :c3-c2-reader-integrity-report (constantly integrity)
+                    :c2-top-level-products (constantly products)
+                    :c3-syntax-object construction/c3-syntax-object
+                    :c3-generated-syntax-object construction/c3-generated-syntax-object}
+        authenticate (fn [stream artifact boundary]
+                       (syntax/reader-products-authentic? stream artifact boundary nil reader-ops))]
+    (construction/with-operations
+      {:c3-source-form-kind (constantly :list)
+       :c3-source-facts (constantly {})}
+      (fn []
+        (let [{:keys [form-record token-record]} (first products)
+              source (construction/c3-syntax-object seed form-record token-record unit c2 integrity)
+              stream [source (construction/c3-generated-syntax-object source)]
+              report (fn [objects reader]
+                       (verification/c3-syntax-verification-report
+                        objects (serialize-stream objects) reader))]
+          (verification/with-operations
+            (assoc origin-operations :c3-syntax-stream-reader-products-authentic? authenticate)
+            (fn []
+              {:quote (report stream c2)
+               :without-reader (report stream nil)
+               :substituted-seed (report (assoc-in stream [0 :origin 1 :inputs]
+                                                   ["sha256:substituted"]) c2)
+               :broken-c3-link (report (assoc-in stream [0 :origin 1 :input-syntax-ids]
+                                                 ["sha256:missing"]) c2)})))))))
+
+(deftest hosted-reader-authenticates-the-abbreviation-seed-link
+  (let [{:keys [quote without-reader substituted-seed broken-c3-link]} (hosted-abbreviation-reports)]
+    (is (= :passed (:status quote)))
+    (is (true? (:generated-origins-valid? quote)))
+    (is (true? (:reader-products-authentic? quote)))
+    (is (false? (:generated-origins-valid? without-reader)))
+    (is (= :failed (:status substituted-seed)))
+    (is (true? (:serialization-current? substituted-seed)))
+    (is (false? (:reader-products-authentic? substituted-seed)))
+    (is (false? (:generated-origins-valid? broken-c3-link)))))
 
 (defn origin-validation-results []
   (let [origin (first (:origin generated-syntax))

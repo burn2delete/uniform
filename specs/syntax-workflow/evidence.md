@@ -93,7 +93,7 @@ requires links to prior syntax. The Gravity reference is
 
 Source inspection found that the hosted serialization fixture records origin
 kinds but omits input IDs. The [hosted report](../../bootstrap/clojure/src/gravity/c3_syntax_verification.clj)
-now resolves both `:input-syntax-ids` and `:inputs` on generated origins
+resolves C3 links under both `:input-syntax-ids` and `:inputs` on generated origins
 before adding the current object's `:syntax/id` to the set of prior IDs.
 If both fields occur, each must contain inputs and every link must resolve.
 The capability proof consumes the fresh report's `:generated-origins-valid?`
@@ -109,16 +109,33 @@ The fixtures call the report, capability proof and validation code directly.
 They supply the reader authentication callback and capture the diagnostic ID,
 stage, source and missing field at the hosted failure callback.
 
-| Fixture | Expected report | Expected validation |
-| --- | --- | --- |
-| Shared source and generated sibling | `:passed`, origins valid | Report entry point only |
-| Prior source | `:passed`, serialization current | `:complete` |
-| Missing later input, self or forward link | `:failed`, origins invalid, serialization current | `C3-ORIGIN`, `[:source-and-generated-origins?]` |
-| Broken second spelling, mixed source/generated chain, empty inputs, missing producer or span | Same failed report checks | Same origin diagnostic |
+### Controller observations for the reviewed candidate
 
-Controller execution and independent acceptance are pending. The following
-argument vectors exercise the fixtures and print the returned reports and
-validation payloads for the controller's evidence record.
+The controller receipt in review 353 identifies base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`ed1eb059e8fc4b29d6567fc9c960a11ab362bdae` and tree
+`eebe2228dd190bc453db4a0ae37a5c020bff1095`. All three commands below
+passed on that tree. In the controller's `target/validation/advance/events.jsonl`
+on 2026-11-18 UTC, `check-350` reported 6 language-boundary tests and 11
+assertions. `check-351` reported 6 hosted verifier tests and 141 assertions.
+Both reported zero failures and errors.
+
+The stdout records for `check-352` contain the returned
+`:gravity/syntax-verification-report` and validation results. Every report
+had `:serialization-current? true` and `:serialization-round-trips? true`.
+
+| Fixture key | Report `:status` | `:generated-origins-valid?` | Validation result |
+| --- | --- | --- | --- |
+| `:shared` | `:passed` | `true` | Report entry point only |
+| `:prior` | `:passed` | `true` | `:complete` |
+| `:missing`, `:self`, `:forward`, `:second-spelling`, `:mixed-chain`, `:empty-inputs`, `:missing-producer`, `:missing-span` | `:failed` | `false` | Each returned the diagnostic below |
+
+```clojure
+{:id "C3-ORIGIN" :source "source.gravity" :stage :syntax-object-model
+ :missing-fields [:source-and-generated-origins?]}
+```
+
+The controller ran these argument vectors on the reviewed tree.
 
 ```clojure
 ["clojure" "-M:leaf-test" "--namespace" "gravity.c3-syntax-verification-test"]
@@ -126,3 +143,22 @@ validation payloads for the controller's evidence record.
  "(require '[gravity.c3-syntax-verification-test :as t]) (prn {:shared (t/shared-origin-report) :validation-cases (t/origin-validation-results)})"]
 ["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
 ```
+
+### Hosted Reader abbreviation repair
+
+On the hosted path, the Reader abbreviation constructor puts the originating
+C2 seed's `:syntax-id` in `:inputs` on a source object's generated origin.
+The verifier delegates the identity of that link to the existing Reader
+authentication callback, which rebuilds the stream from the supplied C2
+products. An accompanying `:input-syntax-ids` still resolves against prior
+C3 objects. [Hosted origin constructor](../../bootstrap/clojure/src/gravity/syntax_origin.clj)
+and [Reader authentication](../../bootstrap/clojure/src/gravity/syntax.clj).
+
+The repair fixture constructs a first source object from `'x` and a generated
+successor. It exercises the hosted Reader reconstruction with fixture C2
+integrity, revision and top-level product inputs. Its negative cases omit
+the Reader artifact, substitute the seed link, and add an unresolved C3 link
+to the Reader origin. Each altered stream has fresh serialization.
+Controller execution of the repair and independent acceptance are pending.
+For the repair, repeat the two namespace checks and include
+`:abbreviations (t/hosted-abbreviation-reports)` in the report command's map.

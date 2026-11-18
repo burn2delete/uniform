@@ -78,16 +78,25 @@
       transaction-serialization
       (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
-(defn- generated-origin-valid? [prior-ids origin]
+(defn- generated-origin-valid? [prior-ids hosted-source? c2-artifact origin]
   (and (:producer origin)
        (or (:span origin) (:generated-span origin))
-       (let [input-fields (select-keys origin [:input-syntax-ids :inputs])]
+       (let [input-fields (select-keys origin [:input-syntax-ids :inputs])
+             abbreviation? (and hosted-source?
+                                (= {:kind :reader
+                                    :name 'gravity.stage0/reader-abbreviation
+                                    :version "stage0"}
+                                   (:producer origin)))]
          (and (seq input-fields)
-              (every? (fn [ids]
-                        (and (coll? ids) (seq ids) (every? prior-ids ids)))
-                      (vals input-fields))))))
+              (every? (fn [[field ids]]
+                        (if (and abbreviation? (= :inputs field))
+                          ;; Hosted Reader authentication reconstructs this C2 seed link.
+                          (and c2-artifact (vector? ids)
+                               (= 1 (count ids)) (some? (first ids)))
+                          (and (coll? ids) (seq ids) (every? prior-ids ids))))
+                      input-fields)))))
 
-(defn- generated-origins-valid? [syntax-stream]
+(defn- generated-origins-valid? [syntax-stream c2-artifact gravity-boundary]
   (loop [remaining (seq syntax-stream) prior-ids #{}]
     (if remaining
       (let [{:keys [form origin] syntax-id :syntax/id} (first remaining)
@@ -96,9 +105,11 @@
             generated (if generated-form?
                         (remove #(= :source (:kind %)) origins)
                         (filter #(= :generated (:kind %)) origins))
-            available (disj prior-ids syntax-id)]
+            available (disj prior-ids syntax-id)
+            hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
         (if (and (or (not generated-form?) (seq generated))
-                 (every? #(generated-origin-valid? available %) generated))
+                 (every? #(generated-origin-valid? available hosted-source? c2-artifact %)
+                         generated))
           (recur (next remaining) (conj prior-ids syntax-id))
           false))
       true)))
@@ -123,7 +134,7 @@
             :source-spans-resolve?
             (every? #(invoke :c3-resolvable-span? (:span %)) syntax-stream)
             :generated-origins-valid?
-            (generated-origins-valid? syntax-stream)
+            (generated-origins-valid? syntax-stream c2-artifact gravity-boundary)
             :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
             :metadata-valid? (every? #(map? (:metadata %)) syntax-stream)
             :namespace-context-valid?
