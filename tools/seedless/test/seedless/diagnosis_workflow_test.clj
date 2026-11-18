@@ -23,7 +23,10 @@
 
 (use-fixtures :each
   (fn [test]
-    (with-redefs [rt/event! (fn [& _]) probe/input-paths fixture-inputs]
+    (with-redefs [rt/event! (fn [& _])
+                  probe/input-paths fixture-inputs
+                  probe/frontend-support-input-paths ["producer.clj"]
+                  probe/frontend-host-input-paths (constantly [])]
       (test))))
 
 (defn context []
@@ -49,8 +52,7 @@
   [ctx id reason]
   (let [cwd (get-in ctx [:config :repo-dir])
         value (-> (observations/observation ctx "unused-unclassified-key")
-                  (assoc :inputs (compiler/declared-inputs cwd)
-                         :status :blocked
+                  (assoc :status :blocked
                          :position {:component 0 :stage :function-types}
                          :reason "Unfamiliar fixture rejection needs source investigation"
                          :subject {:source-path "module.clj"
@@ -66,6 +68,11 @@
                                                 :compiler-result-status :rejected
                                                 :stage :type-checking
                                                 :source-span {:line-start 2 :line-end 2}}}))
+        value (assoc value :inputs (probe/execution-inputs cwd value)
+                     :frontend-host-input-id (probe/frontend-host-input-id cwd)
+                     :admission-inputs (compiler/declared-inputs cwd))
+        value (assoc value :admission-input-id
+                     (compiler/admission-input-id (:admission-inputs value)))
         observation (assoc value :input-id (compiler/input-id value))]
     (assoc observation :execution {:exitCode 1 :stdout (pr-str observation) :stderr ""
                                   :capture-truncated false})))
@@ -391,20 +398,38 @@
 
 (deftest intact-retained-map-key-capture-enters-the-production-investigation-boundary
   ;; The complete capture and all provenance fields are preserved verbatim.
-  ;; Source/hash and command doubles make its recorded inputs applicable to this
-  ;; regression; they do not recreate a live compiler execution or receiver type.
+  ;; The historical capture's selected dependencies are rebound to the current
+  ;; identity shape; this does not recreate a live compiler execution or type.
   (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
         retained (edn/read-string (slurp (io/resource "fixtures/compiler-envelope-map-keys.edn")))
-        raw (:observation retained)
-        hashes (assoc (into {} (map (juxt :path :sha256) (:inputs raw)))
-                      (get-in raw [:subject :source-path]) (get-in raw [:subject :source-sha256]))
+        recorded (:observation retained)
+        source-paths (probe/frontend-input-paths cwd (get-in recorded [:route :closure]))
+        _ (doseq [path source-paths
+                  :let [file (io/file cwd path)]
+                  :when (not (.isFile file))]
+            (io/make-parents file)
+            (spit file "historical compiler input fixture\n"))
+        _ (apply rt/git ctx cwd "add" source-paths)
+        _ (rt/git ctx cwd "commit" "-m" "Add historical frontend source fixtures")
+        captured-inputs (probe/execution-inputs cwd recorded)
+        captured-inputs (mapv (fn [{:keys [path] :as input}]
+                                (if (= path (get-in recorded [:subject :source-path]))
+                                  (assoc input :sha256 (get-in recorded [:subject :source-sha256]))
+                                  input))
+                              captured-inputs)
+        raw (assoc recorded :inputs captured-inputs
+                           :frontend-host-input-id (probe/frontend-host-input-id cwd))
+        raw (assoc raw :input-id (compiler/input-id raw))
+        hashes (merge (into {} (map (juxt :path :sha256) (:inputs recorded)))
+                      (into {} (map (juxt :path :sha256) captured-inputs))
+                      {(get-in raw [:subject :source-path]) (get-in raw [:subject :source-sha256])})
         original-hash compiler/input-sha256
         calls (atom [])]
     (try
       (is (= "d5775869ceb05bb28d0fc247ee42c00fa0179bd0" (:source-revision raw)))
-      (is (= "a05ff121fc7be2837164781eaa42292233a85f0c7ec36990e904791d5fd0b922" (:input-id raw)))
+      (is (not= (:input-id recorded) (:input-id raw)))
       (is (= (:input-id raw) (compiler/input-id raw)))
-      (is (= 14 (count (:inputs raw))))
+      (is (= (mapv :path (:inputs raw)) source-paths))
       (is (= :map-keys-finite-keyword-map-type-required (get-in raw [:failure :diagnostic :reason])))
       (with-redefs [probe/input-paths (mapv :path (:inputs raw))
                     compiler/input-sha256 (fn [root path]
@@ -423,6 +448,7 @@
              (is (some (fn [blocker] (str/includes? blocker "inferred receiver")) (:blockers result)))
              (is (= (:source-revision raw) (:source-revision observed)))
              (is (= (:inputs raw) (:inputs observed)))
+             (is (= (:frontend-host-input-id raw) (:frontend-host-input-id observed)))
              (is (= (:subject raw) (:subject observed)))
              (is (= (:failure raw) (:failure observed)))
              (is (empty? (w/tasks ctx))))))

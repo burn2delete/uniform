@@ -191,7 +191,7 @@
          distinct
          vec)))
 
-(defn frontend-input-paths [root closure]
+(defn frontend-input-paths [_root closure]
   (->> (concat frontend-support-input-paths (keep :source-path closure))
        distinct
        vec))
