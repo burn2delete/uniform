@@ -27169,7 +27169,9 @@
                       facade-hash
                       (str "sha256:" (bootstrap/sha256-bytes-hex
                                        (java.nio.file.Files/readAllBytes
-                                        (.toPath (java.io.File. facade-path)))))]
+                                        (.toPath (java.io.File. facade-path)))))
+                      runtime-rule-source
+                      (get-in artifact-a [:provenance :runtime-rule-source])]
                   (is (= runtime-path
                          (get-in artifact-a
                                  [:provenance :actual-paths :runtime-owner])))
@@ -27177,6 +27179,16 @@
                          (get-in artifact-a
                                  [:provenance :actual-paths
                                   :runtime-compatibility-facade])))
+                  (is (= runtime-hash
+                         (get-in runtime-rule-source
+                                 [:runtime-source :sha256])))
+                  (is (= facade-hash
+                         (get-in runtime-rule-source
+                                 [:compatibility-source :sha256])))
+                  (is (not (contains? (:runtime-source runtime-rule-source)
+                                      :path)))
+                  (is (not (contains? (:compatibility-source runtime-rule-source)
+                                      :path)))
                   (is (= runtime-hash (:runtime-owner-content-hash runtime-source-a)))
                   (is (= facade-hash (:compatibility-facade-content-hash runtime-source-a)))
                   (is (= (:runtime-owner-content-hash runtime-source-a)

@@ -357,11 +357,9 @@
      :runtime-rule-source
      {:kind :gravity-source
       :sha256 runtime-source-hash
-      :runtime-source {:path (:path runtime-source-data)
-                       :sha256 runtime-source-hash}
+      :runtime-source {:sha256 runtime-source-hash}
       :compatibility-source
-      {:path (:source-path compatibility-link)
-       :sha256 (:source-content-hash compatibility-link)}
+      {:sha256 (:source-content-hash compatibility-link)}
       :development-unadmitted? true
       :effects :not-checked
       :runtime-rule-hash runtime-rule-hash
