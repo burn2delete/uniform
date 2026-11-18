@@ -76,6 +76,148 @@
                      (assoc-in original [:references 0 :scope-chain] [(first chain)])]]
       (is (= :rejected (:status (run 'sh06-build-resolution-template changed)))))))
 
+(deftest scope-index-preserves-first-match-and-parent-graph-semantics
+  (let [scope-rows (scopes 3)
+        root-id (:scope-id (first scope-rows))
+        child-id (:scope-id (second scope-rows))
+        leaf-id (:scope-id (nth scope-rows 2))
+        missing-id (id 9999)
+        chain [leaf-id child-id root-id]
+        self-cycle (assoc-in scope-rows [0 :parent-scope-id] root-id)
+        two-scope-cycle (-> scope-rows
+                            (assoc-in [0 :parent-scope-id] child-id)
+                            (assoc-in [1 :parent-scope-id] root-id))
+        missing-parent (assoc-in scope-rows [1 :parent-scope-id] missing-id)
+        first-local {:name 'value :kind :local :semantic-span {:ordinal 1}
+                     :source-span nil :binding-syntax-id (id 401)
+                     :allow-shadow? true}
+        second-local {:name 'value :kind :local :semantic-span {:ordinal 2}
+                      :source-span nil :binding-syntax-id (id 402)
+                      :allow-shadow? true}
+        first-row (assoc (first scope-rows) :bindings [first-local])
+        duplicate-row (assoc (second scope-rows) :scope-id root-id
+                             :parent-scope-id missing-id :bindings [])
+        duplicate-scopes [first-row duplicate-row]
+        duplicate-request (assoc (request) :lexical-scopes duplicate-scopes)
+        duplicate-reference (reference [root-id])
+        first-binding {:binding-class :lexical :scope-id root-id :name 'value
+                       :binding-id :first}
+        bindings [{:binding-class :lexical :scope-id root-id :name 'value
+                   :binding-id :outer}
+                  {:binding-class :lexical :scope-id child-id :name 'value
+                   :binding-id :inner}]
+        shadow-request (assoc (request) :lexical-scopes
+                              [(assoc (first scope-rows) :bindings [first-local])
+                               (assoc (second scope-rows) :bindings [second-local])]
+                              :references [(reference [child-id root-id])])
+        accepted-shadow (run 'sh06-build-resolution-template shadow-request)]
+    (is (true? (run 'sh06-scope-graph-valid? scope-rows [{:scope-chain chain}])))
+    (is (false? (run 'sh06-scope-graph-valid?
+                     scope-rows [{:scope-chain [leaf-id root-id]}])))
+    (is (false? (run 'sh06-scope-graph-valid?
+                     scope-rows [{:scope-chain [leaf-id missing-id]}])))
+    (is (false? (run 'sh06-scope-graph-valid? self-cycle [])))
+    (is (false? (run 'sh06-scope-graph-valid? two-scope-cycle [])))
+    (is (false? (run 'sh06-scope-graph-valid? missing-parent [])))
+    ;; Duplicate scope IDs are rejected by request validation. These direct
+    ;; semantic lookups retain first-row behavior without treating this as a
+    ;; valid request.
+    (is (true? (run 'sh06-scope-graph-valid? duplicate-scopes [])))
+    (is (= [:first]
+           (mapv :binding-id
+                 (run 'sh06-reference-candidates duplicate-request
+                      [first-binding] duplicate-reference))))
+    (is (= :rejected
+           (:status (run 'sh06-build-resolution-template duplicate-request))))
+    (is (= :accepted (:status accepted-shadow)))
+    (is (= [{:digest-ref 1}]
+           (mapv :binding-id
+                 (get-in accepted-shadow
+                         [:namespace-analysis-template :resolution-table])))))
+
+(deftest reference-lookup-keeps-nearest-lexical-binding-first
+  (let [scope-rows (scopes 2)
+        root-id (:scope-id (first scope-rows))
+        child-id (:scope-id (second scope-rows))
+        outer-local {:name 'value :kind :local :semantic-span {:ordinal 1}
+                     :source-span nil :binding-syntax-id (id 501)
+                     :allow-shadow? true}
+        inner-local {:name 'value :kind :local :semantic-span {:ordinal 2}
+                     :source-span nil :binding-syntax-id (id 502)
+                     :allow-shadow? true}
+        lexical-scopes [(assoc (first scope-rows) :bindings [outer-local])
+                        (assoc (second scope-rows) :bindings [inner-local])]
+        reference (reference [child-id root-id])
+        request-with-scopes (assoc (request) :lexical-scopes lexical-scopes)
+        bindings [{:binding-class :lexical :scope-id root-id :name 'value
+                   :binding-id :outer}
+                  {:binding-class :lexical :scope-id child-id :name 'value
+                   :binding-id :inner}]
+        shadowed (run 'sh06-reference-candidates
+                      request-with-scopes bindings reference)
+        unshadowed (run 'sh06-reference-candidates
+                        (assoc request-with-scopes :lexical-scopes
+                               (assoc lexical-scopes 1
+                                      (assoc (second lexical-scopes) :bindings [])))
+                        bindings reference)]
+    (is (= [:inner] (mapv :binding-id shadowed)))
+    (is (= [:outer] (mapv :binding-id unshadowed)))))
+
+(deftest duplicate-same-scope-name-keeps-first-binding-candidate-order
+  (let [scope-id (:scope-id (first (scopes 1)))
+        first-local {:name 'value :kind :local :semantic-span {:ordinal 1}
+                     :source-span nil :binding-syntax-id (id 601)
+                     :allow-shadow? true}
+        second-local {:name 'value :kind :local :semantic-span {:ordinal 2}
+                      :source-span nil :binding-syntax-id (id 602)
+                      :allow-shadow? true}
+        local-scopes [(assoc (first (scopes 1)) :bindings
+                             [first-local second-local])]
+        ref (reference [scope-id])
+        request-with-scopes (assoc (request) :lexical-scopes local-scopes)
+        bindings [{:binding-class :lexical :scope-id scope-id :name 'value
+                   :binding-id :first}
+                  {:binding-class :lexical :scope-id scope-id :name 'value
+                   :binding-id :second}]
+        check (run 'sh06-reference-check request-with-scopes bindings ref)]
+    (is (= "C5-AMBIGUOUS" (:rule check)))
+    (is (= [:first :first]
+           (mapv :binding-id (:candidate-bindings check))))))
+
+(deftest accepted-template-resolves-repeated-lexical-references
+  (let [scope-count 257
+        reference-count 1024
+        scope-rows
+        (mapv (fn [i]
+                {:scope-id (id (+ 1000 i)) :parent-scope-id nil
+                 :owner-syntax-id (id (+ 2000 i))
+                 :bindings (if (= i (dec scope-count))
+                             [{:name 'value :kind :local
+                               :semantic-span {:ordinal i} :source-span nil
+                               :binding-syntax-id (id (+ 10000 i))
+                               :allow-shadow? true}]
+                             [])})
+              (range scope-count))
+        last-scope-id (:scope-id (last scope-rows))
+        references
+        (mapv (fn [i]
+                {:syntax-id (id (+ 20000 i))
+                 :symbol 'value :qualifier nil :name 'value
+                 :position :expression :scope-chain [last-scope-id]
+                 :semantic-span {:ordinal i} :source-span nil})
+              (range reference-count))
+        result (run 'sh06-build-resolution-template
+                    (assoc (request) :lexical-scopes scope-rows
+                           :references references))
+        rows (get-in result [:namespace-analysis-template :resolution-table])]
+    (is (= :accepted (:status result)))
+    (is (= scope-count
+           (count (get-in result [:namespace-analysis-template
+                                  :lexical-scope-graph]))))
+    (is (= reference-count (count rows)))
+    (is (every? #(= :local-lexical-binding (:resolution-order %)) rows))
+    (is (every? #(= {:digest-ref 0} (:binding-id %)) rows))))
+
 (deftest ambiguous-diagnostics-retain-all-candidates-and-semantic-rejections
   (let [original (assoc (request) :definitions (mapv definition (range 33))
                          :references [(reference [])])
