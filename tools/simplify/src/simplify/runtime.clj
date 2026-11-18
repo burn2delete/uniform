@@ -360,7 +360,16 @@
        (let [state (import-legacy-registry ctx state)
              state (reduce (fn [state [kind entries]]
                              (reduce-kv (fn [state key refusal]
-                                          (if (get-in state [:restrictions kind key]) state
+                                          (if (or (get-in state [:restrictions kind key])
+                                                  ;; Old binaries keep the owner-local API guard. A settled
+                                                  ;; incident must not re-export it to unrelated projects.
+                                                  (and (= :api kind) (= "graphql" (:endpoint refusal)) (= "POST" (:method refusal))
+                                                       (let [hold (get-in state [:restrictions :project-controls (get-in local [:project :id])])]
+                                                         (and (= :project-controls-pagination (:kind hold))
+                                                              (= (:state-file ctx) (:state-file hold))
+                                                              (= key (:legacy-api-key hold))
+                                                              (= refusal (:retained-local-guard hold))))))
+                                            state
                                               (assoc-in state [:restrictions kind key] (merge (owner ctx) refusal))))
                                         state (or entries {})))
                            state [[:commands (:restricted-commands local)] [:api (:restricted-actions local)] [:checks (:restricted-checks local)]])

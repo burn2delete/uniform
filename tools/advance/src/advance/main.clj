@@ -215,6 +215,21 @@
   (let [{:keys [state digest]} (read-status-state! config)]
     (status-summary config state digest (read-status-control config))))
 
+(defn run-or-hold! [ctx]
+  (let [key (rt/digest (pr-str ["POST" "graphql"]))
+        project (get-in @(:state ctx) [:project :id])
+        reason (cond (rt/shared-restriction ctx :project-controls project) :restricted-project-controls
+                     (or (get-in @(:state ctx) [:restricted-actions key]) (rt/shared-restriction ctx :api key))
+                     :retained-graphql-restriction)]
+    (if reason
+      (do (coordination/register! ctx)
+          (try
+            (rt/event! ctx :operational-holding-start {:reason reason :provider-dispatch false})
+            (while (not (flow/paused? ctx)) (Thread/sleep (get-in ctx [:config :poll-ms])))
+            (rt/event! ctx :operational-holding-end {:reason :local-pause :provider-dispatch false})
+            (finally (coordination/unregister! ctx))))
+      (workflow/campaign! ctx))))
+
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
@@ -230,9 +245,9 @@
     "setup" (rt/with-lock ctx #(do (coordination/register! ctx)
                                  (try (project/setup! ctx) (workflow/ensure-campaign! ctx)
                                       (finally (coordination/unregister! ctx)))))
-    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
+    "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (run-or-hold! ctx)))
     "resume" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx)))
-                                 (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
+                                 (rt/write-edn! (:control-file ctx) {:paused false}) (run-or-hold! ctx)))
     (base/dispatch! ctx command args)))
 
 (defn -main [& [command config-path & args]]

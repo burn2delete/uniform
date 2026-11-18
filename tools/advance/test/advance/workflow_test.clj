@@ -56,6 +56,21 @@
     (is (= "Provider navigation" (get-in raw [0 :head :repo :description])))
     (is (nil? (get-in presented [0 :head :repo :description])))))
 
+(deftest restricted-project-controls-hold-before-provider-setup-or-pagination
+  (let [ctx (fixture/context)
+        events (atom [])]
+    (rt/update! ctx assoc :project {:id "held"})
+    (with-redefs [rt/shared-restriction (fn [_ kind project] (when (= [:project-controls "held"] [kind project]) {:scope :all-cursors}))
+                  gh/graphql (fn [& _] (throw (AssertionError. "Restricted page reached GitHub")))
+                  workflow/campaign! (fn [& _] (throw (AssertionError. "Campaign entered setup")))
+                  coordination/register! (fn [_])
+                  coordination/unregister! (fn [_])
+                  rt/event! (fn [_ _ data] (swap! events conj (:reason data)))
+                  simplify.workflow/paused? (constantly true)]
+      (is (thrown-with-msg? Exception #"pagination remains restricted" (project/settings ctx)))
+      (main/run-or-hold! ctx)
+      (is (= [:restricted-project-controls :local-pause] @events)))))
+
 (deftest selector-reaches-the-api-with-complete-scope-and-external-message-sized-input
   (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
         provider-limit 1048576 ; Actual observed app-server message boundary, not a task allowance.

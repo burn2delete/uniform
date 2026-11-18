@@ -44,6 +44,8 @@
                           :options (mapv (fn [option] {:name option :color "BLUE" :description option}) options)})))))))
 
 (defn settings [ctx]
+  (when (rt/shared-restriction ctx :project-controls (get-in @(:state ctx) [:project :id]))
+    (rt/fail! "Project controls pagination remains restricted" {:restricted true :operation :project-controls}))
   (loop [cursor nil result {}]
     (let [page (get-in (gh/graphql ctx
                         "query($project:ID!,$after:String){node(id:$project){... on ProjectV2{items(first:100,after:$after){nodes{content{... on Issue{number}} fieldValues(first:100){nodes{... on ProjectV2ItemFieldSingleSelectValue{name field{... on ProjectV2SingleSelectField{name}}}}}} pageInfo{hasNextPage endCursor}}}}}"
