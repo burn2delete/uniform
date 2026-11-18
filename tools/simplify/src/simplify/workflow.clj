@@ -17,6 +17,7 @@
        "Preserve normative semantics, provenance, legality checks and independent acceptance. "
        "Project work/cost/input quotas are removed requirements; do not replace them with renamed limits. "
        "New tooling must be Clojure. Make the smallest complete justified change. "
+       "For a fix within an existing contract, keep the diff and focused regressions together. Report checks and results in the PR workflow with normal CI and review. Create no separate receipt, review-consumption record, evidence report or ledger entry for that fix. Preserve evidence required by the owning contract or governed admission. "
        "Do not spawn agents, change GitHub, push, merge, commit, alter git refs, change credentials, or broaden permissions. "
        "The controller owns these actions. Network access is disabled. "
        "A denied/restricted action must be reported as restricted; never retry or route around it. "
@@ -188,18 +189,24 @@
                                      :draft (boolean (get-in ctx [:config :early-draft]))
                                      :body (str (:proposal t) "\n\nPreserves: " (:preserve t)
                                                 "\n\nImplements #" (get-in t [:issue :number]) ". The coordinator closes the issue after verifying the merge."
-                                                "\n\nValidation and exact revision evidence are recorded on the issue.\n\n" (gh/marker ctx (:key t)))})))]
+                                                "\n\nLocal checks and independent review are reported on this PR.\n\n" (gh/marker ctx (:key t)))})))
+        approved? (and (= "approved" (get-in t [:review :verdict]))
+                       (= (select-keys t [:base :candidate :tree])
+                          (select-keys (:review t) [:base :candidate :tree])))]
     (task! ctx (:key t) :pr (select-keys pr [:number :html_url :node_id]))
-    (when (get-in ctx [:config :early-draft])
-      (let [approved? (and (= "approved" (get-in t [:review :verdict]))
-                           (= (select-keys t [:base :candidate :tree])
-                              (select-keys (:review t) [:base :candidate :tree])))]
-        (when (= (boolean (:draft pr)) approved?)
-          (gh/draft! ctx (select-keys pr [:node_id]) (not approved?) (:candidate t)))))
-    (gh/comment! ctx (:issue t) (str (if (:review t) "candidate/" "draft/") (:candidate t))
-                 (str "Candidate `" (:candidate t) "`, tree `" (:tree t) "`, base `" (:base t) "`.\n\n"
-                      "Independent review: " (or (get-in t [:review :summary]) "Pending for this candidate")
-                      "\n\nChecks: `" (pr-str (get-in t [:checks :commands])) "`.\n\nPR: " (:html_url pr)))
+    (when (and (get-in ctx [:config :early-draft]) (= (boolean (:draft pr)) approved?))
+      (gh/draft! ctx (select-keys pr [:node_id]) (not approved?) (:candidate t)))
+    (when (and approved?
+               (= :passed (get-in t [:checks :result]))
+               (= (select-keys t [:candidate :tree]) (select-keys (:checks t) [:candidate :tree])))
+      (let [comment-key (str "candidate/" (:candidate t))
+            issue-effect (str "comment/" (get-in t [:issue :number]) "/" comment-key)
+            ;; Keep any prior issue publication bound to its original effect.
+            destination (if (contains? (:effects @(:state ctx)) issue-effect) (:issue t) pr)]
+        (gh/comment! ctx destination comment-key
+                     (str "Candidate `" (:candidate t) "`, tree `" (:tree t) "`, base `" (:base t) "`.\n\n"
+                          "**Independent review**\n\n" (get-in t [:review :summary])
+                          "\n\n**Passed local checks**\n\n`" (pr-str (get-in t [:checks :commands])) "`"))))
     (transition! ctx (:key t) :ci)))
 
 (defn prepare-base! [ctx t]

@@ -1,24 +1,18 @@
 (require '[clojure.java.io :as io]
          '[clojure.java.shell :as shell]
-         '[clojure.pprint :as pprint]
          '[clojure.string :as str]
          '[gravity.tooling.strict-json :as json])
 (import '[java.nio.file Files]
-        '[java.nio.file.attribute FileAttribute]
-        '[java.security MessageDigest])
+        '[java.nio.file.attribute FileAttribute])
 
 ;; Run from the repository root. Optional argument: pinned external specify CLI.
-;; This verifier never dispatches an agent or compiler and writes only results.edn.
 (def root (.getCanonicalFile (io/file ".")))
-(def checks (atom []))
+(def passed-checks (atom 0))
 (defn check! [name condition]
   (when-not condition (throw (ex-info (str "Spec Kit check failed: " name) {})))
-  (swap! checks conj name))
+  (swap! passed-checks inc))
 (defn read-json [file] (json/read-strict-json (slurp file)))
 (defn files [path] (filter #(.isFile %) (file-seq (io/file path))))
-(defn sha256 [file]
-  (format "%064x" (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256")
-                                        (Files/readAllBytes (.toPath file))))))
 (defn relative [file] (str (.relativize (.toPath root) (.toPath (.getCanonicalFile file)))))
 (defn execute! [directory & command]
   (let [result (apply shell/sh (concat command [:dir directory]))]
@@ -91,13 +85,6 @@
           (check! [:official-preset-update (relative file)]
                   (= (slurp file) (slurp (io/file generated (relative file))))))
         (finally (doseq [file (reverse (file-seq scratch))] (io/delete-file file true))))))
-  (let [report {:scope :spec-kit-scaffold-only :upstream-commit (get pin "commit")
-                :checks @checks :passed (count @checks)
-                :input-sha256 (into (sorted-map) (map (juxt relative sha256))
-                                    (remove #(= "results.edn" (.getName %)) (mapcat files [".agents" ".specify"])))
-                :unrun [:codex-runtime-discovery-and-chat :compiler-tests :raw-PR356-log-authentication
-                        :independent-adoption-review :integration-merge]}]
-    (spit ".specify/validation/results.edn" (with-out-str (pprint/pprint report)))
-    (println "validation passed:" (count @checks) "Spec Kit scaffold checks; compiler/model unrun")))
+  (println "Passed" @passed-checks "Spec Kit scaffold checks."))
 
 (shutdown-agents)

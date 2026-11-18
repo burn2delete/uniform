@@ -179,6 +179,15 @@ repository language policy.
 - Keep changes scoped to the requested implementation or documentation slice.
 - Add positive and negative fixtures, diagnostics, and evidence artifacts when
   the governing document requires them.
+- For a fix within an existing contract, use the ordinary pull request. Keep
+  the source diff and focused regression coverage together, run affected
+  checks, and use the PR review and normal CI as the durable record. Do not
+  create a feature dossier, review-consumption record, report about another
+  report, or ledger entry for an ordinary fix. Update an existing task only
+  when its state actually changes. Preserve historical records as history.
+- Lead milestone updates with runnable behavior, an emitted artifact, a
+  specific rejection, or a stage the compiler can rebuild. Link existing
+  checks and use task totals only for navigation.
 - Ordinary semantic development does not require fresh authority proofs or
   migration fingerprint updates first. Execute current source with accurate
   provenance; keep implementation progress separate from authoritative

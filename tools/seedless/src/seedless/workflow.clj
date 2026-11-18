@@ -22,7 +22,7 @@
        "Static catalogs, quoted templates, stdout replay, file moves and compatibility dispatch do not prove seed retirement. "
        "Keep implementation, integration, authoritative migration and release evidence separate. "
        "Do not refresh historical pins to manufacture a pass, weaken legality/authentication checks, or retry a restricted action. "
-       "Ordinary source work needs focused positive/negative tests, not fresh migration proofs. "
+       "For ordinary source fixes, keep focused positive/negative tests with the diff and report checks and results in the PR workflow. Use normal review and CI without creating a separate receipt, review-consumption record, evidence report or ledger entry. Preserve evidence required by the owning contract or governed admission. "
        "No project cost, input, attempt or task quotas. Preserve actual host/watchdog restrictions. "
        "New tooling must be Clojure; destination behavior must be Uniform. "
        "Do not spawn agents, commit, alter Git refs, push, change GitHub, credentials or permissions. "

@@ -61,13 +61,12 @@ name map, complete reference search and focused owner checks, including
 required manifest/digest updates. Stop the command at this classification. Do
 not select or create a feature directory or any Spec Kit artifact.
 
-A change is not private-only when it touches a public API, serialized identity,
-protocol/schema/diagnostic ID, component ownership, semantic behavior or new
-acceptance evidence. Continue with only the established bounded-workflow
-artifact(s) applicable to that change; this rule does not make
-`spec.md`, `plan.md`, `tasks.md` and `evidence.md` mandatory for every
-substantive edit. Existing four-artifact packages remain valid historical
-records.
+Apply the owning contracts to changes in public APIs, serialized identities,
+protocol/schema/diagnostic IDs, component ownership, semantics, or required
+acceptance evidence. The [ordinary fix workflow](README.md) applies when the
+implementation is being corrected to satisfy its existing contract. Use the
+bounded-workflow artifacts applicable to an explicit planning or admission
+request. Existing four-artifact packages remain valid historical records.
 
 A lightweight review check uses the actual base revision of the candidate:
 
