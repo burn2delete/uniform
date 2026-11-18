@@ -895,7 +895,7 @@
     #{:host-role :physical-provenance-separate? :scope
       :self-hosted? :semantic-owner
       :semantic-root-path-neutral?})
-    (if (= :bounded-validation-hashing-and-instantiation
+    (if (= :validation-hashing-and-instantiation
            (get authority :host-role))
       (if (= true
              (get authority :physical-provenance-separate?))
@@ -1321,10 +1321,6 @@
    {:arity 2 :params ['values 'observed]}
    'ae-append
    {:arity 2 :params ['left 'right]}
-   'ae-bounded-vector?
-   {:arity 2 :params ['values 'maximum]}
-   'ae-bounds-record
-   {:arity 0 :params []}
    'ae-build-accepted-template
    {:arity 1 :params ['descriptor]}
    'ae-build-fact-transition-bindings
@@ -1476,12 +1472,12 @@
                (get source :logical-source-path))
           (if (= 'authenticated-envelope-build-template
                  (get source :builder-function))
-            (if (= "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71"
+            (if (= "sha256:7ef0386733632569a81a3e709551e4c4d300ec43ff0f7f13b5fe7399df29c3b7"
                    (get source :source-content-hash))
-              (if (= 59495 (get source :source-byte-count))
-                (if (= "sha256:125e012806bddf996f23e357bd33309c9bbd40927ce0f2c841e69b39c1740922"
+              (if (= 59822 (get source :source-byte-count))
+                (if (= "sha256:2f6c3810a46cc333718da8212117109fdf76a5aabe24142aa859bbf1a131dcde"
                        (get source :plan-semantic-hash))
-                  (if (= "sha256:e88f53c2994f5d8d4577f6df9f6531a750c2808ef0a2b4b5d297f64e7b45e26e"
+                  (if (= "sha256:0c04397dd7a0fd54a89156ea09079117599b116b9c3d2db3221cd1645ada97c6"
                          (get source :functions-semantic-hash))
                     (if (= "sha256:19b21ed1e94563631c25b502f5297fa1e33070f0a62fefc480bcba5984b02a7a"
                            (get source :builder-semantic-hash))
@@ -1567,10 +1563,10 @@
         :source-revision :projection-contract :semantic-projections
         :fact-transitions :effect-capability-relation :proof-composite
         :preservation :identity-subjects :lineage
-        :reference-closure :actual-path-provenance :bounds})
+        :reference-closure :actual-path-provenance})
       (if (= :gravity/private-authenticated-envelope-descriptor
              (get descriptor :artifact))
-        (if (= 1 (get descriptor :schema-version))
+        (if (= 2 (get descriptor :schema-version))
           (if (= :sh26-stage-rebuild (get descriptor :stage))
             (if (= :gravity/sh26-sh25-complete-context
                    (get descriptor :artifact-kind))
@@ -1759,8 +1755,8 @@
               (if (sh26-template-replay-valid? replay)
             (if (sh26-replay-builder-bound? replay builder)
               (if (map? envelope)
-            (if (= :gravity/authenticated-envelope
-                   (get envelope :artifact))
+            (if (= [:gravity/authenticated-envelope 2]
+                   [(get envelope :artifact) (get envelope :schema-version)])
               (if (= :sh26-stage-rebuild (get envelope :stage))
                 (if (= :gravity/sh26-sh25-complete-context
                        (get envelope :artifact-kind))
@@ -1955,11 +1951,9 @@
 (defn sh26-stage-lineage-valid? [lineage]
   (if (vector? lineage)
     (if (>= (count lineage) 2)
-      (if (<= (count lineage) 16)
-        (if (sh26-lineage-identities-unique-from?
-             lineage 0 [])
-          (sh26-lineage-from? lineage 0)
-          false)
+      (if (sh26-lineage-identities-unique-from?
+           lineage 0 [])
+        (sh26-lineage-from? lineage 0)
         false)
       false)
     false))
