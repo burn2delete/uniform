@@ -116,20 +116,20 @@
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
    "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
-                             "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                             "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
-                             "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
-                             "bootstrap/clojure/src/gravity/checked_core.clj"
-                             "bootstrap/clojure/src/gravity/checked_core"
-                             "bootstrap/clojure/src/gravity/c6_core_lowering"
-                             "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
-                             "bootstrap/clojure/test/gravity/checked_core"
-                             "bootstrap/clojure/test/gravity/c6_"
-                             "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
-                             "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
-                             "bootstrap/clojure/fixtures/self-hosting/sh-07"
-                             c7-source-path
-                             b6-source-path]})
+                           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                           "bootstrap/clojure/src/gravity/checked_core.clj"
+                           "bootstrap/clojure/src/gravity/checked_core"
+                           "bootstrap/clojure/src/gravity/c6_core_lowering"
+                           "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
+                           "bootstrap/clojure/test/gravity/checked_core"
+                           "bootstrap/clojure/test/gravity/c6_"
+                           "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+                           "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
+                           "bootstrap/clojure/fixtures/self-hosting/sh-07"
+                           c7-source-path
+                           b6-source-path]})
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
@@ -1149,8 +1149,7 @@
         (conj ["b6-gravity-source-check" 180
                (command "2g" "-M:dev-test"
                         "--namespace" "gravity.bootstrap-test"
-                        "--exact" "public-check-accepts-gravity-authored-b6-javascript-typescript-backend-design")])
-        ))
+                        "--exact" "public-check-accepts-gravity-authored-b6-javascript-typescript-backend-design")])))
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable" selection)]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]

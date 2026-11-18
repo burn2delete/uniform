@@ -2115,22 +2115,35 @@
                  (assoc argv (dec (count argv)) "gravity.types.pipeline-test") source-vars namespace)))))
 
 (deftest checked-core-cohort-includes-the-complete-native-mir-namespace
-  (let [commands (ci/commands-for-selection "checked-core-runtime" {:kind :full})
-        [label timeout argv] (last commands)
+  (let [change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path "language/compiler/src/gravity/checked_core.gravity"}
+        ordinary-selection (ci/stage-selection [change])
+        ordinary-commands (ci/commands-for-selection "checked-core-runtime" ordinary-selection)
+        full-commands (ci/commands-for-selection "checked-core-runtime"
+                                                 {:kind :full :reason :non-pull-request :paths []})
+        mir-command (some #(when (= "mir-native-validation" (first %)) %) ordinary-commands)
         source-vars (binding [*read-eval* false]
                       (source-deftest-names "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"))
         namespace "gravity.mir.pipeline-test"]
     (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
             "checked-core-projection-kernel-regression" "mir-native-validation"]
-           (mapv first commands)))
-    (is (= "mir-native-validation" label))
-    (is (= 180 timeout))
-    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace) argv))
+           (mapv first ordinary-commands)))
+    (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
+            "checked-core-projection-kernel-regression" "mir-native-validation"
+            "checked-js-b6-owner-regression"]
+           (mapv first full-commands)))
+    (is (= "mir-native-validation" (first mir-command)))
+    (is (= 180 (second mir-command)))
+    (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" namespace)
+           (nth mir-command 2)))
     (is (seq source-vars))
-    (is (= source-vars (macro-selected-vars argv source-vars namespace)))
-    (is (empty? (macro-selected-vars (vec (drop-last 2 argv)) source-vars namespace)))
+    (is (= source-vars (macro-selected-vars (nth mir-command 2) source-vars namespace)))
+    (is (empty? (macro-selected-vars (vec (drop-last 2 (nth mir-command 2))) source-vars namespace)))
     (is (empty? (macro-selected-vars
-                 (assoc argv (dec (count argv)) "gravity.checked-core.pipeline-test") source-vars namespace)))))
+                 (assoc (nth mir-command 2)
+                        (dec (count (nth mir-command 2)))
+                        "gravity.checked-core.pipeline-test")
+                 source-vars namespace)))))
 
 (deftest macro-children-preserve-complete-disjoint-source-selection
   (let [[cohort receipt compatibility :as commands] (ci/commands-for-selection "macro" {:kind :full})
