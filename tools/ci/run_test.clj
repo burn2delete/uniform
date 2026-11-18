@@ -474,17 +474,6 @@
     (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
     (is (= "true" (last (str/split (last (ci/selection-output-lines selected)) #"="))))))
 
-(deftest public-js-cli-receipt-shape-control
-  (let [receipt (edn/read-string (slurp "docs/compiler-public-js-cli-receipt.edn"))]
-    (is (map? receipt))
-    (is (= :uniform/public-checked-js-cli-development-evidence-v1
-           (:schema receipt)))
-    (is (= :non-authoritative-development-evidence (:authority receipt)))
-    (is (= :uniform/public-js-baseline-reproduction-v1
-           (get-in receipt [:baseline :schema])))
-    (is (vector? (:nonclaims receipt)))
-    (is (vector? (get-in receipt [:public-help :command])))))
-
 (deftest workflow-selector-fails-closed-for-missing-or-malformed-outputs
   (let [workflow (slurp ".github/workflows/ci.yml")]
     (is (str/includes? workflow "needs.select.outputs.selection-valid != 'true'"))
@@ -502,7 +491,7 @@
     (is (str/includes? workflow "node-version: 20.20.2"))
     (is (str/includes? workflow "checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}"))
     (is (str/includes? workflow "needs.select.outputs.checked-js-owner-required != 'false'"))
-    (is (str/includes? workflow "matrix.mode == 'checked-core-runtime' && 70"))
+    (is (str/includes? workflow "matrix.mode == 'checked-core-runtime' && 85"))
     (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
     (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
 
@@ -2248,7 +2237,7 @@
            (mapv first ordinary-commands)))
     (is (= ["checked-core-runtime-regression" "checked-core-current-binding-regression"
             "checked-core-projection-kernel-regression" "mir-native-validation"
-            "checked-js-b6-owner-regression"]
+            "checked-js-b6-owner-regression" "public-js-compiler-smoke"]
            (mapv first full-commands)))
     (is (= "mir-native-validation" (first mir-command)))
     (is (= 180 (second mir-command)))
@@ -3036,16 +3025,6 @@
       (is (= expected-checked
              (:modes (ci/stage-selection [(change path)])))
           path))
-    (let [receipt (ci/stage-selection [(change "docs/compiler-public-js-cli-receipt.edn")])]
-      (is (= :selected (:kind receipt)))
-      (is (= :public-js-receipt-only (:reason receipt)))
-      (is (= #{"static" "contracts"} (:modes receipt)))
-      (is (nil? (ci/stage-owner "docs/compiler-public-js-cli-receipt.edn")))
-      (is (ci/skip-for-stage-selection? "checked-core-runtime" receipt)))
-    (is (= :full
-           (:kind (ci/stage-selection
-                   [(change "docs/compiler-public-js-cli-receipt.edn")
-                    (change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")]))))
     (is (= expected-all
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/src/gravity/macro.clj")
@@ -3070,8 +3049,6 @@
         b6-selection
         (ci/stage-selection
          [(change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")])
-        receipt-selection
-        (ci/stage-selection [(change "docs/compiler-public-js-cli-receipt.edn")])
         c7-selection
         (ci/stage-selection
          [(change "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")])
@@ -3089,12 +3066,6 @@
         (ci/stage-selection
          [(change "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
           (change "README.md")])
-        mixed-receipt-markdown-selection
-        (ci/stage-selection
-         [(change "docs/compiler-public-js-cli-receipt.edn")
-          (change "README.md")])
-        receipt-static-commands
-        (ci/commands-for-selection "static" (assoc receipt-selection :base "BASE"))
         full-selection {:kind :full :reason :non-pull-request :paths []}
         checked-ids
         (fn [selection]
@@ -3118,12 +3089,8 @@
             "mir-native-validation"]
            (checked-ids checked-core-only-selection)))
     (is (= :selected (:kind mixed-b6-markdown-selection)))
-    (is (= :selected (:kind mixed-receipt-markdown-selection)))
-    (is (= :public-js-receipt-only (:reason mixed-receipt-markdown-selection)))
     (is (some #{"checked-js-b6-owner-regression"}
               (checked-ids mixed-b6-markdown-selection)))
-    (is (ci/skip-for-stage-selection? "checked-core-runtime" receipt-selection))
-    (is (ci/skip-for-stage-selection? "checked-core-runtime" mixed-receipt-markdown-selection))
     (is (some #{"checked-js-b6-owner-regression"}
               (checked-ids full-selection)))
     (is (some #{"checked-js-b6-owner-regression"} (checked-ids nil)))
@@ -3135,19 +3102,6 @@
     (is (some #{"c7-gravity-source-consumers"} (checked-ids full-c7-selection)))
     (is (not (some #{"checked-js-b6-owner-regression"}
                    (checked-ids checked-core-only-selection))))
-    (is (= ["whitespace" "changed-clojure-lint" "public-js-cli-receipt-shape"]
-           (mapv first receipt-static-commands)))
-    (is (= (ci/command "256m" "-M" "tools/ci/run_test.clj" "--exact"
-                       "ci.run-test/public-js-cli-receipt-shape-control")
-           (nth (last receipt-static-commands) 2)))
-    (let [receipt-output (set (ci/selection-output-lines receipt-selection))]
-      (is (contains? receipt-output "static=true"))
-      (is (contains? receipt-output "contracts=true"))
-      (is (contains? receipt-output "checked-core-runtime=false"))
-      (is (contains? receipt-output "checked-js-owner-required=false"))
-      (is (contains? receipt-output "leaves-portable=false"))
-      (is (contains? receipt-output "leaves-darwin=false"))
-      (is (contains? receipt-output "static-tools-required=true")))
     (is (= expected-contract-command-ids
            (mapv first (ci/commands-for-selection "contracts" c7-selection))))
     (is (not (ci/skip-for-stage-selection? "contracts" c7-selection)))
@@ -3160,6 +3114,7 @@
       (is (= (ci/command "2g" "-M:dev-test"
                          "--namespace" "gravity.backend.js-checked-mir-test"
                          "--exact" "scalar-module-target-execution"
+                         "--exact" "checked-add-requires-original-guard"
                          "--progress")
              (nth owner-command 2)))
       (is (= 180 (second source-command)))
@@ -3174,23 +3129,45 @@
                             ["sh08-function-arity-current-source-composition"
                              "sh08-function-argument-type-current-source-composition"]))
              (nth c7-command 2)))
-      (is (nil? (some #(when (= "checked-js-public-acceptance" (first %)) %)
-                      (ci/commands-for-selection "checked-core-runtime" receipt-selection))))
       (doseq [selection [b6-selection full-b6-selection full-c7-selection full-selection nil]]
         (is (= "true"
                (some #(when (str/starts-with? % "checked-js-owner-required=")
                         (subs % (count "checked-js-owner-required=")))
                      (ci/selection-output-lines selection)))))
-      (doseq [selection [c7-selection checked-core-only-selection receipt-selection]]
+      (doseq [selection [c7-selection checked-core-only-selection]]
         (is (= "false"
                (some #(when (str/starts-with? % "checked-js-owner-required=")
                         (subs % (count "checked-js-owner-required=")))
                      (ci/selection-output-lines selection))))))))
 
+(deftest public-js-smoke-executes-on-the-node-equipped-job
+  (let [selection-for (fn [path]
+                        (ci/stage-selection [{:path path :status "M"
+                                              :old-mode "100644" :new-mode "100644"}]))
+        smoke (fn [selection]
+                (some #(when (= "public-js-compiler-smoke" (first %)) (nth % 2))
+                      (ci/commands-for-selection "checked-core-runtime" selection)))
+        expected (ci/command "1g" "-M:dev-test"
+                             "--namespace" "gravity.compiler.public-js-smoke-test"
+                             "--exact" "public-js-compiler-smoke")]
+    (doseq [path ["bin/gravity"
+                  "bootstrap/clojure/src/gravity/cli/compile_command.clj"
+                  "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj"
+                  "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj"
+                  "examples/checked-js/acceptance.gravity"]
+            :let [selection (selection-for path)
+                  outputs (set (ci/selection-output-lines selection))]]
+      (is (= expected (smoke selection)) path)
+      (is (every? outputs ["checked-core-runtime=true" "checked-js-owner-required=true"]) path))
+    (is (= expected (smoke {:kind :full :reason :path-discovery-failed :paths []})))
+    (is (nil? (smoke (selection-for "tools/advance/src/advance/workflow.clj"))))
+    (is (nil? (smoke (selection-for "language/compiler/src/gravity/checked_core.gravity"))))))
+
 (deftest stage-selection-falls-back-for-cross-cutting-and-unknown-inputs
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})]
     (doseq [path ["contracts/ci-policy.edn"
+                  "docs/example.edn"
                   "specs/compiler/spec.md"
                   "deps.edn"
                   ".github/workflows/ci.yml"
@@ -3511,7 +3488,6 @@
         c7-owner-result
         (select "portable"
                 ["language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"])
-        receipt-result (select "portable" ["docs/compiler-public-js-cli-receipt.edn"])
         checked-owner-mixed-result
         (select "portable"
                 ["language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
@@ -3566,8 +3542,6 @@
     (doseq [result [checked-owner-result c7-owner-result checked-owner-markdown-result]]
       (is (= :selected (:kind result)))
       (is (empty? (:entries result))))
-    (is (= :full (:kind receipt-result)))
-    (is (= 52 (count (:entries receipt-result))))
     (is (= :selected (:kind checked-owner-leaf-result)))
     (is (= ["c7-type-checker"] (mapv :id (:entries checked-owner-leaf-result))))
     (is (= :full (:kind checked-owner-mixed-result)))

@@ -63,14 +63,15 @@ integration decisions; the former master is an execution/integration delegate.
 
 ## Exact outcomes and evidence ownership
 
-Each change names its owner, exact paths, acceptance and rejection behavior,
-input revision/tree, commands, result/exit, artifact identities and limits.
-Distinguish locally observed evidence from another owner's reported evidence;
-name unrun checks and stale inputs. Implementation owners own their source and
-raw evidence; reviewers own review dispositions; Deus owns integration.
-Use the existing [development workflow](../../docs/development-verification-workflow.md)
-for proof, reuse and authority decisions. Spec Kit is a work-artifact layer,
-not a competing evidence authority or a second roadmap.
+For a fix within an existing contract, record relevant checks and results on
+the PR. The diff, regressions, review and CI are the durable record. For a
+governed admission or evidence required by a canonical contract, capture the
+exact subject, commands, results, artifact identities and limits the contract
+requires. Distinguish observed results from reported or unrun checks.
+Implementation owners own their source and raw evidence. Reviewers own review
+dispositions. Deus coordinates integration subject to the delegation below.
+Use the [development workflow](../../docs/development-verification.md) for
+proof, reuse and authority decisions.
 
 ## Scope and changes
 

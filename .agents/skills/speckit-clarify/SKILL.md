@@ -15,6 +15,10 @@ metadata:
 $ARGUMENTS
 ```
 
+For an ordinary fix under `.specify/README.md`, resolve material questions
+using the existing contract and PR context. Return before feature selection
+unless the requested clarification concerns a Spec Kit artifact.
+
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
 and current coordination remain authoritative. Use the selected feature directory

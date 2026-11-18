@@ -71,7 +71,5 @@
         (when-not (and source (not (:checked source)))
           (rt/fail! "Selection must name a current open task" {:task (:task increment)}))
         (when (contains? known (:key increment))
-          (rt/fail! "A previous increment cannot be selected again" {:key (:key increment)}))
-        (when-not (some #{(:path source)} (:paths increment))
-          (rt/fail! "Increment must own its source task file to record scoped evidence" {:task (:task increment)}))))
+          (rt/fail! "A previous increment cannot be selected again" {:key (:key increment)}))))
     selected))

@@ -8,15 +8,12 @@ description: Execute authorized tasks with exact evidence
 $ARGUMENTS
 ```
 
-Before selecting a feature directory, classify the request with
-`.specify/semantic-names.md`. For private rename-only changes, return to the
-ordinary branch/PR workflow there and stop: record the old/new map, complete
-reference search, focused owner checks and required manifest/digest updates;
-create no feature directory or Spec Kit artifact. Otherwise continue only with
-this command's applicable bounded workflow. Public/serialized identity,
-protocol/schema/diagnostic IDs, ownership, semantics and new evidence are
-explicitly not private-only; no substantive edit implicitly requires all four
-artifacts.
+Before selecting a feature directory, apply the ordinary fix workflow in
+`.specify/README.md` and the private rename guidance in `.specify/semantic-names.md`.
+If the request is a routine fix and neither the user nor the owning contract
+calls for Spec Kit artifacts, use the diff and focused regression checks through
+normal PR review and CI, then return before feature selection. Otherwise,
+continue with the bounded Spec Kit workflow below.
 
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
@@ -27,10 +24,11 @@ selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
 
-Read the selected `spec.md`, `plan.md`, `tasks.md` and evidence record. Execute
-only authorized, owned tasks; reuse existing implementation and receipts when
-valid under the canonical development workflow. Run appropriate checks, record
-exact commands, revision, result and artifacts, and mark only evidenced tasks.
+Read the selected `spec.md`, `plan.md`, `tasks.md` and any applicable evidence.
+Execute authorized, owned tasks and reuse valid implementation and evidence.
+Run appropriate checks, report commands and results on the PR, and mark only
+evidenced tasks. Write separate evidence only where required by the owning
+contract or governed admission.
 Continue independent tasks if one is blocked; report the precise blocked action,
 reason, completed work and pending/denied/uncertain status. Do not treat unfinished
 checklist items as a new permission ceremony. Keep the draft current. Report the

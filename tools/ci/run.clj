@@ -34,14 +34,26 @@
 (def macro-pipeline-cohort-regex
   (str "^(?!.*(?:" (str/join "|" (map #(java.util.regex.Pattern/quote %) macro-receipt-test-vars)) ")$).+"))
 
-(def public-js-receipt-path
-  "docs/compiler-public-js-cli-receipt.edn")
-
 (def c7-source-path
   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (def b6-source-path
   "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity")
+
+(def ^:private public-js-smoke-paths
+  #{"bin/gravity"
+    "bootstrap/clojure/src/gravity/cli/launcher.clj"
+    "bootstrap/clojure/src/gravity/cli/entrypoint.clj"
+    "bootstrap/clojure/src/gravity/cli/dispatch.clj"
+    "bootstrap/clojure/src/gravity/cli/compile_request.clj"
+    "bootstrap/clojure/src/gravity/cli/compile_command.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00916-p18-t04-parse-compile-request.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00927-p18-t04-compile-js-ts-target-file.clj"
+    "bootstrap/clojure/src/gravity/compiler/application.clj"
+    "bootstrap/clojure/src/gravity/backend/js_checked_mir.clj"
+    "bootstrap/clojure/test/gravity/compiler/public_js_acceptance.clj"
+    "bootstrap/clojure/test/gravity/compiler/public_js_smoke_test.clj"
+    "examples/checked-js/acceptance.gravity"})
 
 (def leaf-stage-consumer-paths
   "Exact paths whose consumer runs in checked-core-runtime and is outside the leaf catalog."
@@ -387,13 +399,6 @@
          "M" (= "100644" old-mode)
          false)))
 
-(defn- public-js-receipt-only? [changes]
-  (let [changes (vec changes)]
-    (and (some #(= public-js-receipt-path (:path %)) changes)
-         (every? #(or (= public-js-receipt-path (:path %))
-                      (docs-only-record? %))
-                 changes))))
-
 (defn prefix-path? [path prefix]
   (and (string? path)
        (or (= path prefix)
@@ -428,6 +433,12 @@
   (boolean (or (nil? selection)
                (= :full (:kind selection))
                (b6-source-change? selection))))
+
+(defn- public-js-smoke-required? [selection]
+  (let [paths (selection-paths selection)]
+    (or (nil? selection)
+        (and (= :full (:kind selection)) (empty? paths))
+        (some public-js-smoke-paths paths))))
 
 ;; The historical bootstrap-input check consumes an immutable source snapshot.
 ;; Ordinary stage source edits cannot affect that snapshot, but the current
@@ -562,13 +573,6 @@
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
 
-      (public-js-receipt-only? changes)
-      {:kind :selected
-       :reason :public-js-receipt-only
-       :paths paths
-       :stages []
-       :modes always-pr-modes}
-
       unknown-path?
       {:kind :full :reason :unknown-or-cross-stage-path :paths paths}
 
@@ -622,17 +626,14 @@
 (defn selection-output-lines [selection]
   (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
         seedless-tests-only? (= :seedless-tests-only (:reason selection))
-        public-js-receipt-only? (= :public-js-receipt-only (:reason selection))
         modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (or (= :docs-only (:kind selection)) lint-tooling-only?
-                      public-js-receipt-only? seedless-tests-only?)
+                  (or (= :docs-only (:kind selection)) lint-tooling-only? seedless-tests-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
                   (and (not= :docs-only (:kind selection))
                        (not lint-tooling-only?)
-                       (not public-js-receipt-only?)
                        (not seedless-tests-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
@@ -997,9 +998,6 @@
                  (seq paths)
                  (every? string? paths)
                  (or (= :lint-tooling-only (:reason selection))
-                     (and (= :public-js-receipt-only (:reason selection))
-                          (every? #(or (= public-js-receipt-path %)
-                                       (docs-only-path? %)) paths))
                      (every? #(some? (stage-owner %)) paths))
                  (or (not= :lint-tooling-only (:reason selection))
                      (every? #(contains? static-control-selector-paths %) paths)))
@@ -1060,11 +1058,7 @@
                            (command "256m" "-M" "tools/ci/snapshot_test.clj")]])
                        (when (seq paths)
                          [["changed-clojure-lint" 120
-                           (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])
-                       (when (some #{public-js-receipt-path} paths)
-                         [["public-js-cli-receipt-shape" 60
-                           (command "256m" "-M" "tools/ci/run_test.clj" "--exact"
-                                    "ci.run-test/public-js-cli-receipt-shape-control")]])))
+                           (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
     "public-release" [(public-conformance-command)]
     "bootstrap"
@@ -1170,8 +1164,14 @@
                         (command "2g" "-M:dev-test"
                                  "--namespace" "gravity.backend.js-checked-mir-test"
                                  "--exact" "scalar-module-target-execution"
+                                 "--exact" "checked-add-requires-original-guard"
                                  "--progress")]))]
       (cond-> base
+        (public-js-smoke-required? selection)
+        (conj ["public-js-compiler-smoke" 900
+               (command "1g" "-M:dev-test"
+                        "--namespace" "gravity.compiler.public-js-smoke-test"
+                        "--exact" "public-js-compiler-smoke")])
         (c7-source-change? selection)
         (conj ["c7-gravity-source-consumers" 1800
                (apply command "2g" "-M:dev-test"

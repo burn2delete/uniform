@@ -20,7 +20,9 @@ Name exact affected paths, unchanged boundaries and excluded claims.
 ## Evidence and outcome ownership
 
 Name implementation/evidence owners, reviewer and integration coordinator.
-Link evidence.md; distinguish local, reported, stale, unrun and blocked results.
+Link PR review and checks. Link separate evidence when the owning contract or
+governed admission requires it. Distinguish local, reported, stale, unrun and
+blocked results.
 
 ## Unresolved items
 

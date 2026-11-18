@@ -16,12 +16,12 @@
 (def instructions
   (str flow/instructions
        " Your objective is current Spec Kit implementation and full project completion. "
-       "Read .specify/README.md, applicable spec/plan/tasks/evidence and canonical contracts. "
+       "Read .specify/README.md, the applicable feature artifacts, and canonical contracts. "
        "The user delegates the full implementation/review/merge loop to this controller, including integration formerly assigned to Deus. "
        "Existing denied/restricted operations remain denied. Do not infer a grant from this delegation. "
        "Use small independently useful increments of broad tasks. Retain task identity and evidence; "
        "leave the parent open until all its acceptance criteria and independent acceptance exist. "
-       "Record actual checks and scoped results in the owning feature artifacts. Historical migration checklists are history. "
+       "Report actual checks and scoped results for the PR. Update the owning task only when its outcome changes. Keep historical migration checklists as history. "
        "Do not invent task or cost allowances or wait for all upstream components before useful development. "
        "Distinguish start, composition, acceptance and release dependencies; retain genuine cycles. "
        "Missing planning may be prepared within an existing task, with explicit source-backed behavior and evidence. "))
@@ -318,13 +318,13 @@
         output-schema (selection-output-schema catalog)
         job (flow/next-job! ctx :select)
         prompt (str "Select independently useful implementation increments from the current task catalog. "
-                      "Read owning spec/plan/task/evidence and actual source; the index is navigation. "
+                      "Read the applicable feature artifacts and actual source. Use the index for navigation. "
                       "Prioritize configured task keys, then Project priority, actual prerequisites and work that unblocks completion. "
                       "Respect Project Control Paused/Blocked on both campaign, source tasks and increments. "
                       "Do not duplicate active, held, restricted or already merged increments. "
                       "Open PRs are independent candidates even when their writers released file claims for review/CI. Inspect their scope and avoid duplicating their implementation; do not adopt, close, merge or claim their acceptance. "
                       "Use a fresh stable key for each distinct increment, never just rename an unsuccessful one. "
-                      "Include the source tasks.md in owned paths and name concrete accepted/rejected evidence. "
+                      "Name concrete accepted/rejected checks. Include the source task file in owned paths only when the increment needs to update its task outcome. "
                       "Dependencies reference real increment keys only; inspect artifact-level task dependencies rather than assuming the coarse graph is acyclic. "
                       "If none are actionable, give blockers; never infer completion from an empty selection.\nBase: " base
                       "\nTree: " tree

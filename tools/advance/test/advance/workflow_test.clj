@@ -700,9 +700,9 @@
       (is (= 2 (count @reads)))
       (is (empty? (:tasks @(:state ctx)))))))
 (def increment {:key "preserve-value" :task source-key :title "Implement the value increment"
-                :evidence "Current value has duplicate representation" :proposal "Preserve one value and record scoped progress"
+                :evidence "Current value has duplicate representation" :proposal "Preserve one value"
                 :preserve "The value remains one; the broader parent remains open"
-                :paths ["work.edn" source-path] :dependencies []})
+                :paths ["work.edn"] :dependencies []})
 
 (defn run-loop! [local-failure? & [composition-failure?]]
   (let [ctx (fixture/context)
@@ -794,7 +794,6 @@
                       (str/starts-with? job "implement-")
                       (do (swap! implementations inc)
                           (spit (io/file cwd "work.edn") (str "{:value 1 :revision " @implementations "}\n"))
-                          (spit (io/file cwd source-path) (str "\nScoped increment " @implementations " implemented; parent acceptance remains open.\n") :append true)
                           {:outcome "ready" :summary "Actual scoped implementation" :checks []})
                       :else
                       (do (is (:isDraft @pr) "PR remains draft during independent review")
@@ -814,6 +813,7 @@
     (is (= :paused (:status state)))
     (is (= 2 selections) "Continues selecting after the verified increment")
     (is (not (get-in state [:source-tasks source-key :checked])))
+    (is (= "work.edn" (rt/git ctx (:worktree t) "diff" "--name-only" (:base t) (:candidate t))))
     (is (= 1 (count closed)) "Only the increment closes")
     (is (empty? (coordination/claims ctx)))
     (is (= (:candidate t) (get-in t [:checks :candidate]) (get-in t [:review :candidate])))))

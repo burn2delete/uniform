@@ -32,11 +32,11 @@ use the explicit CLI route for focused execution.
 
 | Check | PR | Main/manual/weekly | Evidence and limits |
 | --- | --- | --- | --- |
-| static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. A public checked-JavaScript CLI receipt change also parses the EDN and checks its recorded schema and evidence shape. Legacy format adoption remains separate. |
+| static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
 | macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
-| checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions plus the exact checked JavaScript B6 owner execution for full/unknown selections and B6-source changes. The job installs Node 20 when that owner runs and has a 70-minute ceiling for selected B6 and C7 consumer checks. |
+| checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions. The Node 20 checks cover B6 scalar execution, checked-add guard identity and the public CLI smoke test as described below. The job has an 85-minute ceiling. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
 | darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
@@ -63,13 +63,16 @@ checked-Core stage with the current-source SH08 consumer tests. The B6
 JavaScript backend source selects the checked-Core stage with its Gravity
 source check and the checked JavaScript owner execution. The owner test also
 runs for full, unknown, and push CI selections, but is omitted for unrelated
-stage-selected changes. Both exact source paths are the only stage-owned exceptions
-to full leaf fallback; other paths outside reviewed leaf closures retain the
-full catalog even when a compiler stage owns them. A change limited to
-`docs/compiler-public-js-cli-receipt.edn`, optionally with Markdown, selects
-static changed-EDN lint and receipt-shape validation plus contracts; it does
-not select compiler or leaf jobs. The stage table is deliberately allowlisted, so an
-unknown non-documentation path, a contract/specification change, a dependency
+stage-selected changes. Only the C7 and B6 sources have a stage-owned
+exception to full leaf fallback. Other paths outside reviewed leaf closures
+retain the full catalog even when a compiler stage owns them.
+
+Edits to the public JavaScript launcher, dispatch,
+checked producer adapter, smoke fixture or smoke tests also run one public
+compile followed by a Node 20 import and export calls. This smoke check runs
+on main, on scheduled and manual CI, and when PR path discovery fails.
+Adding or editing an unowned EDN file under `docs/` runs the full matrix and
+changed-file lint. An unknown non-documentation path, a contract/specification change, a dependency
 or workflow change, a tooling change, or any delete/rename/mode/type change
 falls back to the full semantic matrix. If changed-path discovery is missing
 or malformed, the selector also falls back to the full matrix, while `static`

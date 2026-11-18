@@ -1,6 +1,6 @@
 # Tasks: [change]
 
-Spec: [spec.md] | Plan: [plan.md] | Evidence: [evidence.md]
+Spec: [spec.md] | Plan: [plan.md]
 Owner: [exact owner] | Input revision: [commit/tree]
 
 ## Declared increment
