@@ -273,6 +273,35 @@
              'sh18-verify-native-c-emission
              [gravity-request gravity-emission]))))))
 
+(deftest native-c-emission-preserves-complete-origin-chains
+  (let [fixture (fixture-request accepted-gravity-plan 'sh18-accepted-native-request)
+        origin (get-in fixture [:program :origin-chain 0])
+        chain (vec (repeat 9 origin))
+        request (-> fixture
+                    (assoc-in [:program :origin-chain] chain)
+                    (update :source-map
+                            (fn [entries]
+                              (mapv #(assoc % :origin-chain chain) entries))))
+        emission (emit request)]
+    (is (= :accepted (:status emission)))
+    (is (= :hosted-c11 (get-in emission [:manifest :dialect])))
+    (is (str/includes? (:source emission) "int main(int argc, char **argv)"))
+    (is (= [chain chain chain]
+           (mapv :origin-chain (get-in emission [:manifest :source-map]))))
+    (is (= :passed (:status (invoke-engine 'sh18-verify-native-c-emission
+                                           [request emission]))))
+    (doseq [[path rule reason]
+            [[[:source-map 1 :origin-chain 8 :source-id]
+              "B1-METADATA" :incomplete-source-map]
+             [[:program :origin-chain 8 :source-id]
+              "B1-UNSUPPORTED" :unsupported-program-shape]]]
+      (testing (str path)
+        (let [result (emit (assoc-in request path :gravity.example/other))
+              diagnostic (first (:diagnostics result))]
+          (is (= :rejected (:status result)))
+          (is (= rule (:rule diagnostic)))
+          (is (= reason (:reason diagnostic))))))))
+
 (deftest sh18-native-c-emitter-rejects-ineligible-inputs
   (doseq [[function [rule reason]] rejected-cases]
     (testing (str function)
