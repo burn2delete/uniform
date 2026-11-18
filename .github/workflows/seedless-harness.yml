@@ -6,6 +6,7 @@ on:
       - tools/seedless/**
       - tools/gravity/compiler_probe.clj
       - tools/simplify/**
+      - tools/ci/maven_dependencies.clj
       - .github/workflows/seedless-harness.yml
       - .github/actions/clojure/**
   push:
@@ -14,6 +15,7 @@ on:
       - tools/seedless/**
       - tools/gravity/compiler_probe.clj
       - tools/simplify/**
+      - tools/ci/maven_dependencies.clj
       - .github/workflows/seedless-harness.yml
       - .github/actions/clojure/**
   workflow_dispatch:
@@ -35,6 +37,13 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        with:
+          dependency-directory: tools/seedless
+          dependency-alias: test
+          dependency-cache-files: |
+            tools/seedless/deps.edn
+            tools/simplify/deps.edn
+            .github/actions/clojure/action.yml
       - name: Test without inference or GitHub writes
         working-directory: tools/seedless
         run: clojure -Srepro -M:test
