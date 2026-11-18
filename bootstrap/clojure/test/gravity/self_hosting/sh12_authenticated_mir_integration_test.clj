@@ -414,6 +414,60 @@
                (str "/checkout-a/sh12-input"
                     extension "/" (name outcome))))))))
 
+(deftest sh12-outcome-products-validate-each-safe1-classification
+  (let [test-id
+        (fn [value]
+          (identity-id :gravity/sh12-outcome-products-test-id value))
+        links
+        {:profile :meta
+         :target :jvm
+         :core-node-id (test-id :core-node)
+         :source-span {:source-id (test-id :source)
+                       :start-byte 0
+                       :end-byte 1}
+         :origin-chain [(test-id :origin)]
+         :type-fact-id (test-id :type-fact)
+         :effect-fact-id (test-id :effect-fact)
+         :capability-proof-id (test-id :capability-proof)
+         :ownership-fact-id (test-id :ownership-fact)
+         :runtime-support-id (test-id :runtime-support)
+         :runtime-provider-id (test-id :runtime-provider)
+         :runtime-check-id (test-id :runtime-check)
+         :unsafe-audit-id (test-id :unsafe-audit)
+         :unsafe-review-id (test-id :unsafe-review)}]
+    (doseq [[operation expected]
+            [[:proven-overflow :proven-safe]
+             [:runtime-division :runtime-checked]
+             [:unsafe-overflow :unsafe-island]]]
+      (testing (name expected)
+        (let [request
+              (call-private
+               'gravity.self-hosting.sh11-authenticated-safety-integration-test
+               'safety-operation operation links)
+              products
+              (call-private
+               'gravity.self-hosting.sh11-authenticated-safety-integration-test
+               'c10-products request)
+              safety-result (:safety-result products)
+              selected (:outcome safety-result)
+              accepted
+              (invoke
+               bridge-plan 'sh12-outcome-products-valid?
+               [selected safety-result])
+              altered
+              (assoc-in safety-result
+                        [:outcomes 0 :specialized-safe-rule]
+                        :SAFE1-NO-OUTCOME)
+              rejected
+              (invoke
+               bridge-plan 'sh12-outcome-products-valid?
+               [selected altered])]
+          (is (= :passed
+                 (:status (:safety-verification products))))
+          (is (= expected selected))
+          (is (true? accepted))
+          (is (false? rejected)))))))
+
 (deftest sh12-rejects-self-consistent-malformed-outcome-products
   (let [proven-products
         (authentic-product ".gravity" :proven-safe)
