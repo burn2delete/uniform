@@ -48,7 +48,6 @@
    :maximum-carrier-depth 64
    :maximum-carrier-width 128
    :maximum-scalar-units 65536
-   :maximum-origin-entries 8
    :maximum-path-characters 4096
    :supported-operations
    [:argv-parse-i64
@@ -278,22 +277,18 @@
     false))
 
 (defn sh18-origin-chain-valid? [origins source-id]
-  (let [maximum
-        (get (sh18-native-c-policy) :maximum-origin-entries)]
-    (if (vector? origins)
-      (if (> (count origins) 0)
-        (if (<= (count origins) maximum)
-          (loop [remaining origins]
-            (if (= (count remaining) 0)
-              true
-              (if (sh18-origin-valid? (first remaining))
-                (if (= source-id (get (first remaining) :source-id))
-                  (recur (rest remaining))
-                  false)
-                false)))
-          false)
-        false)
-      false)))
+  (if (vector? origins)
+    (if (> (count origins) 0)
+      (loop [remaining origins]
+        (if (= (count remaining) 0)
+          true
+          (if (sh18-origin-valid? (first remaining))
+            (if (= source-id (get (first remaining) :source-id))
+              (recur (rest remaining))
+              false)
+            false)))
+      false)
+    false))
 
 (defn sh18-program-valid? [request]
   (let [program (get request :program)
