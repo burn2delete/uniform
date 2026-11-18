@@ -50,7 +50,7 @@
           artifacts (:artifacts (gh/api ctx (gh/repo-path ctx (str "actions/runs/" (:run ci) "/artifacts?per_page=100"))))
           checkout (gh/api ctx (gh/repo-path ctx (str "git/commits/" (:checkout ci))))
           parents (str/split (rt/git ctx (:worktree t) "show" "-s" "--format=%P" (:candidate t)) #" ")
-          scopes (map #(select-keys % [:id :name :conclusion]) (:jobs jobs))
+          scopes (map #(select-keys % [:id :name :conclusion :run_attempt]) (:jobs jobs))
           old-delta (source-delta ctx (:worktree t) (:base original) (:candidate original))
           new-delta (source-delta ctx (:worktree t) (:base t) (:candidate t))]
       (recovery/require!
@@ -63,12 +63,12 @@
             (= :passed (:state workflows)) (= "success" (:conclusion run)) (= (:attempt ci) (:run_attempt run))
             (= ".github/workflows/ci.yml" (:path run) (:workflow ci)) (= "pull_request" (:event run))
             (= (:total_count jobs) (count scopes)) (= (set scopes) (set (:jobs ci)))
-            (every? (fn [a] (some #(= [(:job a) (:name a) "success"] ((juxt :id :name :conclusion) %)) scopes))
+            (every? (fn [a] (some #(= [(:job a) (:name a) "success" (:attempt a)] ((juxt :id :name :conclusion :run_attempt) %)) scopes))
                     (:required-artifacts ci))
-            (every? (fn [{:keys [name artifact sha256]}]
-                      (and (re-matches #"[a-z0-9-]+" name)
+            (every? (fn [{:keys [name artifact sha256 attempt]}]
+                      (and (pos-int? attempt) (<= attempt (:attempt ci)) (re-matches #"[a-z0-9-]+" name)
                            (some #(and (= artifact (:id %)) (= (str "sha256:" sha256) (:digest %))
-                                       (= (str "ci-" name "-" (:checkout ci) "-" (:attempt ci)) (:name %))
+                                       (= (str "ci-" name "-" (:checkout ci) "-" attempt) (:name %))
                                        (= (:candidate t) (get-in % [:workflow_run :head_sha]))
                                        (= (:run ci) (get-in % [:workflow_run :id]))) artifacts)
                            (= sha256 (recovery/file-digest (io/file (.getParentFile (io/file ci-file)) (str name ".zip"))))))

@@ -31,9 +31,9 @@
         auth {:kind :single-pr-composition :repo "owner/repo" :pr 7 :from "old" :native native
               :required-hosted ["contracts"] :hosted :normal-pr-ci :require-all-selected-jobs-and-fresh-independent-review true
               :active-issues {:campaign 1 :parent 2 :increment 3}}
-        job {:name "contracts" :id 99 :conclusion "success"}
-        ci (merge tuple {:result :passed :attempt 1 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
-                         :required-artifacts [{:name "contracts" :job 99 :artifact 50 :sha256 (rt/digest "fixture artifact")}] :jobs [job]})
+        job {:name "contracts" :id 99 :conclusion "success" :run_attempt 1}
+        ci (merge tuple {:result :passed :attempt 2 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
+                         :required-artifacts [{:name "contracts" :job 99 :attempt 1 :artifact 50 :sha256 (rt/digest "fixture artifact")}] :jobs [job]})
         digest (rt/digest (pr-str auth)) key "candidate-task" calls (atom [])
         af (io/file (:state-dir ctx) "authority.edn") cf (io/file (:state-dir ctx) "ci.edn")
         t (merge tuple {:key key :task "parent" :issue {:number 3} :pr {:number 7} :branch "branch" :status :attention
@@ -53,7 +53,7 @@
                                                                                         :name "ci-contracts-checkout-1" :workflow_run {:head_sha "head" :id 42}}]}
                                            (str/includes? path "/git/commits/") {:sha "checkout" :parents [{:sha "base"} {:sha "head"}] :tree {:sha "tree"}}
                                            :else {:state "open" :draft true :base {:ref "main"} :head {:ref "branch" :sha "head" :repo {:full_name "owner/repo"}}}))
-                  gh/head-workflow-state (fn [& _] {:state :passed :runs [{:id 42 :head_sha "head" :run_attempt 1
+                  gh/head-workflow-state (fn [& _] {:state :passed :runs [{:id 42 :head_sha "head" :run_attempt 2
                                                                          :path ".github/workflows/ci.yml" :event "pull_request" :conclusion "success"}]})
                   flow/review! (fn [c task]
                                  (is (nil? (:pr-integration c)))
