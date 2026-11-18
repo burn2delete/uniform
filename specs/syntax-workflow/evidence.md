@@ -179,6 +179,30 @@ a bare leading source, omit just the producer, or omit just the span. Each
 regenerates serialization and expects a failed origin check and `C3-ORIGIN`
 with `:missing-fields [:source-and-generated-origins?]`.
 
-Controller results for these fixtures and independent acceptance are pending.
+The supplied controller receipt for base
+`378b98048d93d2eccef432ec57cc68f8644ea98e`, candidate
+`072dec774bd3040f342a41fb3111eeedbd168ba3`, tree
+`b5db7af7f4616c6b367fcbd08314c1af33478a8f` reports that all three checks
+passed, including the leading-source fixtures. Review then changed only the
+positive fixture's `:input-syntax-ids` to `["sha256:missing"]` and observed
+`:generated-origins-valid? true` on that candidate.
+
+### Source inputs in a generated form's origin chain
+
+The hosted verifier checks both input spellings on each source entry in a
+generated form's chain. A source entry has zero inputs, as in the
+[hosted constructor](../../bootstrap/clojure/src/gravity/syntax_origin.clj)
+and the [Gravity origin predicate](../../bootstrap/gravity/src/gravity/bootstrap/syntax.gravity).
+
+`:leading-source-input-syntax-ids` reproduces the review case.
+`:leading-source-inputs` adds the same missing ID under `:inputs` alongside
+the empty `:input-syntax-ids`. `:later-source-with-prior-input` puts a source
+entry after a generated entry and gives it an otherwise resolvable ID.
+Each fixture regenerates serialization and expects a current, round-tripping
+payload, a `:failed` report with `:generated-origins-valid? false`, and
+`C3-ORIGIN` with `:missing-fields [:source-and-generated-origins?]`.
+The empty-vector `:source-first` case still expects `:passed` and `:complete`.
+
+Controller results for this repair and independent acceptance are pending.
 The proposed checks are the two namespace checks above and the report command
 with `:abbreviations (t/hosted-abbreviation-reports)` included in its map.

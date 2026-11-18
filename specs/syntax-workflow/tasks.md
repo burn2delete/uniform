@@ -104,9 +104,12 @@ links reached `C3-ORIGIN` with current serialization. Review requested a
 repair for hosted Reader abbreviations. All three controller checks passed
 on that repair, candidate `9938a8f8f0fae2108d32f74124b9136b199705ac`.
 Review found that a bare leading source origin on a generated form passed
-the hosted origin check. The current repair restores the leading producer
-and span checks and adds mixed-chain fixtures. Controller results for this
-change and independent acceptance remain pending. Syntax/4 remains open.
+the hosted origin check. All three controller checks passed on the leading
+producer and span repair, candidate `072dec774bd3040f342a41fb3111eeedbd168ba3`.
+Review then found that a source entry could carry an unresolved input. The
+current repair checks both input spellings on every source entry in a generated
+form's chain. Its fixture results and independent acceptance are pending.
+Syntax/4 remains open.
 [Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
 <!-- syntax-source-verification:end -->
 

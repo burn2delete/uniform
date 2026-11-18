@@ -203,6 +203,12 @@
         source-first (fn [entry] (assoc-in syntax-stream [1 :origin] [entry origin]))
         streams {:prior syntax-stream
                  :source-first (source-first source-origin)
+                 :leading-source-input-syntax-ids
+                 (source-first (assoc source-origin :input-syntax-ids ["sha256:missing"]))
+                 :leading-source-inputs
+                 (source-first (assoc source-origin :inputs ["sha256:missing"]))
+                 :later-source-with-prior-input
+                 (with-origin (assoc source-origin :inputs [(:syntax/id source-syntax)]))
                  :bare-leading-source (source-first {:kind :source})
                  :leading-source-without-producer (source-first (dissoc source-origin :producer))
                  :leading-source-without-span (source-first (dissoc source-origin :span))

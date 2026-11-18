@@ -82,6 +82,10 @@
   (and (:producer origin)
        (or (:span origin) (:generated-span origin))))
 
+(defn- source-origin-inputs-empty? [origin]
+  (and (= [] (:input-syntax-ids origin []))
+       (= [] (:inputs origin []))))
+
 (defn- generated-origin-valid? [prior-ids hosted-source? c2-artifact origin]
   (and (origin-has-producer-and-span? origin)
        (let [input-fields (select-keys origin [:input-syntax-ids :inputs])
@@ -105,16 +109,19 @@
       (let [{:keys [form origin] syntax-id :syntax/id} (first remaining)
             generated-form? (= :generated-form (:kind form))
             origins (when (sequential? origin) origin)
-            generated (if generated-form?
-                        (remove #(= :source (:kind %)) origins)
-                        (filter #(= :generated (:kind %)) origins))
+            entries (if generated-form?
+                      origins
+                      (filter #(= :generated (:kind %)) origins))
             available (disj prior-ids syntax-id)
             hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
         (if (and (or (not generated-form?)
                      (and (origin-has-producer-and-span? (first origins))
-                          (seq generated)))
-                 (every? #(generated-origin-valid? available hosted-source? c2-artifact %)
-                         generated))
+                          (some #(not= :source (:kind %)) origins)))
+                 (every? (fn [entry]
+                           (if (= :source (:kind entry))
+                             (source-origin-inputs-empty? entry)
+                             (generated-origin-valid? available hosted-source? c2-artifact entry)))
+                         entries))
           (recur (next remaining) (conj prior-ids syntax-id))
           false))
       true)))
