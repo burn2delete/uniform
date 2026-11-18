@@ -159,6 +159,73 @@
          #(= "/checkout-a/release" %)
          (tree-seq coll? seq (:provenance left))))))
 
+(defn- extend-lineage [prefix node-count parent-ids]
+  (reduce
+   (fn [nodes ordinal]
+     (conj nodes
+           (assoc (second prefix)
+                  :artifact-id (str "artifact:rebuild-" ordinal)
+                  :compiler-artifact-id (:artifact-id (peek nodes))
+                  :rebuild-parent-ids (parent-ids nodes)
+                  :topological-ordinal ordinal
+                  :content-hash (str "sha256:rebuild-" ordinal)
+                  :actual-artifact-path (str "/build/rebuild-" ordinal))))
+   prefix
+   (range (count prefix) node-count)))
+
+(deftest lineage-accepts-a-65-node-compiler-chain
+  (let [prefix (subvec (:lineage (accepted-request)) 0 2)
+        chain (extend-lineage prefix 65 (fn [nodes]
+                                          [(:artifact-id (peek nodes))]))]
+    (is (true? (invoke engine-plan 'sh28-lineage-valid?
+                       [chain (:artifact-id (peek chain))])))))
+
+(defn- shared-ancestry-request [base]
+  (let [prefix (pop (:lineage base))
+        ancestors (extend-lineage prefix 46 #(mapv :artifact-id %))
+        root (-> (peek (:lineage base))
+                 (assoc :topological-ordinal (count ancestors))
+                 (update :rebuild-parent-ids conj (:artifact-id (peek ancestors))))
+        lineage (conj ancestors root)
+        new-ids (mapv :artifact-id (subvec ancestors (count prefix)))
+        compiler-revocation (first (:revocations base))
+        added (into (mapv :artifact-id lineage)
+                    (concat (map :artifact-id (:runtime-artifacts base))
+                            (map :build-id (:diverse-builds base))))]
+    (-> base
+        (assoc :lineage lineage)
+        (update :revocations into
+                (map #(assoc compiler-revocation :subject-id %) new-ids))
+        (assoc-in [:tcb-delta :added-components] added)
+        (assoc-in [:tcb-delta :candidate-components]
+                  (into added (map :toolchain-id (:toolchains base)))))))
+
+(deftest trust-evidence-traverses-shared-compiler-ancestry
+  (let [request (shared-ancestry-request (accepted-request))
+        lineage (:lineage request)
+        parents (mapv :rebuild-parent-ids lineage)
+        root-index (dec (count lineage))
+        result (build request)]
+    (is (> (apply max (map count parents)) 8))
+    (is (> (reduce + (map count parents)) 1024))
+    (is (= :accepted (:status result)))
+    (is (= parents (mapv :rebuild-parent-ids
+                         (get-in result [:identity-input :lineage]))))
+    (is (= :passed (:status (verify request result))))
+    (doseq [[label candidate]
+            [["forward parent alongside the actual compiler"
+              (assoc-in request [:lineage (dec root-index) :rebuild-parent-ids 0]
+                        (:root-artifact-id request))]
+             ["shared ancestry disconnected from the root"
+              (update-in request [:lineage root-index :rebuild-parent-ids] pop)]]]
+      (testing label
+        (let [rejected (build candidate)
+              diagnostic (first (:diagnostics rejected))]
+          (is (= :rejected (:status rejected)))
+          (is (= "BOOT8002" (:rule diagnostic)))
+          (is (= :lineage-gap-cycle-or-unreachable-node
+                 (get-in diagnostic [:facts :reason]))))))))
+
 (deftest sh28-rejects-lineage-gaps-cycles-and-unreachable-nodes
   (let [base (accepted-request)
         cycle
