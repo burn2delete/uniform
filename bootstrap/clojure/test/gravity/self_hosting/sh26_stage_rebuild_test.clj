@@ -78,23 +78,6 @@
      :output-count (count value)
      :evidence-ids [evidence-id]}))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- sh26-envelope-descriptor
   [request result verification projection ids]
   (let [fact-names
@@ -147,8 +130,7 @@
            context-preimage)}]
         source-text (slurp (path envelope-source))
         plan @envelope-plan
-        source-hash
-        (str "sha256:" (bootstrap/sha256-hex source-text))
+        source-hash (get-in plan [:source :sha256])
         plan-hash
         (bootstrap/p15-s23-c11-mir-digest
          (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
@@ -156,7 +138,7 @@
         functions-hash
         (bootstrap/p15-s23-c11-mir-digest (:functions plan))]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh26-stage-rebuild
      :artifact-kind :gravity/sh26-sh25-complete-context
      :source-revision
@@ -262,8 +244,7 @@
      {:source-path
       (path (str fixture-root "/stage_rebuild_engine.gravity"))
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticate-sh25-context
   [request result verification projection ids]
@@ -284,12 +265,18 @@
         (invoke envelope-plan
                 'authenticated-envelope-build-template
                 [descriptor])
+        _ (when-not (= :accepted (:status raw))
+            (throw (ex-info "SH-02 rejected the SH-26 ingress descriptor"
+                            {:diagnostics (:diagnostics raw)})))
         replay
         (invoke envelope-plan
                 'authenticated-envelope-verify-template
                 [descriptor
                  (:artifact-template raw)
                  (:digest-requests raw)])
+        _ (when-not (= :template-replay-passed (:status replay))
+            (throw (ex-info "SH-02 rejected SH-26 ingress replay"
+                            {:diagnostics (:diagnostics replay)})))
         seal
         (ns-resolve
          'gravity.self-hosting.sh02-authenticated-envelope-test
@@ -608,10 +595,10 @@
     (is (= :sh-envelope (:owner revision)))
     (is (= "gravity/compiler/authenticated-envelope"
            (:logical-source-path revision)))
-    (is (= "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71"
+    (is (= "sha256:7ef0386733632569a81a3e709551e4c4d300ec43ff0f7f13b5fe7399df29c3b7"
            (:source-content-hash revision)))
-    (is (= 59495 (:source-byte-count revision)))
-    (is (= 72 (count (:function-shapes revision))))
+    (is (= 59822 (:source-byte-count revision)))
+    (is (= 70 (count (:function-shapes revision))))
     (is (= revision (:source-revision pin)))
     (is (= 'authenticated-envelope-verify-template
            (:verifier-function pin)))
@@ -621,7 +608,7 @@
             [[:owner [:owner] :different-owner]
              [:source-hash [:source-content-hash]
               "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
-             [:byte-count [:source-byte-count] 59494]
+             [:byte-count [:source-byte-count] 59821]
              [:plan [:plan-semantic-hash]
               "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]
              [:functions [:functions-semantic-hash]
@@ -879,7 +866,8 @@
                           'sh26-stage-rebuild-request)
         gravity (build gravity-request)
         qst (build qst-request)
-        verification (verify gravity-request gravity)]
+        verification (verify gravity-request gravity)
+        authentication (get-in gravity-request [:sh25-ingress :authentication])]
     (is (= :accepted
            (get-in gravity-request
                    [:sh25-ingress :complete-result :status])))
@@ -913,9 +901,9 @@
                     :identity-subjects 4 :preimage
                     :complete-result-id])))
     (is (= :gravity/authenticated-envelope
-           (get-in gravity-request
-                   [:sh25-ingress :authentication :envelope
-                    :artifact])))
+           (get-in authentication [:envelope :artifact])))
+    (is (= 2 (get-in authentication [:descriptor :schema-version])
+             (get-in authentication [:envelope :schema-version])))
     (is (= :template-replay-passed
            (get-in gravity-request
                    [:sh25-ingress :authentication
@@ -958,6 +946,7 @@
         transition (:stage-transition result)
         manifest (:stage-manifest result)
         paths (get-in result [:provenance :component-sources])]
+    (is (= :accepted (:status result)))
     (is (= 2 (count lineage)))
     (is (= (get-in lineage [0 :compiler-id])
            (get-in lineage [1 :parent-compiler-id])))
@@ -1011,6 +1000,7 @@
     (is (= :accepted (:status result)))
     (is (= 17 (count (:prior-stage-lineage result))))
     (is (= lineage (:prior-stage-lineage result)))
+    (is (= lineage (get-in result [:identity-input :stage-lineage])))
     (is (= (:stage-output-id terminal)
            (get-in result [:stage-transition :input-stage-output-id])))
     (is (= :passed (:status (verify request result))))
