@@ -258,6 +258,61 @@
   [& args]
   (apply run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "1"} args))
 
+(defn- executable-from-path
+  [command]
+  (some (fn [directory]
+          (let [candidate (java.io.File. directory command)]
+            (when (and (.isFile candidate) (.canExecute candidate))
+              (.toPath candidate))))
+        (str/split (System/getenv "PATH")
+                   (re-pattern
+                    (java.util.regex.Pattern/quote
+                     java.io.File/pathSeparator)))))
+
+(defn- path-without-clojure
+  [root]
+  (let [directory (.resolve ^java.nio.file.Path root "no-clojure-path")]
+    (java.nio.file.Files/createDirectories
+     directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (doseq [command ["bash" "cat" "dirname" "grep"]]
+      (let [source (executable-from-path command)]
+        (when-not source
+          (throw (ex-info "Required wrapper test command is unavailable"
+                          {:command command})))
+        (java.nio.file.Files/createSymbolicLink
+         (.resolve directory command) source
+         (make-array java.nio.file.attribute.FileAttribute 0))))
+    (.toString directory)))
+
+(defn- copy-gravity-wrapper!
+  [root packaged?]
+  (let [root ^java.nio.file.Path root
+        bin-directory (.resolve root "bin")
+        help-directory (.resolve root "bootstrap/clojure/resources/gravity/cli")
+        wrapper (.resolve bin-directory "gravity")]
+    (java.nio.file.Files/createDirectories
+     bin-directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (java.nio.file.Files/createDirectories
+     help-directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (java.nio.file.Files/copy
+     (java.nio.file.Paths/get "bin/gravity" (make-array String 0)) wrapper
+     (make-array java.nio.file.CopyOption 0))
+    (.setExecutable (.toFile wrapper) true false)
+    (doseq [name ["help-source.txt" "help-archived-packaged-jvm.txt"]]
+      (java.nio.file.Files/copy
+       (java.nio.file.Paths/get
+        (str "bootstrap/clojure/resources/gravity/cli/" name)
+        (make-array String 0))
+       (.resolve help-directory name)
+       (make-array java.nio.file.CopyOption 0)))
+    (when packaged?
+      (let [jar (.resolve root "target/phase-18/jvm-cli/gravity-jvm-cli.jar")]
+        (java.nio.file.Files/createDirectories
+         (.getParent jar) (make-array java.nio.file.attribute.FileAttribute 0))
+        (java.nio.file.Files/write
+         jar (byte-array 0) (make-array java.nio.file.OpenOption 0))))
+    wrapper))
+
 (defn- run-thin-bin-in-directory
   [working-directory & args]
   (run-process-in-directory
@@ -22721,6 +22776,81 @@
     (is (str/includes? (:err rejected-result) "L2-BUILTIN-ARITY"))
     (is (= 1 (:exit seedless-claim)))
     (is (str/includes? (:err seedless-claim) "P18T01001"))))
+
+(deftest p18-shell-help-resources-preserve-wrapper-boundaries
+  (with-temp-directory
+    "gravity-shell-help-boundaries-"
+    (fn [root]
+      (let [root ^java.nio.file.Path root
+            no-clojure-path (path-without-clojure root)
+            source-wrapper (.getCanonicalPath (java.io.File. "bin/gravity"))
+            archived-root (.resolve root "archived-repository")
+            archived-wrapper (copy-gravity-wrapper! archived-root true)
+            seedless-root (.resolve root "seedless-repository")
+            seedless-wrapper (copy-gravity-wrapper! seedless-root false)
+            source-help (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
+            archived-help (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")
+            env-base {"PATH" no-clojure-path}
+            working-directory (.toString root)
+            source-result
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [source-wrapper "help"])
+            source-missing-clojure
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [source-wrapper "check" "missing.gravity"])
+            archived-result
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [archived-wrapper "help"])
+            archived-missing-clojure
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [archived-wrapper "check" "missing.gravity"])
+            proof (.resolve seedless-root
+                            "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn")
+            release (.resolve seedless-root
+                              "target/phase-18/release/gravity")
+            _ (java.nio.file.Files/createDirectories
+               (.getParent proof)
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            _ (java.nio.file.Files/createDirectories
+               (.getParent release)
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            _ (spit (.toFile proof)
+                    ":status :complete\n:full-language-compiler-self-hosted? true\n:clojure-seed-retired? true\n:clojure-seed-boundary? false\n")
+            _ (java.nio.file.Files/createSymbolicLink
+               release (executable-from-path "echo")
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            seedless-handoff
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [seedless-wrapper "help"])]
+        (is (zero? (:exit source-result)) source-result)
+        (is (= source-help (:out source-result)))
+        (is (empty? (:err source-result)))
+        (is (str/includes? source-help "--target js|js-ts"))
+        (is (= 1 (:exit source-missing-clojure)) source-missing-clojure)
+        (is (str/includes? (:err source-missing-clojure) "P18T01002"))
+        (is (zero? (:exit archived-result)) archived-result)
+        (is (= archived-help (:out archived-result)))
+        (is (str/includes? (:out archived-result) ":packaged-jvm-cli? true"))
+        (is (str/includes? (:out archived-result) "gravity.cli.Main\""))
+        (is (= 1 (:exit archived-missing-clojure)) archived-missing-clojure)
+        (is (str/includes? (:err archived-missing-clojure) "P18T02007"))
+        (is (zero? (:exit seedless-handoff)) seedless-handoff)
+        (is (= "help\n" (:out seedless-handoff)))))))
 
 (deftest p18-t02-source-inventory-discovery-is-deferred
   (is (fn? bootstrap/p18-t02-source-inventory))

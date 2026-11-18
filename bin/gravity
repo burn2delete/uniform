@@ -123,40 +123,11 @@ final_seed_retired() {
 }
 
 usage() {
-  local packaged="false"
-  local delegate="clojure -M:gravity"
+  local help_resource="${ROOT_DIR}/bootstrap/clojure/resources/gravity/cli/help-source.txt"
   if packaged_cli_selected; then
-    packaged="true"
-    delegate="java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main"
+    help_resource="${ROOT_DIR}/bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt"
   fi
-  cat <<EOF
-gravity bootstrap-hosted command
-
-Usage:
-  gravity --version
-  gravity help
-  gravity check <file.qst|file.gravity>
-  gravity sh07-core <file.qst|file.gravity>
-  gravity run <file.qst|file.gravity>
-  gravity run <file.gravity|file.qst> --target c --lowering runtime-derived
-  gravity compile <file.qst|file.gravity>
-  gravity compile <file.qst|file.gravity> -o <executable>
-  gravity compile <file.qst|file.gravity> --target c -o <executable>
-  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>
-  gravity test
-  gravity self-host verify
-  gravity <artifact-command> <file.qst|file.gravity>
-
-Metadata:
-  :bootstrap-hosted? true
-  :packaged-jvm-cli? ${packaged}
-  :seedless-release? false
-  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged
-  :delegates-to "${delegate}"
-  :experimental-verified-mir-c-route "implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication"
-
-Use gravity-bootstrap for explicit Clojure seed audit and recovery.
-EOF
+  cat "${help_resource}"
 }
 
 version() {
