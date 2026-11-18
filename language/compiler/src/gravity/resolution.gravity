@@ -796,13 +796,16 @@
               (conj with-from (get edge :to)))]
         (recur (rest remaining) with-to)))))
 
-(defn sh06-node-has-incoming? [edges node]
-  (loop [remaining edges]
+(defn dependency-incoming-edges [edges]
+  (loop [remaining edges incoming {}]
     (if (= (count remaining) 0)
-      false
-      (if (= (get (first remaining) :to) node)
-        true
-        (recur (rest remaining))))))
+      incoming
+      (let [edge (first remaining)
+            node (get edge :to)]
+        (recur (rest remaining)
+               (if (contains? incoming node)
+                 incoming
+                 (assoc incoming node edge)))))))
 
 (defn sh06-remove-outgoing [edges nodes]
   (loop [remaining edges kept []]
@@ -812,22 +815,33 @@
         (recur (rest remaining) kept)
         (recur (rest remaining) (conj kept (first remaining)))))))
 
-(defn sh06-dependency-cycle? [edges]
+(defn dependency-cycle-witness [incoming start]
+  ;; The remaining nodes all have a predecessor. Walk backward until an edge
+  ;; closes a loop, so a tail reachable from a cycle cannot be the witness.
+  (loop [node start seen #{}]
+    (let [edge (get incoming node)
+          predecessor (get edge :from)
+          visited (conj seen node)]
+      (if (contains? visited predecessor)
+        edge
+        (recur predecessor visited)))))
+
+(defn dependency-cycle-edge [edges]
   (loop [remaining-edges edges]
     (if (= (count remaining-edges) 0)
-      false
+      nil
       (let [nodes (sh06-edge-nodes remaining-edges)
+            incoming (dependency-incoming-edges remaining-edges)
             roots
             (loop [remaining nodes found []]
               (if (= (count remaining) 0)
                 found
-                (if (sh06-node-has-incoming?
-                     remaining-edges (first remaining))
+                (if (contains? incoming (first remaining))
                   (recur (rest remaining) found)
                   (recur (rest remaining)
                          (conj found (first remaining))))))]
         (if (= (count roots) 0)
-          true
+          (dependency-cycle-witness incoming (get (first remaining-edges) :to))
           (recur (sh06-remove-outgoing remaining-edges roots)))))))
 
 (defn sh06-duplicate-alias? [imports]
@@ -1123,20 +1137,22 @@
           (if (= alias-check nil)
             (let [shadow-check (sh06-illegal-shadow-context request)]
               (if (= shadow-check nil)
-                (if (sh06-dependency-cycle?
-                     (get request :dependency-edges))
-                  {:rule "C5-CYCLE"
-                   :reference nil
-                   :candidate-bindings []
-                   :dependency-edge (first (get request :dependency-edges))
-                   :facts {:reason :namespace-dependency-cycle
-                           :dependency-edges
-                           (get request :dependency-edges)}}
-                  (let [import-check (sh06-invalid-import-check request)]
-                    (if (= import-check nil)
-                      (sh06-first-reference-check-indexed
-                       request (get numbered :bindings) lookup-context)
-                      import-check)))
+                (let [edges (get request :dependency-edges)
+                      cycle-edge (dependency-cycle-edge edges)]
+                  (if (= cycle-edge nil)
+                    (let [import-check (sh06-invalid-import-check request)]
+                      (if (= import-check nil)
+                        (sh06-first-reference-check-indexed
+                         request (get numbered :bindings) lookup-context)
+                        import-check))
+                    {:rule "C5-CYCLE"
+                     :reference {:source-span
+                                 {:source (sh06-path-get request [:provenance :actual-source-path])
+                                  :form-index 0}}
+                     :candidate-bindings []
+                     :dependency-edge cycle-edge
+                     :facts {:reason :namespace-dependency-cycle
+                             :dependency-edges edges}}))
                 shadow-check))
             alias-check))))))
 
