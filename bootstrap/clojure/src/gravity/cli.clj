@@ -97,6 +97,7 @@
    "  gravity check <file.qst|file.gravity>\n"
    "  gravity sh07-core <file.qst|file.gravity>\n"
    "  gravity run <file.qst|file.gravity>\n"
+   "  gravity run <file.qst|file.gravity> --target c --lowering runtime-derived\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
    "  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n"
@@ -106,10 +107,13 @@
    "  gravity compile <file.qst|file.gravity> --target js|js-ts\n"
    "    --lowering runtime-derived -o <directory>\n"
    "    (explicit legacy route; retains its existing results and failures)\n"
+   "  gravity compile <file.qst|file.gravity> --target c -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>\n"
    "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
    "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
    "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
    "  gravity test\n"
+   "  gravity self-host verify\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
    "  gravity p18-t06-final-release\n"
@@ -123,6 +127,8 @@
    (if packaged-jvm-cli? "true" "false")
    "\n"
    "  :seedless-release? false\n"
+   "  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged\n"
+   "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    experimental-c-route-help))
 
 (defn cli-usage-text
