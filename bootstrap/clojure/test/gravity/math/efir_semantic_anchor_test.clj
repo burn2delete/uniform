@@ -3,12 +3,11 @@
             [gravity.bootstrap :as bootstrap]))
 
 (def ^:private source-path "math/efir-semantic-anchor.gravity")
+(def ^:private source-span (str source-path ":1:1"))
 
 (def ^:private graph
-  (let [span (str source-path ":1:1")]
-    (assoc (first bootstrap/efir-default-graphs)
-           :source-span span
-           :source-anchors [{:span span :origin :source}])))
+  (assoc (first bootstrap/efir-default-graphs)
+         :source-anchors [{:span source-span :origin :source}]))
 
 (defn- emit-graph [candidate]
   (bootstrap/efir-source-artifact
@@ -19,12 +18,13 @@
                  (list :metadata {:math {:efir {:efir-graphs [candidate]}}})))))
 
 (deftest efir-emits-either-kind-of-semantic-reference
-  (doseq [anchor [(:semantic-anchor graph)
-                  {:mir-ops ["mir-op-sigmoid-call"]}
-                  {:mir-ops [:op/sigmoid-call]}]]
-    (testing (pr-str anchor)
-      (let [candidate (assoc graph :semantic-anchor anchor)
-            artifact (emit-graph candidate)]
+  (doseq [candidate [graph
+                     (assoc graph :semantic-anchor {:mir-ops ["mir-op-sigmoid-call"]})
+                     (-> graph
+                         (assoc :semantic-anchor {:mir-ops [:op/sigmoid-call]})
+                         (assoc-in [:source-anchors 0 :origin] :generated))]]
+    (testing (pr-str (:semantic-anchor candidate))
+      (let [artifact (emit-graph candidate)]
         (is (= [candidate] (:efir-graph artifact)))
         (is (= [(select-keys candidate [:graph-id :source-anchors :semantic-anchor])]
                (:source-anchor-map artifact)))
@@ -46,6 +46,10 @@
             (assoc graph :semantic-anchor {:mir-ops [false 42 {:op-id "mir-op-sigmoid-call"}]})]
            ["the reference field is scalar"
             (assoc graph :semantic-anchor {:mir-ops "mir-op-sigmoid-call"})]
+           ["a generated origin is present and the semantic anchor is missing"
+            (-> graph
+                (assoc-in [:source-anchors 0 :origin] :generated)
+                (dissoc :semantic-anchor))]
            ["a Core reference is present and the source anchor is missing"
             (dissoc graph :source-anchors)]]]
     (testing label
@@ -56,7 +60,9 @@
                            (ex-data error)))]
         (is (= {:id "MATH3-SOURCE"
                 :graph-id (:graph-id candidate)
-                :source-span (:source-span candidate)}
+                :source-span (if (:source-anchors candidate)
+                               source-span
+                               {:source source-path})}
                (select-keys diagnostic [:id :graph-id :source-span])))
         (is (false? (:efir-graphs-anchored?
                      (bootstrap/efir-capability-proof {:efir-graphs [candidate]}))))))))
