@@ -149,7 +149,10 @@
                              :c-source-path c-source-path
                              :manifest-path manifest-path
                              :source-map-path source-map-path
-                             :provenance-path provenance-path}
+                             :provenance-path provenance-path
+                             :current-runtime-development?
+                             (and (= :c target)
+                                  (= :runtime-derived lowering-mode))}
                       lowering-mode
                       (assoc :lowering-mode lowering-mode)))]
       (assoc artifact

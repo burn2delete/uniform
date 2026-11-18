@@ -48,6 +48,8 @@
      manifest-input
      manifest-hash]}
    state
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? shared-packet)
    provenance
    (cond->
     {:source-map-hash source-map-hash,
@@ -103,7 +105,9 @@
      :stage2-runtime-execution-record
      (when
       runtime-derived?
-      {:artifact :gravity/p15-s23-stage2-runtime-execution-record,
+      {:artifact (if current-runtime-development?
+                   :gravity/current-runtime-development-execution-record
+                   :gravity/p15-s23-stage2-runtime-execution-record),
        :runtime-engine (:runtime-engine stage2-runtime-rule),
        :plan-id (:plan-id stage2-runtime-execution-record),
        :stdout-hash output-hash,
@@ -189,6 +193,50 @@
       :compiler-driver-rule-hash (:driver-rule-hash stage2-driver-rule),
       :runtime-engine (:runtime-engine stage2-runtime-rule),
       :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)}))
+   provenance
+   (if current-runtime-development?
+     (-> provenance
+         (dissoc :stage2-compiler-driver-record
+                 :compiler-driver-rule-hash
+                 :compiler-driver-rule-source)
+         (assoc :oracle
+                {:runtime-engine (:runtime-engine stage2-runtime-rule)
+                 :runtime-artifact-source
+                 (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+                 :runtime-artifact-host-runner
+                 :gravity-current-runtime-development-host-runner
+                 :purpose :development-output-equivalence
+                 :runtime-kernel-rule-hash
+                 (:runtime-kernel-rule-hash stage2-runtime-rule)
+                 :runtime-rule-hash (:runtime-rule-hash stage2-runtime-rule)
+                 :clojure-instruction-runner-comparison
+                 {:boundary :comparison-only :authoritative-runtime? false}
+                 :kind :gravity/current-runtime-development-execution
+                 :authoritative-runtime? false
+                 :runtime-artifact-hash (:runtime-artifact-hash stage2-runtime-rule)
+                 :revision-status :development-unadmitted
+                 :effects :not-checked
+                 :clojure-seed-boundary? true
+                 :self-hosted? false}
+                :compiler-stage :p15-s23-stage2-plan-emitter
+                :compiler-engine (get-in plan [:compiler :rule-engine])
+                :stage2-compiler-driver-used? false
+                :current-runtime-development-comparison-record stage2-driver-run
+                :runtime-artifact-source
+                (c-backend-current-runtime-development-source-record stage2-runtime-rule)
+                :runtime-artifact-host-runner
+                :gravity-current-runtime-development-host-runner
+                :compiler
+                (-> (:compiler provenance)
+                    (dissoc :compiler-driver-rule-hash)
+                    (assoc :compiler-stage :p15-s23-stage2-plan-emitter
+                           :plan-emitter-engine (get-in plan [:compiler :rule-engine])))
+                :current-runtime-development? true
+                :runtime-artifact-helper-owner :p15-compatibility-facade
+                :runtime-artifact-helpers-invoked-by-evaluator? false
+                :revision-status :development-unadmitted
+                :effects :not-checked))
+     provenance)
    provenance-hash
    (str
     "sha256:"

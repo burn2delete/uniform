@@ -22,3 +22,45 @@
                     state)))))))
       (catch StackOverflowError _ false)
       (catch Exception _ false))))
+
+(defn current-runtime-development-packet-authentic?
+  "Independently rebuild and replay the narrow current-source C development
+  packet. This schema is separate from the historical P15 reference packet."
+  [packet context]
+  (try
+    (and
+     (= :passed (:status (p15-s23-trusted-carrier-validation
+                          context :default-only)))
+     (= :passed (:status (p15-s23-trusted-carrier-validation
+                          packet :default-only)))
+     (map? context)
+     (= #{:source-path :source-text :source-content-hash :requested-target}
+        (set (keys context)))
+     (string? (:source-path context))
+     (string? (:source-text context))
+     (= :c (:requested-target context))
+     (= :valid (:status (p15-s23-closed-core-utf8-count (:source-text context))))
+     (= (:source-content-hash context)
+        (str "sha256:" (sha256-hex (:source-text context))))
+     (map? packet)
+     (= :gravity/current-source-runtime-development-packet (:kind packet))
+     (= :complete (:status packet))
+     (= :development-unadmitted (:revision-status packet))
+     (= :not-checked (:effects packet))
+     (true? (:clojure-seed-boundary? packet))
+     (false? (:self-hosted? packet))
+     (let [source-path (:source-path context)
+           source-text (:source-text context)
+           target (:requested-target context)
+           validate-plan!
+           (fn [candidate]
+             (c-backend-validate-plan! source-path target candidate)
+             (c-backend-validate-runtime-plan! source-path target candidate))
+           rebuilt
+           (stage2-runtime-derived-current-runtime-development-packet
+            source-path source-text target
+            {:validate-plan! validate-plan!})]
+       (= (c-backend-canonical-value packet)
+          (c-backend-canonical-value rebuilt))))
+    (catch StackOverflowError _ false)
+    (catch Exception _ false)))
