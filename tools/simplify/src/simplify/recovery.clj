@@ -672,9 +672,72 @@
               "The composition resolution changed before native checking")
     inspection))
 
+(defn- accepted-preexisting-checks? [task]
+  (let [checks (:checks task)
+        receipt (:preexisting-validation checks)]
+    (and (= :preexisting-validation (:kind receipt))
+         (= :this-tree-only (get-in receipt [:operator-authorization :scope]))
+         (= (:key task) (:key receipt))
+         (= (get-in task [:pr :number]) (:pr receipt))
+         (= (select-keys task [:base :candidate :tree])
+            (select-keys receipt [:base :candidate :tree])
+            (select-keys checks [:base :candidate :tree]))
+         (= (:original-error-sha256 checks) (error-digest task))
+         (= (get-in task [:error :details :command]) (get-in receipt [:native-denial :command]))
+         (= (:commands checks) (conj (mapv :command (:native receipt)) (get-in receipt [:hosted :command])))
+         (= :passed (:result checks)))))
+
+(defn record-preexisting-validation! [ctx key path approved-digest]
+  ;; The operator supplies the digest of the independently verified receipt.
+  ;; This maintenance command only admits evidence for a passive review.
+  (let [file (io/file (rt/canonical path))
+        _ (require! (and (.isFile file)
+                         (.startsWith (.toPath file) (.toPath (io/file (rt/canonical (:state-dir ctx))))))
+                    "The approved validation packet must be retained by the controller")
+        raw (slurp file :encoding "UTF-8")
+        _ (require! (= approved-digest (rt/digest raw)) "The validation packet differs from the approved bytes")
+        receipt (edn/read-string raw) task (get-in @(:state ctx) [:tasks key])
+        {:keys [native native-denial hosted]} receipt
+        tuple (select-keys task [:base :candidate :tree])
+        check (:command native-denial)
+        commands (vec (distinct (concat (get-in ctx [:config :checks])
+                                        (get-in @(:state ctx) [:jobs (:implementation-job task) :output :checks]))))
+        checks (assoc tuple :result :passed :commands commands :preexisting-validation receipt
+                      :original-error-sha256 (error-digest task) :evidence-file (str file)
+                      :evidence-sha256 approved-digest)
+        guard (rt/shared-restriction ctx :checks (codex/check-key ctx check))]
+    (require! (and (= :attention (:status task)) (= "Sandboxed check failed" (get-in task [:error :message]))
+                   (true? (get-in task [:error :details :restricted]))
+                   (= :this-tree-only (get-in receipt [:operator-authorization :scope]))
+                   (seq (get-in receipt [:operator-authorization :item]))
+                   (true? (:restricted native-denial)) (pos-int? (:exit native-denial))
+                   (vector? native) (seq native) (every? #(and (:job %) (= 0 (:exit %))) native)
+                   (every? #(re-matches #"[0-9a-f]{40}" (or % "")) (map tuple [:base :candidate :tree]))
+                   (= (:tree task) (:tree hosted)) (= :passed (:result hosted))
+                   (= check (:command hosted)) (false? (:integration-authority receipt))
+                   (every? pos-int? (map hosted [:run :job :attempt :artifact]))
+                   (re-matches #"[0-9a-f]{64}" (or (:sha256 hosted) ""))
+                   (.isBefore (java.time.Instant/parse (:completed hosted))
+                              (java.time.Instant/parse (:began native-denial)))
+                   (accepted-preexisting-checks? (assoc task :checks checks))
+                   (= (:state-file ctx) (:state-file guard))
+                   (= check (:command guard)))
+              "Validation must cover every selected check for this exact held candidate")
+    (let [registry (rt/coordinate! ctx (fn [s] [s (select-keys s [:writers :history])]))
+          owns? #(and (= key (:key %)) (= (:state-file ctx) (:state-file %)))]
+      (require! (and (not-any? owns? (vals (:writers registry)))
+                     (some #(and (= :writer-inspected (:kind %)) (owns? (:lease %))
+                                 (= (:error task) (get-in % [:lease :error]))) (:history registry)))
+                "The held writer needs an inspected release for this failure"))
+    (require! (nil? (get-in task [:checks :preexisting-validation])) "Validation has already been recorded")
+    (rt/update! ctx update-in [:tasks key]
+                #(-> % (update :validation-history (fnil conj []) (select-keys % [:checks :review :error :status]))
+                     (assoc :checks checks :review nil)))))
+
 (defn review-permitted? [task]
   (let [inspection (:inspected-authored task) fresh (:fresh-source-validation task)]
-    (or (and (= :inspected-reported-implementation (:kind inspection)) (= :checked (:stage inspection))
+    (or (accepted-preexisting-checks? task)
+        (and (= :inspected-reported-implementation (:kind inspection)) (= :checked (:stage inspection))
          (= (:original-error-sha256 inspection) (error-digest task))
          (= (:checked-implementation-job inspection) (:implementation-job task))
          (= (select-keys task [:base :candidate :tree]) (:checked-candidate inspection))

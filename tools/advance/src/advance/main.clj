@@ -7,7 +7,9 @@
             [clojure.string :as str]
             [simplify.coordination :as coordination]
             [simplify.main :as base]
-            [simplify.runtime :as rt])
+            [simplify.recovery :as recovery]
+            [simplify.runtime :as rt]
+            [simplify.workflow :as flow])
   (:gen-class))
 
 (def defaults
@@ -216,6 +218,15 @@
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
+    "review-preexisting-validation"
+    (let [[key path digest] args]
+      (when-not (= 3 (count args)) (rt/fail! "Expected task key, verified receipt path and accepted SHA-256" {}))
+      (rt/with-lock ctx
+        #(do (when-not (:paused (rt/read-edn (:control-file ctx))) (rt/fail! "Pause and drain Advance first" {}))
+             (flow/assert-identity! ctx (flow/task ctx key))
+             (flow/assert-clean! ctx (:worktree (flow/task ctx key)))
+             (recovery/record-preexisting-validation! ctx key path digest)
+             (prn (flow/review! ctx (flow/task ctx key))))))
     "setup" (rt/with-lock ctx #(do (coordination/register! ctx)
                                  (try (project/setup! ctx) (workflow/ensure-campaign! ctx)
                                       (finally (coordination/unregister! ctx)))))
