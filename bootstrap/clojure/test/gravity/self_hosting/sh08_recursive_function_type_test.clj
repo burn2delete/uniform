@@ -1123,7 +1123,7 @@
     (is (map? proof-results-call))
     (is (some #(and (map? %) (= :function-call (:op %))
                     (= 'sh08-ft-context-proof (:function %)))
-              (tree-seq coll? seq (get-in inference-call [:args 9]))))
+              (tree-seq coll? seq (get-in inference-call [:args 8]))))
     (is (= :if (:op context-proof-branch)))
     (is (= :local (get-in context-proof-branch [:then :op])))
     (is (= 'recursive-proof
