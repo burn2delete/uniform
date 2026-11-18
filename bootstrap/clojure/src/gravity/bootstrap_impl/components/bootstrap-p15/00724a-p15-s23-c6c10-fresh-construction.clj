@@ -1,7 +1,8 @@
 (require '[gravity.checked-core.bool-branch-join :as bool-branch-join]
          '[gravity.c6-c10.source-interface :as c6-source-interface])
 
-(declare sh05-macro-resolve-source-path sh06-resolution-resolve-source-path)
+(declare sh05-macro-resolve-source-path sh06-resolution-resolve-source-path
+         p15-s23-application-request!)
 
 (defn- p15-s23-c6c10-current-source-snapshot-matches-binding?
   [source-binding source-snapshot]
@@ -174,13 +175,18 @@
    or verifier evidence. Existing Uniform owners construct and replay all
    semantic products; the host resolves their digest requests and transports
    exact source identities. Public historical source interfaces are unchanged."
-  [source-path source-text policy]
-  (p15-s23-c6c10-require-trusted-carrier! source-path :compiler-application-policy policy)
+  ([source-path source-text]
+   (p15-s23-c6c10-current-scalar-construction source-path source-text nil true))
+  ([source-path source-text policy]
+   (p15-s23-c6c10-current-scalar-construction source-path source-text policy false))
+  ([source-path source-text policy discover-policy?]
   (let [policy-keys #{:profile :target :effects :capabilities :safety}
-        _ (when-not (and (map? policy) (= policy-keys (set (keys policy))))
+        _ (when-not discover-policy?
+            (p15-s23-c6c10-require-trusted-carrier! source-path :compiler-application-policy policy))
+        _ (when-not (or discover-policy?
+                        (and (map? policy) (= policy-keys (set (keys policy)))))
             (p15-s23-c6c10-host-fail!
              "C6-VERIFY" source-path :explicit-compiler-application-policy {}))
-        context (p15-s23-stage2-gravity-checked-core-context source-path source-text (:target policy))
         owner-sources (p15-s23-c6c10-application-owner-sources)
         ;; Version 2 selects the existing current compiler-program ABI only.
         ;; No v2 Core-family admission or interface label crosses this route.
@@ -214,11 +220,16 @@
                      ingress))
         ingress (products)
         observed-policy (select-keys (:authoritative-module ingress) policy-keys)
-        _ (when-not (= (p15-s23-c6c10-canonical-identity source-path policy)
-                       (p15-s23-c6c10-canonical-identity source-path observed-policy))
+        effective-policy (if discover-policy? observed-policy policy)
+        _ (p15-s23-application-request! source-path effective-policy)
+        _ (when-not (or discover-policy?
+                        (= (p15-s23-c6c10-canonical-identity source-path policy)
+                           (p15-s23-c6c10-canonical-identity source-path observed-policy)))
             (p15-s23-c6c10-host-fail!
              "C6-ORIGIN" source-path :declared-source-policy-matches-request
              {:requested-policy policy :source-policy observed-policy}))
+        context (p15-s23-stage2-gravity-checked-core-context
+                 source-path source-text (:target effective-policy))
         envelope (p15-s23-c6c10-private-builder-envelope source-path ingress source-binding)
         raw (p15-s23-c6c10-invoke-pinned-source-function!
              source-path source-binding p15-s23-c6c10-builder-function
@@ -247,7 +258,7 @@
           verification (p15-s23-c6c10-validate-gravity-replay-report! source-path raw report)
           artifact (p15-s23-c6c10-public-artifact context source-binding ingress sealed)
           receipt (assoc (:source-policy-receipt ingress)
-                         :policy policy :owner-sources owner-sources
+                         :policy effective-policy :owner-sources owner-sources
                          :function-resolution
                          (select-keys (:resolved-functions ingress)
                            [:sh06-artifact-id :sh06-semantic-projection-id :projection-binding
@@ -270,4 +281,4 @@
        :gravity-verification
        (assoc (select-keys verification [:status :request-count :semantic-authority :checks])
               :checked-core-artifact-id (:artifact-id artifact)
-              :digest-graph-proof-id (get-in sealed [:graph-proof :graph-proof-id]))})))
+              :digest-graph-proof-id (get-in sealed [:graph-proof :graph-proof-id]))}))))
