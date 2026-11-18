@@ -168,8 +168,10 @@
             (update! ctx update-in [:effects id] assoc :status :done :result result)
             result)
           (catch Exception e
-            (update! ctx update-in [:effects id] assoc :status (if (:restricted (ex-data e)) :restricted :uncertain)
-                     :message (.getMessage e))
+            (update! ctx update-in [:effects id] merge
+                     {:status (if (:restricted (ex-data e)) :restricted :uncertain)
+                      :message (.getMessage e)}
+                     (select-keys (ex-data e) [:failed-request]))
             (throw (ex-info (.getMessage e)
                             (assoc (or (ex-data e) {}) :effect id
                                    :effect-status (get-in @(:state ctx) [:effects id :status])) e))))))))
@@ -358,7 +360,16 @@
        (let [state (import-legacy-registry ctx state)
              state (reduce (fn [state [kind entries]]
                              (reduce-kv (fn [state key refusal]
-                                          (if (get-in state [:restrictions kind key]) state
+                                          (if (or (get-in state [:restrictions kind key])
+                                                  ;; Old binaries keep the owner-local API guard. A settled
+                                                  ;; incident must not re-export it to unrelated projects.
+                                                  (and (= :api kind) (= "graphql" (:endpoint refusal)) (= "POST" (:method refusal))
+                                                       (let [hold (get-in state [:restrictions :project-controls (get-in local [:project :id])])]
+                                                         (and (= :project-controls-pagination (:kind hold))
+                                                              (= (:state-file ctx) (:state-file hold))
+                                                              (= key (:legacy-api-key hold))
+                                                              (= refusal (:retained-local-guard hold))))))
+                                            state
                                               (assoc-in state [:restrictions kind key] (merge (owner ctx) refusal))))
                                         state (or entries {})))
                            state [[:commands (:restricted-commands local)] [:api (:restricted-actions local)] [:checks (:restricted-checks local)]])

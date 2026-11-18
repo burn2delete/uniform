@@ -21,6 +21,39 @@
   (assoc t :review (assoc (select-keys t [:base :candidate :tree]) :verdict "approved")
            :checks {:candidate (:candidate t) :tree (:tree t) :result :passed}))
 
+(deftest early-publication-cannot-attach-an-older-review-to-the-current-head
+  (let [ctx (assoc-in (fixture/context) [:config :early-draft] true)
+        t (assoc finding :base "base" :candidate "new" :tree "tree" :branch "branch")
+        current (-> (evidenced t) (assoc-in [:review :summary] "Reviewed this tree")
+                    (assoc-in [:checks :commands] [["clojure" "test"]]))
+        comment (atom nil) draft-changes (atom [])]
+    (with-redefs [flow/assert-clean! (constantly nil) flow/assert-identity! (constantly nil)
+                  rt/effect! (constantly nil) gh/api (constantly [{:draft true :state "open"}])
+                  gh/draft! (fn [_ _ draft? _] (swap! draft-changes conj draft?))
+                  gh/comment! (fn [_ _ key body] (reset! comment [key body]))
+                  flow/transition! (constantly nil)]
+      (doseq [stale [(assoc-in current [:review :candidate] "old") (assoc-in current [:checks :tree] "old-tree")]]
+        (flow/publish! (assoc-in ctx [:config :repository] "fixture/repo") stale)
+        (is (nil? @comment)))
+      (is (empty? @draft-changes))
+      (flow/publish! (assoc-in ctx [:config :repository] "fixture/repo") current)
+      (is (= "candidate/new" (first @comment)))
+      (is (str/includes? (second @comment) "Reviewed this tree"))
+      (is (= [false] @draft-changes)))))
+
+(deftest completed-checks-retain-their-identity-when-a-later-check-fails
+  (let [ctx (assoc-in (fixture/context) [:config :check-executables] #{"clojure"})
+        t (assoc finding :base "base" :candidate "new" :tree "tree")
+        passed ["clojure" "focused"] denied ["clojure" "restricted"] events (atom [])]
+    (with-redefs [flow/assert-identity! (constantly nil)
+                  codex/command! (fn [_ _ _ argv]
+                                   (when (= argv denied) (rt/fail! "Refused" {:restricted true})))
+                  rt/event! (fn [_ event body] (swap! events conj [event body]))]
+      (is (thrown? Exception (flow/checks! ctx t [passed denied])))
+      (is (= [[:check-passed (assoc (select-keys t [:key :base :candidate :tree])
+                                    :job "check-1" :command passed)]] @events))
+      (is (nil? (:checks (flow/task ctx (:key t))))))))
+
 (defn repository! [ctx]
   (let [root (:state-dir ctx) bare (str (io/file root "remote.git")) repo (str (io/file root "repo"))]
     (rt/git ctx root "init" "--bare" "--initial-branch=main" bare)
