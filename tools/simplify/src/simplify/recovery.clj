@@ -10,10 +10,12 @@
 (defn require! [condition message]
   (when-not condition (rt/fail! message {:writer-ended? true})))
 
-(defn file-digest [path]
+(defn bytes-digest [^bytes data]
   (.formatHex (java.util.HexFormat/of)
-              (.digest (java.security.MessageDigest/getInstance "SHA-256")
-                       (java.nio.file.Files/readAllBytes (.toPath (io/file path))))))
+              (.digest (java.security.MessageDigest/getInstance "SHA-256") data)))
+
+(defn file-digest [path]
+  (bytes-digest (java.nio.file.Files/readAllBytes (.toPath (io/file path)))))
 
 (defn error-digest [task] (rt/digest (pr-str (:error task))))
 

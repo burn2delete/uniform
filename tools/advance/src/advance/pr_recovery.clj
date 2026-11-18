@@ -6,7 +6,10 @@
             [simplify.github :as gh]
             [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
-            [simplify.workflow :as flow]))
+            [simplify.workflow :as flow])
+  (:import [java.io ByteArrayInputStream]
+           [java.nio.file Files]
+           [java.util.zip ZipInputStream]))
 
 (defn- retained [ctx path sha]
   (let [file (io/file (rt/canonical path))]
@@ -63,6 +66,43 @@
                              (str/split-lines log))]
         (= [(:selection ci)] (vec selections))))))
 
+(defn- zip-text-entries [bytes wanted]
+  (with-open [zip (ZipInputStream. (ByteArrayInputStream. bytes))]
+    (loop [found {}]
+      (if-let [entry (.getNextEntry zip)]
+        (let [path (.getName entry)]
+          (recovery/require! (not (contains? found path)) "Duplicate CI evidence entry")
+          (recur (if (wanted path) (assoc found path (String. (.readAllBytes zip) "UTF-8")) found)))
+        found))))
+
+(defn- returned-vars [entries logs]
+  (vec (into (sorted-set)
+             (for [path logs line (str/split-lines (entries path))
+                   :when (str/starts-with? line "{:schema :gravity/development-test-progress-v2,")
+                   :let [event (edn/read-string line)]
+                   :when (= [:test-var :return] ((juxt :phase :edge) event))]
+               (:test-var event)))))
+
+(defn- archive-evidence? [file ci {:keys [name sha256 children attempt returned-test-vars]}]
+  (let [bytes (Files/readAllBytes (.toPath file))
+        summaries (case name
+                    "leaves-darwin" ["leaves-darwin-summary.edn" "darwin-probe-summary.edn"]
+                    "leaves-unsupported" ["darwin-unsupported-summary.edn"]
+                    [(str name "-summary.edn")])
+        logs (when (and returned-test-vars (= name "resolution-pipeline")) (mapv #(str (:id %) ".log") children))
+        wanted (into (set summaries) (cons "checkout.txt" logs))]
+    (and (= sha256 (recovery/bytes-digest bytes))
+         (let [entries (zip-text-entries bytes wanted)
+               reports (mapv #(some-> (entries %) edn/read-string) summaries)
+               records (mapcat identity reports)]
+           (and (= wanted (set (keys entries)))
+                (= [(:checkout ci) (:tree ci)] (str/split-lines (entries "checkout.txt")))
+                (every? #(and (vector? %) (seq %)) reports)
+                (every? #(and (string? (:id %)) (= (:checkout ci) (:commit %))
+                              (= (str (:run ci)) (:run-id %)) (= (str attempt) (:run-attempt %))) records)
+                (= children (mapv #(select-keys % [:id :status :exit-code]) records))
+                (or (nil? returned-test-vars) (and (seq logs) (= returned-test-vars (returned-vars entries logs)))))))))
+
 (defn finish! [ctx task-key authority-file authority-digest ci-file ci-digest]
   (recovery/require! (and (true? @(:coordinator-owner ctx)) (= {:paused true} (rt/read-edn (:control-file ctx))))
                      "Pause and drain the coordinator before scoped integration")
@@ -109,13 +149,13 @@
             (= (:total_count jobs) (count scopes)) (= (set scopes) (set (:jobs ci))) (full-selection? ci (:jobs jobs))
             (live-selection? ctx ci (:jobs jobs))
             (every? #(and (pos-int? (:producing-job %)) (same-job-execution? ctx (:jobs jobs) % (:run ci))) (:required-artifacts ci))
-            (every? (fn [{:keys [name artifact sha256 attempt]}]
+            (every? (fn [{:keys [name artifact sha256 attempt] :as receipt}]
                       (and (pos-int? attempt) (<= attempt (:attempt ci)) (re-matches #"[a-z0-9-]+" name)
                            (some #(and (= artifact (:id %)) (= (str "sha256:" sha256) (:digest %))
                                        (= (str "ci-" name "-" (:checkout ci) "-" attempt) (:name %))
                                        (= (:candidate t) (get-in % [:workflow_run :head_sha]))
                                        (= (:run ci) (get-in % [:workflow_run :id]))) artifacts)
-                           (= sha256 (recovery/file-digest (io/file (.getParentFile (io/file ci-file)) (str name ".zip"))))))
+                           (archive-evidence? (io/file (.getParentFile (io/file ci-file)) (str name ".zip")) ci receipt)))
                     (:required-artifacts ci))
             (= old-delta new-delta))
        "The live workflow, PR or composed feature delta differs from its receipt")

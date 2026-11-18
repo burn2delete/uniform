@@ -197,7 +197,9 @@ native checks, `finish-pr-composition CONFIG.edn TASK-KEY AUTHORITY.edn
 AUTHORITY-SHA256 CI.edn CI-SHA256` verifies the retained authority, hosted
 artifacts, live GitHub run and feature delta. It obtains a fresh independent
 review before publishing the result and entering the existing integration
-preflight. The scope ends at that candidate.
+preflight. The scope ends at that candidate. The eligible local guard is the
+legacy endpoint-only record bound to the settled project-controls incident.
+A recorded request-specific refusal or shared API refusal still blocks dispatch.
 
 The inherited recovery commands preserve state and mutation intents:
 

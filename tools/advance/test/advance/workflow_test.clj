@@ -15,14 +15,31 @@
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
+            [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
             [simplify.schema :as schema]
             [simplify.workflow :as flow]
-            [simplify.workflow-test :as git-fixture]))
+            [simplify.workflow-test :as git-fixture])
+  (:import [java.util.zip ZipEntry ZipOutputStream]))
 
 (use-fixtures :each fixture/no-github-network)
 
 (def source-path "specs/demo/tasks.md")
+
+(defn- ci-archive [ctx mode attempt]
+  (let [file (io/file (:state-dir ctx) (str mode ".zip"))
+        stages (case mode "leaves-darwin" [mode "darwin-probe"] "leaves-unsupported" ["darwin-unsupported"] [mode])
+        child (fn [stage] {:id stage :status :passed :exit-code 0})
+        entries (into {"checkout.txt" "checkout\ntree\n"}
+                      (for [stage stages]
+                        [(str stage "-summary.edn")
+                         (pr-str [(assoc (child stage) :run-id "42" :run-attempt (str attempt) :commit "checkout")])]))]
+    (with-open [zip (ZipOutputStream. (io/output-stream file))]
+      (doseq [[path content] entries]
+        (.putNextEntry zip (ZipEntry. path))
+        (.write zip (.getBytes ^String content "UTF-8"))
+        (.closeEntry zip)))
+    {:sha256 (recovery/file-digest file) :children (mapv child stages)}))
 
 (deftest explicit-pr-scope-spans-publication-and-integration-only-after-fresh-review
   (let [ctx (-> (fixture/context) (assoc :coordinator-owner (atom true)) (assoc-in [:config :repository] "owner/repo")
@@ -37,10 +54,10 @@
         others (vec (for [[i job-name] (map-indexed vector (keys (dissoc pr-recovery/full-pr-jobs "contracts")))]
                       (assoc job :id (+ 110 i) :name job-name)))
         jobs (into [job (assoc job :id 101 :name "select CI checks")] others)
-        details (fn [j] (let [mode (get pr-recovery/full-pr-jobs (:name j))]
-                          {:name mode :job-name (:name j) :job (:id j) :producing-job (if (= 99 (:id j)) 98 (:id j))
-                           :attempt (if (= 99 (:id j)) 1 2) :artifact (+ 1000 (:id j))
-                           :sha256 (rt/digest "fixture artifact") :children [{:status :passed :exit-code 0}]}))
+        details (fn [j] (let [mode (get pr-recovery/full-pr-jobs (:name j)) attempt (if (= 99 (:id j)) 1 2)]
+                          (assoc (ci-archive ctx mode attempt) :name mode :job-name (:name j)
+                                 :job (:id j) :producing-job (if (= 99 (:id j)) 98 (:id j))
+                                 :attempt attempt :artifact (+ 1000 (:id j)))))
         ci (merge tuple {:result :passed :attempt 2 :run 42 :workflow ".github/workflows/ci.yml" :checkout "checkout"
                          :selection {:kind :full :base "base"} :selector {:job 101 :producing-job 101 :attempt 2 :job-name "select CI checks"}
                          :required-artifacts (mapv details (cons job others))
@@ -54,7 +71,6 @@
         finish (fn [sha] (pr-recovery/finish! ctx key af sha cf (rt/digest (pr-str ci))))
         scope (fn [c] (let [p (:pr-integration c)] [(:task-key p) (:candidate p) (rt/digest (:authority-raw p))]))]
     (rt/write-edn! af auth) (rt/write-edn! cf ci) (rt/write-edn! (:control-file ctx) {:paused true})
-    (doseq [{:keys [name]} (:required-artifacts ci)] (spit (io/file (:state-dir ctx) (str name ".zip")) "fixture artifact"))
     (rt/update! ctx assoc :tasks {key t} :campaign-issue {:number 1} :source-tasks {"parent" {:issue {:number 2}}})
     (is (thrown-with-msg? Exception #"receipt changed" (finish "invalid")))
     (with-redefs [flow/assert-identity! (fn [& _]) flow/assert-clean! (fn [& _])
@@ -85,6 +101,10 @@
       (let [incomplete (update ci :required-artifacts pop)]
         (rt/write-edn! cf incomplete)
         (is (thrown-with-msg? Exception #"live workflow" (pr-recovery/finish! ctx key af digest cf (rt/digest (pr-str incomplete)))))
+        (rt/write-edn! cf ci))
+      (let [forged (assoc-in ci [:required-artifacts 0 :children 0 :id] "never-ran")]
+        (rt/write-edn! cf forged)
+        (is (thrown-with-msg? Exception #"live workflow" (pr-recovery/finish! ctx key af digest cf (rt/digest (pr-str forged)))))
         (rt/write-edn! cf ci))
       (finish digest)
       (is (= [[:publish [key "head" digest]] [:integrate [key "head" digest]]] @calls))

@@ -43,7 +43,8 @@
           hold (rt/shared-restriction ctx :project-controls p)
           item (get-in s [:effects (str "project-item/" p "/" (:node_id issue)) :result])
           field (get-in project [:workflow :id])]
-      (and (true? (some-> (:coordinator-owner ctx) deref))
+      (and (not (contains? local :failed-request))
+           (true? (some-> (:coordinator-owner ctx) deref))
            (= :single-pr-composition (:kind auth)) (string? authority-sha256)
            (string? authority-raw) (= authority-sha256 (:authority-sha256 scope) (rt/digest authority-raw))
            (= auth (edn/read-string authority-raw))

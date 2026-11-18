@@ -127,6 +127,13 @@
       (is (thrown? Exception (gh/graphql ctx "query{viewer{login}}" {})))
       (is (thrown? Exception (gh/review-threads-clear? (dissoc ctx :pr-integration) 5)))
       (is (thrown? Exception (gh/review-threads-clear? (assoc-in ctx [:pr-integration :candidate] "other") 5)))
+      (let [denied (assoc local :failed-request {:phase :provider-returned :body-sha256 (rt/digest (first @calls))})]
+        (rt/update! ctx assoc-in [:restricted-actions k] denied)
+        (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :project-controls "project" :retained-local-guard] denied) nil]))
+        (is (thrown? Exception (gh/review-threads-clear? ctx 5)))
+        (is (= 3 (count @calls)))
+        (rt/update! ctx assoc-in [:restricted-actions k] local)
+        (rt/coordinate! ctx (fn [s] [(assoc-in s [:restrictions :project-controls "project" :retained-local-guard] local) nil])))
       (rt/shared-restrict! ctx :api k {:method "POST" :endpoint "graphql" :error "new episode"})
       (is (thrown? Exception (gh/review-threads-clear? ctx 5)))
       (is (= 3 (count @calls))))))
