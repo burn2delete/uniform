@@ -43,6 +43,7 @@
    "  gravity check <file.qst|file.gravity>\n"
    "  gravity sh07-core <file.qst|file.gravity>\n"
    "  gravity run <file.qst|file.gravity>\n"
+   "  gravity run <file.qst|file.gravity> --target c --lowering runtime-derived\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
    "  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n"
@@ -52,10 +53,13 @@
    "  gravity compile <file.qst|file.gravity> --target js|js-ts\n"
    "    --lowering runtime-derived -o <directory>\n"
    "    (explicit legacy route; retains its existing results and failures)\n"
+   "  gravity compile <file.qst|file.gravity> --target c -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>\n"
    "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
    "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
    "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
    "  gravity test\n"
+   "  gravity self-host verify\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
    "  gravity p18-t06-final-release\n"
@@ -67,6 +71,13 @@
    "  :bootstrap-hosted? true\n"
    "  :packaged-jvm-cli? " (if packaged? "true" "false") "\n"
    "  :seedless-release? false\n"
+   "  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged\n"
+   "  :delegates-to \""
+   (if packaged?
+     "java -Dgravity.packaged.jvm.cli=true -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar:<clojure-runtime-classpath> clojure.main -m gravity.cli.launcher"
+     "clojure -M:gravity")
+   "\"\n"
+   "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    "  :experimental-verified-mir-c-route \"implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication\"\n"))
 
 (deftest presentation-values-are-extracted-with-bootstrap-parity
@@ -110,6 +121,19 @@
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-version-record))))
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-help-text))))))
 
+(deftest checked-in-shell-help-is-rendered-by-the-cli-presentation
+  (let [source (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
+        archived (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")]
+    (is (= (cli/p18-cli-help-resource-text :source) source))
+    (is (= (cli/p18-cli-help-resource-text :archived-packaged-jvm-cli)
+           archived))
+    (is (= (cli/p18-cli-help-text false) source))
+    (is (str/includes? source "gravity compile <file.qst|file.gravity> --target js|js-ts"))
+    (is (str/includes? source ":delegates-to \"clojure -M:gravity\""))
+    (is (str/includes? archived ":packaged-jvm-cli? true"))
+    (is (str/includes? archived
+                       ":delegates-to \"java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main\""))))
+
 (deftest usage-text-remains-the-entrypoint-compatibility-value
   (let [usage (cli/cli-usage-text)]
     (is (= usage entrypoint/usage-text))
@@ -120,19 +144,19 @@
   (let [contract-var
         (get (ns-interns 'gravity.cli) 'namespace-contract)
         contract (var-get contract-var)]
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
-             'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text
+             'p18-cli-help-resource-text 'cli-usage-text 'sh07-core-input}
            (set (keys (ns-publics 'gravity.cli)))))
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.cli (:namespace contract)))
     (is (= :bootstrap-cli-presentation-and-core-arguments
            (:contract-boundary contract)))
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
-             'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text
+             'p18-cli-help-resource-text 'cli-usage-text 'sh07-core-input}
            (set (keys (:public-api contract)))))
     (is (= [:packaged-jvm-cli-state :selected-sh07-command-arguments] (:artifact-inputs contract)))
     (is (= [:bootstrap-version-record :bootstrap-help-text
-            :bootstrap-usage-text :sh07-core-input]
+            :bootstrap-help-resource-text :bootstrap-usage-text :sh07-core-input]
            (:artifact-outputs contract)))
     (is (= ['clojure.core]
            (get-in contract [:dependency-direction :requires])))

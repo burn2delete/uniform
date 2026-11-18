@@ -17,16 +17,26 @@
   (probe/input-sha256 root path))
 
 (defn input-id [observation]
-  (rt/digest (pr-str (select-keys observation [:inputs :route]))))
+  (rt/digest (pr-str (select-keys observation [:inputs :frontend-host-input-id :route]))))
 
-(defn current? [cwd observation argv]
+(declare admission-current?)
+
+(defn- frontend-current? [cwd observation argv]
   (try
     (and (seq (:inputs observation))
          (= argv (get-in observation [:route :command]))
          (= (:input-id observation) (input-id observation))
+         (= (mapv :path (:inputs observation))
+            (probe/frontend-input-paths cwd (get-in observation [:route :closure])))
+         (= (:frontend-host-input-id observation) (probe/frontend-host-input-id cwd))
          (every? (fn [{:keys [path sha256]}] (= sha256 (input-sha256 cwd path)))
                  (:inputs observation)))
     (catch Exception _ false)))
+
+(defn current? [cwd observation argv]
+  (and (frontend-current? cwd observation argv)
+       (or (not (contains? observation :admission-inputs))
+           (admission-current? cwd observation))))
 
 (defn- read-one [text]
   (let [reader (java.io.PushbackReader. (java.io.StringReader. text)) eof (Object.)
@@ -58,7 +68,8 @@
   "Project identities and the observed boundary for a GitHub comment. The full
   execution, source products and diagnostics remain in tasks and durable effects."
   [observation]
-  (cond-> (select-keys observation [:source-revision :input-id :status :terminal :position
+  (cond-> (select-keys observation [:source-revision :input-id :frontend-host-input-id
+                                    :admission-input-id :status :terminal :position
                                     :reason :restricted :observation-effect])
     (:route observation)
     (assoc :route (select-keys (:route observation) [:command :stage :target :triple :scope :build-graph-status]))
@@ -270,6 +281,29 @@
           {:path path :sha256 (try (input-sha256 cwd path) (catch Exception _ :unavailable))})
         probe/input-paths))
 
+(defn admission-input-id [inputs]
+  (rt/digest (pr-str inputs)))
+
+(defn admission-current? [cwd observation]
+  (try
+    (or (not (contains? observation :admission-inputs))
+        (and (vector? (:admission-inputs observation))
+             (= (mapv :path (:admission-inputs observation)) probe/input-paths)
+             (= (:admission-input-id observation)
+                (admission-input-id (:admission-inputs observation)))
+             (every? (fn [{:keys [sha256]}]
+                       (and (string? sha256) (re-matches #"[0-9a-f]{64}" sha256)))
+                     (:admission-inputs observation))
+             (= (:admission-inputs observation) (declared-inputs cwd))))
+    (catch Exception _ false)))
+
+(defn- declared-execution-inputs [cwd observation]
+  (try
+    (probe/execution-inputs cwd observation)
+    (catch Exception _
+      (mapv (fn [path] {:path path :sha256 :unavailable})
+            (probe/frontend-input-paths cwd (get-in observation [:route :closure]))))))
+
 (defn- executable-file-identity [file]
   {:path (rt/canonical file) :bytes (.length file)
    :sha256 (probe/sha256 (Files/readAllBytes (.toPath file)))})
@@ -291,15 +325,75 @@
                                                    ["PATH" "JAVA_HOME" "JAVA_TOOL_OPTIONS" "JDK_JAVA_OPTIONS" "CLJ_CONFIG"])))
    :executables (into {} (map (fn [name] [name (executable-identity name)]) ["clojure" "codex"]))})
 
+(defn- execution-fingerprint [argv inputs frontend-host-input-id execution]
+  (rt/digest (pr-str {:command argv :inputs inputs
+                      :frontend-host-input-id frontend-host-input-id
+                      :execution execution})))
+
+(defn- execution-current? [cwd observation argv inputs frontend-host-input-id]
+  (and (seq (:inputs observation))
+       (= argv (get-in observation [:route :command]))
+       (= (mapv :path (:inputs observation))
+          (probe/frontend-input-paths cwd (get-in observation [:route :closure])))
+       (= (:inputs observation) inputs)
+       (= (:frontend-host-input-id observation) frontend-host-input-id)
+       (= (:input-id observation) (input-id observation))
+       (= (:execution-fingerprint observation)
+          (execution-fingerprint argv (:inputs observation) frontend-host-input-id
+                                 (:execution-context observation)))))
+
+(defn- compiler-result [cwd argv execution result]
+  (cond
+    (:capture-truncated result)
+    (blocked "Compiler observation capture was truncated" result)
+
+    (not (number? (:exitCode result)))
+    (blocked "Compiler execution has no terminal status" result)
+
+    :else
+    (try
+      (let [{observation :value warnings :warnings} (read-result result)
+            validated (if (= "P18T04007" (get-in observation [:failure :id]))
+                        (blocked "Final-release refusal does not identify an implementation repair" result)
+                        (validate-observation! cwd argv result observation))
+            execution-inputs (:inputs validated)
+            host-input-id (:frontend-host-input-id validated)]
+        (cond-> (assoc validated :execution result :execution-warnings warnings)
+          (and (seq execution-inputs) host-input-id)
+          (assoc :execution-context execution
+                 :execution-fingerprint (execution-fingerprint argv execution-inputs host-input-id execution))))
+      (catch Exception e
+        (blocked (str "Compiler execution prerequisite or observation unavailable: " (.getMessage e)) result)))))
+
+(defn- reusable-observation? [cwd argv fingerprint inputs frontend-host-input-id previous]
+  (and (= fingerprint (:execution-fingerprint previous))
+       (if (seq (:inputs previous))
+         (execution-current? cwd previous argv inputs frontend-host-input-id)
+         (= :blocked (:status previous)))))
+
+(defn- reused-result [ctx previous prior-effect]
+  (let [cached (or (get-in @(:state ctx) [:effects prior-effect :result]) previous)]
+    (assoc
+     (if (and (= :blocked (:status cached)) (nil? (:input-id cached)) (map? (:execution cached)))
+       ;; Interpret the retained wrapper without rewriting its original effect
+       ;; or replaying the terminated process.
+       (assoc cached :terminal (:terminal (blocked (:reason cached) (:execution cached))))
+       cached)
+     :observation-effect prior-effect)))
+
 (defn observe!
   "Run through the controller's existing sandbox executor and durable effects.
   Nonzero compiler execution is evidence, not a successful check."
   [ctx cwd base execute!]
   (when-let [argv (get-in ctx [:config :compiler-observation-command])]
     (let [previous (:compiler-observation @(:state ctx))
-          inputs (declared-inputs cwd)
+          admission-inputs (declared-inputs cwd)
           execution (execution-context ctx)
-          fingerprint (rt/digest (pr-str {:command argv :inputs inputs :execution execution}))
+          fingerprint-inputs (if (seq (:inputs previous))
+                               (declared-execution-inputs cwd previous)
+                               admission-inputs)
+          frontend-host-input-id (probe/frontend-host-input-id cwd)
+          fingerprint (execution-fingerprint argv fingerprint-inputs frontend-host-input-id execution)
           effect (str "compiler-observation/" fingerprint)
           prior-effect (:observation-effect previous)
           observed
@@ -310,14 +404,9 @@
               (rt/fail! "Original compiler execution needs inspection; changed inputs cannot replay it"
                         {:effect prior-effect
                          :restricted (= :restricted (get-in @(:state ctx) [:effects prior-effect :status]))}))
-            (if (and (= fingerprint (:execution-fingerprint previous))
-                     (or (= :blocked (:status previous)) (current? cwd previous argv)))
-              (let [cached (or (get-in @(:state ctx) [:effects prior-effect :result]) previous)]
-                (if (and (= :blocked (:status cached)) (nil? (:input-id cached)) (map? (:execution cached)))
-                  ;; Interpret a retained wrapper result without rewriting its
-                  ;; original effect or replaying the terminated process.
-                  (assoc cached :terminal (:terminal (blocked (:reason cached) (:execution cached))))
-                  cached))
+            (if (reusable-observation? cwd argv fingerprint fingerprint-inputs
+                                       frontend-host-input-id previous)
+              (reused-result ctx previous prior-effect)
               (rt/effect! ctx effect
                           #(let [result (try (execute! argv)
                                              (catch Exception e
@@ -326,33 +415,22 @@
                                                        (not (map? (:result (ex-data e)))))
                                                  (throw e)
                                                  (:result (ex-data e)))))]
-                             (cond
-                               (:capture-truncated result) (blocked "Compiler observation capture was truncated" result)
-                               (not (number? (:exitCode result))) (blocked "Compiler execution has no terminal status" result)
-                               :else
-                               (try
-                                 (let [{observation :value warnings :warnings} (read-result result)]
-                                   (when-not (= inputs (:inputs observation))
-                                     (rt/fail! "Compiler observation omitted or changed declared source inputs" {}))
-                                   (assoc
-                                    (if (= "P18T04007" (get-in observation [:failure :id]))
-                                      (blocked "Final-release refusal does not identify an implementation repair" result)
-                                      (validate-observation! cwd argv result observation))
-                                    :execution result :execution-warnings warnings))
-                                 (catch Exception e
-                                   (blocked (str "Compiler execution prerequisite or observation unavailable: " (.getMessage e)) result)))))))
+                             (compiler-result cwd argv execution result))))
             (catch Exception e
               (assoc (blocked (.getMessage e) (:result (ex-data e)))
                      :restricted (boolean (:restricted (ex-data e)))
                      :effect (or (:effect (ex-data e)) prior-effect effect))))
-          observed (merge {:source-revision base :inputs inputs :route (probe/route [])}
+          observed (merge {:source-revision base :route (probe/route [])}
                           observed
-                          {:execution-fingerprint fingerprint :execution-context execution
-                           :observation-effect (or (:effect observed) effect)})
-          observed (if (current? cwd observed argv)
-                     (validate-observation! cwd argv {:exitCode (get-in observed [:terminal :exit])}
-                                            (classify-observation cwd observed))
-                     observed)]
+                          {:execution-fingerprint (or (:execution-fingerprint observed) fingerprint)
+                           :execution-context execution
+                           :observation-effect (or (:observation-effect observed) (:effect observed) effect)
+                           :admission-inputs admission-inputs
+                           :admission-input-id (admission-input-id admission-inputs)})
+          observed (if (admission-current? cwd observed)
+                     (classify-observation cwd observed)
+                     (assoc observed :status :blocked
+                            :reason "Planning and ownership inputs changed during compiler observation"))]
       (rt/update! ctx assoc :compiler-observation observed)
       observed)))
 

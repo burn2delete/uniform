@@ -285,13 +285,20 @@
      :verification reports :runtime-observation {:node-version observed-node}
      :artifact-inventory (assoc artifacts :manifest (text-artifact "manifest.edn" (:manifest contents)))})))
 
-(defn compile-source!
-  "Compile actual source under explicit policy and emit one fresh directory.
-   This is the production source-to-module route; no tests, supplied IR or
-   manual intermediate transformation are required."
-  [source-path policy options]
+(defn- compile-source*
+  [source-path policy options discover-policy?]
   (emission-request! source-path options)
-  (bootstrap/p15-s23-call-with-current-source-verified-mir
-   source-path policy
-   (fn [application authenticate!]
-     (emit-verified-module! authenticate! application options))))
+  (let [emit (fn [application authenticate!]
+               (emit-verified-module! authenticate! application options))]
+    (if discover-policy?
+      (bootstrap/p15-s23-call-with-current-source-verified-mir source-path emit)
+      (bootstrap/p15-s23-call-with-current-source-verified-mir source-path policy emit))))
+
+(defn compile-source!
+  "Compile actual source with discovered or explicit policy into a fresh directory.
+   Discovery reads policy from the first authoritative ingress; construction
+   still performs the genuine source replay before target emission."
+  ([source-path options]
+   (compile-source* source-path nil options true))
+  ([source-path policy options]
+   (compile-source* source-path policy options false)))

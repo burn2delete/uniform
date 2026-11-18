@@ -127,6 +127,62 @@
               :plan-assembly-semantic-hash :plan-assembly-invoked?
               :plan-assembly-generic-bridge-residual?])))))))
 
+(defn p15-s23-stage2-current-expression-development-record-authentic?
+  "Validate a measured current expression binding without consulting the
+  historical source or semantic pins used by the versioned reference record."
+  [record current-binding plan]
+  (let [keys-for-v2 (conj p15-s23-stage2-compiler-artifact-record-keys
+                          :source-contract-version
+                          :functions-semantic-hash
+                          :function-count)
+        compiler (:compiler plan)]
+    (and
+     (map? record)
+     (= keys-for-v2 (set (keys record)))
+     (= :gravity/p15-s23-stage2-expression-lowering-binding
+        (:artifact record))
+     (= :development-current (:source-mode current-binding))
+     (= :complete (:status current-binding))
+     (= 2 (:source-contract-version current-binding))
+     (= 2 (:source-contract-version record))
+     (= (:source-content-hash current-binding)
+        (:source-content-hash record)
+        (:expression-lowering-source-content-hash compiler))
+     (= (:semantic-hash current-binding)
+        (:semantic-hash record)
+        (:expression-lowering-semantic-hash compiler))
+     (= (:artifact-hash current-binding)
+        (:artifact-hash record)
+        (:expression-lowering-artifact-hash compiler))
+     (= (:functions current-binding) (:functions record))
+     (= (:functions-semantic-hash current-binding)
+        (:functions-semantic-hash record)
+        (:expression-lowering-functions-semantic-hash compiler))
+     (= (:function-count current-binding)
+        (:function-count record)
+        (:expression-lowering-function-count compiler))
+     (true? (:invoked? record))
+     (true? (:generic-bridge-residual? record))
+     (= p15-s23-stage2-compiler-artifact-plan-assembly-function
+        (:plan-assembly-function record))
+     (= (:plan-assembly-function record)
+        (:plan-assembly-function compiler))
+     (= (:artifact-hash record)
+        (:plan-assembly-artifact-hash record)
+        (:plan-assembly-artifact-hash compiler))
+     (= (:source-content-hash record)
+        (:plan-assembly-source-content-hash record)
+        (:plan-assembly-source-content-hash compiler))
+     (= (:semantic-hash record)
+        (:plan-assembly-semantic-hash record)
+        (:plan-assembly-semantic-hash compiler))
+     (true? (:plan-assembly-invoked? record))
+     (true? (:plan-assembly-generic-bridge-residual? record))
+     (true? (:clojure-seed-boundary? record))
+     (false? (:self-hosted? record))
+     (= (get-in current-binding [:source-program :plan-id])
+        (get-in current-binding [:plan :plan-id])))))
+
 (defn p15-s23-stage2-compiler-artifact-source-path
   []
   (let [compiler-source (c-backend-resolve-p15-s23-compiler-source-path)

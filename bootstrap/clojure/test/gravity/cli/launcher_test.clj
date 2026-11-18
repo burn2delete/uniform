@@ -102,6 +102,34 @@
        "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
        "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
 
+(defn- compile-error-expression
+  [arguments]
+  (str "(require 'gravity.cli.launcher)"
+       " (let [exit-code (atom nil)]"
+       "   (with-redefs-fn {(ns-resolve 'gravity.cli.launcher 'exit!)"
+       "                      (fn [status] (reset! exit-code status))}"
+       "     #(gravity.cli.launcher/-main "
+       (str/join " " (map pr-str arguments)) "))"
+       "   (prn {:exit-code @exit-code"
+       "         :bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+       "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
+       "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
+
+(defn- compile-forward-expression
+  [arguments]
+  (str "(require 'gravity.cli.launcher)"
+       " (let [calls (atom nil)"
+       "       bootstrap (create-ns 'gravity.bootstrap)"
+       "       loaded-libs (var-get (resolve 'clojure.core/*loaded-libs*))]"
+       "   (intern bootstrap '-main"
+       "           (fn [& arguments] (reset! calls (vec arguments))))"
+       "   (dosync (alter loaded-libs conj 'gravity.bootstrap))"
+       "   (gravity.cli.launcher/-main "
+       (str/join " " (map pr-str arguments)) ")"
+       "   (prn {:forwarded @calls"
+       "         :bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+       "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
+
 (defn- expected-presentation
   [argument packaged?]
   (if (#{"help" "--help" "-h"} argument)
@@ -135,6 +163,54 @@
                 :entrypoint-loaded false
                 :cli-loaded true}
                marker))))))
+
+(deftest malformed-compile-arguments-are-bootstrap-free
+  (doseq [arguments [["compile"]
+                     ["compile" "source.gravity" "--target"]
+                     ["compile" "source.gravity" "--unknown"]
+                     ["compile" "source.gravity" "-o"]
+                     ["compile" "source.gravity" "--target" "js"
+                      "--target" "js"]
+                     ["compile" "source.gravity" "-o" "target/one"
+                      "--output" "target/two"]
+                     ["compile" "source.gravity" "-o" "../outside"]]]
+    (testing (pr-str arguments)
+      (let [{:keys [exit err marker]} (child-observation
+                                      false (compile-error-expression arguments))
+            diagnostic (edn/read-string (without-known-java-tool-options-banner err))]
+        (is (= 0 exit) (pr-str {:err err :marker marker}))
+        (is (= {:id "P18T04002"
+                :message "compile executable output usage is invalid"
+                :bootstrap-stage :stage0
+                :source-span {:source (if (and (string? (second arguments))
+                                              (not (str/blank? (second arguments)))
+                                              (not (str/starts-with? (second arguments) "-")))
+                                       (second arguments)
+                                       "bin/gravity")}
+                :phase "P18-T04"
+                :diagnostic-family :p18-t04-executable-command-contract}
+               (select-keys diagnostic
+                            [:id :message :bootstrap-stage :source-span :phase
+                             :diagnostic-family])))
+        (is (= {:exit-code 1
+                :bootstrap-loaded false
+                :entrypoint-loaded false
+                :cli-loaded true}
+               marker))))))
+
+(deftest valid-compile-arguments-forward-unchanged
+  (doseq [arguments [["compile" "source.gravity" "-o"
+                      "target/legacy-output"]
+                     ["compile" "source.gravity" "--target" "js"
+                      "-o" "target/compile-output"]]]
+    (let [{:keys [exit err marker]}
+          (child-observation false (compile-forward-expression arguments))]
+      (is (= 0 exit) (pr-str {:arguments arguments :err err :marker marker}))
+      (is (= "" (without-known-java-tool-options-banner err)))
+      (is (= {:forwarded arguments
+              :bootstrap-loaded true
+              :cli-loaded true}
+             marker)))))
 
 (deftest build-route-uses-standalone-invocation
   (let [bootstrap-before (find-ns 'gravity.bootstrap)

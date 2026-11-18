@@ -15,13 +15,13 @@ I64 arguments and results use JavaScript BigInt with signed 64-bit checks.
 
 Use `bin/gravity compile <source> --target js -o <fresh-directory>`, or the
 explicit current-source launcher `clojure -J-Xmx2g -M:gravity compile` with
-the same arguments. The CLI reads source policy through the existing current
-Reader/Syntax and module machinery, then calls
+the same arguments. The CLI derives source policy from the actual source during
+the first authoritative Reader/Syntax and module ingress, then calls
 `gravity.compiler.application/current-source-to-js-module`. Users supply no
 Clojure API expression, policy map, intermediate IR or compilation harness.
-Fresh construction and verification remain authoritative; preliminary policy
-discovery does not accept the program. The producer accepts no supplied Core,
-MIR, verifier report, construction token or target eligibility certificate.
+The constructor replays those inputs before verification; policy extraction
+alone does not accept the program. The producer accepts no supplied Core, MIR,
+verifier report, construction token or target eligibility certificate.
 
 The public integration source candidate is
 `dda7fd940b12af20c6e7016bef224cc984ca5362`, tree
@@ -124,9 +124,19 @@ Require clean initial status, the intended candidate SHA, the documented
 toolchain and successful current-source launch before recording acceptance.
 Explicit target/lowering commands already bypass a historical packaged JAR in
 `bin/gravity`. Run `clojure -M:gravity help` for the current checked JavaScript
-command and explicit legacy lowering. The historical shell launcher's static
-help is frozen by the repository language-boundary contract; its bytes and
-current-source selection remain unchanged.
+command and explicit legacy lowering. The shell wrapper reads checked-in help
+resources rendered by the Clojure CLI presentation. Source and archived
+packaged-JVM help share the command forms while reporting their selected
+launcher metadata. This help path works without Clojure and independently of
+the caller's working directory; other wrapper behavior remains behind the
+existing frozen-shell boundary.
+
+Regenerate the checked-in wrapper help resources through the supported Clojure
+resource renderer:
+
+```bash
+clojure -M -e '(require (quote gravity.cli)) (doseq [[path launcher] [["bootstrap/clojure/resources/gravity/cli/help-source.txt" :source] ["bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt" :archived-packaged-jvm-cli]]] (spit path (gravity.cli/p18-cli-help-resource-text launcher)))'
+```
 
 ## Exact public source-to-module invocation
 

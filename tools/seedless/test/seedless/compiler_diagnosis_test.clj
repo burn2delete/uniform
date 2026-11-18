@@ -13,7 +13,11 @@
 ;; capture provenance and production workflow boundaries have separate tests.
 (def paths ["module.clj" "producer.clj" diagnosis/ownership-path diagnosis/requirements-path])
 (use-fixtures :each
-  (fn [test] (with-redefs [rt/event! (fn [& _]) probe/input-paths paths] (test))))
+  (fn [test] (with-redefs [rt/event! (fn [& _])
+                           probe/input-paths paths
+                           probe/frontend-support-input-paths ["producer.clj"]
+                           probe/frontend-host-input-paths (constantly [])]
+               (test))))
 
 (defn context []
   (let [ctx (fixture/repository! (fixture/context)) cwd (get-in ctx [:config :repo-dir])]
@@ -39,19 +43,24 @@
 
 (defn raw-observation [ctx reason]
   (let [cwd (get-in ctx [:config :repo-dir])
+        route {:command compiler/command :stage :current-source-function-types
+               :target :llvm-x86_64-linux :triple "x86_64-unknown-linux-gnu"
+               :scope :synthetic-complete-test-population
+               :closure [{:component-id :synthetic-module :source-path "module.clj"}]}
         raw {:source-revision (rt/git ctx cwd "rev-parse" "HEAD")
-             :inputs (compiler/declared-inputs cwd)
-             :route {:command compiler/command :stage :current-source-function-types
-                     :target :llvm-x86_64-linux :triple "x86_64-unknown-linux-gnu"
-                     :scope :synthetic-complete-test-population
-                     :closure [{:component-id :synthetic-module :source-path "module.clj"}]}
+             :inputs (probe/execution-inputs cwd {:route route})
+             :frontend-host-input-id (probe/frontend-host-input-id cwd)
+             :route route
              :position {:component 0 :stage :function-types} :completed []
              :subject {:source-path "module.clj" :source-sha256 (compiler/input-sha256 cwd "module.clj")}
              :terminal {:status :failed :exit 1} :status :blocked
              :failure {:id "SYNTHETIC-REJECTION" :kind :unclassified :source "module.clj"
                        :reason "Synthetic typed compiler rejection"
                        :diagnostic {:compiler-result-status :rejected :reason reason :function 'subject}}}
-        raw (assoc raw :input-id (compiler/input-id raw))]
+        admissions (compiler/declared-inputs cwd)
+        raw (assoc raw :admission-inputs admissions
+                       :admission-input-id (compiler/admission-input-id admissions)
+                       :input-id (compiler/input-id raw))]
     (assoc raw :execution {:exitCode 1 :stdout (pr-str raw) :stderr "" :capture-truncated false})))
 
 (defn proposal [ctx observation]

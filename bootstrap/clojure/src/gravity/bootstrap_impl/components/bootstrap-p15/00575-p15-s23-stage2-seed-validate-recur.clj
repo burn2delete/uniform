@@ -10,11 +10,7 @@
   ;; Source forms are untrusted at this boundary.  Carry tail context on an
   ;; explicit worklist so deeply nested rejected input cannot consume the host
   ;; call stack before producing a structured diagnostic.
-  (loop [pending [[form target-arity tail-position? (:p15-s23-sh07-callsite-path module [])]]
-         observed 0]
-    (when (> observed 262144)
-      (p15-s23-stage2-seed-recur-fail!
-       module form target-arity nil :validation-form-limit))
+  (loop [pending [[form target-arity tail-position? (:p15-s23-sh07-callsite-path module [])]]]
     (if (empty? pending)
       :passed
       (let [[current current-target current-tail? path] (peek pending)
@@ -156,7 +152,7 @@
             tasks (mapv (fn [task child-path] (conj task child-path)) tasks paths)]
         ;; `pending` is a LIFO vector.  Reverse newly discovered tasks so
         ;; diagnostics retain deterministic left-to-right source order.
-        (recur (into pending (reverse tasks)) (inc observed))))))
+        (recur (into pending (reverse tasks)))))))
 
 (defn p15-s23-stage2-seed-compile-let
   [emitter module locals bindings body]

@@ -97,16 +97,17 @@
                   (p15-s23-c11-mir-contain-exception! source-path :contained-public-c11-verifier-diagnostic error))
                 (catch Exception error
                   (p15-s23-c11-mir-contain-exception! source-path :contained-public-c11-verifier-host-failure error)))))]
-    (defn p15-s23-current-source-to-verified-mir
-      "Production source-only composition under the original C11 authority.
-       No accepted artifact, report, binding, plan or token is a caller input."
-      [source-path policy]
+    (defn- p15-s23-current-source-to-verified-mir*
+      [source-path policy discover-policy?]
       (binding [*print-length* nil *print-level* nil *print-meta* false
                 *print-dup* false *print-readably* true *print-namespace-maps* false]
-      (p15-s23-application-request! source-path policy)
+      (when-not discover-policy?
+        (p15-s23-application-request! source-path policy))
       (let [source (p15-s23-application-source-snapshot! source-path)
             path (:path source)
-            fresh (p15-s23-c6c10-current-scalar-construction path (:text source) policy)
+            fresh (if discover-policy?
+                    (p15-s23-c6c10-current-scalar-construction path (:text source))
+                    (p15-s23-c6c10-current-scalar-construction path (:text source) policy))
             checked-core (:artifact fresh)
             context (:context fresh)
             mir (binding [*p15-s23-c11-mir-diagnostic-context*
@@ -116,7 +117,7 @@
             result
             {:artifact :gravity/compiler-application :schema-version 1 :status :accepted
              :source (dissoc source :text)
-             :source-target (:target policy)
+             :source-target (get-in fresh [:source-policy-receipt :policy :target])
              :checked-core checked-core :mir-module (:mir-module mir)
              :core-verification (:gravity-verification fresh)
              :mir-verification (:verification mir)
@@ -133,6 +134,14 @@
         (assoc result :artifact-id
                (p15-s23-c6c10-canonical-digest
                 path {:domain :gravity/compiler-application-v1 :artifact result})))))
+
+    (defn p15-s23-current-source-to-verified-mir
+      "Build from source under C11 authority, discovering source policy by arity.
+       No accepted artifact, report, binding, plan or token is a caller input."
+      ([source-path]
+       (p15-s23-current-source-to-verified-mir* source-path nil true))
+      ([source-path policy]
+       (p15-s23-current-source-to-verified-mir* source-path policy false)))
 
     (defn p15-s23-authenticate-current-source-mir-handoff!
       "Authenticate an invocation-local source construction handoff.
@@ -153,11 +162,11 @@
     ;; Capture the original constructor value in the same lexical authority.
     ;; Replacing the public source API Var must not register fabricated products.
     (let [construct-source p15-s23-current-source-to-verified-mir]
-    (defn p15-s23-call-with-current-source-verified-mir
-      "Compose a backend with genuine freshly constructed source products.
-       The consumer receives the product and an invocation-local handoff."
-      [source-path policy consumer]
-      (let [product (construct-source source-path policy)
+    (defn- p15-s23-call-with-current-source-verified-mir*
+      [source-path policy consumer discover-policy?]
+      (let [product (if discover-policy?
+                      (construct-source source-path)
+                      (construct-source source-path policy))
             path (get-in product [:source :path])
             authenticate!
             (fn [candidate]
@@ -180,7 +189,17 @@
           (consumer product authenticate!)
           (finally
             (locking live-application-handoffs
-              (.remove live-application-handoffs authenticate!)))))))
+              (.remove live-application-handoffs authenticate!))))))
+
+    (defn p15-s23-call-with-current-source-verified-mir
+      "Compose a backend with freshly constructed source products.
+       Two arguments discover source policy; three use explicit policy."
+      ([source-path consumer]
+       (p15-s23-call-with-current-source-verified-mir*
+        source-path nil consumer true))
+      ([source-path policy consumer]
+       (p15-s23-call-with-current-source-verified-mir*
+        source-path policy consumer false))))
 
     (defn p15-s23-stage2-c11-mir-artifact
       "Existing legacy arity remains v1. The explicit header selects only a built-in contract."

@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]
             [gravity.self-hosting.sh09-body-effect-test :as body-effects]
             [gravity.self-hosting.sh08-authenticated-type-integration-test]))
 
@@ -119,23 +120,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
                  (body-effects/module-root-plan plan) plan))))
-
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
 
 (defn- bridge-source-revision
   []
@@ -339,7 +323,7 @@
          #(fact-transition % (get fact-values %) evidence-id)
          fact-names)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh09-authenticated-effect-bridge
      :artifact-kind :gravity/sh09-authenticated-effect-boundary
      :source-revision (bridge-source-revision)
@@ -470,8 +454,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor sh08-verification]
@@ -571,9 +554,8 @@
      :result result}))
 
 (deftest sh09-authenticated-effect-bridge-compiles-with-narrow-api
-  (doseq [plan [envelope-plan c8-plan bridge-plan]]
-    (is (= (if (identical? plan c8-plan) :gravity/stage2-compiler-artifact-module-bundle
-               :gravity/stage2-compiler-artifact-plan) (:kind @plan))))
+  (doseq [plan [envelope-plan bridge-plan]]
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan))))
   (let [functions (:functions @bridge-plan)]
     (is (= {:arity 0 :params []}
            (select-keys
@@ -597,6 +579,36 @@
            (select-keys
             (get functions 'sh09-verify-authenticated-effect-result)
             [:arity :params])))))
+
+(deftest sh09-c8-construction-requires-module-bundle
+  (let [source-path (path "bootstrap/clojure/fixtures/self-hosting/sh-08/modules/module-chain-leaf.gravity")
+        source-text (slurp source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        reader-path (path bootstrap/sh03-reader-source-relative-path)
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        resolution (bootstrap/compiler-c5-resolution-source-artifact
+                    source-path source-text
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                    reader-path invocation)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                emitter source-path source-text
+                {:caller-resolution-artifact resolution :dependency-plans []}
+                invocation)
+        ordinary-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text)
+        failure (try
+                  (kernel-support/require-c8-module-bundle ordinary-plan)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+    (is (= :accepted (:status resolution)))
+    (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind bundle)))
+    (is (identical? bundle (kernel-support/require-c8-module-bundle bundle)))
+    (is (= "SH09-C8-MODULE-BUNDLE-REQUIRED" (:id failure)))
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind failure)))))
 
 (deftest sh09-accepts-pure-and-explicit-compiler-read
   (doseq [[extension sh08-products]
@@ -800,8 +812,7 @@
              {:artifact
               :gravity/sh09-authenticated-effect-bridge-request
               :schema-version 1
-              :unexpected true}
-             over-depth-carrier]]
+              :unexpected true}]]
       (let [result
             (invoke
              bridge-plan
@@ -809,4 +820,46 @@
              [value])]
         (is (= :rejected (:status result)))
         (is (= "STD09-BRIDGE-SCHEMA"
-               (get-in result [:diagnostics 0 :rule])))))))
+               (get-in result [:diagnostics 0 :rule])))))
+    (let [result
+          (invoke
+           bridge-plan
+           'sh09-build-authenticated-effect-request
+           [over-depth-carrier])]
+      (is (= :rejected (:status result)))
+      (is (= "STD09-BRIDGE-SCHEMA"
+             (get-in result [:diagnostics 0 :rule])))
+      (is (= :request-keys
+             (get-in result [:diagnostics 0 :facts :reason]))))))
+
+(deftest sh09-long-captured-path-retains-provenance-and-authentication
+  (let [path (str "/checkout-a/" (apply str (repeat 4096 "a")) ".gravity")
+        prepared (prepared-request @sh08-gravity :pure path)
+        request (:request prepared)
+        result (:result (run-bridge prepared))
+        substituted
+        (invoke bridge-plan 'sh09-build-authenticated-effect-request
+                [(assoc request :actual-source-path (str path "/substituted"))])]
+    (is (> (count path) 4096))
+    (is (= :accepted (:status result)))
+    (is (= path (get-in request [:envelope :actual-path-provenance :source-path])))
+    (is (= path (get-in result [:provenance :actual-source-path])))
+    (is (= :rejected (:status substituted)))
+    (is (= :invalid-authenticated-envelope
+           (get-in substituted [:diagnostics 0 :facts :reason])))))
+
+(deftest sh09-captured-path-validation-has-no-size-quota
+  (let [path (apply str (repeat 16777217 "a"))
+        envelope {:actual-path-provenance {:source-path path}}
+        malformed
+        (invoke bridge-plan 'sh09-build-authenticated-effect-request
+                [{:actual-source-path path}])]
+    (is (> (count path) 16777216))
+    (is (nil? (invoke bridge-plan 'sh09-bridge-captured-path-error
+                      [path envelope])))
+    (is (= [:envelope :invalid-authenticated-envelope]
+           (invoke bridge-plan 'sh09-bridge-captured-path-error
+                   [(str path "x") envelope])))
+    (is (= :rejected (:status malformed)))
+    (is (= :request-keys
+           (get-in malformed [:diagnostics 0 :facts :reason])))))

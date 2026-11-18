@@ -75,7 +75,8 @@
           index (get-in raw [:position :component])
           component (when (nat-int? index) (get closure index))
           source (get-in raw [:failure :source])
-          stable [:source-revision :input-id :inputs :route :position :completed :subject :terminal]]
+          stable [:source-revision :input-id :frontend-host-input-id :inputs :route
+                  :position :completed :subject :terminal]]
       (and (not (:restricted observation))
            (= :blocked (:status raw)) (= :unclassified (get-in raw [:failure :kind]))
            ;; Preserve the collector's existing final-release boundary even
@@ -84,7 +85,8 @@
            (= :rejected (get-in raw [:failure :diagnostic :compiler-result-status]))
            (= {:status :failed :exit 1} (:terminal raw))
            (re-matches #"[0-9a-f]{40}" (or (:source-revision raw) ""))
-           (= (mapv :path (:inputs raw)) (vec probe/input-paths))
+           (= (mapv :path (:inputs raw))
+              (probe/frontend-input-paths cwd (get-in raw [:route :closure])))
            (= (select-keys raw stable) (select-keys observation stable))
            (= (get-in raw [:failure :id]) (get-in observation [:failure :id]))
            (= (get-in raw [:failure :diagnostic]) (get-in observation [:failure :diagnostic]))
@@ -139,7 +141,7 @@
 
 (defn- covered? [observation path]
   (some #(or (= path (:path %)) (str/starts-with? path (str (:path %) "/")))
-        (:inputs observation)))
+        (concat (:inputs observation) (:admission-inputs observation))))
 
 (defn- ownership-record [cwd]
   (let [record (read-one (current-contents cwd ownership-path))]
@@ -354,7 +356,8 @@
             (rt/fail! "Pending progress assessment must name missing evidence" {})) false)
       (do
         (let [raw (captured before)
-              bound [:source-revision :input-id :inputs :route :position :completed :subject :terminal]]
+              bound [:source-revision :input-id :frontend-host-input-id :inputs :route
+                     :position :completed :subject :terminal]]
           (when-not (and (= (:input-id before) (compiler/input-id before))
                          (= (select-keys raw bound) (select-keys before bound))
                          (= (get-in raw [:failure :diagnostic]) (get-in before [:failure :diagnostic]))

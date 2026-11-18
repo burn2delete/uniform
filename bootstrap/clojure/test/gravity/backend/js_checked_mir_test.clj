@@ -390,7 +390,19 @@
   (with-source "acceptance.gravity" scalar-source
     (fn [path directory]
       (let [output (.resolve directory "acceptance-js")
-            result (application/current-source-to-js-module path scalar-policy (options output))
+            frontend-products bootstrap/p15-s23-stage2-c2-c3-front-end-products
+            frontend-count (atom 0)
+            started-at (System/nanoTime)
+            ;; Exercise the public source-policy discovery route. The source
+            ;; constructor must derive policy during its authoritative ingress
+            ;; instead of parsing Reader/Syntax products in a preliminary pass.
+            result (with-redefs [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                                 (fn [source-path & args]
+                                   (when (= path source-path)
+                                     (swap! frontend-count inc))
+                                   (apply frontend-products source-path args))]
+                     (application/current-source-to-js-module path (options output)))
+            elapsed-ms (/ (- (System/nanoTime) started-at) 1000000.0)
             product (:application result)
             invoke (reference-invoker path)
             node (node-report path (get-in result [:paths :javascript]) scalar-execution-script)
@@ -400,6 +412,9 @@
                        [true Long/MAX_VALUE Long/MIN_VALUE]]
             expected ["10" "7" "18014398509481987" "9223372036854775807"
                       "-9223372036854775808" "-1"]]
+        (is (= 2 @frontend-count)
+            "One authoritative C2/C3 ingress and one genuine construction replay run on the actual source")
+        (is (= scalar-policy (get-in product [:source-policy-receipt :policy])))
         (assert-artifacts result path scalar-source)
         (is (= ["score"] (get node "exports")) "Private add is not exported")
         (is (= expected (get node "results")))
@@ -413,7 +428,64 @@
             (is (= node (node-report path (str (.resolve outside "program.mjs")) scalar-execution-script)))
             (finally (js/delete-tree! outside))))
         (println "checked scalar Node20 execution" (pr-str {:results expected :exports (get node "exports")
-                                                           :standalone true}))))))
+                                                           :standalone true}))
+        (println "checked JS public source path stages"
+                 (pr-str {:entrypoint :current-source-policy-discovery
+                          :actual-source-c2-c3-ingresses @frontend-count
+                          :genuine-replay-count 1
+                          :compile-elapsed-ms elapsed-ms}))))))
+
+(deftest scalar-module-discovery-and-explicit-policy-ordering
+  (with-source "malformed-discovery.gravity" (str scalar-source "[")
+    (fn [path directory]
+      (let [frontend-products bootstrap/p15-s23-stage2-c2-c3-front-end-products
+            frontend-count (atom 0)
+            output (.resolve directory "discovery-rejected")
+            data (with-redefs [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                               (fn [source-path & args]
+                                 (when (= path source-path)
+                                   (swap! frontend-count inc))
+                                 (apply frontend-products source-path args))]
+                   (failure #(application/current-source-to-js-module path (options output))))]
+        (is (= "C2-DELIMITER" (:id data)) (pr-str data))
+        (is (= 1 @frontend-count)
+            "Malformed actual source rejects during its first ingress without entering replay")
+        (is (not (.exists (.toFile output)))))))
+  (with-source "malformed-explicit.gravity" (str scalar-source "[")
+    (fn [path directory]
+      (let [frontend-products bootstrap/p15-s23-stage2-c2-c3-front-end-products
+            frontend-count (atom 0)
+            invalid-policy (assoc scalar-policy :profile :native)
+            output (.resolve directory "explicit-rejected")
+            data (with-redefs [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                               (fn [source-path & args]
+                                 (when (= path source-path)
+                                   (swap! frontend-count inc))
+                                 (apply frontend-products source-path args))]
+                   (failure #(application/current-source-to-js-module
+                              path invalid-policy (options output))))]
+        (is (= "C11-MODULE" (:id data)) (pr-str data))
+        (is (= :application-explicit-hosted-safe-scalar-policy (:missing-fact data))
+            (pr-str data))
+        (is (zero? @frontend-count)
+            "An invalid explicit policy retains precedence over malformed source")
+        (is (not (.exists (.toFile output)))))))
+  (with-source "explicit-discovery-keyword.gravity" scalar-source
+    (fn [path directory]
+      (let [frontend-products bootstrap/p15-s23-stage2-c2-c3-front-end-products
+            frontend-count (atom 0)
+            output (.resolve directory "keyword-rejected")
+            data (with-redefs [bootstrap/p15-s23-stage2-c2-c3-front-end-products
+                               (fn [source-path & args]
+                                 (when (= path source-path)
+                                   (swap! frontend-count inc))
+                                 (apply frontend-products source-path args))]
+                   (failure #(application/current-source-to-js-module
+                              path :gravity/source-policy-discovery (options output))))]
+        (is (= "C11-MODULE" (:id data)) (pr-str data))
+        (is (zero? @frontend-count)
+            "Source discovery is selected by API arity, never an explicit caller data value")
+        (is (not (.exists (.toFile output))))))))
 
 (deftest scalar-module-runtime-rejections
   (with-source "runtime-rejections.gravity" scalar-source

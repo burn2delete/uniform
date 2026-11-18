@@ -115,23 +115,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions plan)))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- bridge-source-revision []
   (let [source-text (slurp (path bridge-source))
         plan @bridge-plan
@@ -299,7 +282,7 @@
          fact-names)]
     {:artifact
      :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh10-authenticated-ownership-bridge
      :artifact-kind
      :gravity/sh10-authenticated-ownership-boundary
@@ -446,8 +429,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor sh08-verification]
@@ -600,6 +582,68 @@
         functions
         'sh10-verify-authenticated-ownership-result)
        [:arity :params])))))
+
+(deftest sh10-identity-checks-require-every-authenticated-pair
+  (let [names [:sh08-typed-core :sh10-ownership-result
+               :sh10-type-fact-link :sh10-effect-fact-link
+               :sh10-capability-proof-link
+               :sh10-ownership-operation]
+        domains [:gravity/sh10-sh08-typed-core-v1
+                 :gravity/sh10-ownership-result-v2
+                 :gravity/sh10-type-fact-link-v1
+                 :gravity/sh10-effect-fact-link-v1
+                 :gravity/sh10-capability-proof-link-v1
+                 :gravity/sh10-ownership-operation-v1]
+        fact {:effects [] :capabilities []}
+        typed {:artifact-id
+               (identity-id :gravity/sh10-test-typed-artifact
+                            {:test true})
+               :identity-input {:module :test}
+               :type-facts [fact]}
+        ownership-result
+        {:status :accepted
+         :state {:availability :available}}
+        operation {:operation :initialized-read}
+        preimages
+        [{:typed-artifact-id (:artifact-id typed)
+          :identity-input (:identity-input typed)}
+         ownership-result
+         {:fact fact}
+         {:effects (:effects fact)}
+         {:capabilities (:capabilities fact)}
+         operation]
+        observed-ids (mapv identity-id domains preimages)
+        checks
+        (mapv
+         (fn [name domain observed-id]
+           {:name name :domain domain
+            :computed-id observed-id
+            :observed-id observed-id})
+         names domains observed-ids)
+        subjects
+        (mapv
+         (fn [name domain preimage observed-id]
+           {:name name :domain domain
+            :preimage preimage :observed-id observed-id})
+         names domains preimages observed-ids)
+        arguments
+        [checks subjects typed ownership-result operation
+         (nth observed-ids 1) (nth observed-ids 5)
+         (nth observed-ids 2) (nth observed-ids 3)
+         (nth observed-ids 4)]
+        accepted
+        (invoke
+         bridge-plan 'sh10-bridge-identity-checks-valid?
+         arguments)
+        altered-subjects
+        (assoc-in subjects [3 :preimage]
+                  {:effects [:changed]})
+        rejected
+        (invoke
+         bridge-plan 'sh10-bridge-identity-checks-valid?
+         (assoc arguments 1 altered-subjects))]
+    (is (true? accepted))
+    (is (false? rejected))))
 
 (deftest sh10-accepts-authenticated-read-borrow-and-move
   (doseq [[extension sh08-products]
@@ -809,6 +853,46 @@
     (is (not= (:provenance result-a)
               (:provenance result-b)))))
 
+(deftest sh10-long-captured-path-retains-provenance-and-authentication
+  (let [path (str "/checkout-a/" (apply str (repeat 4096 "a")) ".gravity")
+        prepared (prepared-request @sh08-gravity :initialized-read path)
+        request (:request prepared)
+        run (run-bridge prepared)
+        result (:result run)
+        substituted
+        (invoke bridge-plan 'sh10-build-authenticated-ownership-request
+                [(assoc request :actual-source-path (str path "/substituted"))])
+        empty-path
+        (invoke bridge-plan 'sh10-build-authenticated-ownership-request
+                [(assoc request :actual-source-path "")])]
+    (is (> (count path) 4096))
+    (is (= :accepted (:status result)))
+    (is (= path (get-in request [:envelope :actual-path-provenance :source-path])))
+    (is (= path (get-in (:c9-request run) [:actual-source-path])))
+    (is (= path (get-in result [:provenance :actual-source-path])))
+    (is (= :rejected (:status substituted)))
+    (is (= :invalid-authenticated-envelope
+           (get-in substituted [:diagnostics 0 :facts :reason])))
+    (is (= :rejected (:status empty-path)))
+    (is (= :actual-path-required
+           (get-in empty-path [:diagnostics 0 :facts :reason])))))
+
+(deftest sh10-captured-path-validation-has-no-size-quota
+  (let [path (apply str (repeat 16777217 "a"))
+        envelope {:actual-path-provenance {:source-path path}}
+        malformed
+        (invoke bridge-plan 'sh10-build-authenticated-ownership-request
+                [{:actual-source-path path}])]
+    (is (> (count path) 16777216))
+    (is (nil? (invoke bridge-plan 'sh10-bridge-captured-path-error
+                      [path envelope])))
+    (is (= [:envelope :invalid-authenticated-envelope]
+           (invoke bridge-plan 'sh10-bridge-captured-path-error
+                   [(str path "x") envelope])))
+    (is (= :rejected (:status malformed)))
+    (is (= :request-keys
+           (get-in malformed [:diagnostics 0 :facts :reason])))))
+
 (deftest sh10-authenticated-ownership-bridge-fails-closed-on-malformed-input
   (doseq [value
           [nil
@@ -828,7 +912,7 @@
       (is (= "STD10-BRIDGE-SCHEMA"
              (get-in result [:diagnostics 0 :rule]))))))
 
-(deftest sh10-authenticated-ownership-bridge-bounds-carriers
+(deftest sh10-authenticated-ownership-bridge-rejects-nonrequest-shape
   (let [deep (nth (iterate vector :leaf) 130)
         result
         (invoke
@@ -838,6 +922,6 @@
     (is (= :rejected (:status result)))
     (is (= "STD10-BRIDGE-SCHEMA"
            (get-in result [:diagnostics 0 :rule])))
-    (is (= :request-carrier-bound
+    (is (= :request-keys
            (get-in result
                    [:diagnostics 0 :facts :reason])))))

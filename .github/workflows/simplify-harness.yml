@@ -5,6 +5,7 @@ on:
     paths:
       - tools/simplify/**
       - tools/advance/**
+      - tools/ci/maven_dependencies.clj
       - .github/workflows/simplify-harness.yml
       - .github/actions/clojure/**
   push:
@@ -12,6 +13,7 @@ on:
     paths:
       - tools/simplify/**
       - tools/advance/**
+      - tools/ci/maven_dependencies.clj
       - .github/workflows/simplify-harness.yml
       - .github/actions/clojure/**
   workflow_dispatch:
@@ -33,6 +35,13 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        with:
+          dependency-directory: tools/advance
+          dependency-alias: test
+          dependency-cache-files: |
+            tools/advance/deps.edn
+            tools/simplify/deps.edn
+            .github/actions/clojure/action.yml
       - name: Test protocol and workflow without inference or GitHub writes
         working-directory: tools/advance
         run: clojure -Srepro -M:test

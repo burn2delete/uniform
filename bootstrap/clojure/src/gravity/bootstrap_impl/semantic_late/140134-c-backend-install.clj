@@ -33,6 +33,7 @@
       compile?
       lowering-mode
       runtime-derived?
+      current-runtime-development?
       executable-path
       c-source-path
       manifest-path
@@ -81,6 +82,7 @@
        :target target,
        :compile? compile?,
        :runtime-derived? runtime-derived?,
+       :current-runtime-development? current-runtime-development?,
        :dialect dialect}
       state-1
       (semantic-late-c-backend-source-artifact-packet state-0)

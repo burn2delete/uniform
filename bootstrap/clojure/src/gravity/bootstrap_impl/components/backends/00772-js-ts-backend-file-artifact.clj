@@ -49,100 +49,157 @@
   [source-path plan]
   (gravity.backend.jvm/validate-plan! #'c-backend-validate-runtime-plan! #'jvm-backend-fail! jvm-backend-target source-path plan))
 
+(defn- jvm-backend-current-runtime-development-packet-valid?
+  [packet trusted-plan]
+  (let [packet-plan (:plan packet)
+        compiler-record (:stage2-compiler-artifact-record packet)
+        plan-compiler (get-in packet [:plan :compiler])
+        runtime-record (:stage2-runtime-execution-record packet)
+        comparison-record
+        (:current-runtime-development-comparison-record packet)]
+    (and (= :gravity/current-source-runtime-development-packet (:kind packet))
+         (= :complete (:status packet))
+         (= :jvm (:requested-target packet))
+         (= {:status :accepted
+             :source-declared-target :jvm
+             :requested-target :jvm
+             :selection :source-and-request-agree}
+            (:target-eligibility packet))
+         (= (:plan-id trusted-plan) (:plan-id packet-plan))
+         (= (:plan-id packet-plan) (:plan-id runtime-record))
+         (= :complete (:status runtime-record))
+         (= :complete (:status comparison-record))
+         (= (:plan-id packet-plan) (:stage2-plan-id comparison-record))
+         (true? (:stage2-runtime-executed? comparison-record))
+         (true? (:accepted-output-equivalent? comparison-record))
+         (= (:reference-output packet) (:stdout runtime-record))
+         (= (:reference-output packet)
+            (:current-runtime-output comparison-record))
+         (= (:reference-output packet)
+            (:stage0-reference-output comparison-record))
+         (= (:artifact-hash compiler-record)
+            (:expression-lowering-artifact-hash plan-compiler))
+         (= (:source-content-hash compiler-record)
+            (:expression-lowering-source-content-hash plan-compiler))
+         (= (:semantic-hash compiler-record)
+            (:expression-lowering-semantic-hash plan-compiler)))))
+
+(defn- jvm-backend-validate-current-runtime-development-packet!
+  [source-path packet authenticated-reference trusted-plan]
+  (when-not (and
+             (= :passed (:status (p15-s23-trusted-carrier-validation
+                                  packet :default-only)))
+             (= :passed (:status (p15-s23-trusted-carrier-validation
+                                  authenticated-reference :default-only)))
+             (= :passed (:status (p15-s23-trusted-carrier-validation
+                                  trusted-plan :default-only))))
+    (jvm-backend-fail!
+     "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
+     source-path nil {:missing-fact :authenticated-target-neutral-stage2-packet}))
+  (when-not (and
+             (= (c-backend-canonical-value packet)
+                (c-backend-canonical-value authenticated-reference))
+             (= (:plan-id (:plan authenticated-reference))
+                (:plan-id trusted-plan))
+             (jvm-backend-current-runtime-development-packet-valid?
+              authenticated-reference trusted-plan))
+    (jvm-backend-fail!
+     "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
+     source-path (:plan packet)
+     {:observed-packet-kind (:kind packet)
+      :observed-packet-status (:status packet)
+      :observed-plan-id (get-in packet [:plan :plan-id])
+      :expected-plan-id (:plan-id trusted-plan)
+      :missing-fact :authenticated-target-neutral-stage2-packet}))
+  :passed)
+
 (defn jvm-backend-validate-packet!
   [source-path packet trusted-emitter-rule trusted-driver-rule
    trusted-runtime-rule trusted-plan packet-context]
-  (let [emitter-hash (get-in packet
-                             [:stage2-plan-emitter-rule :source-rule-hash])
-        trusted-emitter-hash (:source-rule-hash trusted-emitter-rule)
-        driver-hash (get-in packet
-                            [:stage2-compiler-driver-rule :driver-rule-hash])
-        trusted-driver-hash (:driver-rule-hash trusted-driver-rule)
-        runtime-hash (get-in packet
-                             [:stage2-runtime-rule :runtime-rule-hash])
-        trusted-runtime-hash (:runtime-rule-hash trusted-runtime-rule)
-        runtime-artifact-hash
-        (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
-        trusted-runtime-artifact-hash
-        (:runtime-artifact-hash trusted-runtime-rule)
-        compiler-record (:stage2-compiler-artifact-record packet)
-        packet-plan (:plan packet)
-        driver-plan (:stage2-plan (:stage2-compiler-driver-record packet))
-        plan-shape-keys
-        [:kind :entrypoint :functions :binding-table
-         :instruction-summary :effect-summary]
-        plan-compiler (get-in packet [:plan :compiler])
-        runtime-record (:stage2-runtime-execution-record packet)
-        driver-record (:stage2-compiler-driver-record packet)]
-    (when-not
-     (and (= :gravity/target-neutral-stage2-runtime-packet (:kind packet))
-          (= :complete (:status packet))
-          (= :jvm (:requested-target packet))
-          (= {:status :accepted
-              :source-declared-target :jvm
-              :requested-target :jvm
-              :selection :source-and-request-agree}
-             (:target-eligibility packet))
-          (map? packet-plan)
-          (= (c-backend-canonical-value
-              (select-keys trusted-plan plan-shape-keys))
-             (c-backend-canonical-value
-              (select-keys packet-plan plan-shape-keys)))
-          (= (c-backend-canonical-value
-              (select-keys trusted-plan plan-shape-keys))
-             (c-backend-canonical-value
-              (select-keys driver-plan plan-shape-keys)))
-          (= (:plan-id trusted-plan) (:plan-id packet-plan))
-          (= (:plan-id driver-plan) (:plan-id runtime-record))
-          (= :complete (:status runtime-record))
-          (= :complete (:status driver-record))
-          (true? (:accepted-output-equivalent? driver-record))
-          (= (:reference-output packet) (:stdout runtime-record))
-          (string? emitter-hash)
-          (boolean (re-matches #"sha256:[0-9a-f]{64}" emitter-hash))
-          (= trusted-emitter-hash emitter-hash)
-          (= trusted-driver-hash driver-hash)
-          (= trusted-runtime-hash runtime-hash)
-          (= trusted-runtime-artifact-hash runtime-artifact-hash)
-          (p15-s23-closed-runtime-packet-authentic? packet packet-context)
-          (p15-s23-stage2-compiler-artifact-record-authentic?
-           compiler-record)
-          (p15-s23-stage2-compiler-artifact-record-matches-plan?
-           compiler-record packet-plan)
-          (= (:artifact-hash compiler-record)
-             (:expression-lowering-artifact-hash plan-compiler))
-          (= (:source-content-hash compiler-record)
-             (:expression-lowering-source-content-hash plan-compiler))
-          (= (:semantic-hash compiler-record)
-             (:expression-lowering-semantic-hash plan-compiler))
-          (= (select-keys
-              compiler-record
-              [:plan-assembly-function :plan-assembly-artifact-hash
-               :plan-assembly-source-content-hash
-               :plan-assembly-semantic-hash :plan-assembly-invoked?
-               :plan-assembly-generic-bridge-residual?])
-             (select-keys
-              plan-compiler
-              [:plan-assembly-function :plan-assembly-artifact-hash
-               :plan-assembly-source-content-hash
-               :plan-assembly-semantic-hash :plan-assembly-invoked?
-               :plan-assembly-generic-bridge-residual?])))
+  (when-not (= :passed (:status (p15-s23-trusted-carrier-validation
+                                 packet :default-only)))
+    (jvm-backend-fail!
+     "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
+     source-path nil {:missing-fact :authenticated-target-neutral-stage2-packet}))
+  (let [current-runtime-development?
+        (c-backend-current-runtime-development-packet? packet)
+        valid?
+        (if current-runtime-development?
+          (let [authenticated-reference
+                (current-runtime-development-packet-authenticated-reference
+                 packet packet-context)]
+            (and authenticated-reference
+                 (try
+                   (= :passed
+                      (jvm-backend-validate-current-runtime-development-packet!
+                       source-path packet authenticated-reference trusted-plan))
+                   (catch clojure.lang.ExceptionInfo _ false))))
+          (let [emitter-hash (get-in packet
+                                     [:stage2-plan-emitter-rule :source-rule-hash])
+                packet-plan (:plan packet)
+                compiler-record (:stage2-compiler-artifact-record packet)
+                plan-compiler (get-in packet [:plan :compiler])
+                runtime-record (:stage2-runtime-execution-record packet)
+                driver-hash (get-in packet
+                                    [:stage2-compiler-driver-rule :driver-rule-hash])
+                runtime-hash (get-in packet
+                                     [:stage2-runtime-rule :runtime-rule-hash])
+                runtime-artifact-hash
+                (get-in packet [:stage2-runtime-rule :runtime-artifact-hash])
+                driver-plan
+                (:stage2-plan (:stage2-compiler-driver-record packet))
+                driver-record (:stage2-compiler-driver-record packet)
+                shape-keys [:kind :entrypoint :functions :binding-table
+                            :instruction-summary :effect-summary]]
+            (and (= :gravity/target-neutral-stage2-runtime-packet (:kind packet))
+                 (= :complete (:status packet))
+                 (= :jvm (:requested-target packet))
+                 (= {:status :accepted
+                     :source-declared-target :jvm
+                     :requested-target :jvm
+                     :selection :source-and-request-agree}
+                    (:target-eligibility packet))
+                 (= (c-backend-canonical-value
+                     (select-keys trusted-plan shape-keys))
+                    (c-backend-canonical-value
+                     (select-keys packet-plan shape-keys)))
+                 (= (c-backend-canonical-value
+                     (select-keys trusted-plan shape-keys))
+                    (c-backend-canonical-value
+                     (select-keys driver-plan shape-keys)))
+                 (= (:plan-id trusted-plan) (:plan-id packet-plan))
+                 (= (:plan-id driver-plan) (:plan-id runtime-record))
+                 (= :complete (:status runtime-record))
+                 (= :complete (:status driver-record))
+                 (true? (:accepted-output-equivalent? driver-record))
+                 (= (:reference-output packet) (:stdout runtime-record))
+                 (= (:source-rule-hash trusted-emitter-rule) emitter-hash)
+                 (= (:driver-rule-hash trusted-driver-rule) driver-hash)
+                 (= (:runtime-rule-hash trusted-runtime-rule) runtime-hash)
+                 (= (:runtime-artifact-hash trusted-runtime-rule)
+                    runtime-artifact-hash)
+                 (p15-s23-stage2-compiler-artifact-record-authentic?
+                  compiler-record)
+                 (p15-s23-stage2-compiler-artifact-record-matches-plan?
+                  compiler-record packet-plan)
+                 (= (:artifact-hash compiler-record)
+                    (:expression-lowering-artifact-hash plan-compiler))
+                 (= (:source-content-hash compiler-record)
+                    (:expression-lowering-source-content-hash plan-compiler))
+                 (= (:semantic-hash compiler-record)
+                    (:expression-lowering-semantic-hash plan-compiler))
+                 (p15-s23-closed-runtime-packet-authentic?
+                  packet packet-context))))]
+    (when-not valid?
+      (let [packet-plan (:plan packet)]
       (jvm-backend-fail!
        "C14-INPUT" "JVM backend received an unauthenticated stage2 packet"
-       source-path (:plan packet)
+       source-path packet-plan
        {:observed-packet-kind (:kind packet)
         :observed-packet-status (:status packet)
         :observed-plan-id (:plan-id packet-plan)
         :expected-plan-id (:plan-id trusted-plan)
-        :observed-emitter-source-rule-hash emitter-hash
-        :expected-emitter-source-rule-hash trusted-emitter-hash
-        :observed-driver-rule-hash driver-hash
-        :expected-driver-rule-hash trusted-driver-hash
-        :observed-runtime-rule-hash runtime-hash
-        :expected-runtime-rule-hash trusted-runtime-hash
-        :observed-runtime-artifact-hash runtime-artifact-hash
-        :expected-runtime-artifact-hash trusted-runtime-artifact-hash
-        :missing-fact :authenticated-target-neutral-stage2-packet})))
+        :missing-fact :authenticated-target-neutral-stage2-packet}))))
   :passed)
 
 (defn jvm-backend-byte-array-source

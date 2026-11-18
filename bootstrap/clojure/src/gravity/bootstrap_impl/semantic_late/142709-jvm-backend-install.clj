@@ -29,7 +29,7 @@
  (defn
   jvm-backend-source-artifact
   ([source-path source-text] (jvm-backend-source-artifact source-path source-text {}))
-  ([source-path source-text {:keys [output-path emit?], :or {emit? false}}]
+  ([source-path source-text {:keys [output-path emit? current-runtime-development?], :or {emit? false}}]
    (when
     (and emit? (str/blank? (str output-path)))
     (jvm-backend-fail!
@@ -40,7 +40,7 @@
      {:missing-fields [:output-path]}))
    (clojure.core/let
     [state-0
-     {:source-path source-path, :source-text source-text, :output-path output-path, :emit? emit?}
+     {:source-path source-path, :source-text source-text, :output-path output-path, :emit? emit?, :current-runtime-development? current-runtime-development?}
      state-1
      (semantic-late-jvm-backend-source-artifact-output-tools state-0)
      state-2

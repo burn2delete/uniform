@@ -14,6 +14,7 @@
      compile?
      lowering-mode
      runtime-derived?
+     current-runtime-development?
      executable-path
      c-source-path
      manifest-path
@@ -52,7 +53,18 @@
           :p15-diagnostic "P15S23Q003",
           :missing-fact :stage2-plan-integrity}))
        (c-backend-validate-plan! source-path target candidate-plan)
-       (c-backend-validate-runtime-plan! source-path target candidate-plan))}))
+       (c-backend-validate-runtime-plan! source-path target candidate-plan))
+      :current-runtime-development? (true? current-runtime-development?)}))
+   current-runtime-development?
+   (= :gravity/current-source-runtime-development-packet (:kind shared-packet))
+   current-runtime-development-authentic?
+   (when current-runtime-development?
+     (current-runtime-development-packet-authentic?
+      shared-packet
+      {:source-path source-path
+       :source-text source-text
+       :source-content-hash (str "sha256:" (sha256-hex source-text))
+       :requested-target target}))
    macro-artifact
    (when-not runtime-derived? (macro-source-artifact source-path source-text))
    module
@@ -67,7 +79,10 @@
    (when
     runtime-derived?
     (when-not
-     (p15-s23-stage2-compiler-artifact-record-authentic? stage2-compiler-artifact-record)
+     (if current-runtime-development?
+       current-runtime-development-authentic?
+       (p15-s23-stage2-compiler-artifact-record-authentic?
+        stage2-compiler-artifact-record))
      (c-backend-fail!
       "C14-INPUT"
       "C backend received inconsistent stage2 compiler artifact metadata"
@@ -86,9 +101,11 @@
     (and
      runtime-derived?
      (not
-      (p15-s23-closed-runtime-packet-authentic?
-       shared-packet
-       (p15-s23-closed-runtime-packet-context source-path source-text target))))
+      (if current-runtime-development?
+        current-runtime-development-authentic?
+        (p15-s23-closed-runtime-packet-authentic?
+         shared-packet
+         (p15-s23-closed-runtime-packet-context source-path source-text target)))))
     (c-backend-fail!
      "C14-INPUT"
      "C backend received an unauthenticated closed runtime execution"
@@ -106,9 +123,10 @@
     (and
      runtime-derived?
      (not
-      (p15-s23-stage2-compiler-artifact-record-matches-plan?
-       stage2-compiler-artifact-record
-       plan)))
+      (if current-runtime-development?
+        current-runtime-development-authentic?
+        (p15-s23-stage2-compiler-artifact-record-matches-plan?
+         stage2-compiler-artifact-record plan))))
     (c-backend-fail!
      "C14-INPUT"
      "C backend received a stage2 compiler record that does not match its plan"
