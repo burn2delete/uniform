@@ -162,87 +162,6 @@
       false)
     false))
 
-(defn sh12-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh12-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh12-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh12-max [left right]
-  (if (> left right) left right))
-
-(defn sh12-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh12-aggregate? current)
-              (let [width (sh12-aggregate-width current)]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh12-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj result
-                                   [(first remaining)
-                                    (+ depth 1)]))))]
-                    (recur
-                     next-frontier next-nodes scalar-units
-                     (sh12-max observed-depth depth)
-                     (sh12-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units
-                       (count (vec (str current))))]
-                (if (> next-scalar-units 16777216)
-                  {:status :rejected
-                   :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier) next-nodes
-                   next-scalar-units
-                   (sh12-max observed-depth depth)
-                   observed-width))))))))))
-
 (defn sh12-diagnostic [request family reason]
   {:artifact :gravity/sh12-authenticated-mir-diagnostic
    :rule
@@ -1436,13 +1355,18 @@
          :unsafe-islands))
        nil)}))
 
+(defn sh12-bridge-actual-path-error [path]
+  (if (string? path)
+    (if (> (count path) 0)
+      nil
+      [:schema :actual-source-path])
+    [:schema :actual-source-path]))
+
 (defn sh12-build-checked-core
   [request]
-  (let [request-preflight (sh12-carrier-preflight request)
-        safe-core (get request :safe-core)
+  (let [safe-core (get request :safe-core)
         verification (get request :safe-verification)
         error
-        (if (= :accepted (get request-preflight :status))
         (if
          (sh12-exact-keys?
           request
@@ -1471,24 +1395,8 @@
                         (get request :c11-revision))
                         (if (symbol? (get request :entrypoint))
                         (if (symbol? (get request :module-id))
-                          (if
-                           (string?
-                            (get request :actual-source-path))
-                            (if
-                             (> (count
-                                 (get request
-                                      :actual-source-path))
-                                0)
-                              (if
-                               (<=
-                                (count
-                                 (get request
-                                      :actual-source-path))
-                                4096)
-                                nil
-                                [:schema :actual-source-path])
-                              [:schema :actual-source-path])
-                            [:schema :actual-source-path])
+                          (sh12-bridge-actual-path-error
+                           (get request :actual-source-path))
                           [:schema :module-id])
                         [:schema :entrypoint])
                         [:lineage :invalid-c11-revision])
@@ -1498,8 +1406,7 @@
                 [:lineage :invalid-sh11-product])
               [:schema :schema-version])
             [:schema :artifact])
-          [:schema :request-keys])
-        [:schema :request-carrier-bound])]
+          [:schema :request-keys])]
     (if (= error nil)
       (let [safe-id (get safe-core :artifact-id)
             literal-id (str safe-id ":mir-input")
@@ -2139,27 +2046,8 @@
 
 (defn sh12-bind-authenticated-mir
   [request checked-core mir mir-verification mir-id]
-  (let [request-preflight (sh12-carrier-preflight request)
-        checked-core-preflight
-        (sh12-carrier-preflight checked-core)
-        mir-preflight (sh12-carrier-preflight mir)
-        verifier-preflight
-        (sh12-carrier-preflight mir-verification)
-        expected
-        (if (= :accepted (get request-preflight :status))
-          (sh12-build-checked-core request)
-          (sh12-rejected request :schema
-                         :request-carrier-bound))]
-    (if
-     (= false
-        (= :accepted
-           (get request-preflight :status)
-           (get checked-core-preflight :status)
-           (get mir-preflight :status)
-           (get verifier-preflight :status)))
-      (sh12-rejected request :verify
-                     :c11-carrier-bound)
-      (if (= :accepted (get expected :status))
+  (let [expected (sh12-build-checked-core request)]
+    (if (= :accepted (get expected :status))
         (if (= expected checked-core)
           (if (sh12-sha256-id? mir-id)
             (if (= mir-id (get request :expected-mir-id))
@@ -2205,40 +2093,26 @@
              request :schema :mir-id))
           (sh12-rejected
            request :verify :checked-core-substitution))
-        expected))))
+      expected)))
 
 (defn sh12-verify-authenticated-mir
   [request checked-core mir mir-verification mir-id candidate]
-  (let [candidate-preflight
-        (sh12-carrier-preflight candidate)]
-    (if (= :accepted (get candidate-preflight :status))
-      (let [expected
-            (sh12-bind-authenticated-mir
-             request checked-core mir
-             mir-verification mir-id)]
-        {:artifact
-         :gravity/sh12-authenticated-mir-verification
-         :status
-         (if (= expected candidate) :passed :rejected)
-         :checks
-         [:fresh-sh11-verification
-          :exact-checked-core-adaptation
-          :gravity-c11-builder-result
-          :gravity-c11-verifier-result
-          :type-effect-capability-ownership-safety-preservation
-          :runtime-check-preservation
-          :path-neutral-identity
-          :separate-actual-path-provenance]
-         :expected expected
-         :candidate candidate})
-      {:artifact
-       :gravity/sh12-authenticated-mir-verification
-       :status :rejected
-       :reason :candidate-result-carrier-bound
-       :checks [:bounded-candidate-carrier]
-       :candidate-preflight candidate-preflight
-       :candidate-echo :omitted
-       :diagnostics
-       [(sh12-diagnostic
-         request :verify
-         :candidate-result-carrier-bound)]})))
+  (let [expected
+        (sh12-bind-authenticated-mir
+         request checked-core mir
+         mir-verification mir-id)]
+    {:artifact
+     :gravity/sh12-authenticated-mir-verification
+     :status
+     (if (= expected candidate) :passed :rejected)
+     :checks
+     [:fresh-sh11-verification
+      :exact-checked-core-adaptation
+      :gravity-c11-builder-result
+      :gravity-c11-verifier-result
+      :type-effect-capability-ownership-safety-preservation
+      :runtime-check-preservation
+      :path-neutral-identity
+      :separate-actual-path-provenance]
+     :expected expected
+     :candidate candidate}))

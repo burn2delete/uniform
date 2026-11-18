@@ -85,89 +85,6 @@
       false)
     false))
 
-(defn sh10-bridge-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh10-bridge-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh10-bridge-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh10-bridge-max [left right]
-  (if (> left right) left right))
-
-(defn sh10-bridge-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh10-bridge-aggregate? current)
-              (let [width
-                    (sh10-bridge-aggregate-width current)]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh10-bridge-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining) (+ depth 1)]))))]
-                    (recur
-                     next-frontier
-                     next-nodes
-                     scalar-units
-                     (sh10-bridge-max observed-depth depth)
-                     (sh10-bridge-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units (count (vec (str current))))]
-                (if (> next-scalar-units 16777216)
-                  {:status :rejected :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier)
-                   next-nodes
-                   next-scalar-units
-                   (sh10-bridge-max observed-depth depth)
-                   observed-width))))))))))
-
 (defn sh10-bridge-exact-keys? [value expected]
   (if (map? value)
     (= (set (keys value)) expected)
@@ -438,12 +355,6 @@
                       (if (map? (get typed :typed-core))
                         (if (map? (get typed :identity-input))
                           (if
-                           (= :accepted
-                              (get
-                               (sh10-bridge-carrier-preflight
-                                verification)
-                               :status))
-                            (if
                            (sh10-bridge-exact-keys?
                             verification
                             #{:artifact :status :checks
@@ -472,7 +383,6 @@
                                   false)
                                 false)
                               false)
-                            false)
                             false)
                           false)
                         false)
@@ -573,11 +483,11 @@
       :semantic-projections :fact-transitions
       :effect-capability-relation :proof-composite
       :preservation :identity-subjects :lineage
-      :reference-closure :actual-path-provenance :bounds})
+      :reference-closure :actual-path-provenance})
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh10-authenticated-ownership-bridge
                (get descriptor :stage))
           (if
@@ -817,14 +727,19 @@
      :profile (get (get typed :module) :profile)
      :target (get (get typed :module) :target)}))
 
+(defn sh10-bridge-captured-path-error [path envelope]
+  (if (string? path)
+    (if (> (count path) 0)
+      (if (= path
+             (get (get envelope :actual-path-provenance)
+                  :source-path))
+        nil
+        [:envelope :invalid-authenticated-envelope])
+      [:schema :actual-path-required])
+    [:schema :actual-path-required]))
+
 (defn sh10-bridge-upstream-error [request]
   (if
-   (= false
-      (= :accepted
-         (get (sh10-bridge-carrier-preflight request)
-              :status)))
-    [:schema :request-carrier-bound]
-    (if
      (= false
         (sh10-bridge-exact-keys?
          request
@@ -892,15 +807,6 @@
                             :expected-ownership-result)))
                     [:schema :expected-ownership-result]
                     (if
-                     (= false
-                        (= :accepted
-                           (get
-                            (sh10-bridge-carrier-preflight
-                             (get request
-                                  :expected-ownership-result))
-                            :status)))
-                      [:schema :expected-result-carrier-bound]
-                      (if
                        (= false
                           (sh10-bridge-sha256-id?
                            (get
@@ -933,27 +839,9 @@
                              (get request :sh08-verification)))
                           [:envelope
                            :invalid-authenticated-envelope]
-                          (if
-                         (string?
-                          (get request :actual-source-path))
-                          (if
-                           (> (count
-                               (get
-                                request
-                                :actual-source-path))
-                              0)
-                            (if
-                             (<=
-                              (count
-                               (get
-                                request
-                                :actual-source-path))
-                              4096)
-                              nil
-                              [:schema :actual-path-bound])
-                            [:schema :actual-path-required])
-                          [:schema
-                           :actual-path-required]))))))))))))))))
+                          (sh10-bridge-captured-path-error
+                           (get request :actual-source-path)
+                           (get request :envelope)))))))))))))))
 
 (defn sh10-bridge-rule [family]
   (if (= family :schema)
@@ -1040,21 +928,7 @@
 
 (defn sh10-bridge-ownership-result-valid?
   [c9-request ownership-result ownership-verification]
-  (if
-   (= :accepted
-      (get (sh10-bridge-carrier-preflight c9-request) :status))
-    (if
-     (= :accepted
-        (get
-         (sh10-bridge-carrier-preflight ownership-result)
-         :status))
-      (if
-       (= :accepted
-          (get
-           (sh10-bridge-carrier-preflight
-            ownership-verification)
-           :status))
-        (if (= :accepted (get c9-request :status))
+  (if (= :accepted (get c9-request :status))
     (if
      (= (get c9-request :expected-ownership-result)
         ownership-result)
@@ -1089,9 +963,6 @@
         false)
         false)
       false)
-    false)
-        false)
-      false)
     false))
 
 (defn sh10-bridge-identity-input
@@ -1112,31 +983,7 @@
 
 (defn sh10-bind-authenticated-ownership-result
   [request c9-request ownership-result ownership-verification]
-  (if
-   (= false
-      (= :accepted
-         (get (sh10-bridge-carrier-preflight c9-request)
-              :status)))
-    (sh10-bridge-rejected
-     request :verify :c9-request-carrier-bound [])
-    (if
-     (= false
-        (= :accepted
-           (get
-            (sh10-bridge-carrier-preflight ownership-result)
-            :status)))
-      (sh10-bridge-rejected
-       request :verify :c9-result-carrier-bound [])
-      (if
-       (= false
-          (= :accepted
-             (get
-              (sh10-bridge-carrier-preflight
-               ownership-verification)
-              :status)))
-        (sh10-bridge-rejected
-         request :verify :c9-verification-carrier-bound [])
-        (let [expected-request
+  (let [expected-request
         (sh10-build-authenticated-ownership-request request)]
     (if (= false (= expected-request c9-request))
       (sh10-bridge-rejected
@@ -1177,7 +1024,7 @@
            :clojure-seed-boundary? true}
           (sh10-bridge-rejected
            request :ownership :c9-ownership-rejection
-           (get ownership-result :diagnostics))))))))))
+           (get ownership-result :diagnostics)))))))
 
 (defn sh10-verify-authenticated-ownership-result
   [request c9-request ownership-result
@@ -1185,15 +1032,11 @@
   (let [expected
         (sh10-bind-authenticated-ownership-result
          request c9-request ownership-result
-         ownership-verification)
-        candidate-preflight
-        (sh10-bridge-carrier-preflight candidate)]
+         ownership-verification)]
     {:artifact
      :gravity/sh10-authenticated-ownership-verification
      :status
-     (if (= :accepted (get candidate-preflight :status))
-       (if (= expected candidate) :passed :rejected)
-       :rejected)
+     (if (= expected candidate) :passed :rejected)
      :checks
      [:verified-sh08-typed-core
       :authenticated-input-and-output-identities

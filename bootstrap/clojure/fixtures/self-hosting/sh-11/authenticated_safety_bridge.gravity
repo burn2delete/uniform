@@ -90,89 +90,6 @@
       false)
     false))
 
-(defn sh11-bridge-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh11-bridge-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh11-bridge-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh11-bridge-max [left right]
-  (if (> left right) left right))
-
-(defn sh11-bridge-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh11-bridge-aggregate? current)
-              (let [width
-                    (sh11-bridge-aggregate-width current)]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh11-bridge-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining)
-                               (+ depth 1)]))))]
-                    (recur
-                     next-frontier next-nodes scalar-units
-                     (sh11-bridge-max observed-depth depth)
-                     (sh11-bridge-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units
-                       (count (vec (str current))))]
-                (if (> next-scalar-units 16777216)
-                  {:status :rejected
-                   :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier) next-nodes
-                   next-scalar-units
-                   (sh11-bridge-max observed-depth depth)
-                   observed-width))))))))))
-
 (defn sh11-bridge-exact-keys? [value expected]
   (if (map? value)
     (= (set (keys value)) expected)
@@ -341,12 +258,6 @@
                     (get effected :provenance)
                     :actual-source-path))
                   0)
-                (if
-                 (<= (count
-                      (get
-                       (get effected :provenance)
-                       :actual-source-path))
-                     4096)
             (if
              (sh11-bridge-sha256-id?
               (get
@@ -363,7 +274,6 @@
                 false)
               false)
                  false)
-                false)
               false)
             false)
           false)
@@ -407,12 +317,6 @@
                     (get owned :provenance)
                     :actual-source-path))
                   0)
-                (if
-                 (<= (count
-                      (get
-                       (get owned :provenance)
-                       :actual-source-path))
-                     4096)
             (if
              (sh11-bridge-sha256-id?
               (get
@@ -428,7 +332,6 @@
                 false)
               false)
                  false)
-                false)
               false)
             false)
           false)
@@ -843,11 +746,11 @@
         :semantic-projections :fact-transitions
         :effect-capability-relation :proof-composite
         :preservation :identity-subjects :lineage
-        :reference-closure :actual-path-provenance :bounds})
+        :reference-closure :actual-path-provenance})
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh11-authenticated-safety-bridge
                (get descriptor :stage))
           (if
@@ -978,15 +881,19 @@
 (defn sh11-bridge-safety-request [safety-operation]
   safety-operation)
 
+(defn sh11-bridge-captured-path-error [path envelope]
+  (if (string? path)
+    (if (> (count path) 0)
+      (if (= path
+             (get (get envelope :actual-path-provenance)
+                  :source-path))
+        nil
+        [:envelope :invalid-authenticated-envelope])
+      [:schema :actual-path-required])
+    [:schema :actual-path-required]))
+
 (defn sh11-bridge-upstream-error [request]
   (if
-   (= false
-      (= :accepted
-         (get
-          (sh11-bridge-carrier-preflight request)
-          :status)))
-    [:schema :request-carrier-bound]
-    (if
      (= false
         (sh11-bridge-exact-keys?
        request
@@ -1094,25 +1001,9 @@
                                     :ownership-verification)))
                             [:envelope
                              :invalid-authenticated-envelope]
-                            (if
-                             (string?
-                              (get request :actual-source-path))
-                              (if
-                               (> (count
-                                   (get request
-                                        :actual-source-path))
-                                  0)
-                                (if
-                                 (<=
-                                  (count
-                                   (get request
-                                        :actual-source-path))
-                                  4096)
-                                  nil
-                                  [:schema :actual-path-bound])
-                                [:schema :actual-path-required])
-                              [:schema
-                               :actual-path-required]))))))))))))))))
+                            (sh11-bridge-captured-path-error
+                             (get request :actual-source-path)
+                             (get request :envelope))))))))))))))))
 
 (defn sh11-bridge-rule [family]
   (if (= family :schema)
@@ -1194,22 +1085,6 @@
 
 (defn sh11-bridge-safety-result-valid?
   [c10-request safety-result safety-verification]
-  (if
-   (= :accepted
-      (get
-       (sh11-bridge-carrier-preflight c10-request)
-       :status))
-   (if
-    (= :accepted
-       (get
-        (sh11-bridge-carrier-preflight safety-result)
-        :status))
-    (if
-     (= :accepted
-        (get
-         (sh11-bridge-carrier-preflight
-          safety-verification)
-         :status))
   (if (= :accepted (get c10-request :status))
     (if (= (get c10-request :expected-safety-result)
            safety-result)
@@ -1228,8 +1103,7 @@
             (if (= (get safety-result :operation-id)
                    (get safety-verification :operation-id))
               (=
-               [:bounded-request-and-candidate
-                :complete-recomputation
+               [:complete-recomputation
                 :exactly-one-outcome
                 :legal-outcome
                 :proof-check-audit-exclusivity
@@ -1243,10 +1117,7 @@
         false)
       false)
       false)
-    false)
-     false)
-    false)
-   false))
+    false))
 
 (defn sh11-bridge-identity-input
   [request c10-request safety-result]
@@ -1273,23 +1144,6 @@
 
 (defn sh11-bind-authenticated-safety-result
   [request c10-request safety-result safety-verification]
-  (let [request-preflight
-        (sh11-bridge-carrier-preflight request)
-        c10-request-preflight
-        (sh11-bridge-carrier-preflight c10-request)
-        safety-result-preflight
-        (sh11-bridge-carrier-preflight safety-result)
-        verification-preflight
-        (sh11-bridge-carrier-preflight safety-verification)]
-    (if
-     (= false
-        (= :accepted
-           (get request-preflight :status)
-           (get c10-request-preflight :status)
-           (get safety-result-preflight :status)
-           (get verification-preflight :status)))
-      (sh11-bridge-rejected
-       request :verify :safety-result-carrier-bound [])
   (let [expected-request
         (sh11-build-authenticated-safety-request request)]
     (if (= false (= expected-request c10-request))
@@ -1341,7 +1195,7 @@
             (sh11-authenticated-safety-bridge-policy)
             :pending)
            :self-hosted? false
-           :clojure-seed-boundary? true}))))))))
+           :clojure-seed-boundary? true}))))))
 
 (defn sh11-bridge-final-candidate-valid?
   [expected candidate]
@@ -1436,32 +1290,12 @@
       false)
     false))
 
-(defn sh11-bridge-candidate-bound-rejection
-  [request candidate-preflight]
-  {:artifact :gravity/sh11-authenticated-safety-verification
-   :status :rejected
-   :reason :candidate-carrier-bound
-   :checks [:bounded-candidate-carrier]
-   :candidate-preflight candidate-preflight
-   :candidate-echo :omitted
-   :diagnostics
-   [(sh11-bridge-diagnostic
-     request :verify :candidate-carrier-bound [])]})
-
 (defn sh11-verify-authenticated-safety-result
   [request c10-request safety-result safety-verification candidate]
-  (let [candidate-preflight
-        (sh11-bridge-carrier-preflight candidate)]
-    (if
-     (= false
-        (= :accepted
-           (get candidate-preflight :status)))
-      (sh11-bridge-candidate-bound-rejection
-       request candidate-preflight)
-      (let [expected
-            (sh11-bind-authenticated-safety-result
-             request c10-request safety-result
-             safety-verification)]
+  (let [expected
+        (sh11-bind-authenticated-safety-result
+         request c10-request safety-result
+         safety-verification)]
         {:artifact
          :gravity/sh11-authenticated-safety-verification
          :status
@@ -1482,4 +1316,4 @@
           :path-neutral-identity
           :separate-actual-path-provenance]
          :expected expected
-         :candidate candidate}))))
+         :candidate candidate}))
