@@ -158,6 +158,30 @@
       (main/run-or-hold! ctx)
       (is (= [:restricted-project-controls :local-pause] @events)))))
 
+(deftest local-controls-reload-and-fail-closed-without-provider-reads
+  (let [ctx (fixture/context) file (str (io/file (:state-dir ctx) "project-controls.edn"))
+        ctx (update ctx :config assoc :repository "owner/repo" :local-controls-file file)
+        policy {:repository "owner/repo" :project "p" :defaults {"Control" "Active" "Priority" "Normal"}
+                :issues {12 {"Control" "Paused"} 34 {"Priority" "High"}}}]
+    (rt/update! ctx assoc :repository "owner/repo" :project {:id "p" :workflow {:id "status"}}
+                :campaign-issue {:number 12} :campaign-tracked true :effects {"link-project" {:status :done}})
+    (with-redefs [gh/graphql (fn [& _] (throw (AssertionError. "Local scheduling attempted a project read")))]
+      (rt/write-edn! file policy)
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (is (= 1 (project/priority (project/settings ctx) 34)))
+      (is (= 2 (project/priority (project/settings ctx) 99)))
+      (rt/write-edn! file (assoc policy :issues {}))
+      (is (project/runnable? (project/settings ctx) 12))
+      (doseq [invalid [(assoc policy :project "foreign") (assoc policy :repository "foreign/repo")
+                       (assoc policy :issues {1 {"Control" "Typo"}}) (assoc policy :issues {"1" {}})
+                       (dissoc policy :defaults) (assoc policy :unknown true)]]
+        (rt/write-edn! file invalid)
+        (is (not (project/runnable? (project/settings ctx) 12))))
+      (spit file (str (pr-str policy) " {}"))
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (io/delete-file file)
+      (is (not (project/runnable? (project/settings ctx) 12))))))
+
 (deftest selector-reaches-the-api-with-complete-scope-and-external-message-sized-input
   (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
         provider-limit 1048576 ; Actual observed app-server message boundary, not a task allowance.

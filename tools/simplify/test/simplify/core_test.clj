@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [simplify.codex :as codex]
+            [simplify.diagnostics :as diagnostics]
             [simplify.github :as gh]
             [simplify.main :as main]
             [simplify.runtime :as rt]
@@ -23,6 +24,52 @@
                                (command ctx cwd argv input)))]
       (f))))
 (use-fixtures :each no-github-network)
+
+(deftest restart-check-observes-both-restriction-sources
+  (let [config {:repo-dir (temp-dir) :state-dir (temp-dir) :repository "org/repo"}
+        common (io/file (:repo-dir config) ".git")
+        file (io/file common "uniform-harnesses.edn")
+        key (rt/digest (pr-str ["POST" "graphql"]))
+        registry {:schema 1 :writers {} :restrictions {:api {key {:method "POST" :endpoint "graphql"}}}}]
+    (.mkdir common)
+    (is (thrown? Exception (diagnostics/restart-check config {})))
+    (spit file (pr-str registry))
+    (doseq [[state sources] [[{} [:shared]] [{:restricted-actions {key {}}} [:campaign :shared]]]]
+      (let [result (diagnostics/restart-check config state)]
+        (is (= :blocked (:status result)))
+        (is (= [:lookup-project-owner sources] ((juxt :step :sources) (first (:blockers result)))))))
+    (is (= (pr-str registry) (slurp file)))
+    (spit file (pr-str (dissoc registry :restrictions)))
+    (is (= [:campaign] (get-in (diagnostics/restart-check config {:restricted-actions {key {}}})
+                               [:blockers 0 :sources])))
+    (is (= :no-recorded-blocker (:status (diagnostics/restart-check config {}))))
+    (is (= #{"uniform-harnesses.edn"} (set (.list common))))))
+
+(deftest timeout-and-writer-holds-use-observed-evidence
+  (let [frame (fn [name edge elapsed]
+                (pr-str (array-map :schema :gravity/development-test-progress-v2 :authority :non-authoritative
+                                   :phase :test-var :test-var name :edge edge :elapsed-ns elapsed)))
+        result {:exitCode 124 :elapsed-ms 20000 :capture-truncated true
+                :stderr (str/join "\n" [(frame "suite/one" :return 12) (frame "suite/two" :enter 18)
+                                        "{:schema :gravity/development-test-progress-v2, :unfinished"])}
+        failure (try (codex/validate-command-result! {} ["fixture"] result)
+                     (catch Exception e (ex-data e)))
+        task {:status :attention :key "held" :paths ["src"] :error {:details {:output {:blocking-paths ["test/a"]}}}
+              :failed-checks [{:details failure} {:details {:result (dissoc result :elapsed-ms)}}]}
+        writer {:key "other" :paths ["test"] :status :active}
+        [hold] (diagnostics/holds {:tasks {"held" task}} {:writers {"other" writer}})
+        [fresh historic] (:timeouts hold)]
+    (is (= :return (get-in failure [:timeout-progress :last-completed-test :edge])))
+    (is (= "suite/one" (get-in fresh [:last-completed-test :test-var])))
+    (is (= "suite/two" (get-in historic [:last-observed-test :test-var])))
+    (is (= 20000 (:elapsed-ms fresh)))
+    (is (nil? (:elapsed-ms historic)))
+    (is (:capture-truncated fresh))
+    (is (nil? (diagnostics/timeout-progress (assoc result :exitCode 1))))
+    (is (= ["test/a" "test" "other"]
+           ((juxt :path :owned-path (comp :key :owner)) (first (:writer-conflicts hold)))))
+    (is (empty? (diagnostics/holds {:tasks {"free" {:key "free" :status :ready :paths ["lib"]}}}
+                                  {:writers {"other" writer}})))))
 (defn context []
   (let [dir (temp-dir)
         config {:repo-dir dir :state-dir dir}]
@@ -274,7 +321,10 @@
         (testing mode
           (if (#{"ok" "quoted-denial" "tool-output-data"} mode)
             (do
-              (is (= "approved" (:verdict (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review))))
+              (let [ctx (assoc-in ctx [:config :models :review] "fixture-review")]
+                (is (= "approved" (:verdict (codex/job! (codex/for-role ctx :review) "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review))))
+                (is (= "fixture-review" (get-in @(:state ctx) [:jobs "fixture" :model])))
+                (is (= ctx (codex/for-role ctx :implement))))
               (is (= :completed (get-in @(:state ctx) [:jobs "fixture" :status])))
               (is (empty? (:restricted-commands @(:state ctx)))))
             (do

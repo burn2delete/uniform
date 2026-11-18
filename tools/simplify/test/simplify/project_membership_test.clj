@@ -138,6 +138,39 @@
       (is (thrown? Exception (gh/review-threads-clear? ctx 5)))
       (is (= 3 (count @calls))))))
 
+(deftest local-scheduling-uses-journaled-tracking-and-preserves-refusals
+  (let [repo "owner/repo" issue {:node_id "i" :number 3} k (rt/digest (pr-str ["POST" "graphql"]))
+        legacy {:method "POST" :endpoint "graphql" :error "historical provider refusal"}
+        ctx (-> (project-context) (assoc :coordinator-owner (atom true) :local-scheduling {:project "project" :repository repo})
+                (assoc-in [:config :repository] repo))
+        hold {:kind :project-controls-pagination :scope :all-cursors :project "project" :state-file (:state-file ctx)
+              :legacy-api-key k :retained-local-guard legacy}
+        calls (atom [])]
+    (rt/update! ctx assoc :repository repo :campaign-issue issue :restricted-actions {k legacy}
+                :project {:id "project" :workflow {:id "wf" :options [{:id "opt" :name "Implementing"}]}})
+    (rt/shared-restrict! ctx :project-controls "project" hold)
+    (with-redefs [rt/command (transport-command calls
+                               (fn [{:keys [query]} _]
+                                 {:exit 0 :out (json/write-str
+                                                {:data (if (str/includes? query "projectItems")
+                                                         {:node {:projectItems {:nodes [{:id "item" :project {:id "project"}}]
+                                                                                :pageInfo {:hasNextPage false}}}}
+                                                         {:updateProjectV2ItemFieldValue {:projectV2Item {:id "item"}}})})}))]
+      (gh/status! ctx issue "Implementing")
+      (is (= 2 (count @calls)))
+      (is (str/includes? (:query (first @calls)) "on Issue{projectItems"))
+      (is (thrown? Exception (gh/graphql ctx "query { node { items { fieldValues } } }" {})))
+      (is (thrown? Exception (gh/item! ctx {:node_id "foreign"})))
+      (let [{:keys [query variables]} (last @calls)]
+        (is (thrown? Exception (gh/graphql ctx query variables)) "Completed tracking cannot be reissued directly")
+        (rt/update! ctx assoc-in [:restricted-actions k :failed-request] {:phase :provider-returned})
+        (is (thrown? Exception (gh/status! ctx issue "Implementing")))
+        (rt/update! ctx assoc-in [:restricted-actions k] legacy)
+        (is (thrown? Exception (gh/status! ctx issue "Implementing")))) ; Prior tracking refusal stays terminal.
+      (rt/shared-restrict! ctx :api k legacy)
+      (is (thrown? Exception (gh/graphql ctx (:query (first @calls)) (:variables (first @calls)))))
+      (is (= 2 (count @calls))))))
+
 (deftest recovery-can-distinguish-a-provider-refusal-from-a-later-blocked-request
   (doseq [response [{:exit 1 :err "HTTP 403: rate limit exceeded" :out ""}
                     {:exit 0 :err "" :out (json/write-str {:errors [{:type "RATE_LIMITED"}]})}]]

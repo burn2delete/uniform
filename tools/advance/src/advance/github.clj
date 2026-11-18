@@ -1,6 +1,8 @@
 (ns advance.github
   "Implementation Project controls; repository task files retain outcome authority."
-  (:require [simplify.github :as gh]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [simplify.github :as gh]
             [simplify.runtime :as rt]))
 
 (def controls {"Priority" ["Highest" "High" "Normal" "Low"]
@@ -43,7 +45,7 @@
                          {:project project :name title
                           :options (mapv (fn [option] {:name option :color "BLUE" :description option}) options)})))))))
 
-(defn settings [ctx]
+(defn- github-settings [ctx]
   (when (rt/shared-restriction ctx :project-controls (get-in @(:state ctx) [:project :id]))
     (rt/fail! "Project controls pagination remains restricted" {:restricted true :operation :project-controls}))
   (loop [cursor nil result {}]
@@ -60,6 +62,47 @@
                                                              (get-in item [:fieldValues :nodes])))) m)) result (:nodes page))]
         (if (get-in page [:pageInfo :hasNextPage])
           (recur (get-in page [:pageInfo :endCursor]) result) result)))))
+
+(defn local-settings [ctx]
+  (let [file (io/file (get-in ctx [:config :local-controls-file]))
+        state @(:state ctx)]
+    (with-open [reader (java.io.PushbackReader. (io/reader file))]
+      (let [policy (edn/read reader) overrides (:issues policy) end (Object.)]
+        (when-not (and (.isAbsolute file) (identical? end (edn/read {:eof end} reader))
+                       (= #{:repository :project :defaults :issues} (set (keys policy)))
+                       (string? (:project policy)) (= (:project policy) (get-in state [:project :id]))
+                       (= (:repository policy) (:repository state) (get-in ctx [:config :repository]))
+                       (= {"Control" "Active" "Priority" "Normal"} (:defaults policy))
+                       (map? overrides) (every? pos-int? (keys overrides))
+                       (every? (fn [entry] (and (map? entry)
+                                                (every? (fn [[field value]] (some #{value} (controls field))) entry)))
+                               (vals overrides)))
+          (rt/fail! "Invalid local scheduling controls" {:file (str file)}))
+        overrides))))
+
+(defn hold-reason [ctx]
+  (let [s @(:state ctx) p (get-in s [:project :id]) key (rt/digest (pr-str ["POST" "graphql"]))
+        hold (rt/shared-restriction ctx :project-controls p) local (get-in s [:restricted-actions key])
+        file (get-in ctx [:config :local-controls-file])]
+    (cond
+      (rt/shared-restriction ctx :api key) :retained-graphql-restriction
+      (and (or local hold) (not (and file (gh/settled-controls-guard? ctx key local hold))))
+      (if hold :restricted-project-controls :retained-graphql-restriction)
+      (and file (not (and (:campaign-tracked s) (pos-int? (get-in s [:campaign-issue :number]))
+                          (string? (get-in s [:project :workflow :id]))
+                          (= :done (get-in s [:effects "link-project" :status]))))) :unverified-project-setup)))
+
+(defn settings [ctx]
+  (if (:local-controls-file (:config ctx))
+    (try (if-let [reason (hold-reason ctx)]
+           (rt/fail! "Scheduling remains held" {:reason reason})
+           (local-settings ctx))
+         (catch Exception e
+           (rt/event! ctx :scheduling-controls-unavailable {:file (get-in ctx [:config :local-controls-file])
+                                                            :message (.getMessage e)})
+           ;; The ordinary campaign gate stops selection, dispatch and integration.
+           {(get-in @(:state ctx) [:campaign-issue :number]) {"Control" "Blocked"}}))
+    (github-settings ctx)))
 
 (defn runnable? [settings number]
   (not (#{"Paused" "Blocked"} (get-in settings [number "Control"]))))
