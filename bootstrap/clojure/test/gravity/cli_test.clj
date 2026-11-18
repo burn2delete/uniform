@@ -122,11 +122,11 @@
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-help-text))))))
 
 (deftest checked-in-shell-help-is-rendered-by-the-cli-presentation
-  (let [renderer (var-get (ns-resolve 'gravity.cli 'shell-p18-cli-help-text))
-        source (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
+  (let [source (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
         archived (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")]
-    (is (= (renderer false) source))
-    (is (= (renderer true) archived))
+    (is (= (cli/p18-cli-help-resource-text :source) source))
+    (is (= (cli/p18-cli-help-resource-text :archived-packaged-jvm-cli)
+           archived))
     (is (= (cli/p18-cli-help-text false) source))
     (is (str/includes? source "gravity compile <file.qst|file.gravity> --target js|js-ts"))
     (is (str/includes? source ":delegates-to \"clojure -M:gravity\""))
@@ -144,19 +144,19 @@
   (let [contract-var
         (get (ns-interns 'gravity.cli) 'namespace-contract)
         contract (var-get contract-var)]
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
-             'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text
+             'p18-cli-help-resource-text 'cli-usage-text 'sh07-core-input}
            (set (keys (ns-publics 'gravity.cli)))))
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.cli (:namespace contract)))
     (is (= :bootstrap-cli-presentation-and-core-arguments
            (:contract-boundary contract)))
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
-             'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text
+             'p18-cli-help-resource-text 'cli-usage-text 'sh07-core-input}
            (set (keys (:public-api contract)))))
     (is (= [:packaged-jvm-cli-state :selected-sh07-command-arguments] (:artifact-inputs contract)))
     (is (= [:bootstrap-version-record :bootstrap-help-text
-            :bootstrap-usage-text :sh07-core-input]
+            :bootstrap-help-resource-text :bootstrap-usage-text :sh07-core-input]
            (:artifact-outputs contract)))
     (is (= ['clojure.core]
            (get-in contract [:dependency-direction :requires])))

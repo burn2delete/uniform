@@ -131,6 +131,13 @@ launcher metadata. This help path works without Clojure and independently of
 the caller's working directory; other wrapper behavior remains behind the
 existing frozen-shell boundary.
 
+Regenerate the checked-in wrapper help resources through the supported Clojure
+resource renderer:
+
+```bash
+clojure -M -e '(require (quote gravity.cli)) (doseq [[path launcher] [["bootstrap/clojure/resources/gravity/cli/help-source.txt" :source] ["bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt" :archived-packaged-jvm-cli]]] (spit path (gravity.cli/p18-cli-help-resource-text launcher)))'
+```
+
 ## Exact public source-to-module invocation
 
 The checked-in ordinary source is

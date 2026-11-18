@@ -18,6 +18,10 @@
     'p18-cli-help-text
     {:arglists '([packaged-jvm-cli?])
      :returns :human-help-text}
+    'p18-cli-help-resource-text
+    {:arglists '([launcher])
+     :returns :human-help-text
+     :launchers #{:source :archived-packaged-jvm-cli}}
     'cli-usage-text
     {:arglists '([])
      :returns :usage-text}
@@ -29,6 +33,7 @@
      :admission :none}}
    :artifact-inputs [:packaged-jvm-cli-state :selected-sh07-command-arguments]
    :artifact-outputs [:bootstrap-version-record :bootstrap-help-text
+                      :bootstrap-help-resource-text
                       :bootstrap-usage-text :sh07-core-input]
    :diagnostic-ownership {:stage ["SH07-CLI-ARGS"]
                           :source-decoding :reader :core-legality :checked-core
@@ -135,19 +140,25 @@
    "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    experimental-c-route-help))
 
-(defn- shell-p18-cli-help-text
-  [packaged-jvm-cli?]
-  (render-p18-cli-help-text
-   packaged-jvm-cli?
-   (if packaged-jvm-cli?
-     archived-packaged-jvm-cli-delegate
-     (:delegates-to (p18-cli-version-record false)))))
-
 (defn p18-cli-help-text
   [packaged-jvm-cli?]
   (render-p18-cli-help-text
    packaged-jvm-cli?
    (:delegates-to (p18-cli-version-record packaged-jvm-cli?))))
+
+(defn p18-cli-help-resource-text
+  "Return the generated help text for a checked-in wrapper launcher resource."
+  [launcher]
+  (case launcher
+    :source
+    (p18-cli-help-text false)
+
+    :archived-packaged-jvm-cli
+    (render-p18-cli-help-text true archived-packaged-jvm-cli-delegate)
+
+    (throw (ex-info "Unsupported bootstrap CLI help resource launcher"
+                    {:id "P18-CLI-HELP-RESOURCE-LAUNCHER"
+                     :launcher launcher}))))
 
 (defn cli-usage-text
   "Return the stable usage text for a command-line shape failure.
