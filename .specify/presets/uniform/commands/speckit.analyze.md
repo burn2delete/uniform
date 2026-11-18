@@ -8,6 +8,9 @@ description: Analyze consistency and evidence scope
 $ARGUMENTS
 ```
 
+For an ordinary fix under `.specify/README.md`, review its diff and checks.
+Report findings on the PR and return before feature selection.
+
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
 and current coordination remain authoritative. Use the selected feature directory
@@ -17,7 +20,7 @@ selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
 
-Read the selected spec, plan, tasks and evidence record. Report contradictions,
+Read the selected spec, plan, tasks and applicable evidence. Report contradictions,
 missing canonical references, unsupported completion/authority claims and owner
 conflicts with exact paths. Do not modify implementation or wake reviewers.
 Existing obligations determine severity; invent no generic process gates.

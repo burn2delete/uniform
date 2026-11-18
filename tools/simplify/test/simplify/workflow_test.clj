@@ -35,6 +35,34 @@
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
 
+(deftest publishes-one-exact-check-and-review-summary-on-the-pr
+  (let [ctx (assoc (fixture/context) :config {:repository "fixture/repo" :campaign "fixture"})
+        pr {:number 3 :state "open"}
+        t (merge finding {:issue {:number 2} :branch "fix" :base "base" :candidate "candidate" :tree "tree"})
+        checked (-> (evidenced t)
+                    (assoc-in [:checks :commands] [["clojure" "-M:test"]])
+                    (assoc-in [:review :summary] "Approved exact diff"))
+        posted (atom {})]
+    (with-redefs [flow/assert-clean! (fn [& _]) flow/assert-identity! (fn [& _])
+                  rt/git (fn [& _] "") gh/status! (fn [& _])
+                  gh/pages (fn [_ path] (get @posted path []))
+                  gh/api (fn
+                           ([_ _] [pr])
+                           ([_ _ path body] (swap! posted update path (fnil conj []) body)))]
+      (flow/publish! ctx checked)
+      (flow/publish! ctx checked)
+      (flow/publish! ctx (-> checked
+                             (assoc :candidate "new-candidate")
+                             (assoc-in [:checks :candidate] "new-candidate")))
+      (let [comments (get @posted "repos/fixture/repo/issues/3/comments")]
+        (is (= 1 (count comments)))
+        (is (str/includes? (:body (first comments)) "Approved exact diff"))
+        (is (str/includes? (:body (first comments)) "**Passed local checks**\n\n`[[\"clojure\" \"-M:test\"]]`")))
+      (let [legacy (evidenced (assoc t :candidate "legacy"))]
+        (rt/update! ctx assoc-in [:effects "comment/2/candidate/legacy"] {:status :restricted})
+        (is (thrown-with-msg? Exception #"Restricted effect cannot be retried" (flow/publish! ctx legacy)))
+        (is (= #{"repos/fixture/repo/issues/3/comments"} (set (keys @posted))))))))
+
 (deftest nul-delimited-git-paths-remain-exact
   (let [ctx (fixture/context) {:keys [repo]} (repository! ctx)
         tracked "tracked space.edn" untracked "untracked\nname.edn"]

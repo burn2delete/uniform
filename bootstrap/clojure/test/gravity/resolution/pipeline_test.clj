@@ -334,7 +334,10 @@
                   :alias-table [{:alias 'lib}]
                   :dependency-records [{:namespace 'library}]
                   :exports ['value] :lexical-scope-graph [{:scope-id "scope"}]
-                  :dependency-graph {:nodes ['consumer 'library] :edges []}
+                  :dependency-graph {:nodes ['consumer 'library]
+                                     :edges [{:from 'consumer :to 'library :kind :namespace
+                                              :boundary :pure-core-api :semantic-span {:dependency-edge 0}
+                                              :source-span {:line-start 4}}]}
                   :cross-profile-edge-report [{:boundary :pure-core-api}]
                   :incremental-invalidation-inputs {:imports ['library]}}
         product (resolution/product-projections analysis ops)]
@@ -349,6 +352,11 @@
     (is (= (:lexical-scope-graph analysis) (get-in product [:lexical-scope-graph :scopes])))
     (is (= (:cross-profile-edge-report analysis) (get-in product [:cross-profile-edge-report :records])))
     (is (= (:incremental-invalidation-inputs analysis) (get-in product [:incremental-invalidation-keys :inputs])))
+    (is (= ((:reader-canonical-hash ops)
+            {:domain :gravity/sh06-invalidation-identity-v2
+             :inputs (:incremental-invalidation-inputs analysis)
+             :dependency-graph-id (:dependency-graph-id (expected/resolution-preimage product))})
+           (get-in product [:incremental-invalidation-keys :invalidation-id])))
     (is (not= (get-in product [:incremental-invalidation-keys :invalidation-id])
               (get-in (resolution/product-projections (assoc analysis :incremental-invalidation-inputs {}) ops)
                       [:incremental-invalidation-keys :invalidation-id])))))
@@ -1026,42 +1034,89 @@
     (is (true? (second observed)))))
 
 (deftest verifier-requires-fresh-replay-current-products-and-public-proof
-  (let [artifact @real-artifact
-        verify (fn [value construction? ops]
-                 ((seed-var 'sh06-resolution-with-reader-invocation)
-                  source invocation
-                  #(#'resolution/verify-contained* value construction? :gravity.bootstrap/legacy ops)))
-        ops (operations)]
-    (is (= :passed (:status (verify artifact false ops))))
-    (is (= :passed (:status ((seed-var 'sh06-resolution-with-reader-invocation)
-                             source invocation #(resolution/verify artifact :gravity.bootstrap/legacy ops)))))
+  (let [artifact (with-report-context
+                   (fn [ctx]
+                     ;; Scope the owner's existing receipts to fixture construction.
+                     ;; Public verification below starts with empty receipts.
+                     (prn {:event :resolution-fixture-start})
+                     (flush)
+                     (let [artifact @real-artifact]
+                       (prn {:event :resolution-fixture-end
+                             :sh05-executions (get-in @ctx [:executions :sh05] 0)
+                             :sh05-reuses (get-in @ctx [:reuses :sh05] 0)})
+                       (flush)
+                       artifact)))
+        ops (operations)
+        verify (fn [case-name value construction? ops]
+                 (prn {:event :resolution-verifier-start :case case-name})
+                 (flush)
+                 (let [report ((seed-var 'sh06-resolution-with-reader-invocation)
+                               source invocation
+                               #(if construction?
+                                  (#'resolution/verify-contained* value true :gravity.bootstrap/legacy ops)
+                                  (resolution/verify value :gravity.bootstrap/legacy ops)))]
+                   (prn {:event :resolution-verifier-end :case case-name
+                         :status (:status report) :failed-checks (:failed-checks report)})
+                   (flush)
+                   report))]
     (is (= '([artifact context operations]) (:arglists (meta #'resolution/verify))))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify-current*)))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify*)))
     (is (nil? ((ns-publics 'gravity.resolution) 'verify-contained*)))
-    (let [without-proof (assoc artifact :capability-based-proof nil)]
-      (is (= :passed (:status (verify without-proof true ops))))
-      (let [report (verify without-proof false ops)]
-        (is (= :failed (:status report)))
-        (is (= [:embedded-capability-proof-current?] (:failed-checks report)))))
-    (doseq [[path value expected]
-            [[[:artifact-id] "sha256:changed" :artifact-identity-current?]
-             [[:provenance :source-revision-id] "changed" :provenance-current?]
-             [[:gravity-resolution-boundary :raw-template-result] {} :raw-template-result-current?]
-             [[:gravity-resolution-boundary :authenticated-envelope] {} :fresh-sh02-envelope-verified?]
-             [[:capability-based-proof :status] :failed :embedded-capability-proof-current?]]]
-      (let [report (verify (assoc-in artifact path value) false ops)]
-        (is (= :failed (:status report)))
-        (is (some #{expected} (:failed-checks report)))))
-    (doseq [[key replacement expected]
-            [[:sh06-resolution-verify-sh05 (fn [& _] {:status :failed}) :fresh-upstream-sh05-verification?]
-             [:sh06-resolution-run-request! (fn [& _] (throw (ex-info "unit replay refusal" {:id "C5-UNRESOLVED"})))
-              :fresh-gravity-request-replay?]
-             [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
-              :fresh-sh02-envelope-verified?]]]
-      (let [report (with-redefs-fn {(get ops key) replacement} #(verify artifact false ops))]
-        (is (= :failed (:status report)))
-        (is (some #{expected} (:failed-checks report)))))))
+    ;; The owner can reuse verification of the exact same immutable SH05 object
+    ;; within a scope. Direct stage entry still runs every applicable SH06 check.
+    (with-report-context
+      (fn [ctx]
+        (is (= :passed (:status (verify :current-artifact artifact false ops))))
+        (is (pos? (get-in @ctx [:executions :sh05] 0)))
+        ;; Start with a fresh upstream owner execution for the stale-key control.
+        (with-report-context
+          (fn [stale-ctx]
+            (let [prior-id ((:reader-canonical-hash ops)
+                            {:domain :gravity/sh06-invalidation-identity-v1
+                             :inputs (get-in artifact [:incremental-invalidation-keys :inputs])})
+                  stale (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] prior-id)
+                  report (verify :v1-invalidation-key stale false ops)]
+              (is (pos? (get-in @stale-ctx [:executions :sh05] 0)))
+              (is (= :failed (:status report)))
+              (is (= #{:invalidation-current? :artifact-identity-current?
+                       :embedded-capability-proof-current?}
+                     (set (:failed-checks report))))
+              (is (every? (comp true? (:checks report))
+                          [:fresh-upstream-sh05-verification? :fresh-gravity-request-replay?
+                           :fresh-gravity-verification? :resolved-analysis-current?
+                           :dependency-graph-current? :fresh-sh02-envelope-verified?])))))
+        (let [without-proof (assoc artifact :capability-based-proof nil)]
+          (is (= :passed (:status (verify :construction-without-proof without-proof true ops))))
+          (let [report (verify :public-without-proof without-proof false ops)]
+            (is (= :failed (:status report)))
+            (is (= [:embedded-capability-proof-current?] (:failed-checks report)))))
+        ;; Keep the request and descriptor valid so replay and envelope validation
+        ;; both reach their real inputs.
+        (let [tampered (-> artifact
+                           (assoc-in [:provenance :source-revision-id] "changed")
+                           (assoc-in [:gravity-resolution-boundary :raw-template-result] {})
+                           (assoc-in [:gravity-resolution-boundary :authenticated-envelope] {}))
+              report (verify :altered-provenance-template-and-envelope tampered false ops)]
+          (is (= :failed (:status report)))
+          (is (= #{:provenance-current? :raw-template-result-current?
+                   :fresh-sh02-envelope-verified? :embedded-capability-proof-current?}
+                 (set (:failed-checks report)))))
+        (doseq [[path value expected]
+                [[[:artifact-id] "sha256:changed" :artifact-identity-current?]
+                 [[:capability-based-proof :status] :failed :embedded-capability-proof-current?]]]
+          (let [report (verify expected (assoc-in artifact path value) false ops)]
+            (is (= :failed (:status report)))
+            (is (some #{expected} (:failed-checks report)))))
+        (doseq [[key replacement expected]
+                [[:sh06-resolution-verify-sh05 (fn [& _] {:status :failed}) :fresh-upstream-sh05-verification?]
+                 [:sh06-resolution-run-request! (fn [& _] (throw (ex-info "unit replay refusal" {:id "C5-UNRESOLVED"})))
+                  :fresh-gravity-request-replay?]
+                 [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
+                  :fresh-sh02-envelope-verified?]]]
+          (let [report (with-redefs-fn {(get ops key) replacement} #(verify key artifact false ops))]
+            (is (= :failed (:status report)))
+            (is (some #{expected} (:failed-checks report)))))))))
 
 (deftest verifier-configuration-roots-invalidate-old-receipts
   (doseq [name '[sh06-resolution-artifact-keys sh06-resolution-pass-contract
@@ -1152,25 +1207,56 @@
   ;; Execute the actual current Gravity leaf on explicit normalized requests.
   ;; Source authentication and publication remain with their owning boundaries.
   (let [id #(format "sha256:%064x" %)
+        edges [{:from 'stage.execution :to 'stage.library :kind :namespace
+                :boundary :pure-core-api :semantic-span {:explicit-edge 0}
+                :source-span {:source source :line-start 2}}
+               {:from 'stage.execution :to 'stage.support :kind :generated
+                :boundary :schema :semantic-span {:explicit-edge 1}
+                :source-span {:source source :line-start 3}}]
         request {:artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1
                  :module {:namespace 'stage.execution :package 'stage :profile :hosted :target :jvm
                           :safety :safe :effects [] :capabilities [] :exports []
                           :source-revision-id (id 1) :c4-artifact-id (id 2)}
                  :definitions [] :imports [] :import-bindings [] :lexical-scopes []
-                 :references [] :core-bindings [] :dependency-edges []
+                 :references [] :core-bindings [] :dependency-edges edges
                  :macro-expansion-binding {:artifact :gravity/sh05-macro-expansion-binding :schema-version 1
                                            :source-revision-id (id 1) :c4-artifact-id (id 2)
                                            :macro-result-id (id 3) :authenticated-envelope-id (id 4)}
                  :provenance {:actual-source-path source}}
         binding (real-binding)
-        run (resolution/run-request! source binding request (operations))
+        ops (operations)
+        run (resolution/run-request! source binding request ops)
+        analysis (:resolved-analysis run)
+        product (resolution/product-projections analysis ops)
+        invalidation (:incremental-invalidation-keys product)
         rejected (assoc request :references [{:syntax-id (id 9) :symbol 'missing :qualifier nil :name 'missing
                                               :position :expression :scope-chain [] :semantic-span {} :source-span nil}])
-        error (caught #(resolution/run-request! source binding rejected (operations)))]
+        error (caught #(resolution/run-request! source binding rejected ops))]
     (is (= :accepted (get-in run [:raw-template-result :status])))
     (is (= :passed (get-in run [:template-verification :status])))
     (is (= :passed (get-in run [:resolved-verification :status])))
-    (is (re-matches #"sha256:[0-9a-f]{64}" (get-in run [:resolved-analysis :artifact-id])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id analysis)))
+    (is (= edges (get-in product [:dependency-graph :edges])))
+    (is (= invalidation (:incremental-invalidation-keys
+                         (resolution/product-projections
+                          (update analysis :dependency-graph #(into {} %)) ops))))
+    (doseq [[field value preserves-key?]
+            [[:source-span {:source "relocated.gravity" :line-start 20} true]
+             [:from 'stage.library false]
+             [:boundary :pure-core-api false]]]
+      (test/testing (str "Dependency edge change to " field)
+        (let [changed-request (assoc-in request [:dependency-edges 1 field] value)
+              changed-run (resolution/run-request! source binding changed-request ops)
+              changed-product (resolution/product-projections (:resolved-analysis changed-run) ops)
+              changed-invalidation (:incremental-invalidation-keys changed-product)]
+          (is (= :passed (get-in changed-run [:resolved-verification :status])))
+          (is (= (get-in product [:dependency-graph :nodes])
+                 (get-in changed-product [:dependency-graph :nodes])))
+          (is (= (:dependency-edges changed-request) (get-in changed-product [:dependency-graph :edges])))
+          (is (= (:inputs invalidation) (:inputs changed-invalidation)))
+          (is (= preserves-key?
+                 (= (:invalidation-id invalidation)
+                    (:invalidation-id changed-invalidation)))))))
     (is (= "C5-UNRESOLVED" (:id (ex-data error))))
     (is (= 'missing (:symbol (ex-data error))))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id (ex-data error))))

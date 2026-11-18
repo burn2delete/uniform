@@ -253,8 +253,30 @@
     (is (str/blank? (:err result)) (:err result))
     (when (zero? (:exit result)) (json/read-strict-component-contract (:out result)))))
 
+(defn- assert-scalar-results! [directory]
+  (let [success (node-report! directory success-script)]
+    (is (= ["score"] (get success "exports")))
+    (is (= ["10" "7" "18014398509481987" "15" "100"
+            "9223372036854775807" "-9223372036854775808"]
+           (get success "results")))
+    (is (= (vec (repeat 7 "bigint")) (get success "resultTypes")))
+    success))
+
+(defn run-smoke! []
+  (let [output (str "target/development-loop-batches/public-js-smoke-" (UUID/randomUUID))
+        directory (.toPath (io/file (root) output))
+        source (absolute "examples/checked-js/acceptance.gravity")]
+    (try
+      (let [result (compile! [(absolute "bin/gravity")] (root)
+                             ["compile" source "--target" "js" "-o" output])]
+        (is (= 0 (:exit result)) (pr-str result))
+        (is (= :emitted (get-in result [:data :status])))
+        (when (zero? (:exit result))
+          (assert-scalar-results! (.toFile directory))))
+      (finally (delete-tree! directory)))))
+
 (defn- assert-runtime! [directory source]
-  (let [success (node-report! directory success-script)
+  (let [success (assert-scalar-results! directory)
         errors (node-report! directory errors-script)
         manifest (edn/read-string (slurp (io/file directory "manifest.edn")))
         checks (get-in manifest [:evidence :runtime-check-table])
@@ -264,11 +286,6 @@
         addition-ids (set (map #(get % "mirInstructionId")
                              (filter #(= 10 (get % "sourceLine"))
                                      (get-in source-map ["x_gravity" "generatedOrigins"]))))]
-    (is (= ["score"] (get success "exports")))
-    (is (= ["10" "7" "18014398509481987" "15" "100"
-            "9223372036854775807" "-9223372036854775808"]
-           (get success "results")))
-    (is (= (vec (repeat 7 "bigint")) (get success "resultTypes")))
     (is (= [":overflow" ":overflow" ":arity" ":arity" ":type" ":type"
             ":type" ":type" ":type" ":type" ":range" ":range"]
            (mapv #(get % "kind") errors)))

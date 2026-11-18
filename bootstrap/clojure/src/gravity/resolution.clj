@@ -2069,6 +2069,7 @@
    (.valAt
     ^clojure.lang.ILookup operations
     :sh06-resolution-order-compatibility)
+   graph (:dependency-graph analysis)
    compatibility-resolutions
    (mapv
     (fn*
@@ -2086,8 +2087,13 @@
     :inputs (:incremental-invalidation-inputs analysis),
     :invalidation-id
     (reader-canonical-hash
-     {:domain :gravity/sh06-invalidation-identity-v1,
-      :inputs (:incremental-invalidation-inputs analysis)})},
+     {:domain :gravity/sh06-invalidation-identity-v2,
+      :inputs (:incremental-invalidation-inputs analysis),
+      :dependency-graph-id
+      (reader-canonical-hash
+       {:domain :gravity/sh06-dependency-graph-v1
+        :nodes (:nodes graph)
+        :edges (mapv #(dissoc % :source-span) (:edges graph))})})},
    :import-export-table
    {:artifact :gravity/c5-import-export-table,
     :status :complete,
@@ -2095,7 +2101,7 @@
     :exports (:exports analysis)},
    :dependency-graph
    (assoc
-    (:dependency-graph analysis)
+    graph
     :artifact
     :gravity/c5-module-dependency-graph
     :status
@@ -2161,7 +2167,8 @@
  [artifact chunks operations]
  (let
   [reader-canonical-hash
-   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)]
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   graph (:dependency-graph artifact)]
   {:task (:task artifact),
    :upstream-syntax-stream-id
    (get-in artifact [:sh05-macro-artifact :expanded-syntax-stream-id]),
@@ -2180,12 +2187,9 @@
      :source-revision-id]),
    :dependency-graph-id
    (reader-canonical-hash
-    {:domain :gravity/sh06-dependency-graph-v1,
-     :nodes (get-in artifact [:dependency-graph :nodes]),
-     :edges
-     (mapv
-      (fn* [p1__241#] (dissoc p1__241# :source-span))
-      (get-in artifact [:dependency-graph :edges]))}),
+    {:domain :gravity/sh06-dependency-graph-v1
+     :nodes (:nodes graph)
+     :edges (mapv #(dissoc % :source-span) (:edges graph))}),
    :slice (:slice artifact),
    :kind (:kind artifact),
    :resolution-chunks (:resolution-chunks chunks),

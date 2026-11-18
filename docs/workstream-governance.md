@@ -205,14 +205,18 @@ Registered worktrees are inventory, not integration authority. Dirty state in
 another worktree is reported so the coordinator can avoid destructive cleanup,
 but only the exact candidate worktree and identities can satisfy admission.
 
-An ordinary source-only pull request that makes no governed authority or
-lifecycle claim uses its normal checks and independent review as the durable
-disposition evidence. It does not require a separate lifecycle metadata
-commit or terminal ledger record. This does not relax exact integration
-preflight, ownership, evidence, nonclaim, or governance validation when a
-candidate changes lifecycle data or admission policy, or claims governed
-authority; those candidates continue through the existing lifecycle and
-composition path.
+For an ordinary fix within an existing contract, the source diff, focused
+regressions, PR review, and normal CI provide the durable disposition. Link
+the relevant check or review from the PR when needed. Do not turn those
+results into a separate evidence report, review-consumption record, lifecycle
+metadata commit, or terminal ledger entry. Previously recorded dispositions
+remain historical evidence.
+
+Candidates that change lifecycle data or admission policy or claim governed
+authority continue through the existing lifecycle and composition path with
+exact integration preflight, ownership, evidence, independent acceptance,
+nonclaims, and governance validation. Evidence required by an owning
+language, safety, migration, or release contract remains required.
 
 ## Acceptance Criteria
 
