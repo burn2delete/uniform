@@ -12,7 +12,13 @@
             [simplify.runtime :as rt]
             [simplify.workflow :as shared]))
 
-(use-fixtures :each (fn [test] (with-redefs [rt/event! (fn [& _]) probe/input-paths ["module.clj"]] (test))))
+(use-fixtures :each
+  (fn [test]
+    (with-redefs [rt/event! (fn [& _])
+                  probe/input-paths ["module.clj"]
+                  probe/frontend-support-input-paths []
+                  probe/frontend-host-input-paths (constantly [])]
+      (test))))
 
 (defn context []
   (assoc-in (fixture/repository! (fixture/context))
@@ -22,12 +28,16 @@
 
 (defn observation [ctx key]
   (let [cwd (get-in ctx [:config :repo-dir])
+        route {:command compiler/command :target :llvm-x86_64-linux
+               :triple "x86_64-unknown-linux-gnu" :stage :current-source-canonical-core
+               :closure [{:component-id "compiler" :source-path "module.clj"
+                          :path "module.clj" :dependencies ["required-runtime"]}
+                         {:component-id "required-runtime" :source-path "module.clj"
+                          :path "module.clj"}]}
         result {:source-revision (rt/git ctx cwd "rev-parse" "HEAD")
-                :inputs [{:path "module.clj" :sha256 (compiler/input-sha256 cwd "module.clj")}]
-                :route {:command compiler/command :target :llvm-x86_64-linux
-                        :triple "x86_64-unknown-linux-gnu" :stage :current-source-canonical-core
-                        :closure [{:component-id "compiler" :path "module.clj" :dependencies ["required-runtime"]}
-                                  {:component-id "required-runtime" :path "language/runtime"}]}
+                :inputs (probe/execution-inputs cwd {:route route})
+                :frontend-host-input-id (probe/frontend-host-input-id cwd)
+                :route route
                 :completed [] :position {:component 0 :stage :current-frontend}
                 :status :actionable-failure
                 :failure {:id "C6-CALL" :kind :implementation :source "module.clj"
@@ -62,9 +72,15 @@
          _ (spit file source)
          _ (spit (io/file cwd compiler/c7-source) "selector producer identity fixture\n")
          recorded (:observation (edn/read-string (slurp (io/resource resource))))
+         _ (doseq [path (probe/frontend-input-paths cwd (get-in recorded [:route :closure]))
+                   :let [dependency (io/file cwd path)]
+                   :when (not (.isFile dependency))]
+             (io/make-parents dependency)
+             (spit dependency "selector frontend dependency fixture\n"))
          observation (-> recorded
                          (assoc :source-revision (rt/git ctx cwd "rev-parse" "HEAD")
-                                :inputs (compiler/declared-inputs cwd))
+                                :inputs (probe/execution-inputs cwd recorded)
+                                :frontend-host-input-id (probe/frontend-host-input-id cwd))
                          (assoc-in [:subject :source-sha256] (compiler/input-sha256 cwd compiler/envelope-source)))]
      (assoc observation :input-id (compiler/input-id observation)))))
 
@@ -165,7 +181,8 @@
 (deftest recorded-multiple-self-result-needs-the-authenticated-later-gate-witness
   (let [ctx (context) cwd (get-in ctx [:config :repo-dir])]
     (try
-      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source compiler/c7-source]]
+      (with-redefs [probe/input-paths ["module.clj" compiler/envelope-source compiler/c7-source]
+                    probe/frontend-support-input-paths [compiler/c7-source]]
         (let [raw-before (recorded-envelope-fixture ctx)
               before (compiler/classify-observation cwd raw-before)
               raw-after (recorded-envelope-fixture ctx "fixtures/compiler-envelope-multiple-self.edn" "changed envelope fixture\n")
@@ -200,9 +217,7 @@
           (is (not (compiler/advanced? (update-in before [:failure :witness] dissoc :consumer-source) after)))
           (spit (io/file cwd compiler/c7-source) "changed producer fixture\n")
           (is (not (compiler/current? cwd raw-after compiler/command)))
-          (let [changed (assoc raw-after :inputs (compiler/declared-inputs cwd))
-                changed (assoc changed :input-id (compiler/input-id changed))]
-            (is (not (compiler/advanced? before (compiler/classify-observation cwd changed)))))))
+          (is (not (compiler/advanced? before (compiler/classify-observation cwd raw-after))))))
       (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest observed-prerequisite-check-advances-and-next-plan-waits-for-retained-work
@@ -817,13 +832,123 @@
                                                              :writer-ended? true}))
                                             (execute-result! (observation ctx failure-key))))]
              (is (empty? (:slices (w/plan! ctx))))
-             (is (seq (:inputs (:compiler-observation @(:state ctx)))))
+             (is (seq (:admission-inputs (:compiler-observation @(:state ctx)))))
              (when (= :source change)
                (spit (io/file (get-in ctx [:config :repo-dir]) "module.clj") "(ns fixture)\n(def dependency true)\n"))
              (let [next-ctx (if (= :watchdog change) (assoc-in ctx [:config :compiler-observation-timeout-ms] 7200000) ctx)]
                (is (= failure-key (:key (first (:slices (w/plan! next-ctx)))))))))
         (is (= 2 @calls))
         (finally (fixture/delete-tree! (:root ctx)))))))
+
+(deftest bookkeeping-only-input-changes-reuse-the-frontend-result
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        ledger (io/file cwd "contracts/workstream-ledger.json")
+        calls (atom 0)]
+    (try
+      (io/make-parents ledger)
+      (spit ledger "ledger before")
+      (with-redefs [probe/input-paths ["module.clj" "contracts/workstream-ledger.json"]]
+        (let [execute! (fn [_]
+                         (let [run (swap! calls inc)
+                               revision (if (= run 1) "base-before" "unexpected-rerun")]
+                           (execute-result! (assoc (observation ctx failure-key)
+                                                   :source-revision revision))))
+              before (compiler/observe! ctx cwd "base-before" execute!)
+              _ (spit ledger "ledger after")
+              after (compiler/observe! ctx cwd "base-after" execute!)
+              plan-result (compiler/bind-selection! cwd compiler/command after
+                                                    (plan [(repair)]) {} [])]
+          (is (= 1 @calls))
+          (is (= "base-before" (:source-revision before) (:source-revision after)))
+          (is (= (:input-id before) (:input-id after)))
+          (is (= (:inputs before) (:inputs after)))
+          (is (= (:frontend-host-input-id before) (:frontend-host-input-id after)))
+          (is (= (:execution-fingerprint before) (:execution-fingerprint after)))
+          (is (not= (:admission-input-id before) (:admission-input-id after)))
+          (is (= (compiler/declared-inputs cwd) (:admission-inputs after)))
+          (is (= (:observation-effect before) (:observation-effect after)))
+          (is (= (:failure before) (:failure after)))
+          (is (= (:execution before) (:execution after)))
+          (is (compiler/current? cwd after compiler/command))
+          (is (= failure-key (get-in plan-result [:slices 0 :key])))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest admission-change-during-frontend-run-retains-the-execution-result
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        ledger (io/file cwd "contracts/workstream-ledger.json")
+        calls (atom 0)]
+    (try
+      (io/make-parents ledger)
+      (spit ledger "ledger before")
+      (with-redefs [probe/input-paths ["module.clj" "contracts/workstream-ledger.json"]]
+        (let [execute! (fn [_]
+                         (swap! calls inc)
+                         (let [result (observation ctx failure-key)]
+                           (spit ledger "ledger changed while compiler was running")
+                           (execute-result! (assoc result :source-revision "base-before"))))
+              first-result (compiler/observe! ctx cwd "base-before" execute!)
+              reused-result (compiler/observe! ctx cwd "base-after" execute!)]
+          (is (= 1 @calls))
+          (is (= "base-before" (:source-revision first-result) (:source-revision reused-result)))
+          (is (= (:input-id first-result) (:input-id reused-result)))
+          (is (= (:inputs first-result) (:inputs reused-result)))
+          (is (= (:frontend-host-input-id first-result) (:frontend-host-input-id reused-result)))
+          (is (= (:execution-fingerprint first-result) (:execution-fingerprint reused-result)))
+          (is (= :blocked (:status first-result)))
+          (is (= :actionable-failure (:status reused-result)))
+          (is (not (compiler/current? cwd first-result compiler/command)))
+          (is (compiler/current? cwd reused-result compiler/command))
+          (is (= (:observation-effect first-result) (:observation-effect reused-result)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest changed-c7-frontend-dependency-invalidates-and-reruns-the-observation
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        c7-path compiler/c7-source c7-file (io/file cwd compiler/c7-source) calls (atom 0)]
+    (try
+      (io/make-parents c7-file)
+      (spit c7-file "C7 source before\n")
+      (with-redefs [probe/frontend-support-input-paths [c7-path]]
+        (let [execute! (fn [_]
+                         (let [run (swap! calls inc)
+                               revision (if (= run 1) "base-before" "base-after")]
+                           (execute-result! (assoc (observation ctx failure-key)
+                                                   :source-revision revision))))
+              before (compiler/observe! ctx cwd "base-before" execute!)]
+          (spit c7-file "C7 source after\n")
+          (let [after (compiler/observe! ctx cwd "base-after" execute!)]
+            (is (= 2 @calls))
+            (is (= "base-after" (:source-revision after)))
+            (is (some #(= c7-path (:path %)) (:inputs before)))
+            (is (not= (:inputs before) (:inputs after)))
+            (is (not= (:execution-fingerprint before) (:execution-fingerprint after)))
+            (is (not= (:input-id before) (:input-id after)))
+            (is (compiler/current? cwd after compiler/command)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
+
+(deftest frontend-host-input-digest-is-required-and-binds-added-files
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        first-file (io/file cwd "host/source-a.clj")
+        second-file (io/file cwd "host/source-b.clj")]
+    (try
+      (doseq [file [first-file second-file]]
+        (io/make-parents file)
+        (spit file "(ns host.fixture)\n"))
+      (let [one (with-redefs [probe/frontend-host-input-paths (constantly ["host/source-a.clj"])]
+                  (probe/frontend-host-input-id cwd))
+            two (with-redefs [probe/frontend-host-input-paths (constantly ["host/source-a.clj" "host/source-b.clj"])]
+                  (probe/frontend-host-input-id cwd))
+            after-removal (with-redefs [probe/frontend-host-input-paths (constantly ["host/source-a.clj"])]
+                            (probe/frontend-host-input-id cwd))
+            raw (observation ctx failure-key)]
+        (is (not= one two))
+        (is (= one after-removal))
+        (is (not= two after-removal))
+        (is (compiler/current? cwd raw compiler/command))
+        (is (not (compiler/current? cwd (dissoc raw :frontend-host-input-id) compiler/command)))
+        (let [tampered (assoc raw :frontend-host-input-id (apply str (repeat 64 "0")))
+              tampered (assoc tampered :input-id (compiler/input-id tampered))]
+          (is (not (compiler/current? cwd tampered compiler/command)))))
+      (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest changing-watchdog-cannot-replay-an-uncertain-execution
   (let [ctx (context) calls (atom 0)]
@@ -1111,6 +1236,9 @@
       #(let [closure (#'probe/source-closure "/transport-fixture" (conj roots imported optional))]
          (is (= (into [:required-import] probe/cohort) (mapv :component-id closure)))
          (is (= ['gravity.required] (:source-imports (second closure))))
+         (let [paths (probe/frontend-input-paths "/transport-fixture" closure)]
+           (is (some #{"language/compiler/src/gravity/required.gravity"} paths))
+           (is (not (some #{"language/compiler/src/gravity/optional_broken.gravity"} paths))))
          (is (not (some #{:optional-broken} @visited)))))
     (with-redefs-fn {#'probe/module-header
                      (fn [_ component]
@@ -1119,6 +1247,30 @@
                          (assoc :module 'gravity.different)))}
       #(is (thrown-with-msg? Exception #"different namespace"
                              (#'probe/source-closure "/transport-fixture" (conj roots imported optional)))))))
+
+(deftest frontend-inputs-follow-the-selected-import-closure
+  (let [ctx (context) cwd (get-in ctx [:config :repo-dir])
+        consumer "language/compiler/src/gravity/consumer.gravity"
+        imported "language/compiler/src/gravity/required.gravity"
+        closure [{:component-id :consumer :source-path consumer}
+                 {:component-id :required :source-path imported}]]
+    (try
+      (doseq [[path text] [[consumer "consumer before\n"] [imported "required before\n"]]]
+        (let [file (io/file cwd path)]
+          (io/make-parents file)
+          (spit file text)))
+      (with-redefs [probe/frontend-support-input-paths []
+                    probe/frontend-host-input-paths (constantly [])]
+        (let [before (probe/execution-inputs cwd {:route {:closure closure}})
+              before-import (some #(when (= imported (:path %)) (:sha256 %)) before)]
+          (spit (io/file cwd imported) "required after\n")
+          (let [after (probe/execution-inputs cwd {:route {:closure closure}})
+                without-import (probe/execution-inputs cwd {:route {:closure [(first closure)]}})
+                after-import (some #(when (= imported (:path %)) (:sha256 %)) after)]
+            (is (string? before-import))
+            (is (not= before-import after-import))
+            (is (nil? (some #(when (= imported (:path %)) %) without-import))))))
+      (finally (fixture/delete-tree! (:root ctx))))))
 
 (deftest probe-forwards-the-existing-import-products-without-substituting-facts
   ;; Supplied products exercise transport identity; the real probe must produce
