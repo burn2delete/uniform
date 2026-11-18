@@ -12,6 +12,7 @@
             [clojure.test :refer [deftest is use-fixtures]]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
@@ -157,6 +158,41 @@
       (is (thrown-with-msg? Exception #"pagination remains restricted" (project/settings ctx)))
       (main/run-or-hold! ctx)
       (is (= [:restricted-project-controls :local-pause] @events)))))
+
+(deftest local-controls-reload-and-fail-closed-without-provider-reads
+  (let [ctx (fixture/context) file (str (io/file (:state-dir ctx) "project-controls.edn"))
+        ctx (update ctx :config assoc :repository "owner/repo" :local-controls-file file)
+        policy {:repository "owner/repo" :project "p" :defaults {"Control" "Active" "Priority" "Normal"}
+                :issues {12 {"Control" "Paused"} 34 {"Priority" "High"}}}]
+    (rt/update! ctx assoc :repository "owner/repo" :project {:id "p" :workflow {:id "status"}}
+                :campaign-issue {:number 12} :campaign-tracked true :effects {"link-project" {:status :done}})
+    (with-redefs [gh/graphql (fn [& _] (throw (AssertionError. "Local scheduling attempted a project read")))]
+      (rt/write-edn! file policy)
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (is (= 1 (project/priority (project/settings ctx) 34)))
+      (is (= 2 (project/priority (project/settings ctx) 99)))
+      (rt/write-edn! file (assoc policy :issues {}))
+      (is (project/runnable? (project/settings ctx) 12))
+      (let [s @(:state ctx) config (assoc (:config ctx) :state-dir (:state-dir ctx))
+            key (rt/digest (pr-str ["POST" "graphql"])) local {:method "POST" :endpoint "graphql" :error "original"}
+            s (assoc s :restricted-actions {key local})
+            hold {:kind :project-controls-pagination :scope :all-cursors :project "p"
+                  :state-file (str (io/file (:state-dir ctx) "state.edn")) :legacy-api-key key :retained-local-guard local}
+            registry (atom {:restrictions {:project-controls {"p" hold}}})]
+        (with-redefs [diagnostics/coordination-snapshot (fn [_] @registry)]
+          (is (= :no-recorded-blocker (:status (main/restart-check config s))))
+          (is (= [:restricted-project-controls] (:blockers (main/restart-check config (assoc-in s [:restricted-actions key :failed-request] {})))))
+          (swap! registry assoc-in [:restrictions :api key] local)
+          (is (= [:retained-graphql-restriction] (:blockers (main/restart-check config s))))))
+      (doseq [invalid [(assoc policy :project "foreign") (assoc policy :repository "foreign/repo")
+                       (assoc policy :issues {1 {"Control" "Typo"}}) (assoc policy :issues {"1" {}})
+                       (dissoc policy :defaults) (assoc policy :unknown true)]]
+        (rt/write-edn! file invalid)
+        (is (not (project/runnable? (project/settings ctx) 12))))
+      (spit file (str (pr-str policy) " {}"))
+      (is (not (project/runnable? (project/settings ctx) 12)))
+      (io/delete-file file)
+      (is (not (project/runnable? (project/settings ctx) 12))))))
 
 (deftest selector-reaches-the-api-with-complete-scope-and-external-message-sized-input
   (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")

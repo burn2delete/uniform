@@ -31,6 +31,60 @@
 (def ^:private ready-mutation
   "mutation($id:ID!){markPullRequestReadyForReview(input:{pullRequestId:$id}){pullRequest{id}}}")
 
+(def ^:private draft-mutation
+  "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id}){pullRequest{id}}}")
+
+(def ^:private issue-membership-query
+  "query($id:ID!,$after:String){node(id:$id){... on Issue{projectItems(first:100,after:$after,includeArchived:false){nodes{id project{id}} pageInfo{hasNextPage endCursor}}}}}")
+
+(def ^:private add-item-mutation
+  "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}")
+
+(defn settled-controls-guard? [ctx key local hold]
+  (and (map? local) (not (contains? local :failed-request))
+       (= :project-controls-pagination (:kind hold)) (= :all-cursors (:scope hold))
+       (= (:project hold) (get-in @(:state ctx) [:project :id]))
+       (= (:state-file ctx) (:state-file hold)) (= key (:legacy-api-key hold))
+       (= local (:retained-local-guard hold))))
+
+(defn- tracked-request? [ctx key local {:keys [query variables]}]
+  (let [s @(:state ctx) project (:project s) p (:id project) repo (:repository s)
+        hold (rt/shared-restriction ctx :project-controls p)]
+    (when (and (:local-scheduling ctx) (true? (some-> (:coordinator-owner ctx) deref))
+               (= {:repository repo :project p} (:local-scheduling ctx))
+               (= repo (get-in ctx [:config :repository])) (settled-controls-guard? ctx key local hold))
+      (let [prs (keep :pr (vals (:tasks s)))
+            issues (cons (:campaign-issue s) (keep :issue (concat (vals (:tasks s)) (vals (:source-tasks s)))))
+            member-key #(str "project-item/" p "/" %)
+            pending? #(= :pending (get-in s [:effects % :status]))
+            known-issue? (fn [id] (and (string? id) (some #(= id (:node_id %)) issues)))
+            cursor? #(or (nil? %) (string? %))]
+        (cond
+          (= query issue-membership-query)
+          (and (= #{:id :after} (set (keys variables))) (cursor? (:after variables))
+               (known-issue? (:id variables)) (pending? (member-key (:id variables))))
+          (= query add-item-mutation)
+          (and (= {:project p :content (:content variables)} variables) (known-issue? (:content variables))
+               (pending? (member-key (:content variables))))
+          (= query update-status-mutation)
+          (and (string? (get-in project [:workflow :id])) (string? (:item variables))
+               (some #(and (string? (:id %)) (= (:option variables) (:id %))) (get-in project [:workflow :options]))
+               (= variables {:project p :item (:item variables) :field (get-in project [:workflow :id]) :option (:option variables)})
+               (some (fn [{id :node_id}]
+                       (let [item (get-in s [:effects (member-key id)])]
+                         (and (string? id) (= :done (:status item)) (= (:item variables) (:result item))
+                              (pending? (get-in s [:tracking-intents (str "project-status/" p "/" id)]))))) issues))
+          (= query review-threads-query)
+          (let [[owner name] (str/split repo #"/")]
+            (and (pos-int? (:number variables)) (some #(= (:number variables) (:number %)) prs)
+                 (= variables {:owner owner :name name :number (:number variables) :after (:after variables)})
+                 (cursor? (:after variables))))
+          (#{draft-mutation ready-mutation} query)
+          (some (fn [{:keys [candidate pr]}]
+                  (and (string? candidate) (string? (:node_id pr)) (= variables {:id (:node_id pr)})
+                       (pending? (str (if (= query draft-mutation) "draft/" "ready/") candidate)))) (vals (:tasks s)))
+          :else false)))))
+
 (defn- graphql-request [method endpoint payload]
   (when (= "graphql" endpoint)
     {:method method :endpoint endpoint :body-sha256 (rt/digest (or payload ""))}))
@@ -82,7 +136,8 @@
          local (get-in @(:state ctx) [:restricted-actions key])
          _ (when (or (rt/shared-restriction ctx :api key)
                      (and local (not (and (= [method endpoint] ["POST" "graphql"])
-                                          (reviewed-pr-request? ctx key local body)))))
+                                          (or (reviewed-pr-request? ctx key local body)
+                                              (tracked-request? ctx key local body))))))
              (rt/fail! "Restricted GitHub action cannot be retried"
                        (cond-> {:endpoint endpoint :restricted true}
                          request (assoc :failed-request (assoc request :phase :before-call)))))
@@ -328,6 +383,23 @@
           (recur next-cursor))
         :else nil))))
 
+(defn- issue-item [ctx project content]
+  (loop [cursor nil]
+    (let [items (get-in (graphql ctx issue-membership-query {:id content :after cursor}) [:node :projectItems])
+          next? (get-in items [:pageInfo :hasNextPage])
+          next-cursor (get-in items [:pageInfo :endCursor])]
+      (when-not (and (vector? (:nodes items)) (boolean? next?)
+                     (every? #(and (string? (:id %)) (string? (get-in % [:project :id]))) (:nodes items)))
+        (rt/fail! "Issue project membership is unavailable" {:content content}))
+      (or (some #(when (= project (get-in % [:project :id])) (:id %)) (:nodes items))
+          (when next?
+            (when-not (and (string? next-cursor) (not= next-cursor cursor))
+              (rt/fail! "Issue membership cursor did not advance" {:content content}))
+            (recur next-cursor))))))
+
+(defn- find-item [ctx project content]
+  ((if (:local-scheduling ctx) issue-item existing-item) ctx project content))
+
 (defn- duplicate-project-item-error? [error]
   (let [{:keys [errors restricted]} (ex-data error)]
     (and (false? restricted)
@@ -338,12 +410,12 @@
 
 (defn- add-item! [ctx project content]
   (try
-    (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
+    (get-in (graphql ctx add-item-mutation
                      {:project project :content content})
             [:addProjectV2ItemById :item :id])
     (catch Exception error
       (if (duplicate-project-item-error? error)
-        (or (existing-item ctx project content)
+        (or (find-item ctx project content)
             (rt/fail! "Duplicate Project membership has no verified readback"
                       {:project project :content content :duplicate true}))
         (throw error)))))
@@ -351,7 +423,7 @@
 (defn item! [ctx issue]
   ;; Sub-issue admission can add membership independently of this controller.
   (rt/effect! ctx (str "project-item/" (get-in @(:state ctx) [:project :id]) "/" (:node_id issue))
-              #(or (existing-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
+              #(or (find-item ctx (get-in @(:state ctx) [:project :id]) (:node_id issue))
                    (add-item! ctx (get-in @(:state ctx) [:project :id]) (:node_id issue)))))
 
 (defn status! [ctx issue status]
@@ -376,7 +448,5 @@
 
 (defn draft! [ctx pr draft? candidate]
   (rt/effect! ctx (str (if draft? "draft/" "ready/") candidate)
-    #(graphql ctx (if draft?
-                    "mutation($id:ID!){convertPullRequestToDraft(input:{pullRequestId:$id}){pullRequest{id}}}"
-                    ready-mutation)
+    #(graphql ctx (if draft? draft-mutation ready-mutation)
               {:id (:node_id pr)})))

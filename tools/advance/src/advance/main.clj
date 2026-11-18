@@ -7,6 +7,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [simplify.coordination :as coordination]
+            [simplify.diagnostics :as diagnostics]
             [simplify.main :as base]
             [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
@@ -216,20 +217,35 @@
   (let [{:keys [state digest]} (read-status-state! config)]
     (status-summary config state digest (read-status-control config))))
 
+(defn restart-check [config state]
+  (if-let [file (:local-controls-file config)]
+    (let [ctx {:state (atom state) :state-file (str (io/file (:state-dir config) "state.edn")) :config config}
+          shared (:restrictions (diagnostics/coordination-snapshot config))
+          _ (when-not (every? map? [(get state :restricted-actions {}) (get shared :api {}) (get shared :project-controls {})])
+              (rt/fail! "Cannot inspect recorded scheduling restrictions" {}))
+          hold (project/startup-hold ctx (project/hold-reason ctx #(get-in shared [%1 %2])))]
+      {:scope :local-project-scheduling :campaign (:campaign config) :file file
+       :status (if hold :blocked :no-recorded-blocker) :blockers (if hold [hold] [])})
+    (diagnostics/restart-check config state)))
+
 (defn run-or-hold! [ctx]
-  (let [key (rt/digest (pr-str ["POST" "graphql"]))
-        project (get-in @(:state ctx) [:project :id])
-        reason (cond (rt/shared-restriction ctx :project-controls project) :restricted-project-controls
-                     (or (get-in @(:state ctx) [:restricted-actions key]) (rt/shared-restriction ctx :api key))
-                     :retained-graphql-restriction)]
-    (if reason
-      (do (coordination/register! ctx)
-          (try
-            (rt/event! ctx :operational-holding-start {:reason reason :provider-dispatch false})
-            (while (not (flow/paused? ctx)) (Thread/sleep (get-in ctx [:config :poll-ms])))
-            (rt/event! ctx :operational-holding-end {:reason :local-pause :provider-dispatch false})
-            (finally (coordination/unregister! ctx))))
-      (workflow/campaign! ctx))))
+  (let [file (get-in ctx [:config :local-controls-file])
+        reason #(project/startup-hold ctx (project/hold-reason ctx))]
+    (when-let [initial (reason)]
+      (coordination/register! ctx)
+      (try
+        (rt/event! ctx :operational-holding-start {:reason initial :provider-dispatch false})
+        (while (and (not (flow/paused? ctx)) (reason)) (Thread/sleep (get-in ctx [:config :poll-ms])))
+        (rt/event! ctx :operational-holding-end {:reason (if (flow/paused? ctx) :local-pause :controls-available)
+                                                 :provider-dispatch false})
+        (finally (coordination/unregister! ctx))))
+    (when-not (flow/paused? ctx)
+      (workflow/campaign!
+       (if file
+         (let [identity {:repository (get-in ctx [:config :repository]) :project (get-in @(:state ctx) [:project :id])}]
+           (rt/event! ctx :local-scheduling-controls (assoc identity :file file :defaults {"Control" "Active" "Priority" "Normal"}))
+           (assoc ctx :local-scheduling identity))
+         ctx)))))
 
 (defn dispatch! [ctx command args]
   (case command
@@ -261,10 +277,14 @@
   (try
     (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|status-summary|retry|reconcile|review-preexisting-validation|finish-pr-composition CONFIG.edn [ARGS]" {}))
     (let [config (base/config! config-path defaults)]
-      (if (= command "status-summary")
+      (if (#{"status-summary" "restart-check"} command)
         (do
-          (when (seq args) (rt/fail! "status-summary takes no additional arguments" {:args args}))
-          (println (pr-str (status-summary! config))))
+          (when (seq args) (rt/fail! (str command " takes no additional arguments") {:args args}))
+          (if (= command "restart-check")
+            (let [report (restart-check config (:state (read-status-state! config)))]
+              (prn report)
+              (when (= :blocked (:status report)) (rt/fail! "Advance startup is held" {})))
+            (prn (status-summary! config))))
         (let [ctx (assoc (base/context! config) :before-implement workflow/validate-source! :command command)]
           (.addShutdownHook (Runtime/getRuntime)
             (Thread. ^Runnable

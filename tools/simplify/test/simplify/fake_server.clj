@@ -18,7 +18,8 @@
                                                         (emit! {:id id :error {:message "Fixture approval declined"}}))
                        (emit! {:id id :result {}}))
         "initialized" nil
-        "thread/start" (emit! {:id id :result {:thread {:id "fixture-thread"} :model "fixture-no-inference"}})
+        "thread/start" (emit! {:id id :result {:thread {:id "fixture-thread"}
+                                              :model (or (:model params) "fixture-no-inference")}})
         "turn/interrupt" (do (emit! {:id id :result {}})
                              (emit! {:method "turn/completed"
                                      :params {:turn {:id "fixture-turn" :status "interrupted"}}}))

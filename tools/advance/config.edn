@@ -5,7 +5,9 @@
  :state-dir "../../target/validation/advance"
  :worktree-root "../../../uniform-advance-worktrees"
  ;; Concurrent host workers; no limit on tasks, attempts or useful work.
- :parallelism 3
+ :parallelism 6
+ :models {:select "gpt-6.2-astra" :implement "gpt-6.2-sol"
+          :review "gpt-6.2-astra" :completion-review "gpt-6.2-astra"}
  :poll-ms 15000
  :check-timeout-ms 1200000
  :priorities []
