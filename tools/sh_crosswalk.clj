@@ -591,6 +591,15 @@
     (loop [rows []] (if (.find m)
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
                                         :source (indexed-source-span path text index (.start m) (.end m))})) rows))))
+
+(defn task-region [path text region]
+  (when-not (seq (acceptance-dependencies/marked-task-ids text region))
+    (throw (ex-info "Missing task region" {:path path :region region})))
+  (let [open (str "<!-- " region ":start -->")
+        start (+ (.indexOf text open) (count open))
+        end (.indexOf text (str "<!-- " region ":end -->"))]
+    {:start start :end end :text (subs text start end)}))
+
 (defn task-records
   ([component] (task-records component (str component "-implementation-tasks")))
   ([component region]
@@ -604,21 +613,18 @@
                         (contains? historical-task-transition-paths path)
                         (:source-input-commit readiness-source-version)
                         :else (source-pin path))
-        source-text (if historical-row-source?
-                      (git-source baseline path)
-                      text)
-        recorded (if (contains? current-source-transition-paths path) source-text (git-source source-commit path))
-        ;; A task ledger can grow past its captured region. Keep parsing the
-        ;; live markers/rows and preserve the file identity of the inspected revision.
-        _ (when-not (str/starts-with? source-text recorded)
-            (throw (ex-info "Task ledger differs within its recorded source" {:path path})))
-        file-digest (sh-inventory/sha256 recorded)
+        transitioned? (contains? current-source-transition-paths path)
+        source-text (if (and transitioned? (not historical-row-source?))
+                      text
+                      (git-source source-commit path))
+        {:keys [start end] inspected-region :text} (task-region path source-text region)
+        ;; Locators address the inspected revision. A change in surrounding
+        ;; navigation may move the identical marked rows in the live ledger.
+        _ (when (and (not transitioned?) (not= source-text text)
+                     (not= inspected-region (:text (task-region path text region))))
+            (throw (ex-info "Task ledger differs within its recorded region" {:path path :region region})))
+        file-digest (sh-inventory/sha256 source-text)
         source-index (source-span-index source-text)
-        marker (str "<!-- " region ":")
-        start (+ (.indexOf source-text (str marker "start -->")) (count (str marker "start -->")))
-        end (.indexOf source-text (str marker "end -->"))
-        _ (when-not (seq (acceptance-dependencies/marked-task-ids source-text region))
-            (throw (ex-info "Missing task region" {:path path :region region})))
         m (re-matcher #"(?m)^- \[([ xX])\] `([^`]+)`[^\n]*" source-text)
         positions (loop [v []] (if (.find m) (recur (if (< start (.start m) end)
                    (conj v {:start (.start m) :id (.group m 2) :checked (not= " " (.group m 1))}) v)) v))]

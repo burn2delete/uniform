@@ -385,7 +385,7 @@
                             (assoc-in source [:requirements 0 :task-references] []) sh-crosswalk/mapping-review)))
     (is (thrown? Exception (sh-crosswalk/adopt-review source (assoc sh-crosswalk/mapping-review :status :pending))))))
 
-(deftest task-ledger-suffix-preserves-the-inspected-file-and-authenticates-the-live-region
+(deftest task-ledger-navigation-preserves-pinned-locators-and-authenticates-live-rows
   (let [path "specs/evolution-workflow/tasks.md"
         original (sh-crosswalk/git-source (sh-crosswalk/source-pin path) path)
         read-text slurp
@@ -393,11 +393,21 @@
                   (with-redefs [clojure.core/slurp
                                 (fn [p & opts] (if (= path p) current (apply read-text p opts)))]
                     (sh-crosswalk/task-records "evolution")))
-        rows (records original)]
-    (is (= rows (records (str original "\nAdditional progress outside the task region.\n"))))
+        rows (records original)
+        region "evolution-implementation-tasks"
+        incoming (str "<!-- " region ":start -->")
+        outgoing (str "<!-- " region ":end -->")
+        marked (str incoming (:text (sh-crosswalk/task-region path original region)) outgoing)
+        long-header (apply str (repeat 100 "Navigation link\n"))
+        moved (str long-header marked "\nAdditional progress.\n")]
+    (is (= rows (records marked) (records moved)))
     (is (= (sh-inventory/sha256 original) (:file-sha256 (first rows))))
-    (is (thrown? Exception (records (str/replace-first original "evolution/change-review" "changed-task"))))
-    (is (thrown? Exception (records (str original "\n<!-- evolution-implementation-tasks:start -->\n"))))))
+    (doseq [invalid [(str/replace-first moved "evolution/change-review" "changed-task")
+                     (str/replace-first moved "- [ ]" "- [x]")
+                     (str/replace-first moved "Status: Open" "Status: Changed")
+                     (str incoming moved) (str moved outgoing)
+                     (str/replace moved outgoing "")]]
+      (is (thrown? Exception (records invalid))))))
 
 (deftest real-derived-view-is-deterministic-and-preserves-gate-boundaries
   (let [view (sh-crosswalk/build) text (sh-crosswalk/rollup view)
@@ -955,6 +965,8 @@
         raw (fn [v r] (acceptance-dependencies/source-raw (:source r) (:source-snapshots v)))
         changed (set (for [[id r] before :when (not= (raw prior r) (raw @preserved-composition-view (after id)))] id))
         comparisons (:task-comparisons bridge)
+        regions (into {} (for [[component [row]] (:task-authorities view)]
+                           [(:path row) (str component "-implementation-tasks")]))
         transition-for (fn [path]
                          (first (filter #(= path (:path %))
                                         sh-crosswalk/current-source-transition-contracts)))]
@@ -1029,8 +1041,9 @@
           (is (= (:live-sha256 transition) (sh-inventory/sha256 (slurp path))) path))
         (let [inspected (sh-crosswalk/git-source (:commit after) path)]
           (is (= (:sha256 after) (sh-inventory/sha256 inspected)) path)
-          (if (= :task-file-version (:scope after))
-            (is (str/starts-with? (slurp path) inspected) path)
+          (if-let [region (regions path)]
+            (is (= (:text (sh-crosswalk/task-region path inspected region))
+                   (:text (sh-crosswalk/task-region path (slurp path) region))) path)
             (is (= inspected (slurp path)) path)))))
     (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
     (is (= (mapv :task-references (:sh07-sequence prior)) (mapv :task-references (:sh07-sequence view))))
@@ -7408,6 +7421,10 @@
                   historical-body (sh-crosswalk/git-source source-commit path)
                   raw (span-text historical-body source-span)
                   task (tasks task-id)
+                  region (str (:component task) "-implementation-tasks")
+                  live-region (:text (sh-crosswalk/task-region path body region))
+                  task-file (sh-crosswalk/git-source (:source-commit task) path)
+                  inspected-row (span-text task-file (:source task))
                   current (sh-crosswalk/git-source
                            (sh-crosswalk/current-source-commit path source-commit) path)]]
       (is (= path (:path task)))
@@ -7421,10 +7438,12 @@
       (is (= sha256 (sha historical-body) (sha (sh-crosswalk/git-source source-commit path))))
       (if (contains? sh-crosswalk/current-source-transition-paths path)
         (is (= current body))
-        (is (str/starts-with? body current)))
+        (is (= live-region (:text (sh-crosswalk/task-region path current region)))))
       (is (= (:sha256 source-span) (sha raw)))
-      (is (str/includes? (span-text body (:source task)) raw))
-      (is (= (.indexOf body raw) (.lastIndexOf body raw))))
+      (is (= (get-in task [:source :sha256]) (sha inspected-row)))
+      (is (str/includes? live-region inspected-row))
+      (is (str/includes? inspected-row raw))
+      (is (= (.indexOf live-region raw) (.lastIndexOf live-region raw))))
     (doseq [[id row] (:owner-joins r)]
       (is (= id (:id row)))
       (is (= :unassessed (:whole-attached-owner-predicate row)))

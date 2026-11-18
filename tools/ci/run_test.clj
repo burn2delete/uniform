@@ -6,8 +6,7 @@
             [clojure.test :as test :refer [deftest is run-tests]]
             [ci.maven-dependencies :as maven]
             [ci.public-diagnostic-report :as diagnostic-report]
-            [ci.public-release-subset :as public]
-            [gravity.tooling.strict-json :as json]))
+            [ci.public-release-subset :as public]))
 
 (binding [*command-line-args* nil] (load-file "tools/ci/run.clj"))
 (require '[ci.run :as ci])
@@ -2712,13 +2711,51 @@
           (finally
             (delete-fixture-tree! root)))))))
 
+(defn- read-workflow-checks [path]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-workflow-checks-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        result-path (str (io/file directory "checks.edn"))
+        ;; Keep the YAML reader on this test child's classpath only.
+        deps (assoc-in (edn/read-string ci/runtime-deps)
+                       [:deps 'org.snakeyaml/snakeyaml-engine] {:mvn/version "2.10"})
+        form `(let [loader# (org.snakeyaml.engine.v2.api.Load.
+                             (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))
+                    workflow# (.loadFromString loader# (slurp ~path))
+                    checks# (get-in workflow# ["jobs" "checks"])]
+                (spit ~result-path
+                      (pr-str {:timeout (get checks# "timeout-minutes")
+                               :rows (mapv #(into {} %)
+                                           (get-in checks# ["strategy" "matrix" "include"]))})))
+        argv ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str deps) "-M" "-e" (pr-str form)]]
+    (try
+      (let [receipt (with-redefs [ci/output (.getPath directory)]
+                      (ci/execute! "read-workflow-checks" 20 argv))]
+        (when-not (= :passed (:status receipt))
+          (throw (ex-info "Could not read the CI workflow" receipt)))
+        (edn/read-string (slurp result-path)))
+      (finally (delete-fixture-tree! directory)))))
+
+(defn- matrix-timeout-minutes [timeout row]
+  (if (integer? timeout)
+    timeout
+    (let [[_ dot-field bracket-field]
+          (when (string? timeout)
+            (re-matches #"\$\{\{\s*matrix(?:\.([\w-]+)|\[\s*'([^']+)'\s*\])\s*\}\}"
+                        (str/trim timeout)))]
+      (when-let [field (or dot-field bracket-field)]
+        (get row field)))))
+
+(deftest hosted-timeout-expression-uses-the-complete-value
+  (let [row {"limit" 90}]
+    (is (= 80 (matrix-timeout-minutes 80 row)))
+    (is (= 90 (matrix-timeout-minutes "${{ matrix.limit }}" row)))
+    (is (= 90 (matrix-timeout-minutes "${{ matrix['limit'] }}" row)))
+    (is (nil? (matrix-timeout-minutes "${{ matrix.limit }} + 1" row)))))
+
 (deftest hosted-envelope-leaves-setup-and-cleanup-time-after-child-watchdogs
-  (let [checks (second (re-find #"(?ms)^  checks:[ \t]*\R(.*?)(?=^  \S|\z)"
-                                (slurp ".github/workflows/ci.yml")))
-        [_ timeout-field] (re-find #"(?m)^\s+timeout-minutes:\s*\$\{\{\s*matrix\.([\w-]+)\s*\}\}" checks)
-        [_ matrix-json] (re-find #"(?ms)^ +matrix:\s*(\{.*?\]\s*\})" checks)
-        rows (get (json/read-strict-json matrix-json) "include")
-        minutes-by-mode (into {} (map (juxt #(get % "mode") #(get % timeout-field))) rows)
+  (let [{:keys [timeout rows]} (read-workflow-checks ".github/workflows/ci.yml")
+        minutes-by-mode (into {} (map (juxt #(get % "mode") #(matrix-timeout-minutes timeout %))) rows)
         change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
         all-checked-consumers
@@ -2734,9 +2771,10 @@
                               ["checked-core-runtime" all-checked-consumers]
                               ["checked-core-runtime" (assoc all-checked-consumers :kind :full)]]
             :let [watchdogs (mapv second (ci/commands-for-selection mode selection))
-                  job-seconds (* 60 (get minutes-by-mode mode))]]
+                  minutes (get minutes-by-mode mode)]]
       (is (and (seq watchdogs) (every? pos-int? watchdogs)) mode)
-      (is (<= (+ (reduce + watchdogs) overhead-seconds) job-seconds)
+      (is (and (integer? minutes)
+               (<= (+ (reduce + watchdogs) overhead-seconds) (* 60 minutes)))
           (str mode " must leave five minutes for setup, cleanup and upload")))))
 
 (deftest resolution-commands-are-complete-and-disjoint
