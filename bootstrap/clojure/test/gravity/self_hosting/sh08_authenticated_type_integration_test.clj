@@ -102,23 +102,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions plan)))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- digest-ref-ordinal
   [value]
   (when-not
@@ -156,7 +139,6 @@
       (= :accepted (:status raw))
       (vector? requests)
       (pos? request-count)
-      (<= request-count 2048)
       (= 2 (count roots))
       (= (:semantic-envelope-root raw) (first roots))
       (= (:provenance-binding-root raw) (second roots)))
@@ -261,9 +243,30 @@
       (get (:functions plan) builder))
      :function-shapes shapes}))
 
+(defn- current-source-invocation
+  []
+  {:reader-source-path
+   (path bootstrap/sh03-reader-source-relative-path)
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection
+   {:schema :gravity/sh04-development-syntax-selection-v1
+    :source-path
+    (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
+   :macro-source-mode :development-current})
+
 (defn- core-artifact
   [source-path]
-  (bootstrap/sh07-core-file-artifact source-path))
+  (let [invocation (current-source-invocation)
+        reader-source-path (:reader-source-path invocation)
+        text (slurp source-path)
+        module-inputs
+        {:artifact :gravity/sh06-module-inputs
+         :schema-version 1
+         :module-artifacts []}
+        resolution
+        (bootstrap/compiler-c5-resolution-source-artifact
+         source-path text module-inputs reader-source-path invocation)]
+    (bootstrap/sh07-core-from-resolution-artifact resolution invocation)))
 
 (defn- core
   [artifact]
@@ -286,7 +289,8 @@
   [source-path]
   (let [artifact (core-artifact source-path)
         verification
-        (bootstrap/sh07-core-artifact-verification artifact)
+        (bootstrap/sh07-core-artifact-verification
+         artifact (current-source-invocation))
         typed (c7-result artifact)]
     (merge
      {:source-path source-path
@@ -337,7 +341,7 @@
          #(fact-transition % (get fact-values %) evidence-id)
          fact-names)]
     {:artifact :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh08-authenticated-type-bridge
      :artifact-kind :gravity/sh08-authenticated-type-boundary
      :source-revision (bridge-source-revision)
@@ -447,8 +451,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor]
@@ -614,6 +617,35 @@
         run-gravity (run-bridge request-gravity)
         run-qst (run-bridge request-qst)
         result (:result run-gravity)]
+    (let [reader-path (path bootstrap/sh03-reader-source-relative-path)
+          reader-text (slurp reader-path)
+          reader-revision
+          (get-in gravity
+                  [:sh07-artifact
+                   :sh06-resolution-artifact
+                   :sh05-macro-artifact
+                   :gravity-macro-boundary
+                   :authenticated-sh04-artifact
+                   :c2-reader-artifact
+                   :sh03-reader-authentication
+                   :reader-source-revision])]
+      (is (= (source-hash reader-text)
+             (:source-content-hash reader-revision)))
+      (is (= (byte-count reader-text)
+             (:source-byte-count reader-revision))))
+    (is (true?
+         (invoke
+          bridge-plan 'sh08-bridge-type-result-valid?
+          [(:c7-request run-gravity)
+           (:type-template run-gravity)
+           (:type-verification run-gravity)])))
+    (is (false?
+         (invoke
+          bridge-plan 'sh08-bridge-type-result-valid?
+          [(:c7-request run-gravity)
+           (:type-template run-gravity)
+           (assoc (:type-verification run-gravity)
+                  :checks [:status-only-substitution])])))
     (is (= :passed
            (:status (:sh07-verification gravity))
            (:status (:sh07-verification qst))))

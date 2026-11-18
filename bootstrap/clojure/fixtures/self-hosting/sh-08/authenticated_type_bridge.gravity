@@ -451,7 +451,7 @@
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh08-authenticated-type-bridge
                (get descriptor :stage))
           (if
@@ -769,8 +769,8 @@
       false)
     false)
     false)
-    false)
-    false)))
+    )
+    )))
 
 (defn sh08-bridge-typed-artifact-id [request]
   (get request :expected-type-artifact-id))
