@@ -948,7 +948,13 @@
             c2-artifact-canonical/reader-canonical-value-default]
            (mapv :canonical-value @streamed-calls)))
     (is (every? string? (map :result @streamed-calls)))
-    (is (= [(legacy-hash token-input) (legacy-hash form-input)] actual-hashes))))
+    (is (= [(legacy-hash token-input) (legacy-hash form-input)] actual-hashes))
+    (doseq [input [[(with-meta 'alpha (sorted-map :line 1))]
+                   [(cons 'alpha (seq ['beta]))]]]
+      (is (nil? (original-vector-hash
+                 c2-artifact-canonical/streaming-sha256-hex
+                 c2-artifact-canonical/reader-canonical-value-default input)))
+      (is (= (legacy-hash input) (bootstrap/reader-canonical-hash input))))))
 
 (deftest c2-canonical-vector-hash-preserves-explicit-callbacks-and-falls-back
   (let [value [{:token-id :tok-0 :kind :symbol :raw "alpha" :trivia-before []}

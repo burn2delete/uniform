@@ -60,7 +60,6 @@
 
 (def ^:private streamable-list-classes
   #{clojure.lang.PersistentList
-    clojure.lang.Cons
     (class '())})
 
 (def ^:private streamable-scalar-classes
@@ -86,8 +85,10 @@
 
 (defn- streamable-metadata? [value]
   (let [metadata (when (instance? clojure.lang.IObj value) (meta value))]
-    (and (not (contains? (or metadata {}) :type))
-         (or (nil? metadata) (streamable-value? metadata)))))
+    (or (nil? metadata)
+        (and (contains? streamable-map-classes (class metadata))
+             (streamable-value? metadata)
+             (not (contains? metadata :type))))))
 
 (defn- streamable-value? [value]
   (let [value-class (when-not (nil? value) (class value))]
