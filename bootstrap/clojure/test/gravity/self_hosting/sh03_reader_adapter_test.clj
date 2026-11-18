@@ -113,6 +113,14 @@
      (bootstrap/reader-project-context-for-source source-path)
      bootstrap/standard-reader-options)))
 
+(defn- sh03-current-result
+  [source-path]
+  (bootstrap/sh03-reader-resolved-result!
+   source-path (source-bytes source-path)
+   (bootstrap/reader-project-context-for-source source-path)
+   bootstrap/standard-reader-options
+   (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")))
+
 (defn- sh03-result-with-options
   [source-path reader-options]
   (bootstrap/sh03-reader-resolved-result!
@@ -685,6 +693,30 @@
               (is (false? (authentic? omitted candidate)))))))
       (finally (.delete temporary)))))
 
+(deftest sh03-current-c2-source-map-preserves-adapted-spans
+  (let [temporary (java.io.File/createTempFile "gravity-sh03-current-map-" ".gravity")
+        source-path (.getAbsolutePath temporary)
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}}
+        text (str "(ns gravity.sh03.current-source-map (:profile :hosted) "
+                  "(:target :jvm) (:effects #{}) (:capabilities #{}) "
+                  "(:safety :safe) (:exports [main]))\n"
+                  "(defn main [] #uuid \"123e4567-e89b-12d3-a456-426614174000\")\n")]
+    (try
+      (spit temporary text)
+      (let [artifact
+            (bootstrap/compiler-c2-reader-source-artifact
+             source-path text (bootstrap/reader-project-context-for-source source-path)
+             nil nil reader-path invocation)
+            source-map (:gravity-reader-source-map artifact)]
+        (is (= (mapv #(select-keys % [:token-id :span]) (:token-stream artifact))
+               (:token-spans source-map)))
+        (is (= (mapv #(select-keys % [:form-id :span :parent-form-id])
+                     (:form-tree artifact))
+               (:form-spans source-map))))
+      (finally (.delete temporary)))))
+
 (deftest sh03-current-reader-plan-checks-keep-historical-priority
   ;; Supplied-plan validation units, not historical reader admission. The
   ;; current plan is derived by the original source-selected constructor.
@@ -1199,6 +1231,93 @@
     (is (some #{:fresh-gravity-sh03-reader-result-replay}
               (:missing-fields data)))
     (is (nil? (:unexpected-host-error data)))))
+
+(deftest sh03-direct-artifact-matches-retained-replay-input
+  (let [source (fixture-path "accepted" "newline-lf" ".gravity")
+        text (slurp source :encoding "UTF-8")
+        reader (path bootstrap/sh03-reader-source-relative-path)
+        build #(bootstrap/compiler-c2-reader-source-artifact
+                source text (bootstrap/reader-project-context-for-source source)
+                nil nil reader)
+        adapt bootstrap/sh03-reader-adapt-products!
+        retained (atom [])
+        original bootstrap/c2-reader-products
+        replay-input (ns-resolve 'gravity.bootstrap '*sh03-return-replay-input?*)]
+    (with-redefs [bootstrap/sh03-reader-adapt-products!
+                  (fn [& args]
+                    (swap! retained conj (some? (:raw-result (last args))))
+                    (apply adapt args))]
+      (let [artifact (build)
+            reference (with-redefs [bootstrap/c2-reader-products
+                                    (fn [& args]
+                                      (with-bindings {replay-input true}
+                                        (apply original args)))]
+                        (build))]
+        (is (= [false true] @retained))
+        (is (= reference artifact))
+        (is (= (str "sha256:" (bootstrap/sha256-hex text))
+               (get-in artifact [:source-unit-record :bytes-hash])))))))
+
+(deftest sh03-current-reader-top-level-digest-table-reuse
+  (let [source (fixture-path "accepted" "newline-lf" ".gravity")
+        bytes (source-bytes source)
+        raw (:raw-result (sh03-current-result source))
+        resolver-var (ns-resolve 'gravity.bootstrap
+                                 'p15-s23-c6c10-resolve-digest-references!)
+        original-resolver (var-get resolver-var)
+        resolve-candidate
+        (fn [candidate]
+          (let [completion (atom [])
+                result
+                (with-redefs-fn
+                  {resolver-var
+                   (fn [request-source value request-count consumer-ordinal digests]
+                     (when (nil? consumer-ordinal) (reset! completion value))
+                     (original-resolver request-source value request-count
+                                        consumer-ordinal digests))}
+                  #(bootstrap/sh03-reader-resolve-digest-requests!
+                    source candidate bytes))]
+            {:result result :completion @completion}))
+        exact (resolve-candidate raw)
+        exact-result (:result exact)
+        exact-output (:result exact-result)
+        legacy-output
+        (original-resolver source (assoc raw :digest-requests [])
+                           (count (:resolved-digests exact-result)) nil
+                           (:resolved-digests exact-result))
+        legacy-output
+        (assoc legacy-output :digest-requests (:resolved-requests exact-result)
+               :incremental-reader-hashes
+               (assoc (:incremental-reader-hashes legacy-output) :status :stable))]
+    (is (= [] (:digest-requests (:completion exact))))
+    (is (nil? (:token-stream (:completion exact))))
+    (is (nil? (:form-tree (:completion exact))))
+    (is (nil? (:semantic-value-table (:completion exact))))
+    (is (= legacy-output exact-output))
+    (is (identical? (:token-stream exact-output)
+                    (get-in exact-result [:resolved-requests 2 :preimage :tokens])))
+    (is (identical? (:form-tree exact-output)
+                    (get-in exact-result [:resolved-requests 3 :preimage :forms])))
+    (is (identical? (:semantic-value-table exact-output)
+                    (get-in exact-result [:resolved-requests 3 :preimage
+                                          :semantic-value-table])))
+    (let [changed-table (conj (:token-stream raw) :changed)
+          candidate (assoc raw :token-stream changed-table)
+          fallback (resolve-candidate candidate)
+          fallback-result (:result fallback)
+          fallback-output (:result fallback-result)
+          fallback-legacy
+          (original-resolver source (assoc candidate :digest-requests [])
+                             (count (:resolved-digests fallback-result)) nil
+                             (:resolved-digests fallback-result))
+          fallback-legacy
+          (assoc fallback-legacy
+                 :digest-requests (:resolved-requests fallback-result)
+                 :incremental-reader-hashes
+                 (assoc (:incremental-reader-hashes fallback-legacy) :status :stable))]
+      (is (= changed-table (:token-stream (:completion fallback))))
+      (is (= fallback-legacy fallback-output))
+      (is (= :changed (last (:token-stream fallback-output)))))))
 
 (deftest sh03-digest-resolution-reuses-only-its-fresh-canonical-form
   (let [validation-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-validation!)

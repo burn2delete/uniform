@@ -42,6 +42,31 @@
 (defn sh03-reader-canonical-digest [source-path value]
   (p15-s23-c6c10-streaming-digest source-path value))
 
+(def ^:private sh03-reader-top-level-digest-table-paths
+  [[:token-stream 2 :token-stream :tokens]
+   [:form-tree 3 :form-tree :forms]
+   [:semantic-value-table 3 :form-tree :semantic-value-table]])
+
+(defn- sh03-reader-reusable-top-level-digest-tables
+  [raw-result resolved-requests resolved-digests]
+  (vec
+   (keep
+    (fn [[result-key ordinal request-key child-key]]
+      (let [table (get raw-result result-key)
+            request (get-in raw-result [:digest-requests ordinal])
+            resolved-request (get resolved-requests ordinal)
+            digest (get resolved-digests ordinal)
+            request-table (get-in request [:preimage child-key])]
+        (when (and (= request-key (:key request))
+                   (= ordinal (:ordinal request))
+                   (= request-key (:key resolved-request))
+                   (= ordinal (:ordinal resolved-request))
+                   (= digest (:digest resolved-request))
+                   (vector? table)
+                   (identical? table request-table))
+          [result-key (get-in resolved-request [:preimage child-key])])))
+    sh03-reader-top-level-digest-table-paths)))
+
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
   (let [requests (:digest-requests raw-result)
@@ -133,10 +158,22 @@
   ;; Complete the identity-checking frame before allocating the final result.
   (let [{:keys [resolved-digests resolved-requests]}
         (sh03-reader-resolve-digest-request-sequence! source-path raw-result source-bytes)
+        reusable-top-level-tables
+        (sh03-reader-reusable-top-level-digest-tables
+         raw-result resolved-requests resolved-digests)
+        completion-input
+        (reduce (fn [result [result-key _]]
+                  (assoc result result-key nil))
+                (assoc raw-result :digest-requests [])
+                reusable-top-level-tables)
         resolved-result
         (p15-s23-c6c10-resolve-digest-references!
-         source-path (assoc raw-result :digest-requests [])
+         source-path completion-input
          (count resolved-requests) nil resolved-digests)
+        resolved-result
+        (reduce (fn [result [result-key table]]
+                  (assoc result result-key table))
+                resolved-result reusable-top-level-tables)
         resolved-result
         (assoc resolved-result :digest-requests resolved-requests
                :incremental-reader-hashes
@@ -152,6 +189,8 @@
    (fn [path value]
      (sh03-reader-boundary-fail! path :sh03-reader-diagnostic-id-request value {}))
    source-path diagnostic))
+
+(def ^:private ^:dynamic *sh03-return-replay-input?* true)
 
 (defn sh03-reader-resolved-result!
   ([source-path source-bytes project-context reader-options]
@@ -191,7 +230,10 @@
                        %))]
     (assoc resolved
            :result result
-           :raw-result raw-result
+           ;; Standalone products retain the original input for subsequent
+           ;; precomputed-product verification. Direct C2 assembly has already
+           ;; replayed it here and consumes only the verified, resolved result.
+           :raw-result (when *sh03-return-replay-input?* raw-result)
            :verification-report verifier-result
            :invocation-context
            (when (some? reader-source-path)
@@ -218,32 +260,43 @@
   (sh03-reader-decode-buffer!
    source-path raw (java.nio.ByteBuffer/wrap ^bytes bytes)))
 
-(defn sh03-reader-source-scalar-boundaries!
+(defn- sh03-reader-source-scalar-boundary-index!
   [source-path ^String source-text ^bytes source-bytes]
-  (loop [utf16-index 0
-         byte-index 0
-         scalar-index 0
-         boundaries {0 0}]
-    (if (= utf16-index (.length source-text))
-      (do
-        (when-not (= byte-index (alength source-bytes))
-          (sh03-reader-boundary-fail!
-           source-path :complete-sh03-reader-source-scalar-index
-           {:observed-byte-count byte-index}
-           {:expected-byte-count (alength source-bytes)}))
-        boundaries)
-      (let [codepoint (.codePointAt source-text utf16-index)
-            utf16-width (Character/charCount codepoint)
-            utf8-width (cond
-                         (<= codepoint 0x7f) 1
-                         (<= codepoint 0x7ff) 2
-                         (<= codepoint 0xffff) 3
-                         :else 4)
-            next-byte (+ byte-index utf8-width)]
-        (recur (+ utf16-index utf16-width)
-               next-byte
-               (inc scalar-index)
-               (assoc boundaries next-byte (inc scalar-index)))))))
+  (let [byte-count (alength source-bytes)
+        boundaries (int-array (inc byte-count))]
+    (java.util.Arrays/fill boundaries -1)
+    (aset-int boundaries 0 0)
+    (loop [utf16-index 0 byte-index 0 scalar-index 0]
+      (if (= utf16-index (.length source-text))
+        (do
+          (when-not (= byte-index byte-count)
+            (sh03-reader-boundary-fail!
+             source-path :complete-sh03-reader-source-scalar-index
+             {:observed-byte-count byte-index}
+             {:expected-byte-count byte-count}))
+          boundaries)
+        (let [codepoint (.codePointAt source-text utf16-index)
+              utf8-width (cond
+                           (<= codepoint 0x7f) 1
+                           (<= codepoint 0x7ff) 2
+                           (<= codepoint 0xffff) 3
+                           :else 4)
+              next-byte (+ byte-index utf8-width)]
+          (when (<= next-byte byte-count)
+            (aset-int boundaries next-byte (inc scalar-index)))
+          (recur (+ utf16-index (Character/charCount codepoint))
+                 next-byte (inc scalar-index)))))))
+
+(defn sh03-reader-source-scalar-boundaries!
+  [source-path source-text source-bytes]
+  (let [^ints index (sh03-reader-source-scalar-boundary-index!
+                     source-path source-text source-bytes)]
+    (loop [offset 0 result (transient {})]
+      (if (= offset (alength index))
+        (persistent! result)
+        (let [scalar (aget index offset)]
+          (recur (inc offset)
+                 (if (neg? scalar) result (assoc! result offset scalar))))))))
 
 ;; Trusted HOST connection only; none of these functions are Gravity builtins.
 ;; The source sandbox cannot manufacture the original issuer or scope objects.

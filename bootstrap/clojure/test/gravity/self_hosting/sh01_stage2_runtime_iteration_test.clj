@@ -21593,7 +21593,8 @@
     (is (= catalogs (set (map :name (filter #(= :var (:kind %)) (:exports entry))))))
     (is (= (count (get-in artifact [:gravity-resolution-boundary :resolved-analysis :module-contract :exports]))
            (count (:exports entry))))
-    (let [result (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'verify-c8-effect-checker [:input])]
+    (let [result (body-support/invoke-current-c8-module-bundle
+                  runtime bundle 'verify-c8-effect-checker [:input])]
       (is (= :stage1-source-owned (:status result)))
       (is (= 'typed-core-artifact (:typed-core-artifact result)))
       (is (= 'c8-effect-diagnostic-catalog (:diagnostics result))))))

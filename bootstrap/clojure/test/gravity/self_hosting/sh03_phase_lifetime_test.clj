@@ -60,7 +60,8 @@
 
 (def ^:private phase-functions
   '#{sh03-decode-source-bytes sh03-scan-tokens sh03-parse-tokens
-     sh03-construct-parsed-source-unit})
+     sh03-construct-parsed-source-unit
+     sh03-construct-parsed-source-unit-for-verification})
 
 (defn- observe-phases [events operation]
   (let [call-var (ns-resolve 'gravity.bootstrap
@@ -76,22 +77,28 @@
                    :env-keys (set (keys env))
                    :characters (get env 'characters)
                    :tokens (get env 'tokens)
-                   :parsed (get env 'parsed)}))
+                   :parsed (get env 'parsed)
+                   :replay-candidate (get env 'replay-candidate)}))
          (original runtime plan env instruction scope))}
       operation)))
 
 (defn- assert-phase-readsets [events]
-  (let [expected-keys '#{source-unit source-bytes reader-policy phase characters tokens parsed}
+  (let [expected-keys '#{source-unit source-bytes reader-policy replay-candidate
+                         phase characters tokens parsed}
         expected-phases '{sh03-decode-source-bytes :decode
                           sh03-scan-tokens :scan
                           sh03-parse-tokens :parse
-                          sh03-construct-parsed-source-unit :construct}]
-    (doseq [{:keys [function phase env-keys characters tokens parsed]} events]
+                          sh03-construct-parsed-source-unit :construct
+                          sh03-construct-parsed-source-unit-for-verification :construct}]
+    (doseq [{:keys [function phase env-keys characters tokens parsed replay-candidate]} events]
       ;; This observes the caller interpreter environment, not just the formal
       ;; callee arguments. Old nested lets would retain decoded/characters here.
       (is (= expected-keys env-keys))
       (is (= (get expected-phases function) phase))
       (is (not-any? env-keys '[decoded scanned parsed-result]))
+      (if (= function 'sh03-construct-parsed-source-unit-for-verification)
+        (is (= :accepted (:status replay-candidate)))
+        nil)
       (case phase
         :decode (is (every? nil? [characters tokens parsed]))
         :scan (do (is (every? vector? characters))
@@ -105,10 +112,14 @@
                      (is (= :accepted (:status parsed))))))))
 
 (deftest phase-lifetime-loop-has-only-original-source-outer-readset
-  (let [definition (get-in @current-plan [:functions 'sh03-read-source-unit])
+  (let [definition (get-in @current-plan [:functions 'sh03-read-source-unit-internal])
+        public-definition (get-in @current-plan [:functions 'sh03-read-source-unit])
         loops (filter #(and (map? %) (= :loop (:op %)))
                       (tree-seq coll? seq (:instructions definition)))]
-    (is (= '[source-unit source-bytes reader-policy] (:params definition)))
+    (is (= '[source-unit source-bytes reader-policy replay-candidate]
+           (:params definition)))
+    (is (= '[source-unit source-bytes reader-policy]
+           (:params public-definition)))
     (is (= 1 (count loops)))
     (is (= '[phase characters tokens parsed] (mapv :name (:bindings (first loops)))))
     (let [events (atom [])
@@ -132,6 +143,10 @@
                           (conj arguments result))))]
     (is (true? (:verified? report)))
     (is (= :accepted (:status report)))
-    (is (= (zipmap phase-functions (repeat 2))
+    (is (= '{sh03-decode-source-bytes 2
+             sh03-scan-tokens 2
+             sh03-parse-tokens 2
+             sh03-construct-parsed-source-unit 1
+             sh03-construct-parsed-source-unit-for-verification 1}
            (frequencies (map :function @events))))
     (assert-phase-readsets @events)))

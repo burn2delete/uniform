@@ -91,7 +91,10 @@
 
 (defn- invoke-c8
   [function arguments]
-  (invoke c8-plan function arguments))
+  (body-effects/invoke-current-c8-module-bundle
+   {:engine :gravity-sh09-effect-legality-leaf
+    :compiler-artifact-plan? true}
+   @c8-plan function arguments))
 
 (defn- request
   [plan function]

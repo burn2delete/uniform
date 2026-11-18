@@ -4704,6 +4704,101 @@
                        :span (get form :span)
                        :parent-form-id (get form :parent-form-id)})))))})
 
+(defn sh03-compact-token-records-match? [tokens value-index candidate]
+  (if (if (vector? candidate)
+        (= (count tokens) (count candidate))
+        false)
+    (loop [position 0]
+      (if (= position (count tokens))
+        true
+        (if (= (sh03-compact-token-record
+                (get tokens position) value-index)
+               (get candidate position))
+          (recur (+ position 1))
+          false)))
+    false))
+
+(defn sh03-compact-form-replay-products
+  [tokens forms value-index candidate]
+  (if (if (vector? candidate)
+        (= (count forms) (count candidate))
+        false)
+    (loop [position 0 literals [] deferred []]
+      (if (= position (count forms))
+        {:matches? true
+         :literal-records literals
+         :deferred-literal-records deferred}
+        (let [form (get forms position)
+              compact-form (sh03-compact-form-record tokens form)
+              observed (get candidate position)
+              literal-row
+              (sh03-literal-records [compact-form] value-index)
+              deferred-row
+              (sh03-deferred-literal-records [compact-form] value-index)]
+          (if (= compact-form observed)
+            (recur
+             (+ position 1)
+             (if (= (count literal-row) 0)
+               literals
+               (conj literals (get literal-row 0)))
+             (if (= (count deferred-row) 0)
+               deferred
+               (conj deferred (get deferred-row 0))))
+            {:matches? false}))))
+    {:matches? false}))
+
+(defn sh03-source-map-token-spans-match? [tokens spans]
+  (loop [position 0]
+    (if (= position (count tokens))
+      true
+      (let [token (get tokens position)
+            observed (get spans position)
+            expected {:token-id (get token :token-id)
+                      :span (get token :span)}]
+        (if (= expected observed)
+          (recur (+ position 1))
+          false)))))
+
+(defn sh03-source-map-form-spans-match? [forms spans]
+  (loop [position 0]
+    (if (= position (count forms))
+      true
+      (let [form (get forms position)
+            observed (get spans position)
+            expected {:form-id (get form :form-id)
+                      :span (get form :span)
+                      :parent-form-id (get form :parent-form-id)}]
+        (if (= expected observed)
+          (recur (+ position 1))
+          false)))))
+
+(defn sh03-source-map-record-shape-valid? [tokens forms candidate]
+  (if (map? candidate)
+    (if (sh03-exact-keys?
+         candidate #{:artifact :token-spans :form-spans})
+      (if (= :gravity/reader-source-map (get candidate :artifact))
+        (if (vector? (get candidate :token-spans))
+          (if (vector? (get candidate :form-spans))
+            (if (= (count tokens) (count (get candidate :token-spans)))
+              (if (= (count forms) (count (get candidate :form-spans)))
+                true
+              false)
+            false)
+          false)
+        false)
+      false)
+      false)
+    false))
+
+(defn sh03-source-map-record-matches? [tokens forms candidate]
+  (if (sh03-source-map-record-shape-valid? tokens forms candidate)
+    (if (sh03-source-map-token-spans-match?
+         tokens (get candidate :token-spans))
+      (sh03-source-map-form-spans-match?
+       forms (get candidate :form-spans))
+      false)
+    false))
+
 (defn sh03-top-level-records [root-ids root-values]
   (loop [ids root-ids values root-values result []]
     (if (= (count ids) 0)
@@ -4780,6 +4875,16 @@
              (conj result
                    (sh03-semantic-form-identity (first remaining)))))))
 
+(defn sh03-semantic-form-tree-from-source-records [tokens forms]
+  (loop [position 0 result []]
+    (if (= position (count forms))
+      result
+      (recur
+       (+ position 1)
+       (conj result
+             (sh03-semantic-form-identity
+              (sh03-compact-form-record tokens (get forms position))))))))
+
 (defn sh03-semantic-value-identity [entry]
   {:value-id (get entry :value-id)
    :form-id (get entry :form-id)
@@ -4842,13 +4947,11 @@
         true
         (recur (rest remaining))))))
 
-(defn sh03-digest-requests
+(defn sh03-digest-requests-with-form-identity
   [source-unit source-bytes reader-policy semantic-template
-   token-stream forms value-table extension-records]
+   token-stream forms value-table extension-records form-identity]
   (let [
         retain-trivia (get reader-policy :retain-trivia)
-        form-identity
-        (if retain-trivia forms (sh03-semantic-form-tree forms))
         value-identity
         (if retain-trivia
           value-table
@@ -4929,6 +5032,17 @@
        :form-tree-id {:digest-ref 3}
        :extension-invocation-set-id {:digest-ref 4}
        :semantic-template semantic-template}}]))
+
+(defn sh03-digest-requests
+  [source-unit source-bytes reader-policy semantic-template
+   token-stream forms value-table extension-records]
+  (let [form-identity
+        (if (get reader-policy :retain-trivia)
+          forms
+          (sh03-semantic-form-tree forms))]
+    (sh03-digest-requests-with-form-identity
+     source-unit source-bytes reader-policy semantic-template
+     token-stream forms value-table extension-records form-identity)))
 
 (defn sh03-digest-request-summary [request]
   {:key (get request :key)
@@ -5058,93 +5172,140 @@
 
 ; Construct the parsed product directly. Semantic validation and independent
 ; replay do not depend on a projected construction-work allowance.
-(defn sh03-construct-parsed-source-unit
-  [source-unit source-bytes reader-policy tokens parsed]
+(defn sh03-construct-parsed-source-unit-internal
+  [source-unit source-bytes reader-policy tokens parsed replay-candidate]
   (if (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
         (sh03-reader-sealed-text-forms-valid? (get parsed :form-tree))
         true)
-                    (let [raw-output-tokens
-                          (sh03-filter-output-tokens
-                           tokens (get reader-policy :retain-trivia))
-                          raw-forms (get parsed :form-tree)
-                          roots (get parsed :top-level-form-ids)
-                          values (get parsed :top-level-values)
-                          value-table
-                          (sh03-semantic-value-table tokens raw-forms)
-                          token-value-index
-                          (sh03-semantic-value-token-index value-table)
-                          form-value-index
-                          (sh03-semantic-value-form-index value-table)
-                          output-tokens
-                          (sh03-compact-token-records
-                           raw-output-tokens token-value-index)
-                          forms
-                          (sh03-compact-form-records tokens raw-forms)
-                          literals
-                          (sh03-literal-records forms form-value-index)
-                          deferred
-                          (sh03-deferred-literal-records
-                           forms form-value-index)
-                          extension-records
-                          (if (= (get reader-policy :extension-policy) :gravity/declared-input-reader)
-                            (get parsed :resource-extension-records)
-                          (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
-                            [(sh03-reader-sealed-text-record raw-forms reader-policy)]
-                            (sh03-reader-extension-invocation-records forms reader-policy)))
-                          source-map
-                          (sh03-source-map-record output-tokens forms)
-                          semantic-template
-                          (sh03-accepted-semantic-template
-                           output-tokens forms roots value-table literals
-                           deferred extension-records)
-                          requests
-                          (sh03-digest-requests
-                           source-unit source-bytes reader-policy
-                           semantic-template output-tokens forms value-table
-                           extension-records)]
-                      {:artifact :gravity/sh03-reader-result
-                       :schema-version 1
-                       :status :accepted
-                       :source-unit
-                       (sh03-semantic-source-unit
-                        source-unit reader-policy)
-                       :actual-path-provenance
-                       (sh03-actual-provenance source-unit)
-                       :token-stream output-tokens
-                       :form-tree forms
-                       :semantic-value-table value-table
-                       :top-level-form-ids roots
-                       :top-level-parsed-records
-                       (sh03-top-level-records roots values)
-                       :parsed-semantic-values
-                       (sh03-top-level-value-references roots)
-                       :literal-decoding-records literals
-                       :semantic-error-deferment-record
-                       {:artifact
-                        :gravity/semantic-error-deferment-record
-                        :deferred? (> (count deferred) 0)
-                        :deferred-literal-records deferred}
-                       :reader-extension-invocation-records
-                       extension-records
-                       :reader-source-map source-map
-                       :incremental-reader-hashes
-                       {:source-unit {:digest-ref 1}
-                        :token-stream {:digest-ref 2}
-                        :form-tree {:digest-ref 3}
-                        :extension-invocation-set {:digest-ref 4}
-                        :reader-result {:digest-ref 5}
-                        :status :pending-resolution}
-                       :semantic-reader-template semantic-template
-                       :digest-requests requests
-                       :diagnostics []
-                       :bounds (sh03-bounds-record)
-                       :execution-boundary
-                       (sh03-execution-boundary-record)})
+    (let [raw-output-tokens
+          (sh03-filter-output-tokens
+           tokens (get reader-policy :retain-trivia))
+          raw-forms (get parsed :form-tree)
+          roots (get parsed :top-level-form-ids)
+          values (get parsed :top-level-values)
+          value-table
+          (sh03-semantic-value-table tokens raw-forms)
+          token-value-index
+          (sh03-semantic-value-token-index value-table)
+          form-value-index
+          (sh03-semantic-value-form-index value-table)
+          form-replay-products
+          (if (= replay-candidate nil)
+            {:matches? true}
+            (sh03-compact-form-replay-products
+             tokens raw-forms form-value-index
+             (get replay-candidate :form-tree)))
+          replay-rows-match?
+          (if (= replay-candidate nil)
+            true
+            (if (sh03-compact-token-records-match?
+                 raw-output-tokens token-value-index
+                 (get replay-candidate :token-stream))
+              (if (get form-replay-products :matches?)
+                (sh03-source-map-record-matches?
+                 raw-output-tokens raw-forms
+                 (get replay-candidate :reader-source-map))
+                false)
+              false))]
+      (if (if (= replay-candidate nil) false (= replay-rows-match? false))
+        {:sh03-reader-replay-mismatch? true
+         :status :accepted}
+        (let [output-tokens
+              (if (= replay-candidate nil)
+                (sh03-compact-token-records
+                 raw-output-tokens token-value-index)
+                (get replay-candidate :token-stream))
+              forms
+              (if (= replay-candidate nil)
+                (sh03-compact-form-records tokens raw-forms)
+                (get replay-candidate :form-tree))
+              literals
+              (if (= replay-candidate nil)
+                (sh03-literal-records forms form-value-index)
+                (get form-replay-products :literal-records))
+              deferred
+              (if (= replay-candidate nil)
+                (sh03-deferred-literal-records forms form-value-index)
+                (get form-replay-products :deferred-literal-records))
+              extension-records
+              (if (= (get reader-policy :extension-policy) :gravity/declared-input-reader)
+                (get parsed :resource-extension-records)
+              (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
+                [(sh03-reader-sealed-text-record raw-forms reader-policy)]
+                (sh03-reader-extension-invocation-records forms reader-policy)))
+              source-map
+              (if (= replay-candidate nil)
+                (sh03-source-map-record output-tokens forms)
+                (get replay-candidate :reader-source-map))
+              semantic-template
+              (sh03-accepted-semantic-template
+               raw-output-tokens raw-forms roots value-table literals
+               deferred extension-records)
+              digest-form-identity
+              (if (get reader-policy :retain-trivia)
+                forms
+                (if (= replay-candidate nil)
+                  (sh03-semantic-form-tree forms)
+                  (sh03-semantic-form-tree-from-source-records
+                   tokens raw-forms)))
+              requests
+              (sh03-digest-requests-with-form-identity
+               source-unit source-bytes reader-policy
+               semantic-template output-tokens forms value-table
+               extension-records digest-form-identity)]
+          {:artifact :gravity/sh03-reader-result
+           :schema-version 1
+           :status :accepted
+           :source-unit
+           (sh03-semantic-source-unit
+            source-unit reader-policy)
+           :actual-path-provenance
+           (sh03-actual-provenance source-unit)
+           :token-stream output-tokens
+           :form-tree forms
+           :semantic-value-table value-table
+           :top-level-form-ids roots
+           :top-level-parsed-records
+           (sh03-top-level-records roots values)
+           :parsed-semantic-values
+           (sh03-top-level-value-references roots)
+           :literal-decoding-records literals
+           :semantic-error-deferment-record
+           {:artifact
+            :gravity/semantic-error-deferment-record
+            :deferred? (> (count deferred) 0)
+            :deferred-literal-records deferred}
+           :reader-extension-invocation-records
+           extension-records
+           :reader-source-map source-map
+           :incremental-reader-hashes
+           {:source-unit {:digest-ref 1}
+            :token-stream {:digest-ref 2}
+            :form-tree {:digest-ref 3}
+            :extension-invocation-set {:digest-ref 4}
+            :reader-result {:digest-ref 5}
+            :status :pending-resolution}
+           :semantic-reader-template semantic-template
+           :digest-requests requests
+           :diagnostics []
+           :bounds (sh03-bounds-record)
+           :execution-boundary
+           (sh03-execution-boundary-record)})))
     (sh03-rejected-result
      source-unit source-bytes reader-policy
      {:rule "C2-EXTENSION" :engine nil :reason :sealed-pure-text-population
       :span (sh03-empty-span-at-byte 0) :raw nil :facts {}
       :token-id nil :form-id nil :related []})))
+
+(defn sh03-construct-parsed-source-unit
+  [source-unit source-bytes reader-policy tokens parsed]
+  (sh03-construct-parsed-source-unit-internal
+   source-unit source-bytes reader-policy tokens parsed nil))
+
+(defn sh03-construct-parsed-source-unit-for-verification
+  [source-unit source-bytes reader-policy tokens parsed replay-candidate]
+  (sh03-construct-parsed-source-unit-internal
+   source-unit source-bytes reader-policy tokens parsed replay-candidate))
 
 (defn sh03-rejected-decoded-source-unit
   [source-unit source-bytes reader-policy decoded]
@@ -5328,7 +5489,8 @@
 ; locals refer to existing phase input tables, without a new aggregate
 ; data carrier. Interpreter environments/recur dispatch remain the existing
 ; execution boundary; accepted products and indexes keep their full charges.
-(defn sh03-read-source-unit [source-unit source-bytes reader-policy]
+(defn sh03-read-source-unit-internal
+  [source-unit source-bytes reader-policy replay-candidate]
   (if (sh03-source-unit-valid? source-unit)
     (if (sh03-reader-policy-valid? reader-policy)
       (if (sh03-source-byte-vector-valid? source-unit source-bytes)
@@ -5351,9 +5513,12 @@
                     (recur :construct nil tokens parsed-result)
                     (sh03-rejected-result
                      source-unit source-bytes reader-policy parsed-result)))
-                (sh03-construct-parsed-source-unit
-                 source-unit source-bytes reader-policy
-                 tokens parsed)))))
+                (if (= replay-candidate nil)
+                  (sh03-construct-parsed-source-unit
+                   source-unit source-bytes reader-policy tokens parsed)
+                  (sh03-construct-parsed-source-unit-for-verification
+                   source-unit source-bytes reader-policy tokens parsed
+                   replay-candidate))))))
         (sh03-invalid-input-result
          source-unit source-bytes reader-policy
          "C2-HASH" :source-byte-vector-contract
@@ -5375,6 +5540,15 @@
        :source-unit-contract)
      {:source-unit
       (sh03-source-unit-input-summary source-unit)})))
+
+(defn sh03-read-source-unit [source-unit source-bytes reader-policy]
+  (sh03-read-source-unit-internal
+   source-unit source-bytes reader-policy nil))
+
+(defn sh03-read-source-unit-for-verification
+  [source-unit source-bytes reader-policy replay-candidate]
+  (sh03-read-source-unit-internal
+   source-unit source-bytes reader-policy replay-candidate))
 
 (defn sh03-result-envelope-shape? [result]
   (if (sh03-exact-keys?
@@ -5413,8 +5587,11 @@
                                  reader-policy result]
   (if (sh03-result-preflight? result)
     (let [expected
-          (sh03-read-source-unit source-unit source-bytes reader-policy)]
-      (if (= expected result)
+          (sh03-read-source-unit-for-verification
+           source-unit source-bytes reader-policy result)
+          replay-mismatch?
+          (= true (get expected :sh03-reader-replay-mismatch?))]
+      (if (if replay-mismatch? false (= expected result))
         {:artifact :gravity/sh03-reader-verification-report
          :schema-version 1
          :status :accepted

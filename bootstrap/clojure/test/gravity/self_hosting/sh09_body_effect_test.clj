@@ -8,6 +8,7 @@
 (def module-root-entry kernel-support/module-root-entry)
 (def module-root-plan kernel-support/module-root-plan)
 (def compile-c8-module-bundle kernel-support/compile-c8-module-bundle)
+(def invoke-current-c8-module-bundle kernel-support/invoke-current-c8-module-bundle)
 (defn- leaf [function & args] (apply kernel-support/leaf function args))
 (defn- sha [n] (str "sha256:" (format "%064x" n)))
 (defn- sh08-helper [name]
@@ -3546,7 +3547,7 @@
     (let [bundle (compile-c8-module-bundle
                   (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"))
           invoke (fn [function args]
-                   (bootstrap/p15-s23-stage2-runtime-execute-function
+                   (invoke-current-c8-module-bundle
                     {:engine :body-effect-pmk-public-composition} bundle function args))]
       (doseq [[extension products result]
               (map vector extensions products results)]
@@ -5539,7 +5540,9 @@
     ;; Force the real compiler module only after source/type/leaf joins pass.
     (let [bundle (compile-c8-module-bundle (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"))
           root (module-root-entry bundle) plan (:plan root)
-          invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :body-effect-authenticated-development} bundle function args))]
+          invoke (fn [function args]
+                   (invoke-current-c8-module-bundle
+                    {:engine :body-effect-authenticated-development} bundle function args))]
       (is (= 6 (count (filter #(= :var (:kind %)) (:exports root)))))
       (is (= 3 (get-in plan [:functions 'sh09-build-authenticated-body-effect-result :arity])))
       (is (= 4 (get-in plan [:functions 'sh09-verify-authenticated-body-effect-result :arity])))
