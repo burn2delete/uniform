@@ -2814,6 +2814,78 @@
       (is (= :failed (:status (ci/selection-error-result "static" discovery-fallback))))
       (is (nil? (ci/selection-error-result "bootstrap" discovery-fallback))))))
 
+(deftest seedless-test-only-selection-runs-harness-and-required-checks-without-leaves
+  (let [base (apply str (repeat 40 "a"))
+        change (fn [path]
+                 {:old-mode "100644" :new-mode "100644" :status "M" :path path})
+        output-map (fn [selection]
+                     (into {}
+                           (map (fn [line]
+                                  (let [[mode value] (str/split line #"=" 2)]
+                                    [mode (= "true" value)]))
+                                (ci/selection-output-lines selection))))
+        workflow (slurp ".github/workflows/seedless-harness.yml")]
+    (is (= 12 (count ci/seedless-test-paths)))
+    (is (str/includes? workflow "tools/seedless/**"))
+    (is (str/includes? workflow "working-directory: tools/seedless"))
+    (is (str/includes? workflow "run: clojure -Srepro -M:test"))
+    (doseq [path ci/seedless-test-paths]
+      (let [selection (assoc (ci/stage-selection [(change path)]) :base base)
+            output (output-map selection)
+            static-ids (set (map first (ci/commands-for-selection "static" selection)))]
+        (is (= :selected (:kind selection)) path)
+        (is (= :seedless-tests-only (:reason selection)) path)
+        (is (= [] (:stages selection)) path)
+        (doseq [mode ["static" "contracts"]]
+          (is (true? (get output mode)) (str mode " retained for " path))
+          (is (not (ci/skip-for-stage-selection? mode selection)) mode))
+        (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"
+                      "leaves-portable" "leaves-darwin"]]
+          (is (false? (get output mode)) (str mode " skipped for " path)))
+        (is (ci/skip-for-stage-selection? "bootstrap" selection) path)
+        (is (true? (get output "darwin-unsupported")) path)
+        (is (true? (get output "static-tools-required")) path)
+        (is (true? (get output "selection-valid")) path)
+        (is (false? (get output "checked-js-owner-required")) path)
+        (is (every? static-ids ["workflow-lint" "clojure-lint" "clojure-format"
+                                "changed-clojure-lint"])
+            (str "static lint retained for " path))))))
+
+(deftest seedless-test-only-selection-falls-back-for-shared-or-unknown-inputs
+  (let [change (fn [path]
+                 {:old-mode "100644" :new-mode "100644" :status "M" :path path})
+        test-path "tools/seedless/test/seedless/workflow_test.clj"
+        regular (change test-path)]
+    (doseq [path ["tools/seedless/README.md"
+                  "tools/seedless/config.edn"
+                  "tools/seedless/deps.edn"
+                  "tools/seedless/src/seedless/workflow.clj"
+                  "tools/seedless/test/seedless/new_test.clj"
+                  "tools/gravity/compiler_probe.clj"
+                  "tools/simplify/test/simplify/workflow_test.clj"
+                  ".github/workflows/seedless-harness.yml"
+                  "unknown/seedless-test-owner.clj"]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) path)
+      (is (= :full (:kind (ci/stage-selection [regular (change path)])))
+          (str "mixed input remains full: " path)))
+    (let [shared-compiler-path "language/compiler/src/gravity/checked_core.gravity"]
+      (is (= :selected (:kind (ci/stage-selection [(change shared-compiler-path)])))
+          "ordinary shared-compiler changes retain their existing stage selection")
+      (is (= :full (:kind (ci/stage-selection [regular (change shared-compiler-path)])))
+          "Seedless tests mixed with shared compiler changes remain full"))
+    (let [added {:old-mode "000000" :new-mode "100644" :status "A" :path test-path}
+          selection (ci/stage-selection [added])]
+      (is (= :selected (:kind selection)))
+      (is (= :seedless-tests-only (:reason selection))))
+    (doseq [record [{:old-mode "100644" :new-mode "000000" :status "D" :path test-path}
+                    {:old-mode "100644" :new-mode "100755" :status "M" :path test-path}
+                    {:old-mode "100755" :new-mode "100644" :status "M" :path test-path}
+                    {:old-mode "100644" :new-mode "120000" :status "M" :path test-path}
+                    {:old-mode "100644" :new-mode "100644" :status "R" :path test-path}]]
+      (is (= :full (:kind (ci/stage-selection [record]))) (pr-str record)))
+    (doseq [records [[] [regular regular] [nil] [(dissoc regular :status)]]]
+      (is (= :full (:kind (ci/stage-selection records))) (pr-str records)))))
+
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
