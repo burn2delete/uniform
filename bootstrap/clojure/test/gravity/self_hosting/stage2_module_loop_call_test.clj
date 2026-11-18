@@ -77,6 +77,16 @@
           (is (every? #(identical? context (first %)) @seen))))
       (is (identical? original bootstrap/p15-s23-stage2-seed-compile-expr)))))
 
+(deftest stage2-wide-form-recur-validation
+  (let [module {:source-path "wide.gravity"}
+        values (vec (repeat 262144 true))
+        validate #(bootstrap/p15-s23-stage2-seed-validate-recur! module % nil true)]
+    (is (= :passed (validate values)))
+    (let [failure (diagnostic #(validate (conj values '(recur))))]
+      (is (= ["L2-RECUR-TARGET" :missing-target '(recur) "wide.gravity"]
+             [(:id failure) (:reason failure) (:form failure)
+              (get-in failure [:source-span :source])])))))
+
 (deftest stage2-module-loop-recur-diagnostics-development-kernel
   (let [module {:source-path "normalized-loop.gravity"}]
     (doseq [[form target expected]
