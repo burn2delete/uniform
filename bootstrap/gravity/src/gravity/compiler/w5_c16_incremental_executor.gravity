@@ -533,12 +533,13 @@
    :revalidation revalidation
    :provenance provenance})
 
-(defn w5-c16-node-id? [nodes node-id index]
+(defn node-stage-matches? [nodes node-id stage index]
   (if (= index (count nodes))
     false
-    (if (= node-id (get (get nodes index) :node-id))
-      true
-      (w5-c16-node-id? nodes node-id (+ index 1)))))
+    (let [node (get nodes index)]
+      (if (= node-id (get node :node-id))
+        (= stage (get node :stage))
+        (node-stage-matches? nodes node-id stage (+ index 1))))))
 
 (defn w5-c16-node-ids-unique? [nodes index seen]
   (if (= index (count nodes))
@@ -574,16 +575,13 @@
            #{:edge-id :from :to :dependency-kind :invalidated-by
              :source-span :producer-stage :consumer-stage})
       (if (keyword? (get edge :edge-id))
-        (if (w5-c16-node-id? nodes (get edge :from) 0)
-          (if (w5-c16-node-id? nodes (get edge :to) 0)
+        (if (node-stage-matches?
+             nodes (get edge :from) (get edge :producer-stage) 0)
+          (if (node-stage-matches?
+               nodes (get edge :to) (get edge :consumer-stage) 0)
             (if (keyword? (get edge :dependency-kind))
               (if (set? (get edge :invalidated-by))
-                (if (w5-c16-source-span-valid?
-                     (get edge :source-span))
-                  (if (w5-c16-stage? (get edge :producer-stage))
-                    (w5-c16-stage? (get edge :consumer-stage))
-                    false)
-                  false)
+                (w5-c16-source-span-valid? (get edge :source-span))
                 false)
               false)
             false)

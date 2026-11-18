@@ -197,6 +197,28 @@
                                      :diagnostics-invalidated]))
                   changed)))))
 
+(deftest w5-c16-rejects-edges-with-mismatched-endpoint-stages
+  (doseq [[plan extension kind] [[accepted-gravity-plan ".gravity" :gravity]
+                                [accepted-qst-plan ".qst" :qst]]]
+    (let [base (request plan 'w5-c16-incremental-execution-request
+                        "/checkout-a" extension kind)]
+      (doseq [stage-field [:producer-stage :consumer-stage]]
+        (testing (str extension " with mismatched " stage-field)
+          (let [invalid (update-in base [:dependency-graph :edges]
+                                   (fn [edges]
+                                     (mapv (fn [edge]
+                                             (if (= :edge/syntax-typed (:edge-id edge))
+                                               (assoc edge stage-field :reader)
+                                               edge))
+                                           edges)))
+                result (run-request invalid)
+                diagnostic (first (:diagnostics result))]
+            (is (= :rejected (:status result)))
+            (is (= "C16-GRAPH" (:rule diagnostic)))
+            (is (= :dependency-graph-inconsistency
+                   (get-in diagnostic [:facts :reason])))
+            (is (= [] (:operations result) (:reuse-reports result)))))))))
+
 (deftest w5-c16-cache-artifacts-are-stage-bound-and-path-neutral
   (let [left-request
         (request accepted-gravity-plan
