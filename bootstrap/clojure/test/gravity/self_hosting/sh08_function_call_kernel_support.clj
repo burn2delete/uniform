@@ -1263,6 +1263,16 @@
   [bundle]
   (:plan (module-root-entry bundle)))
 
+(defn require-c8-module-bundle
+  [plan]
+  (when-not (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
+    (throw
+     (ex-info
+      "C8 delayed construction must produce a stage2 module bundle"
+      {:id "SH09-C8-MODULE-BUNDLE-REQUIRED"
+       :kind (:kind plan)})))
+  plan)
+
 (defn compile-c8-module-bundle
   [source-path]
   (let [effects-path (path effects-source-relative-path)
@@ -1287,10 +1297,11 @@
                  source-path (slurp source-path :encoding "UTF-8") inputs reader-path invocation)
         dependency-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
                          emitter effects-path (slurp effects-path))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path (slurp source-path)
-     {:caller-resolution-artifact caller
-      :dependency-plans [dependency-plan]})))
+    (require-c8-module-bundle
+     (bootstrap/p15-s23-stage2-compiler-artifact-plan
+      emitter source-path (slurp source-path)
+      {:caller-resolution-artifact caller
+       :dependency-plans [dependency-plan]}))))
 
 (def ^:private c8-source-relative-path
   "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")

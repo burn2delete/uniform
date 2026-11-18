@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]
             [gravity.self-hosting.sh09-body-effect-test :as body-effects]
             [gravity.self-hosting.sh08-authenticated-type-integration-test]))
 
@@ -553,9 +554,8 @@
      :result result}))
 
 (deftest sh09-authenticated-effect-bridge-compiles-with-narrow-api
-  (doseq [plan [envelope-plan c8-plan bridge-plan]]
-    (is (= (if (identical? plan c8-plan) :gravity/stage2-compiler-artifact-module-bundle
-               :gravity/stage2-compiler-artifact-plan) (:kind @plan))))
+  (doseq [plan [envelope-plan bridge-plan]]
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan))))
   (let [functions (:functions @bridge-plan)]
     (is (= {:arity 0 :params []}
            (select-keys
@@ -579,6 +579,36 @@
            (select-keys
             (get functions 'sh09-verify-authenticated-effect-result)
             [:arity :params])))))
+
+(deftest sh09-c8-construction-requires-module-bundle
+  (let [source-path (path "bootstrap/clojure/fixtures/self-hosting/sh-08/modules/module-chain-leaf.gravity")
+        source-text (slurp source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        reader-path (path bootstrap/sh03-reader-source-relative-path)
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        resolution (bootstrap/compiler-c5-resolution-source-artifact
+                    source-path source-text
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                    reader-path invocation)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                emitter source-path source-text
+                {:caller-resolution-artifact resolution :dependency-plans []}
+                invocation)
+        ordinary-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text)
+        failure (try
+                  (kernel-support/require-c8-module-bundle ordinary-plan)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+    (is (= :accepted (:status resolution)))
+    (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind bundle)))
+    (is (identical? bundle (kernel-support/require-c8-module-bundle bundle)))
+    (is (= "SH09-C8-MODULE-BUNDLE-REQUIRED" (:id failure)))
+    (is (= :gravity/stage2-compiler-artifact-plan (:kind failure)))))
 
 (deftest sh09-accepts-pure-and-explicit-compiler-read
   (doseq [[extension sh08-products]
