@@ -1,3 +1,4 @@
+(declare jvm-backend-validate-plan!)
 
 
 (defn p15-s23-closed-runtime-target-record
@@ -195,6 +196,172 @@
 
 (defn p15-s23-closed-runtime-target-semantic-record
   [record]
-  (if (map? record)
-    (dissoc record :actual-path-binding)
-    record))
+  (let [carrier (p15-s23-trusted-carrier-validation record :default-only)]
+    (when-not (= :passed (:status carrier))
+      (throw (ex-info "Closed runtime target record has an untrusted carrier"
+                      {:missing-fact :trusted-closed-runtime-target-record})))
+    (cond
+      (not (map? record)) record
+      (= :gravity/current-runtime-development-target-record (:artifact record))
+      (dissoc record :actual-paths)
+      :else (dissoc record :actual-path-binding))))
+
+(declare current-runtime-development-target-context)
+
+(defn- current-runtime-development-target-record-from-authenticated-packet
+  [packet]
+  (when-not (= :passed (:status (p15-s23-trusted-carrier-validation
+                                  packet :default-only)))
+    (p15-s23-stage2-runtime-executor-fail!
+     "P15S23X003" "<current-runtime-development-packet>" nil
+     {:missing-fact :current-runtime-development-target-carrier}))
+  (when-not (and (= :gravity/current-source-runtime-development-packet
+                    (:kind packet))
+                 (= :complete (:status packet))
+                 (= :development-unadmitted (:revision-status packet))
+                 (= :not-checked (:effects packet))
+                 (true? (:clojure-seed-boundary? packet))
+                 (false? (:self-hosted? packet)))
+    (p15-s23-stage2-runtime-executor-fail!
+     "P15S23X003" "<current-runtime-development-packet>" nil
+     {:missing-fact :current-runtime-development-target-input}))
+  (let [runtime-rule (:stage2-runtime-rule packet)
+        runtime-binding (:current-runtime-development-binding runtime-rule)
+        compatibility-link (:current-runtime-compatibility-link runtime-rule)
+        execution (:closed-plan-execution-record packet)
+        invocation (:closed-plan-invocation-record packet)
+        validation (:closed-plan-validation-record packet)
+        actual-paths (get-in packet [:provenance :actual-paths])
+        semantic-input
+        {:artifact :gravity/current-runtime-development-target-record
+         :program-plan-id (get-in packet [:plan :plan-id])
+         :runtime-plan-id (get-in runtime-rule [:runtime-artifact-plan :plan-id])
+         :runtime-source-content-hash (:runtime-source-content-hash runtime-binding)
+         :compatibility-source-content-hash
+         (:source-content-hash compatibility-link)
+         :runtime-function-hashes (:runtime-function-hashes runtime-binding)
+         :runtime-rule-hash (:runtime-rule-hash runtime-rule)
+         :runtime-artifact-hash (:runtime-artifact-hash runtime-rule)
+         :closed-plan-function
+         (:runtime-artifact-closed-plan-function runtime-rule)
+         :closed-plan-function-hash
+         (:runtime-artifact-closed-plan-function-hash runtime-rule)
+         :closed-plan-validation
+         (select-keys validation [:artifact :status :entrypoint
+                                  :operation-set :observed-operation-set])
+         :execution
+         {:artifact (:artifact execution)
+          :entrypoint (:entrypoint execution)
+          :stdout-hash (:stdout-hash invocation)
+          :status (:status execution)}
+         :invocation
+         (select-keys invocation [:artifact :function :function-hash
+                                  :runtime-artifact-hash :runtime-plan-id
+                                  :plan-id :stdout-hash :execution-hash
+                                  :invocation-count :status])
+         :boundary {:revision-status :development-unadmitted
+                    :effects :not-checked
+                    :clojure-seed-boundary? true
+                    :self-hosted? false}}
+        record-hash
+        (str "sha256:" (sha256-hex
+                         (pr-str (c-backend-canonical-value semantic-input))))]
+    (assoc semantic-input
+           :actual-paths actual-paths
+           :record-hash record-hash)))
+
+(defn current-runtime-development-target-record
+  [packet context]
+  (when-not (and (= :passed (:status (p15-s23-trusted-carrier-validation
+                                      context :default-only)))
+                 (= :passed (:status (p15-s23-trusted-carrier-validation
+                                      packet :default-only)))
+                 (= #{:schema :source-path :source-text :source-content-hash
+                      :requested-target :plan-id :runtime-source-content-hash
+                      :compatibility-source-content-hash}
+                    (set (keys context)))
+                 (= :gravity/current-runtime-development-validation-context-v1
+                    (:schema context))
+                 (string? (:source-path context))
+                 (string? (:source-text context))
+                 (contains? #{:c :jvm} (:requested-target context))
+                 (= (str "sha256:" (sha256-hex (:source-text context)))
+                    (:source-content-hash context))
+                 (= context
+                    (current-runtime-development-target-context
+                     packet (:source-path context) (:source-text context)
+                     (:requested-target context))))
+    (p15-s23-stage2-runtime-executor-fail!
+     "P15S23X003" "<current-runtime-development-packet>" nil
+     {:missing-fact :current-runtime-development-target-input}))
+  (when-not (current-runtime-development-packet-authentic?
+             packet
+             (select-keys context [:source-path :source-text
+                                   :source-content-hash :requested-target]))
+    (p15-s23-stage2-runtime-executor-fail!
+     "P15S23X003" (:source-path context) nil
+     {:missing-fact :authenticated-current-runtime-development-packet}))
+  (current-runtime-development-target-record-from-authenticated-packet packet))
+
+(defn current-runtime-development-target-context
+  [packet source-path source-text requested-target]
+  {:schema :gravity/current-runtime-development-validation-context-v1
+   :source-path source-path
+   :source-text source-text
+   :source-content-hash (str "sha256:" (sha256-hex source-text))
+   :requested-target requested-target
+   :plan-id (get-in packet [:plan :plan-id])
+   :runtime-source-content-hash
+   (get-in packet [:stage2-runtime-rule
+                   :current-runtime-development-binding
+                   :runtime-source-content-hash])
+   :compatibility-source-content-hash
+   (get-in packet [:stage2-runtime-rule
+                   :current-runtime-compatibility-link
+                   :source-content-hash])})
+
+(defn current-runtime-development-target-record-authentic?
+  [record context]
+  (try
+    (and
+     (= :passed (:status (p15-s23-trusted-carrier-validation
+                          record :default-only)))
+     (= :passed (:status (p15-s23-trusted-carrier-validation
+                          context :default-only)))
+     (map? record)
+     (map? context)
+     (= #{:schema :source-path :source-text :source-content-hash
+          :requested-target :plan-id :runtime-source-content-hash
+          :compatibility-source-content-hash}
+        (set (keys context)))
+     (= :gravity/current-runtime-development-validation-context-v1
+        (:schema context))
+     (string? (:source-path context))
+     (string? (:source-text context))
+     (contains? #{:c :jvm} (:requested-target context))
+     (= (str "sha256:" (sha256-hex (:source-text context)))
+        (:source-content-hash context))
+     (let [source-path (:source-path context)
+           source-text (:source-text context)
+           target (:requested-target context)
+           validate-plan!
+           (fn [candidate]
+             (case target
+               :c (do
+                    (c-backend-validate-plan! source-path target candidate)
+                    (c-backend-validate-runtime-plan! source-path target candidate))
+               :jvm (jvm-backend-validate-plan! source-path candidate)))
+           rebuilt
+           (stage2-runtime-derived-current-runtime-development-packet
+            source-path source-text target
+            {:validate-plan! validate-plan!})]
+       (and
+        (= context
+           (current-runtime-development-target-context
+            rebuilt source-path source-text target))
+        (= (c-backend-canonical-value record)
+           (c-backend-canonical-value
+            (current-runtime-development-target-record-from-authenticated-packet
+             rebuilt))))))
+    (catch StackOverflowError _ false)
+    (catch Exception _ false)))

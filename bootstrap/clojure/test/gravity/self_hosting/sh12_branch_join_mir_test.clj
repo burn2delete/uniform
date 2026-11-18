@@ -163,6 +163,43 @@
      {:ingress ingress :compiled-binding-data binding
       :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)})))
 
+(def ^:private current-stage2-emitter-binding
+  (delay
+    (let [relative "bootstrap/gravity/p15_s23/emitter.gravity"
+          path (str (.resolve @root relative))
+          plan (compile-plan relative)
+          source-hash (get-in plan [:source :sha256])
+          digest #(str "sha256:" (bootstrap/sha256-hex
+                                  (pr-str (bootstrap/c-backend-canonical-value %))))
+          semantic (digest (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input plan))]
+      {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+       :status :complete :source-path path :source-content-hash source-hash
+       :semantic-hash semantic
+       :artifact-hash (digest {:source-content-hash source-hash :semantic-hash semantic})
+       :plan plan :invoked? true :generic-bridge-residual? true
+       :clojure-seed-boundary? true :self-hosted? false})))
+
+(defn- scalar-source-input
+  [source-path source-text compiled-binding reader-source-path]
+  (let [reader-binding (bootstrap/sh03-reader-current-binding!
+                        source-path reader-source-path)
+        invocation (current-reader-invocation reader-source-path)
+        ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+                 source-path source-text reader-source-path :compiler-application
+                 (dissoc reader-binding :plan) invocation)]
+    (bootstrap/p15-s23-c6c10-private-builder-envelope
+     source-path ingress compiled-binding)))
+
+(defn- with-temporary-gravity-source
+  [relative-directory source-text callback]
+  (let [directory (.toFile (.resolve @root relative-directory))
+        file (java.io.File/createTempFile "sh12-current-c6-" ".gravity" directory)]
+    (try
+      (spit file source-text)
+      (callback (.getCanonicalPath file) source-text)
+      (finally
+        (io/delete-file file true)))))
+
 (defn- parameter-input [source-path source-text]
   (:envelope (parameter-source-products source-path source-text)))
 
@@ -1298,44 +1335,79 @@
     (is (= :rejected (:status (verify input original (:artifact-template forged)))))))
 
 (deftest sh12-current-c6-preserves-hosted-export-gate-before-module-checks
-  ;; Execute the ORIGINAL compiled export predicate, not a fabricated hosted
-  ;; packet or a replacement acceptance function. Public hosted admission is
-  ;; still outside this development fragment check.
-  (let [function (get-in @parameter-c6-plan [:functions 'c6-c10-build-checked-core-template])
-        dispatch (first (:instructions function))
-        scope-predicate (:test dispatch)
-        legacy (:else dispatch)
-        body (:then legacy)
-        shape (first (filter #(= 'plan-shape-valid? (:name %)) (:bindings body)))
-        predicate (get-in shape [:expr :then :then :test])]
-    (is (= :if (:op dispatch) (:op legacy)))
-    (is (= '= (:function scope-predicate)))
-    (is (= 'c6c10-build-scalar-template (get-in dispatch [:then :function])))
-    (is (= 'c6c10-envelope-shape-valid? (get-in legacy [:test :function])))
-    (doseq [[input expected]
-            [[{:scope :compositional-scalar-hosted-safe-jvm-source} true]
-             [{:scope :bounded-pure-hosted-safe-jvm-source} false]
-             [{:scope :bounded-checked-i64-add-hosted-safe-jvm-source} false]
-             [{} false]]]
-      (is (= expected
-             (bootstrap/p15-s23-stage2-runtime-execute-instruction
-              {:engine :gravity-sh12-branch-join-mir-test :compiler-artifact-plan? true}
-              @parameter-c6-plan {'input input} scope-predicate))))
-    (is (= :let (:op body)))
-    (is (= '= (:function predicate)))
-    (doseq [[input module authoritative expected]
-            [[{} {:exports ['main]} {:exports []} true]
-             [{} {:exports []} {:exports ['main]} false]
-             [{} {} {:exports ['main]} false]
-             [{:resolved-parameter {}} {} {:exports ['main]} true]
-             [{:resolved-parameter {}} {} {:exports []} false]
-             [{:resolved-parameter {}} {} {} false]]]
-      (is (= expected
-             (bootstrap/p15-s23-stage2-runtime-execute-instruction
-              {:engine :gravity-sh12-branch-join-mir-test :compiler-artifact-plan? true}
-              @parameter-c6-plan
-              {'input input 'module module 'authoritative-module authoritative}
-              predicate))))))
+  ;; Exercise current source parents through the compiled C6 entrypoint. This
+  ;; is development behavior evidence, not public hosted admission or migration
+  ;; evidence.
+  (let [reader-path (str (.resolve @root
+                                  "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+        parameter-path (str (.resolve @root
+                                     "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/bool_parameter_source.gravity"))
+        parameter-binding (parameter-compiled-binding-data parameter-path)
+        parameter-source (slurp parameter-path)
+        unexported-parameter-source
+        (str/replace parameter-source "(:exports [main])" "(:exports [])")
+        zero-arity-path (str (.resolve @root
+                                       "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/zero_arity_bool_false_source.gravity"))
+        zero-arity-source (slurp zero-arity-path)
+        zero-arity-case
+        (binding [bootstrap/*p15-s23-stage2-compiler-artifact-binding*
+                  @current-stage2-emitter-binding]
+          (let [input (:envelope (parameter-source-products
+                                  zero-arity-path zero-arity-source nil reader-path))]
+            {:input input
+             :result (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                             [input])}))
+        zero-arity-input (:input zero-arity-case)
+        zero-arity-result (:result zero-arity-case)
+        rejected-parameter-case
+        (with-temporary-gravity-source
+          "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/rejected"
+          unexported-parameter-source
+          (fn [rejected-path rejected-source]
+            (let [binding (parameter-compiled-binding-data rejected-path)
+                  input (:envelope (parameter-source-products
+                                    rejected-path rejected-source binding reader-path))]
+              {:input input
+               :result (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                               [input])})))
+        scalar-path (str (.resolve @root "examples/checked-js/acceptance.gravity"))
+        scalar-source (slurp scalar-path)
+        scalar-jvm-input (scalar-source-input
+                          parameter-path parameter-source parameter-binding reader-path)
+        scalar-js-input (scalar-source-input
+                         scalar-path scalar-source
+                         (parameter-compiled-binding-data scalar-path) reader-path)
+        scalar-results
+        {:jvm (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                      [scalar-jvm-input])
+         :js-ts (invoke parameter-c6-plan 'c6-c10-build-checked-core-template
+                        [scalar-js-input])}]
+    (is (not= parameter-source unexported-parameter-source))
+    (is (= :bounded-pure-hosted-safe-jvm-source (:scope zero-arity-input)))
+    (is (nil? (:resolved-parameter zero-arity-input)))
+    (is (= :accepted (:status zero-arity-result))
+        (pr-str (:diagnostics zero-arity-result)))
+    (is (= :complete-for-bounded-pure-hosted-safe-jvm-slice
+           (:status (:artifact-template zero-arity-result))))
+    (is (= 'main (:entrypoint (:artifact-template zero-arity-result))))
+    (is (= :bounded-pure-hosted-safe-jvm-source
+           (:scope (:input rejected-parameter-case))))
+    (is (= :rejected (:status (:result rejected-parameter-case))))
+    (is (= "C6-CORE-SHAPE" (:rule (diagnostic (:result rejected-parameter-case))))
+        (pr-str (:diagnostics (:result rejected-parameter-case))))
+    (is (= :single-main-stage2-plan
+           (get-in (diagnostic (:result rejected-parameter-case)) [:facts :missing-fact])))
+    (is (= :compositional-scalar-hosted-safe-jvm-source (:scope scalar-jvm-input)))
+    (is (= :compositional-scalar-hosted-safe-js-ts-source (:scope scalar-js-input)))
+    (doseq [[target expected-status expected-slice]
+            [[:jvm :accepted :complete-for-compositional-scalar-hosted-safe-jvm-slice]
+             [:js-ts :accepted :complete-for-compositional-scalar-hosted-safe-js-ts-slice]]
+            :let [result (get scalar-results target)
+                  artifact (:artifact-template result)]]
+      (is (= expected-status (:status result))
+          (pr-str {:target target :diagnostics (:diagnostics result)}))
+      (is (= expected-slice (:status artifact))
+          (pr-str {:target target :artifact artifact})))))
 
 (deftest sh12-current-c6-bool-parameter-becomes-an-entry-value-not-an-instruction
   ;; Existing assembly attaches an EXPLICIT request to real current products.

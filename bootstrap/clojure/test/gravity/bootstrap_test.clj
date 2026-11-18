@@ -258,6 +258,61 @@
   [& args]
   (apply run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "1"} args))
 
+(defn- executable-from-path
+  [command]
+  (some (fn [directory]
+          (let [candidate (java.io.File. directory command)]
+            (when (and (.isFile candidate) (.canExecute candidate))
+              (.toPath candidate))))
+        (str/split (System/getenv "PATH")
+                   (re-pattern
+                    (java.util.regex.Pattern/quote
+                     java.io.File/pathSeparator)))))
+
+(defn- path-without-clojure
+  [root]
+  (let [directory (.resolve ^java.nio.file.Path root "no-clojure-path")]
+    (java.nio.file.Files/createDirectories
+     directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (doseq [command ["bash" "cat" "dirname" "grep"]]
+      (let [source (executable-from-path command)]
+        (when-not source
+          (throw (ex-info "Required wrapper test command is unavailable"
+                          {:command command})))
+        (java.nio.file.Files/createSymbolicLink
+         (.resolve directory command) source
+         (make-array java.nio.file.attribute.FileAttribute 0))))
+    (.toString directory)))
+
+(defn- copy-gravity-wrapper!
+  [root packaged?]
+  (let [root ^java.nio.file.Path root
+        bin-directory (.resolve root "bin")
+        help-directory (.resolve root "bootstrap/clojure/resources/gravity/cli")
+        wrapper (.resolve bin-directory "gravity")]
+    (java.nio.file.Files/createDirectories
+     bin-directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (java.nio.file.Files/createDirectories
+     help-directory (make-array java.nio.file.attribute.FileAttribute 0))
+    (java.nio.file.Files/copy
+     (java.nio.file.Paths/get "bin/gravity" (make-array String 0)) wrapper
+     (make-array java.nio.file.CopyOption 0))
+    (.setExecutable (.toFile wrapper) true false)
+    (doseq [name ["help-source.txt" "help-archived-packaged-jvm.txt"]]
+      (java.nio.file.Files/copy
+       (java.nio.file.Paths/get
+        (str "bootstrap/clojure/resources/gravity/cli/" name)
+        (make-array String 0))
+       (.resolve help-directory name)
+       (make-array java.nio.file.CopyOption 0)))
+    (when packaged?
+      (let [jar (.resolve root "target/phase-18/jvm-cli/gravity-jvm-cli.jar")]
+        (java.nio.file.Files/createDirectories
+         (.getParent jar) (make-array java.nio.file.attribute.FileAttribute 0))
+        (java.nio.file.Files/write
+         jar (byte-array 0) (make-array java.nio.file.OpenOption 0))))
+    wrapper))
+
 (defn- run-thin-bin-in-directory
   [working-directory & args]
   (run-process-in-directory
@@ -22722,6 +22777,81 @@
     (is (= 1 (:exit seedless-claim)))
     (is (str/includes? (:err seedless-claim) "P18T01001"))))
 
+(deftest p18-shell-help-resources-preserve-wrapper-boundaries
+  (with-temp-directory
+    "gravity-shell-help-boundaries-"
+    (fn [root]
+      (let [root ^java.nio.file.Path root
+            no-clojure-path (path-without-clojure root)
+            source-wrapper (.getCanonicalPath (java.io.File. "bin/gravity"))
+            archived-root (.resolve root "archived-repository")
+            archived-wrapper (copy-gravity-wrapper! archived-root true)
+            seedless-root (.resolve root "seedless-repository")
+            seedless-wrapper (copy-gravity-wrapper! seedless-root false)
+            source-help (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
+            archived-help (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")
+            env-base {"PATH" no-clojure-path}
+            working-directory (.toString root)
+            source-result
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [source-wrapper "help"])
+            source-missing-clojure
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [source-wrapper "check" "missing.gravity"])
+            archived-result
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [archived-wrapper "help"])
+            archived-missing-clojure
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [archived-wrapper "check" "missing.gravity"])
+            proof (.resolve seedless-root
+                            "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn")
+            release (.resolve seedless-root
+                              "target/phase-18/release/gravity")
+            _ (java.nio.file.Files/createDirectories
+               (.getParent proof)
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            _ (java.nio.file.Files/createDirectories
+               (.getParent release)
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            _ (spit (.toFile proof)
+                    ":status :complete\n:full-language-compiler-self-hosted? true\n:clojure-seed-retired? true\n:clojure-seed-boundary? false\n")
+            _ (java.nio.file.Files/createSymbolicLink
+               release (executable-from-path "echo")
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            seedless-handoff
+            (run-process-in-directory
+             working-directory
+             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
+             [seedless-wrapper "help"])]
+        (is (zero? (:exit source-result)) source-result)
+        (is (= source-help (:out source-result)))
+        (is (empty? (:err source-result)))
+        (is (str/includes? source-help "--target js|js-ts"))
+        (is (= 1 (:exit source-missing-clojure)) source-missing-clojure)
+        (is (str/includes? (:err source-missing-clojure) "P18T01002"))
+        (is (zero? (:exit archived-result)) archived-result)
+        (is (= archived-help (:out archived-result)))
+        (is (str/includes? (:out archived-result) ":packaged-jvm-cli? true"))
+        (is (str/includes? (:out archived-result) "gravity.cli.Main\""))
+        (is (= 1 (:exit archived-missing-clojure)) archived-missing-clojure)
+        (is (str/includes? (:err archived-missing-clojure) "P18T02007"))
+        (is (zero? (:exit seedless-handoff)) seedless-handoff)
+        (is (= "help\n" (:out seedless-handoff)))))))
+
 (deftest p18-t02-source-inventory-discovery-is-deferred
   (is (fn? bootstrap/p18-t02-source-inventory))
   (let [sentinel (ex-info "source inventory discovery" {:test :deferred})
@@ -26747,8 +26877,12 @@
                                            "-o" output-b)
                     artifact-a (edn/read-string (:out result-a))
                     artifact-b (edn/read-string (:out result-b))
-                    run-a (run-bin output-a)
-                    run-b (run-bin output-b)]
+                    run-a (when (and (zero? (:exit result-a))
+                                     (.isFile (java.io.File. output-a)))
+                            (run-bin output-a))
+                    run-b (when (and (zero? (:exit result-b))
+                                     (.isFile (java.io.File. output-b)))
+                            (run-bin output-b))]
                 (is (zero? (:exit result-a)) (:err result-a))
                 (is (zero? (:exit result-b)) (:err result-b))
                 (is (= :runtime-derived
@@ -26994,10 +27128,95 @@
                        (get-in artifact-b [:target :lowering-mode])))
                 (is (true? (get-in artifact-a [:manifest :runtime-derived?])))
                 (is (true? (get-in artifact-b [:manifest :runtime-derived?])))
-                (is (= :gravity-stage2-runtime-execution
+                (is (= :gravity/current-runtime-development-execution
                        (get-in artifact-a [:manifest :oracle :kind])))
-                (is (= :gravity-stage2-runtime-execution
+                (is (= :gravity/current-runtime-development-execution
                        (get-in artifact-b [:manifest :oracle :kind])))
+                (is (= :gravity/current-runtime-development-execution
+                       (get-in artifact-a [:provenance :oracle :kind])))
+                (is (= :p15-s23-stage2-plan-emitter
+                       (get-in artifact-a [:manifest :compiler-stage])))
+                (is (false? (get-in artifact-a
+                                    [:manifest :stage2-compiler-driver-used?])))
+                (is (string? (get-in artifact-a
+                                     [:manifest :runtime-kernel-rule-hash])))
+                (is (= :development-unadmitted
+                       (get-in artifact-a [:manifest :revision-status])))
+                (is (= :not-checked
+                       (get-in artifact-a [:manifest :effects])))
+                (is (= :gravity/current-runtime-development-source
+                       (get-in artifact-a
+                               [:manifest :oracle :runtime-artifact-source :kind])))
+                (is (= :p15-compatibility-facade
+                       (get-in artifact-a
+                               [:manifest :runtime-artifact-helper-owner])))
+                (is (false? (get-in artifact-a
+                                    [:manifest
+                                     :runtime-artifact-helpers-invoked-by-evaluator?])))
+                (let [runtime-source-a (get-in artifact-a
+                                                [:manifest :runtime-artifact-source])
+                      runtime-source-b (get-in artifact-b
+                                                [:manifest :runtime-artifact-source])
+                      project-root (.getCanonicalPath (java.io.File. "."))
+                      runtime-path (str project-root
+                                        "/language/runtime/src/gravity/runtime.gravity")
+                      facade-path (str project-root
+                                       "/bootstrap/gravity/p15_s23/runtime.gravity")
+                      runtime-hash
+                      (str "sha256:" (bootstrap/sha256-bytes-hex
+                                       (java.nio.file.Files/readAllBytes
+                                        (.toPath (java.io.File. runtime-path)))))
+                      facade-hash
+                      (str "sha256:" (bootstrap/sha256-bytes-hex
+                                       (java.nio.file.Files/readAllBytes
+                                        (.toPath (java.io.File. facade-path)))))
+                      runtime-rule-source
+                      (get-in artifact-a [:provenance :runtime-rule-source])]
+                  (is (= runtime-path
+                         (get-in artifact-a
+                                 [:provenance :actual-paths :runtime-owner])))
+                  (is (= facade-path
+                         (get-in artifact-a
+                                 [:provenance :actual-paths
+                                  :runtime-compatibility-facade])))
+                  (is (= runtime-hash
+                         (get-in runtime-rule-source
+                                 [:runtime-source :sha256])))
+                  (is (= facade-hash
+                         (get-in runtime-rule-source
+                                 [:compatibility-source :sha256])))
+                  (is (not (contains? (:runtime-source runtime-rule-source)
+                                      :path)))
+                  (is (not (contains? (:compatibility-source runtime-rule-source)
+                                      :path)))
+                  (is (= runtime-hash (:runtime-owner-content-hash runtime-source-a)))
+                  (is (= facade-hash (:compatibility-facade-content-hash runtime-source-a)))
+                  (is (= (:runtime-owner-content-hash runtime-source-a)
+                         (:runtime-owner-content-hash runtime-source-b)))
+                  (is (= (:compatibility-facade-content-hash runtime-source-a)
+                         (:compatibility-facade-content-hash runtime-source-b)))
+                  (is (not (contains? (:runtime-function-hashes runtime-source-a)
+                                      'p15-s23-runtime-println-value)))
+                  (is (string? (get-in runtime-source-a
+                                       [:compatibility-only-helpers
+                                        'p15-s23-runtime-println-value
+                                        :semantic-hash])))
+                  (is (not (contains? runtime-source-a :runtime-owner-path)))
+                  (is (not (contains? runtime-source-a :compatibility-facade-path)))
+                  (is (false? (:compatibility-helpers-invoked-by-evaluator?
+                               runtime-source-a)))
+                  (is (not (contains? runtime-source-a :println-function))))
+                (is (not (contains? (:current-runtime-development-comparison-record
+                                     artifact-a)
+                                    :stage2-plan)))
+                (is (= (get-in artifact-a
+                               [:current-runtime-development-comparison-record
+                                :stage2-plan-id])
+                       (get-in artifact-b
+                               [:current-runtime-development-comparison-record
+                                :stage2-plan-id])))
+                (is (not (contains? (:closed-runtime-validation-context artifact-a)
+                                    :packet)))
                 (is (= :comparison-only
                        (get-in artifact-a
                                [:manifest :oracle
@@ -27433,7 +27652,7 @@
       (is (= :stage2-driver-execution-equivalence
              (:missing-fact runtime-failed))))))
 
-(deftest public-current-source-runtime-derived-driver-binding-routes-both-extensions
+(deftest public-current-source-runtime-derived-plan-emitter-binding-routes-both-extensions
   (let [root (.getCanonicalPath (java.io.File. "."))
         bin (str root "/bin/gravity")
         nonce (str (System/nanoTime))]
@@ -27449,24 +27668,32 @@
                          "--lowering" "runtime-derived" "-o" output])
                 artifact (edn/read-string (:out result))]
             (is (zero? (:exit result)) (:err result))
-            (is (= :p15-s23-stage2-compiler-driver
+            (is (= :p15-s23-stage2-plan-emitter
                    (get-in artifact [:manifest :compiler-stage])))
-            (is (= :gravity-stage2-compiler-driver-rules-v1
+            (is (= (get-in artifact [:manifest :plan-emitter-engine])
                    (get-in artifact [:manifest :compiler-engine])))
-            (is (true? (get-in artifact
+            (is (false? (get-in artifact
                                 [:manifest :stage2-compiler-driver-used?])))
-            (is (string? (get-in artifact
-                                  [:manifest :compiler-driver-rule-hash])))
+            (is (not (contains? (:manifest artifact)
+                                :compiler-driver-rule-hash)))
             (is (true? (get-in artifact
                                [:manifest
                                 :expression-lowering-invoked?])))
             (is (true? (get-in artifact
                                [:manifest
                                 :expression-lowering-generic-bridge-residual?])))
-            (is (= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+            (is (string? (get-in artifact
+                                  [:manifest :expression-lowering-semantic-hash])))
+            (is (not= bootstrap/p15-s23-stage2-compiler-artifact-expected-semantic-hash
+                      (get-in artifact
+                              [:manifest :expression-lowering-semantic-hash])))
+            (is (= :gravity/current-runtime-development-source
                    (get-in artifact
-                           [:manifest
-                            :expression-lowering-semantic-hash])))
+                           [:manifest :runtime-artifact-source :kind])))
+            (is (= :development-unadmitted
+                   (get-in artifact [:manifest :revision-status])))
+            (is (= :not-checked
+                   (get-in artifact [:manifest :effects])))
             (is (= source (get-in artifact [:provenance :source :path]))))
           (finally
             (doseq [path [output (str output ".c")
@@ -27763,11 +27990,11 @@
                                          "examples/hello.gravity"
                                          "--lowering" "runtime-derived"
                                          "-o" output)
-            jvm-target (run-thin-bin "bin/gravity" "compile"
-                                     "examples/hello.gravity"
-                                     "--target" "jvm"
-                                     "--lowering" "runtime-derived"
-                                     "-o" output)
+            duplicate-output (run-thin-bin "bin/gravity" "compile"
+                                            "examples/hello.gravity"
+                                            "--target" "jvm"
+                                            "--lowering" "runtime-derived"
+                                            "-o" output "-o" output)
             core-app (run-thin-bin "bin/gravity" "compile"
                                    "examples/core-app.gravity"
                                    "--target" "c"
@@ -27782,8 +28009,8 @@
         (is (str/includes? (:err duplicate) "P18T04002"))
         (is (= 1 (:exit missing-target)))
         (is (str/includes? (:err missing-target) "P18T04002"))
-        (is (= 1 (:exit jvm-target)))
-        (is (str/includes? (:err jvm-target) "P18T04002"))
+        (is (= 1 (:exit duplicate-output)))
+        (is (str/includes? (:err duplicate-output) "P18T04002"))
         (is (= 1 (:exit core-app)))
         (is (str/includes? (:err core-app) "B2-UNSUPPORTED")))
       (finally
@@ -27793,6 +28020,98 @@
                       (str output ".provenance.edn")]]
           (java.nio.file.Files/deleteIfExists
            (.toPath (java.io.File. path))))))))
+
+(deftest current-runtime-development-authentication-rejects-hostile-carriers
+  (let [calls (atom 0)
+        callback (fn []
+                   (swap! calls inc)
+                   (throw (RuntimeException. "hostile map callback")))
+        hostile-map
+        (reify clojure.lang.IPersistentMap
+          (assoc [_ _ _] (callback))
+          (assocEx [_ _ _] (callback))
+          (without [_ _] (callback))
+          (containsKey [_ _] (callback))
+          (entryAt [_ _] (callback))
+          (count [_] (callback))
+          (cons [_ _] (callback))
+          (empty [_] (callback))
+          (equiv [_ _] (callback))
+          (seq [_] (callback))
+          (valAt [_ _] (callback))
+          (valAt [_ _ _] (callback))
+          (iterator [_] (callback)))
+        nested {:nested hostile-map}
+        metadata-map (with-meta {} {:untrusted true})]
+    (is (false? (bootstrap/current-runtime-development-packet-authentic?
+                 hostile-map {})))
+    (is (false? (bootstrap/current-runtime-development-packet-authentic?
+                 nested {:source-path "x"
+                         :source-text ""
+                         :source-content-hash "sha256:"
+                         :requested-target :c})))
+    (is (false? (bootstrap/current-runtime-development-target-record-authentic?
+                 hostile-map {})))
+    (is (false? (bootstrap/current-runtime-development-target-record-authentic?
+                 {} metadata-map)))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (bootstrap/p15-s23-closed-runtime-target-semantic-record
+                  hostile-map)))
+    (is (zero? @calls))))
+
+(deftest current-runtime-development-source-binding-rejects-tampered-sources
+  (let [source-path "examples/hello.gravity"
+        source-text (slurp source-path)
+        paths (bootstrap/c-backend-current-runtime-development-source-paths)
+        emitter-rule (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                      source-path :c)
+        emitter (:emitter emitter-rule)]
+    (with-temp-directory
+      "gravity-current-runtime-facade-tamper-"
+      (fn [directory]
+        (let [facade-path (.resolve directory "runtime.gravity")
+              facade-text (slurp (:compatibility-source paths))
+              tampered-facade
+              (str/replace facade-text
+                           "(defn p15-s23-runtime-concat\n  [left right]\n  (str left right))"
+                           "(defn p15-s23-runtime-concat\n  [left right]\n  (str right left))")]
+          (is (not= facade-text tampered-facade))
+          (spit (.toFile facade-path) tampered-facade)
+          (let [data
+                (diagnostic-data
+                 #(with-redefs
+                    [bootstrap/c-backend-current-runtime-development-source-paths
+                     (fn [] (assoc paths :compatibility-source
+                                   (.toString facade-path)))]
+                    (bootstrap/c-backend-current-runtime-development-source-rule!
+                     source-path :c emitter)))]
+            (is (= "P15S23X002" (:id data)))
+            (is (= :current-runtime-compatibility-link
+                   (:missing-fact data)))))))
+    (with-temp-directory
+      "gravity-current-runtime-owner-tamper-"
+      (fn [directory]
+        (let [runtime-path (.resolve directory "runtime.gravity")
+              runtime-text (slurp (:runtime-source paths))
+              original-status-form
+              "(if (= :normal (get result 2)) (assoc record :entrypoint-result (first result) :status :complete)"
+              tampered-status-form
+              "(if (= :thrown (get result 2)) (assoc record :entrypoint-result (first result) :status :complete)"
+              tampered-runtime (str/replace runtime-text original-status-form
+                                            tampered-status-form)]
+          (is (not= runtime-text tampered-runtime))
+          (spit (.toFile runtime-path) tampered-runtime)
+          (let [data
+                (diagnostic-data
+                 #(with-redefs
+                    [bootstrap/c-backend-current-runtime-development-source-paths
+                     (fn [] (assoc paths :runtime-source
+                                   (.toString runtime-path)))]
+                    (bootstrap/stage2-runtime-derived-current-runtime-development-packet
+                     source-path source-text :c {})))]
+            (is (= "P15S23X003" (:id data)))
+            (is (= :current-runtime-development-output-equivalence
+                   (:missing-fact data)))))))))
 
 (deftest public-current-source-compile-preserves-jvm-default-and-c-diagnostics
   (let [nonce (str (System/nanoTime))
@@ -27861,15 +28180,24 @@
                (get-in artifact [:target :lowering-mode])))
         (is (= :gravity/stage2-hosted-core-compiled-plan
                (:input-plan-kind artifact)))
-        (is (= :p15-s23-stage2-compiler-driver
+        (is (= :p15-s23-stage2-plan-emitter
                (get-in artifact [:manifest :compiler-stage])))
-        (is (= :gravity-stage2-compiler-driver-rules-v1
+        (is (= (get-in artifact [:manifest :plan-emitter-engine])
                (get-in artifact [:manifest :compiler-engine])))
-        (is (true? (get-in artifact
+        (is (false? (get-in artifact
                             [:manifest :stage2-compiler-driver-used?])))
-        (is (re-find #"^sha256:"
-                     (get-in artifact
-                             [:manifest :compiler-driver-rule-hash])))
+        (is (not (contains? (:manifest artifact)
+                            :compiler-driver-rule-hash)))
+        (is (= :gravity/current-runtime-development-execution
+               (get-in artifact [:manifest :oracle :kind])))
+        (is (= :development-unadmitted
+               (get-in artifact [:manifest :revision-status])))
+        (is (= :not-checked
+               (get-in artifact [:manifest :effects])))
+        (is (= :gravity/current-runtime-development-source
+               (get-in artifact
+                       [:manifest :runtime-artifact-source :kind])))
+        (is (string? (get-in artifact [:manifest :runtime-kernel-rule-hash])))
         (is (string? (get-in artifact
                              [:manifest :compiler-source-rule-hash])))
         (is (= (get-in artifact [:manifest :compiler-source-rule-hash])
@@ -29438,98 +29766,143 @@
         (str "(ns jvm.target.integrity (:profile :hosted) (:target :jvm) "
              "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
              "(defn main [] (println \"integrity\"))\n")
+        paths (bootstrap/c-backend-current-runtime-development-source-paths)
+        packet-context
+        {:source-path "integrity.gravity"
+         :source-text source-text
+         :source-content-hash (str "sha256:" (bootstrap/sha256-hex source-text))
+         :requested-target :jvm}
+        packet
+        (bootstrap/stage2-runtime-derived-current-runtime-development-packet
+         "integrity.gravity" source-text :jvm
+         {:validate-plan!
+          (fn [candidate]
+            (bootstrap/jvm-backend-validate-plan!
+             "integrity.gravity" candidate))})
+        authenticated-reference
+        (bootstrap/current-runtime-development-packet-authenticated-reference
+         packet packet-context)
         missing-runtime
         (diagnostic-data
          #(with-redefs
-            [bootstrap/c-backend-stage2-runtime-artifact-source-path
-             (fn [_] "missing-stage2-runtime.gravity")]
-            (bootstrap/jvm-backend-source-artifact
-             "integrity.gravity" source-text)))
-        original-driver @#'bootstrap/p15-s23-stage2-compiler-driver-run-source
-        original-packet @#'bootstrap/stage2-runtime-derived-packet
-        forge-packet
-        (fn [source mutate]
+            [bootstrap/c-backend-current-runtime-development-source-paths
+             (fn [] (assoc paths :runtime-source
+                           "missing-stage2-runtime.gravity"))]
+            (bootstrap/stage2-runtime-derived-current-runtime-development-packet
+             "integrity.gravity" source-text :jvm
+             {:validate-plan!
+              (fn [candidate]
+                (bootstrap/jvm-backend-validate-plan!
+                 "integrity.gravity" candidate))})))
+        validate-packet!
+        (fn [candidate]
           (diagnostic-data
-           #(with-redefs
-              [bootstrap/stage2-runtime-derived-packet
-               (fn [& args] (mutate (apply original-packet args)))]
-              (bootstrap/jvm-backend-source-artifact source source-text))))
-        tampered-driver
-        (diagnostic-data
-         #(with-redefs
-            [bootstrap/p15-s23-stage2-compiler-driver-run-source
-             (fn [& args]
-               (assoc (apply original-driver args)
-                      :accepted-output-equivalent? false))]
-            (bootstrap/jvm-backend-source-artifact
-             "integrity.qst" source-text)))
+           #((deref #'bootstrap/jvm-backend-validate-current-runtime-development-packet!)
+             "integrity.gravity" candidate authenticated-reference
+             (:plan authenticated-reference))))
+        tampered-comparison
+        (validate-packet!
+         (update packet :current-runtime-development-comparison-record
+                 assoc :accepted-output-equivalent? false))
         forged-packet
-        (diagnostic-data
-         #(with-redefs
-            [bootstrap/stage2-runtime-derived-packet
-             (fn [& args]
-               (assoc (apply original-packet args)
-                      :kind :gravity/forged-stage2-packet))]
-            (bootstrap/jvm-backend-source-artifact
-             "forged-packet.gravity" source-text)))
+        (validate-packet!
+         (assoc packet :kind :gravity/forged-stage2-packet))
         forged-emitter
-        (diagnostic-data
-         #(with-redefs
-            [bootstrap/stage2-runtime-derived-packet
-             (fn [& args]
-               (assoc-in
-                (apply original-packet args)
-                [:stage2-plan-emitter-rule :source-rule-hash]
-                (str "sha256:" (apply str (repeat 64 "f")))))]
-            (bootstrap/jvm-backend-source-artifact
-             "forged-emitter.qst" source-text)))
+        (validate-packet!
+         (assoc-in packet [:stage2-plan-emitter-rule :source-rule-hash]
+                   (str "sha256:" (apply str (repeat 64 "f")))))
         forged-compiler-artifact
-        (forge-packet
-         "forged-compiler-artifact.gravity"
-         #(assoc-in % [:stage2-compiler-artifact-record :artifact-hash]
-                    (str "sha256:" (apply str (repeat 64 "1")))))
-        forged-driver-rule
-        (forge-packet
-         "forged-driver-rule.qst"
-         #(assoc-in % [:stage2-compiler-driver-rule :driver-rule-hash]
-                    (str "sha256:" (apply str (repeat 64 "2")))))
+        (validate-packet!
+         (assoc-in packet [:stage2-compiler-artifact-record :artifact-hash]
+                   (str "sha256:" (apply str (repeat 64 "1")))))
+        forged-runtime-owner
+        (validate-packet!
+         (assoc-in packet [:stage2-runtime-rule
+                           :current-runtime-development-binding
+                           :runtime-source-content-hash]
+                   (str "sha256:" (apply str (repeat 64 "2")))))
+        forged-compatibility-facade
+        (validate-packet!
+         (assoc-in packet [:stage2-runtime-rule
+                           :current-runtime-compatibility-link
+                           :source-content-hash]
+                   (str "sha256:" (apply str (repeat 64 "5")))))
         forged-runtime-rule
-        (forge-packet
-         "forged-runtime-rule.gravity"
-         #(assoc-in % [:stage2-runtime-rule :runtime-rule-hash]
-                    (str "sha256:" (apply str (repeat 64 "3")))))
+        (validate-packet!
+         (assoc-in packet [:stage2-runtime-rule :runtime-rule-hash]
+                   (str "sha256:" (apply str (repeat 64 "3")))))
         forged-runtime-artifact
-        (forge-packet
-         "forged-runtime-artifact.qst"
-         #(assoc-in % [:stage2-runtime-rule :runtime-artifact-hash]
-                    (str "sha256:" (apply str (repeat 64 "4")))))
+        (validate-packet!
+         (assoc-in packet [:stage2-runtime-rule :runtime-artifact-hash]
+                   (str "sha256:" (apply str (repeat 64 "4")))))
         injected-plan
-        (forge-packet
-         "injected-plan.gravity"
-         (fn [packet]
-           (update-in
-            packet
-            [:plan :functions (get-in packet [:plan :entrypoint])
-             :instructions]
-            conj {:op :literal :value "ignored-injected-value"})))]
+        (validate-packet!
+         (update-in
+          packet
+          [:plan :functions (get-in packet [:plan :entrypoint])
+           :instructions]
+          conj {:op :literal :value "ignored-injected-value"}))]
+    (is (= :gravity/current-source-runtime-development-packet
+           (:kind authenticated-reference)))
     (is (= "P15S23X001" (:id missing-runtime)))
-    (is (= :runtime-artifact-source (:missing-fact missing-runtime)))
-    (is (= "P15S23Y003" (:id tampered-driver)))
-    (is (= :p15-s23-stage2-compiler-driver
-           (:diagnostic-family tampered-driver)))
+    (is (= :current-runtime-source (:missing-fact missing-runtime)))
+    (is (= "C14-INPUT" (:id tampered-comparison)))
+    (is (= :authenticated-target-neutral-stage2-packet
+           (:missing-fact tampered-comparison)))
     (doseq [data [forged-packet forged-emitter forged-compiler-artifact
-                        forged-driver-rule forged-runtime-rule
+                        forged-runtime-owner forged-compatibility-facade
+                        forged-runtime-rule
                         forged-runtime-artifact injected-plan]]
       (is (= "C14-INPUT" (:id data)))
       (is (= :authenticated-target-neutral-stage2-packet
              (:missing-fact data))))))
+
+(deftest p15-s23-reference-runtime-pin-rejects-measured-mismatched-source-fixture
+  (with-temp-source
+    ".gravity" "historical pin mismatch fixture\n"
+    (fn [runtime-source]
+      (let [runtime-bytes
+            (java.nio.file.Files/readAllBytes
+             (.toPath (java.io.File. runtime-source)))
+            refusal
+            (with-redefs
+              [bootstrap/c-backend-stage2-runtime-artifact-source-path
+               (fn [_] runtime-source)]
+              (diagnostic-data
+               #(bootstrap/c-backend-stage2-runtime-source-rule!
+                 "historical-runtime-pin-control.gravity" :jvm)))]
+        (is (= 82780
+               bootstrap/p15-s23-stage2-runtime-artifact-expected-source-byte-count))
+        (is (= "sha256:2824d332b8208ef9ca4f47f9b0994886754cc2c6a61802bc8bc053515a8a673b"
+               bootstrap/p15-s23-stage2-runtime-artifact-expected-source-content-hash))
+        (is (= "P15S23X002" (:id refusal)))
+        (is (= :runtime-artifact-source-byte-count (:missing-fact refusal)))
+        (is (= 82780 (:expected-byte-count refusal)))
+        (is (= (alength runtime-bytes) (:observed-byte-count refusal)))))))
 
 (deftest public-current-source-jvm-runtime-derived-routes-from-unrelated-cwd
   (let [source-text
         (str "(ns jvm.target.public (:profile :hosted) (:target :jvm) "
              "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
              "(defn main [] (println \"public-jvm\"))\n")
+        incompatible-source-text
+        (str "(ns jvm.target.incompatible (:profile :hosted) "
+             "(:target :js-ts) (:effects #{}) (:capabilities #{}))\n"
+             "(defn main [] (do))\n")
         bin (.getCanonicalPath (java.io.File. "bin/gravity"))
+        project-root (.getCanonicalPath (java.io.File. "."))
+        runtime-source-path
+        (str project-root "/language/runtime/src/gravity/runtime.gravity")
+        compatibility-source-path
+        (str project-root "/bootstrap/gravity/p15_s23/runtime.gravity")
+        runtime-source-hash
+        (str "sha256:" (bootstrap/sha256-bytes-hex
+                         (java.nio.file.Files/readAllBytes
+                          (.toPath (java.io.File. runtime-source-path)))))
+        compatibility-source-hash
+        (str "sha256:" (bootstrap/sha256-bytes-hex
+                         (java.nio.file.Files/readAllBytes
+                          (.toPath (java.io.File. compatibility-source-path)))))
         env {"GRAVITY_BOOTSTRAP_ONLY" "1"
              "PATH" (str "/tmp/gravity-clojure-runtime/bin:"
                          (System/getenv "PATH"))}]
@@ -29539,11 +29912,15 @@
         (with-temp-source
           ".qst" source-text
           (fn [qst-path]
-            (with-temp-directory
-              "gravity-jvm-public-cwd-"
-              (fn [directory]
+        (with-temp-source
+          ".gravity" incompatible-source-text
+          (fn [incompatible-path]
+           (with-temp-directory
+            "gravity-jvm-public-cwd-"
+            (fn [directory]
                 (let [gravity-output "target/jvm-gravity"
                       qst-output "target/jvm-qst"
+                      incompatible-output "target/jvm-incompatible"
                       gravity-result
                       (run-process-in-directory
                        (.toString directory) env
@@ -29561,15 +29938,70 @@
                       qst-artifact
                       (when (zero? (:exit qst-result))
                         (edn/read-string (:out qst-result)))
+                      incompatible-result
+                      (run-process-in-directory
+                       (.toString directory) env
+                       [bin "compile" incompatible-path "--target" "jvm"
+                        "--lowering" "runtime-derived" "-o"
+                        incompatible-output])
                       gravity-jar (get-in gravity-artifact
                                           [:emitted-files :jar])
                       qst-jar (get-in qst-artifact [:emitted-files :jar])]
                   (is (zero? (:exit gravity-result)) (:err gravity-result))
                   (is (zero? (:exit qst-result)) (:err qst-result))
+                  (is (= 1 (:exit incompatible-result)) incompatible-result)
+                  (is (str/includes? (:err incompatible-result) "C14-PROFILE")
+                      incompatible-result)
+                  (is (not (.exists (.toFile
+                                     (.resolve directory incompatible-output)))))
                   (is (= :gravity/jvm-backend-artifact
                          (:kind gravity-artifact)))
+                  (is (true? (:current-runtime-development? gravity-artifact)))
+                  (is (= :p15-s23-stage2-plan-emitter
+                         (get-in gravity-artifact [:manifest :compiler-stage])))
+                  (is (false? (get-in gravity-artifact
+                                      [:manifest :stage2-compiler-driver-used?])))
+                  (is (not (contains? (get-in gravity-artifact
+                                              [:manifest :input])
+                                      :compiler-driver-rule-hash)))
+                  (is (not (contains? gravity-artifact
+                                      :stage2-compiler-driver-record)))
+                  (is (= :development-unadmitted
+                         (get-in gravity-artifact
+                                 [:manifest :runtime-revision-status])))
+                  (is (= :not-checked
+                         (get-in gravity-artifact
+                                 [:manifest :runtime-effects-status])))
+                  (is (true? (get-in gravity-artifact
+                                     [:manifest :clojure-seed-boundary?])))
+                  (is (false? (get-in gravity-artifact [:manifest :self-hosted?])))
+                  (let [runtime-record
+                        (get-in gravity-artifact
+                                [:manifest :runtime-artifact-source])
+                        provenance (:provenance gravity-artifact)]
+                    (is (= :gravity/current-runtime-development-source
+                           (:kind runtime-record)))
+                    (is (= runtime-source-hash
+                           (:runtime-owner-content-hash runtime-record)))
+                    (is (= compatibility-source-hash
+                           (:compatibility-facade-content-hash runtime-record)))
+                    (is (= runtime-source-path
+                           (get-in provenance [:actual-paths :runtime-owner])))
+                    (is (= compatibility-source-path
+                           (get-in provenance
+                                   [:actual-paths :runtime-compatibility-facade])))
+                    (is (not (contains? provenance :compiler-driver-rule-hash)))
+                    (is (= :development-unadmitted
+                           (:revision-status runtime-record)))
+                    (is (= :not-checked (:effects runtime-record)))
+                    (is (true? (:clojure-seed-boundary? runtime-record)))
+                    (is (false? (:self-hosted? runtime-record))))
                   (is (= (:artifact-id gravity-artifact)
                          (:artifact-id qst-artifact)))
+                  (doseq [field [:artifact-id :manifest-hash :provenance-hash
+                                 :input-plan-hash]]
+                    (is (= (get gravity-artifact field)
+                           (get qst-artifact field)) field))
                   (is (= "public-jvm\n"
                          (:out (run-bin "java" "-jar" gravity-jar))))
                   (is (= "public-jvm\n"
@@ -29582,7 +30014,7 @@
                   (bootstrap/js-ts-backend-delete-tree!
                    (.toPath (java.io.File. gravity-output)))
                   (bootstrap/js-ts-backend-delete-tree!
-                   (.toPath (java.io.File. qst-output))))))))))))
+                   (.toPath (java.io.File. qst-output))))))))))))))
 
 (def ^:private closed-runtime-public-source
   (str "(ns runtime.closed.public (:profile :hosted) (:target :jvm) "

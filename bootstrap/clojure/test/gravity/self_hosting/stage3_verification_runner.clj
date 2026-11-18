@@ -80,13 +80,30 @@
   ['gravity.self-hosting.sh08-primitive-function-type-test/sh08-primitive-family-authenticated-bool-gravity-boundary])
 
 (def recursive-pure-selectors
-  ['gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-source-reachability-and-structure
+  ['gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-census-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-cold-cut-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-cold-inference-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-return-witness-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-cold-quote-shape-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-cold-declared-result-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-proof-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-escaped-population-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-homogeneous-head-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-indexed-private-cold-wrapper-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-indexed-private-entry-source-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-indexed-private-proof-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-indexed-private-rejection-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-three-parameter-false-base-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-entry-values-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-entry-diagnostic-source-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-private-self-value-projections-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/current-gravity-declared-self-value-development-kernel
+   'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-source-reachability-and-structure
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-fixture-pair-is-byte-identical
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-pure-positive-and-monotone-fixed-point
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-pure-hostile-matrix
    'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-unsupported-external-primitive-keeps-evidence
-   'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-primitive-family-diagonal-and-conflicts
-   'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-nonconvergence-is-precise])
+   'gravity.self-hosting.sh08-recursive-function-type-test/sh08-recursive-primitive-family-diagonal-and-conflicts])
 
 (def recursive-authenticated-selectors
   ;; These two authenticated boundaries share the recursive test namespace and
@@ -139,9 +156,11 @@
    'gravity.self-hosting.sh07-c8-effect-source-coverage-test/sh07-b29-c8-structural-limitations-remain-explicit])
 
 (def stage4-sh09-adapter-selectors
-  ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact
+  ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-atomic-signature-identity-development-kernel
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-source-structure-and-policy-are-exact
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-one-pure-effect-fact-per-type-fact
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-rejects-upstream-and-candidate-substitution
+   'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-imported-type-only-diagnostic-development-kernel
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-derives-declared-pure-function-call-effects
    'gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-binds-ordered-effect-identities
    ;; Keep the authenticated boundary in this same namespace/JVM, after every
@@ -164,12 +183,17 @@
 
 (def stage5-c9-kernel-selectors
   ['gravity.self-hosting.sh10-ownership-transition-test/sh10-source-and-fixtures-compile-as-gravity
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-current-source-kernel-accepts-retired-carrier-and-event-sizes
    'gravity.self-hosting.sh10-ownership-transition-test/sh10-accepts-initiation-borrow-move-and-bounded-lifetime-flows
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-ending-a-borrow-requires-an-active-non-nil-identity
+   'gravity.self-hosting.sh10-ownership-transition-test/sh10-executes-long-event-flow-without-host-recursion
    'gravity.self-hosting.sh10-ownership-transition-test/sh10-rejects-invalid-state-transitions-structurally
    'gravity.self-hosting.sh10-ownership-transition-test/sh10-fails-closed-on-request-event-and-result-substitution])
 
 (def stage5-sh10-c8-adapter-selectors
-  ['gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-source-api-and-policy-are-exact
+  ['gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-persistent-i64-read-development-kernel
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-persistent-read-domain-and-mutable-fence-development-kernel
+   'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-source-api-and-policy-are-exact
    'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-persistent-primitive-read
    'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-accepts-primitive-type-family
    'gravity.self-hosting.sh10-c8-ownership-adapter-test/sh10-c8-adapter-rejects-mutation-and-non-read-events
@@ -194,8 +218,11 @@
    'gravity.self-hosting.sh11-numeric-safety-test/sh11-enforces-each-supported-mode-semantics
    'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-unresolved-and-invalid-numeric-safety
    'gravity.self-hosting.sh11-numeric-safety-test/sh11-contains-i64-overflow-and-binds-index-and-shift-domains
-   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
-   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks])
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-absent-numeric-and-safety-modes
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-provenance-attacks
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-accepts-finite-carriers-beyond-retired-structural-quotas
+   'gravity.self-hosting.sh11-numeric-safety-test/sh11-preserves-schema-types-without-payload-size-ceilings])
 
 ;; This is an explicit fail-fast order, not source order.  The source/API and
 ;; four synthetic identity checks must all pass before the single authenticated
@@ -233,7 +260,7 @@
    'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-proof-reference-api-and-positive
    'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-path-neutral-provenance-pair
    'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-representative-mutation-rejections
-   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-boundaries
+   'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-carrier-preflight-has-no-project-quotas
    'gravity.self-hosting.sh12-c10-mir-adapter-test/sh12-c10-authenticated-gravity-boundary])
 
 (def stage7-public-c11-selectors
@@ -273,7 +300,9 @@
 
 (def stage9-c13-source-shape-selectors
   ['gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-source-shape-and-control
-   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-export-completeness])
+   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-source-snapshot-has-no-byte-quota
+   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-mir-optimization-export-completeness
+   'gravity.self-hosting.sh07-c13-mir-optimization-shape-preflight-test/sh07-c13-c14-cross-stage-export-preflight])
 
 ;; One namespace, one C13 plan, and the exact prepared C11->C12 evidence chain.
 ;; The surface stays first, the complete positive precedes every mutation, and
@@ -318,13 +347,21 @@
    'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-static-tool-and-elf-hostiles
    'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-tampered-complete-envelope-rejects-before-tools
    'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-stage-content-tamper-rejects-after-envelope-rehash
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-equality-delta-positions-follow-vector-bounds
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-host-and-gravity-target-policies-agree
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-local-forwarding-preserves-the-last-operand-scalar-type
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-sequence-and-scope-preserve-the-last-operand-scalar-type
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-development-c-process-results-use-existing-b2-boolean-exit-codes
    'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-source-compiles-and-c11-revision-is-complete
    'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-lowers-and-verifies-all-three-bounded-targets
    'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-enforces-exact-normalized-schemas-and-references
-   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-preflight-contains-hostile-depth-width-and-scalars
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-validates-complete-carriers-without-quotas
    'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-linux-llvm-target-contract-rejects-cross-target-substitution
    'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-identity-is-path-neutral-and-provenance-retains-paths
-   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-verifier-rejects-result-substitution-before-comparison])
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-verifier-rejects-result-substitution-before-comparison
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-return-types-match-the-defined-returned-value
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-return-operations-preserve-one-defined-operand-type
+   'gravity.self-hosting.sh17-target-lowering-hardening-test/sh17-integer-operations-check-their-declared-signatures])
 
 ;; The complete catalog owner is manual/stable-candidate evidence.  The
 ;; automatic execution profile below selects only its first discriminator.
@@ -959,12 +996,25 @@
         (or (pos? error) (pos? fail)) :failed
         :else :passed))))
 
+(def ^:private cache-counter-keys
+  [:sh06-hits :sh06-misses
+   :core-hits :core-misses
+   :verification-hits :verification-misses])
+
+(def ^:private iteration-cache-counter-keys
+  [:semantic-hits :semantic-misses :semantic-joined
+   :semantic-published :semantic-evictions
+   :semantic-failed-producers :semantic-rejected-hits])
+
+(def ^:private delegate-cache-counter-schemas
+  [cache-counter-keys
+   (into cache-counter-keys iteration-cache-counter-keys)])
+
 (defn- cache-map
   [cache]
-  (or cache
-      {:sh06-hits 0 :sh06-misses 0
-       :core-hits 0 :core-misses 0
-       :verification-hits 0 :verification-misses 0}))
+  (let [cache (or cache {})]
+    (merge (zipmap cache-counter-keys (repeat 0))
+           (select-keys cache cache-counter-keys))))
 
 (defn- merge-cache
   [left right]
@@ -1055,21 +1105,22 @@
 (def ^:private summary-counter-keys
   [:test :pass :fail :error])
 
-(def ^:private cache-counter-keys
-  [:sh06-hits :sh06-misses
-   :core-hits :core-misses
-   :verification-hits :verification-misses])
-
 (defn- required-nonnegative-counters?
   [value keys]
   (and (map? value)
        (every? #(nonnegative-integer? (get value %)) keys)))
 
+(defn- delegate-cache-counter-schema
+  [value]
+  (when (map? value)
+    (let [actual (set (keys value))]
+      (some #(when (= actual (set %)) %)
+            delegate-cache-counter-schemas))))
+
 (defn- exact-cache-counters?
   [value]
-  (and (map? value)
-       (= (set cache-counter-keys) (set (keys value)))
-       (required-nonnegative-counters? value cache-counter-keys)))
+  (when-let [keys (delegate-cache-counter-schema value)]
+    (required-nonnegative-counters? value keys)))
 
 (defn- delegate-contract-error
   [message data]
@@ -1136,7 +1187,9 @@
      "SH-07 delegate cache maximum disagrees with fixed bound"
      {:expected maximum-cache-entries
       :actual (:maximum-entries delegate-result)}))
-  (let [completed (:test-var-results delegate-result)
+  (let [aggregate-cache-keys
+        (delegate-cache-counter-schema (:cache delegate-result))
+        completed (:test-var-results delegate-result)
         skipped (:skipped-test-vars delegate-result)
         completed-count (count completed)
         expected-skipped (vec (drop completed-count selectors))
@@ -1208,11 +1261,12 @@
        "SH-07 aggregate result must provide exact non-negative summary counters"
        {:aggregate (:test-result delegate-result)
         :required summary-counter-keys}))
-    (when-not (exact-cache-counters? (:cache delegate-result))
+    (when-not (and aggregate-cache-keys
+                   (exact-cache-counters? (:cache delegate-result)))
       (delegate-contract-error
-       "SH-07 aggregate cache must provide exactly six non-negative counters"
+       "SH-07 aggregate cache must provide one exact supported counter schema"
        {:cache (:cache delegate-result)
-        :required cache-counter-keys}))
+        :supported-schemas delegate-cache-counter-schemas}))
     (when-not (nonnegative-integer? (:elapsed-ms delegate-result))
       (delegate-contract-error
        "SH-07 aggregate elapsed-ms must be a non-negative integer"
@@ -1236,11 +1290,14 @@
           (require-equal-when-present! result field (get summary field)
                                        {:position position}))
         (when-not (and (nonnegative-integer? (:elapsed-ms result))
+                       (= aggregate-cache-keys
+                          (delegate-cache-counter-schema (:cache result)))
                        (exact-cache-counters? (:cache result)))
           (delegate-contract-error
-           "SH-07 delegate elapsed/cache evidence is malformed"
+           "SH-07 delegate elapsed/cache evidence is malformed or uses a different counter schema"
            {:position position :result result
-            :required-cache-keys cache-counter-keys}))
+            :aggregate-cache-keys aggregate-cache-keys
+            :supported-cache-schemas delegate-cache-counter-schemas}))
         (when (and (contains? result :authoritative?)
                    (true? (:authoritative? result)))
           (delegate-contract-error
@@ -1277,7 +1334,7 @@
           (reduce
            (fn [totals result]
              (merge-with + totals (:cache result)))
-           (zipmap cache-counter-keys (repeat 0))
+           (zipmap aggregate-cache-keys (repeat 0))
            completed)
           _ (when-not (= expected-cache (:cache delegate-result))
               (delegate-contract-error
@@ -1395,7 +1452,7 @@
        :skipped-test-vars skipped-tail
        :stopped-early? (boolean (seq skipped-tail))
        :cache cache
-       :delegate-cache (:cache delegate-result)
+       :delegate-cache (cache-map (:cache delegate-result))
        :elapsed-ms (long (or (:elapsed-ms delegate-result) elapsed))
        :delegate-elapsed-ms (:elapsed-ms delegate-result)
        :authority :non-authoritative

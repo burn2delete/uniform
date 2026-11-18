@@ -134,23 +134,6 @@
       [name (select-keys function [:arity :params])]))
    (:functions plan)))
 
-(def ^:private envelope-bounds
-  {:maximum-semantic-projections 64
-   :maximum-fact-transitions 64
-   :maximum-identity-subjects 64
-   :maximum-lineage-records 32
-   :maximum-reference-nodes 128
-   :maximum-reference-edges 128
-   :maximum-reference-depth 64
-   :maximum-logical-source-path-code-units 128
-   :maximum-reference-id-code-units 128
-   :maximum-digest-requests 2048
-   :maximum-carrier-nodes 65536
-   :maximum-carrier-depth 64
-   :maximum-container-width 128
-   :maximum-scalar-bytes 65536
-   :maximum-integer-bits 256})
-
 (defn- bridge-source-revision []
   (let [source-text (slurp (path bridge-source))
         plan @bridge-plan
@@ -483,7 +466,7 @@
          fact-names)]
     {:artifact
      :gravity/private-authenticated-envelope-descriptor
-     :schema-version 1
+     :schema-version 2
      :stage :sh11-authenticated-safety-bridge
      :artifact-kind
      :gravity/sh11-authenticated-safety-boundary
@@ -660,8 +643,7 @@
      :actual-path-provenance
      {:source-path actual-path
       :workspace-root (str @root)
-      :invocation-root (System/getProperty "user.dir")}
-     :bounds envelope-bounds}))
+      :invocation-root (System/getProperty "user.dir")}}))
 
 (defn- authenticated-envelope
   [descriptor effect-verification ownership-verification]
@@ -827,6 +809,63 @@
         functions
         'sh11-verify-authenticated-safety-result)
        [:arity :params])))))
+
+(deftest sh11-bridge-accepts-current-c10-verification-and-rejects-tampering
+  (let [links
+        {:core-node-id
+         (identity-id :gravity/sh11-direct-c10-test :core-node)
+         :source-span
+         {:source-id
+          (identity-id :gravity/sh11-direct-c10-test :source)
+          :start-byte 0
+          :end-byte 1}
+         :origin-chain
+         [(identity-id :gravity/sh11-direct-c10-test :origin)]
+         :profile :meta
+         :target :jvm
+         :type-fact-id
+         (identity-id :gravity/sh11-direct-c10-test :type-fact)
+         :effect-fact-id
+         (identity-id :gravity/sh11-direct-c10-test :effect-fact)
+         :capability-proof-id
+         (identity-id :gravity/sh11-direct-c10-test :capability-proof)
+         :ownership-fact-id
+         (identity-id :gravity/sh11-direct-c10-test :ownership-fact)}
+        request (safety-operation :proven-overflow links)
+        result
+        (invoke c10-plan 'sh11-classify-operation [request])
+        verification
+        (invoke c10-plan 'sh11-verify-safety-result [request result])
+        c10-request
+        {:status :accepted
+         :expected-safety-result result
+         :expected-safety-verification verification}
+        accepted
+        (invoke bridge-plan 'sh11-bridge-safety-result-valid?
+                [c10-request result verification])
+        tampered-verifications
+        [(update verification :checks assoc 0 :tampered-recomputation)
+         (update verification :checks assoc 5 :tampered-lineage)]]
+    (is (= :accepted (:status result)))
+    (is (= :passed (:status verification)))
+    (is (= [:complete-recomputation
+            :exactly-one-outcome
+            :legal-outcome
+            :proof-check-audit-exclusivity
+            :diagnostic-identity
+            :source-lineage-identity]
+           (:checks verification)))
+    (is (true? accepted))
+    (doseq [tampered tampered-verifications]
+      (is
+       (false?
+        (invoke
+         bridge-plan
+         'sh11-bridge-safety-result-valid?
+         [(assoc c10-request
+                 :expected-safety-verification tampered)
+          result
+          tampered]))))))
 
 (deftest sh11-classifies-all-four-safe1-outcomes
   (doseq [[extension sh08-products]
@@ -1022,6 +1061,56 @@
     (is (not= (:provenance result-a)
               (:provenance result-b)))))
 
+(deftest sh11-long-captured-path-retains-provenance-and-authentication
+  (let [path (str "/checkout-a/" (apply str (repeat 4096 "a")) ".gravity")
+        prepared
+        (prepared-request @sh08-gravity :proven-overflow path)
+        request (:request prepared)
+        run (run-bridge prepared)
+        result (:result run)
+        substituted
+        (invoke
+         bridge-plan
+         'sh11-build-authenticated-safety-request
+         [(assoc request :actual-source-path (str path "/substituted"))])
+        empty-path
+        (invoke
+         bridge-plan
+         'sh11-build-authenticated-safety-request
+         [(assoc request :actual-source-path "")])]
+    (is (> (count path) 4096))
+    (is (= :accepted (:status result)))
+    (is (= :passed (:status (:safety-verification run))))
+    (is (= path
+           (get-in request
+                   [:envelope :actual-path-provenance :source-path])))
+    (is (= path
+           (get-in (:c10-request run) [:actual-source-path])))
+    (is (= path
+           (get-in result [:provenance :actual-source-path])))
+    (is (= :rejected (:status substituted)))
+    (is (= :invalid-authenticated-envelope
+           (get-in substituted [:diagnostics 0 :facts :reason])))
+    (is (= :rejected (:status empty-path)))
+    (is (= :actual-path-required
+           (get-in empty-path [:diagnostics 0 :facts :reason])))))
+
+(deftest sh11-captured-path-validation-has-no-size-quota
+  (let [path (apply str (repeat 16777217 "a"))
+        envelope {:actual-path-provenance {:source-path path}}
+        malformed
+        (invoke bridge-plan 'sh11-build-authenticated-safety-request
+                [{:actual-source-path path}])]
+    (is (> (count path) 16777216))
+    (is (nil? (invoke bridge-plan 'sh11-bridge-captured-path-error
+                      [path envelope])))
+    (is (= [:envelope :invalid-authenticated-envelope]
+           (invoke bridge-plan 'sh11-bridge-captured-path-error
+                   [(str path "x") envelope])))
+    (is (= :rejected (:status malformed)))
+    (is (= :request-keys
+           (get-in malformed [:diagnostics 0 :facts :reason])))))
+
 (deftest sh11-authenticated-safety-bridge-fails-closed-on-malformed-input
   (doseq [value
           [nil
@@ -1052,7 +1141,7 @@
     (is (= :rejected (:status result)))
     (is (= "STD11-BRIDGE-SCHEMA"
            (get-in result [:diagnostics 0 :rule])))
-    (is (= :request-carrier-bound
+    (is (= :request-keys
            (get-in
             result
             [:diagnostics 0 :facts :reason])))))

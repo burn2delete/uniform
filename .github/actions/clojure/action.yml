@@ -4,6 +4,19 @@ inputs:
   java-version:
     description: Exact JDK required by the selected source contract
     default: 21.0.8+9.0.LTS
+  dependency-directory:
+    description: Directory containing the pinned Clojure dependency root to prefetch
+    default: .
+  dependency-alias:
+    description: Optional Clojure alias whose dependency root should be prefetched
+    default: ''
+  dependency-cache-files:
+    description: Dependency manifests and pinned CLI config that identify this Maven cache
+    default: |
+      deps.edn
+      tools/ci/run.clj
+      tools/ci/lint_facade_test.clj
+      .github/actions/clojure/action.yml
   private-temp:
     description: Use an owned Java temporary directory for portable cache tests
     default: 'true'
@@ -27,8 +40,28 @@ runs:
       with:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
+        cache: maven
+        cache-dependency-path: ${{ inputs.dependency-cache-files }}
     - uses: DeLaGuardo/setup-clojure@3fe9b3ae632c6758d0b7757b0838606ef4287b08 # 13.4
       with:
         cli: 1.12.5.1654
         clj-kondo: ${{ inputs.install-static-tools == 'true' && '2025.10.23' || '' }}
         cljfmt: ${{ inputs.install-static-tools == 'true' && '0.13.4' || '' }}
+    - name: Prefetch pinned Maven dependencies
+      shell: bash
+      env:
+        DEPENDENCY_DIRECTORY: ${{ inputs.dependency-directory }}
+        DEPENDENCY_ALIAS: ${{ inputs.dependency-alias }}
+      run: |
+        clojure_description="$(clojure -Sdescribe)"
+        install_directory="$(sed -n 's/.*:install-dir "\([^"]*\)".*/\1/p' <<< "$clojure_description")"
+        clojure_version="$(sed -n 's/.*:version "\([^"]*\)".*/\1/p' <<< "$clojure_description")"
+        clojure_tools_jar="$install_directory/libexec/clojure-tools-$clojure_version.jar"
+        if [[ ! -f "$clojure_tools_jar" ]]; then
+          echo "Cannot find the pinned Clojure tools runtime at $clojure_tools_jar" >&2
+          exit 1
+        fi
+        java -cp "$clojure_tools_jar:$GITHUB_WORKSPACE/tools" clojure.main \
+          -m ci.maven-dependencies \
+          --directory "$DEPENDENCY_DIRECTORY" \
+          --alias "$DEPENDENCY_ALIAS"

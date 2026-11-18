@@ -72,89 +72,6 @@
       false)
     false))
 
-(defn sh09-bridge-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh09-bridge-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh09-bridge-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh09-bridge-max [left right]
-  (if (> left right) left right))
-
-(defn sh09-bridge-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh09-bridge-aggregate? current)
-              (let [width
-                    (sh09-bridge-aggregate-width current)]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh09-bridge-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining) (+ depth 1)]))))]
-                    (recur
-                     next-frontier
-                     next-nodes
-                     scalar-units
-                     (sh09-bridge-max observed-depth depth)
-                     (sh09-bridge-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units (count (vec (str current))))]
-                (if (> next-scalar-units 16777216)
-                  {:status :rejected :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier)
-                   next-nodes
-                   next-scalar-units
-                   (sh09-bridge-max observed-depth depth)
-                   observed-width))))))))))
-
 (defn sh09-bridge-exact-keys? [value expected]
   (if (map? value)
     (= (set (keys value)) expected)
@@ -435,7 +352,7 @@
     (if
      (= :gravity/private-authenticated-envelope-descriptor
         (get descriptor :artifact))
-      (if (= 1 (get descriptor :schema-version))
+      (if (= 2 (get descriptor :schema-version))
         (if (= :sh09-authenticated-effect-bridge
                (get descriptor :stage))
           (if
@@ -729,6 +646,17 @@
      :replay-record (get authority :replay-record)
      :ordering (get authority :ordering)}))
 
+(defn sh09-bridge-captured-path-error [path envelope]
+  (if (string? path)
+    (if (> (count path) 0)
+      (if (= path
+             (get (get envelope :actual-path-provenance)
+                  :source-path))
+        nil
+        [:envelope :invalid-authenticated-envelope])
+      [:schema :actual-path-required])
+    [:schema :actual-path-required]))
+
 (defn sh09-bridge-upstream-error [request]
   (if
    (= false
@@ -839,25 +767,9 @@
                              (get request :sh08-verification)))
                           [:envelope
                            :invalid-authenticated-envelope]
-                          (if
-                           (string?
-                            (get request :actual-source-path))
-                            (if
-                             (> (count
-                                 (get request
-                                      :actual-source-path))
-                                0)
-                              (if
-                               (<=
-                                (count
-                                 (get request
-                                      :actual-source-path))
-                                4096)
-                                nil
-                                [:schema :actual-path-bound])
-                              [:schema :actual-path-required])
-                            [:schema
-                             :actual-path-required])))))))))))))))
+                          (sh09-bridge-captured-path-error
+                           (get request :actual-source-path)
+                           (get request :envelope))))))))))))))))
 
 (defn sh09-bridge-rule [family]
   (if (= family :schema)
@@ -900,12 +812,8 @@
    :clojure-seed-boundary? true})
 
 (defn sh09-build-authenticated-effect-request [request]
-  (let [preflight (sh09-bridge-carrier-preflight request)]
-    (if (= :rejected (get preflight :status))
-      (sh09-bridge-rejected
-       request :schema (get preflight :reason) [])
-      (let [error (sh09-bridge-upstream-error request)]
-        (if (= error nil)
+  (let [error (sh09-bridge-upstream-error request)]
+    (if (= error nil)
       {:artifact :gravity/sh09-authenticated-c8-request
        :schema-version 1
        :status :accepted
@@ -930,7 +838,7 @@
        :actual-source-path (get request :actual-source-path)
        :diagnostics []}
       (sh09-bridge-rejected
-       request (first error) (first (rest error)) []))))))
+       request (first error) (first (rest error)) []))))
 
 (defn sh09-bridge-effect-result-valid?
   [c8-request effect-result effect-verification]
@@ -989,25 +897,8 @@
 
 (defn sh09-bind-authenticated-effect-result
   [request c8-request effect-result effect-verification]
-  (let [request-preflight
-        (sh09-bridge-carrier-preflight request)
-        c8-request-preflight
-        (sh09-bridge-carrier-preflight c8-request)
-        effect-result-preflight
-        (sh09-bridge-carrier-preflight effect-result)
-        verification-preflight
-        (sh09-bridge-carrier-preflight effect-verification)]
-    (if
-     (= false
-        (= :accepted
-           (get request-preflight :status)
-           (get c8-request-preflight :status)
-           (get effect-result-preflight :status)
-           (get verification-preflight :status)))
-      (sh09-bridge-rejected
-       request :verify :effect-result-carrier-bound [])
-      (let [expected-request
-            (sh09-build-authenticated-effect-request request)]
+  (let [expected-request
+        (sh09-build-authenticated-effect-request request)]
     (if (= false (= expected-request c8-request))
       (sh09-bridge-rejected
        request :verify :c8-request-substitution [])
@@ -1042,26 +933,19 @@
             :pending)
            :self-hosted? false
            :clojure-seed-boundary? true}
-          (sh09-bridge-rejected
-           request :effect :c8-effect-rejection
-           (get effect-result :diagnostics)))))))))
+       (sh09-bridge-rejected
+        request :effect :c8-effect-rejection
+        (get effect-result :diagnostics)))))))
 
 (defn sh09-verify-authenticated-effect-result
   [request c8-request effect-result effect-verification candidate]
-  (let [candidate-preflight
-        (sh09-bridge-carrier-preflight candidate)
-        expected
-        (if (= :accepted (get candidate-preflight :status))
-          (sh09-bind-authenticated-effect-result
-           request c8-request effect-result effect-verification)
-          (sh09-bridge-rejected
-           request :verify :candidate-result-carrier-bound []))]
+  (let [expected
+        (sh09-bind-authenticated-effect-result
+         request c8-request effect-result effect-verification)]
     {:artifact
      :gravity/sh09-authenticated-effect-verification
      :status
-     (if (= :accepted (get candidate-preflight :status))
-       (if (= expected candidate) :passed :rejected)
-       :rejected)
+     (if (= expected candidate) :passed :rejected)
      :checks
      [:authenticated-sh08-typed-core
       :authenticated-input-and-output-identities

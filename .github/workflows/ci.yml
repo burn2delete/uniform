@@ -39,6 +39,7 @@ jobs:
       leaves-darwin: ${{ steps.selection.outputs.leaves-darwin }}
       darwin-unsupported: ${{ steps.selection.outputs.darwin-unsupported }}
       static-tools-required: ${{ steps.selection.outputs.static-tools-required }}
+      checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}
       selection-valid: ${{ steps.selection.outputs.selection-valid }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -63,9 +64,10 @@ jobs:
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
     # Macro runs three sequential fresh children with independent 900-second
-    # watchdogs. Leave room for all children, setup, cleanup and upload; the
-    # other matrix modes retain their existing 20-minute envelope.
-    timeout-minutes: ${{ matrix.mode == 'macro' && 50 || 20 }}
+    # watchdogs. Checked-Core can run the 900-second B6 owner test, 1,800-second
+    # C7 source-consumer command and its existing regressions. Leave ten minutes
+    # for setup, cleanup and upload; other matrix modes retain 20 minutes.
+    timeout-minutes: ${{ (matrix.mode == 'macro' && 50) || (matrix.mode == 'checked-core-runtime' && 70) || 20 }}
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -80,6 +82,11 @@ jobs:
           # use a single commit.
           fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' && 1 || 0 }}
           persist-credentials: false
+      - name: Install Node.js 20 for the checked JS owner regression
+        if: ${{ always() && !cancelled() && matrix.mode == 'checked-core-runtime' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.checked-js-owner-required != 'false') }}
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 20.20.2
       - uses: ./.github/actions/clojure
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
         with:

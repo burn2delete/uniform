@@ -18,6 +18,10 @@
     'p18-cli-help-text
     {:arglists '([packaged-jvm-cli?])
      :returns :human-help-text}
+    'p18-cli-help-resource-text
+    {:arglists '([launcher])
+     :returns :human-help-text
+     :launchers #{:source :archived-packaged-jvm-cli}}
     'cli-usage-text
     {:arglists '([])
      :returns :usage-text}
@@ -29,6 +33,7 @@
      :admission :none}}
    :artifact-inputs [:packaged-jvm-cli-state :selected-sh07-command-arguments]
    :artifact-outputs [:bootstrap-version-record :bootstrap-help-text
+                      :bootstrap-help-resource-text
                       :bootstrap-usage-text :sh07-core-input]
    :diagnostic-ownership {:stage ["SH07-CLI-ARGS"]
                           :source-decoding :reader :core-legality :checked-core
@@ -87,8 +92,11 @@
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 
-(defn p18-cli-help-text
-  [packaged-jvm-cli?]
+(def ^:private archived-packaged-jvm-cli-delegate
+  "java -cp <packaged-jar>:<clojure-runtime-classpath> gravity.cli.Main")
+
+(defn- render-p18-cli-help-text
+  [packaged-jvm-cli? delegates-to]
   (str
    "gravity bootstrap-hosted command\n\n"
    "Usage:\n"
@@ -97,6 +105,7 @@
    "  gravity check <file.qst|file.gravity>\n"
    "  gravity sh07-core <file.qst|file.gravity>\n"
    "  gravity run <file.qst|file.gravity>\n"
+   "  gravity run <file.qst|file.gravity> --target c --lowering runtime-derived\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
    "  gravity compile <file.qst|file.gravity> --target js|js-ts -o <fresh-directory>\n"
@@ -106,10 +115,13 @@
    "  gravity compile <file.qst|file.gravity> --target js|js-ts\n"
    "    --lowering runtime-derived -o <directory>\n"
    "    (explicit legacy route; retains its existing results and failures)\n"
+   "  gravity compile <file.qst|file.gravity> --target c -o <executable>\n"
+   "  gravity compile <file.qst|file.gravity> --target c --lowering runtime-derived -o <executable>\n"
    "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
    "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
    "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
    "  gravity test\n"
+   "  gravity self-host verify\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
    "  gravity p18-t06-final-release\n"
@@ -123,7 +135,30 @@
    (if packaged-jvm-cli? "true" "false")
    "\n"
    "  :seedless-release? false\n"
+   "  bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged\n"
+   "  :delegates-to \"" delegates-to "\"\n"
+   "Use gravity-bootstrap for explicit Clojure seed audit and recovery.\n"
    experimental-c-route-help))
+
+(defn p18-cli-help-text
+  [packaged-jvm-cli?]
+  (render-p18-cli-help-text
+   packaged-jvm-cli?
+   (:delegates-to (p18-cli-version-record packaged-jvm-cli?))))
+
+(defn p18-cli-help-resource-text
+  "Return the generated help text for a checked-in wrapper launcher resource."
+  [launcher]
+  (case launcher
+    :source
+    (p18-cli-help-text false)
+
+    :archived-packaged-jvm-cli
+    (render-p18-cli-help-text true archived-packaged-jvm-cli-delegate)
+
+    (throw (ex-info "Unsupported bootstrap CLI help resource launcher"
+                    {:id "P18-CLI-HELP-RESOURCE-LAUNCHER"
+                     :launcher launcher}))))
 
 (defn cli-usage-text
   "Return the stable usage text for a command-line shape failure.

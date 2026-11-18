@@ -248,7 +248,7 @@
   (is (= runner/authoritative-ho-authenticated-selectors
          (get runner/fixed-batch-selectors :authoritative-ho-authenticated)))
   (is (= (count runner/primitive-pure-selectors) 4))
-  (is (= (count runner/recursive-pure-selectors) 7))
+  (is (= (count runner/recursive-pure-selectors) 24))
   (is (= (count runner/recursive-authenticated-selectors) 2))
   (is (= (count runner/authoritative-ho-pure-selectors) 7))
   (is (= (count runner/authoritative-ho-authenticated-selectors) 2))
@@ -256,16 +256,16 @@
   (is (= (count runner/coverage-census-contract-selectors) 2))
   (is (= (count runner/source-control-form-arity-selectors) 1))
   (is (= 4 (count runner/stage4-c8-source-structural-selectors)))
-  (is (= 6 (count runner/stage4-sh09-adapter-selectors)))
+  (is (= 8 (count runner/stage4-sh09-adapter-selectors)))
   (is (= ['gravity.self-hosting.sh09-c7-effect-adapter-test/sh09-c7-adapter-authenticated-gravity-boundary]
          (take-last 1 runner/stage4-sh09-adapter-selectors)))
   (is (= 1 (count runner/stage4-public-c8-selectors)))
   (is (= 4 (count runner/stage5-c9-source-structural-selectors)))
-  (is (= 4 (count runner/stage5-c9-kernel-selectors)))
-  (is (= 5 (count runner/stage5-sh10-c8-adapter-selectors)))
+  (is (= 7 (count runner/stage5-c9-kernel-selectors)))
+  (is (= 7 (count runner/stage5-sh10-c8-adapter-selectors)))
   (is (= 1 (count runner/stage5-public-c9-selectors)))
   (is (= 5 (count runner/stage6-c10-source-structural-selectors)))
-  (is (= 7 (count runner/stage6-c10-kernel-selectors)))
+  (is (= 10 (count runner/stage6-c10-kernel-selectors)))
   (is (= 5 (count runner/stage6-sh11-c9-safety-adapter-selectors)))
   (is (= 1 (count runner/stage6-public-c10-selectors)))
   (is (= runner/stage5-c9-source-structural-selectors
@@ -329,15 +329,15 @@
   (is (= 1 (count runner/stage8-public-c12-selectors)))
   (is (= runner/stage9-c13-source-shape-selectors
          (get runner/fixed-batch-selectors :stage9-c13-source-shape)))
-  (is (= 2 (count runner/stage9-c13-source-shape-selectors)))
+  (is (= 4 (count runner/stage9-c13-source-shape-selectors)))
   (is (= runner/stage9-sh16-c13-evidence-boundary-selectors
          (get runner/fixed-batch-selectors
               :stage9-sh16-c13-evidence-boundary)))
   (is (= 4 (count runner/stage9-sh16-c13-evidence-boundary-selectors)))
   (is (= runner/stage10-w1-static-admission-selectors
          (get runner/fixed-batch-selectors :stage10-w1-static-admission)))
-  (is (= 22 (count runner/stage10-w1-static-admission-selectors)))
-  (is (= 22 (count (set runner/stage10-w1-static-admission-selectors))))
+  (is (= 30 (count runner/stage10-w1-static-admission-selectors)))
+  (is (= 30 (count (set runner/stage10-w1-static-admission-selectors))))
   (is (= runner/stage10-w1-hostile-stable-selectors
          (get runner/fixed-batch-selectors :stage10-w1-hostile-stable)))
   (is (= 2 (count runner/stage10-w1-hostile-stable-selectors)))
@@ -526,8 +526,8 @@
            (get-in runner/fixed-batches
                    [:stage8-sh13-c11-domain-evidence :catalog-order-policy])))
     (is (= runner/stage9-c13-source-shape-selectors c13-shape))
-    (is (= 2 (count c13-shape)))
-    (is (= 2 (count (set c13-shape))))
+    (is (= 4 (count c13-shape)))
+    (is (= 4 (count (set c13-shape))))
     (is (= runner/stage9-sh16-c13-evidence-boundary-selectors boundary))
     (is (= 4 (count boundary)))
     (is (= 4 (count (set boundary))))
@@ -548,11 +548,13 @@
                  "bootstrap/clojure/test/gravity/self_hosting/sh17_c13_optimized_mir_carrier_test.clj")
         direct (execution-profile-selectors-for sh17-carrier-ns)]
     (is (= 6 (count continuity)))
-    (is (= 7 (count hardening)))
-    (is (= 4 (count carrier)))
+    (is (= 15 (count hardening)))
+    (is (= 10 (count carrier)))
     (is (= runner/stage10-w1-hostile-stable-selectors
-           (subvec carrier 2)))
-    (is (= [(nth carrier 2)] direct))
+           (vec (take-last
+                 (count runner/stage10-w1-hostile-stable-selectors)
+                 carrier))))
+    (is (= runner/stage10-w1-direct-mutation-selectors direct))
     (is (= runner/stage10-w1-hostile-stable-selectors
            (selectors-for sh17-carrier-ns)))
     (is (= :source-subsequence
@@ -761,8 +763,11 @@
           'gravity.self-hosting.sh11-numeric-safety-test/sh11-enforces-each-supported-mode-semantics
           'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-unresolved-and-invalid-numeric-safety
           'gravity.self-hosting.sh11-numeric-safety-test/sh11-contains-i64-overflow-and-binds-index-and-shift-domains
-          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
-          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks]
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-rejects-absent-numeric-and-safety-modes
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-schema-mode-lineage-and-provenance-attacks
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-fails-closed-on-runtime-unsafe-and-result-attacks
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-accepts-finite-carriers-beyond-retired-structural-quotas
+          'gravity.self-hosting.sh11-numeric-safety-test/sh11-preserves-schema-types-without-payload-size-ceilings]
          runner/stage6-c10-kernel-selectors))
   (is (= :explicit-execution-order
          (get-in runner/fixed-batches
@@ -927,6 +932,53 @@
      :skipped-test-vars []
      :cache cache
      :elapsed-ms 1}))
+
+(deftest delegate-contract-accepts-current-iteration-cache-and-projects-stage3-counters
+  (let [selector 'gravity.synthetic/current-cache-test
+        iteration-cache
+        {:sh06-hits 1 :sh06-misses 0
+         :core-hits 0 :core-misses 1
+         :verification-hits 2 :verification-misses 0
+         :semantic-hits 3 :semantic-misses 4 :semantic-joined 5
+         :semantic-published 6 :semantic-evictions 7
+         :semantic-failed-producers 8 :semantic-rejected-hits 9}
+        stage3-cache (select-keys iteration-cache
+                                  [:sh06-hits :sh06-misses
+                                   :core-hits :core-misses
+                                   :verification-hits :verification-misses])
+        delegate (assoc (successful-delegate [selector])
+                        :cache iteration-cache
+                        :test-var-results
+                        [(assoc (passing-result selector 0)
+                                :cache iteration-cache)])
+        result (synthetic-batch-run
+                :synthetic-current-iteration-cache [selector] delegate)
+        unknown-counter (assoc delegate
+                               :cache (assoc iteration-cache :unknown 1))
+        negative-counter (assoc delegate
+                                :cache (assoc iteration-cache
+                                              :semantic-failed-producers -1))
+        mismatched-var (assoc delegate
+                              :test-var-results
+                              [(assoc (passing-result selector 0)
+                                      :cache (update iteration-cache
+                                                     :semantic-misses inc))])]
+    (is (= :passed (:status result)))
+    (is (= stage3-cache (:cache result)))
+    (is (= stage3-cache (:delegate-cache result)))
+    (is (= stage3-cache
+           (get-in result [:test-var-results 0 :cache])))
+    (is (= iteration-cache
+           (get-in result [:delegate-result :cache])))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-unknown-iteration-counter
+                              [selector] unknown-counter)))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-negative-iteration-counter
+                              [selector] negative-counter)))
+    (is (= "STAGE3-DELEGATE-CONTRACT"
+           (contract-error-id :synthetic-iteration-counter-total-mismatch
+                              [selector] mismatched-var)))))
 
 (deftest multi-var-batches-delegate-with-one-entry-and-fail-fast-tail
   (let [calls (atom [])

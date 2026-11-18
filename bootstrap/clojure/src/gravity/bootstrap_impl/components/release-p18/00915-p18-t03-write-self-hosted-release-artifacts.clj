@@ -111,11 +111,5 @@
 
 (defn p18-t04-output-path-allowed?
   [output-path]
-  (let [file (java.io.File. (str output-path))
-        segments (p18-t04-path-segments output-path)]
-    (and (string? output-path)
-         (not (str/blank? output-path))
-         (not (.isAbsolute file))
-         (not-any? #{".."} segments)
-         (or (str/starts-with? output-path "target/")
-             (= 1 (count segments))))))
+  ((requiring-resolve 'gravity.cli.compile-request/output-path-allowed?)
+   output-path))

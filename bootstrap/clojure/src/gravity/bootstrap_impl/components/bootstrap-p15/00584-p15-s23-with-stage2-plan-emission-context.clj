@@ -8,30 +8,40 @@
       (build-fn))))
 
 (defn p15-s23-stage2-plan-emitter-compile-source
-  [emitter source-path source-text]
-  (p15-s23-with-stage2-plan-emission-context
-   (fn []
-     (let [_ (validate-stage0-source-profile! source-path source-text)
-           _ (validate-stage0-source-safety! source-path source-text)
-           macro-artifact (macro-source-artifact source-path source-text)
-           authoritative-products
-           (p15-s23-stage2-c2-c3-front-end-products source-path source-text)
-           authoritative-module
-           (parse-module source-path (:forms authoritative-products))
-           _ (validate-seed-source-headers! source-path (:forms authoritative-module))
-           ;; Export visibility and provider selection are semantic.  The
-           ;; historical macro artifact retains neither ns clause, while the
-           ;; C2/C3 stage2 front end does.  Restore those authoritative fields at
-           ;; this narrow direct emitter boundary so driver/direct plans agree
-           ;; without normalizing either contract away.
-           module (cond-> (assoc (:module macro-artifact)
-                                 :forms (:expanded-forms macro-artifact))
-                    (seq (:exports authoritative-module))
-                    (assoc :exports (:exports authoritative-module))
-                    (seq (:providers authoritative-module))
-                    (assoc :providers (:providers authoritative-module)))]
-       (p15-s23-stage2-emitted-core-plan
-        emitter source-path source-text module)))))
+  ([emitter source-path source-text]
+   (p15-s23-stage2-plan-emitter-compile-source emitter source-path source-text nil))
+  ([emitter source-path source-text invocation]
+   (p15-s23-with-stage2-plan-emission-context
+    (fn []
+      (let [_ (validate-stage0-source-profile! source-path source-text)
+            _ (validate-stage0-source-safety! source-path source-text)
+            macro-artifact (macro-source-artifact source-path source-text)
+            authoritative-products
+            (if invocation
+              (p15-s23-stage2-c2-c3-front-end-products
+               source-path source-text (reader-project-context-for-source source-path)
+               false (:reader-source-path invocation) invocation)
+              (p15-s23-stage2-c2-c3-front-end-products source-path source-text))
+            authoritative-module
+            (parse-module source-path (:forms authoritative-products))
+            _ (validate-seed-source-headers! source-path (:forms authoritative-module))
+            ;; Export visibility and provider selection are semantic.  The
+            ;; historical macro artifact retains neither ns clause, while the
+            ;; C2/C3 stage2 front end does.  Restore those authoritative fields at
+            ;; this narrow direct emitter boundary so driver/direct plans agree
+            ;; without normalizing either contract away.
+            module (cond-> (assoc (:module macro-artifact)
+                                  :forms (:expanded-forms macro-artifact))
+                     (seq (:exports authoritative-module))
+                     (assoc :exports (:exports authoritative-module))
+                     (seq (:providers authoritative-module))
+                     (assoc :providers (:providers authoritative-module)))]
+        (binding [*p15-s23-stage2-compiler-artifact-binding*
+                  (if invocation
+                    (p15-s23-stage2-current-expression-development-binding! source-path)
+                    *p15-s23-stage2-compiler-artifact-binding*)]
+          (p15-s23-stage2-emitted-core-plan
+           emitter source-path source-text module)))))))
 
 (defn p15-s23-stage2-plan-emitter-accepted-record
   [emitter]

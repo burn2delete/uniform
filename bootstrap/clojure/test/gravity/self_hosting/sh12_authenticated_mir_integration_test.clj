@@ -414,6 +414,60 @@
                (str "/checkout-a/sh12-input"
                     extension "/" (name outcome))))))))
 
+(deftest sh12-outcome-products-validate-each-safe1-classification
+  (let [test-id
+        (fn [value]
+          (identity-id :gravity/sh12-outcome-products-test-id value))
+        links
+        {:profile :meta
+         :target :jvm
+         :core-node-id (test-id :core-node)
+         :source-span {:source-id (test-id :source)
+                       :start-byte 0
+                       :end-byte 1}
+         :origin-chain [(test-id :origin)]
+         :type-fact-id (test-id :type-fact)
+         :effect-fact-id (test-id :effect-fact)
+         :capability-proof-id (test-id :capability-proof)
+         :ownership-fact-id (test-id :ownership-fact)
+         :runtime-support-id (test-id :runtime-support)
+         :runtime-provider-id (test-id :runtime-provider)
+         :runtime-check-id (test-id :runtime-check)
+         :unsafe-audit-id (test-id :unsafe-audit)
+         :unsafe-review-id (test-id :unsafe-review)}]
+    (doseq [[operation expected]
+            [[:proven-overflow :proven-safe]
+             [:runtime-division :runtime-checked]
+             [:unsafe-overflow :unsafe-island]]]
+      (testing (name expected)
+        (let [request
+              (call-private
+               'gravity.self-hosting.sh11-authenticated-safety-integration-test
+               'safety-operation operation links)
+              products
+              (call-private
+               'gravity.self-hosting.sh11-authenticated-safety-integration-test
+               'c10-products request)
+              safety-result (:safety-result products)
+              selected (:outcome safety-result)
+              accepted
+              (invoke
+               bridge-plan 'sh12-outcome-products-valid?
+               [selected safety-result])
+              altered
+              (assoc-in safety-result
+                        [:outcomes 0 :specialized-safe-rule]
+                        :SAFE1-NO-OUTCOME)
+              rejected
+              (invoke
+               bridge-plan 'sh12-outcome-products-valid?
+               [selected altered])]
+          (is (= :passed
+                 (:status (:safety-verification products))))
+          (is (= expected selected))
+          (is (true? accepted))
+          (is (false? rejected)))))))
+
 (deftest sh12-rejects-self-consistent-malformed-outcome-products
   (let [proven-products
         (authentic-product ".gravity" :proven-safe)
@@ -923,11 +977,11 @@
     (is (= :rejected (:status result)))
     (is (= "STD12-BRIDGE-SCHEMA"
            (get-in result [:diagnostics 0 :rule])))
-    (is (= :request-carrier-bound
+    (is (= :request-keys
            (get-in result
                    [:diagnostics 0 :facts :reason])))))
 
-(deftest sh12-verifier-omits-overdeep-candidate-carriers
+(deftest sh12-verifier-compares-overdeep-candidate-as-tampering
   (let [run
         (run-sh12
          (authentic-product ".gravity" :proven-safe)
@@ -960,17 +1014,51 @@
     (doseq [candidate [accepted-shaped rejected-shaped]]
       (let [verification (verify candidate)]
         (is (= :rejected (:status verification)))
-        (is (= :candidate-result-carrier-bound
-               (:reason verification)))
-        (is (= :carrier-depth-bound
-               (get-in verification
-                       [:candidate-preflight :reason])))
-        (is (= :omitted (:candidate-echo verification)))
-        (is (= "STD12-BRIDGE-VERIFY"
-               (get-in verification
-                       [:diagnostics 0 :rule])))
-        (is (not (contains? verification :candidate)))
-        (is (not (contains? verification :expected)))))))
+        (is (= (:result run) (:expected verification)))
+        (is (= candidate (:candidate verification)))))))
+
+(deftest sh12-long-captured-path-retains-provenance-and-identity
+  (let [products (authentic-product ".gravity" :proven-safe)
+        path (str "/checkout-a/" (apply str (repeat 4096 "a")) ".gravity")
+        run (run-sh12 products ".gravity" :proven-safe path)
+        other (run-sh12 products ".gravity" :proven-safe
+                         "/checkout-a/sh12-input.gravity")
+        empty-path
+        (invoke
+         bridge-plan
+         'sh12-build-checked-core
+         [(assoc (:request run) :actual-source-path "")])]
+    (is (> (count path) 4096))
+    (is (= :accepted (:status (:checked-core run))))
+    (is (= :accepted (:status (:result run))))
+    (is (= :passed (:status (:verification run))))
+    (is (= path
+           (get-in (:checked-core run)
+                   [:provenance :actual-source-path])))
+    (is (= path
+           (get-in (:result run)
+                   [:provenance :actual-source-path])))
+    (is (= (:mir-id other) (:mir-id run)))
+    (is (= (get-in other [:result :identity-input])
+           (get-in run [:result :identity-input])))
+    (is (not= (get-in other [:result :provenance])
+              (get-in run [:result :provenance])))
+    (is (= :rejected (:status empty-path)))
+    (is (= :actual-source-path
+           (get-in empty-path [:diagnostics 0 :facts :reason])))))
+
+(deftest sh12-captured-path-validation-has-no-size-quota
+  (let [path (apply str (repeat 16777217 "a"))
+        malformed
+        (invoke bridge-plan 'sh12-build-checked-core
+                [{:actual-source-path path}])]
+    (is (> (count path) 16777216))
+    (is (nil? (invoke bridge-plan 'sh12-bridge-actual-path-error [path])))
+    (is (= [:schema :actual-source-path]
+           (invoke bridge-plan 'sh12-bridge-actual-path-error [""])))
+    (is (= :rejected (:status malformed)))
+    (is (= :request-keys
+           (get-in malformed [:diagnostics 0 :facts :reason])))))
 
 (deftest sh12-identities-are-path-neutral-and-provenance-is-distinct
   (doseq [extension [".gravity" ".qst"]
