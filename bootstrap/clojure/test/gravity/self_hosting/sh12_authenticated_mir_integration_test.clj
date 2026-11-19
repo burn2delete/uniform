@@ -172,10 +172,8 @@
        'gravity.self-hosting.sh11-authenticated-safety-integration-test
        'prepared-request products :unsafe-overflow actual-path))))
 
-(defn- verified-sh11 [extension outcome actual-path]
-  (let [prepared
-        (prepared-sh11 extension outcome actual-path)
-        run
+(defn- verified-sh11 [prepared]
+  (let [run
         (call-private
          'gravity.self-hosting.sh11-authenticated-safety-integration-test
          'run-bridge prepared)
@@ -199,9 +197,10 @@
      [[extension outcome]
       (delay
         (verified-sh11
-         extension outcome
-         (str "/checkout-a/sh11-input" extension
-              "/" (name outcome))))])))
+         (prepared-sh11
+          extension outcome
+          (str "/checkout-a/sh11-input" extension
+               "/" (name outcome)))))])))
 
 (defn- authentic-product [extension outcome]
   @(get authentic-product-delays [extension outcome]))
@@ -467,6 +466,71 @@
           (is (= expected selected))
           (is (true? accepted))
           (is (false? rejected)))))))
+
+(deftest sh12-preserves-complete-unsafe-audit-text
+  (let [actual-path "/checkout-a/sh12-unsafe-audit.gravity"
+        upstream ((sh11-value 'upstream-products)
+                  (sh08-products ".gravity") actual-path)
+        links ((sh11-value 'fact-links) upstream)
+        operation :unsafe-overflow
+        base-operation ((sh11-value 'safety-operation) operation links)
+        prefix (apply str (repeat 256 "a"))
+        text (str prefix "b")]
+    (doseq [field [:owner :safe-wrapper]]
+      (testing (name field)
+        (let [safety-operation
+              (assoc-in base-operation [:unsafe-audit field] text)
+              audit (:unsafe-audit safety-operation)
+              c10 ((sh11-value 'c10-products) safety-operation)
+              safety-result (:safety-result c10)
+              descriptor
+              ((sh11-value 'descriptor)
+               upstream safety-operation c10 operation links actual-path)
+              envelope
+              ((sh11-value 'authenticated-envelope)
+               descriptor
+               (get-in upstream [:effect :verification])
+               (get-in upstream [:ownership :verification]))
+              sh11-request
+              ((sh11-value 'request)
+               upstream safety-operation c10 operation descriptor
+               envelope actual-path)
+              products (verified-sh11 {:request sh11-request})
+              request
+              (sh12-request products ".gravity" :unsafe-island actual-path)
+              checked-core
+              (invoke bridge-plan 'sh12-build-checked-core [request])
+              literal-id (get-in checked-core [:core-nodes 0 :node-id])
+              safety (get-in checked-core [:safety-facts literal-id])
+              altered-request
+              (assoc-in request
+                        [:safe-core :safety-result :outcomes 0 :unsafe-audit field]
+                        (str prefix "c"))
+              rejected
+              (invoke bridge-plan 'sh12-build-checked-core [altered-request])]
+          (is (= :passed (get-in c10 [:safety-verification :status])))
+          (is (= :unsafe-island (:outcome safety-result)))
+          (is (= [audit] (:unsafe-islands safety-result)))
+          (is (= :passed (get-in products [:verification :status])))
+          (is (= :accepted (:status checked-core)))
+          (is (= :unsafe-island (:outcome safety)))
+          (is (= audit (:unsafe-audit safety)))
+          (is (= audit (get-in safety [:source-safety-outcome :unsafe-audit])))
+          (is (= :rejected (:status rejected)))
+          (is (= "STD12-BRIDGE-LINEAGE"
+                 (get-in rejected [:diagnostics 0 :rule])))
+          (doseq [invalid ["" :nonstring]]
+            (testing (pr-str invalid)
+              (let [invalid-audit (assoc audit field invalid)
+                    malformed
+                    (-> safety-result
+                        (assoc-in [:identity-input :request :unsafe-audit]
+                                  invalid-audit)
+                        (assoc-in [:unsafe-islands 0] invalid-audit)
+                        (assoc-in [:outcomes 0 :unsafe-audit] invalid-audit))]
+                (is (false?
+                     (invoke bridge-plan 'sh12-outcome-products-valid?
+                             [:unsafe-island malformed])))))))))))
 
 (deftest sh12-rejects-self-consistent-malformed-outcome-products
   (let [proven-products

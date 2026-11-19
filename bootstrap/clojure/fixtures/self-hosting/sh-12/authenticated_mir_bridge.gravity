@@ -733,15 +733,11 @@
 (defn sh12-unsafe-set-fields-valid? [audit]
   (if
    (if (string? (get audit :owner))
-     (if (> (count (get audit :owner)) 0)
-       (<= (count (get audit :owner)) 256)
-       false)
+     (> (count (get audit :owner)) 0)
      false)
     (if
      (if (string? (get audit :safe-wrapper))
-       (if (> (count (get audit :safe-wrapper)) 0)
-         (<= (count (get audit :safe-wrapper)) 256)
-         false)
+       (> (count (get audit :safe-wrapper)) 0)
        false)
       (if (sh12-keyword-set? (get audit :effects))
         (if
