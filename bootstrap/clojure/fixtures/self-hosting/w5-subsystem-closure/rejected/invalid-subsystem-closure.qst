@@ -155,10 +155,28 @@
                        :provenance-status :pending))))
 
 (defn w5-subsystem-closure-invalid-missing-status-request [request]
-  (assoc request :subsystems
-         (assoc (get request :subsystems) :runtime
-                (dissoc (get (get request :subsystems) :runtime)
-                        :source-status))))
+  (let [subsystems (get request :subsystems)
+        runtime (get subsystems :runtime)
+        runtime-without-source-status
+        {:subsystem (get runtime :subsystem)
+         :source-id (get runtime :source-id)
+         :executable-id (get runtime :executable-id)
+         :conformance-id (get runtime :conformance-id)
+         :provenance-id (get runtime :provenance-id)
+         :compiler-id (get runtime :compiler-id)
+         :profile (get runtime :profile)
+         :target (get runtime :target)
+         :executable-status (get runtime :executable-status)
+         :conformance-status (get runtime :conformance-status)
+         :provenance-status (get runtime :provenance-status)
+         :execution-status (get runtime :execution-status)
+         :source-span (get runtime :source-span)
+         :actual-source-path (get runtime :actual-source-path)
+         :actual-executable-path (get runtime :actual-executable-path)
+         :actual-conformance-path (get runtime :actual-conformance-path)
+         :actual-provenance-path (get runtime :actual-provenance-path)}]
+    (assoc request :subsystems
+           (assoc subsystems :runtime runtime-without-source-status))))
 
 (defn w5-subsystem-closure-invalid-extra-status-request [request]
   (assoc request :subsystems

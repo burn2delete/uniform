@@ -3098,14 +3098,24 @@
     (is (re-find (re-pattern (option-value final-argv "--exact"))
                  ci/resolution-pipeline-final-test))))
 
-(deftest resolution-workflow-serializes-only-its-own-pool
+(deftest resolution-workflow-allows-three-independent-jobs-to-overlap
   (let [jobs (get @ci-workflow "jobs")
         resolution (get jobs "resolution")
         publish (get jobs "publish")
+        skip-step (workflow-step resolution "id" "record-skip")
+        provenance-step (workflow-step resolution "id" "retain-provenance")
+        upload (workflow-action resolution "actions/upload-artifact")
         publish-condition (get publish "if")]
     (is (= ["resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"]
            (mapv #(get % "mode") (workflow-rows resolution))))
-    (is (= 1 (get-in resolution ["strategy" "max-parallel"])))
+    (is (= 3 (get-in resolution ["strategy" "max-parallel"])))
+    (is (str/includes? (get skip-step "if")
+                       "needs.select.outputs.resolution == 'false'"))
+    (is (str/includes? (get provenance-step "run") "git rev-parse HEAD 'HEAD^{tree}'"))
+    (is (str/includes? (get provenance-step "run") "git status --porcelain"))
+    (is (str/includes? (get provenance-step "run") "target/ci/SHA256SUMS"))
+    (is (= "target/ci/" (get-in upload ["with" "path"])))
+    (is (= "error" (get-in upload ["with" "if-no-files-found"])))
     (doseq [job ["checks" "leaves"]]
       (is (< 1 (get-in jobs [job "strategy" "max-parallel"] 0)) job))
     (is (= #{"checks" "resolution" "leaves" "snapshot"} (set (get publish "needs"))))
