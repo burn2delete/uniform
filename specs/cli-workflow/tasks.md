@@ -224,3 +224,120 @@ T002 uses prepared artifacts; T003 uses validated exact content; T004 follows ac
 ## New-name review
 
 All new paths use `cli-workflow` and ordinary artifact names. No planning-ID implementation name or compatibility identifier is changed.
+
+## Source command usage increment
+
+Append-only scope for finding
+`cli.source-command-usage.check-and-run-compiled-v1` (2026-11-04), owned by
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`
+in [the existing authority](#implementation-tasks). No new task identity or
+completion denominator is introduced. The parent remains Open pending the
+remaining command matrix and independent acceptance. Canonical task bodies,
+statuses, captured regions and historical migration evidence above are retained;
+PR767 readiness changes are not adopted.
+
+The [scoped contract](#source-command-usage-plan) requires local
+T1006/exit-2 rejection before service resolution for malformed `check` and
+`run-compiled`, with fixed payload-safe diagnostics and unchanged valid routing.
+Implementation and fixtures are prepared in the owned entrypoint and
+`gravity.cli.source-command-usage-test`; execution and independent acceptance
+are pending, as separated in [evidence.md](evidence.md#source-command-usage-increment).
+
+Required fixture names are `check-forwards-source-path`,
+`run-compiled-forwards-source-path`, `missing-source`, `blank-source`,
+`extra-source`, `unsupported-option`, `service-failure-remains-exit-one` and
+`service-t1006-is-not-local-usage`; `non-string-source` covers the injected
+boundary's operand type. Positive recording operations establish routing only.
+Negative cases require exit 2, zero service resolutions/calls and no raw
+secret-marker leakage. Downstream failure controls require the identical
+service exception and existing exit 1 even when its ID is T1006.
+
+No tests/checks or Git may execute in this bounded worker. Controller-owned
+focused regressions, acceptance dependency controls, language boundary and
+document validators remain unrun here; retained refusals remain binding.
+Independent acceptance and integration are not supplied by this appendix.
+
+### Usage diagnostic stage repair
+
+2026-11-05, same finding and parent task: the reported focused check found
+26 failures because the stderr expectation removed `:stage` although the
+presenter retains it. The shared negative-fixture assertion now requires the
+complete T1006 payload, including command-line stage. All existing positive,
+negative and service-failure controls remain. See the
+[repair evidence](evidence.md#usage-diagnostic-stage-repair) for the attributed
+failure and unrun controller checks. Parent status remains Open; no independent
+acceptance or integration is recorded.
+
+## Source command usage plan
+
+Relocated from the appended `plan.md` source-command usage increment and stage
+repair on 2026-11-05. The plan file is an exact SH inspection input; this
+appendix retains the scoped implementation contract under the same task
+without changing that historical input or its digest. The former ownership
+wording about three appended plan/task/evidence sections is superseded by
+this location; `plan.md` retains its pre-increment content.
+
+Current scope (2026-11-04): finding
+`cli.source-command-usage.check-and-run-compiled-v1`, under the existing
+`cli/remaining-tasks-and-evidence/reconcile-supported-commandoptions-with-normative-families`
+task in [tasks.md](tasks.md#implementation-tasks). This is a behavior change,
+not a private rename. Apply the local
+[implementation skill](../../.agents/skills/speckit-implement/SKILL.md) within
+the controller's execution restrictions.
+
+[T1](../../docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md#exit-codes)
+owns usage exit 2, invalid-usage diagnostic T1006 and secret redaction;
+[C15](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#redaction)
+owns secret-safe diagnostic data. At `gravity.cli.entrypoint/run!`, validate
+only `check` and `run-compiled` before dispatch: exactly one string source
+operand, nonblank and not starting with `-`, with no remaining arguments.
+Reject missing/blank/non-string operands, extra operands and unsupported
+options through the existing injected diagnostic/exit boundary. Construct
+T1006 from fixed command/usage/remediation text and unavailable context as nil;
+never attach raw arguments, paths or causes. Select exit 2 by this local
+validation branch, never by a downstream exception's diagnostic ID.
+
+Forward valid requests unchanged through the existing dispatcher. Preserve
+legal source-path bytes, output and exactly-once service invocation, including
+both `.gravity` and `.qst`. An option-like filename can retain its explicit
+`./` path prefix; no option terminator or new option support is added. Reader
+still owns extensions, UTF-8 and source authenticity. Build handling, compile
+and run parsers, SH07 routing and service exception handling stay unchanged.
+Required operand arity is not an input/work quota; add no accounting, grants,
+host fallback or compiler semantics.
+
+Own only `bootstrap/clojure/src/gravity/cli/entrypoint.clj`,
+`bootstrap/clojure/test/gravity/cli/source_command_usage_test.clj` and these
+three appended plan/task/evidence sections. New private helper and test names
+describe source-command usage; compatibility diagnostic ID T1006 is retained.
+Do not alter canonical task bodies/statuses, captured regions or historical
+evidence, and do not adopt PR767 readiness changes.
+
+Starting work needs only the current injected operation interface. Composition
+fixtures use the actual entrypoint/dispatcher with recording operations and
+the existing diagnostic presenter. They establish routing/presentation only,
+not Reader acceptance, actual compiler/runtime service success, installed
+execution or final T1 conformance. Scoped acceptance requires the focused
+checks and independent review recorded in [evidence.md](evidence.md#source-command-usage-increment).
+The wider command matrix and real-service/release dependencies remain open;
+they neither block this local implementation nor receive completion credit.
+
+### Usage diagnostic stage repair plan
+
+Repair scope (2026-11-05), same finding and owning task: preserve the complete
+local T1006 data, including `:stage :command-line`, in the fixture's stderr
+comparison. C15 requires stage in structured diagnostics and golden fixtures;
+the existing diagnostic presenter already projects `:stage`. Compare the
+rendered EDN with the complete exception data rather than removing that field.
+Keep the explicit expected diagnostic map and all routing, exit, redaction and
+downstream-failure assertions. No entrypoint or presenter behavior changes.
+
+### SH inspection input repair
+
+2026-11-05, same finding and parent task: controller feedback reported five
+acceptance-dependency errors for stale `specs/cli-workflow/plan.md`. Restore
+the pre-increment plan and retain its appended contract and repair note here.
+Keep all source-digest, provenance and task-body checks unchanged. Existing
+positive/negative CLI fixtures remain prepared; controller checks and
+independent acceptance remain pending. See the
+[repair evidence](evidence.md#sh-inspection-input-repair). Parent status is Open.

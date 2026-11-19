@@ -1,7 +1,8 @@
 (ns gravity.cli.entrypoint
   "Process boundary for the bootstrap-hosted CLI."
   (:refer-clojure :exclude [run!])
-  (:require [gravity.build.invocation :as build-invocation]
+  (:require [clojure.string :as str]
+            [gravity.build.invocation :as build-invocation]
             [gravity.cli :as cli]
             [gravity.cli.dispatch :as dispatch]))
 
@@ -47,20 +48,37 @@
     (catch Exception exception
       (print-build-failure! exception exit!))))
 
+(defn- source-command-usage-error
+  [arguments]
+  (when (contains? #{"check" "run-compiled"} (first arguments))
+    (let [[command path & remaining] arguments]
+      (when-not (and (string? path) (not (str/blank? path))
+                     (not (str/starts-with? path "-")) (empty? remaining))
+        (let [message (str "usage: gravity " command " <file.qst|file.gravity>")]
+          (ex-info message
+                   {:id "T1006" :stage :command-line :severity :error
+                    :message message :source-span nil :profile nil :target nil
+                    :remediation "Provide exactly one nonblank source path and no options."}))))))
+
 (defn run!
   [arguments {:keys [resolve-operation print-diagnostic! exit!]}]
-  (try
-    (when-not (dispatch/dispatch! resolve-operation arguments)
-      (binding [*out* *err*]
-        (println usage-text))
-      (exit! 2))
-    (shutdown-agents)
-    (catch clojure.lang.ExceptionInfo exception
-      (if (= "build" (first arguments))
-        (print-build-failure! exception exit!)
-        (do (print-diagnostic! exception)
-            (exit! 1))))
-    (catch Exception exception
-      (if (= "build" (first arguments))
-        (print-build-failure! exception exit!)
-        (throw exception)))))
+  ;; Only this local shape decision selects usage exit 2. Service diagnostic
+  ;; IDs, including T1006, retain the existing downstream failure handling.
+  (if-let [usage-error (source-command-usage-error arguments)]
+    (do (print-diagnostic! usage-error)
+        (exit! 2))
+    (try
+      (when-not (dispatch/dispatch! resolve-operation arguments)
+        (binding [*out* *err*]
+          (println usage-text))
+        (exit! 2))
+      (shutdown-agents)
+      (catch clojure.lang.ExceptionInfo exception
+        (if (= "build" (first arguments))
+          (print-build-failure! exception exit!)
+          (do (print-diagnostic! exception)
+              (exit! 1))))
+      (catch Exception exception
+        (if (= "build" (first arguments))
+          (print-build-failure! exception exit!)
+          (throw exception))))))
