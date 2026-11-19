@@ -56,7 +56,7 @@
      nil
      {:expected-stdout-hash (str "sha256:" (sha256-hex expected-output)),
       :actual-stdout-hash
-      (str "sha256:" (sha256-bytes-hex (byte-array (map byte (:stdout-bytes execution))))),
+      (str "sha256:" (sha256-bytes-hex (byte-array (map unchecked-byte (:stdout-bytes execution))))),
       :missing-fact :stage2-jvm-execution-equivalence}))]
   (clojure.core/assoc
    state
