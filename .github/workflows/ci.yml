@@ -40,6 +40,7 @@ jobs:
       darwin-unsupported: ${{ steps.selection.outputs.darwin-unsupported }}
       static-tools-required: ${{ steps.selection.outputs.static-tools-required }}
       checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}
+      stage2-module-tests-required: ${{ steps.selection.outputs.stage2-module-tests-required }}
       # Only a complete set of booleans can narrow the PR matrix.
       selection-valid: >-
         ${{ steps.selection.outputs.selection-valid == 'true' &&
@@ -52,7 +53,8 @@ jobs:
             (steps.selection.outputs.leaves-darwin == 'true' || steps.selection.outputs.leaves-darwin == 'false') &&
             (steps.selection.outputs.darwin-unsupported == 'true' || steps.selection.outputs.darwin-unsupported == 'false') &&
             (steps.selection.outputs.static-tools-required == 'true' || steps.selection.outputs.static-tools-required == 'false') &&
-            (steps.selection.outputs.checked-js-owner-required == 'true' || steps.selection.outputs.checked-js-owner-required == 'false') }}
+            (steps.selection.outputs.checked-js-owner-required == 'true' || steps.selection.outputs.checked-js-owner-required == 'false') &&
+            (steps.selection.outputs.stage2-module-tests-required == 'true' || steps.selection.outputs.stage2-module-tests-required == 'false') }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -76,7 +78,12 @@ jobs:
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
     # Leave time after the sequential child watchdogs for setup, cleanup and upload.
-    timeout-minutes: ${{ matrix.mode == 'checked-core-runtime' && 85 || matrix.mode == 'macro' && 50 || 20 }}
+    timeout-minutes: >-
+      ${{ matrix.mode == 'checked-core-runtime' && 85 ||
+          matrix.mode == 'macro' && 50 ||
+          matrix.mode == 'bootstrap' && (needs.select.result != 'success' ||
+          needs.select.outputs.selection-valid != 'true' ||
+          needs.select.outputs.stage2-module-tests-required != 'false') && 355 || 20 }}
     strategy:
       fail-fast: false
       max-parallel: 2
