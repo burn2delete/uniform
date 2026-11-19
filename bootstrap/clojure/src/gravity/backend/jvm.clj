@@ -430,11 +430,13 @@
     java.nio.charset.StandardCharsets/UTF_8)
    output
    (str/trim (str stdout "\n" (:stderr result)))
+   banner
+   (some (fn [line]
+           (or (re-matches #"javac[ \t]+([0-9]+)(?:[.+_-][0-9A-Za-z.+_-]+)?[ \t]*" line)
+               (re-matches #"(?:java|openjdk)[ \t]+version[ \t]+\"([0-9]+)(?:[.+_-][0-9A-Za-z.+_-]+)?\"(?:[ \t]+.*)?" line)))
+         (str/split-lines output))
    major
-   (some->
-    (re-find #"(?:version )?\"?([0-9]+)" output)
-    second
-    Long/parseLong)]
+   (some-> banner second parse-long)]
   (when-not
    (and major (>= major (deref target-release)))
    (fail!
