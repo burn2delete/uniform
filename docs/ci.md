@@ -47,8 +47,10 @@ use the explicit CLI route for focused execution.
 
 ### Pull-request stage selection
 
-The selector determines which checks need runners. It selects the three
-Resolution jobs together and each runs independently.
+Pull requests run the selector to determine which checks need runners. It
+selects the three Resolution jobs together and each runs independently.
+Pushes to `main`, scheduled runs and manual runs start the full matrix
+directly.
 For a regular added or modified file in a known stage-owned
 Reader, Macro, Resolution, or checked-Core path, `tools/ci/run.clj` runs that
 stage and every downstream stage, while retaining `static` and `contracts`.

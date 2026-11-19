@@ -26,6 +26,7 @@ env:
 jobs:
   select:
     name: select CI checks
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
@@ -332,7 +333,11 @@ jobs:
   publish:
     name: experimental-prerelease
     needs: [checks, resolution, leaves, snapshot]
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    # Manual runs skip the selector ancestor. Require each direct prerequisite to pass.
+    if: >-
+      ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+          needs.checks.result == 'success' && needs.resolution.result == 'success' &&
+          needs.leaves.result == 'success' && needs.snapshot.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

@@ -695,9 +695,9 @@
                    {:id :selector-failed :status :failure :outputs docs}
                    {:id :selector-skipped :status :skipped :outputs docs}
                    {:id :selector-status-malformed :status :unknown :outputs docs}
-                   {:id :push :event "push" :outputs docs}
-                   {:id :manual :event "workflow_dispatch" :outputs docs}
-                   {:id :weekly :event "schedule" :outputs docs}
+                   {:id :push :event "push" :status :skipped}
+                   {:id :manual :event "workflow_dispatch" :status :skipped}
+                   {:id :weekly :event "schedule" :status :skipped}
                    {:id :cancelled :status :cancelled :outputs docs :modes #{}}]
         rows (for [job-id ["checks" "resolution" "leaves"]
                    :let [job (get jobs job-id)]
@@ -767,6 +767,7 @@
 (deftest workflow-hands-selector-outputs-and-event-identities-to-consumers
   (let [jobs (get @ci-workflow "jobs")
         select (get jobs "select")
+        events (keys (get @ci-workflow "on"))
         outputs (get select "outputs")
         full (selector-output-map {:kind :full})
         docs (selector-output-map {:kind :docs-only})
@@ -781,6 +782,8 @@
                         (for [key (keys docs)] (assoc docs key "unknown"))
                         [(assoc docs "static" "false") (assoc docs "contracts" "false")])
         requests (merge
+                  (into {} (for [event events]
+                             [[:event event] [(get select "if") true :success {"github" {"event_name" event}}]]))
                   (into {} (for [[key expression] (dissoc outputs "selection-valid")]
                              [[:output key] [expression false :success context]]))
                   (into {} (for [[index step] (map-indexed vector selectors) key ["CI_BASE_SHA" "CI_PR_HEAD_SHA"]]
@@ -788,6 +791,8 @@
                   (into {} (for [data (concat [full docs] invalid)]
                              [[:valid data] [validity false :success (assoc-in context ["steps" "selection" "outputs"] data)]])))
         observed (evaluate-workflow-requests! requests)]
+    (doseq [event events]
+      (is (= (= event "pull_request") (get observed [:event event])) event))
     (is (= (set (keys full)) (set (keys outputs))))
     (doseq [[key value] (dissoc named "selection-valid")]
       (is (= value (get observed [:output key])) key))
@@ -3153,7 +3158,19 @@
         publish (get jobs "publish")
         provenance-step (workflow-step resolution "id" "retain-provenance")
         upload (workflow-action resolution "actions/upload-artifact")
-        publish-condition (get publish "if")]
+        prerequisites #{"checks" "resolution" "leaves" "snapshot"}
+        manual {"github" {"event_name" "workflow_dispatch" "ref" "refs/heads/main"}
+                "needs" (zipmap prerequisites (repeat {"result" "success"}))}
+        publish-cases
+        (concat [[:skipped manual true] ; The selector ancestor was skipped.
+                 [:cancelled manual false]
+                 [:skipped (assoc-in manual ["github" "ref"] "refs/heads/feature") false]]
+                (for [event ["push" "schedule" "pull_request"]]
+                  [:success (assoc-in manual ["github" "event_name"] event) false])
+                (for [job prerequisites
+                      result ["failure" "skipped" "cancelled" nil]]
+                  [(if (= "failure" result) :failure :skipped)
+                   (assoc-in manual ["needs" job "result"] result) false]))]
     (is (= #{"pull_request" "push" "workflow_dispatch" "schedule"} (set (keys triggers))))
     (is (= ["main"] (get-in triggers ["push" "branches"])))
     (is (= [{"cron" "23 5 * * 1"}] (get triggers "schedule")))
@@ -3167,16 +3184,11 @@
     (is (= "error" (get-in upload ["with" "if-no-files-found"])))
     (doseq [job ["checks" "leaves"]]
       (is (< 1 (get-in jobs [job "strategy" "max-parallel"] 0)) job))
-    (is (= #{"checks" "resolution" "leaves" "snapshot"} (set (get publish "needs"))))
-    (is (= [true false false false false]
-           (evaluate-workflow-fields!
-            (mapv (fn [[event ref status]]
-                    [publish-condition true status {"github" {"event_name" event "ref" ref}}])
-                  [["workflow_dispatch" "refs/heads/main" :success]
-                   ["workflow_dispatch" "refs/heads/feature" :success]
-                   ["push" "refs/heads/main" :success]
-                   ["schedule" "refs/heads/main" :success]
-                   ["workflow_dispatch" "refs/heads/main" :failure]]))))))
+    (is (= prerequisites (set (get publish "needs"))))
+    (let [results (evaluate-workflow-fields!
+                   (mapv (fn [[status context]] [(get publish "if") true status context]) publish-cases))]
+      (doseq [[[status context expected] actual] (map vector publish-cases results)]
+        (is (= expected actual) [status context])))))
 
 (deftest advance-status-selection-covers-every-eligible-subset-and-retains-controls
   (let [paths ["tools/advance/README.md"
@@ -3939,6 +3951,35 @@
     (is (= (count catalog) (count (concat portable darwin))))
     (is (thrown? Exception (ci/leaf-selection "unknown" catalog)))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest leaf-jobs-load-the-catalog-once
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-leaf-catalog-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        catalog [{:id "portable-leaf" :namespace 'fixture.portable-test}
+                 {:id "darwin-publication" :namespace 'fixture.darwin-test}]
+        catalog-loads (atom 0)
+        launched (atom nil)]
+    (try
+      (with-redefs [ci/output (.getPath directory)
+                    ci/pull-request-selection (constantly {:kind :full :reason :non-pull-request})
+                    ci/load-leaf-catalog (fn [] (swap! catalog-loads inc) catalog)
+                    ci/execute! (fn [_id _timeout argv]
+                                  (reset! launched argv)
+                                  {:status :passed})]
+        (doseq [[platform namespace] [["portable" "fixture.portable-test"]
+                                      ["darwin" "fixture.darwin-test"]]]
+          (let [argv (ci/command "512m" "-M:leaf-test" "--namespace" namespace)]
+            (reset! catalog-loads 0)
+            (is (= 0 (ci/run-mode! (str "leaves-" platform))))
+            (is (= argv @launched) platform)
+            (is (= 1 @catalog-loads) platform)
+            (is (= argv (ci/leaf-command platform)) platform)
+            (is (= 2 @catalog-loads) platform)
+            (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Empty platform leaf selection"
+                                  (ci/leaf-command platform {:leaf-selection {:entries []}})))
+            (is (= 2 @catalog-loads) platform))))
+      (finally (delete-fixture-tree! directory)))))
 
 (deftest affected-leaves-follow-reviewed-source-closures
   (let [catalog (ci/load-leaf-catalog)

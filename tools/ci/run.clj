@@ -998,12 +998,12 @@
 (defn leaf-command
   ([platform] (leaf-command platform nil))
   ([platform selection]
-   (let [catalog (load-leaf-catalog)
-         result (or (:leaf-selection selection)
-                    (if (contains? selection :changes)
-                      (leaf-selection-for-changes platform catalog (:changes selection))
-                      {:kind :full :reason :non-pull-request
-                       :entries (platform-leaf-catalog platform catalog)}))
+   (let [result (or (:leaf-selection selection)
+                    (let [catalog (load-leaf-catalog)]
+                      (if (contains? selection :changes)
+                        (leaf-selection-for-changes platform catalog (:changes selection))
+                        {:kind :full :reason :non-pull-request
+                         :entries (platform-leaf-catalog platform catalog)})))
          selected (:entries result)]
      (when (empty? selected)
        (throw (ex-info "Empty platform leaf selection" {:platform platform :result result})))
