@@ -115,7 +115,16 @@
 
 (defn ae-exact-keys? [value expected]
   (if (map? value)
-    (= (set (keys value)) expected)
+    (if (set? expected)
+      (if (= (count value) (count expected))
+        (loop [remaining (vec expected)]
+          (if (= (count remaining) 0)
+            true
+            (if (contains? value (first remaining))
+              (recur (rest remaining))
+              false)))
+        false)
+      false)
     false))
 
 (defn ae-lowercase-hex? [characters]
