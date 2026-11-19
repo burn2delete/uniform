@@ -39,6 +39,24 @@
       (is (= ["main" "main" "new-main"] (mapv first @calls)))
       (is (= :ready (:status (flow/task ctx "held")))))))
 
+(deftest a-held-audit-admits-only-independent-findings
+  (let [ctx (update (fixture/context) :config assoc :scope ["."] :campaign "fixture")
+        results (atom []) admitted (atom [])
+        proposal (fn [key paths dependencies] (assoc finding :key key :paths paths :dependencies dependencies))]
+    (rt/update! ctx assoc-in [:tasks "existing"] {:key "existing" :paths ["shared/test.clj"] :status :ready})
+    (with-redefs [flow/worktree! (fn [& _] {:worktree "fixture"}) flow/assert-clean! (constantly nil)
+                  rt/git (constantly "main") gh/comment! (constantly nil)
+                  codex/job! (fn [& _] {:findings @results :coverage ["fixture"]})
+                  flow/admit! (fn [_ _ _ findings] (reset! admitted (mapv :key findings)))]
+      (is (false? (flow/audit! ctx "main" ["shared"])))
+      (reset! results [(proposal "child" ["d"] ["parent"])
+                       (proposal "parent" ["c"] ["occupied"])
+                       (proposal "occupied" ["shared/a"] [])
+                       (proposal "waiting" ["e"] ["existing"])
+                       (proposal "independent" ["other/file"] [])])
+      (flow/audit! ctx "main" ["shared"])
+      (is (= ["independent"] @admitted)))))
+
 (deftest early-publication-cannot-attach-an-older-review-to-the-current-head
   (let [ctx (assoc-in (fixture/context) [:config :early-draft] true)
         t (assoc finding :base "base" :candidate "new" :tree "tree" :branch "branch")

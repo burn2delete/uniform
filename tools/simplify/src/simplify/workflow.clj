@@ -757,7 +757,7 @@
         _ (validate-findings! (:findings output) (:tasks @(:state ctx)))
         fresh (remove #(contains? (:tasks @(:state ctx)) (:key %)) (:findings output))
         independent (remove #(overlap? (:paths %) occupied) fresh)
-        prior (set (keys (:tasks @(:state ctx))))
+        prior (set (map :key (if (seq occupied) (filter #(= :done (:status %)) (tasks ctx)) (tasks ctx))))
         ;; If a proposed prerequisite was excluded, defer its dependents too.
         admitted (loop [items (vec independent)]
                    (let [available (into prior (map :key items))
