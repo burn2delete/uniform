@@ -112,6 +112,7 @@ jobs:
           node-version: 20.20.2
       - uses: ./.github/actions/clojure
         if: ${{ !cancelled() }}
+        id: toolchain
         with:
           install-static-tools: ${{ matrix.mode == 'static' && (!matrix.selected-pr || needs.select.outputs.static-tools-required != 'false') }}
       - name: Install workflow syntax checker
@@ -127,7 +128,7 @@ jobs:
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
       - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
         id: run-checks
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && (matrix.mode != 'static' || steps.toolchain.outcome == 'success') }}
         env:
           CI_MODE: ${{ matrix.mode }}
           CI_FORCE_FULL: ${{ !matrix.selected-pr || needs.select.outputs[matrix.mode] != 'true' }}
