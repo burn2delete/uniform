@@ -278,6 +278,30 @@
       (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name)
       (is (= contract (:gravity/namespace-contract (meta operation)))))))
 
+(deftest tool-version-reads-java-and-javac-banners
+  (let [required-major 21
+        probe (fn [command stdout stderr]
+                (jvm/tool-version!
+                 (fn [& _] {:exit 0 :stdout-bytes (mapv int stdout) :stderr stderr})
+                 (fn [id message _source _span data]
+                   (throw (ex-info message (assoc data :id id))))
+                 (atom required-major) command "source.gravity"))
+        openjdk-output (str "Warning: wrapper setting 17\n"
+                            "openjdk version \"21.0.1\" 2023-10-17\n"
+                            "OpenJDK Runtime Environment (build 21.0.1+12)")]
+    (is (= {:command "compiler" :version "javac 21.0.1" :major 21}
+           (probe "compiler" "javac 21.0.1\n" "")))
+    (is (= {:command "runtime" :version openjdk-output :major 21}
+           (probe "runtime" "" (str openjdk-output "\n"))))
+    (is (= 25 (:major (probe "runtime" "" "java version \"25.0.1\" 2025-10-21 LTS\n"))))
+    (doseq [output ["Warning: wrapper is 64-bit\njava version \"17.0.12\" 2024-07-16"
+                    "Warning: wrapper is 64-bit"]]
+      (let [refusal (observe-toolchain #(probe "runtime" "" (str output "\n")))]
+        (is (= :rejected (:status refusal)) output)
+        (is (= {:id "B5-TARGET" :command "runtime" :observed-version output
+                :required-major required-major :missing-fact :java21-target-toolchain}
+               (:data refusal)) output)))))
+
 (deftest tool-versions-and-hashes-preserve-late-data-and-failure
   (let [target (with-local-vars [release 21] release)
         calls (atom [])
