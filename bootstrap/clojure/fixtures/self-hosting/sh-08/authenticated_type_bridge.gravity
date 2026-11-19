@@ -145,7 +145,7 @@
                      (sh08-bridge-max observed-depth depth)
                      (sh08-bridge-max observed-width width)))))
               (let [next-scalar-units
-                    (+ scalar-units (count (vec (str current))))]
+                    (+ scalar-units (count (str current)))]
                 (if (> next-scalar-units 16777216)
                   {:status :rejected :reason :carrier-scalar-bound}
                   (recur
@@ -600,14 +600,17 @@
                      (get request :expected-type-artifact-id)
                      (get request :sh07-verification)))
                   [:envelope :invalid-authenticated-envelope]
-                  (if (string?
-                       (get request :actual-source-path))
-                    (if (> (count
-                            (get request :actual-source-path))
-                           0)
-                      nil
-                      [:schema :actual-path-required])
-                    [:schema :actual-path-required])))))))))))
+                  (let [path (get request :actual-source-path)]
+                    (if (string? path)
+                      (if (> (count path) 0)
+                        (if (= path
+                               (get (get (get request :envelope)
+                                         :actual-path-provenance)
+                                    :source-path))
+                          nil
+                          [:envelope :invalid-authenticated-envelope])
+                        [:schema :actual-path-required])
+                      [:schema :actual-path-required]))))))))))))
 
 (defn sh08-bridge-rule [family]
   (if (= family :schema)
