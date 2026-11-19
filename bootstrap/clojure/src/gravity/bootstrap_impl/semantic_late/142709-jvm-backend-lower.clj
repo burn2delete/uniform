@@ -1,6 +1,13 @@
 ; Semantic decomposition of committed HEAD reader line 142709.
 ; Loaded into gravity.bootstrap; intentionally no ns form.
 
+(clojure.core/defn-
+ jvm-backend-source-map-for-route
+ [source-text java-source current-runtime-development?]
+ (cond-> (jvm-backend-source-map source-text java-source)
+   current-runtime-development?
+   (update :origin-chain #(filterv (complement #{:stage2-compiler-driver}) %))))
+
 (clojure.core/defn
  semantic-late-jvm-backend-source-artifact-lower
  [state]
@@ -28,10 +35,6 @@
    jvm-backend-module-source
    current-runtime-development?
    (c-backend-current-runtime-development-packet? packet)
-   source-map
-   (cond-> (jvm-backend-source-map source-text java-source)
-     current-runtime-development?
-     (update :origin-chain #(filterv (complement #{:stage2-compiler-driver}) %)))
    plan-hash
    (c4-artifact-id
     (c-backend-canonical-value
@@ -66,7 +69,7 @@
    :module-source
    module-source
    :source-map
-   source-map
+   (jvm-backend-source-map-for-route source-text java-source current-runtime-development?)
    :plan-hash
    plan-hash
    :source-hash
