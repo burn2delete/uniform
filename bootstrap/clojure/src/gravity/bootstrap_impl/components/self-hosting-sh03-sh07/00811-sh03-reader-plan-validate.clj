@@ -129,6 +129,15 @@
 (def ^:private sh03-reader-cached-binding
   (delay (sh03-reader-build-pinned-binding! "<sh03-reader-bootstrap>")))
 
+(defn- sh03-reader-compile-current-owner! [request-source source]
+  (let [built (sh03-reader-build-plan! request-source source)
+        identities (sh03-reader-plan-structure! request-source (:plan built) nil)]
+    (merge (dissoc built :builtin-functions) identities
+           {:artifact :gravity/sh03-current-source-reader-plan-binding :status :complete
+            :semantic-authority :gravity-source :compiled-by :clojure-stage0-seed
+            :executed-by :clojure-stage2-generic-rule-runner
+            :generic-bridge-residual? true :self-hosted? false})))
+
 (defn sh03-reader-current-binding!
   ([request-source]
   (let [current-source
@@ -166,17 +175,24 @@
     binding))
   ([request-source reader-source-path]
    (let [source (sh03-reader-read-selected-source-bytes! request-source reader-source-path)
-         built (sh03-reader-build-plan! request-source source)
-         identities (sh03-reader-plan-structure! request-source (:plan built) nil)
+         source-id (dissoc source :bytes)
+         context (when (nil? *authenticated-source-form-records*) *application-reader-owner*)
+         cached (when context @context)
+         binding (if (and cached
+                          (= source-id (:source cached))
+                          (= *additional-bootstrap-targets* (:targets cached))
+                          (= (get-in cached [:binding :plan :compiler :emitter-source-rule-hash])
+                             (:source-rule-hash
+                              (c-backend-stage2-plan-emitter-source-rule! (:source-path source) :jvm))))
+                   (:binding cached)
+                   (sh03-reader-compile-current-owner! request-source source))
          after (sh03-reader-read-selected-source-bytes! request-source reader-source-path)]
-     (when-not (= (dissoc source :bytes) (dissoc after :bytes))
+     (when-not (= source-id (dissoc after :bytes))
        (sh03-reader-boundary-fail! request-source :fresh-current-sh03-reader-source
-                                  nil {:before (dissoc source :bytes) :after (dissoc after :bytes)}))
-     (merge (dissoc built :builtin-functions) identities
-            {:artifact :gravity/sh03-current-source-reader-plan-binding :status :complete
-             :semantic-authority :gravity-source :compiled-by :clojure-stage0-seed
-             :executed-by :clojure-stage2-generic-rule-runner
-             :generic-bridge-residual? true :self-hosted? false}))))
+                                  nil {:before source-id :after (dissoc after :bytes)}))
+     (when context
+       (reset! context {:source source-id :targets *additional-bootstrap-targets* :binding binding}))
+     binding)))
 
 (def sh03-reader-result-keys
   #{:artifact :schema-version :status :source-unit :actual-path-provenance

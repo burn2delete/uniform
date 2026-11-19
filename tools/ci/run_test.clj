@@ -410,7 +410,7 @@
     (let [regular-doc (fn [path]
                         {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
       (is (ci/docs-only-change? "pull_request" base
-                                (mapv regular-doc ["README.md" "docs/guide.md"])))
+                                (mapv regular-doc ["README.md" "docs/ci.md"])))
       (doseq [paths [["language/runtime/src/gravity/runtime.gravity"]
                      [".github/workflows/ci.yml"]
                      [".github/README.md"]
@@ -418,6 +418,10 @@
                      ["bin/README.md"]
                      ["contracts/policy.md"]
                      ["specs/compiler.md"]
+                     ["docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"]
+                     ["docs/acceptance-dependencies.md"]
+                     ["docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"]
+                     ["README.md" "docs/guide.md"]
                      ["notes.txt"]
                      ["README.md; echo unexpected"]
                      []]]
@@ -467,7 +471,7 @@
             "checked-core-runtime=false"
             "leaves-portable=false"
             "leaves-darwin=false"
-            "darwin-unsupported=true"
+            "darwin-unsupported=false"
             "static-tools-required=false"
             "checked-js-owner-required=false"
             "selection-valid=true"]
@@ -475,25 +479,334 @@
     (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
     (is (= "true" (last (str/split (last (ci/selection-output-lines selected)) #"="))))))
 
+(defn- isolated-workflow-tool! [id dependencies operation input]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-workflow-test-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        input-path (str (io/file directory "input.edn"))
+        result-path (str (io/file directory "result.edn"))
+        deps (update (edn/read-string ci/runtime-deps) :deps merge dependencies)
+        form `(do (require 'clojure.edn 'clojure.walk 'clojure.string)
+                  (spit ~result-path
+                        (pr-str (~operation (clojure.edn/read-string (slurp ~input-path))))))
+        argv ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str deps) "-M" "-e" (pr-str form)]]
+    (try
+      (spit input-path (pr-str input))
+      (let [receipt (with-redefs [ci/output (.getPath directory)]
+                      (ci/execute! id 20 argv))]
+        (when-not (= :passed (:status receipt))
+          (throw (ex-info "Workflow test subprocess failed" receipt)))
+        (edn/read-string (slurp result-path)))
+      (finally (delete-fixture-tree! directory)))))
+
+(def ^:private ci-workflow
+  (delay
+    (isolated-workflow-tool!
+     "read-workflow" {'org.snakeyaml/snakeyaml-engine {:mvn/version "2.10"}}
+     '(fn [path]
+        (let [loader (org.snakeyaml.engine.v2.api.Load.
+                      (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))]
+          (clojure.walk/prewalk
+           #(cond (instance? java.util.Map %) (into {} %)
+                  (instance? java.util.List %) (vec %)
+                  :else %)
+           (.loadFromString loader (slurp path)))))
+     ".github/workflows/ci.yml")))
+
+(defn- evaluate-workflow-fields! [fields]
+  ;; JEXL parses and evaluates the scalar expressions used by this workflow.
+  ;; Supply Actions' status context, string semantics and hyphenated map keys.
+  (isolated-workflow-tool!
+   "evaluate-workflow-fields" {'org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}
+   '(fn [fields]
+      (let [arithmetic (proxy [org.apache.commons.jexl3.JexlArithmetic] [false]
+                         (equals [left right]
+                           (cond (and (string? left) (string? right))
+                                 (.equalsIgnoreCase ^String left ^String right)
+                                 (or (and (nil? left) (= "" right))
+                                     (and (= "" left) (nil? right))) true
+                                 :else (proxy-super equals left right)))
+                         (toBoolean
+                           ([value]
+                            (if (string? value) (not (empty? value)) (proxy-super toBoolean value)))
+                           ([strict value]
+                            (if (string? value) (not (empty? value)) (proxy-super toBoolean strict value)))))
+            engine (.. (org.apache.commons.jexl3.JexlBuilder.)
+                       (features (.arrayReferenceExpr (org.apache.commons.jexl3.JexlFeatures/createNone) true))
+                       (arithmetic arithmetic) (booleanLogical false) (strict false) create)
+            interpolation #"\$\{\{\s*(.*?)\s*\}\}"
+            tokens #"('(?:[^']|'')*')|(?i:\b(always|success|failure|cancelled)\s*\(\s*\))|\.([A-Za-z_][\w-]*-[\w-]+)"]
+        (mapv (fn [[value conditional? status context]]
+                (let [statuses {"status_always" true
+                                "status_success" (= :success status)
+                                "status_failure" (= :failure status)
+                                "status_cancelled" (= :cancelled status)}
+                      context (org.apache.commons.jexl3.MapContext.
+                               (clojure.walk/postwalk
+                                #(if (map? %) (java.util.HashMap. ^java.util.Map %) %)
+                                (merge statuses context)))
+                      evaluate (fn [expression]
+                                 (let [translated (clojure.string/replace
+                                                   expression tokens
+                                                   (fn [[_ literal status-name property]]
+                                                     (cond literal literal
+                                                           status-name (str "status_" (clojure.string/lower-case status-name))
+                                                           :else (str "['" property "']"))))]
+                                   (.. engine (createExpression translated) (evaluate context))))
+                      full-expression (when (string? value) (second (re-matches interpolation value)))]
+                  (cond
+                    conditional?
+                    (let [expression (str (or full-expression (if (nil? value) true value)))
+                          explicit-status? (some #(nth % 2) (re-seq tokens expression))]
+                      (.toBoolean arithmetic
+                                  (evaluate (if explicit-status? expression
+                                                (str "status_success && (" expression ")")))))
+                    full-expression (evaluate full-expression)
+                    (string? value) (clojure.string/replace value interpolation
+                                                            (fn [[_ expression]] (str (evaluate expression))))
+                    :else value)))
+              fields)))
+   fields))
+
+(defn- workflow-step [job field value]
+  (let [matches (filter #(= value (get % field)) (get job "steps"))]
+    (when-not (= 1 (count matches))
+      (throw (ex-info "Expected one workflow step" {:field field :value value :count (count matches)})))
+    (first matches)))
+
+(defn- workflow-action [job action]
+  (let [matches (filter #(str/starts-with? (get % "uses" "") (str action "@")) (get job "steps"))]
+    (when-not (= 1 (count matches))
+      (throw (ex-info "Expected one workflow action" {:action action :count (count matches)})))
+    (first matches)))
+
+(defn- workflow-rows [job]
+  (let [matrix (get-in job ["strategy" "matrix"])]
+    (or (get matrix "include") (mapv #(hash-map "mode" %) (get matrix "mode")))))
+
+(defn- workflow-selection-fields [job-id job context status]
+  (let [step (partial workflow-step job "id")
+        checkout (workflow-action job "actions/checkout")
+        setup (workflow-step job "uses" "./.github/actions/clojure")
+        upload (workflow-action job "actions/upload-artifact")
+        field (fn [value] [value false :success context])
+        step-status (if (= :cancelled status) :cancelled :success)
+        condition (fn [step] [(get step "if") true step-status context])
+        after-failure (fn [step] [(get step "if") true :failure context])]
+    (merge {:job [(get job "if") true status context]
+            :checkout (condition checkout)
+            :checkout-depth (field (get-in checkout ["with" "fetch-depth"]))
+            :runner (field (get job "runs-on"))
+            :clojure (condition setup)
+            :run (condition (step "run-checks"))
+            :skip (condition (step "record-skip"))
+            :provenance (after-failure (step "retain-provenance"))
+            :upload (after-failure upload)
+            :upload-name (field (get-in upload ["with" "name"]))}
+           (case job-id
+             "checks" {:node (condition (workflow-action job "actions/setup-node"))
+                       :static-tools (field (get-in setup ["with" "install-static-tools"]))
+                       :workflow-checker (condition (step "setup-workflow-checker"))}
+             "leaves" {:darwin-probe (condition (step "darwin-probe"))
+                       :unsupported-probe (condition (step "run-unsupported-check"))}
+             {}))))
+
+(defn- evaluate-workflow-requests! [requests]
+  (zipmap (keys requests) (evaluate-workflow-fields! (vec (vals requests)))))
+
+(defn- selector-output-map [selection]
+  (into {} (map #(str/split % #"=" 2)) (ci/selection-output-lines selection)))
+
+(defn- selector-workflow-scenarios [selection-key]
+  (let [disabled {"selection-valid" "true" selection-key "false"
+                  "static-tools-required" "false" "checked-js-owner-required" "false"}
+        enabled (assoc disabled selection-key "true")]
+    [{:id :full :outputs (selector-output-map {:kind :full}) :runs? true :tools? true}
+     {:id :docs-only :outputs (selector-output-map {:kind :docs-only})
+      :runs? (contains? #{"static" "contracts"} selection-key) :tools? false}
+     {:id :unselected :outputs disabled :runs? false :tools? false}
+     {:id :unselected-case-insensitive
+      :outputs (assoc disabled "selection-valid" "TrUe" selection-key "FaLsE")
+      :runs? false :tools? false}
+     {:id :selection-outputs-absent :runs? true :tools? true}
+     {:id :mode-absent :outputs {"selection-valid" "true"} :runs? true :tools? true}
+     {:id :mode-malformed :outputs {"selection-valid" "true" selection-key "unknown"}
+      :runs? true :tools? true}
+     {:id :validity-absent :outputs (dissoc disabled "selection-valid") :runs? true :tools? true}
+     {:id :validity-malformed :outputs (assoc disabled "selection-valid" "unknown") :runs? true :tools? true}
+     {:id :selector-failed :status :failure :outputs disabled :runs? true :tools? true}
+     {:id :selector-skipped :status :skipped :outputs disabled :runs? true :tools? true}
+     {:id :selector-status-malformed :status :unknown :outputs disabled :runs? true :tools? true}
+     {:id :selected-without-optional-tools :outputs enabled :runs? true :tools? false}
+     {:id :selected-with-node-only :outputs (assoc enabled "checked-js-owner-required" "true")
+      :runs? true :tools? false :node? true}
+     {:id :selected-with-malformed-tool-outputs
+      :outputs (assoc enabled "static-tools-required" "unknown" "checked-js-owner-required" "unknown")
+      :runs? true :tools? true}
+     {:id :cancelled :status :cancelled :outputs disabled :runs? false :tools? false}]))
+
 (deftest workflow-selector-fails-closed-for-missing-or-malformed-outputs
-  (let [workflow (slurp ".github/workflows/ci.yml")]
-    (is (str/includes? workflow "needs.select.outputs.selection-valid != 'true'"))
-    (is (str/includes? workflow "needs.select.outputs[matrix.mode] != 'false'"))
-    (is (str/includes? workflow "needs.select.outputs[matrix.selection-key] != 'false'"))
-    (is (str/includes? workflow "needs.select.outputs[matrix.mode] == 'false'"))
-    (is (str/includes? workflow "CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}"))
-    (is (str/includes? workflow "CI_BASE_SHA: ${{ github.event.before }}"))
-    (is (str/includes? workflow "fetch-depth: 2"))
-    (is (str/includes? workflow "fetch-depth: 10"))
-    (is (str/includes? workflow "&& 1 || 0"))
-    (is (= 5 (count (re-seq #"persist-credentials: false" workflow))))
-    (is (str/includes? workflow "needs.select.outputs.resolution != 'false'"))
-    (is (str/includes? workflow "uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e"))
-    (is (str/includes? workflow "node-version: 20.20.2"))
-    (is (str/includes? workflow "checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}"))
-    (is (str/includes? workflow "needs.select.outputs.checked-js-owner-required != 'false'"))
-    (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
-    (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
+  (let [jobs (get @ci-workflow "jobs")
+        sha (apply str (repeat 40 "a"))
+        leaf-selection-keys {"portable" "leaves-portable" "darwin" "leaves-darwin"
+                             "unsupported" "darwin-unsupported"}
+        leaf-runners {"portable" "ubuntu-24.04" "darwin" "macos-26" "unsupported" "macos-15"}
+        rows (for [job-id ["checks" "resolution" "leaves"]
+                   :let [job (get jobs job-id)]
+                   matrix (workflow-rows job)
+                   :let [selection-key (case job-id
+                                         "checks" (get matrix "mode")
+                                         "resolution" "resolution"
+                                         "leaves" (get leaf-selection-keys (get matrix "platform")))]]
+               {:job-id job-id :job job :matrix matrix
+                :scenarios (selector-workflow-scenarios selection-key)})
+        cases (for [{:keys [job-id job matrix scenarios]} rows
+                    {:keys [outputs status] :or {status :success} :as scenario} scenarios
+                    :let [context {"matrix" matrix
+                                   "needs" {"select" (cond-> {"result" (name status)}
+                                                       outputs (assoc "outputs" outputs))}
+                                   "github" {"sha" sha "run_attempt" "7"}}]]
+                (assoc scenario :job-id job-id :matrix matrix :status status
+                       :fields (workflow-selection-fields job-id job context status)))
+        observed (evaluate-workflow-requests!
+                  (into {} (mapcat (fn [{:keys [id job-id matrix fields]}]
+                                     (map (fn [[k v]] [[job-id matrix id k] v]) fields)))
+                        cases))]
+    (is (= #{"checks" "resolution" "leaves"} (set (map :job-id rows))))
+    (is (= leaf-selection-keys
+           (into {} (map (juxt #(get % "platform") #(get % "selection-key")))
+                 (workflow-rows (get jobs "leaves")))))
+    (doseq [job-id ["checks" "resolution" "leaves"]
+            :let [needs (get-in jobs [job-id "needs"])]]
+      (is (contains? (set (if (string? needs) [needs] needs)) "select") job-id))
+    (doseq [{:keys [job-id matrix status id runs? tools?] :as scenario} cases
+            :let [value #(get observed [job-id matrix id %])
+                  mode (get matrix "mode")
+                  platform (get matrix "platform")
+                  retained? (not= :cancelled status)
+                  skip? (and retained? (not runs?))]]
+      (test/testing (str job-id " " (or mode platform) " " id)
+        (is (= retained? (value :job)))
+        (is (= retained? (value :checkout)))
+        (is (= (if skip? 1 0) (value :checkout-depth)))
+        (is (= runs? (value :clojure)))
+        (is (= skip? (value :skip)))
+        (is (= (and runs? (not= "unsupported" platform)) (value :run)))
+        (is (true? (value :provenance)) "retain provenance after a failure")
+        (is (true? (value :upload)) "attempt upload after a failure")
+        (is (= (str "ci-" (if platform (str "leaves-" platform) mode) "-" sha "-7")
+               (value :upload-name)))
+        (case job-id
+          "checks" (do
+                     (is (= (and (get scenario :node? tools?) (= "checked-core-runtime" mode)) (value :node)))
+                     (when retained?
+                       (is (= (and tools? (= "static" mode)) (value :static-tools))))
+                     (is (= (and tools? (= "static" mode)) (value :workflow-checker))))
+          "leaves" (do
+                     (is (= (if skip? "ubuntu-24.04" (get leaf-runners platform)) (value :runner)))
+                     (is (= (and runs? (= "darwin" platform)) (value :darwin-probe)))
+                     (is (= (and runs? (= "unsupported" platform)) (value :unsupported-probe))))
+          nil)))))
+
+(deftest workflow-hands-selector-outputs-and-event-identities-to-consumers
+  (let [jobs (get @ci-workflow "jobs")
+        select (get jobs "select")
+        outputs (get select "outputs")
+        expected (into {} (map (fn [key] [key (str "from-selector-" key)]))
+                       (keys (selector-output-map {:kind :full})))
+        context {"steps" {"selection" {"outputs" expected}}
+                 "github" {"event" {"before" "push-base" "pull_request" {"head" {"sha" "pr-head"}}}}}
+        selectors [(workflow-step select "id" "selection")
+                   (workflow-step (get jobs "checks") "id" "run-checks")
+                   (workflow-step (get jobs "resolution") "id" "run-checks")
+                   (workflow-step (get jobs "leaves") "id" "run-checks")]
+        selection-env ["CI_BASE_SHA" "CI_PR_HEAD_SHA"]
+        fields (concat (vals outputs) (for [step selectors key selection-env]
+                                        (get-in step ["env" key])))
+        results (evaluate-workflow-fields! (mapv #(vector % false :success context) fields))
+        [output-results env-results] (split-at (count outputs) results)]
+    (is (= expected (zipmap (keys outputs) output-results)))
+    (is (= (repeat (count selectors) ["push-base" "pr-head"]) (partition 2 env-results)))))
+
+(deftest workflow-checkout-and-node-setup-use-explicit-inputs
+  (let [jobs (get @ci-workflow "jobs")
+        node (workflow-action (get jobs "checks") "actions/setup-node")]
+    (doseq [[job-id job] jobs
+            step (get job "steps")
+            :when (str/starts-with? (get step "uses" "") "actions/checkout@")]
+      (is (contains? #{false "false"} (get-in step ["with" "persist-credentials"])) job-id))
+    (is (= 2 (get-in (workflow-action (get jobs "select") "actions/checkout") ["with" "fetch-depth"])))
+    (is (= 10 (get-in (workflow-action (get jobs "snapshot") "actions/checkout") ["with" "fetch-depth"])))
+    (is (re-matches #"actions/setup-node@[0-9a-f]{40}" (get node "uses")))
+    (is (re-matches #"20\.\d+\.\d+" (get-in node ["with" "node-version"] "")))
+    (let [steps (get-in jobs ["checks" "steps"])]
+      (is (< (.indexOf ^java.util.List steps node)
+             (.indexOf ^java.util.List steps (workflow-step (get jobs "checks") "id" "run-checks")))))))
+
+(deftest workflow-retains-skipped-checks-and-failure-receipts-in-upload
+  (let [jobs (get @ci-workflow "jobs")
+        cases (for [[job-id matrix-key matrix-value summary command-mode]
+                    [["checks" "mode" "macro" "macro-summary.edn" "macro"]
+                     ["resolution" "mode" "resolution-pipeline" "resolution-pipeline-summary.edn" "resolution-pipeline"]
+                     ["leaves" "platform" "darwin" "leaf-summary.edn" "leaves-darwin"]
+                     ["leaves" "platform" "unsupported" "leaf-summary.edn" "darwin-unsupported"]]
+                    :let [job (get jobs job-id)
+                          matrix (some #(when (= matrix-value (get % matrix-key)) %) (workflow-rows job))]]
+                {:job job :matrix matrix :summary summary :command-mode command-mode
+                 :skip-step (workflow-step job "id" "record-skip")
+                 :run-step (workflow-step job "id" (if (= matrix-value "unsupported")
+                                                     "run-unsupported-check" "run-checks"))})
+        env-requests (into {} (for [{:keys [command-mode matrix skip-step run-step]} cases
+                                    step [skip-step run-step]
+                                    [k v] (get step "env")]
+                                [[command-mode (get step "id") k] [v false :success {"matrix" matrix}]]))
+        env-results (evaluate-workflow-requests! env-requests)]
+    (doseq [{:keys [job matrix summary command-mode skip-step run-step]} cases]
+      (test/testing command-mode
+        (let [provenance (workflow-step job "id" "retain-provenance")
+              upload (get (workflow-action job "actions/upload-artifact") "with")
+              root (.toFile (java.nio.file.Files/createTempDirectory
+                             "uniform-workflow-receipt-"
+                             (make-array java.nio.file.attribute.FileAttribute 0)))
+              log-dir (io/file root "fixture-logs")
+              run-step! (fn [script environment allowed-exits]
+                          (let [env-args (map (fn [[k v]] (str k "=" v)) environment)
+                                argv (into ["env"] (concat env-args ["bash" "-e" "-o" "pipefail" "-c" script]))]
+                            (fixture-tool! root argv "" allowed-exits log-dir)))
+              step-env (fn [step]
+                         (into {} (map (fn [k] [k (get env-results [command-mode (get step "id") k])]))
+                               (keys (get step "env"))))]
+          (try
+            (.mkdirs log-dir)
+            (initialize-git-fixture! root)
+            (write-fixture-file! root "tracked.txt" "checked source\n")
+            (write-fixture-file! root ".gitignore" "/fixture-logs/\n/target/\n")
+            (let [commit (commit-fixture! root "workflow receipt fixture")
+                  tree (str/trim (git-fixture! root ["rev-parse" "HEAD^{tree}"]))
+                  expected-skip (cond-> {:status :skipped :reason :unaffected-shared-selection}
+                                  (get matrix "mode") (assoc :mode (get matrix "mode")))]
+              (is (= "target/ci/" (get upload "path")))
+              (is (= "error" (get upload "if-no-files-found")))
+              (run-step! (get skip-step "run") (step-env skip-step) #{0})
+              (let [artifact-dir (io/file root (get upload "path"))]
+                (is (= expected-skip (edn/read-string (slurp (io/file artifact-dir summary)))))
+                (let [stub "clojure() { printf '%s\\n' \"$@\"; return 7; }\n"]
+                  (is (= ["-Srepro" "-M" "tools/ci/run.clj" command-mode]
+                         (str/split-lines (run-step! (str stub (get run-step "run")) (step-env run-step) #{7})))))
+                (write-fixture-file! root "target/ci/command.edn" "{:status :failed :exit-code 7}\n")
+                (run-step! (get provenance "run") {"RUNNER_TEMP" (.getPath root)
+                                                   "GITHUB_SERVER_URL" "https://example.invalid"
+                                                   "GITHUB_REPOSITORY" "fixture/uniform"
+                                                   "GITHUB_RUN_ID" "123"} #{0})
+                (is (= [commit tree] (str/split-lines (slurp (io/file artifact-dir "checkout.txt")))))
+                (is (= "https://example.invalid/fixture/uniform/actions/runs/123\n"
+                       (slurp (io/file artifact-dir "run-url.txt"))))
+                (is (= {:status :failed :exit-code 7}
+                       (edn/read-string (slurp (io/file artifact-dir "command.edn")))))
+                (let [verified (fixture-tool! artifact-dir ["shasum" "-a" "256" "-c" "SHA256SUMS"] "" #{0} log-dir)]
+                  (doseq [file [summary "checkout.txt" "run-url.txt" "command.edn"]]
+                    (is (some #{(str "./" file ": OK")} (str/split-lines verified)) file)))))
+            (finally (delete-fixture-tree! root))))))))
 
 (deftest maven-cache-hit-prefetches-pinned-basis-without-running-tests
   (let [command (maven/prefetch-command "test")
@@ -639,24 +952,6 @@
     (is (str/includes? workflow "actions/upload-artifact@"))
     (is (str/includes? workflow "if: always()"))
     (is (str/includes? workflow "path: target/ci/"))))
-
-(deftest leaf-runner-selection-is-fail-closed-in-leaves-job
-  (let [workflow (slurp ".github/workflows/ci.yml")
-        leaves (second (re-find #"(?s)\n  leaves:\n(.*?)(?=\n  snapshot:)" workflow))]
-    (is (some? leaves))
-    ;; Keep the runner expression on the leaves job, with an explicit Darwin
-    ;; guard and a matrix-runner fallback.  Selector outputs and their valid
-    ;; true/false cases are covered by shared-selection-preserves-full-and-docs-contract-modes.
-    (is (= 1 (count (re-seq #"(?m)^    runs-on: \$\{\{.*\}\}$" (or leaves "")))))
-    (is (str/includes? leaves "matrix.platform == 'darwin'"))
-    (is (str/includes? leaves "needs.select.result == 'success'"))
-    (is (str/includes? leaves "needs.select.outputs.selection-valid == 'true'"))
-    (is (str/includes? leaves "needs.select.outputs[matrix.selection-key] == 'false'"))
-    (is (str/includes? leaves "'ubuntu-24.04' || matrix.runner"))
-    ;; The platform probes remain fail-closed: unselected Darwin skips the
-    ;; probe, while selector failure or malformed output keeps it on macOS.
-    (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
-    (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
 
 (defn source-deftest-names
   [path]
@@ -1359,8 +1654,6 @@
                      :paths ["unknown/new-owner.clj"]}
                     {:kind :full :reason :path-discovery-failed
                      :paths [] :selection-error "discovery failed"}
-                    {:kind :docs-only :reason :known-documentation-only
-                     :paths ["README.md"]}
                     (ci/stage-selection
                      (mapv change ["tools/advance/README.md"
                                    "tools/advance/src/advance/main.clj"
@@ -1381,6 +1674,8 @@
     (is (not-any? #(str/starts-with? % "public-release=")
                   (ci/selection-output-lines nil)))
     (is (not (str/includes? (slurp ".github/workflows/ci.yml") "public-release")))
+    (public-command {:kind :docs-only :reason :known-documentation-only
+                     :paths ["README.md"]})
     (doseq [selection selections]
       (is (= expected-contract-command-ids
              (mapv first (ci/commands-for-selection "contracts" selection))))
@@ -1403,14 +1698,15 @@
                                "tools/advance/src/advance/main.clj"
                                "tools/advance/test/advance/main_test.clj"]))
         lint-tooling (ci/stage-selection [(change "tools/ci/lint.clj")])]
-    (doseq [[label expected-kind selection]
-            [["docs-only" :docs-only docs-only]
-             ["advance-status-only" :selected advance]
-             ["lint-tooling-only" :selected lint-tooling]]]
+    (doseq [[label expected-kind selection expected-ids]
+            [["docs-only" :docs-only docs-only
+              ["docs" "roadmap" "roadmap-negative-controls"]]
+             ["advance-status-only" :selected advance expected-contract-command-ids]
+             ["lint-tooling-only" :selected lint-tooling expected-contract-command-ids]]]
       (is (= expected-kind (:kind selection)) label)
       (is (contains? #{:known-documentation-only :advance-status-only :lint-tooling-only}
                      (:reason selection)) label)
-      (is (= expected-contract-command-ids
+      (is (= expected-ids
              (mapv first (ci/commands-for-selection "contracts" selection))) label)
       (is (not-any? #(= "public-release-subset" (first %))
                     (ci/commands-for-selection "contracts" selection)) label))))
@@ -2711,31 +3007,6 @@
           (finally
             (delete-fixture-tree! root)))))))
 
-(defn- read-workflow-checks [path]
-  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
-                            "uniform-workflow-checks-"
-                            (make-array java.nio.file.attribute.FileAttribute 0)))
-        result-path (str (io/file directory "checks.edn"))
-        ;; Keep the YAML reader on this test child's classpath only.
-        deps (assoc-in (edn/read-string ci/runtime-deps)
-                       [:deps 'org.snakeyaml/snakeyaml-engine] {:mvn/version "2.10"})
-        form `(let [loader# (org.snakeyaml.engine.v2.api.Load.
-                             (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))
-                    workflow# (.loadFromString loader# (slurp ~path))
-                    checks# (get-in workflow# ["jobs" "checks"])]
-                (spit ~result-path
-                      (pr-str {:timeout (get checks# "timeout-minutes")
-                               :rows (mapv #(into {} %)
-                                           (get-in checks# ["strategy" "matrix" "include"]))})))
-        argv ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str deps) "-M" "-e" (pr-str form)]]
-    (try
-      (let [receipt (with-redefs [ci/output (.getPath directory)]
-                      (ci/execute! "read-workflow-checks" 20 argv))]
-        (when-not (= :passed (:status receipt))
-          (throw (ex-info "Could not read the CI workflow" receipt)))
-        (edn/read-string (slurp result-path)))
-      (finally (delete-fixture-tree! directory)))))
-
 (defn- matrix-timeout-minutes [timeout row]
   (if (integer? timeout)
     timeout
@@ -2754,7 +3025,9 @@
     (is (nil? (matrix-timeout-minutes "${{ matrix.limit }} + 1" row)))))
 
 (deftest hosted-envelope-leaves-setup-and-cleanup-time-after-child-watchdogs
-  (let [{:keys [timeout rows]} (read-workflow-checks ".github/workflows/ci.yml")
+  (let [checks (get-in @ci-workflow ["jobs" "checks"])
+        timeout (get checks "timeout-minutes")
+        rows (workflow-rows checks)
         minutes-by-mode (into {} (map (juxt #(get % "mode") #(matrix-timeout-minutes timeout %))) rows)
         change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
@@ -2825,22 +3098,35 @@
     (is (re-find (re-pattern (option-value final-argv "--exact"))
                  ci/resolution-pipeline-final-test))))
 
-(deftest resolution-workflow-serializes-only-its-own-pool
-  (let [workflow (slurp ".github/workflows/ci.yml")
-        resolution (second (re-find #"(?s)\n  resolution:\n(.*?)(?=\n  leaves:)" workflow))]
-    (is (some? resolution))
-    (is (str/includes? resolution
-                       "mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]"))
-    (is (str/includes? resolution "max-parallel: 1"))
-    (is (str/includes? resolution "needs.select.outputs.resolution == 'false'"))
-    (is (str/includes? resolution "git rev-parse HEAD 'HEAD^{tree}'"))
-    (is (str/includes? resolution "git status --porcelain"))
-    (is (str/includes? resolution "target/ci/SHA256SUMS"))
-    (is (str/includes? workflow "needs: [checks, resolution, leaves, snapshot]"))
-    (is (str/includes? workflow
-                       "if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"))
-    (is (not (str/includes? workflow
-                            "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
+(deftest resolution-workflow-allows-three-independent-jobs-to-overlap
+  (let [jobs (get @ci-workflow "jobs")
+        resolution (get jobs "resolution")
+        publish (get jobs "publish")
+        skip-step (workflow-step resolution "id" "record-skip")
+        provenance-step (workflow-step resolution "id" "retain-provenance")
+        upload (workflow-action resolution "actions/upload-artifact")
+        publish-condition (get publish "if")]
+    (is (= ["resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"]
+           (mapv #(get % "mode") (workflow-rows resolution))))
+    (is (= 3 (get-in resolution ["strategy" "max-parallel"])))
+    (is (str/includes? (get skip-step "if")
+                       "needs.select.outputs.resolution == 'false'"))
+    (is (str/includes? (get provenance-step "run") "git rev-parse HEAD 'HEAD^{tree}'"))
+    (is (str/includes? (get provenance-step "run") "git status --porcelain"))
+    (is (str/includes? (get provenance-step "run") "target/ci/SHA256SUMS"))
+    (is (= "target/ci/" (get-in upload ["with" "path"])))
+    (is (= "error" (get-in upload ["with" "if-no-files-found"])))
+    (doseq [job ["checks" "leaves"]]
+      (is (< 1 (get-in jobs [job "strategy" "max-parallel"] 0)) job))
+    (is (= #{"checks" "resolution" "leaves" "snapshot"} (set (get publish "needs"))))
+    (is (= [true false false false]
+           (evaluate-workflow-fields!
+            (mapv (fn [[event ref status]]
+                    [publish-condition true status {"github" {"event_name" event "ref" ref}}])
+                  [["workflow_dispatch" "refs/heads/main" :success]
+                   ["workflow_dispatch" "refs/heads/feature" :success]
+                   ["push" "refs/heads/main" :success]
+                   ["workflow_dispatch" "refs/heads/main" :failure]]))))))
 
 (deftest advance-status-selection-covers-every-eligible-subset-and-retains-controls
   (let [paths ["tools/advance/README.md"
@@ -3383,6 +3669,18 @@
                                   (fn [directory]
                                     (write-fixture-file! directory "README.md" "# changed\n"))
                                   true)))
+  (doseq [path ["docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md"
+                "docs/acceptance-dependencies.md"
+                "bootstrap/clojure/test/gravity/reader/unreviewed-fixture.md"
+                "docs/unreviewed.md"]]
+    (let [changes (assert-git-selection! [["README.md" "# introduction\n"]
+                                          [path "# base\n"]]
+                                         (fn [directory]
+                                           (write-fixture-file! directory "README.md" "# changed\n")
+                                           (write-fixture-file! directory path "# changed\n"))
+                                         false)]
+      (is (= :full (:kind (ci/stage-selection changes))) path)
+      (is (= :full (:kind (ci/leaf-selection-for-changes "portable" [] changes))) path)))
   (is (seq (assert-git-selection! [["README.md" "# base\n"]
                                    ["src/compiler.gravity" "(seed)\n"]]
                                   (fn [directory]

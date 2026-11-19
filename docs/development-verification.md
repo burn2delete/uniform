@@ -50,18 +50,24 @@ clojure -M:packaged-gravity --version
 clojure -M:packaged-gravity run examples/core-app.gravity
 ```
 
-`bin/gravity` does not auto-select the current development packaged JAR at
+`bin/gravity` runs the current bootstrap source by default, even with a JAR
+at the historical `target/phase-18/jvm-cli/gravity-jvm-cli.jar` path.
+`bin/gravity --version` identifies this route with `:packaged-jvm-cli? false`.
+The `:packaged-gravity` alias requires a development package built at
 `target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar`.
-Its frozen wrapper can still select the historical
-`target/phase-18/jvm-cli/gravity-jvm-cli.jar` when that file is present and
-`GRAVITY_BOOTSTRAP_ONLY` is not `1`. Use `clojure -M:gravity --version` to
-select the current source entrypoint explicitly.
-The explicit `:packaged-gravity` alias launches the current development package and preserves the
-accepted/rejected command checks, but it is bootstrap-hosted and is not a
-claim that the final Phase 18 seedless release or self-hosted compiler is
-complete. The byte-identical historical JAR and its Phase 18 evidence remain
-at their archived paths; current package outputs use the development output
-path.
+
+For historical comparisons, `GRAVITY_PACKAGED_CLI_ONLY=1 bin/gravity` selects
+a JAR installed at the historical path. If that file is missing, the wrapper
+uses current source. `GRAVITY_BOOTSTRAP_ONLY=1`, `sh07-core`, and explicit
+target or lowering arguments to `run` or `compile` also select current source.
+To run the checked-in archive directly from the repository root:
+
+```bash
+java -cp "target/phase-18/jvm-cli-archive/gravity-jvm-cli.jar:$(clojure -Spath -Sdeps '{:paths []}')" gravity.cli.Main --version
+```
+
+Both JVM packages are bootstrap-hosted. The public release handoff requires
+the executable release and completed P15 seed-retirement proof.
 
 ## Remove project cost and budget mechanisms
 

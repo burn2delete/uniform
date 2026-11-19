@@ -99,6 +99,7 @@ jobs:
         with:
           install-static-tools: ${{ matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
       - name: Retain unselected CI status
+        id: record-skip
         if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' }}
         env:
           CI_MODE: ${{ matrix.mode }}
@@ -107,6 +108,7 @@ jobs:
           printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
           echo "CI mode $CI_MODE skipped by the shared path selection; required matrix job retained"
       - name: Install workflow syntax checker
+        id: setup-workflow-checker
         if: ${{ always() && !cancelled() && matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
         run: |
           mkdir -p "$RUNNER_TEMP/actionlint"
@@ -117,6 +119,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/actionlint/archive.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
       - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
+        id: run-checks
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
         env:
           CI_MODE: ${{ matrix.mode }}
@@ -127,6 +130,7 @@ jobs:
         if: always()
         run: git diff --exit-code HEAD
       - name: Preserve logs, command receipts and provenance
+        id: retain-provenance
         if: always()
         run: |
           mkdir -p target/ci
@@ -151,16 +155,15 @@ jobs:
     needs: select
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    # resolution-pipeline owns two sequential fresh children, each with an
-    # independent 600-second watchdog; the other modes own one child each.
-    # The 25-minute hosted envelope leaves setup, cleanup and artifact-upload
-    # time beyond the pipeline's 1,200-second maximum child budget. The three
-    # jobs are serialized only within this resolution pool; no global
-    # parallelism or cost equivalence is implied.
+    # The three independent Resolution modes can overlap. resolution-pipeline
+    # still owns two sequential fresh children, each with an independent
+    # 600-second watchdog; the other modes own one child each. The 25-minute
+    # hosted envelope leaves setup, cleanup and artifact-upload time beyond
+    # the pipeline's 1,200-second maximum child budget.
     timeout-minutes: 25
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 3
       matrix:
         mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]
     steps:
@@ -173,6 +176,7 @@ jobs:
       - uses: ./.github/actions/clojure
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
       - name: Retain unselected resolution status
+        id: record-skip
         if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs.resolution == 'false' }}
         env:
           CI_MODE: ${{ matrix.mode }}
@@ -181,6 +185,7 @@ jobs:
           printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
           echo "CI mode $CI_MODE skipped by the shared resolution selection; required matrix job retained"
       - name: Run selected resolution check in a fresh child process
+        id: run-checks
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
         env:
           CI_MODE: ${{ matrix.mode }}
@@ -191,6 +196,7 @@ jobs:
         if: always()
         run: git diff --exit-code HEAD
       - name: Preserve resolution logs, receipts and provenance
+        id: retain-provenance
         if: always()
         run: |
           mkdir -p target/ci
@@ -214,11 +220,11 @@ jobs:
     name: ${{ matrix.check }}
     needs: select
     if: ${{ always() && !cancelled() }}
-    # The Darwin publication leaf may use Ubuntu only after the selector
-    # completed successfully and explicitly verified that it is unaffected.
+    # A Darwin check may use Ubuntu only after the selector completed
+    # successfully and explicitly verified that the check is unaffected.
     # Any selected, full, missing, malformed, or failed selection keeps the
     # platform-specific runner required by the matrix.
-    runs-on: ${{ matrix.platform == 'darwin' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 'ubuntu-24.04' || matrix.runner }}
+    runs-on: ${{ matrix.platform != 'portable' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 'ubuntu-24.04' || matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -255,6 +261,7 @@ jobs:
           java-version: ${{ matrix.java }}
           private-temp: ${{ matrix.platform == 'portable' }}
       - name: Retain unselected leaf status
+        id: record-skip
         if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' }}
         env:
           CHECK_NAME: ${{ matrix.check }}
@@ -263,9 +270,11 @@ jobs:
           printf '{:status :skipped :reason :unaffected-shared-selection}\n' > target/ci/leaf-summary.edn
           echo "CI check $CHECK_NAME skipped by the shared path selection; required matrix job retained"
       - name: Diagnose actual Darwin host and descriptor ABI
+        id: darwin-probe
         if: ${{ always() && !cancelled() && matrix.platform == 'darwin' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh path-aware catalog selection
+        id: run-checks
         if: ${{ always() && !cancelled() && matrix.platform != 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         env:
           LEAF_PLATFORM: ${{ matrix.platform }}
@@ -273,9 +282,11 @@ jobs:
           CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
       - name: Actual unsupported-kernel refusal before publication I/O
+        id: run-unsupported-check
         if: ${{ always() && !cancelled() && matrix.platform == 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-unsupported
       - name: Preserve failure receipts
+        id: retain-provenance
         if: always()
         run: |
           mkdir -p target/ci
