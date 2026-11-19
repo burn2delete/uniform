@@ -216,7 +216,8 @@
       (with-redefs [rt/command (fn [_ _ _ payload]
                                  (swap! calls conj payload)
                                  (cond
-                                   (str/includes? payload "forbidden") {:exit 1 :err "gh: forbidden (HTTP 403)"}
+                                   (str/includes? payload "forbidden") {:exit 1 :err "gh: forbidden (HTTP 403)"
+                                                                       :out "{\"errors\":[{\"type\":\"RATE_LIMITED\"}]}"}
                                    (str/includes? payload "throttled") {:exit 0 :out "{\"errors\":[{\"type\":\"RATE_LIMITED\"}]}"}
                                    :else {:exit 0 :out "{\"data\":{}}"}))]
         (doseq [controller [ctx peer] item ["a" "b"]]

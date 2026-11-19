@@ -96,9 +96,9 @@
     (mapv variables [:project :item :field])))
 
 (defn- provider-throttle? [{:keys [error errors]}]
-  (if (seq errors)
-    (every? #(= "RATE_LIMITED" (:type %)) errors)
-    (boolean (re-matches #"(?i)\s*gh: (?:API|secondary) rate limit exceeded(?: for [0-9a-fA-F:.]+\.)?(?: \(But here's the good news: [^\r\n]*?\))? \(HTTP (?:403|429)\)\s*" (or error "")))))
+  (and (every? #(= "RATE_LIMITED" (:type %)) errors)
+       (or (and (seq errors) (str/blank? error))
+           (boolean (re-matches #"(?i)\s*gh: (?:API|secondary) rate limit exceeded(?: for [0-9a-fA-F:.]+\.)?(?: \(But here's the good news: [^\r\n]*?\))? \(HTTP (?:403|429)\)\s*" (or error ""))))))
 
 (defn settled-status-limit? [guard]
   (and (= :project-status-throttle (:kind guard))
@@ -164,8 +164,8 @@
   (let [item (status-item body)
         scoped? (and item (provider-throttle? refusal))
         key (if scoped? (rt/digest (pr-str [:project-status item])) key)]
-    (when (and (not scoped?) (settled-status-limit? (rt/shared-restriction ctx :api key)))
-      ;; An earlier scoped throttle must never mask a subsequent authorization denial.
+    (when (and (not scoped?) (= ["POST" "graphql"] ((juxt :method :endpoint) refusal)))
+      ;; Record a broad refusal even if another controller is settling the older guard.
       (rt/shared-restrict! ctx :api-denial key refusal))
     (rt/remember-denial! ctx :github key refusal)))
 
@@ -220,7 +220,7 @@
          item (when (= ["POST" "graphql"] [method endpoint]) (status-item body))
          item-key (when item (rt/digest (pr-str [:project-status item])))
          _ (when (or (and shared (not scoped?))
-                     (and scoped? (rt/shared-restriction ctx :api-denial key))
+                     (rt/shared-restriction ctx :api-denial key)
                      (and scoped? (contains? (:items shared) item))
                      (and item-key (or (get-in @(:state ctx) [:restricted-actions item-key])
                                        (rt/shared-restriction ctx :api item-key)))
@@ -237,7 +237,7 @@
      (when-not (zero? (:exit result))
        (let [errors (graphql-errors-from-output endpoint (:out result))
              restricted (boolean (or (rt/authorization-denied? (str (:err result) "\n" (:out result)))
-                                     (and (seq errors) (provider-throttle? {:errors errors}))))]
+                                     (some #(#{"FORBIDDEN" "UNAUTHORIZED" "RATE_LIMITED"} (:type %)) errors)))]
          (when restricted
            (let [refusal (cond-> {:method method :endpoint endpoint :error (:err result)}
                            (seq errors) (assoc :errors errors)
