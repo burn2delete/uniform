@@ -1,0 +1,2 @@
+{:deps {org.clojure/clojure {:mvn/version "1.12.5"}
+        org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}}
