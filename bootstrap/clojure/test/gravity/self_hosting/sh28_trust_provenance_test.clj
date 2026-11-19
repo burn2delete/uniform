@@ -138,6 +138,49 @@
     (is (true? (:clojure-seed-boundary? gravity)))
     (is (= :passed (:status (verify gravity-request gravity))))))
 
+(deftest trust-evidence-accepts-nine-build-environments
+  (let [base (accepted-request)
+        environment-template (first (:environments base))
+        revocation-template
+        (first (filter #(= :environment (:subject-kind %))
+                       (:revocations base)))
+        extra-environments
+        (mapv (fn [index]
+                (assoc environment-template
+                       :environment-id (str "env:clean-" index)
+                       :manifest-id (str "sha256:environment-" index)
+                       :actual-build-root (str "/checkout-" index "/build")))
+              (range 3 10))
+        request (-> base
+                    (update :environments into extra-environments)
+                    (update :revocations into
+                            (map #(assoc revocation-template
+                                         :subject-id (:environment-id %))
+                                 extra-environments)))
+        environments (:environments request)
+        result (build request)]
+    (is (= 9 (count environments)))
+    (is (= :accepted (:status result)))
+    (is (= (mapv #(dissoc % :actual-build-root) environments)
+           (get-in result [:identity-input :environments])))
+    (is (= (mapv :actual-build-root environments)
+           (get-in result [:provenance :actual-environment-roots])))
+    (is (= :passed (:status (verify request result))))
+    (testing "the ninth environment must disable network access"
+      (let [result
+            (build (assoc-in request [:environments 8 :network-policy]
+                             :enabled))]
+        (is (= :rejected (:status result)))
+        (is (= "BOOT8007" (get-in result [:diagnostics 0 :rule])))
+        (is (= :environment-provenance-gap
+               (get-in result [:diagnostics 0 :facts :reason])))))
+    (testing "the ninth environment requires its own revocation record"
+      (let [result (build (update request :revocations pop))]
+        (is (= :rejected (:status result)))
+        (is (= "BOOT8006" (get-in result [:diagnostics 0 :rule])))
+        (is (= :revocation-subject-link-gap
+               (get-in result [:diagnostics 0 :facts :reason])))))))
+
 (deftest sh28-semantic-identity-is-recursively-path-neutral
   (let [left-request
         (request accepted-gravity-plan 'sh28-trust-evidence-request)

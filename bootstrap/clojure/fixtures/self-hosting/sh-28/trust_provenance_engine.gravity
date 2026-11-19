@@ -445,9 +445,7 @@
 (defn sh28-environments-valid? [records]
   (if (vector? records)
     (if (> (count records) 0)
-      (if (<= (count records) 8)
-        (sh28-environments-valid-from? records 0)
-        false)
+      (sh28-environments-valid-from? records 0)
       false)
     false))
 
