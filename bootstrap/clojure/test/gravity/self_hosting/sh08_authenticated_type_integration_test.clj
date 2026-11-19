@@ -895,6 +895,17 @@
     (is (= (dissoc result-a :provenance) (dissoc result-b :provenance)))
     (is (not= (get-in result-a [:provenance :provenance-binding-id])
               (get-in result-b [:provenance :provenance-binding-id])))
+    (testing "oversized captured paths reach provenance binding validation"
+      (let [over-cap-path (str "/" (.repeat "x" 16777216))
+            result
+            (invoke bridge-plan 'sh08-build-authenticated-type-request
+                    [(assoc request-b :actual-source-path over-cap-path)])]
+        (is (= 16777217 (count over-cap-path)))
+        (is (= :rejected (:status result)))
+        (is (= "STD08-BRIDGE-ENVELOPE"
+               (get-in result [:diagnostics 0 :rule])))
+        (is (= :invalid-authenticated-envelope
+               (get-in result [:diagnostics 0 :facts :reason])))))
     (testing "malformed path provenance is rejected"
       (doseq [actual-path ["" :not-text]]
         (let [result
