@@ -220,23 +220,30 @@
   (let [paths (mapv #(fixture "modules" % ".gravity")
                     ["module-chain-leaf" "module-chain-middle" "module-chain-root"])
         [cp bp ap] paths [ct bt at] (mapv slurp paths)
+        invocation (assoc (bootstrap/stage2-runtime-current-reader-invocation)
+                          :macro-source-mode :development-current)
+        reader-path (:reader-source-path invocation)
+        reader-hash (str "sha256:" (bootstrap/sha256-hex (slurp reader-path :encoding "UTF-8")))
+        resolve-module (fn [path text dependencies]
+                         (bootstrap/compiler-c5-resolution-source-artifact
+                          path text {:artifact :gravity/sh06-module-inputs :schema-version 1
+                                     :module-artifacts dependencies}
+                          reader-path invocation))
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! ap :jvm))
         _ (println :transitive-phase :leaf-c5)
-        c (bootstrap/compiler-c5-resolution-file-artifact cp)
-        ci {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [c]}
+        c (resolve-module cp ct [])
         _ (println :transitive-phase :middle-c5)
-        b (bootstrap/compiler-c5-resolution-file-artifact bp ci)
-        bi {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [b]}
+        b (resolve-module bp bt [c])
         _ (println :transitive-phase :root-c5)
-        a (bootstrap/compiler-c5-resolution-file-artifact ap bi)
+        a (resolve-module ap at [b])
         c-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter cp ct)
         _ (println :transitive-phase :middle-bundle)
         middle (bootstrap/p15-s23-stage2-compiler-artifact-plan
-                 emitter bp bt {:caller-resolution-artifact b :dependency-plans [c-plan]})
+                 emitter bp bt {:caller-resolution-artifact b :dependency-plans [c-plan]} invocation)
         b-plan (:plan (first (filter #(= (:artifact-id b) (:module-id %)) (:modules middle))))
         inputs {:caller-resolution-artifact a :dependency-plans [b-plan c-plan]}
         _ (println :transitive-phase :root-bundle)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter ap at inputs)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter ap at inputs invocation)
         routes (:routes bundle)
         by-id (into {} (map (juxt :module-id identity) (:modules bundle)))]
     (is (= [:accepted :accepted :accepted] (mapv :status [c b a])))
@@ -252,6 +259,10 @@
     (is (= b-plan (:plan (get by-id (:artifact-id b)))))
     (doseq [[artifact path text] [[a ap at] [b bp bt] [c cp ct]]]
       (let [entry (get by-id (:artifact-id artifact))]
+        (is (= reader-hash
+               (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                                 :c2-reader-artifact :sh03-reader-authentication :reader-source-revision
+                                 :source-content-hash])))
         (is (= artifact (:resolution-artifact entry)))
         (is (= path (get-in artifact [:provenance :source-path])))
         (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in entry [:plan :source :sha256])))))
@@ -264,25 +275,28 @@
     (is (= #{'main} (set (map :name (:exports (get by-id (:artifact-id a)))))))
     (is (= #{'relay} (set (map :name (:exports (get by-id (:artifact-id b)))))))
     (is (= :source-emitter-or-dependency-set
-           (reason #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter ap at (assoc inputs :dependency-plans [b-plan])))))
+           (reason #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                     emitter ap at (assoc inputs :dependency-plans [b-plan]) invocation))))
     (let [result (atom nil)
           _ (println :transitive-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'main [])))]
+          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-module-execute-function
+                                               runtime bundle 'main [] invocation)))]
       (is (= "kept" @result))
       (is (= "argument\nleaf\nmiddle\nroot\n" output)))
     (let [changed (assoc-in bundle [:routes 1 :origin :ordinary-module-artifact-id] (:artifact-id a))
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id changed) (:modules changed) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
           failure (atom nil)
-          output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'main []))))]
+          output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                             runtime forged 'main [] invocation))))]
       (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash identity)))
       (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
       (is (= "" output)))
     (let [path (fixture "rejected" "module-chain-private-import" ".gravity")
           _ (println :transitive-phase :private-c5)
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact path ci))]
+          failure (diagnostic #(resolve-module path (slurp path) [c]))]
       (is (= "C5-PRIVATE" (:id failure)))
-      (is (map? (:source-span failure))))))
+      (is (= path (get-in failure [:source-span :source]))))))
 
 (deftest stage2-module-transitive-explicit-reader-invocation-plumbing
   ;; Actual C5 current-source verification is owned by the resolution tests.
