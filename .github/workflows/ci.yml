@@ -26,6 +26,7 @@ env:
 jobs:
   select:
     name: select CI checks
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
@@ -81,7 +82,7 @@ jobs:
     timeout-minutes: >-
       ${{ matrix.mode == 'checked-core-runtime' && 85 ||
           matrix.mode == 'macro' && 50 ||
-          matrix.mode == 'bootstrap' && (needs.select.result != 'success' ||
+          matrix.mode == 'bootstrap' && github.event_name == 'pull_request' && (needs.select.result != 'success' ||
           needs.select.outputs.selection-valid != 'true' ||
           needs.select.outputs.stage2-module-tests-required != 'false') && 355 || 20 }}
     strategy:
@@ -111,6 +112,7 @@ jobs:
           node-version: 20.20.2
       - uses: ./.github/actions/clojure
         if: ${{ !cancelled() }}
+        id: toolchain
         with:
           install-static-tools: ${{ matrix.mode == 'static' && (!matrix.selected-pr || needs.select.outputs.static-tools-required != 'false') }}
       - name: Install workflow syntax checker
@@ -126,7 +128,7 @@ jobs:
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
       - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
         id: run-checks
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && (matrix.mode != 'static' || steps.toolchain.outcome == 'success') }}
         env:
           CI_MODE: ${{ matrix.mode }}
           CI_FORCE_FULL: ${{ !matrix.selected-pr || needs.select.outputs[matrix.mode] != 'true' }}
@@ -339,7 +341,11 @@ jobs:
   publish:
     name: experimental-prerelease
     needs: [checks, resolution, leaves, snapshot]
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    # Manual runs skip the selector ancestor. Require each direct prerequisite to pass.
+    if: >-
+      ${{ !cancelled() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' &&
+          needs.checks.result == 'success' && needs.resolution.result == 'success' &&
+          needs.leaves.result == 'success' && needs.snapshot.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

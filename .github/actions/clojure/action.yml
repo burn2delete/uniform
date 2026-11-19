@@ -41,7 +41,9 @@ runs:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
         cache: maven
-        cache-dependency-path: ${{ inputs.dependency-cache-files }}
+        cache-dependency-path: |
+          ${{ inputs.dependency-cache-files }}
+          ${{ inputs.install-static-tools == 'true' && 'tools/ci/workflow_*_tool_deps.edn' || '' }}
     - uses: DeLaGuardo/setup-clojure@3fe9b3ae632c6758d0b7757b0838606ef4287b08 # 13.4
       with:
         cli: 1.12.5.1654
@@ -52,6 +54,7 @@ runs:
       env:
         DEPENDENCY_DIRECTORY: ${{ inputs.dependency-directory }}
         DEPENDENCY_ALIAS: ${{ inputs.dependency-alias }}
+        INSTALL_STATIC_TOOLS: ${{ inputs.install-static-tools }}
       run: |
         clojure_description="$(clojure -Sdescribe)"
         install_directory="$(sed -n 's/.*:install-dir "\([^"]*\)".*/\1/p' <<< "$clojure_description")"
@@ -61,7 +64,19 @@ runs:
           echo "Cannot find the pinned Clojure tools runtime at $clojure_tools_jar" >&2
           exit 1
         fi
-        java -cp "$clojure_tools_jar:$GITHUB_WORKSPACE/tools" clojure.main \
-          -m ci.maven-dependencies \
+        prefetch_dependencies() {
+          java -cp "$clojure_tools_jar:$GITHUB_WORKSPACE/tools" clojure.main \
+            -m ci.maven-dependencies \
+            "$@"
+        }
+        prefetch_dependencies \
           --directory "$DEPENDENCY_DIRECTORY" \
           --alias "$DEPENDENCY_ALIAS"
+        if [[ "$INSTALL_STATIC_TOOLS" == "true" ]]; then
+          prefetch_dependencies \
+            --directory . \
+            --manifest tools/ci/workflow_yaml_tool_deps.edn
+          prefetch_dependencies \
+            --directory . \
+            --manifest tools/ci/workflow_expression_tool_deps.edn
+        fi

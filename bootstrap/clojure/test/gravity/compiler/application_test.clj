@@ -357,11 +357,24 @@
         text (source-text module "" "(do true false)" #{})]
     (with-source-file "boolean-sequence.gravity" text
       (fn [path]
-        (let [result (application/current-source-to-verified-mir path bool-policy)
+        (let [authenticate bootstrap/p15-s23-c6c10-literal-authentication
+              verify-projection! bootstrap/p15-s23-c6c10-verify-private-front-end-projection!
+              events (atom [])
+              result (with-redefs [bootstrap/p15-s23-c6c10-literal-authentication
+                                   (fn [& args]
+                                     (swap! events conj :authenticate)
+                                     (apply authenticate args))
+                                   bootstrap/p15-s23-c6c10-verify-private-front-end-projection!
+                                   (fn [& args]
+                                     (swap! events conj :verify-projection)
+                                     (apply verify-projection! args))]
+                       (application/current-source-to-verified-mir path bool-policy))
               core (:checked-core result) mir (:mir-module result)
               root (core-function core 'main) function (get-in mir [:functions 'main])
               operations (function-operations mir 'main)
               invoke (reference-invoker path)]
+          (is (= [:authenticate :verify-projection :authenticate :verify-projection] @events)
+              "Construction and fresh replay must each authenticate their own C2/C3 products once")
           (assert-source-result result path text module bool-policy)
           (is (= [:literal :literal :do :function] (mapv :source-operation (:core-nodes core))))
           (is (= [] (get-in root [:type :params]) (:params function)))

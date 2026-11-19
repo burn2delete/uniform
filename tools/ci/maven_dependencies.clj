@@ -1,5 +1,6 @@
 (ns ci.maven-dependencies
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as str]))
 
@@ -30,6 +31,27 @@
   (when-not (or (str/blank? alias) (re-matches alias-pattern alias))
     (throw (ex-info "Invalid Clojure dependency alias" {:alias alias})))
   ["clojure" "-Srepro" "-P" (if (str/blank? alias) "-M" (str "-M:" alias))])
+
+(defn isolated-tool-basis
+  "Resolve the manifest's pinned workflow tooling coordinates from Maven Central."
+  [manifest]
+  (let [basis (edn/read-string (slurp manifest))
+        dependencies (:deps basis)]
+    (when-not (and (map? basis)
+                   (= #{:deps} (set (keys basis)))
+                   (map? dependencies)
+                   (seq dependencies)
+                   (every? (fn [[_ coordinate]]
+                             (and (map? coordinate)
+                                  (= #{:mvn/version} (set (keys coordinate)))
+                                  (string? (:mvn/version coordinate))))
+                           dependencies))
+      (throw (ex-info "Invalid isolated Maven dependency manifest"
+                      {:manifest (str manifest)})))
+    (assoc basis :mvn/repos {"central" {:url "https://repo.maven.apache.org/maven2/"}})))
+
+(defn prefetch-manifest-command [manifest]
+  ["clojure" "-Srepro" "-P" "-Sdeps" (pr-str (isolated-tool-basis manifest)) "-M"])
 
 (defn- result-output
   [{:keys [out err]}]
@@ -86,11 +108,11 @@
 (defn- parse-options
   [args]
   (loop [remaining (seq args)
-         options {:directory "." :alias "" :seen #{}}]
+         options {:directory "." :alias "" :manifest nil :seen #{}}]
     (if-not remaining
       (dissoc options :seen)
       (let [[option value & more] remaining]
-        (when-not (contains? #{"--directory" "--alias"} option)
+        (when-not (contains? #{"--directory" "--alias" "--manifest"} option)
           (throw (ex-info "Unknown Maven dependency prefetch option" {:option option})))
         (when-not value
           (throw (ex-info "Maven dependency prefetch option needs a value"
@@ -99,22 +121,31 @@
           (throw (ex-info "Duplicate Maven dependency prefetch option" {:option option})))
         (recur more
                (-> options
-                   (assoc (if (= option "--directory") :directory :alias) value)
+                   (assoc (case option
+                            "--directory" :directory
+                            "--alias" :alias
+                            "--manifest" :manifest)
+                          value)
                    (update :seen conj option)))))))
 
 (defn -main
   [& args]
   (let [exit-code
         (try
-          (let [{:keys [directory alias]} (parse-options args)
+          (let [{:keys [directory alias manifest]} (parse-options args)
                 dependency-directory (io/file directory)]
             (when-not (.isDirectory dependency-directory)
               (throw (ex-info "Maven dependency root is not a directory"
                               {:directory directory})))
-            (when-not (or (str/blank? alias) (re-matches alias-pattern alias))
-              (throw (ex-info "Invalid Clojure dependency alias" {:alias alias})))
+            (when (and manifest (not (str/blank? alias)))
+              (throw (ex-info "Choose either a Maven alias or dependency manifest"
+                              {:alias alias :manifest manifest})))
             (let [{:keys [attempts retried?]}
-                  (retry-prefetch! (prefetch-command alias) directory)]
+                  (retry-prefetch!
+                   (if manifest
+                     (prefetch-manifest-command (io/file dependency-directory manifest))
+                     (prefetch-command alias))
+                   directory)]
               (println (str "Maven dependencies prepared (attempts: " attempts
                             ", retried: " retried? ").")))
             0)

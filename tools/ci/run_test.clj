@@ -481,45 +481,62 @@
     (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
     (is (= "true" (last (str/split (last (ci/selection-output-lines selected)) #"="))))))
 
-(defn- isolated-workflow-tool! [id dependencies operation input]
+(def ^:private isolated-workflow-tool-manifests
+  {"read-workflow" "tools/ci/workflow_yaml_tool_deps.edn"
+   "evaluate-workflow-fields" "tools/ci/workflow_expression_tool_deps.edn"})
+
+(defn- isolated-workflow-tool-command [id form]
+  (let [manifest (get isolated-workflow-tool-manifests id)]
+    (when-not manifest
+      (throw (ex-info "Unknown isolated workflow tool" {:id id})))
+    (let [dependencies (maven/isolated-tool-basis manifest)]
+      ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str dependencies)
+       "-M" "-e" (pr-str form)])))
+
+(defn- isolated-workflow-tool! [id operation input]
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-workflow-test-"
                             (make-array java.nio.file.attribute.FileAttribute 0)))
         input-path (str (io/file directory "input.edn"))
         result-path (str (io/file directory "result.edn"))
-        deps (update (edn/read-string ci/runtime-deps) :deps merge dependencies)
         form `(do (require 'clojure.edn 'clojure.walk 'clojure.string)
                   (spit ~result-path
-                        (pr-str (~operation (clojure.edn/read-string (slurp ~input-path))))))
-        argv ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str deps) "-M" "-e" (pr-str form)]]
+                        (pr-str (~operation (clojure.edn/read-string (slurp ~input-path))))))]
     (try
-      (spit input-path (pr-str input))
-      (let [receipt (with-redefs [ci/output (.getPath directory)]
-                      (ci/execute! id 20 argv))]
-        (when-not (= :passed (:status receipt))
-          (throw (ex-info "Workflow test subprocess failed" receipt)))
-        (edn/read-string (slurp result-path)))
+      (let [argv (isolated-workflow-tool-command id form)]
+        (spit input-path (pr-str input))
+        (let [receipt (with-redefs [ci/output (.getPath directory)]
+                        (ci/execute! id 20 argv))]
+          (when-not (= :passed (:status receipt))
+            (throw (ex-info "Workflow test subprocess failed" receipt)))
+          (edn/read-string (slurp result-path))))
       (finally (delete-fixture-tree! directory)))))
+
+(def ^:private read-workflow-yaml
+  '(fn [path]
+     (let [loader (org.snakeyaml.engine.v2.api.Load.
+                   (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))]
+       (clojure.walk/prewalk
+        #(cond (instance? java.util.Map %) (into {} %)
+               (instance? java.util.List %) (vec %)
+               :else %)
+        (.loadFromString loader (slurp path))))))
 
 (def ^:private ci-workflow
   (delay
     (isolated-workflow-tool!
-     "read-workflow" {'org.snakeyaml/snakeyaml-engine {:mvn/version "2.10"}}
-     '(fn [path]
-        (let [loader (org.snakeyaml.engine.v2.api.Load.
-                      (.build (org.snakeyaml.engine.v2.api.LoadSettings/builder)))]
-          (clojure.walk/prewalk
-           #(cond (instance? java.util.Map %) (into {} %)
-                  (instance? java.util.List %) (vec %)
-                  :else %)
-           (.loadFromString loader (slurp path)))))
-     ".github/workflows/ci.yml")))
+     "read-workflow" read-workflow-yaml ".github/workflows/ci.yml")))
+
+(def ^:private clojure-toolchain-action
+  (delay
+    (isolated-workflow-tool!
+     "read-workflow" read-workflow-yaml ".github/actions/clojure/action.yml")))
 
 (defn- evaluate-workflow-fields! [fields]
   ;; JEXL parses and evaluates the scalar expressions used by this workflow.
   ;; Supply Actions' status context, string semantics and hyphenated map keys.
   (isolated-workflow-tool!
-   "evaluate-workflow-fields" {'org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}
+   "evaluate-workflow-fields"
    '(fn [fields]
       (let [arithmetic (proxy [org.apache.commons.jexl3.JexlArithmetic] [false]
                          (equals [left right]
@@ -602,7 +619,8 @@
             :name (field (get job "name"))
             :runner (field (get job "runs-on"))
             :clojure (condition setup)
-            :run (condition (step "run-checks"))
+            :run [(get (step "run-checks") "if") true :success
+                  (assoc-in context ["steps" "toolchain" "outcome"] "success")]
             :force-full (field (get-in (step "run-checks") ["env" "CI_FORCE_FULL"]))
             :provenance (after-failure (step "retain-provenance"))
             :upload (after-failure upload)
@@ -716,9 +734,9 @@
                    {:id :selector-failed :status :failure :outputs docs}
                    {:id :selector-skipped :status :skipped :outputs docs}
                    {:id :selector-status-malformed :status :unknown :outputs docs}
-                   {:id :push :event "push" :outputs docs}
-                   {:id :manual :event "workflow_dispatch" :outputs docs}
-                   {:id :weekly :event "schedule" :outputs docs}
+                   {:id :push :event "push" :status :skipped}
+                   {:id :manual :event "workflow_dispatch" :status :skipped}
+                   {:id :weekly :event "schedule" :status :skipped}
                    {:id :cancelled :status :cancelled :outputs docs :modes #{}}]
         rows (for [job-id ["checks" "resolution" "leaves"]
                    :let [job (get jobs job-id)]
@@ -788,6 +806,7 @@
 (deftest workflow-hands-selector-outputs-and-event-identities-to-consumers
   (let [jobs (get @ci-workflow "jobs")
         select (get jobs "select")
+        events (keys (get @ci-workflow "on"))
         outputs (get select "outputs")
         full (selector-output-map {:kind :full})
         docs (selector-output-map {:kind :docs-only})
@@ -802,6 +821,8 @@
                         (for [key (keys docs)] (assoc docs key "unknown"))
                         [(assoc docs "static" "false") (assoc docs "contracts" "false")])
         requests (merge
+                  (into {} (for [event events]
+                             [[:event event] [(get select "if") true :success {"github" {"event_name" event}}]]))
                   (into {} (for [[key expression] (dissoc outputs "selection-valid")]
                              [[:output key] [expression false :success context]]))
                   (into {} (for [[index step] (map-indexed vector selectors) key ["CI_BASE_SHA" "CI_PR_HEAD_SHA"]]
@@ -809,6 +830,8 @@
                   (into {} (for [data (concat [full docs] invalid)]
                              [[:valid data] [validity false :success (assoc-in context ["steps" "selection" "outputs"] data)]])))
         observed (evaluate-workflow-requests! requests)]
+    (doseq [event events]
+      (is (= (= event "pull_request") (get observed [:event event])) event))
     (is (= (set (keys full)) (set (keys outputs))))
     (doseq [[key value] (dissoc named "selection-valid")]
       (is (= value (get observed [:output key])) key))
@@ -979,6 +1002,104 @@
       (is (= 1 @runs) failure)
       (is (empty? @delays) failure))))
 
+(deftest isolated-workflow-tools-use-prefetched-reproducible-manifests
+  (let [yaml-path (get isolated-workflow-tool-manifests "read-workflow")
+        expression-path (get isolated-workflow-tool-manifests "evaluate-workflow-fields")
+        yaml-deps (maven/isolated-tool-basis yaml-path)
+        expression-deps (maven/isolated-tool-basis expression-path)
+        yaml-command (isolated-workflow-tool-command "read-workflow" '(identity nil))
+        expression-command (isolated-workflow-tool-command "evaluate-workflow-fields" '(identity nil))
+        action @clojure-toolchain-action
+        prefetch-step (some #(when (= "Prefetch pinned Maven dependencies" (get % "name")) %)
+                            (get-in action ["runs" "steps"]))
+        prefetch-script (get prefetch-step "run")
+        cache-inputs (set (str/split-lines
+                           (get-in action ["inputs" "dependency-cache-files" "default"])))
+        cache-patterns (str/split-lines
+                        (some #(when (str/starts-with? (get % "uses" "") "actions/setup-java@")
+                                 (get-in % ["with" "cache-dependency-path"]))
+                              (get-in action ["runs" "steps"])))
+        workflow @ci-workflow
+        toolchain-step (fn [job]
+                         (some #(when (= "./.github/actions/clojure" (get % "uses")) %)
+                               (get job "steps")))
+        checks-toolchain (toolchain-step (get-in workflow ["jobs" "checks"]))
+        resolution-toolchain (toolchain-step (get-in workflow ["jobs" "resolution"]))
+        leaves-toolchain (toolchain-step (get-in workflow ["jobs" "leaves"]))
+        static-tool-gate (get-in checks-toolchain ["with" "install-static-tools"])
+        static-run-condition (get (workflow-step (get-in workflow ["jobs" "checks"]) "id" "run-checks") "if")
+        static-tool-gate-results
+        (evaluate-workflow-fields!
+         (mapv (fn [mode]
+                 [static-tool-gate false :success
+                  {"matrix" {"mode" mode}
+                   "needs" {"select" {"result" "success"
+                                      "outputs" {"selection-valid" "true"
+                                                 "static-tools-required" "true"}}}}])
+               ["static" "macro"]))]
+    (is (= {'org.clojure/clojure {:mvn/version "1.12.5"}
+            'org.snakeyaml/snakeyaml-engine {:mvn/version "2.10"}}
+           (:deps yaml-deps)))
+    (is (= {'org.clojure/clojure {:mvn/version "1.12.5"}
+            'org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}
+           (:deps expression-deps)))
+    (is (= {"central" {:url "https://repo.maven.apache.org/maven2/"}}
+           (:mvn/repos yaml-deps) (:mvn/repos expression-deps)))
+    (doseq [[path dependencies] [[yaml-path yaml-deps]
+                                 [expression-path expression-deps]]]
+      (let [command (maven/prefetch-manifest-command path)]
+        (is (= ["clojure" "-Srepro" "-P" "-Sdeps" (pr-str dependencies) "-M"] command))
+        (is (not-any? #(str/includes? % "test-runner") command))))
+    (doseq [[command dependencies] [[yaml-command yaml-deps]
+                                    [expression-command expression-deps]]]
+      (is (= "-Srepro" (nth command 2)))
+      (is (= "-Sdeps" (nth command 3)))
+      (is (= dependencies (edn/read-string (nth command 4))))
+      (is (some #{"-M"} command)))
+    (is (not (contains? (:deps yaml-deps) 'org.apache.commons/commons-jexl3)))
+    (is (not (contains? (:deps expression-deps) 'org.snakeyaml/snakeyaml-engine)))
+    (is (= "composite" (get-in action ["runs" "using"])))
+    (is (not-any? cache-inputs [yaml-path expression-path]))
+    (is (= ["${{ inputs.dependency-cache-files }}"
+            "${{ inputs.install-static-tools == 'true' && 'tools/ci/workflow_*_tool_deps.edn' || '' }}"]
+           cache-patterns))
+    (is (some? prefetch-step))
+    (is (str/includes? prefetch-script "--manifest tools/ci/workflow_yaml_tool_deps.edn"))
+    (is (str/includes? prefetch-script "--manifest tools/ci/workflow_expression_tool_deps.edn"))
+    (is (str/includes? prefetch-script "if [[ \"$INSTALL_STATIC_TOOLS\" == \"true\" ]]; then"))
+    (is (some? checks-toolchain))
+    (is (some? resolution-toolchain))
+    (is (some? leaves-toolchain))
+    (is (str/includes? static-tool-gate "matrix.mode == 'static'"))
+    (is (= [true false] static-tool-gate-results))
+    (is (= "toolchain" (get checks-toolchain "id")))
+    (is (= [true false]
+           (evaluate-workflow-fields!
+            (mapv (fn [outcome]
+                    [static-run-condition true :success
+                     {"matrix" {"mode" "static"} "steps" {"toolchain" {"outcome" outcome}}}])
+                  ["success" "failure"]))))
+    (is (nil? (get-in resolution-toolchain ["with" "install-static-tools"])))
+    (is (nil? (get-in leaves-toolchain ["with" "install-static-tools"])))
+    (is (= 3 (get-in workflow ["jobs" "resolution" "strategy" "max-parallel"])))
+    (is (= ["resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"]
+           (get-in workflow ["jobs" "resolution" "strategy" "matrix" "mode"])))))
+
+(deftest maven-cli-prefetches-both-isolated-static-tool-manifests
+  (let [paths [(get isolated-workflow-tool-manifests "read-workflow")
+               (get isolated-workflow-tool-manifests "evaluate-workflow-fields")]
+        runs (atom [])]
+    (with-redefs [maven/retry-prefetch!
+                  (fn [command directory]
+                    (swap! runs conj [command directory])
+                    {:attempts 1 :retried? false})]
+      (doseq [path paths]
+        (maven/-main "--directory" "." "--manifest" path)))
+    (is (= (mapv (fn [path]
+                   [(maven/prefetch-manifest-command path) "."])
+                 paths)
+           @runs))))
+
 (deftest maven-cache-covers-all-pinned-roots-and-prefetches-before-hosted-tests
   (let [toolchain (slurp ".github/actions/clojure/action.yml")
         ci (slurp ".github/workflows/ci.yml")
@@ -988,7 +1109,7 @@
       (is (str/includes? workflow "permissions:\n  contents: read"))
       (is (not (str/includes? workflow "pull_request_target"))))
     (is (str/includes? toolchain "cache: maven"))
-    (is (str/includes? toolchain "cache-dependency-path: ${{ inputs.dependency-cache-files }}"))
+    (is (str/includes? toolchain "${{ inputs.dependency-cache-files }}"))
     (is (str/includes? toolchain
                        "deps.edn\n      tools/ci/run.clj\n      tools/ci/lint_facade_test.clj\n      .github/actions/clojure/action.yml"))
     (is (str/includes? toolchain "-m ci.maven-dependencies"))
@@ -3268,9 +3389,15 @@
                                          [full "failure"]
                                          [nil "failure"]]]
                    [timeout false :success
-                    {"matrix" {"mode" "bootstrap"} "needs" {"select" {"result" result "outputs" outputs}}}])
+                    {"github" {"event_name" "pull_request"} "matrix" {"mode" "bootstrap"}
+                     "needs" {"select" {"result" result "outputs" outputs}}}])
         [ordinary focused fallback & failures] (evaluate-workflow-fields! requests)]
     (is (= 20 ordinary))
+    (is (= [20 20 20]
+           (evaluate-workflow-fields!
+            (for [event ["push" "schedule" "workflow_dispatch"]]
+              [timeout false :success {"github" {"event_name" event} "matrix" {"mode" "bootstrap"}
+                                       "needs" {"select" {"result" "skipped"}}}]))))
     (is (= 355 focused fallback))
     (is (every? #(= 355 %) failures))
     (doseq [[selection minutes] [[selected focused] [mixed fallback] [(ci/execution-selection selected true) fallback]]]
@@ -3333,7 +3460,19 @@
         publish (get jobs "publish")
         provenance-step (workflow-step resolution "id" "retain-provenance")
         upload (workflow-action resolution "actions/upload-artifact")
-        publish-condition (get publish "if")]
+        prerequisites #{"checks" "resolution" "leaves" "snapshot"}
+        manual {"github" {"event_name" "workflow_dispatch" "ref" "refs/heads/main"}
+                "needs" (zipmap prerequisites (repeat {"result" "success"}))}
+        publish-cases
+        (concat [[:skipped manual true] ; The selector ancestor was skipped.
+                 [:cancelled manual false]
+                 [:skipped (assoc-in manual ["github" "ref"] "refs/heads/feature") false]]
+                (for [event ["push" "schedule" "pull_request"]]
+                  [:success (assoc-in manual ["github" "event_name"] event) false])
+                (for [job prerequisites
+                      result ["failure" "skipped" "cancelled" nil]]
+                  [(if (= "failure" result) :failure :skipped)
+                   (assoc-in manual ["needs" job "result"] result) false]))]
     (is (= #{"pull_request" "push" "workflow_dispatch" "schedule"} (set (keys triggers))))
     (is (= ["main"] (get-in triggers ["push" "branches"])))
     (is (= [{"cron" "23 5 * * 1"}] (get triggers "schedule")))
@@ -3347,16 +3486,11 @@
     (is (= "error" (get-in upload ["with" "if-no-files-found"])))
     (doseq [job ["checks" "leaves"]]
       (is (< 1 (get-in jobs [job "strategy" "max-parallel"] 0)) job))
-    (is (= #{"checks" "resolution" "leaves" "snapshot"} (set (get publish "needs"))))
-    (is (= [true false false false false]
-           (evaluate-workflow-fields!
-            (mapv (fn [[event ref status]]
-                    [publish-condition true status {"github" {"event_name" event "ref" ref}}])
-                  [["workflow_dispatch" "refs/heads/main" :success]
-                   ["workflow_dispatch" "refs/heads/feature" :success]
-                   ["push" "refs/heads/main" :success]
-                   ["schedule" "refs/heads/main" :success]
-                   ["workflow_dispatch" "refs/heads/main" :failure]]))))))
+    (is (= prerequisites (set (get publish "needs"))))
+    (let [results (evaluate-workflow-fields!
+                   (mapv (fn [[status context]] [(get publish "if") true status context]) publish-cases))]
+      (doseq [[[status context expected] actual] (map vector publish-cases results)]
+        (is (= expected actual) [status context])))))
 
 (deftest advance-status-selection-covers-every-eligible-subset-and-retains-controls
   (let [paths ["tools/advance/README.md"
@@ -4120,6 +4254,35 @@
     (is (= (count catalog) (count (concat portable darwin))))
     (is (thrown? Exception (ci/leaf-selection "unknown" catalog)))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest leaf-jobs-load-the-catalog-once
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-leaf-catalog-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        catalog [{:id "portable-leaf" :namespace 'fixture.portable-test}
+                 {:id "darwin-publication" :namespace 'fixture.darwin-test}]
+        catalog-loads (atom 0)
+        launched (atom nil)]
+    (try
+      (with-redefs [ci/output (.getPath directory)
+                    ci/pull-request-selection (constantly {:kind :full :reason :non-pull-request})
+                    ci/load-leaf-catalog (fn [] (swap! catalog-loads inc) catalog)
+                    ci/execute! (fn [_id _timeout argv]
+                                  (reset! launched argv)
+                                  {:status :passed})]
+        (doseq [[platform namespace] [["portable" "fixture.portable-test"]
+                                      ["darwin" "fixture.darwin-test"]]]
+          (let [argv (ci/command "512m" "-M:leaf-test" "--namespace" namespace)]
+            (reset! catalog-loads 0)
+            (is (= 0 (ci/run-mode! (str "leaves-" platform))))
+            (is (= argv @launched) platform)
+            (is (= 1 @catalog-loads) platform)
+            (is (= argv (ci/leaf-command platform)) platform)
+            (is (= 2 @catalog-loads) platform)
+            (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Empty platform leaf selection"
+                                  (ci/leaf-command platform {:leaf-selection {:entries []}})))
+            (is (= 2 @catalog-loads) platform))))
+      (finally (delete-fixture-tree! directory)))))
 
 (deftest affected-leaves-follow-reviewed-source-closures
   (let [catalog (ci/load-leaf-catalog)

@@ -47,8 +47,10 @@ use the explicit CLI route for focused execution.
 
 ### Pull-request stage selection
 
-The selector determines which checks need runners. It selects the three
-Resolution jobs together and each runs independently.
+Pull requests run the selector to determine which checks need runners. It
+selects the three Resolution jobs together and each runs independently.
+Pushes to `main`, scheduled runs and manual runs start the full matrix
+directly.
 For a regular added or modified file in a known stage-owned
 Reader, Macro, Resolution, or checked-Core path, `tools/ci/run.clj` runs that
 stage and every downstream stage, while retaining `static` and `contracts`.
@@ -97,8 +99,9 @@ for any known regular test edits. If the selector cannot validate the seven
 catalog entries, it runs the full matrix and Bootstrap records a failed
 catalog check. Each Stage2 child runs its entire namespace with a
 2,700-second process watchdog and keeps its own log and receipt. The
-Bootstrap job uses a 355-minute envelope when Stage2 tests are required or the
-selector outputs are unavailable or invalid. This covers seven sequential
+Bootstrap job uses a 20-minute timeout for pushes, schedules, and manual
+runs. Pull requests use a 355-minute envelope when Stage2 tests are required
+or selector outputs are unavailable or invalid. This covers seven sequential
 watchdogs and the full Bootstrap controls within the hosted job time limit.
 [GitHub Actions limits](https://docs.github.com/en/actions/reference/limits#existing-system-limits).
 
