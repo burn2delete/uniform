@@ -454,6 +454,33 @@
             (get functions 'sh22-verify-authenticated-vector-result)
             [:arity :params])))))
 
+(deftest vector-bridge-checks-the-complete-mir-origin-chain
+  (let [branch-module (invoke sh13-fixture-plan 'sh13-branch-module [])
+        arguments [true]
+        origins (mapv (fn [index]
+                        {:kind :source
+                         :source-id (keyword "sh22-test" (str "origin-" index))})
+                      (range 33))
+        invalid-origins (assoc-in origins [(dec (count origins)) :kind] :generated)]
+    (doseq [[label chain expected]
+            [["accepts 33 ordered source origins" origins true]
+             ["rejects a non-source kind in the final origin" invalid-origins false]]]
+      (testing label
+        (let [module (assoc branch-module :origin-chain chain)
+              execution (invoke sh13-plan 'sh13-run-module [module arguments])
+              verification (invoke sh13-plan 'sh13-verify-execution
+                                   [module arguments execution])]
+          (is (= :accepted (:status execution)))
+          (is (= :passed (:status verification)))
+          (is (= chain (get-in execution [:provenance :origin-chain])))
+          (is (= (:source-span module)
+                 (get-in execution [:provenance :source-span])))
+          (is (= expected
+                 (invoke bridge-plan 'sh22-bridge-sh13-valid?
+                         [module arguments execution verification]))))))
+    (testing "rejects an empty origin chain at the bridge"
+      (is (false? (invoke bridge-plan 'sh22-bridge-origins-valid? [[]]))))))
+
 (deftest sh22-authenticated-bridge-validation-has-no-project-quotas
   (let [products (upstream-products)
         descriptor (descriptor products "/checkout-a/sh22-bridge.gravity")
