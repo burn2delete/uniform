@@ -3,7 +3,6 @@
 (defn p15-s23-c6c10-function-merkle-manifest
   [source-path source-content-hash functions]
   (when-not (and (map? functions)
-                 (<= (count functions) 256)
                  (every? symbol? (keys functions))
                  (every? map? (vals functions)))
     (p15-s23-c6c10-host-fail!
