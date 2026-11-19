@@ -866,6 +866,8 @@
                          [bridge-request c7-request type-template type-verification])]
              (is (= :accepted (:status c7-request)))
              (is (= canonical-core (:core-artifact c7-request)))
+             (is (= (:semantic-root authenticated)
+                    (:semantic-envelope-id c7-request)))
              (is (= :accepted (:status result)))
              (is (= {:actual-source-path (:actual-source-path bridge-request)
                      :provenance-binding-id (:provenance-root authenticated)}
@@ -884,7 +886,8 @@
            (:semantic-root authenticated-b)))
     (is (= (:identity-input result-a)
            (:identity-input result-b)))
-    (is (= (:artifact-id result-a)
+    (is (= (:expected-type-artifact-id request-a)
+           (:artifact-id result-a)
            (:artifact-id result-b)))
     (is (= (dissoc result-a :provenance) (dissoc result-b :provenance)))
     (is (not= (get-in result-a [:provenance :provenance-binding-id])

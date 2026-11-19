@@ -675,26 +675,10 @@
       (sh08-bridge-rejected
        request (first error) (first (rest error)) []))))
 
-(defn sh08-bridge-type-result-valid?
+;; Callers validate the carriers before comparing the C7 products.
+(defn bridge-type-result-matches?
   [c7-request type-template type-verification]
   (if
-   (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight c7-request) :status)))
-    false
-    (if
-   (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight type-template) :status)))
-    false
-    (if
-   (= false
-      (= :accepted
-         (get
-          (sh08-bridge-carrier-preflight type-verification)
-          :status)))
-    false
-    (if
    (sh08-bridge-exact-keys?
     c7-request
     #{:artifact :schema-version :status :core-artifact
@@ -763,9 +747,20 @@
         false)
       false)
     false)
-    false)
-    )
-    )))
+    false))
+
+(defn sh08-bridge-type-result-valid?
+  [c7-request type-template type-verification]
+  (if (= :accepted
+         (get (sh08-bridge-carrier-preflight c7-request) :status))
+    (if (= :accepted
+           (get (sh08-bridge-carrier-preflight type-template) :status))
+      (if (= :accepted
+             (get (sh08-bridge-carrier-preflight type-verification) :status))
+        (bridge-type-result-matches? c7-request type-template type-verification)
+        false)
+      false)
+    false))
 
 (defn sh08-bridge-typed-artifact-id [request]
   (get request :expected-type-artifact-id))
@@ -820,7 +815,7 @@
        request :verify :c7-request-substitution [])
       (if
        (= false
-          (sh08-bridge-type-result-valid?
+          (bridge-type-result-matches?
            c7-request type-template type-verification))
         (sh08-bridge-rejected
          request :verify :invalid-fresh-c7-result [])
