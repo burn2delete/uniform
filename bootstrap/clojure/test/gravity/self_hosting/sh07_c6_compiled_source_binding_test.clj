@@ -1,6 +1,59 @@
 (ns gravity.self-hosting.sh07-c6-compiled-source-binding-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]))
+
+(deftest function-manifest-covers-a-table-with-257-definitions
+  (let [source "/virtual/large-function-manifest.gravity"
+        source-hash (str "sha256:" (bootstrap/sha256-hex "function manifest fixture"))
+        entries (mapv (fn [value]
+                        (let [name (symbol (str "fixture-" value))]
+                          [name {:name name :arity 0 :params []
+                                 :instructions [{:op :literal :value value}]}]))
+                      (range 1000 1257))
+        names (mapv first entries)
+        last-name (peek names)
+        functions (apply array-map (mapcat identity entries))
+        reordered-functions (apply array-map (mapcat identity (rseq entries)))
+        manifest-for #(bootstrap/p15-s23-c6c10-function-merkle-manifest
+                       source source-hash %)
+        plan {:source {:path source :sha256 source-hash}
+              :module {:source-path source}
+              :functions functions}
+        pin-digest (fn [plan manifest]
+                     (bootstrap/p15-s23-c6c10-canonical-digest
+                      source
+                      (bootstrap/p15-s23-c6c10-plan-pin-input
+                       source-hash plan manifest)))
+        manifest (manifest-for functions)
+        chunks (:chunks manifest)]
+    (testing "every function appears once in canonical order"
+      (is (= 257 (:function-count manifest)))
+      (is (= [64 64 64 64 1] (mapv :count chunks)))
+      (is (= names (mapv :name (mapcat :records chunks))))
+      (is (not= (keys functions) (keys reordered-functions)))
+      (is (= (:root-digest manifest)
+             (:root-digest (manifest-for reordered-functions)))))
+    (testing "changing the last definition reaches the plan pin"
+      (let [changed-plan (assoc-in plan [:functions last-name :instructions 0 :value] -1)
+            changed-manifest (manifest-for (:functions changed-plan))
+            changed-chunks (:chunks changed-manifest)]
+        (is (= (pop chunks) (pop changed-chunks)))
+        (is (not= (:chunk-digest (peek chunks))
+                  (:chunk-digest (peek changed-chunks))))
+        (is (not= (:root-digest manifest) (:root-digest changed-manifest)))
+        (is (not= (pin-digest plan manifest)
+                  (pin-digest changed-plan changed-manifest)))))
+    (doseq [[label invalid-functions]
+            [["non-map definition" (assoc functions last-name :invalid)]
+             ["non-symbol key" (assoc (dissoc functions last-name)
+                                      :invalid (get functions last-name))]]]
+      (testing label
+        (let [diagnostic (try
+                           (manifest-for invalid-functions)
+                           nil
+                           (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+          (is (= "C6-VERIFY" (:id diagnostic)))
+          (is (= source (get-in diagnostic [:source-span :source]))))))))
 
 ;; Ordinary development binding maintenance, not C6 subject construction,
 ;; current expression-emitter validation, or renewed bootstrap evidence.
