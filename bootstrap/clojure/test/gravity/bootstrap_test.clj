@@ -31526,6 +31526,44 @@
     (is (not (str/includes? (pr-str (first diagnostics))
                             "unsupported-authority-present")))))
 
+(deftest checked-core-authority-source-labels-preserve-unicode-and-policy
+  (let [source (closed-pure-source-with-main
+                "(println \"ok\")"
+                {:effects #{:io/write} :capabilities #{:io/stdout} :exports '[main]})
+        policy bootstrap/p15-s23-checked-core-reference-policy-selector
+        issue (fn [path selector]
+                (try
+                  (bootstrap/p15-s23-stage2-closed-checked-core-authority-binding
+                   path source :jvm selector)
+                  (catch clojure.lang.ExceptionInfo ex (ex-data ex))))
+        scalar (String. (Character/toChars 0x1f642))
+        short (str "./" scalar ".gravity")
+        ;; Repeated separators preserve the same host-resolvable source location.
+        long-label (str "." (.repeat "/" 16385) scalar ".gravity")
+        unicode-label (str (.repeat scalar 4097) ".gravity")
+        forged (issue unicode-label (assoc policy :policy-id :forged))
+        invalid (issue (str unicode-label (char 0xd800)) policy)
+        secret "private issuer detail"
+        sanitized (bootstrap/p15-s23-checked-core-sanitized-exception-data
+                   (ex-info secret {:id "C8-CAPABILITY" :raw secret
+                                    :source-span {:source unicode-label :line 3 :raw secret}}))]
+    (let [baseline (issue short policy)]
+      (is (= (cond-> baseline
+               (= short (get-in baseline [:source-span :source]))
+               (assoc-in [:source-span :source] long-label))
+             (issue long-label policy))))
+    (is (= ["C8-CAPABILITY" :pinned-checked-core-reference-policy-selector]
+           ((juxt :id :missing-fact) forged)))
+    (is (= unicode-label (get-in forged [:source-span :source])))
+    (is (= ["C8-CAPABILITY" :bounded-checked-core-authority-source-path]
+           ((juxt :id :missing-fact) invalid)))
+    (is (= "<checked-core-authority>" (get-in invalid [:source-span :source])))
+    (is (= #{:message :redaction :id :source-span} (set (keys sanitized))))
+    (is (= {:source unicode-label :line 3} (:source-span sanitized)))
+    (is (= (str "sha256:" (bootstrap/sha256-hex secret))
+           (get-in sanitized [:redaction :cause-message-hash])))
+    (is (not (str/includes? (pr-str sanitized) secret)))))
+
 (deftest authenticated-checked-core-str-println-replay-is-exact-and-fail-closed
   (let [source
         (closed-pure-source-with-main
