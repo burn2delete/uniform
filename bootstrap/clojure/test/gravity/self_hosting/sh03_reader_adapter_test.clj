@@ -755,6 +755,23 @@
     (is (= identities (select-keys binding (keys identities))))
     (is (= (:plan-id plan) (:plan-semantic-hash identities)
            (bootstrap/reader-canonical-hash (dissoc plan :plan-id))))
+    (let [tampered (update-in plan [:source :byte-count] inc)
+          tampered-body (dissoc tampered :plan-id)
+          compute-identities bootstrap/sh03-reader-plan-identities
+          canonical-hash bootstrap/reader-canonical-hash
+          plan-hashes (atom 0)
+          failure (with-redefs [bootstrap/sh03-reader-plan-identities
+                                (fn [candidate]
+                                  (assoc (compute-identities candidate) :plan-semantic-hash (:plan-id candidate)))
+                                bootstrap/reader-canonical-hash
+                                (fn [value]
+                                  (when (= tampered-body value)
+                                    (swap! plan-hashes inc))
+                                  (canonical-hash value))]
+                    (thrown-data #(structure source-path tampered nil)))]
+      (is (= 1 @plan-hashes))
+      (is (= "C2-HASH" (:id failure)) (pr-str failure))
+      (is (= [:pinned-recomputable-sh03-reader-plan-identities] (:missing-fields failure))))
     (is (= (:instruction-summary plan) (:instruction-summary identities)
            (:instruction-summary summary) (:instruction-summary audit)))
     (is (= summary audit))
