@@ -3999,6 +3999,7 @@
         (is (= "syntax-regression" syntax-id))
         (is (= 600 syntax-timeout))
         (is (= (ci/command "2g" "-M:dev-test"
+                           "--progress"
                            "--namespace" "gravity.syntax.pipeline-test"
                            "--namespace" "gravity.syntax.owner-calls-test"
                            "--namespace" "gravity.bootstrap-compatibility.c3-test"
