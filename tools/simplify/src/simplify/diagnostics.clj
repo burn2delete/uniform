@@ -2,6 +2,7 @@
   "Observations from saved campaign records. No controller lock or dispatch."
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
+            [simplify.github :as gh]
             [simplify.runtime :as rt]))
 
 (defn coordination-snapshot [config]
@@ -26,7 +27,9 @@
                              :let [key (rt/digest (pr-str [method endpoint]))
                                    sources (cond-> []
                                              (contains? local key) (conj :campaign)
-                                             (contains? shared key) (conj :shared))]
+                                             (or (get-in registry [:restrictions :api-denial key])
+                                                 (and (contains? shared key)
+                                                      (not (gh/settled-status-limit? (get shared key))))) (conj :shared))]
                              :when (seq sources)]
                          {:step step :method method :endpoint endpoint :key key :sources sources}))]
       {:scope :required-github-project-setup :campaign (:campaign config)

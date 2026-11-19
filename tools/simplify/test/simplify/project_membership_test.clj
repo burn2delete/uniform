@@ -189,6 +189,48 @@
         (is (= (failure "first")
                (:failed-request (rt/shared-restriction ctx :api (rt/digest (pr-str ["POST" "graphql"]))))))))))
 
+(deftest inspected-status-throttle-preserves-items-and-allows-independent-work
+  (let [ctx (assoc (context) :coordinator-owner (atom true))
+        k (rt/digest (pr-str ["POST" "graphql"]))
+        query @#'gh/update-status-mutation
+        variables (fn [item] {:project "p" :item item :field "wf" :option "ready"})
+        request (fn [item phase]
+                  {:method "POST" :endpoint "graphql" :phase phase
+                   :body-sha256 (rt/digest (json/write-str {:query query :variables (variables item)}))})
+        local {:method "POST" :endpoint "graphql" :error "gh: API rate limit exceeded for 192.0.2.1. (HTTP 403)"
+               :failed-request (request "a" :provider-returned)}
+        id "project-status/p/A/1" calls (atom [])]
+    (rt/update! ctx assoc :restricted-actions {k local}
+                :project {:id "p" :workflow {:id "wf" :options [{:id "ready"}]}}
+                :tracking-intents {"project-status/p/A" id "project-status/p/B" "project-status/p/B/2"}
+                :effects {id {:status :restricted :failed-request (:failed-request local)}
+                          "project-status/p/B/2" {:status :restricted :failed-request (request "b" :before-call)}
+                          "project-item/p/A" {:status :done :result "a"}
+                          "project-item/p/B" {:status :done :result "b"}})
+    (rt/shared-restrict! ctx :api k local)
+    (is (thrown? Exception (gh/settle-status-limit! ctx "project-status/p/B/2")))
+    (let [before @(:state ctx)]
+      (is (= id (:effect (gh/settle-status-limit! ctx id))))
+      (is (= before @(:state ctx))))
+    (let [peer (assoc ctx :state (atom {}) :state-file "another-campaign")]
+      (with-redefs [rt/command (fn [_ _ _ payload]
+                                 (swap! calls conj payload)
+                                 (cond
+                                   (str/includes? payload "forbidden") {:exit 1 :err "gh: forbidden (HTTP 403)"
+                                                                       :out "{\"errors\":[{\"type\":\"RATE_LIMITED\"}]}"}
+                                   (str/includes? payload "throttled") {:exit 0 :out "{\"errors\":[{\"type\":\"RATE_LIMITED\"}]}"}
+                                   :else {:exit 0 :out "{\"data\":{}}"}))]
+        (doseq [controller [ctx peer] item ["a" "b"]]
+          (is (thrown? Exception (gh/graphql controller query (assoc (variables item) :option "done")))))
+        (is (empty? @calls))
+        (is (= {} (gh/graphql peer query (variables "independent"))))
+        (is (thrown? Exception (gh/graphql ctx query (variables "throttled"))))
+        (is (thrown? Exception (gh/graphql peer query (variables "throttled"))))
+        (is (= {} (gh/graphql peer query (variables "another-item"))))
+        (is (thrown? Exception (gh/graphql peer query (variables "forbidden"))))
+        (is (thrown? Exception (gh/graphql ctx query (variables "unrelated-after-denial"))))
+        (is (= 4 (count @calls)))))))
+
 (deftest malformed-or-mixed-graphql-output-does-not-admit-membership
   (doseq [[label output error-text]
           [["invalid JSON" "not-json" "GraphQL: Content already exists in this project"]

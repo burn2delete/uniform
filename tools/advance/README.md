@@ -153,6 +153,14 @@ restricted operations and uncertain effects retain their evidence for inspection
 
 ## Project controls
 
+After inspecting a provider-returned Project status rate limit, the original
+controller operator can run `settle-status-rate-limit CONFIG EFFECT-ID` while
+the controller is drained. The command uses the campaign lock. It reconstructs
+the failed status payload from the project field, membership and options, and
+checks the retained payload hashes before recording the scope in the shared
+registry. Every unresolved status item stays held. Older controllers continue
+to see the endpoint-wide fence. The command performs no provider request.
+
 The dedicated Project has All work, Workflow, Outcomes and Attention views.
 Status records execution separately from operator controls:
 
