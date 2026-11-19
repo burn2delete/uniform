@@ -28,6 +28,22 @@
                       p10-generated-artifact-keys)
       (p10-schema-fail! "P10-MANIFEST" source-path artifact
                         {:missing-fields [:generated-artifact-status]}))
+    (let [source-schema (:source-schema-ir artifact)
+          validator (:validator-artifact artifact)
+          ;; The generated record's hash field alone cannot authorize new boundaries.
+          declared-boundaries (set/intersection
+                               (:boundaries p10-source-schema-contract)
+                               (set (:boundaries source-schema)))
+          cleared-boundaries (set (:clears-taint-for validator))
+          retained-boundaries (set (:retains-taint-for validator))
+          invalid-clearances (set/union
+                              (set/difference cleared-boundaries declared-boundaries)
+                              (set/intersection cleared-boundaries retained-boundaries))]
+      (when (seq invalid-clearances)
+        (p10-schema-fail! "S1-TAINT" source-path
+                          (assoc source-schema :source-span (first (:source-spans source-schema)))
+                          {:derivation-target :validator
+                           :boundary (first (sort-by pr-str invalid-clearances))})))
     (doseq [document p10-schema-documents
             :let [record (get documents document)
                   summary (p10-document-summaries document)
