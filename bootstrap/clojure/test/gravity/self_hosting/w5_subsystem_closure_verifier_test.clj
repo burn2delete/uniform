@@ -342,6 +342,10 @@
                       ["x" ".gravity"])))
   (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
                       ["x" "xx"])))
+  (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
+                      [:not-a-path ".gravity"])))
+  (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
+                      ["x.gravity" :not-a-suffix])))
   (is (true? (invoke engine-plan 'w5-sc-source-fixture-path?
                      ["x.qst"])))
   (is (false? (invoke engine-plan 'w5-sc-source-fixture-path?
@@ -382,7 +386,8 @@
           (is (= :non-authority (:authority long-result)))
           (is (= long-root
                  (nested-get long-result :provenance :repository-root)))
-          (is (= source-path
+          (is (= (str long-root "/fixtures/incomplete-subsystem-closure" extension)
+                 source-path
                  (nested-get long-result :provenance :source-span-path)))
           (is (= (:identity-input short-result) (:identity-input long-result)))
           (testing "a mismatched top span suffix"
@@ -395,7 +400,16 @@
                   diagnostic (first (:diagnostics result))]
               (is (= :rejected (:status result)))
               (is (= "W5-SC-PROVENANCE" (:rule diagnostic)))
-              (is (= :source-span (:field diagnostic))))))))))
+              (is (= :source-span (:field diagnostic)))))
+          (testing "a different path in the package-build provenance record"
+            (let [invalid
+                  (assoc-in long-request [:provenance 2 :actual-provenance-path]
+                            (str long-root "/provenance/another-package.edn"))
+                  result (invoke engine-plan 'w5-subsystem-closure [invalid])
+                  diagnostic (first (:diagnostics result))]
+              (is (= :rejected (:status result)))
+              (is (= "W5-SC-PROVENANCE" (:rule diagnostic)))
+              (is (= :provenance (:field diagnostic))))))))))
 
 (deftest w5-subsystem-closure-accepts-a-long-source-root-id
   (let [base (request-for-source accepted-gravity-plan "/checkout-a" ".gravity")
