@@ -1,5 +1,7 @@
 (ns gravity.self-hosting.sh07-c6-compiled-source-binding-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
+            [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]))
 
 (deftest function-manifest-covers-a-table-with-257-definitions
@@ -60,11 +62,29 @@
           (is (= :bounded-compiled-function-table (:missing-fact diagnostic)))
           (is (= source (get-in diagnostic [:source-span :source]))))))))
 
+(defn- compile-historical-binding [request-source]
+  ;; This revision introduced the aggregate pin. Select its input bytes and
+  ;; leave the production snapshot, compiler, manifest and export checks active.
+  (let [revision "a733adfdd860e0210e7fff00ae4357200b085781"
+        path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+        {:keys [exit out err]} (shell/sh "git" "show" (str revision ":" path)
+                                        :out-enc :bytes)]
+    (when-not (zero? exit)
+      (throw (ex-info "Unable to read pinned C6 source" {:revision revision :path path :error err})))
+    (let [fixture (java.io.File/createTempFile "uniform-c6-binding-" ".gravity")]
+      (try
+        (with-open [stream (io/output-stream fixture)]
+          (.write stream ^bytes out))
+        (with-redefs [bootstrap/p15-s23-c6c10-resolve-source-path
+                      (constantly (.getCanonicalPath fixture))]
+          (bootstrap/p15-s23-c6c10-compile-source-binding request-source))
+        (finally (java.nio.file.Files/delete (.toPath fixture)))))))
+
 ;; Ordinary development binding maintenance, not C6 subject construction,
 ;; current expression-emitter validation, or renewed bootstrap evidence.
 (deftest sh07-c6-compiled-source-binding-retains-full-plan-identity
   (let [source "/virtual/sh07-c6-compiled-source-binding.gravity"
-        compiled (bootstrap/p15-s23-c6c10-compile-source-binding source)
+        compiled (compile-historical-binding source)
         manifest (:function-manifest compiled)
         preimage (bootstrap/p15-s23-c6c10-plan-pin-input
                   (:source-content-hash compiled) (:plan compiled) manifest)
