@@ -55,17 +55,20 @@
 (deftest duplicate-diagnostic-identity-refuses-artifact-construction
   (let [fixtures (repeated-rule-fixtures)
         duplicate-id (:diagnostic-id (first fixtures))
-        duplicate-fixtures (assoc-in fixtures [1 :diagnostic-id] duplicate-id)
-        duplicate (second duplicate-fixtures)]
-    (doseq [[boundary operation] (boundary-operations {:diagnostic-fixtures duplicate-fixtures})]
-      (testing (name boundary)
+        other-rule (second manifest/compiler-pass-default-diagnostic-fixtures)]
+    (doseq [[duplicate-fixtures duplicate-index]
+            [[(assoc-in fixtures [1 :diagnostic-id] duplicate-id) 1]
+             [(conj fixtures (assoc other-rule :diagnostic-id duplicate-id)) 2]]
+            :let [duplicate (nth duplicate-fixtures duplicate-index)]
+            [boundary operation] (boundary-operations {:diagnostic-fixtures duplicate-fixtures})]
+      (testing (str (name boundary) " at fixture " duplicate-index)
         (let [{:keys [diagnostic] :as result} (capture-outcome operation)]
           (is (= result (capture-outcome operation)))
           (is (not (contains? result :value)))
           (is (= {:id "C15-ID"
                   :schema-field :diagnostic-id
                   :reason :duplicate
-                  :fixture-index 1
+                  :fixture-index duplicate-index
                   :offending-diagnostic-id duplicate-id
                   :stage (:stage duplicate)
                   :profile (:profile duplicate)
@@ -124,9 +127,11 @@
   (let [fixtures (repeated-rule-fixtures)
         duplicate-fixtures (assoc-in fixtures [1 :diagnostic-id]
                                      (:diagnostic-id (first fixtures)))]
-    (doseq [[fixtures expected-id] [[(assoc-in duplicate-fixtures [1 :facts] nil) "C15-FACTS"]
-                                   [(vec (reverse duplicate-fixtures)) "C15-ORDER"]]
-            [boundary operation] (boundary-operations {:diagnostic-fixtures fixtures})]
+    (doseq [[invalid-fixtures expected-id]
+            [[(assoc-in duplicate-fixtures [1 :facts] nil) "C15-FACTS"]
+             [(assoc-in duplicate-fixtures [1 :secret-free?] false) "C15-REDACTION"]
+             [(vec (reverse duplicate-fixtures)) "C15-ORDER"]]
+            [boundary operation] (boundary-operations {:diagnostic-fixtures invalid-fixtures})]
       (testing (str expected-id " at " (name boundary))
         (let [result (capture-outcome operation)]
           (is (= expected-id (get-in result [:diagnostic :id])))
