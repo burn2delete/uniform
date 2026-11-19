@@ -75,11 +75,9 @@
          source-path :exact-sh03-reader-plan-envelope
          plan {:observed-keys (when (map? plan) (set (keys plan)))}))
       (let [static-audit (sh03-reader-plan-static-audit! source-path plan)
-            identities (sh03-reader-plan-identities plan)
-            expected-plan-id
-            (reader-canonical-hash (dissoc plan :plan-id))]
+            identities (sh03-reader-compute-plan-identities plan)]
         (when-not
-         (and (= expected-plan-id (:plan-id plan))
+         (and (= (:plan-semantic-hash identities) (:plan-id plan))
               (= (:instruction-summary plan)
                  (:instruction-summary static-audit)
                  (:instruction-summary identities))

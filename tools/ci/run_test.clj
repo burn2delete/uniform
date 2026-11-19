@@ -1626,7 +1626,7 @@
 
 (deftest contracts-include-the-complete-native-tooling-and-ownership-namespaces
   (let [commands (ci/commands-for-selection "contracts" {:kind :full})]
-    (is (= expected-contract-command-ids
+    (is (= (conj expected-contract-command-ids "jvm-backend-regression")
            (mapv first commands)))
     (doseq [[command [label namespace path]]
             (map vector (drop 4 commands)
@@ -1677,7 +1677,8 @@
     (public-command {:kind :docs-only :reason :known-documentation-only
                      :paths ["README.md"]})
     (doseq [selection selections]
-      (is (= expected-contract-command-ids
+      (is (= (cond-> expected-contract-command-ids
+               (not= :selected (:kind selection)) (conj "jvm-backend-regression"))
              (mapv first (ci/commands-for-selection "contracts" selection))))
       (public-command selection))
     (doseq [path stage-paths]
@@ -2524,7 +2525,8 @@
                    (assoc argv (dec (count argv)) "gravity.mir.pipeline-test") source-vars namespace))))))
 
 (deftest contracts-include-the-complete-c7-set-equality-routing-namespace
-  (let [[label timeout argv] (last (ci/commands-for-selection "contracts" {:kind :full}))
+  (let [[label timeout argv] (some #(when (= "c7-set-equality-routing" (first %)) %)
+                                   (ci/commands-for-selection "contracts" {:kind :full}))
         namespace "gravity.self-hosting.sh08-set-equality-routing-test"
         source-vars (binding [*read-eval* false]
                       (source-deftest-names "bootstrap/clojure/test/gravity/self_hosting/sh08_set_equality_routing_test.clj"))]
@@ -3290,6 +3292,67 @@
       (is (= :full (:kind (ci/stage-selection [record]))) (pr-str record)))
     (doseq [records [[] [regular regular] [nil] [(dissoc regular :status)]]]
       (is (= :full (:kind (ci/stage-selection records))) (pr-str records)))))
+
+(deftest jvm-backend-only-selection-runs-the-owner-regression
+  (let [base (apply str (repeat 40 "a"))
+        source "bootstrap/clojure/src/gravity/backend/jvm.clj"
+        pipeline "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"
+        value-adapter "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00773-jvm-backend-value-source.clj"
+        jar-adapter "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00774-jvm-backend-stored-jar-entry.clj"
+        change (fn [path] {:path path :status "M"
+                           :old-mode "100644" :new-mode "100644"})
+        regression (some #(when (= "jvm-backend-regression" (first %)) %)
+                         (ci/commands "contracts"))
+        argv (last regression)
+        namespace "gravity.backend.jvm.pipeline-test"
+        source-tests (binding [*read-eval* false] (source-deftest-names pipeline))]
+    (doseq [paths [[source] [pipeline] [value-adapter] [jar-adapter] [source pipeline]]
+            :let [changes (mapv change paths)
+                  selection (assoc (ci/stage-selection changes) :base base)
+                  outputs (selector-output-map selection)
+                  static (ci/commands-for-selection "static" selection)
+                  contracts (ci/commands-for-selection "contracts" selection)]]
+      (is (= [:selected :jvm-backend-only] ((juxt :kind :reason) selection)) paths)
+      (is (= #{"static" "contracts" "static-tools-required" "selection-valid"}
+             (into #{} (keep (fn [[key value]] (when (= "true" value) key))) outputs))
+          paths)
+      (is (= ["whitespace" "changed-clojure-lint"] (mapv first static)) paths)
+      (is (= ["git" "diff" "--check" base "HEAD"] (last (first static))) paths)
+      (is (= (into ["tools/ci/lint.clj" base] paths)
+             (vec (drop-while #(not= "tools/ci/lint.clj" %) (last (second static)))))
+          paths)
+      (is (= ["language-boundary" "jvm-backend-regression"] (mapv first contracts)) paths)
+      (is (= regression (last contracts)) paths)
+      (doseq [platform ["portable" "darwin"]]
+        (is (= {:kind :selected :reason :jvm-backend-only :paths paths :entries []}
+               (ci/leaf-selection-for-changes platform [] changes))
+            platform)))
+    (is (= [(symbol namespace)] (:namespaces (dev-test-command-options argv))))
+    (is (contains? source-tests "real-source-java21-jar-and-refusals"))
+    (is (= source-tests (selected-names-in-namespace argv source-tests namespace)))))
+
+(deftest jvm-backend-selection-fails-closed-for-mixed-and-structural-diffs
+  (let [change (fn [path] {:path path :status "M"
+                           :old-mode "100644" :new-mode "100644"})
+        jvm (change "bootstrap/clojure/src/gravity/backend/jvm.clj")
+        unrelated ["README.md" "docs/ci.md"
+                   "bootstrap/clojure/src/gravity/reader.clj"
+                   "bootstrap/clojure/src/gravity/backend/jvm/unknown.clj"
+                   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00772-js-ts-backend-file-artifact.clj"
+                   "bootstrap/clojure/fixtures/jvm-toolchain/rejected.gravity"
+                   ".github/workflows/ci.yml" "deps.edn"]]
+    (doseq [changes (concat (map #(vector jvm (change %)) unrelated)
+                            [[] [jvm jvm] [(dissoc jvm :status)]
+                             [(assoc jvm :status "D" :new-mode "000000")]
+                             [(assoc jvm :status "R")]
+                             [(assoc jvm :new-mode "100755")]
+                             [(assoc jvm :status "T" :new-mode "120000")]])
+            :let [selection (ci/stage-selection changes)]]
+      (is (= :full (:kind selection)) changes)
+      (is (= (selector-output-map {:kind :full}) (selector-output-map selection)) changes)
+      (is (= (ci/commands "contracts") (ci/commands-for-selection "contracts" selection))
+          changes)
+      (is (= :full (:kind (ci/leaf-selection-for-changes "portable" [] changes))) changes))))
 
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
