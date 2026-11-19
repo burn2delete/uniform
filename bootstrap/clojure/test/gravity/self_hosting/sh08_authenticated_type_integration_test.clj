@@ -254,10 +254,22 @@
     (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
    :macro-source-mode :development-current})
 
+(def ^:private current-emitter
+  (delay
+    ((ns-resolve 'gravity.bootstrap
+                 'p15-s23-stage2-current-expression-development-binding!)
+     (path "bootstrap/gravity/p15_s23/emitter.gravity"))))
+
+(defn- with-frontend-operation [operation]
+  ;; The envelope owner reauthenticates its source before each lookup.
+  ;; Construction and independent replay each get their own plan scope.
+  (binding [bootstrap/*p15-s23-stage2-compiler-artifact-binding* @current-emitter]
+    ((ns-resolve 'gravity.bootstrap 'p15-s23-with-stage2-plan-emission-context)
+     operation)))
+
 (defn- core-artifact
-  [source-path]
-  (let [invocation (current-source-invocation)
-        reader-source-path (:reader-source-path invocation)
+  [source-path invocation]
+  (let [reader-source-path (:reader-source-path invocation)
         text (slurp source-path)
         module-inputs
         {:artifact :gravity/sh06-module-inputs
@@ -287,10 +299,11 @@
 
 (defn- products
   [source-path]
-  (let [artifact (core-artifact source-path)
+  (let [invocation (current-source-invocation)
+        artifact (with-frontend-operation #(core-artifact source-path invocation))
         verification
-        (bootstrap/sh07-core-artifact-verification
-         artifact (current-source-invocation))]
+        (with-frontend-operation
+          #(bootstrap/sh07-core-artifact-verification artifact invocation))]
     (when-not (= :passed (:status verification))
       (throw (ex-info "SH-08 fixture failed fresh SH-07 verification"
                       {:id "SH08-AUTH-CORE-VERIFICATION"
@@ -844,6 +857,7 @@
              [request-b authenticated-b run-b]]]
       (let [result (:result run)]
         (is (= :accepted (get-in run [:c7-request :status])))
+        (is (= :accepted (get-in run [:type-template :status])))
         (is (= :passed (get-in run [:type-verification :status])))
         (is (= :accepted (:status result)))
         (is (= {:actual-source-path (:actual-source-path bridge-request)
@@ -864,6 +878,7 @@
            (:identity-input result-b)))
     (is (= (:artifact-id result-a)
            (:artifact-id result-b)))
+    (is (= (dissoc result-a :provenance) (dissoc result-b :provenance)))
     (is (not= (get-in result-a [:provenance :provenance-binding-id])
               (get-in result-b [:provenance :provenance-binding-id])))
     (testing "malformed path provenance is rejected"
