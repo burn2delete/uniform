@@ -324,3 +324,49 @@ and Safety `56b119414d255696883af9ca15a01d6380a2d5b92bb7ecaad1dd32ad13290265`.
 This bridge records source reconciliation only; it confers no implementation,
 canonical-adoption, release, self-hosting, denominator, or integration
 authority.
+
+## Validated UTF-8 byte slice
+
+Finding `stdlib.text.validated-utf8-byte-slice-v1` implements the byte-offset
+case of [STD4](../../docs/phase-16-standard-library/214-std4-string-and-text-library-specification.md)
+in the experimental `:meta` library request path. The operation rebuilds the
+validated value from all input bytes and compares its facts before checking
+the half-open range. On valid UTF-8 each endpoint must be at the end of the
+vector or at a non-continuation byte. The result owns a copied byte vector.
+
+The [focused fixtures](../../bootstrap/clojure/test/gravity/self_hosting/sh22_utf8_byte_slice_test.clj)
+consume validator output for `[65 240 159 152 128 66]`. They expect one
+four-byte scalar for `[1,5)`, empty text for `[6,6)`, and STD4002 for split,
+reversed, noninteger or out-of-range endpoints. Malformed bytes outside the
+slice and false validation facts expect STD4001. Other fixtures cover request
+authority, provenance, replay and substitution of another valid scalar.
+
+The controller reported exit 1 for `gravity.self-hosting.sh22-standard-library-test`:
+29 tests, 7882 assertions, 28 failures and 0 errors. Two assertions expected
+25 operations and exports. The new slice brings each inventory to 26. The
+other 26 failures expected one observed `quot` call on accepted operands.
+The quotient values matched, but each observed call list was empty.
+
+Source inspection traced the empty lists to the test observer. The generic
+runtime call passes `[runtime plan function args instruction public-invocation-scope]`.
+The observer inspects the last two arguments for the function and operands.
+Its empty lists therefore also fail to establish that rejected inputs avoid
+division. The observer needs to capture the actual function and operands while
+forwarding the complete call to the original builtin. Keep the one-call and
+zero-call assertions for accepted and rejected inputs respectively.
+
+Both repairs require ownership of
+`bootstrap/clojure/test/gravity/self_hosting/sh22_standard_library_test.clj`.
+The separate inventory assertion in
+`bootstrap/clojure/test/gravity/self_hosting/sh22_integer_set_equality_test.clj`
+also expects 25 and needs the same inventory update. The supplied run covered
+only the standard-library namespace. Controller checks after repair and
+independent acceptance remain pending.
+
+```clojure
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-utf8-byte-slice-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-standard-library-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh22-integer-set-equality-test"]
+["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]
+```
+
