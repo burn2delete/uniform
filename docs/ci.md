@@ -33,13 +33,13 @@ use the explicit CLI route for focused execution.
 | Check | PR | Main/manual/weekly | Evidence and limits |
 | --- | --- | --- | --- |
 | static | Always. Git whitespace only for changes limited to reviewed explanatory docs. | Always | actionlint 1.7.12 workflow syntax, clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling, cljfmt 0.13.4 on CI tooling, Git whitespace, and harness failure controls. |
-| contracts (projections) | Always. Document and roadmap validation only for changes limited to reviewed explanatory docs. | Always | The canonical 240-document validator, the full-language roadmap validator and its negative fixtures, acceptance dependency controls, and native and type-inference suites. |
+| contracts (projections) | Always. Reviewed explanatory docs select document and roadmap validation. Reviewed JVM backend changes select the language boundary and JVM pipeline. | Always | Full CI runs the canonical 240-document validator, the full-language roadmap validator and its negative fixtures, acceptance dependency controls, native and type-inference suites, and the JVM pipeline. |
 | bootstrap | Stage selection | Always | Fresh process requires Bootstrap without preinstalled aliases, exact decimal/abbreviation Reader regressions, language boundary, strict catalog controls, and ownership inventory. |
 | macro | Stage selection | Always | Three fresh processes run the ordinary pipeline tests, the receipt and artifact verification controls, and the Bootstrap C4 compatibility namespace. |
 | checked-core-runtime | Stage selection | Always | Checked-Core pipeline, current-binding and projection-kernel regressions. The Node 20 checks cover B6 scalar execution, checked-add guard identity and the public CLI smoke test as described below. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Stage selection | Always | Three independent Resolution matrix jobs may overlap and retain separate logs and receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog. The other two modes run one fresh child each. |
-| fresh-leaf-regressions / portable and / darwin | The reviewed source/test require closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. Changes limited to reviewed explanatory docs record skipped checks. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Each selected namespace gets a fresh JVM. |
-| darwin-unsupported-host | Skipped for changes limited to reviewed explanatory docs. Runs its refusal probe for other PRs. | Always | The actual macOS 15 kernel must reject required confinement features before any publication open. |
+| fresh-leaf-regressions / portable and / darwin | The reviewed source/test require closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. Reviewed explanatory docs and JVM backend changes record skipped checks. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Each selected namespace gets a fresh JVM. |
+| darwin-unsupported-host | Reviewed explanatory docs and JVM backend changes record a skipped check. Other PRs run the refusal probe. | Always | The actual macOS 15 kernel must reject required confinement features before any publication open. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
@@ -80,6 +80,17 @@ falls back to the full semantic matrix. If changed-path discovery is missing
 or malformed, the selector also falls back to the full matrix, while `static`
 records an explicit failed selection result so an untrusted diff cannot pass
 without changed-file lint.
+
+The JVM route applies when an authenticated PR diff contains only regular
+additions or modifications to the enumerated JVM owner, its two dedicated
+Bootstrap adapters, or its pipeline tests. The required `static` check runs
+Git whitespace and changed-file Clojure lint. The required `contracts` check
+runs the language boundary and the full `gravity.backend.jvm.pipeline-test`
+namespace on the pinned JDK. That suite compiles both source spellings with
+`javac`, builds and runs deterministic Java 21 JARs, and checks toolchain,
+lowering, and artifact refusals. The other matrix jobs retain their required
+check names and record skips. Mixed or structural diffs use full CI, which
+also runs the JVM pipeline on main, scheduled, and manual runs.
 
 The `resolution-pipeline` mode starts two fresh 600-second children
 sequentially: one cohort and one fresh current-product replay. The other two
