@@ -122,7 +122,7 @@
      :source-content-hash source-content-hash
      :builtin-functions (:builtin-functions audit)}))
 
-(defn sh03-reader-plan-identities
+(defn- sh03-reader-compute-plan-identities
   [plan]
   (let [functions (:functions plan)
         function-names (vec (sort-by str (keys functions)))
@@ -150,6 +150,9 @@
      :instruction-summary (:instruction-summary audit)
      :observed-instruction-nodes (:observed-nodes audit)
      :observed-instruction-depth (:observed-depth audit)}))
+
+(defn sh03-reader-plan-identities [plan]
+  (sh03-reader-compute-plan-identities plan))
 
 (defn sh03-reader-plan-task
   [instruction locals target tail? depth]
