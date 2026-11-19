@@ -64,49 +64,55 @@
   "Exact paths whose consumer runs in checked-core-runtime and is outside the leaf catalog."
   #{c7-source-path b6-source-path})
 
+;; The current SH-03 plan reads its Gravity source through the seed form
+;; reader and reports tampering through the C2 reader diagnostics.
+(def ^:private reader-plan-hash-path-prefixes
+  ["bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+   "bootstrap/clojure/src/gravity/reader_primitives.clj"
+   "bootstrap/clojure/src/gravity/reader_cursor.clj"
+   "bootstrap/clojure/src/gravity/reader_host_oracle.clj"
+   "bootstrap/clojure/src/gravity/reader_namespace.clj"
+   "bootstrap/clojure/src/gravity/c2_reader_diagnostics"
+   "bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj"])
+
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
 ;; retain the full matrix rather than being guessed into one stage.
 (def stage-path-prefixes
-  {"bootstrap" ["bootstrap/gravity/src/gravity/reader.gravity"
-                "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
-                "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
-                "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
-                "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                "bootstrap/clojure/src/gravity/reader.clj"
-                "bootstrap/clojure/src/gravity/reader_primitives.clj"
-                "bootstrap/clojure/src/gravity/reader_cursor.clj"
-                "bootstrap/clojure/src/gravity/reader_host_oracle.clj"
-                "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj"
-                "bootstrap/clojure/src/gravity/reader_namespace.clj"
-                "bootstrap/clojure/src/gravity/c2_reader_product_projection"
-                "bootstrap/clojure/src/gravity/c2_reader_diagnostics"
-                "bootstrap/clojure/src/gravity/c3_literal_projection"
-                "bootstrap/clojure/src/gravity/c3_reader_expansions.clj"
-                "bootstrap/clojure/src/gravity/c3_reader_integrity"
-                "bootstrap/clojure/src/gravity/c3_reader_integrity.clj"
-                "bootstrap/clojure/src/gravity/c3_syntax_construction"
-                "bootstrap/clojure/src/gravity/c3_syntax_construction.clj"
-                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics"
-                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj"
-                "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj"
-                "bootstrap/clojure/src/gravity/c3_syntax_verification"
-                "bootstrap/clojure/src/gravity/c3_syntax_verification.clj"
-                "bootstrap/clojure/src/gravity/c3_artifact_identity.clj"
-                "bootstrap/clojure/src/gravity/syntax.clj"
-                "bootstrap/clojure/src/gravity/syntax_object_stream.clj"
-                "bootstrap/clojure/src/gravity/syntax_origin.clj"
-                "bootstrap/clojure/test/gravity/reader"
-                "bootstrap/clojure/test/gravity/reader_"
-                "bootstrap/clojure/test/gravity/c2_reader_"
-                "bootstrap/clojure/test/gravity/c3_"
-                "bootstrap/clojure/test/gravity/syntax"
-                "bootstrap/clojure/test/gravity/syntax_"
-                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"
-                "bootstrap/clojure/test/gravity/self_hosting/sh03_"
-                "bootstrap/clojure/test/gravity/self_hosting/sh04_"
-                "bootstrap/clojure/fixtures/self-hosting/sh-03"
-                "bootstrap/clojure/fixtures/self-hosting/sh-04"]
+  {"bootstrap" (into reader-plan-hash-path-prefixes
+                     ["bootstrap/gravity/src/gravity/reader.gravity"
+                      "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
+                      "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+                      "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                      "bootstrap/clojure/src/gravity/reader.clj"
+                      "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj"
+                      "bootstrap/clojure/src/gravity/c2_reader_product_projection"
+                      "bootstrap/clojure/src/gravity/c3_literal_projection"
+                      "bootstrap/clojure/src/gravity/c3_reader_expansions.clj"
+                      "bootstrap/clojure/src/gravity/c3_reader_integrity"
+                      "bootstrap/clojure/src/gravity/c3_reader_integrity.clj"
+                      "bootstrap/clojure/src/gravity/c3_syntax_construction"
+                      "bootstrap/clojure/src/gravity/c3_syntax_construction.clj"
+                      "bootstrap/clojure/src/gravity/c3_syntax_diagnostics"
+                      "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj"
+                      "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj"
+                      "bootstrap/clojure/src/gravity/c3_syntax_verification"
+                      "bootstrap/clojure/src/gravity/c3_syntax_verification.clj"
+                      "bootstrap/clojure/src/gravity/c3_artifact_identity.clj"
+                      "bootstrap/clojure/src/gravity/syntax.clj"
+                      "bootstrap/clojure/src/gravity/syntax_object_stream.clj"
+                      "bootstrap/clojure/src/gravity/syntax_origin.clj"
+                      "bootstrap/clojure/test/gravity/reader"
+                      "bootstrap/clojure/test/gravity/reader_"
+                      "bootstrap/clojure/test/gravity/c2_reader_"
+                      "bootstrap/clojure/test/gravity/c3_"
+                      "bootstrap/clojure/test/gravity/syntax"
+                      "bootstrap/clojure/test/gravity/syntax_"
+                      "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"
+                      "bootstrap/clojure/test/gravity/self_hosting/sh03_"
+                      "bootstrap/clojure/test/gravity/self_hosting/sh04_"
+                      "bootstrap/clojure/fixtures/self-hosting/sh-03"
+                      "bootstrap/clojure/fixtures/self-hosting/sh-04"])
    "macro" ["language/compiler/src/gravity/macro.gravity"
             "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             "bootstrap/clojure/src/gravity/macro.clj"
@@ -437,6 +443,13 @@
 (defn- b6-source-change? [selection]
   (some #{b6-source-path} (selection-paths selection)))
 
+(defn- reader-plan-hash-required? [selection]
+  (or (nil? selection)
+      (= :full (:kind selection))
+      (some (fn [path]
+              (some #(prefix-path? path %) reader-plan-hash-path-prefixes))
+            (selection-paths selection))))
+
 (defn- checked-js-owner-required? [selection]
   (boolean (or (nil? selection)
                (= :full (:kind selection))
@@ -656,45 +669,6 @@
            :clojure-paths []
            :selection-error (str error)})))))
 
-(defn selection-output-lines [selection]
-  (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
-        seedless-tests-only? (= :seedless-tests-only (:reason selection))
-        jvm-backend-only? (= :jvm-backend-only (:reason selection))
-        modes (if (= :full (:kind selection))
-                (conj semantic-modes "leaves-portable" "leaves-darwin"
-                      "darwin-unsupported")
-                (cond-> (set (:modes selection))
-                  (= :docs-only (:kind selection))
-                  (into always-pr-modes)
-                  (or lint-tooling-only? seedless-tests-only?)
-                  (into #{"static" "contracts" "darwin-unsupported"})
-                  (and (not= :docs-only (:kind selection))
-                       (not lint-tooling-only?)
-                       (not seedless-tests-only?)
-                       (not jvm-backend-only?))
-                  (conj "leaves-portable" "leaves-darwin"
-                        "darwin-unsupported")))]
-    (into (mapv #(str % "=" (boolean (contains? modes %)))
-                ["static" "contracts" "bootstrap" "macro" "resolution"
-                 "checked-core-runtime" "leaves-portable" "leaves-darwin"
-                 "darwin-unsupported"])
-          [(str "static-tools-required=" (boolean (not= :docs-only (:kind selection))))
-           (str "checked-js-owner-required=" (checked-js-owner-required? selection))
-           ;; Downstream jobs use this marker to distinguish a complete
-           ;; selector result from missing or malformed job outputs.
-           "selection-valid=true"])))
-
-(defn- emit-selection-output! [selection]
-  (when-let [path (System/getenv "GITHUB_OUTPUT")]
-    (spit path (str (str/join "\n" (selection-output-lines selection)) "\n")
-          :append true)))
-
-(defn select! []
-  (let [selection (pull-request-selection)]
-    (emit-selection-output! selection)
-    (println "CI selection" (pr-str (select-keys selection [:kind :reason :base :paths :modes])))
-    0))
-
 (defn skip-for-docs-only? [mode selection]
   (and (contains? semantic-modes mode)
        (= :docs-only (:kind selection))
@@ -901,19 +875,18 @@
                    (conj visited path)))))
       paths)))
 
-(defn leaf-selection-for-changes [platform catalog changes]
+(defn- catalog-leaf-selection [catalog changes]
   (let [changes (vec changes)
-        paths (mapv :path changes)
-        platform-catalog (platform-leaf-catalog platform catalog)]
+        paths (mapv :path changes)]
     (cond
       (empty? changes)
-      {:kind :full :reason :no-changes :paths paths :entries platform-catalog}
+      {:kind :full :reason :no-changes :paths paths :entries catalog}
 
       (some #(not (regular-added-or-modified? %)) changes)
-      {:kind :full :reason :non-regular-change :paths paths :entries platform-catalog}
+      {:kind :full :reason :non-regular-change :paths paths :entries catalog}
 
       (some contract-or-spec-path? paths)
-      {:kind :full :reason :contract-or-spec-change :paths paths :entries platform-catalog}
+      {:kind :full :reason :contract-or-spec-change :paths paths :entries catalog}
 
       (lint-tooling-only? paths)
       {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
@@ -922,7 +895,7 @@
       {:kind :selected :reason :jvm-backend-only :paths paths :entries []}
 
       (some cross-cutting-path? paths)
-      {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}
+      {:kind :full :reason :cross-cutting-change :paths paths :entries catalog}
 
       (every? docs-only-record? changes)
       {:kind :docs-only :reason :known-documentation-only :paths paths :entries []}
@@ -945,7 +918,7 @@
               {:kind :full
                :reason :unknown-or-unowned-leaf-path
                :paths paths
-               :entries platform-catalog}
+               :entries catalog}
               (let [matching-ids (->> closures
                                       (filter #(some (set paths) (:paths %)))
                                       (map (comp :id :entry))
@@ -953,13 +926,16 @@
                 {:kind :selected
                  :reason :affected-leaf
                  :paths paths
-                 :entries (filterv #(contains? matching-ids (:id %)) platform-catalog)}))))
+                 :entries (filterv #(contains? matching-ids (:id %)) catalog)}))))
         (catch Exception error
           {:kind :full
            :reason :leaf-closure-failed
            :paths paths
            :selection-error (str error)
-           :entries platform-catalog})))))
+           :entries catalog})))))
+
+(defn leaf-selection-for-changes [platform catalog changes]
+  (update (catalog-leaf-selection catalog changes) :entries #(platform-leaf-catalog platform %)))
 
 (defn leaf-selection
   ([platform catalog]
@@ -971,6 +947,53 @@
   (binding [*command-line-args* nil]
     (load-file "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"))
   (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog)))
+
+(defn- scheduled-leaf-modes [selection]
+  (cond
+    (or (= :docs-only (:kind selection))
+        (contains? #{:jvm-backend-only :lint-tooling-only :seedless-tests-only} (:reason selection)))
+    #{}
+
+    (seq (:changes selection))
+    (let [{:keys [kind entries]} (catalog-leaf-selection (load-leaf-catalog) (:changes selection))]
+      (if (= :selected kind)
+        (into #{} (keep #(when (seq (platform-leaf-catalog % entries)) (str "leaves-" %)))
+              ["portable" "darwin"])
+        leaf-modes))
+
+    :else leaf-modes))
+
+(defn selection-output-lines [selection]
+  (let [selection (if (or (= :docs-only (:kind selection))
+                          (and (= :selected (:kind selection))
+                               (set? (:modes selection))
+                               (every? (:modes selection) always-pr-modes))
+                          (= :full (:kind selection)))
+                    selection
+                    {:kind :full})
+        modes (case (:kind selection)
+                :docs-only always-pr-modes
+                :selected (:modes selection)
+                semantic-modes)
+        modes (cond-> (into modes (scheduled-leaf-modes selection))
+                (and (not= :docs-only (:kind selection))
+                     (not= :jvm-backend-only (:reason selection)))
+                (conj "darwin-unsupported"))]
+    (into (mapv #(str % "=" (contains? modes %))
+                ["static" "contracts" "bootstrap" "macro" "resolution"
+                 "checked-core-runtime" "leaves-portable" "leaves-darwin" "darwin-unsupported"])
+          [(str "static-tools-required=" (not= :docs-only (:kind selection)))
+           (str "checked-js-owner-required=" (checked-js-owner-required? selection))
+           "selection-valid=true"])))
+
+(defn select! []
+  (let [selection (pull-request-selection)
+        outputs (selection-output-lines selection)]
+    (when-let [path (System/getenv "GITHUB_OUTPUT")]
+      (spit path (str (str/join "\n" outputs) "\n") :append true))
+    (println "CI selection" (pr-str (select-keys selection [:kind :reason :base :paths])))
+    (println "CI scheduling outputs" (str/join " " outputs))
+    0))
 
 (defn leaf-command
   ([platform] (leaf-command platform nil))
@@ -1143,6 +1166,12 @@
                        "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
                        "--namespace" "gravity.self-hosting.sh04-form-index-test"
                        "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
+      (reader-plan-hash-required? selection)
+      (conj ["reader-plan-hash-regression" 120
+             (command "2g" "-M:dev-test"
+                      "--namespace" "gravity.self-hosting.sh03-reader-adapter-test"
+                      "--exact" "gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority"
+                      "--fail-fast")])
       (bootstrap-input-controls-required? selection)
       (conj ["bootstrap-input-controls" 600
              (command "2g" "-M:dev-test"
@@ -1281,9 +1310,18 @@
          :reason :non-pull-request
          :entries (platform-leaf-catalog platform catalog)}))))
 
+(defn execution-selection [selection force-full?]
+  (if (and force-full? (not= :non-pull-request (:reason selection)))
+    ;; Keep the independently verified base and lint paths. Dropping the PR
+    ;; narrowing inputs also forces the full platform catalog and owner tests.
+    (assoc (select-keys selection [:base :clojure-paths :selection-error])
+           :kind :full :reason :shared-selection-unavailable)
+    selection))
+
 (defn run-mode! [mode]
   (let [selection (if (or (contains? semantic-modes mode) (leaf-mode? mode))
-                    (pull-request-selection)
+                    (execution-selection (pull-request-selection)
+                                         (= "true" (System/getenv "CI_FORCE_FULL")))
                     {:kind :full :reason :non-semantic-mode})
         skipped? (skip-for-docs-only? mode selection)
         stage-skipped? (skip-for-stage-selection? mode selection)
@@ -1318,7 +1356,7 @@
                   {:mode mode :selection selection :results results})]
     (spit (io/file output (str mode "-summary.edn")) (str (pr-str summary) "\n"))
     (when skipped?
-      (println "CI mode" mode "skipped for known documentation-only PR; required matrix job retained"))
+      (println "CI mode" mode "skipped for known documentation-only PR"))
     (when (and docs-only? (= "static" mode))
       (println "CI mode static ran the docs-only whitespace check"))
     (if (every? #(contains? #{:passed :skipped} (:status %)) results) 0 1)))

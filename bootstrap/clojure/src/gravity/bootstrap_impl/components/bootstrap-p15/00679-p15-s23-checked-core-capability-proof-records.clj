@@ -189,10 +189,7 @@
 (defn p15-s23-checked-core-authority-safe-source-path?
   [source-path]
   (and (string? source-path)
-       (<= (count source-path) 4096)
-       (= :valid
-          (:status
-           (p15-s23-closed-core-diagnostic-utf8-count source-path 16384)))))
+       (= :valid (:status (p15-s23-closed-core-utf8-count source-path)))))
 
 (defn p15-s23-checked-core-authority-small-map?
   [value maximum-count]

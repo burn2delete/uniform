@@ -130,20 +130,34 @@
   (let [leaf-path (fixture "modules" "module-loop-leaf" ".gravity")
         path (fixture "modules" "module-loop-root" ".gravity")
         text (slurp path)
+        invocation (assoc (bootstrap/stage2-runtime-current-reader-invocation)
+                          :macro-source-mode :development-current)
+        reader-path (:reader-source-path invocation)
+        reader-hash (str "sha256:" (bootstrap/sha256-hex (slurp reader-path :encoding "UTF-8")))
+        resolve-module (fn [source-path source-text module-artifacts]
+                         (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path source-text
+                          {:artifact :gravity/sh06-module-inputs :schema-version 1
+                           :module-artifacts module-artifacts}
+                          reader-path invocation))
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         _ (println :loop-module-phase :leaf-c5)
-        leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
-        module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
+        leaf (resolve-module leaf-path (slurp leaf-path) [])
         _ (println :loop-module-phase :root-c5)
-        caller (bootstrap/compiler-c5-resolution-file-artifact path module-inputs)
+        caller (resolve-module path text [leaf])
         dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path))
         inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
         _ (println :loop-module-phase :bundle)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text inputs)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text inputs invocation)
         root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))
         routes (:routes bundle)
         instructions (bootstrap/p15-s23-stage2-module-instructions (:plan root))]
     (is (= :accepted (:status leaf) (:status caller)))
+    (doseq [artifact [leaf caller]]
+      (is (= reader-hash
+             (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                               :c2-reader-artifact :sh03-reader-authentication :reader-source-revision
+                               :source-content-hash]))))
     (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
     (is (= :not-checked (get-in bundle [:boundary :effects])))
     (is (false? (get-in bundle [:boundary :self-hosted?])))
@@ -160,7 +174,8 @@
       (is (= (:artifact-id leaf) (get-in route [:origin :ordinary-module-artifact-id]))))
     (let [result (atom nil)
           _ (println :loop-module-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle 'main [])))]
+          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-module-execute-function
+                                               runtime bundle 'main [] invocation)))]
       (is (= ["outer" "inner"] @result))
       ;; Both loops really transfer once; initializers are not repeated.
       (is (= "flag\ninit\nbody\nstep\nbody\nnested\n" output)))
@@ -168,23 +183,32 @@
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id changed) (:modules changed) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
           failure (atom nil)
-          output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'main []))))]
+          output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                             runtime forged 'main [] invocation))))]
       (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash identity)))
       (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
       (is (= "" output)))
     (let [bad-path (fixture "rejected" "module-loop-private-import" ".gravity")
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact bad-path module-inputs))]
+          failure (diagnostic #(resolve-module bad-path (slurp bad-path) [leaf]))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (= bad-path (get-in failure [:source-span :source]))))
     (let [changed (str/replace-first text "(leaf/identity (do (println \"flag\") true))"
                                      "(leaf/identity (do (println \"flag\") true) :extra)")
-          artifact (bootstrap/compiler-c5-resolution-source-artifact path changed module-inputs)
-          failure (atom nil)
-          output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
-                                                           emitter path changed (assoc inputs :caller-resolution-artifact artifact)))))]
-      (is (not= text changed))
-      (is (= :accepted (:status artifact)))
-      (is (= "L2-FUNCTION-ARITY" (:id @failure)))
-      (is (= 1 (:expected-arity @failure)))
-      (is (= 2 (:actual-arity @failure)))
-      (is (= "" output)))))
+          temporary (java.io.File/createTempFile "uniform-stage2-loop-negative-" ".gravity")]
+      (try
+        (spit temporary changed)
+        (let [changed-path (.getCanonicalPath temporary)
+              artifact (resolve-module changed-path changed [leaf])
+              failure (atom nil)
+              output (with-out-str
+                       (reset! failure
+                               (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                             emitter changed-path changed
+                                             (assoc inputs :caller-resolution-artifact artifact) invocation))))]
+          (is (not= text changed))
+          (is (= :accepted (:status artifact)))
+          (is (= "L2-FUNCTION-ARITY" (:id @failure)))
+          (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
+          (is (= changed-path (get-in @failure [:source-span :primary :source])))
+          (is (= "" output)))
+        (finally (.delete temporary))))))
