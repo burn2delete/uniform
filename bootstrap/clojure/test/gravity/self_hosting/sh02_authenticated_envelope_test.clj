@@ -66,6 +66,16 @@
       (throw (ex-info "SH-02 private bootstrap helper is absent"
                       {:id "SH02-PRIVATE-HELPER" :symbol symbol}))))
 
+(deftest exact-keys-checks-the-declared-set-against-the-envelope
+  (doseq [[value expected accepted?]
+          [[{} #{} true]
+           [{:a nil :b false} #{:b :a} true]
+           [{:a nil :extra false} #{:a :b} false]
+           [{:a nil :b false} #{:a} false]
+           [{:a nil} [:a] false]
+           [[] #{} false]]]
+    (is (= accepted? (invoke-envelope 'ae-exact-keys? [value expected])))))
+
 (defn- canonical-id
   [value]
   (bootstrap/p15-s23-c6c10-canonical-digest
