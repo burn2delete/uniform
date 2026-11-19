@@ -8,6 +8,7 @@
             [clojure.string :as str]
             [simplify.coordination :as coordination]
             [simplify.diagnostics :as diagnostics]
+            [simplify.github :as github]
             [simplify.main :as base]
             [simplify.recovery :as recovery]
             [simplify.runtime :as rt]
@@ -249,6 +250,9 @@
 
 (defn dispatch! [ctx command args]
   (case command
+    "settle-status-rate-limit"
+    (do (when-not (= 1 (count args)) (rt/fail! "Expected the original rate-limited status effect ID" {}))
+        (rt/with-lock ctx #(prn (github/settle-status-limit! ctx (first args)))))
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
     "finish-pr-composition"
     (do (when-not (= 5 (count args)) (rt/fail! "Expected task key, authority file and digest, CI file and digest" {}))

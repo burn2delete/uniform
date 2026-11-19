@@ -146,6 +146,12 @@ reading its trace does not replay models or tool effects.
 
 ## Console and recovery
 
+When unfinished findings are waiting on dependencies or writer claims, an
+idle scheduler can audit current main for independent findings. It excludes
+occupied paths and remembers the base, task dispositions and occupied paths
+across polls and restarts. Only a full audit after all findings have a
+terminal disposition can complete the campaign.
+
 Verbose timestamped JSON lines go to stderr and `events.jsonl`: commands and
 output, elapsed time, app-server requests/events, transitions, GitHub results,
 waiting reasons and failures. Common credential fields and known token patterns

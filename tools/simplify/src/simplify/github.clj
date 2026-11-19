@@ -89,6 +89,86 @@
   (when (= "graphql" endpoint)
     {:method method :endpoint endpoint :body-sha256 (rt/digest (or payload ""))}))
 
+(defn- status-item [{:keys [query variables]}]
+  (when (and (= query update-status-mutation)
+             (= #{:project :item :field :option} (set (keys variables)))
+             (every? #(and (string? %) (not (str/blank? %))) (vals variables)))
+    (mapv variables [:project :item :field])))
+
+(defn- provider-throttle? [{:keys [error errors]}]
+  (if (seq errors)
+    (every? #(= "RATE_LIMITED" (:type %)) errors)
+    (boolean (re-matches #"(?i)\s*gh: (?:API|secondary) rate limit exceeded(?: for [0-9a-fA-F:.]+\.)?(?: \(But here's the good news: [^\r\n]*?\))? \(HTTP (?:403|429)\)\s*" (or error "")))))
+
+(defn settled-status-limit? [guard]
+  (and (= :project-status-throttle (:kind guard))
+       (provider-throttle? (:original guard))
+       (set? (:items guard))
+       (seq (:items guard))
+       (= (:items guard) (set (vals (:effects guard))))))
+
+(defn effective-local-guard [state-file local shared]
+  (if (and (settled-status-limit? shared) state-file (= (rt/canonical state-file) (get-in shared [:original :state-file]))
+           (= local (:original-local shared)))
+    (:previous-local shared) local))
+
+(defn settle-status-limit! [ctx effect-id]
+  (let [s @(:state ctx) project (:project s) p (:id project) field (get-in project [:workflow :id])
+        key (rt/digest (pr-str ["POST" "graphql"])) local (get-in s [:restricted-actions key])
+        request (:failed-request local)
+        prefix (str "project-status/" p "/")]
+    (rt/coordinate! ctx
+      (fn [registry]
+        (let [original (get-in registry [:restrictions :api key])
+              hold (get-in registry [:restrictions :project-controls p])
+              pending (for [[tracking id] (:tracking-intents s)
+                            :when (and (str/starts-with? tracking prefix)
+                                       (#{:restricted :pending :uncertain} (get-in s [:effects id :status])))]
+                        [id (subs tracking (count prefix))])
+              unresolved (set (for [[id effect] (:effects s)
+                                    :when (and (str/starts-with? id prefix)
+                                               (#{:restricted :pending :uncertain} (:status effect)))] id))
+              items (into {}
+                      (for [[id issue] pending
+                            :let [membership (get-in s [:effects (str "project-item/" p "/" issue)])]]
+                        (do (when-not (and (= :done (:status membership)) (string? (:result membership)))
+                              (rt/fail! "Unresolved status has no verified project item" {:effect id}))
+                            [id [p (:result membership) field]])))
+              digest-for (fn [[project item field] option]
+                           (rt/digest (json/write-str {:query update-status-mutation
+                                                       :variables {:project project :item item :field field :option option}})))]
+          (when-not (and (true? (some-> (:coordinator-owner ctx) deref))
+                         (string? p) (string? field) (contains? items effect-id)
+                         (= unresolved (set (keys items)))
+                         (= (rt/canonical (:state-file ctx)) (:state-file original))
+                         (= local (select-keys original (keys local)))
+                         (provider-throttle? local)
+                         (= :provider-returned (:phase request))
+                         (= request (get-in s [:effects effect-id :failed-request]))
+                         (= :restricted (get-in s [:effects effect-id :status]))
+                         (every? (fn [[id item]]
+                                   (if-let [r (get-in s [:effects id :failed-request])]
+                                     (and (= ["POST" "graphql"] ((juxt :method :endpoint) r))
+                                          (some #(= (:body-sha256 r) (digest-for item (:id %)))
+                                                (get-in project [:workflow :options]))) true)) items)
+                         (or (nil? hold) (settled-controls-guard? ctx key (:retained-local-guard hold) hold)))
+            (rt/fail! "Status rate-limit inspection does not match the original provider request" {:effect effect-id}))
+          ;; Older controllers still see an endpoint-wide fence. Current controllers
+          ;; hold every unresolved item, including before-call and uncertain writes.
+          (let [guard {:kind :project-status-throttle :original original :original-local local
+                       :previous-local (:retained-local-guard hold) :effect effect-id
+                       :items (set (vals items)) :effects items}]
+            [(assoc-in registry [:restrictions :api key] guard) (select-keys guard [:effect :effects])]))))))
+
+(defn- record-api-refusal! [ctx key body refusal]
+  (let [item (status-item body)
+        scoped? (and item (provider-throttle? refusal))
+        key (if scoped? (rt/digest (pr-str [:project-status item])) key)]
+    (when (and (not scoped?) (settled-status-limit? (rt/shared-restriction ctx :api key)))
+      ;; An earlier scoped throttle must never mask a subsequent authorization denial.
+      (rt/shared-restrict! ctx :api-denial key refusal))
+    (rt/remember-denial! ctx :github key refusal)))
+
 (defn- reviewed-pr-request? [ctx key local {:keys [query variables]}]
   (when-let [{:keys [task-key candidate authority-sha256 authority-raw]} (:pr-integration ctx)]
     (let [s @(:state ctx) t (get-in s [:tasks task-key]) pr (:pr t) issue (:issue t)
@@ -133,8 +213,17 @@
    (let [key (rt/digest (pr-str [method endpoint]))
          payload (when body (json/write-str body))
          request (graphql-request method endpoint payload)
-         local (get-in @(:state ctx) [:restricted-actions key])
-         _ (when (or (rt/shared-restriction ctx :api key)
+         shared (rt/shared-restriction ctx :api key)
+         scoped? (settled-status-limit? shared)
+         raw-local (get-in @(:state ctx) [:restricted-actions key])
+         local (effective-local-guard (:state-file ctx) raw-local shared)
+         item (when (= ["POST" "graphql"] [method endpoint]) (status-item body))
+         item-key (when item (rt/digest (pr-str [:project-status item])))
+         _ (when (or (and shared (not scoped?))
+                     (and scoped? (rt/shared-restriction ctx :api-denial key))
+                     (and scoped? (contains? (:items shared) item))
+                     (and item-key (or (get-in @(:state ctx) [:restricted-actions item-key])
+                                       (rt/shared-restriction ctx :api item-key)))
                      (and local (not (and (= [method endpoint] ["POST" "graphql"])
                                           (or (reviewed-pr-request? ctx key local body)
                                               (tracked-request? ctx key local body))))))
@@ -146,13 +235,14 @@
                               body (into ["--input" "-"]))
                             payload)]
      (when-not (zero? (:exit result))
-       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))
-             errors (graphql-errors-from-output endpoint (:out result))]
+       (let [errors (graphql-errors-from-output endpoint (:out result))
+             restricted (boolean (or (rt/authorization-denied? (str (:err result) "\n" (:out result)))
+                                     (and (seq errors) (provider-throttle? {:errors errors}))))]
          (when restricted
            (let [refusal (cond-> {:method method :endpoint endpoint :error (:err result)}
+                           (seq errors) (assoc :errors errors)
                            request (assoc :failed-request (assoc request :phase :provider-returned)))]
-             (rt/update! ctx assoc-in [:restricted-actions key] refusal)
-             (rt/shared-restrict! ctx :api key refusal)))
+             (record-api-refusal! ctx key body refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    (cond-> {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted}
                      (seq errors) (assoc :errors errors)
@@ -170,8 +260,7 @@
         (when restricted
           (let [key (rt/digest (pr-str ["POST" "graphql"]))
                 refusal {:method "POST" :endpoint "graphql" :errors (:errors response) :failed-request request}]
-            (rt/update! ctx assoc-in [:restricted-actions key] refusal)
-            (rt/shared-restrict! ctx :api key refusal)))
+            (record-api-refusal! ctx key body refusal)))
         (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted
                                            :failed-request request})))
     (:data response)))

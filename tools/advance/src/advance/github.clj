@@ -84,10 +84,11 @@
   ([ctx] (hold-reason ctx #(rt/shared-restriction ctx %1 %2)))
   ([ctx restriction]
   (let [s @(:state ctx) p (get-in s [:project :id]) key (rt/digest (pr-str ["POST" "graphql"]))
-        hold (restriction :project-controls p) local (get-in s [:restricted-actions key])
+        shared (restriction :api key) hold (restriction :project-controls p)
+        local (gh/effective-local-guard (:state-file ctx) (get-in s [:restricted-actions key]) shared)
         file (get-in ctx [:config :local-controls-file])]
     (cond
-      (restriction :api key) :retained-graphql-restriction
+      (or (restriction :api-denial key) (and shared (not (gh/settled-status-limit? shared)))) :retained-graphql-restriction
       (and (or local hold) (not (and file (gh/settled-controls-guard? ctx key local hold))))
       (if hold :restricted-project-controls :retained-graphql-restriction)
       (and file (not (and (:campaign-tracked s) (pos-int? (get-in s [:campaign-issue :number]))

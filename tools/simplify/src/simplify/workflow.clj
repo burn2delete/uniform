@@ -738,9 +738,8 @@
       (gh/relation! ctx (:issue (task ctx (:key f))) "dependencies/blocked_by" (get-in (task ctx dep) [:issue :id])))
     (rt/update! ctx assoc-in [:rounds round :milestone] (:number milestone))))
 
-(defn audit! [ctx]
-  (let [base (fresh-main! ctx)
-        round (inc (or (:round @(:state ctx)) 0))
+(defn audit! [ctx base occupied]
+  (let [round (inc (or (:round @(:state ctx)) 0))
         wt (worktree! ctx (str (subs (rt/digest (get-in ctx [:config :campaign])) 0 8) "-audit-" round "-" (subs base 0 12)) base)
         _ (assert-clean! ctx (:worktree wt))
         _ (when-not (= base (rt/git ctx (:worktree wt) "rev-parse" "HEAD"))
@@ -751,22 +750,43 @@
                                 "Return only justified actionable improvements, with stable semantic keys, evidence, concrete preserved behavior and owned paths. "
                                 "Do not invent a fixed number of findings. An empty findings array is valid. Use dependencies only for real incompatible interfaces. "
                                 "Report inspected coverage explicitly. Scope: " (pr-str (get-in ctx [:config :scope]))
+                                (when (seq occupied)
+                                  (str "\nFind independent work outside these occupied paths: " (pr-str occupied)))
                                 "\nPrevious dispositions (do not reopen without new evidence): "
                                 (pr-str (mapv #(select-keys % [:key :title :status :proposal :error :merged]) (tasks ctx)))) schema/audit)
         _ (validate-findings! (:findings output) (:tasks @(:state ctx)))
-        fresh (remove #(contains? (:tasks @(:state ctx)) (:key %)) (:findings output))]
+        fresh (remove #(contains? (:tasks @(:state ctx)) (:key %)) (:findings output))
+        independent (remove #(overlap? (:paths %) occupied) fresh)
+        prior (set (keys (:tasks @(:state ctx))))
+        ;; If a proposed prerequisite was excluded, defer its dependents too.
+        admitted (loop [items (vec independent)]
+                   (let [available (into prior (map :key items))
+                         kept (filterv #(every? available (:dependencies %)) items)]
+                     (if (= items kept) kept
+                         (recur kept))))]
     (rt/update! ctx assoc :round round)
     (rt/update! ctx assoc-in [:rounds round] {:base base :job job :output output})
     (gh/comment! ctx (:campaign-issue @(:state ctx)) (str "audit/" round)
                  (str "Audit round " round " at `" base "`.\n\n" (:summary output)
-                      "\n\nCoverage: " (str/join ", " (:coverage output)) "\n\nNew actionable findings: " (count fresh) "."))
-    (when (and (empty? fresh) (seq (:findings output)))
+                      "\n\nCoverage: " (str/join ", " (:coverage output)) "\n\nNew actionable findings: " (count admitted) "."))
+    (when (and (empty? occupied) (empty? fresh) (seq (:findings output)))
       (rt/fail! "Audit returned only previously dispositioned findings; completion is not established" {:round round}))
     (doseq [f fresh path (:paths f)]
       (when-not (some #(covers? (safe-path! %) path) (get-in ctx [:config :scope]))
         (rt/fail! "Finding is outside campaign scope" {:path path})))
-    (when (seq fresh) (admit! ctx round base fresh))
-    (and (empty? (:findings output)) (= base (fresh-main! ctx)))))
+    (when (seq admitted) (admit! ctx round base admitted))
+    (and (empty? occupied) (empty? (:findings output)) (= base (fresh-main! ctx)))))
+
+(defn audit-disjoint! [ctx]
+  (let [base (fresh-main! ctx)
+        pending (remove #(terminal (:status %)) (tasks ctx))
+        writers (coordination/claims ctx)
+        occupied (vec (sort (set (mapcat :paths (concat pending writers)))))
+        inputs [base (sort (map (juxt :key :status :candidate) (tasks ctx))) occupied]
+        key (rt/digest (pr-str inputs))]
+    (when-not (= key (:held-audit-input @(:state ctx)))
+      (rt/update! ctx assoc :held-audit-input key)
+      (audit! ctx base occupied))))
 
 (defn paused? [ctx] (and (.exists (io/file (:control-file ctx))) (:paused (rt/read-edn (:control-file ctx)))))
 (defn eligible? [ctx t occupied]
@@ -822,13 +842,17 @@
                              (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
                       (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
             (cond
-              (or (seq @running) (some #(#{:ready :repair :ci :merge :finalizing} (:status %)) (tasks ctx)))
+              (or (seq @running) (some #(#{:ci :merge :finalizing} (:status %)) (tasks ctx)))
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
+              (some #(#{:ready :repair} (:status %)) (tasks ctx))
+              (do (audit-disjoint! ctx)
+                  (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (some #(not (terminal (:status %))) (tasks ctx))
               (do
                 (when-not (= :attention (:status @(:state ctx)))
                   (rt/update! ctx assoc :status :attention)
                   (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
+                (when-not (paused? ctx) (audit-disjoint! ctx))
                 (Thread/sleep (get-in ctx [:config :poll-ms]))
                 (recur))
               :else
@@ -836,7 +860,7 @@
                 (doseq [[round info] (:rounds @(:state ctx)) :when (:milestone info)]
                   (rt/effect! ctx (str "close-milestone/" round)
                               #(gh/api ctx "PATCH" (gh/repo-path ctx (str "milestones/" (:milestone info))) {:state "closed"})))
-                (if (audit! ctx)
+                (if (audit! ctx (fresh-main! ctx) [])
                   (do (rt/update! ctx assoc :status :complete)
                       (gh/status! ctx (:campaign-issue @(:state ctx)) "Done")
                       (rt/effect! ctx "close-campaign" #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in @(:state ctx) [:campaign-issue :number]))) {:state "closed" :state_reason "completed"})))
