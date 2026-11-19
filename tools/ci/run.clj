@@ -966,6 +966,9 @@
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths :entries catalog}
 
+      (nil? stage2)
+      {:kind :full :reason :stage2-module-test-catalog-invalid :paths paths :entries catalog}
+
       (lint-tooling-only? paths)
       {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
 
@@ -978,7 +981,7 @@
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries catalog}
 
-      (or (nil? stage2) (seq (:entries stage2)))
+      (seq (:entries stage2))
       {:kind :full :reason :unknown-or-unowned-leaf-path :paths paths :entries catalog}
 
       (every? docs-only-record? changes)

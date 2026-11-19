@@ -1180,6 +1180,12 @@
     (try
       (with-redefs-fn {contract-var (.getPath catalog-file)}
         (fn []
+          (doseq [path ["tools/ci/lint.clj" "bootstrap/clojure/src/gravity/backend/jvm.clj"]
+                  :let [selection (stage2-test-selection [(regular-modification path)])]]
+            (is (= :full (:kind selection)) path)
+            (is (= (selector-output-map {:kind :full}) (selector-output-map selection)) path)
+            (doseq [mode ["leaves-portable" "leaves-darwin"]]
+              (is (= :full (:kind (ci/leaf-selection-for-mode mode selection))) path)))
           (doseq [[case-name contents] [["missing" nil]
                                         ["malformed EDN" "{:standalone-tests ["]
                                         ["trailing EDN" (str catalog-source "\n{}")]
@@ -3436,6 +3442,7 @@
                "resolution=true" "checked-core-runtime=true" "leaves-portable=true"
                "leaves-darwin=true" "darwin-unsupported=true" "static-tools-required=true"
                "checked-js-owner-required=true"
+               "stage2-module-tests-required=false"
                "selection-valid=true"}
              (set (ci/selection-output-lines selection)))))
     (let [discovery-fallback {:kind :full :reason :path-discovery-failed
