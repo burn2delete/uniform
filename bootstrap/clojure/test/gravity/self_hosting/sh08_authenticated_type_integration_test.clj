@@ -820,32 +820,65 @@
 (deftest sh08-identity-is-path-neutral-with-separate-provenance
   (let [products
         (cached-fixture-products "accepted" ".gravity")
-        descriptor-a
-        (descriptor products "/checkout-a/type-input.gravity")
-        descriptor-b
-        (descriptor products "/checkout-b/type-input.gravity")
+        short-path "/checkout-a/type-input.gravity"
+        long-path (str "/" (apply str (repeat 4096 \x)))
+        descriptor-a (descriptor products short-path)
+        descriptor-b (descriptor products long-path)
         authenticated-a (authenticated-envelope descriptor-a)
         authenticated-b (authenticated-envelope descriptor-b)
-        request-a
-        (request
-         products descriptor-a authenticated-a
-         "/checkout-a/type-input.gravity")
-        request-b
-        (request
-         products descriptor-b authenticated-b
-         "/checkout-b/type-input.gravity")
-        result-a (:result (run-bridge request-a))
-        result-b (:result (run-bridge request-b))]
+        request-a (request products descriptor-a authenticated-a short-path)
+        request-b (request products descriptor-b authenticated-b long-path)
+        run-a (run-bridge request-a)
+        run-b (run-bridge request-b)
+        result-a (:result run-a)
+        result-b (:result run-b)]
+    (doseq [[bridge-request authenticated run]
+            [[request-a authenticated-a run-a]
+             [request-b authenticated-b run-b]]]
+      (let [result (:result run)]
+        (is (= :accepted (:status result)))
+        (is (= {:actual-source-path (:actual-source-path bridge-request)
+                :provenance-binding-id (:provenance-root authenticated)}
+               (:provenance result)))
+        (is (= :passed
+               (:status
+                (invoke
+                 bridge-plan 'sh08-verify-authenticated-type-result
+                 [bridge-request
+                  (:c7-request run)
+                  (:type-template run)
+                  (:type-verification run)
+                  result]))))))
     (is (= (:semantic-root authenticated-a)
            (:semantic-root authenticated-b)))
-    (is (not= (:provenance-root authenticated-a)
-              (:provenance-root authenticated-b)))
     (is (= (:identity-input result-a)
            (:identity-input result-b)))
     (is (= (:artifact-id result-a)
            (:artifact-id result-b)))
-    (is (not= (:provenance result-a)
-              (:provenance result-b)))))
+    (is (not= (get-in result-a [:provenance :provenance-binding-id])
+              (get-in result-b [:provenance :provenance-binding-id])))
+    (testing "malformed path provenance is rejected"
+      (doseq [actual-path ["" :not-text]]
+        (let [result
+              (invoke
+               bridge-plan 'sh08-build-authenticated-type-request
+               [(assoc request-b :actual-source-path actual-path)])]
+          (is (= :rejected (:status result)))
+          (is (= "STD08-BRIDGE-SCHEMA"
+                 (get-in result [:diagnostics 0 :rule])))
+          (is (= :actual-path-required
+                 (get-in result [:diagnostics 0 :facts :reason]))))))
+    (testing "substituted envelope identity is rejected with long provenance"
+      (let [altered-envelope
+            (assoc-in request-b [:envelope :semantic-envelope-id]
+                      (str "sha256:" (apply str (repeat 64 "e"))))
+            result
+            (invoke
+             bridge-plan 'sh08-build-authenticated-type-request
+             [altered-envelope])]
+        (is (= :rejected (:status result)))
+        (is (= "STD08-BRIDGE-ENVELOPE"
+               (get-in result [:diagnostics 0 :rule])))))))
 
 (deftest sh08-authenticated-type-bridge-fails-closed-on-malformed-input
   (doseq [value

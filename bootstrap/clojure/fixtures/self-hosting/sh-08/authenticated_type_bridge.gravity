@@ -605,12 +605,7 @@
                     (if (> (count
                             (get request :actual-source-path))
                            0)
-                      (if (<= (count
-                               (get request
-                                    :actual-source-path))
-                              4096)
-                        nil
-                        [:schema :actual-path-bound])
+                      nil
                       [:schema :actual-path-required])
                     [:schema :actual-path-required])))))))))))
 
