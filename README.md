@@ -48,12 +48,13 @@ clojure -M:gravity run examples/core-app.gravity
 clojure -M:gravity run-compiled examples/core-app.gravity
 ```
 
-The public launcher exposes the accepted bootstrap-hosted subset:
+The repository launcher runs the current source by default, including when a
+historical JVM package is installed. Run it from the checkout:
 
 ```bash
-gravity run examples/core-app.gravity
-gravity test
-gravity self-host verify
+bin/gravity run examples/core-app.gravity
+bin/gravity test
+bin/gravity self-host verify
 ```
 
 `gravity test` covers the current public subset. `gravity self-host verify`
