@@ -379,10 +379,9 @@
            true reader-source-path reader-invocation)
           source-content-hash
           (get-in raw-front-end [:source-unit-record :bytes-hash])
-          literal-authentication
-          (p15-s23-c6c10-literal-authentication source-path raw-front-end reader-invocation)
-          front-end
-          (p15-s23-c6c10-project-front-end source-path raw-front-end reader-invocation)
+          {:keys [front-end literal-authentication]}
+          (p15-s23-c6c10-authenticate-and-project-front-end
+           source-path raw-front-end reader-invocation)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
           application? (= :compiler-application source-policy-version)

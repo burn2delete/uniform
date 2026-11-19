@@ -40,8 +40,8 @@
                       :authenticated-envelope-options {:source :development-current}}]
       (is (= invocation (:invocation (route-failure #(b/p15-s23-c6c10-project-front-end
                                                       "test.gravity" {} invocation)))))
-      (is (nil? (:invocation (route-failure #(b/p15-s23-c6c10-project-front-end
-                                            "test.gravity" {:invocation invocation}))))))))
+      (is (= {:invocation nil} (route-failure #(b/p15-s23-c6c10-project-front-end
+                                               "test.gravity" {:invocation invocation})))))))
 (deftest native-c3-ingress-uses-host-selection-not-artifact-fields
   (let [ingress (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
         forged {:reader-source-path "forged.gravity"
@@ -51,15 +51,13 @@
                   b/p15-s23-stage2-c2-c3-front-end-products (fn [& _] {:invocation forged})
                   b/p15-s23-c6c10-literal-authentication
                   (fn [_ _ invocation] (swap! calls conj invocation) {})
-                  b/p15-s23-c6c10-project-front-end
-                  (fn [_ _ invocation] (throw (ex-info "routing stop" {:invocation invocation})))]
+                  b/p15-s23-c6c10-private-source-identity
+                  (fn [_ _] (throw (ex-info "routing stop" {:stage :projection})))]
       (let [expected {:reader-source-path "selected-reader.gravity"
                       :authenticated-envelope-options {:source :development-current}}]
-        (is (= expected (:invocation (route-failure #(ingress "test.gravity" "source" "selected-reader.gravity")))))
-        (is (= [expected] @calls)))
-      (reset! calls [])
-      (is (nil? (:invocation (route-failure #(ingress "test.gravity" "source")))))
-      (is (= [nil] @calls)))))
+        (is (= {:stage :projection} (route-failure #(ingress "test.gravity" "source" "selected-reader.gravity"))))
+        (is (= {:stage :projection} (route-failure #(ingress "test.gravity" "source"))))
+        (is (= [expected nil] @calls))))))
 
 (deftest native-c3-current-products-require-explicit-host-invocation
   ;; Real current C2/C3 products and fresh verification, not the routing mocks.
@@ -79,12 +77,13 @@
     (is (vector? (:records authentication)))
     (is (seq (:forms-by-id authentication)))
     (is (= (:forms raw) (:forms projection)))
-    (is (= :fresh-authentic-embedded-c2-c3-products
-           (:missing-fact
-            (route-failure #(b/p15-s23-c6c10-literal-authentication
-                              path (assoc raw :invocation invocation))))))
-    (is (= :fresh-authentic-embedded-c2-c3-products
-           (:missing-fact
-            (route-failure #(b/p15-s23-c6c10-literal-authentication
-                              path (assoc-in raw [:c3-capability-proof :status] :forged)
-                              invocation)))))))
+    (is (not (contains? projection :literal-authentication)))
+    (doseq [[candidate options]
+            [[(assoc raw :invocation invocation) []]
+             [(update raw :literal-decoding-records conj {:literal-id :forged}) [invocation]]
+             [(assoc-in raw [:c3-capability-proof :status] :forged) [invocation]]]]
+      (is (= {:id "C6-ORIGIN" :missing-fact :fresh-authentic-embedded-c2-c3-products}
+             (select-keys
+              (route-failure #(apply b/p15-s23-c6c10-project-front-end
+                                     path (assoc candidate :literal-authentication authentication) options))
+              [:id :missing-fact]))))))
