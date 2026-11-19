@@ -34,12 +34,12 @@ use the explicit CLI route for focused execution.
 | --- | --- | --- | --- |
 | static | Always. Git whitespace only for changes limited to reviewed explanatory docs. | Always | actionlint 1.7.12 workflow syntax, clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling, cljfmt 0.13.4 on CI tooling, Git whitespace, and harness failure controls. |
 | contracts (projections) | Always. Reviewed explanatory docs select document and roadmap validation. Reviewed JVM backend changes select the language boundary and JVM pipeline. | Always | Full CI runs the canonical 240-document validator, the full-language roadmap validator and its negative fixtures, acceptance dependency controls, native and type-inference suites, and the JVM pipeline. |
-| bootstrap | Stage selection | Always | Fresh process requires Bootstrap without preinstalled aliases, exact decimal/abbreviation Reader regressions, language boundary, strict catalog controls, and ownership inventory. |
+| bootstrap | Stage selection | Always | Cold Bootstrap load, Reader and Syntax regressions, language boundary, catalog controls and ownership inventory. Reader changes and full runs also check the plan hash. |
 | macro | Stage selection | Always | Three fresh processes run the ordinary pipeline tests, the receipt and artifact verification controls, and the Bootstrap C4 compatibility namespace. |
 | checked-core-runtime | Stage selection | Always | Checked-Core pipeline, current-binding and projection-kernel regressions. The Node 20 checks cover B6 scalar execution, checked-add guard identity and the public CLI smoke test as described below. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Stage selection | Always | Three independent Resolution matrix jobs may overlap and retain separate logs and receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog. The other two modes run one fresh child each. |
-| fresh-leaf-regressions / portable and / darwin | The reviewed source/test require closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. Reviewed explanatory docs and JVM backend changes record skipped checks. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Each selected namespace gets a fresh JVM. |
-| darwin-unsupported-host | Reviewed explanatory docs and JVM backend changes record a skipped check. Other PRs run the refusal probe. | Always | The actual macOS 15 kernel must reject required confinement features before any publication open. |
+| fresh-leaf-regressions / portable and / darwin | The reviewed source/test require closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. Reviewed explanatory docs and JVM backend changes omit both jobs. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Each selected namespace gets a fresh JVM. |
+| darwin-unsupported-host | Reviewed explanatory docs and JVM backend changes omit this job. Other PRs run the refusal probe. | Always | The actual macOS 15 kernel must reject required confinement features before any publication open. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
@@ -47,13 +47,9 @@ use the explicit CLI route for focused execution.
 
 ### Pull-request stage selection
 
-The eight semantic matrix jobs remain present on every pull request: five
-ordinary checks (`static`, `contracts`, `bootstrap`, `macro`, and
-`checked-core-runtime`) plus three independently running Resolution jobs
-(`resolution-pipeline`, `resolution-unmetered`, and
-`resolution-invocation-selection`). The selector preserves the logical
-`resolution` stage and its `resolution` output; the three names are execution
-pool modes only. For a regular added or modified file in a known stage-owned
+The selector determines which checks need runners. It selects the three
+Resolution jobs together and each runs independently.
+For a regular added or modified file in a known stage-owned
 Reader, Macro, Resolution, or checked-Core path, `tools/ci/run.clj` runs that
 stage and every downstream stage, while retaining `static` and `contracts`.
 Changes spanning multiple known stages select the union of those downstream
@@ -68,6 +64,12 @@ select the same owner child, which exercises guard identity through both the
 lightweight and full seeds. Only the C7 and B6 sources have a stage-owned
 exception to full leaf fallback. Other paths outside reviewed leaf closures
 retain the full catalog even when a compiler stage owns them.
+
+For changes to the SH-03 Reader plan, its inputs or its adapter test, and on
+full runs, Bootstrap runs `sh03-current-reader-plan-checks-keep-historical-priority` in its own
+process. It verifies that validation hashes a tampered plan body once and
+rejects it with `C2-HASH` even when the public identity helper returns the
+forged ID.
 
 Edits to the public JavaScript launcher, dispatch,
 checked producer adapter, smoke fixture or smoke tests also run one public
@@ -88,8 +90,8 @@ Git whitespace and changed-file Clojure lint. The required `contracts` check
 runs the language boundary and the full `gravity.backend.jvm.pipeline-test`
 namespace on the pinned JDK. That suite compiles both source spellings with
 `javac`, builds and runs deterministic Java 21 JARs, and checks toolchain,
-lowering, and artifact refusals. The other matrix jobs retain their required
-check names and record skips. Mixed or structural diffs use full CI, which
+lowering, and artifact refusals. Only the selector, `static`, and `contracts`
+need runners for this route. Mixed or structural diffs use full CI, which
 also runs the JVM pipeline on main, scheduled, and manual runs.
 
 The `resolution-pipeline` mode starts two fresh 600-second children
@@ -113,9 +115,8 @@ source-publish rule.
 The documentation-only path applies to regular additions or edits to the
 reviewed explanatory paths listed in `tools/ci/run.clj`, such as `README.md`
 and `docs/ci.md`. These PRs run Git whitespace, the canonical document
-validator, and the roadmap validator with its negative fixtures. The remaining
-jobs preserve their check names and record a skip. Canonical phase documents,
-roadmap inputs, dependency records, policy and evidence files, and unknown
+validator, and the roadmap validator with its negative fixtures. Canonical
+phase documents, roadmap inputs, dependency records, policy and evidence files, and unknown
 Markdown paths retain full coverage. A change to `tools/ci/snapshot.clj` or
 `tools/ci/snapshot_test.clj` adds the snapshot repeatability controls to the
 static job.
@@ -270,11 +271,9 @@ while an unrelated leaf is omitted. Changes limited to reviewed explanatory
 docs select no leaves.
 Unknown or unowned paths, cross-cutting/dependency changes, deletes, renames,
 mode/type changes, and any closure or discovery failure fall back to the full
-platform catalog. A platform with no affected entries records an explicit
-skip. When a successful selector reports `selection-valid=true` and the
-platform output is `false`, the Darwin publication or unsupported-host job
-records its skipped check and receipt on Ubuntu. Selected checks, full runs,
-and missing, malformed, or failed selector results use the matrix runner.
+platform catalog. When the selector finds no affected entries for a platform,
+the workflow skips that platform before it allocates a runner. Full runs and
+failed path discovery dispatch the full platform catalog.
 Positive Darwin publication and the unsupported-host refusal probe run on their
 required macOS/JDK platform when selected. Main, manual, and scheduled runs use
 the full catalog.
