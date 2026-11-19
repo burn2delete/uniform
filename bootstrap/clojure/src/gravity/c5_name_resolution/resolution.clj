@@ -16,8 +16,16 @@
        :binding ((ops/op-fn :c5-import-binding bindings/c5-import-binding)
                  module (get dependency-map alias-sym) local-name (:module module))}
 
-      ;; Self-qualified lookups need the declaration index held by c5-resolution-record.
-      (= ns-part (str (:module module))) nil
+      (= ns-part (str (:module module)))
+      (let [candidates (->> (get-in dependency-map [::bindings-by-name local-name])
+                            (filter #(= (:module module) (:namespace %)))
+                            (map (juxt :binding-id identity))
+                            (into (sorted-map))
+                            vals)]
+        (case (count candidates)
+          0 nil
+          1 {:resolution-kind :fully-qualified :binding (first candidates)}
+          {:candidate-bindings (vec candidates)}))
 
       (str/includes? ns-part ".")
       {:resolution-kind :fully-qualified
@@ -36,14 +44,11 @@
         self-qualified? (and (= qualified? (str (:module module)))
                              (not (contains? alias-map (symbol qualified?))))
         resolved (cond
-                   self-qualified?
-                   (when-let [binding (first (filter #(= (:module module) (:namespace %))
-                                                    (get bindings-by-name (symbol (name sym)))))]
-                     {:resolution-kind :fully-qualified :binding binding})
-
                    qualified?
                    ((ops/op-fn :c5-resolve-qualified-symbol c5-resolve-qualified-symbol)
-                    module alias-map dependency-map sym)
+                    module alias-map
+                    (cond-> dependency-map self-qualified? (assoc ::bindings-by-name bindings-by-name))
+                    sym)
 
                    (contains? local-by-name sym) {:resolution-kind :local :binding (first (get local-by-name sym))}
                    (contains? bindings-by-name sym) {:resolution-kind :namespace :binding (first (get bindings-by-name sym))}
@@ -53,15 +58,19 @@
                    {:resolution-kind :core-auto-import :binding ((ops/op-fn :c5-core-binding bindings/c5-core-binding) sym module)}
                    (contains? (ops/op-value :c5-type-auto-imports config/c5-type-auto-imports) sym)
                    {:resolution-kind :type-position :binding ((ops/op-fn :c5-type-binding bindings/c5-type-binding) sym module)}
-                   :else nil)]
-    (when (and self-qualified? (nil? resolved))
+                   :else nil)
+        failure-id (when self-qualified?
+                     (cond
+                       (:candidate-bindings resolved) "C5-AMBIGUOUS"
+                       (nil? resolved) "C5-UNRESOLVED"))]
+    (when failure-id
       ((ops/op-fn :c5-resolution-fail! diagnostics/c5-resolution-fail!)
-       "C5-UNRESOLVED" (:source-path module)
+       failure-id (:source-path module)
        {:symbol sym :syntax-id (:syntax-id syntax) :span (:span syntax)
         :namespace (:module module) :profile (:profile module) :target (:target module)
-        :capabilities (:capabilities module)}
+        :capabilities (:capabilities module) :candidate-bindings (:candidate-bindings resolved)}
        {}))
-    (when resolved
+    (when (and resolved (nil? failure-id))
       {:syntax-id (:syntax-id syntax) :symbol-index idx :symbol sym
        :position (cond
                    (contains? (ops/op-value :c5-special-form-symbols config/c5-special-form-symbols) sym) :special-form

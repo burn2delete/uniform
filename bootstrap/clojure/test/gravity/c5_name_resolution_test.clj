@@ -221,6 +221,48 @@
     (is (= :passed (get-in artifact [:resolution-verification-report :status])))
     (is (= :complete (:status (:capability-based-proof artifact))))))
 
+(deftest self-qualified-member-uses-interposed-resolver
+  (let [observed (atom [])
+        artifact (c5/with-operations
+                   (assoc injected-operations
+                          :c5-resolve-qualified-symbol
+                          (fn [module aliases dependencies sym]
+                            (let [result (c5/c5-resolve-qualified-symbol
+                                          module aliases dependencies sym)]
+                              (when (= 'demo.main/helper sym)
+                                (swap! observed conj (:binding result)))
+                              result)))
+                   #(c5/compiler-c5-resolution-source-artifact "demo.gravity" "ignored"))
+        table (:binding-table artifact)
+        declaration (some #(when (= 'helper (:name %)) %) (:namespace-bindings table))
+        use (some #(when (= 'demo.main/helper (:symbol %)) %) (:bindings table))]
+    (is (some? declaration))
+    (is (= [declaration] @observed))
+    (is (= :fully-qualified (:resolution-order use)))
+    (is (= (:binding-id declaration) (:binding-id use)))))
+
+(deftest ambiguous-self-qualified-member-reports-distinct-declarations
+  (let [use-site (nth syntax-stream 1)
+        helper (peek (:definitions module-artifact))
+        other-helper (assoc-in helper [:source-span :form-index] 4)
+        declarations [helper other-helper]
+        candidates (->> declarations
+                        (map #(c5/c5-definition-binding module % (:artifact-id c4-artifact)))
+                        (sort-by :binding-id)
+                        vec)
+        expected {:id "C5-AMBIGUOUS" :symbol 'demo.main/helper
+                  :syntax-id (:syntax-id use-site) :source-span (:span use-site)
+                  :candidate-bindings candidates}]
+    (doseq [ordered-declarations [(conj declarations helper) (reverse declarations)]]
+      (let [input (update module-artifact :definitions
+                          #(into (pop %) ordered-declarations))
+            diagnostic (try
+                         (c5/with-operations
+                           (assoc injected-operations :module-source-artifact (constantly input))
+                           #(c5/compiler-c5-resolution-source-artifact "demo.gravity" "ignored"))
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= expected (select-keys diagnostic (keys expected))))))))
+
 (deftest missing-self-qualified-member-is-rejected-unless-quoted
   (let [use-site (nth syntax-stream 1)
         missing 'demo.main/y
