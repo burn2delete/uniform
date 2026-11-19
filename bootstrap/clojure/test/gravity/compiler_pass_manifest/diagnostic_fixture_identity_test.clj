@@ -6,15 +6,17 @@
 (def ^:private source-path "compiler-passes.gravity")
 (def ^:private fact-marker "DIAGNOSTIC_FIXTURE_IDENTITY_FACT_MARKER")
 
-(defn- boundary-operations [source-suite]
-  (let [profile-manifest {:metadata {:compiler {:passes source-suite}}}
-        suite (manifest/compiler-pass-suite profile-manifest)
-        upstream {:kind :gravity/stage0-math-conformance-artifact
-                  :profile-manifest profile-manifest}]
-    {:validator #(manifest/compiler-pass-validate-diagnostics!
-                  source-path profile-manifest suite)
-     :artifact #(manifest/compiler-pass-source-artifact-from-upstream
-                 source-path upstream)}))
+(defn- boundary-operations
+  ([source-suite] (boundary-operations source-suite {}))
+  ([source-suite manifest-context]
+   (let [profile-manifest (assoc manifest-context :metadata {:compiler {:passes source-suite}})
+         suite (manifest/compiler-pass-suite profile-manifest)
+         upstream {:kind :gravity/stage0-math-conformance-artifact
+                   :profile-manifest profile-manifest}]
+     {:validator #(manifest/compiler-pass-validate-diagnostics!
+                   source-path profile-manifest suite)
+      :artifact #(manifest/compiler-pass-source-artifact-from-upstream
+                  source-path upstream)})))
 
 (defn- capture-outcome [operation]
   (try
@@ -66,12 +68,40 @@
                   :fixture-index 1
                   :offending-diagnostic-id duplicate-id
                   :stage (:stage duplicate)
+                  :profile (:profile duplicate)
+                  :target (:target duplicate)
                   :artifact-id (get-in duplicate [:primary :artifact])}
                  (select-keys diagnostic [:id :schema-field :reason :fixture-index
-                                          :offending-diagnostic-id :stage :artifact-id])))
+                                          :offending-diagnostic-id :stage :profile :target
+                                          :artifact-id])))
           (is (seq (:remediation diagnostic)))
           (is (not (contains? diagnostic :facts)))
           (is (not (str/includes? (pr-str result) fact-marker))))))))
+
+(deftest duplicate-diagnostic-context-is-redacted
+  (let [[first-fixture second-fixture] (repeated-rule-fixtures)
+        private-facts (:facts second-fixture)
+        primary-artifact (get-in second-fixture [:primary :artifact])
+        duplicate (assoc second-fixture
+                         :diagnostic-id (:diagnostic-id first-fixture)
+                         :artifact-id private-facts
+                         :stage private-facts
+                         :profile private-facts
+                         :target private-facts)
+        source-suite {:diagnostic-fixtures [first-fixture duplicate]}]
+    (doseq [[label manifest-context expected-context]
+            [["valid manifest context" {:profile :meta :target :jvm} {:profile :meta :target :jvm}]
+             ["malformed manifest context" {:profile private-facts :target private-facts}
+              {:profile nil :target nil}]]
+            [boundary operation] (boundary-operations source-suite manifest-context)]
+      (testing (str label " at " (name boundary))
+        (let [{:keys [diagnostic message] :as result} (capture-outcome operation)]
+          (is (not (contains? result :value)))
+          (is (= (assoc expected-context
+                        :id "C15-ID" :fixture-index 1 :stage nil :artifact-id primary-artifact)
+                 (select-keys diagnostic [:id :fixture-index :stage :profile :target :artifact-id])))
+          (is (not (str/includes? (pr-str diagnostic) fact-marker)))
+          (is (not (str/includes? (str message) fact-marker))))))))
 
 (deftest duplicate-malformed-diagnostic-identity-is-redacted
   (let [id-marker "DIAGNOSTIC_FIXTURE_PRIVATE_ID_MARKER"
