@@ -141,7 +141,7 @@
         raw (fn raw
               ([selected-emitter path text route-index]
                (raw selected-emitter path text route-index nil))
-              ([selected-emitter path _text route-index _map-order]
+              ([_selected-emitter path _text route-index _map-order]
                (let [route-index (not-empty route-index)]
                  {:plan-id (bootstrap/reader-canonical-hash [path route-index])
                   :module {:module (symbol path)} :functions {} :route-index route-index})))
@@ -184,7 +184,7 @@
         raw (fn raw
               ([selected-emitter path text route-index]
                (raw selected-emitter path text route-index nil))
-              ([selected-emitter path _text route-index _map-order]
+              ([_selected-emitter path _text route-index _map-order]
                (let [route-index (not-empty route-index)]
                  {:plan-id (bootstrap/reader-canonical-hash [path route-index])
                   :module {:module (symbol path)} :functions {} :route-index route-index})))
