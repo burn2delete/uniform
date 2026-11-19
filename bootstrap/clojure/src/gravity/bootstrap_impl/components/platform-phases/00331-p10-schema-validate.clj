@@ -44,6 +44,29 @@
                           (assoc source-schema :source-span (first (:source-spans source-schema)))
                           {:derivation-target :validator
                            :boundary (first (sort-by pr-str invalid-clearances))})))
+    (let [serializer (:serialization-fixture artifact)]
+      (when (and (= :json (:format serializer))
+                 (= :external-data (:trust-boundary serializer)))
+        (let [decode-states (cons [[:decoded-trust] (:decoded-trust serializer)]
+                                  (map-indexed
+                                   (fn [index round-trip]
+                                     [[:round-trip-vectors index :decoded-taint]
+                                      (:decoded-taint round-trip)])
+                                   (:round-trip-vectors serializer)))]
+          (doseq [[field-path taint-state] decode-states
+                  :when (not= :untrusted taint-state)]
+            (p10-schema-fail!
+             "S2-TAINT" source-path
+             (assoc serializer :source-span
+                    (or (:source-span serializer)
+                        (first (get-in artifact [:source-schema-ir :source-spans]))))
+             {:format (:format serializer)
+              :boundary (:trust-boundary serializer)
+              :field-path field-path
+              :taint-state taint-state
+              :numeric-policy (:numeric-policy serializer)
+              :string-policy (:string-policy serializer)
+              :remediation "Keep external JSON untrusted until validation succeeds at the intended boundary."})))))
     (doseq [document p10-schema-documents
             :let [record (get documents document)
                   summary (p10-document-summaries document)
