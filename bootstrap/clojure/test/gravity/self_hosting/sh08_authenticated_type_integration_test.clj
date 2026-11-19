@@ -261,8 +261,8 @@
      (path "bootstrap/gravity/p15_s23/emitter.gravity"))))
 
 (defn- with-frontend-operation [operation]
-  ;; The envelope owner reauthenticates its source before each lookup.
-  ;; Construction and independent replay each get their own plan scope.
+  ;; Share compilation within one fixture. The envelope owner still
+  ;; reauthenticates its source before each lookup and replays verification.
   (binding [bootstrap/*p15-s23-stage2-compiler-artifact-binding* @current-emitter]
     ((ns-resolve 'gravity.bootstrap 'p15-s23-with-stage2-plan-emission-context)
      operation)))
@@ -300,10 +300,12 @@
 (defn- products
   [source-path]
   (let [invocation (current-source-invocation)
-        artifact (with-frontend-operation #(core-artifact source-path invocation))
-        verification
+        [artifact verification]
         (with-frontend-operation
-          #(bootstrap/sh07-core-artifact-verification artifact invocation))]
+          (fn []
+            (let [artifact (core-artifact source-path invocation)]
+              [artifact
+               (bootstrap/sh07-core-artifact-verification artifact invocation)])))]
     (when-not (= :passed (:status verification))
       (throw (ex-info "SH-08 fixture failed fresh SH-07 verification"
                       {:id "SH08-AUTH-CORE-VERIFICATION"
@@ -840,6 +842,7 @@
         (products
          (path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"))
         short-path "/checkout-a/type-input.gravity"
+        ;; Captured provenance is data. Only the fixture above is read from disk.
         long-path (str "/" (apply str (repeat 4096 \x)))
         descriptor-a (descriptor products short-path)
         descriptor-b (descriptor products long-path)
@@ -857,6 +860,8 @@
              [request-b authenticated-b run-b]]]
       (let [result (:result run)]
         (is (= :accepted (get-in run [:c7-request :status])))
+        (is (= (core (:sh07-artifact products))
+               (get-in run [:c7-request :core-artifact])))
         (is (= :accepted (get-in run [:type-template :status])))
         (is (= :passed (get-in run [:type-verification :status])))
         (is (= :accepted (:status result)))
