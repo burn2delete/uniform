@@ -114,7 +114,8 @@
         (bootstrap/sh03-reader-input-policy bootstrap/standard-reader-options)
         resolved
         (bootstrap/sh03-reader-resolved-result!
-         source-path bytes project-context bootstrap/standard-reader-options)]
+         source-path bytes project-context bootstrap/standard-reader-options
+         (path bootstrap/sh03-reader-source-relative-path))]
     [source-unit reader-policy (:raw-result resolved)
      (:verification-report resolved)]))
 (defn- request [artifact]
