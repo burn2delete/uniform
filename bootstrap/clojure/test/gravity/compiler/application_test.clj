@@ -480,6 +480,59 @@
             (is (= :returned (get-in execution [:execution :status])))
             (assert-execution-verified invoke result 'evaluate arguments execution)))))))
 
+(deftest scalar-join-successor-arguments
+  (let [text (source-text 'acceptance.scalar.joins "outer :- Bool inner :- Bool fallback :- I64"
+                          "(if outer (if inner 11 22) fallback)" #{})]
+    (with-source-file "scalar-joins.gravity" text
+      (fn [path]
+        (let [result (application/current-source-to-verified-mir path bool-policy)
+              mir (:mir-module result)
+              core (:checked-core result)
+              invoke (reference-invoker path)
+              function (get-in mir [:functions 'main])
+              blocks (:blocks function)
+              inner-test (first (get-in blocks [(:entry function) :terminator :successors]))
+              [left right] (get-in blocks [inner-test :terminator :successors])
+              join (first (get-in blocks [left :terminator :successors]))
+              arguments (get-in blocks [join :arguments])
+              sibling (get-in blocks [right :terminator :successor-arguments 0 0])
+              [outer _ fallback] (:params function)]
+          (is (= :passed (get-in result [:mir-verification :status])))
+          (is (= :gravity/i64 (:type (first arguments))))
+          (is (= right (get-in mir [:data-flow-graph :definitions sibling :block-id])))
+          (doseq [[inputs expected] [[[true true 33] 11] [[true false 33] 22] [[false true 33] 33]]]
+            (let [run (execute-result invoke result 'main inputs)]
+              (is (= :accepted (:status run)))
+              (is (= expected (get-in run [:execution :value])))))
+          (doseq [[pred values rule expected actual]
+                  [[right [] "C11-BLOCK"
+                    {:destination join :parameter-count 1 :argument-count 1}
+                    {:successors [join] :parameters arguments :successor-arguments [[]]}]
+                   [left [outer] "C11-TYPE" :gravity/i64 :gravity/bool]
+                   [left [sibling] "C11-DOMINANCE"
+                    {:value-id sibling :available-at left} {:value-id sibling :defined-in right}]
+                   [right [fallback] "C11-BLOCK"
+                    {:predecessor right :value-id sibling} {:predecessor right :value-id fallback}]]]
+            (testing (str rule " at " pred)
+              (let [term (get-in blocks [pred :terminator])
+                    source (:source term)
+                    candidate (assoc-in mir [:functions 'main :blocks pred :terminator :successor-arguments 0]
+                                        values)
+                    run (invoke 'sh13-run-scalar-functions-mir [core candidate 'main [false true 33]])
+                    report (:verification run)
+                    diagnostic (first (:diagnostics report))]
+                (is (= :rejected (:status report)))
+                (is (= [:gravity/c11-scalar-functions-report (:artifact-id core) (:module-id mir)]
+                       ((juxt :artifact :checked-core-artifact-id :mir-module-id) report)))
+                (is (= [rule 'main pred (:terminator-id term) expected actual]
+                       ((juxt :diagnostic-id :function :block :operation-id :expected :actual) diagnostic)))
+                (is (= (assoc (:span source) :file path :source path) (:source-span diagnostic)))
+                (is (= (:origin-id source) (:origin-id diagnostic)))
+                (is (= (:generated-origin source) (:origin-chain diagnostic)))
+                (is (= :rejected (:status run)))
+                (is (= [diagnostic] (:diagnostics report) (:diagnostics run)))
+                (is (nil? (:execution run)))))))))))
+
 (deftest scalar-functions-resolve-shadowed-addition
   (let [text (module-source 'acceptance.shadowed '[select-value] #{}
                (str "(defn + [selected :- I64 unused :- I64] selected)\n\n"
@@ -767,9 +820,9 @@
         (is (= :passed (:status (invoke 'c11-verify-scalar-functions-mir [core mir]))))
         (doseq [[label candidate-core candidate-mir] cases]
           (testing label
-            (let [verification (invoke 'c11-verify-scalar-functions-mir [candidate-core candidate-mir])
-                  execution (invoke 'sh13-run-scalar-functions-mir
+            (let [execution (invoke 'sh13-run-scalar-functions-mir
                                     [candidate-core candidate-mir 'score [true 3 7]])
+                  verification (:verification execution)
                   diagnostic (first (:diagnostics verification))]
               (is (= :rejected (:status verification)) (str label " " (pr-str verification)))
               (is (= (get rules label) (:diagnostic-id diagnostic)) (pr-str diagnostic))
@@ -778,6 +831,7 @@
               (is (string? (:operation-id diagnostic)) (pr-str diagnostic))
               (is (not= (:expected diagnostic) (:actual diagnostic)) (pr-str diagnostic))
               (is (= :rejected (:status execution)))
+              (is (= [diagnostic] (:diagnostics verification) (:diagnostics execution)))
               (is (nil? (:execution execution)) "Rejected MIR must not execute")
               (when (= label "MIR call signature")
                 (let [data (failure #((ns-resolve 'gravity.bootstrap 'p15-s23-application-c11-result!)
