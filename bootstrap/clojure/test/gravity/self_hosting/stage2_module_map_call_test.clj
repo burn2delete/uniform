@@ -155,17 +155,33 @@
 (deftest stage2-module-map-authenticated-composition
   ;; Six G C5 attempts; Q only parser parity. Original fresh public gates remain.
   (let [leaf-path (fixture "modules" "module-map-leaf" ".gravity") path (fixture "modules" "module-map-caller" ".gravity")
-        text (slurp path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
-        _ (println :map-call-phase :leaf-c5) leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
-        c5-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
-        _ (println :map-call-phase :caller-c5) caller (bootstrap/compiler-c5-resolution-file-artifact path c5-inputs)
+        text (slurp path)
+        invocation (assoc (bootstrap/stage2-runtime-current-reader-invocation)
+                          :macro-source-mode :development-current)
+        reader-path (:reader-source-path invocation)
+        reader-hash (str "sha256:" (bootstrap/sha256-hex (slurp reader-path :encoding "UTF-8")))
+        resolve-module (fn [source-path source-text module-artifacts]
+                         (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path source-text
+                          {:artifact :gravity/sh06-module-inputs :schema-version 1
+                           :module-artifacts module-artifacts}
+                          reader-path invocation))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
+        _ (println :map-call-phase :leaf-c5) leaf (resolve-module leaf-path (slurp leaf-path) [])
+        _ (println :map-call-phase :caller-c5) caller (resolve-module path text [leaf])
         dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path))
         inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
-        _ (println :map-call-phase :bundle) bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text inputs)
+        _ (println :map-call-phase :bundle) bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                                    emitter path text inputs invocation)
         root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))
         request (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request])
         refs (into {} (map (juxt :syntax-id identity)) (:references request)) routes (:routes bundle)]
     (is (= :accepted (:status leaf) (:status caller)))
+    (doseq [artifact [leaf caller]]
+      (is (= reader-hash
+             (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                               :c2-reader-artifact :sh03-reader-authentication :reader-source-revision
+                               :source-content-hash]))))
     (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
     (is (= :not-checked (get-in bundle [:boundary :effects])))
     (is (= #{'main} (set (map :name (:exports root)))))
@@ -175,7 +191,8 @@
       (is (= (:symbol route) (:symbol (get refs (:reference-syntax-id route)))))
       (is (= (:artifact-id leaf) (:callee-module-id route) (get-in route [:origin :ordinary-module-artifact-id]))))
     (let [result (atom nil) _ (println :map-call-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :map-call-test} bundle 'main [])))]
+          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-module-execute-function
+                                               {:engine :map-call-test} bundle 'main [] invocation)))]
       (is (= ["kept" :shadow [:y] :a [:left :right] :c :w '(leaf/hidden :data) :v] @result))
       (is (= "z\nb\ny\na\nxl\nxr\nc\nw\nv\n" output)))
     (let [changed-route (assoc (first routes) :reference-syntax-id (:reference-syntax-id (second routes)))
@@ -184,13 +201,13 @@
           changed (assoc-in bundle [:routes 0] changed-route)
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id bundle) (:modules bundle) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
-          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
-                                                                              {:engine :map-call-test} forged 'main []))))]
+          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                                              {:engine :map-call-test} forged 'main [] invocation))))]
       (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash identity)))
       (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
       (is (= "" output)))
     (let [bad (fixture "rejected" "module-map-private-import" ".gravity")
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact bad c5-inputs))]
+          failure (diagnostic #(resolve-module bad (slurp bad) [leaf]))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (= bad (get-in failure [:source-span :source]))))
     (doseq [[label changed expected]
@@ -199,13 +216,23 @@
                          (str/replace "(leaf/identity (do (println \"v\") :v))" "(leaf/identity :v :extra :extra)")) "L2-FUNCTION-ARITY"]
              [:set (str/replace text "(leaf/identity (do (println \"z\") prefix))" "#{ {:blocked (leaf/identity :blocked)} }") :unsupported-nested-module-call]
              [:fn (str/replace text "(leaf/identity (do (println \"z\") prefix))" "(fn [] {:blocked (leaf/identity :blocked)})") :unsupported-nested-module-call]]]
-      (let [_ (println :map-call-phase label) artifact (bootstrap/compiler-c5-resolution-source-artifact path changed c5-inputs)
-            failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
-                                                                                emitter path changed (assoc inputs :caller-resolution-artifact artifact)))))]
-        (is (not= text changed))
-        (is (= :accepted (:status artifact)))
-        (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
-        (is (= "" output))
-        (when (= label :arity)
-          (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
-          (is (= path (get-in @failure [:source-span :primary :source]))))))))
+      (let [_ (println :map-call-phase label)
+            temporary (java.io.File/createTempFile "uniform-stage2-map-negative-" ".gravity")]
+        (try
+          (spit temporary changed)
+          (let [changed-path (.getCanonicalPath temporary)
+                artifact (resolve-module changed-path changed [leaf])
+                failure (atom nil)
+                output (with-out-str
+                         (reset! failure
+                                 (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                               emitter changed-path changed
+                                               (assoc inputs :caller-resolution-artifact artifact) invocation))))]
+            (is (not= text changed))
+            (is (= :accepted (:status artifact)))
+            (is (= expected (if (= label :arity) (:id @failure) (get-in @failure [:facts :reason]))))
+            (is (= "" output))
+            (when (= label :arity)
+              (is (= [1 2] [(:expected-arity @failure) (:actual-arity @failure)]))
+              (is (= changed-path (get-in @failure [:source-span :primary :source])))))
+          (finally (.delete temporary)))))))

@@ -22,12 +22,8 @@
         safe-source
         (when (and (p15-s23-checked-core-authority-small-map?
                     source-span 8)
-                   (string? (:source source-span))
-                   (<= (count (:source source-span)) 4096)
-                   (= :valid
-                      (:status
-                       (p15-s23-closed-core-diagnostic-utf8-count
-                        (:source source-span) 16384))))
+                   (p15-s23-checked-core-authority-safe-source-path?
+                    (:source source-span)))
           (:source source-span))
         safe-span
         (when (p15-s23-checked-core-authority-small-map? source-span 8)
