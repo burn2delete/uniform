@@ -1,0 +1,262 @@
+(ns gravity.stdlib.sha256
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256])
+  (:effects #{:memory/allocate})
+  (:capabilities #{})
+  (:safety :safe))
+
+; STD1/STD5/STD18: internal, restricted experimental unkeyed content hashing.
+; The algorithm is computed here; no provider callback or claimed digest is an
+; input. Execution still depends on the Clojure plan compiler/runtime.
+(defn sh22-sha256-policy []
+  {:artifact :gravity/sh22-sha256-policy
+   :algorithm :sha-256
+   :mode :unkeyed-content-hash
+   :provider :uniform-source
+   :stability :experimental
+   :visibility :internal
+   :primitive-policy :restricted-to-unkeyed-content-identity
+   :profiles #{:meta}
+   :effects #{:memory/allocate}
+   :capabilities #{}
+   :allocation :proportional-to-input
+   :input :vector-of-octets
+   :padding-output :vector-of-octets
+   :digest-output :lowercase-64-character-hex
+   :key-type :none
+   :nonce-policy :none
+   :randomness-provider :none
+   :numeric-mode :integer-exact
+   :word-arithmetic :explicit-modulo-4294967296
+   :safety-outcome :runtime-checked
+   :text-decoding false
+   :canonicalization false
+   :audit-status :unreviewed
+   :constant-time-claim false
+   :secret-handling-claim false
+   :implemented #{:octet-validation :padding :compression :hex-rendering}
+   :pending [:production-caller-adoption :native-compilation :provider-audit]})
+
+(defn sha256-rejected [reason]
+  {:status :rejected
+   :diagnostics [{:rule "SH22SHA001" :reason reason}]})
+
+(defn sha256-octets? [values]
+  (loop [index 0]
+    (if (= index (count values))
+      true
+      (let [value (get values index)]
+        (if (integer? value)
+          (if (<= 0 value)
+            (if (<= value 255) (recur (+ index 1)) false)
+            false)
+          false)))))
+
+(defn sha256-times8 [value]
+  (let [twice (+ value value)
+        four (+ twice twice)]
+    (+ four four)))
+
+(defn sha256-times32 [value]
+  (let [eight (sha256-times8 value)
+        sixteen (+ eight eight)]
+    (+ sixteen sixteen)))
+
+(defn sha256-times64 [value]
+  (let [thirty-two (sha256-times32 value)]
+    (+ thirty-two thirty-two)))
+
+; Encode the bit length without constructing an overflowing signed word.
+; The low octet is 8*(byte-length mod 32); seven octets encode length/32.
+(defn sha256-length-trailer [size]
+  (let [upper (quot size 32)
+        low (sha256-times8 (- size (sha256-times32 upper)))
+        reversed
+        (loop [remaining upper index 0 result [low]]
+          (if (= index 7)
+            result
+            (let [next (quot remaining 256)
+                  high (sha256-times32 next)
+                  scaled (sha256-times8 high)]
+              (recur next (+ index 1) (conj result (- remaining scaled))))))]
+    (loop [index 7 result []]
+      (if (< index 0) result
+        (recur (- index 1) (conj result (get reversed index)))))))
+
+(defn sha256-pad-octets [values]
+  (let [size (count values)
+        tail (- size (sha256-times64 (quot size 64)))
+        zeros (if (< tail 56) (- 55 tail) (- 119 tail))
+        prefix (loop [index 0 result (conj values 128)]
+                 (if (= index zeros) result
+                   (recur (+ index 1) (conj result 0))))
+        trailer (sha256-length-trailer size)]
+    (loop [index 0 result prefix]
+      (if (= index 8) result
+        (recur (+ index 1) (conj result (get trailer index)))))))
+
+; The argument carrier is checked before inspecting any user value. Rejections
+; contain only fixed reasons, never a printed or retained opaque input.
+(defn sh22-sha256-pad [arguments]
+  (if (vector? arguments)
+    (if (= 1 (count arguments))
+      (let [values (get arguments 0)]
+        (if (vector? values)
+          (if (sha256-octets? values)
+            ; SHA-256's 64-bit bit-length field requires byte-length < 2^61.
+            (if (< (count values) 2305843009213693952)
+              {:status :accepted :value (sha256-pad-octets values)}
+              (sha256-rejected :length-not-representable))
+            (sha256-rejected :non-octet))
+          (sha256-rejected :expected-octet-vector)))
+      (sha256-rejected :invalid-arity))
+    (sha256-rejected :expected-argument-vector)))
+
+; Unsigned 32-bit words are represented exactly in positive integer values.
+; All intermediates fit signed 64-bit arithmetic. These fixed word, block and
+; round widths are SHA-256 semantics, not input/work allowances.
+(defn sha256-word [value]
+  (- value (* (quot value 4294967296) 4294967296)))
+
+; Two-bit XOR truth table, applied to all sixteen digits of a word. This uses
+; only source arithmetic and lookup, without extending the host builtin set.
+(defn sha256-xor [left right]
+  (let [digits [0 1 2 3 1 0 3 2 2 3 0 1 3 2 1 0]]
+    (loop [x left y right place 1 result 0 index 0]
+      (if (= index 16)
+        result
+        (let [x-next (quot x 4)
+              y-next (quot y 4)
+              x-low (- x (* x-next 4))
+              y-low (- y (* y-next 4))
+              digit (get digits (+ (* x-low 4) y-low))]
+          (recur x-next y-next (* place 4)
+                 (+ result (* digit place)) (+ index 1)))))))
+
+(defn sha256-and [left right]
+  (quot (- (+ left right) (sha256-xor left right)) 2))
+
+(defn sha256-xor3 [a b c]
+  (sha256-xor (sha256-xor a b) c))
+
+; divisor = 2^n, multiplier = 2^(32-n). The low n bits are shifted left
+; only after reduction, so no signed overflow or host shift semantics enter.
+(defn sha256-rotr [word divisor multiplier]
+  (let [upper (quot word divisor)
+        lower (- word (* upper divisor))]
+    (+ upper (* lower multiplier))))
+
+(defn sha256-small0 [word]
+  (sha256-xor3 (sha256-rotr word 128 33554432)
+               (sha256-rotr word 262144 16384) (quot word 8)))
+
+(defn sha256-small1 [word]
+  (sha256-xor3 (sha256-rotr word 131072 32768)
+               (sha256-rotr word 524288 8192) (quot word 1024)))
+
+(defn sha256-big0 [word]
+  (sha256-xor3 (sha256-rotr word 4 1073741824)
+               (sha256-rotr word 8192 524288)
+               (sha256-rotr word 4194304 1024)))
+
+(defn sha256-big1 [word]
+  (sha256-xor3 (sha256-rotr word 64 67108864)
+               (sha256-rotr word 2048 2097152)
+               (sha256-rotr word 33554432 128)))
+
+(defn sha256-schedule [padded offset]
+  (let [words
+        (loop [index 0 result []]
+          (if (= index 16)
+            result
+            (let [at (+ offset (* index 4))
+                  word (+ (* (get padded at) 16777216)
+                          (* (get padded (+ at 1)) 65536)
+                          (* (get padded (+ at 2)) 256)
+                          (get padded (+ at 3)))]
+              (recur (+ index 1) (conj result word)))))]
+    (loop [index 16 result words]
+      (if (= index 64)
+        result
+        (let [word (sha256-word
+                    (+ (sha256-small1 (get result (- index 2)))
+                       (get result (- index 7))
+                       (sha256-small0 (get result (- index 15)))
+                       (get result (- index 16))))]
+          (recur (+ index 1) (conj result word)))))))
+
+(defn sha256-compress [state schedule]
+  (let [constants
+        [1116352408 1899447441 3049323471 3921009573
+         961987163 1508970993 2453635748 2870763221
+         3624381080 310598401 607225278 1426881987
+         1925078388 2162078206 2614888103 3248222580
+         3835390401 4022224774 264347078 604807628
+         770255983 1249150122 1555081692 1996064986
+         2554220882 2821834349 2952996808 3210313671
+         3336571891 3584528711 113926993 338241895
+         666307205 773529912 1294757372 1396182291
+         1695183700 1986661051 2177026350 2456956037
+         2730485921 2820302411 3259730800 3345764771
+         3516065817 3600352804 4094571909 275423344
+         430227734 506948616 659060556 883997877
+         958139571 1322822218 1537002063 1747873779
+         1955562222 2024104815 2227730452 2361852424
+         2428436474 2756734187 3204031479 3329325298]
+        working
+        (loop [round 0
+               a (get state 0) b (get state 1)
+               c (get state 2) d (get state 3)
+               e (get state 4) f (get state 5)
+               g (get state 6) h (get state 7)]
+          (if (= round 64)
+            [a b c d e f g h]
+            (let [choose (sha256-xor (sha256-and e f)
+                                     (sha256-and (- 4294967295 e) g))
+                  majority (sha256-xor3 (sha256-and a b)
+                                         (sha256-and a c)
+                                         (sha256-and b c))
+                  t1 (sha256-word (+ h (sha256-big1 e) choose
+                                      (get constants round) (get schedule round)))
+                  t2 (sha256-word (+ (sha256-big0 a) majority))]
+              (recur (+ round 1) (sha256-word (+ t1 t2)) a b c
+                     (sha256-word (+ d t1)) e f g))))]
+    (loop [index 0 result []]
+      (if (= index 8)
+        result
+        (recur (+ index 1)
+               (conj result (sha256-word (+ (get state index)
+                                            (get working index)))))))))
+
+(defn sha256-hex [state]
+  (let [digits ["0" "1" "2" "3" "4" "5" "6" "7"
+                "8" "9" "a" "b" "c" "d" "e" "f"]]
+    (loop [index 0 result ""]
+      (if (= index 8)
+        result
+        (let [word-text
+              (loop [word (get state index) digit 0 text ""]
+                (if (= digit 8)
+                  text
+                  (let [next (quot word 16)]
+                    (recur next (+ digit 1)
+                           (str (get digits (- word (* next 16))) text)))))]
+          (recur (+ index 1) (str result word-text)))))))
+
+(defn sha256-digest-padded [padded]
+  (loop [offset 0
+         state [1779033703 3144134277 1013904242 2773480762
+                1359893119 2600822924 528734635 1541459225]]
+    (if (= offset (count padded))
+      (sha256-hex state)
+      (recur (+ offset 64)
+             (sha256-compress state (sha256-schedule padded offset))))))
+
+; The only accepted argument is literal octets. Neither a precomputed answer
+; nor a provider operation can be supplied in the argument carrier.
+(defn sh22-sha256 [arguments]
+  (let [prepared (sh22-sha256-pad arguments)]
+    (if (= :accepted (get prepared :status))
+      {:status :accepted :value (sha256-digest-padded (get prepared :value))}
+      prepared)))
