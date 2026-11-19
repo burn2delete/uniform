@@ -29,10 +29,14 @@
     (testing "every function appears once in canonical order"
       (is (= 257 (:function-count manifest)))
       (is (= [64 64 64 64 1] (mapv :count chunks)))
-      (is (= names (mapv :name (mapcat :records chunks))))
-      (is (not= (keys functions) (keys reordered-functions)))
-      (is (= (:root-digest manifest)
-             (:root-digest (manifest-for reordered-functions)))))
+      (is (= names (mapv :name (mapcat :records chunks)))))
+    (testing "input order does not affect the manifest root or plan pin"
+      (let [reordered-manifest (manifest-for reordered-functions)]
+        (is (not= (keys functions) (keys reordered-functions)))
+        (is (= (:root-digest manifest) (:root-digest reordered-manifest)))
+        (is (= (pin-digest plan manifest)
+               (pin-digest (assoc plan :functions reordered-functions)
+                           reordered-manifest)))))
     (testing "changing the last definition reaches the plan pin"
       (let [changed-plan (assoc-in plan [:functions last-name :instructions 0 :value] -1)
             changed-manifest (manifest-for (:functions changed-plan))
@@ -53,6 +57,7 @@
                            nil
                            (catch clojure.lang.ExceptionInfo error (ex-data error)))]
           (is (= "C6-VERIFY" (:id diagnostic)))
+          (is (= :bounded-compiled-function-table (:missing-fact diagnostic)))
           (is (= source (get-in diagnostic [:source-span :source]))))))))
 
 ;; Ordinary development binding maintenance, not C6 subject construction,
