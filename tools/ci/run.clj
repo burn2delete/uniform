@@ -509,6 +509,19 @@
 (defn docs-only-record? [{:keys [path] :as change}]
   (and (docs-only-path? path) (regular-added-or-modified? change)))
 
+(def ^:private jvm-backend-paths
+  #{"bootstrap/clojure/src/gravity/backend/jvm.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00773-jvm-backend-value-source.clj"
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00774-jvm-backend-stored-jar-entry.clj"
+    "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"})
+
+(defn- jvm-backend-only? [changes]
+  (let [paths (mapv :path changes)]
+    (and (seq paths)
+         (apply distinct? paths)
+         (every? jvm-backend-paths paths)
+         (every? regular-added-or-modified? changes))))
+
 (defn contract-or-spec-path? [path]
   (and (string? path)
        (or (str/starts-with? path "contracts/")
@@ -583,6 +596,13 @@
        :stages []
        :modes always-pr-modes}
 
+      (jvm-backend-only? changes)
+      {:kind :selected
+       :reason :jvm-backend-only
+       :paths paths
+       :stages []
+       :modes always-pr-modes}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
 
@@ -639,6 +659,7 @@
 (defn selection-output-lines [selection]
   (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
         seedless-tests-only? (= :seedless-tests-only (:reason selection))
+        jvm-backend-only? (= :jvm-backend-only (:reason selection))
         modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
@@ -649,7 +670,8 @@
                   (into #{"static" "contracts" "darwin-unsupported"})
                   (and (not= :docs-only (:kind selection))
                        (not lint-tooling-only?)
-                       (not seedless-tests-only?))
+                       (not seedless-tests-only?)
+                       (not jvm-backend-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
     (into (mapv #(str % "=" (boolean (contains? modes %)))
@@ -701,6 +723,16 @@
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
    (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")])
+
+(defn- language-boundary-command []
+  ["language-boundary" 90
+   (command "512m" "-M:test" "--namespace"
+            "gravity.self-hosting.sh01-language-boundary-test")])
+
+(defn- jvm-backend-regression-command []
+  ["jvm-backend-regression" 180
+   (command "2g" "-M:dev-test" "--progress"
+            "--namespace" "gravity.backend.jvm.pipeline-test")])
 
 (defn contract-commands []
   (into (document-commands)
@@ -886,6 +918,9 @@
       (lint-tooling-only? paths)
       {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
 
+      (jvm-backend-only? changes)
+      {:kind :selected :reason :jvm-backend-only :paths paths :entries []}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}
 
@@ -956,9 +991,8 @@
   "Exact inputs of the static controls that can be narrowed in PR selection.
 
   The selector's `:lint-tooling-only` reason is backed by the same reviewed
-  allowlist.  Stage-owned compiler paths are handled by `stage-owner`; every
-  other path remains a full selection, so context and macro inputs still run
-  their hook/facade controls rather than being guessed away."
+  allowlist. Stage-owned compiler paths and the enumerated JVM backend paths
+  use changed-file lint."
   {:clojure-lint #{".clj-kondo/config.edn"
                    "tools/ci/lint.clj"
                    "tools/ci/lint_context.clj"
@@ -1015,10 +1049,10 @@
       (when (and (sequential? paths)
                  (seq paths)
                  (every? string? paths)
-                 (or (= :lint-tooling-only (:reason selection))
-                     (every? #(some? (stage-owner %)) paths))
-                 (or (not= :lint-tooling-only (:reason selection))
-                     (every? #(contains? static-control-selector-paths %) paths)))
+                 (case (:reason selection)
+                   :lint-tooling-only (every? static-control-selector-paths paths)
+                   :jvm-backend-only (every? jvm-backend-paths paths)
+                   (every? #(some? (stage-owner %)) paths)))
         (vec paths)))))
 
 (defn- static-control-required?
@@ -1077,9 +1111,13 @@
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
-    "contracts" (if (= :docs-only (:kind selection))
-                  (document-commands)
-                  (contract-commands))
+    "contracts" (case (:kind selection)
+                  :docs-only (document-commands)
+                  :selected (if (= :jvm-backend-only (:reason selection))
+                              [(language-boundary-command)
+                               (jvm-backend-regression-command)]
+                              (contract-commands))
+                  (conj (contract-commands) (jvm-backend-regression-command)))
     "public-release" [(public-conformance-command)]
     "bootstrap"
     (cond-> [["cold-bootstrap-load" 120
@@ -1111,9 +1149,7 @@
                       "--namespace" "gravity.bootstrap.rebuild.inputs-test"
                       "--namespace" "gravity.bootstrap.rebuild.component-test")])
       true
-      (into [["language-boundary" 90
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-language-boundary-test")]
+      (into [(language-boundary-command)
              ["catalog-controls" 120
               (command "512m" "-M:test" "--namespace"
                        "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
