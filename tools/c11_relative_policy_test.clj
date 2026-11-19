@@ -70,7 +70,9 @@
     (eval '(declare p15-s23-c6c10-source-binding!
                     p15-s23-c6c10-project-expression-owner-metadata
                     p15-s23-stage2-current-expression-development-binding!))
-    (doseq [form selected] (eval form))))
+    ;; The following declaration starts the separate compiler application.
+    (doseq [form (take-while #(not= 'declare (first %)) selected)]
+      (eval form))))
 (defn call [name & args] (apply (ns-resolve owner name) args))
 (def core {:artifact-id "synthetic-core-id"})
 (def context {:kind :synthetic-context :source-path "fixture.gravity"})

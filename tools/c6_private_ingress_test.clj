@@ -9,11 +9,11 @@
 (defn diagnostic [f] (control 'diagnostic f))
 (binding [*ns* owner]
   (eval '(declare qst-or-gravity-source? reader-project-context-for-source
-                  p15-s23-stage2-c2-c3-front-end-products p15-s23-c6c10-literal-authentication
-                  p15-s23-c6c10-project-front-end validate-ns-syntax! parse-module
-                  stage0-function-table p15-s23-c6c10-resolved-parameter
+                  p15-s23-stage2-c2-c3-front-end-products p15-s23-c6c10-authenticate-and-project-front-end
+                  validate-ns-syntax! parse-module stage0-function-table
+                  p15-s23-c6c10-resolved-parameter p15-s23-c6c10-resolved-scalar-functions
                   p15-s23-stage2-compiler-artifact-plan p15-s23-c6c10-private-stage2-plan
-                  p15-s23-c6c10-project-plan p15-s23-c6c10-project-authoritative-module
+                  p15-s23-c6c10-project-plan p15-s23-c6c10-project-scalar-plan p15-s23-c6c10-project-authoritative-module
                   p15-s23-c6c10-carrier-validation c-backend-stage2-plan-emitter-source-rule!)))
 (control 'evaluate "00716-p15-s23-c6c10-normalize-deferred-ratios-in-plan.clj"
          (control 'named? '#{p15-s23-c6c10-private-ingress-products}))
@@ -38,8 +38,9 @@
           (swap! events conj [:front-end args])
           (when (:front-end-fails options) (throw (ex-info "Synthetic upstream refusal" {:id "SYNTHETIC-C2"})))
           raw)
-        'p15-s23-c6c10-literal-authentication (step :literal-authentication :synthetic-literal-authentication)
-        'p15-s23-c6c10-project-front-end (step :front-end-projection {:synthetic-front-end true})
+        'p15-s23-c6c10-authenticate-and-project-front-end
+        (step :front-end-projection {:front-end {:synthetic-front-end true}
+                                     :literal-authentication :synthetic-literal-authentication})
         'validate-ns-syntax! (step :syntax-validation nil)
         'parse-module (step :module-parse :synthetic-module)
         'stage0-function-table (step :function-table {'main {:arity (or (:arity options) 0)}})
@@ -53,7 +54,10 @@
                                                                         :rule-record {:synthetic-rule true}})
         'p15-s23-c6c10-private-stage2-plan (step :zero-arity-plan {:plan-id "synthetic-plan"})
         'p15-s23-stage2-compiler-artifact-plan (step :parameter-plan {:plan-id "synthetic-plan"})
-        'p15-s23-c6c10-project-plan (step :plan-projection {:synthetic-plan true})
+        'p15-s23-c6c10-project-plan
+        (fn [_ _ authentication _]
+          (swap! events conj [:plan-projection authentication])
+          {:synthetic-plan true})
         'p15-s23-c6c10-project-authoritative-module (step :module-projection {:synthetic-module true})
         'p15-s23-c6c10-carrier-validation
         (fn [& _]
@@ -79,6 +83,7 @@
                    :authenticated-envelope-options {:source :development-current}}]
                  (second (first front))))
           (is (= :envelope-owner (last @events)))
+          (is (some #{[:plan-projection :synthetic-literal-authentication]} @events))
           (is (< (.indexOf @events :carrier-validation) (.indexOf @events :envelope-owner)))
           (is (= version (get-in receipt [:source-interface :version])))
           (is (= (= 3 version) (= :closed-flat-bool-literal-sequence
