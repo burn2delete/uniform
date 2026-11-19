@@ -254,10 +254,25 @@
     (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
    :macro-source-mode :development-current})
 
+(def ^:private current-emitter
+  (delay
+    ((ns-resolve 'gravity.bootstrap
+                 'p15-s23-stage2-current-expression-development-binding!)
+     (path "bootstrap/gravity/p15_s23/emitter.gravity"))))
+
+(defn- with-frontend-operation [operation]
+  ;; Reuse compiled owners within one fixture. Reader and envelope lookups
+  ;; still authenticate current source, and SH-07 verification still replays.
+  (with-bindings {#'bootstrap/*p15-s23-stage2-compiler-artifact-binding*
+                  @current-emitter
+                  (ns-resolve 'gravity.bootstrap '*application-reader-owner*)
+                  (atom nil)}
+    ((ns-resolve 'gravity.bootstrap 'p15-s23-with-stage2-plan-emission-context)
+     operation)))
+
 (defn- core-artifact
-  [source-path]
-  (let [invocation (current-source-invocation)
-        reader-source-path (:reader-source-path invocation)
+  [source-path invocation]
+  (let [reader-source-path (:reader-source-path invocation)
         text (slurp source-path)
         module-inputs
         {:artifact :gravity/sh06-module-inputs
@@ -287,16 +302,23 @@
 
 (defn- products
   [source-path]
-  (let [artifact (core-artifact source-path)
-        verification
-        (bootstrap/sh07-core-artifact-verification
-         artifact (current-source-invocation))
-        typed (c7-result artifact)]
+  (let [invocation (current-source-invocation)
+        [artifact verification]
+        (with-frontend-operation
+          (fn []
+            (let [artifact (core-artifact source-path invocation)]
+              [artifact
+               (bootstrap/sh07-core-artifact-verification artifact invocation)])))]
+    (when-not (= :passed (:status verification))
+      (throw (ex-info "SH-08 fixture failed fresh SH-07 verification"
+                      {:id "SH08-AUTH-CORE-VERIFICATION"
+                       :source-path source-path
+                       :failed-checks (:failed-checks verification)})))
     (merge
      {:source-path source-path
       :sh07-artifact artifact
       :sh07-verification verification}
-     typed)))
+     (c7-result artifact))))
 
 (defn- descriptor
   [products actual-path]
@@ -818,34 +840,98 @@
       (is (= :rejected (:status result-rejection))))))
 
 (deftest sh08-identity-is-path-neutral-with-separate-provenance
+  ;; One literal definition keeps this composition focused on provenance.
   (let [products
-        (cached-fixture-products "accepted" ".gravity")
-        descriptor-a
-        (descriptor products "/checkout-a/type-input.gravity")
-        descriptor-b
-        (descriptor products "/checkout-b/type-input.gravity")
+        (products
+         (path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"))
+        canonical-core (core (:sh07-artifact products))
+        {:keys [type-template type-verification]} products
+        short-path "/checkout-a/type-input.gravity"
+        ;; Captured provenance is data. Only the fixture above is read from disk.
+        long-path (str "/" (apply str (repeat 4096 \x)))
+        descriptor-a (descriptor products short-path)
+        descriptor-b (assoc-in descriptor-a [:actual-path-provenance :source-path]
+                               long-path)
         authenticated-a (authenticated-envelope descriptor-a)
         authenticated-b (authenticated-envelope descriptor-b)
-        request-a
-        (request
-         products descriptor-a authenticated-a
-         "/checkout-a/type-input.gravity")
-        request-b
-        (request
-         products descriptor-b authenticated-b
-         "/checkout-b/type-input.gravity")
-        result-a (:result (run-bridge request-a))
-        result-b (:result (run-bridge request-b))]
+        request-a (request products descriptor-a authenticated-a short-path)
+        request-b (request products descriptor-b authenticated-b long-path)
+        ;; C7 has already run and replayed on this exact Core in products.
+        ;; Both path-specific requests still pass through bridge binding and replay.
+        [result-a result-b]
+        (mapv
+         (fn [[bridge-request authenticated]]
+           (let [c7-request
+                 (invoke bridge-plan 'sh08-build-authenticated-type-request
+                         [bridge-request])
+                 result
+                 (invoke bridge-plan 'sh08-bind-authenticated-type-result
+                         [bridge-request c7-request type-template type-verification])]
+             (is (= :accepted (:status c7-request)))
+             (is (= canonical-core (:core-artifact c7-request)))
+             (is (= (:semantic-root authenticated)
+                    (:semantic-envelope-id c7-request)))
+             (is (= :accepted (:status result)))
+             (is (= {:actual-source-path (:actual-source-path bridge-request)
+                     :provenance-binding-id (:provenance-root authenticated)}
+                    (:provenance result)))
+             (is (= :passed
+                    (:status
+                     (invoke bridge-plan 'sh08-verify-authenticated-type-result
+                             [bridge-request c7-request type-template
+                              type-verification result]))))
+             result))
+         [[request-a authenticated-a] [request-b authenticated-b]])]
+    (is (= 4097 (count long-path)))
+    (is (= :accepted (:status type-template)))
+    (is (= :passed (:status type-verification)))
     (is (= (:semantic-root authenticated-a)
            (:semantic-root authenticated-b)))
-    (is (not= (:provenance-root authenticated-a)
-              (:provenance-root authenticated-b)))
     (is (= (:identity-input result-a)
            (:identity-input result-b)))
-    (is (= (:artifact-id result-a)
+    (is (= (:expected-type-artifact-id request-a)
+           (:artifact-id result-a)
            (:artifact-id result-b)))
-    (is (not= (:provenance result-a)
-              (:provenance result-b)))))
+    (is (= (dissoc result-a :provenance) (dissoc result-b :provenance)))
+    (is (not= (get-in result-a [:provenance :provenance-binding-id])
+              (get-in result-b [:provenance :provenance-binding-id])))
+    (testing "oversized captured paths reach provenance binding validation"
+      (let [over-cap-path (str "/" (.repeat "x" 16777216))
+            result
+            (invoke bridge-plan 'sh08-build-authenticated-type-request
+                    [(assoc request-b :actual-source-path over-cap-path)])]
+        (is (= 16777217 (count over-cap-path)))
+        (is (= :rejected (:status result)))
+        (is (= "STD08-BRIDGE-ENVELOPE"
+               (get-in result [:diagnostics 0 :rule])))
+        (is (= :invalid-authenticated-envelope
+               (get-in result [:diagnostics 0 :facts :reason])))))
+    (testing "malformed path provenance is rejected"
+      (doseq [actual-path ["" :not-text]]
+        (let [result
+              (invoke
+               bridge-plan 'sh08-build-authenticated-type-request
+               [(assoc request-b :actual-source-path actual-path)])]
+          (is (= :rejected (:status result)))
+          (is (= "STD08-BRIDGE-SCHEMA"
+                 (get-in result [:diagnostics 0 :rule])))
+          (is (= :actual-path-required
+                 (get-in result [:diagnostics 0 :facts :reason]))))))
+    (doseq [[label candidate]
+            [["substituted envelope identity"
+              (assoc-in request-b [:envelope :semantic-envelope-id]
+                        (str "sha256:" (apply str (repeat 64 "e"))))]
+             ["path from a different authenticated envelope"
+              (assoc request-b :actual-source-path short-path)]]]
+      (testing label
+        (let [result
+              (invoke bridge-plan 'sh08-build-authenticated-type-request
+                      [candidate])]
+          (is (= :rejected (:status result)))
+          (is (= "STD08-BRIDGE-ENVELOPE"
+                 (get-in result [:diagnostics 0 :rule])))
+          (is (= :invalid-authenticated-envelope
+                 (get-in result [:diagnostics 0 :facts :reason]))))))))
 
 (deftest sh08-authenticated-type-bridge-fails-closed-on-malformed-input
   (doseq [value

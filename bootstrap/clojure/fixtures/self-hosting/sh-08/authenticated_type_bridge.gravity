@@ -72,89 +72,6 @@
       false)
     false))
 
-(defn sh08-bridge-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh08-bridge-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh08-bridge-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh08-bridge-max [left right]
-  (if (> left right) left right))
-
-(defn sh08-bridge-carrier-preflight [value]
-  (loop [frontier [[value 0]]
-         nodes 0
-         scalar-units 0
-         observed-depth 0
-         observed-width 0]
-    (if (= (count frontier) 0)
-      {:status :accepted
-       :nodes nodes
-       :scalar-units scalar-units
-       :maximum-depth observed-depth
-       :maximum-width observed-width}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 1048576)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 128)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (sh08-bridge-aggregate? current)
-              (let [width
-                    (sh08-bridge-aggregate-width current)]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (let [components
-                        (sh08-bridge-aggregate-components current)
-                        next-frontier
-                        (loop [remaining components
-                               result (rest frontier)]
-                          (if (= (count remaining) 0)
-                            result
-                            (recur
-                             (rest remaining)
-                             (conj
-                              result
-                              [(first remaining) (+ depth 1)]))))]
-                    (recur
-                     next-frontier
-                     next-nodes
-                     scalar-units
-                     (sh08-bridge-max observed-depth depth)
-                     (sh08-bridge-max observed-width width)))))
-              (let [next-scalar-units
-                    (+ scalar-units (count (vec (str current))))]
-                (if (> next-scalar-units 16777216)
-                  {:status :rejected :reason :carrier-scalar-bound}
-                  (recur
-                   (rest frontier)
-                   next-nodes
-                   next-scalar-units
-                   (sh08-bridge-max observed-depth depth)
-                   observed-width))))))))))
-
 (defn sh08-bridge-exact-keys? [value expected]
   (if (map? value)
     (= (set (keys value)) expected)
@@ -544,24 +461,19 @@
 (defn sh08-bridge-upstream-error [request]
   (if
    (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight request) :status)))
-    [:schema :request-carrier-bound]
-    (if
-     (= false
-        (sh08-bridge-exact-keys?
-         request
-         #{:artifact
-           :schema-version
-           :sh07-artifact
-           :sh07-verification
-           :expected-type-identity-input
-           :expected-type-artifact-id
-           :envelope-descriptor
-           :envelope
-           :template-replay
-           :envelope-verification
-           :actual-source-path}))
+      (sh08-bridge-exact-keys?
+       request
+       #{:artifact
+         :schema-version
+         :sh07-artifact
+         :sh07-verification
+         :expected-type-identity-input
+         :expected-type-artifact-id
+         :envelope-descriptor
+         :envelope
+         :template-replay
+         :envelope-verification
+         :actual-source-path}))
       [:schema :request-keys]
       (if
      (= false
@@ -600,19 +512,17 @@
                      (get request :expected-type-artifact-id)
                      (get request :sh07-verification)))
                   [:envelope :invalid-authenticated-envelope]
-                  (if (string?
-                       (get request :actual-source-path))
-                    (if (> (count
-                            (get request :actual-source-path))
-                           0)
-                      (if (<= (count
-                               (get request
-                                    :actual-source-path))
-                              4096)
-                        nil
-                        [:schema :actual-path-bound])
-                      [:schema :actual-path-required])
-                    [:schema :actual-path-required])))))))))))
+                  (let [path (get request :actual-source-path)]
+                    (if (string? path)
+                      (if (> (count path) 0)
+                        (if (= path
+                               (get (get (get request :envelope)
+                                         :actual-path-provenance)
+                                    :source-path))
+                          nil
+                          [:envelope :invalid-authenticated-envelope])
+                        [:schema :actual-path-required])
+                      [:schema :actual-path-required])))))))))))
 
 (defn sh08-bridge-rule [family]
   (if (= family :schema)
@@ -677,26 +587,10 @@
       (sh08-bridge-rejected
        request (first error) (first (rest error)) []))))
 
-(defn sh08-bridge-type-result-valid?
+;; Compare exact authenticated C7 and type proof products.
+(defn bridge-type-result-matches?
   [c7-request type-template type-verification]
   (if
-   (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight c7-request) :status)))
-    false
-    (if
-   (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight type-template) :status)))
-    false
-    (if
-   (= false
-      (= :accepted
-         (get
-          (sh08-bridge-carrier-preflight type-verification)
-          :status)))
-    false
-    (if
    (sh08-bridge-exact-keys?
     c7-request
     #{:artifact :schema-version :status :core-artifact
@@ -765,9 +659,11 @@
         false)
       false)
     false)
-    false)
-    )
-    )))
+    false))
+
+(defn sh08-bridge-type-result-valid?
+  [c7-request type-template type-verification]
+  (bridge-type-result-matches? c7-request type-template type-verification))
 
 (defn sh08-bridge-typed-artifact-id [request]
   (get request :expected-type-artifact-id))
@@ -793,48 +689,23 @@
 
 (defn sh08-bind-authenticated-type-result
   [request c7-request type-template type-verification]
-  (if
-   (= false
-      (= :accepted
-         (get (sh08-bridge-carrier-preflight c7-request) :status)))
-    (sh08-bridge-rejected
-     request :verify :c7-request-carrier-bound [])
-    (if
-     (= false
-        (= :accepted
-           (get
-            (sh08-bridge-carrier-preflight type-template)
-            :status)))
-      (sh08-bridge-rejected
-       request :verify :c7-result-carrier-bound [])
-      (if
-       (= false
-          (= :accepted
-             (get
-              (sh08-bridge-carrier-preflight type-verification)
-              :status)))
-        (sh08-bridge-rejected
-         request :verify :c7-verification-carrier-bound [])
-        (let [expected-request
-              (sh08-build-authenticated-type-request request)]
-          (if (= false (= expected-request c7-request))
+  (let [expected-request
+        (sh08-build-authenticated-type-request request)]
+    (if (= false (= expected-request c7-request))
       (sh08-bridge-rejected
        request :verify :c7-request-substitution [])
-      (if
-       (= false
-          (sh08-bridge-type-result-valid?
-           c7-request type-template type-verification))
+      (if (= false
+             (sh08-bridge-type-result-valid?
+              c7-request type-template type-verification))
         (sh08-bridge-rejected
          request :verify :invalid-fresh-c7-result [])
         (if (= :accepted (get type-template :status))
           (let [typed-artifact-id
                 (sh08-bridge-typed-artifact-id request)]
-            (if
-             (= false
-                (sh08-bridge-sha256-id? typed-artifact-id))
+            (if (= false
+                   (sh08-bridge-sha256-id? typed-artifact-id))
               (sh08-bridge-rejected
-               request :envelope
-               :missing-typed-result-identity [])
+               request :envelope :missing-typed-result-identity [])
               {:artifact :gravity/sh08-authenticated-typed-core
                :schema-version 1
                :status :accepted
@@ -842,9 +713,7 @@
                :primitive-literals-vector-map-set-definitions-equal-if-joins
                :artifact-id typed-artifact-id
                :sh07-artifact-id
-               (get
-                (get c7-request :core-artifact)
-                :artifact-id)
+               (get (get c7-request :core-artifact) :artifact-id)
                :module (get type-template :module)
                :type-table (get type-template :type-table)
                :type-facts (get type-template :type-facts)
@@ -853,34 +722,27 @@
                (sh08-bridge-identity-input
                 request type-template typed-artifact-id)
                :provenance
-               {:actual-source-path
-                (get request :actual-source-path)
+               {:actual-source-path (get request :actual-source-path)
                 :provenance-binding-id
                 (get c7-request :provenance-binding-id)}
                :diagnostics []
                :pending
-               (get
-                (sh08-authenticated-type-bridge-policy)
-                :pending)
+               (get (sh08-authenticated-type-bridge-policy) :pending)
                :self-hosted? false
                :clojure-seed-boundary? true}))
           (sh08-bridge-rejected
            request :type :c7-type-rejection
-           (get type-template :diagnostics))))))))))
+           (get type-template :diagnostics)))))))
 
 (defn sh08-verify-authenticated-type-result
   [request c7-request type-template type-verification candidate]
   (let [expected
         (sh08-bind-authenticated-type-result
-         request c7-request type-template type-verification)
-        candidate-preflight
-        (sh08-bridge-carrier-preflight candidate)]
+         request c7-request type-template type-verification)]
     {:artifact
      :gravity/sh08-authenticated-type-verification
      :status
-     (if (= :accepted (get candidate-preflight :status))
-       (if (= expected candidate) :passed :rejected)
-       :rejected)
+     (if (= expected candidate) :passed :rejected)
      :checks
      [:verified-sh07-canonical-core
       :authenticated-input-and-output-identities
