@@ -341,8 +341,21 @@
                          (str/ends-with? (:path %) ".edn"))))
        (mapv :path)))
 
+(def ^:private explanatory-doc-paths
+  ;; Markdown can also be a design contract, test fixture, or pinned evidence.
+  #{"README.md"
+    "README-reference-archive.md"
+    "docs/README.md"
+    "docs/ci.md"
+    "docs/compiler-checked-js-modules.md"
+    "docs/compiler-compositional-scalar-mir.md"
+    "docs/compiler-current-source-mir.md"
+    "docs/current-roadmap.md"
+    "docs/development-verification-reference.md"
+    "docs/development-verification-workflow.md"})
+
 (defn docs-only-path? [path]
-  (and (string? path) (str/ends-with? path ".md")))
+  (contains? explanatory-doc-paths path))
 
 (defn cross-cutting-path? [path]
   (and (string? path)
@@ -393,17 +406,6 @@
 
 (defn lint-tooling-only? [paths]
   (and (seq paths) (every? lint-tooling-path? paths)))
-
-(defn docs-only-record? [{:keys [old-mode new-mode status path]}]
-  (and (docs-only-path? path)
-       (not (or (str/starts-with? path "contracts/")
-                (str/starts-with? path "specs/")))
-       (not (cross-cutting-path? path))
-       (= "100644" new-mode)
-       (case status
-         "A" (= "000000" old-mode)
-         "M" (= "100644" old-mode)
-         false)))
 
 (defn prefix-path? [path prefix]
   (and (string? path)
@@ -504,6 +506,9 @@
        (or (and (= "M" status) (= "100644" old-mode))
            (and (= "A" status) (= "000000" old-mode)))))
 
+(defn docs-only-record? [{:keys [path] :as change}]
+  (and (docs-only-path? path) (regular-added-or-modified? change)))
+
 (defn contract-or-spec-path? [path]
   (and (string? path)
        (or (str/starts-with? path "contracts/")
@@ -544,7 +549,8 @@
         stages (keep stage-owner paths)
         unknown-path? (some (fn [path]
                               (and (not (docs-only-path? path))
-                                   (nil? (stage-owner path))))
+                                   (or (nil? (stage-owner path))
+                                       (str/ends-with? path ".md"))))
                             paths)]
     (cond
       (empty? changes)
@@ -637,7 +643,9 @@
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (or (= :docs-only (:kind selection)) lint-tooling-only? seedless-tests-only?)
+                  (= :docs-only (:kind selection))
+                  (into always-pr-modes)
+                  (or lint-tooling-only? seedless-tests-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
                   (and (not= :docs-only (:kind selection))
                        (not lint-tooling-only?)
@@ -689,31 +697,34 @@
   ["public-release-subset" 900
    (command "2g" "-X:dev-test" "ci.public-release-subset/run!")])
 
-(defn contract-commands []
+(defn- document-commands []
   [(script "docs" "tools/validate_gravity_docs.clj")
    (script "roadmap" "tools/validate_full_language_roadmap.clj")
-   (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
-   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")
-   ["tooling-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.tooling.pipeline-test")]
-   ["ownership-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]
-   ["wasm-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.wasm.pipeline-test")]
-   ["c-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.c.pipeline-test")]
-   ["runtime-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.pipeline-test")]
-   ["effects-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
-   ["types-native-validation" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]
-   ["c7-collection-call-inference-kernels" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-collection-call-inference-kernel-test")]
-   ["c7-normal-return-inference-kernels" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-normal-return-inference-kernel-test")]
-   ["c7-set-equality-routing" 180
-    (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-set-equality-routing-test")]])
+   (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")])
+
+(defn contract-commands []
+  (into (document-commands)
+        [(script "dependency-controls" "tools/acceptance_dependencies_test.clj")
+         ["tooling-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.tooling.pipeline-test")]
+         ["ownership-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.ownership.pipeline-test")]
+         ["wasm-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.wasm.pipeline-test")]
+         ["c-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.backend.c.pipeline-test")]
+         ["runtime-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.runtime.pipeline-test")]
+         ["effects-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.effects.pipeline-test")]
+         ["types-native-validation" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.types.pipeline-test")]
+         ["c7-collection-call-inference-kernels" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-collection-call-inference-kernel-test")]
+         ["c7-normal-return-inference-kernels" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-normal-return-inference-kernel-test")]
+         ["c7-set-equality-routing" 180
+          (command "2g" "-M:dev-test" "--progress" "--namespace" "gravity.self-hosting.sh08-set-equality-routing-test")]]))
 
 (defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
@@ -1066,7 +1077,9 @@
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
-    "contracts" (contract-commands)
+    "contracts" (if (= :docs-only (:kind selection))
+                  (document-commands)
+                  (contract-commands))
     "public-release" [(public-conformance-command)]
     "bootstrap"
     (cond-> [["cold-bootstrap-load" 120
@@ -1271,7 +1284,7 @@
     (when skipped?
       (println "CI mode" mode "skipped for known documentation-only PR; required matrix job retained"))
     (when (and docs-only? (= "static" mode))
-      (println "CI mode static ran the docs-only whitespace check; remaining semantic checks are retained by the matrix"))
+      (println "CI mode static ran the docs-only whitespace check"))
     (if (every? #(contains? #{:passed :skipped} (:status %)) results) 0 1)))
 
 (defn run! [mode]

@@ -15,7 +15,7 @@ runtime_classpath() {
 }
 
 packaged_cli_selected() {
-  [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]
+  [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && "${GRAVITY_PACKAGED_CLI_ONLY:-0}" == "1" && -f "${PACKAGED_JAR}" ]]
 }
 
 current_source_targeted_command_requested() {
