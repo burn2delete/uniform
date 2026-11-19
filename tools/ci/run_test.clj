@@ -2825,13 +2825,13 @@
     (is (re-find (re-pattern (option-value final-argv "--exact"))
                  ci/resolution-pipeline-final-test))))
 
-(deftest resolution-workflow-serializes-only-its-own-pool
+(deftest resolution-workflow-allows-three-independent-jobs-to-overlap
   (let [workflow (slurp ".github/workflows/ci.yml")
         resolution (second (re-find #"(?s)\n  resolution:\n(.*?)(?=\n  leaves:)" workflow))]
     (is (some? resolution))
     (is (str/includes? resolution
                        "mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]"))
-    (is (str/includes? resolution "max-parallel: 1"))
+    (is (str/includes? resolution "max-parallel: 3"))
     (is (str/includes? resolution "needs.select.outputs.resolution == 'false'"))
     (is (str/includes? resolution "git rev-parse HEAD 'HEAD^{tree}'"))
     (is (str/includes? resolution "git status --porcelain"))
