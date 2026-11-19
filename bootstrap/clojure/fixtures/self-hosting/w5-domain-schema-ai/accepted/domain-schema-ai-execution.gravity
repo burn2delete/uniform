@@ -44,7 +44,7 @@
 
 (defn dsai-serializer []
   {:artifact :gravity/serializer :schema-id :TicketClassification
-   :schema-version 2 :format :json :unknown-fields :reject
+   :schema-version 2 :schema-hash dsai-id :format :json :unknown-fields :reject
    :numeric-policy :exact-or-diagnostic :decoded-trust :untrusted
    :canonical false :roundtrip-fixtures [:accepted-json-roundtrip]
    :source-span (dsai-span 4 5)

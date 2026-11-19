@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap])
+  (:import [java.nio.file Files]))
 
 (defn- repository-root []
   (let [resource
@@ -98,10 +99,11 @@
             w5-domain-schema-ai-recompute
             w5-domain-schema-ai-verify-result]]
     (is (map? (get (get @engine-plan :functions) function)) function))
-  (is (= (slurp (path (fixture-path "accepted" "domain-schema-ai-execution" ".gravity")))
-         (slurp (path (fixture-path "accepted" "domain-schema-ai-execution" ".qst")))))
-  (is (= (slurp (path (fixture-path "rejected" "invalid-domain-schema-ai-execution" ".gravity")))
-         (slurp (path (fixture-path "rejected" "invalid-domain-schema-ai-execution" ".qst"))))))
+  (doseq [[family basename] [["accepted" "domain-schema-ai-execution"]
+                             ["rejected" "invalid-domain-schema-ai-execution"]]]
+    (is (= -1 (Files/mismatch (.resolve @root (fixture-path family basename ".gravity"))
+                             (.resolve @root (fixture-path family basename ".qst"))))
+        family)))
 
 (deftest w5-domain-schema-ai-path-suffix-helper-binds-extension
   (is (true? (invoke-engine 'w5-domain-schema-ai-path-ends-with?
@@ -154,11 +156,60 @@
       (is (false? (:tool-executed? result)))
       (is (false? (:database-written? result)))
       (is (false? (:ambient-authority? result)))
+      (is (= (get-in value [:schema-manifest :schema-hash])
+             (get-in value [:serializer :schema-hash])
+             (get-in result [:identity-input :schema-hash])))
+      (is (= (path (fixture-path "accepted" "domain-schema-ai-execution" extension))
+             (get-in result [:provenance :actual-source-path])))
       (is (= extension (:source-extension (:provenance result))))
       (is (= kind (:source-kind (:provenance result))))
+      (is (= (get-in value [:provenance :origin-chain])
+             (get-in result [:provenance :origin-chain])))
+      (is (= (get-in value [:schema-manifest :source-span])
+             (get-in result [:provenance :schema-source-span])))
       (is (= :passed
              (:status (invoke-engine 'w5-domain-schema-ai-verify-result
                                      [value result])))))))
+
+(deftest w5-domain-schema-ai-serializer-binds-schema-hash
+  (doseq [[plan extension kind] [[rejected-gravity-plan ".gravity" :gravity]
+                                 [rejected-qst-plan ".qst" :qst]]]
+    (testing extension
+      (let [source-path (path (fixture-path "rejected" "invalid-domain-schema-ai-execution"
+                                            extension))
+            base (invoke plan 'w5-domain-schema-ai-request [source-path extension kind])
+            result (invoke-engine 'w5-domain-schema-ai-verify [base])
+            alternate-hash "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+            rebound (-> base
+                        (assoc-in [:schema-manifest :schema-hash] alternate-hash)
+                        (assoc-in [:serializer :schema-hash] alternate-hash))
+            rebound-result (invoke-engine 'w5-domain-schema-ai-verify [rebound])
+            stale (invoke-engine 'w5-domain-schema-ai-verify-result [rebound result])]
+        (is (= :accepted (:status result)))
+        (is (= (:provenance base)
+               (select-keys (:provenance result) (keys (:provenance base)))))
+        (is (= :passed (:status (invoke-engine 'w5-domain-schema-ai-verify-result
+                                               [base result]))))
+        (doseq [[mutator serializer]
+                [['serializer-without-schema-hash (dissoc (:serializer base) :schema-hash)]
+                 ['serializer-with-mismatched-schema-hash
+                  (assoc (:serializer base) :schema-hash alternate-hash)]]]
+          (testing (str mutator)
+            (let [invalid (invoke plan mutator [base])
+                  rejected (invoke-engine 'w5-domain-schema-ai-verify [invalid])
+                  diagnostic (first (:diagnostics rejected))]
+              (is (= (assoc base :serializer serializer) invalid))
+              (is (= :rejected (:status rejected)))
+              (is (= "S2-MANIFEST" (:rule diagnostic) (:diagnostic-id diagnostic)))
+              (is (= :serialization (:stage diagnostic)))
+              (is (= :serializer (get-in diagnostic [:facts :field]))))))
+        (is (= (assoc-in result [:identity-input :schema-hash] alternate-hash)
+               rebound-result))
+        (is (= :passed (:status (invoke-engine 'w5-domain-schema-ai-verify-result
+                                               [rebound rebound-result]))))
+        (is (= :rejected (:status stale)))
+        (is (= rebound-result (:expected stale)))
+        (is (= "A9002" (:rule (first (:diagnostics stale)))))))))
 
 (deftest w5-domain-schema-ai-budgets-are-complete-and-bounded
   (let [value (request accepted-gravity-plan ".gravity" :gravity)
@@ -190,8 +241,8 @@
     (is (not= (:provenance left-result) (:provenance right-result)))
     (is (not-any? #(re-find #"/checkout|/secret|/different|/opt" (str %))
                   (tree-seq coll? seq (:identity-input left-result))))
-    (is (re-find #"/checkout-a/"
-                 (:actual-source-path (:provenance left-result))))
+    (is (= (path (fixture-path "accepted" "domain-schema-ai-execution" ".gravity"))
+           (get-in left-result [:provenance :actual-source-path])))
     (is (re-find #"/checkout-b/"
                  (:actual-source-path (:provenance right-result))))))
 

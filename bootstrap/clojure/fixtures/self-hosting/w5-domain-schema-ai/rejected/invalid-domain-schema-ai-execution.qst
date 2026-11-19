@@ -42,6 +42,8 @@
              w5-domain-schema-ai-invalid-extra-capability
              w5-domain-schema-ai-invalid-schema
              w5-domain-schema-ai-invalid-serializer
+             serializer-without-schema-hash
+             serializer-with-mismatched-schema-hash
              w5-domain-schema-ai-invalid-migration
              w5-domain-schema-ai-invalid-provider
              w5-domain-schema-ai-invalid-prompt
@@ -123,7 +125,7 @@
 
 (defn dsai-serializer []
   {:artifact :gravity/serializer :schema-id :TicketClassification
-   :schema-version 2 :format :json :unknown-fields :reject
+   :schema-version 2 :schema-hash dsai-id :format :json :unknown-fields :reject
    :numeric-policy :exact-or-diagnostic :decoded-trust :untrusted
    :canonical false :roundtrip-fixtures [:accepted-json-roundtrip]
    :source-span (dsai-span 4 5)
@@ -438,6 +440,12 @@
   (let [serializer (get request :serializer)
         changed (assoc serializer :decoded-trust :validated-for-sink)]
     (assoc request :serializer changed)))
+
+(defn serializer-without-schema-hash [request]
+  (assoc request :serializer (dissoc (get request :serializer) :schema-hash)))
+
+(defn serializer-with-mismatched-schema-hash [request]
+  (assoc request :serializer (assoc (get request :serializer) :schema-hash dsai-id-2)))
 
 (defn w5-domain-schema-ai-invalid-migration [request]
   (let [migration (get request :migration)

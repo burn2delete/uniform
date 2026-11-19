@@ -376,12 +376,14 @@
 
 (defn w5-domain-schema-ai-serializer-valid? [serializer schema]
   (if (w5-domain-schema-ai-exact-keys?
-       serializer #{:artifact :schema-id :schema-version :format
+       serializer #{:artifact :schema-id :schema-version :schema-hash :format
                     :unknown-fields :numeric-policy :decoded-trust
                     :canonical :roundtrip-fixtures :source-span :provenance})
     (if (= :gravity/serializer (get serializer :artifact))
       (if (= (get schema :schema-id) (get serializer :schema-id))
-        (if (= (get schema :version) (get serializer :schema-version))
+        (if (and (= (get schema :version) (get serializer :schema-version))
+                 (w5-domain-schema-ai-sha? (get serializer :schema-hash))
+                 (= (get schema :schema-hash) (get serializer :schema-hash)))
           (if (= :json (get serializer :format))
             (if (= :reject (get serializer :unknown-fields))
               (if (= :exact-or-diagnostic (get serializer :numeric-policy))
@@ -1255,6 +1257,7 @@
    :domain (get (get request :domain-manifest) :domain)
    :schema-id (get (get request :schema-manifest) :schema-id)
    :schema-version (get (get request :schema-manifest) :version)
+   :schema-hash (get (get request :schema-manifest) :schema-hash)
    :provider-id (get (get request :provider) :provider-id)
    :model-id (get (get request :provider) :model-id)
    :prompt-id (get (get request :prompt) :prompt-id)
