@@ -203,9 +203,7 @@
 (defn sh22-bridge-origins-valid? [origins]
   (if (vector? origins)
     (if (> (count origins) 0)
-      (if (<= (count origins) 32)
-        (sh22-bridge-origins-from-valid? origins 0)
-        false)
+      (sh22-bridge-origins-from-valid? origins 0)
       false)
     false))
 
@@ -213,7 +211,7 @@
   (if (= index (count origins))
     true
     (if (sh22-bridge-origin-valid? (get origins index))
-      (sh22-bridge-origins-from-valid? origins (+ index 1))
+      (recur origins (+ index 1))
       false)))
 
 (defn sh22-bridge-verification-passed?

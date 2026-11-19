@@ -100,14 +100,19 @@
     (defn- p15-s23-current-source-to-verified-mir*
       [source-path policy discover-policy?]
       (binding [*print-length* nil *print-level* nil *print-meta* false
-                *print-dup* false *print-readably* true *print-namespace-maps* false]
+                *print-dup* false *print-readably* true *print-namespace-maps* false
+                *application-reader-owner* (atom nil)]
       (when-not discover-policy?
         (p15-s23-application-request! source-path policy))
       (let [source (p15-s23-application-source-snapshot! source-path)
             path (:path source)
-            fresh (if discover-policy?
-                    (p15-s23-c6c10-current-scalar-construction path (:text source))
-                    (p15-s23-c6c10-current-scalar-construction path (:text source) policy))
+            ;; Ingress and replay both authenticate SH-02's source and emitter.
+            ;; Share the compiled owner within this request; both passes still
+            ;; execute the builder and verifier on their own inputs.
+            fresh (p15-s23-with-stage2-plan-emission-context
+                   #(if discover-policy?
+                      (p15-s23-c6c10-current-scalar-construction path (:text source))
+                      (p15-s23-c6c10-current-scalar-construction path (:text source) policy)))
             checked-core (:artifact fresh)
             context (:context fresh)
             mir (binding [*p15-s23-c11-mir-diagnostic-context*

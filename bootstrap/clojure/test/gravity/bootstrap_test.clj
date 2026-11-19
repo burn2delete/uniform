@@ -22783,39 +22783,25 @@
     (fn [root]
       (let [root ^java.nio.file.Path root
             no-clojure-path (path-without-clojure root)
-            source-wrapper (.getCanonicalPath (java.io.File. "bin/gravity"))
+            source-wrapper (copy-gravity-wrapper! (.resolve root "source-repository") false)
             archived-root (.resolve root "archived-repository")
             archived-wrapper (copy-gravity-wrapper! archived-root true)
             seedless-root (.resolve root "seedless-repository")
             seedless-wrapper (copy-gravity-wrapper! seedless-root false)
             source-help (slurp "bootstrap/clojure/resources/gravity/cli/help-source.txt")
             archived-help (slurp "bootstrap/clojure/resources/gravity/cli/help-archived-packaged-jvm.txt")
-            env-base {"PATH" no-clojure-path}
+            env-base {"PATH" no-clojure-path
+                      "GRAVITY_BOOTSTRAP_ONLY" "0"
+                      "GRAVITY_PACKAGED_CLI_ONLY" "0"}
+            env-archived (assoc env-base "GRAVITY_PACKAGED_CLI_ONLY" "1")
             working-directory (.toString root)
-            source-result
-            (run-process-in-directory
-             working-directory
-             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
-                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
-             [source-wrapper "help"])
-            source-missing-clojure
-            (run-process-in-directory
-             working-directory
-             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "1"
-                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
-             [source-wrapper "check" "missing.gravity"])
+            invoke (fn [wrapper env & args]
+                     (run-process-in-directory working-directory env
+                                               (into [wrapper] args)))
             archived-result
-            (run-process-in-directory
-             working-directory
-             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
-                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
-             [archived-wrapper "help"])
+            (invoke archived-wrapper env-archived "help")
             archived-missing-clojure
-            (run-process-in-directory
-             working-directory
-             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
-                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
-             [archived-wrapper "check" "missing.gravity"])
+            (invoke archived-wrapper env-archived "check" "missing.gravity")
             proof (.resolve seedless-root
                             "docs/artifacts/phase-15/bootstrap/p15-s23-final-seed-retirement-proof.edn")
             release (.resolve seedless-root
@@ -22832,17 +22818,19 @@
                release (executable-from-path "echo")
                (make-array java.nio.file.attribute.FileAttribute 0))
             seedless-handoff
-            (run-process-in-directory
-             working-directory
-             (merge env-base {"GRAVITY_BOOTSTRAP_ONLY" "0"
-                              "GRAVITY_PACKAGED_CLI_ONLY" "0"})
-             [seedless-wrapper "help"])]
-        (is (zero? (:exit source-result)) source-result)
-        (is (= source-help (:out source-result)))
-        (is (empty? (:err source-result)))
+            (invoke seedless-wrapper env-base "help")]
+        (doseq [wrapper [source-wrapper archived-wrapper]]
+          (let [help (invoke wrapper env-base "help")
+                version (invoke wrapper env-base "--version")
+                check (invoke wrapper env-base "check" "missing.gravity")]
+            (is (zero? (:exit help)) help)
+            (is (= source-help (:out help)))
+            (is (empty? (:err help)))
+            (is (zero? (:exit version)) version)
+            (is (false? (:packaged-jvm-cli? (edn/read-string (:out version)))))
+            (is (= 1 (:exit check)) check)
+            (is (= "P18T01002" (:id (edn/read-string (:err check)))))))
         (is (str/includes? source-help "--target js|js-ts"))
-        (is (= 1 (:exit source-missing-clojure)) source-missing-clojure)
-        (is (str/includes? (:err source-missing-clojure) "P18T01002"))
         (is (zero? (:exit archived-result)) archived-result)
         (is (= archived-help (:out archived-result)))
         (is (str/includes? (:out archived-result) ":packaged-jvm-cli? true"))

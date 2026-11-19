@@ -685,6 +685,44 @@
               (is (false? (authentic? omitted candidate)))))))
       (finally (.delete temporary)))))
 
+(deftest sh03-application-reuses-only-a-current-compiled-owner
+  (let [owner (ns-resolve 'gravity.bootstrap '*application-reader-owner*)
+        snapshot (ns-resolve 'gravity.bootstrap 'sh03-reader-read-selected-source-bytes!)
+        compile-owner (ns-resolve 'gravity.bootstrap 'sh03-reader-compile-current-owner!)
+        revision (atom "first") emitter (atom "emitter")
+        reads (atom 0) builds (atom 0)
+        load-owner #(bootstrap/sh03-reader-current-binding! "module.gravity" "reader.gravity")]
+    (with-redefs-fn
+      {snapshot (fn [_ path]
+                  (swap! reads inc)
+                  {:source-path path :source-content-hash @revision :source-byte-count 1})
+       compile-owner (fn [_ _]
+                       {:build (swap! builds inc) :plan {:compiler {:emitter-source-rule-hash @emitter}}})
+       #'bootstrap/c-backend-stage2-plan-emitter-source-rule!
+       (fn [_ _] {:source-rule-hash @emitter})}
+      (fn []
+        (with-bindings {owner (atom nil)}
+          (let [first-owner (load-owner)]
+            (is (identical? first-owner (load-owner)))
+            (is (= 4 @reads))
+            (is (= 1 @builds)))
+          (reset! revision "second")
+          (is (= 2 (:build (load-owner))))
+          (reset! emitter "changed")
+          (is (= 3 (:build (load-owner))))
+          (binding [bootstrap/*additional-bootstrap-targets* #{:js-ts}]
+            (is (= 4 (:build (load-owner)))))
+          (binding [bootstrap/*authenticated-source-form-records* {}]
+            (is (= 5 (:build (load-owner)))))
+          (with-redefs-fn {snapshot (fn [_ path]
+                                      {:source-path path :source-content-hash (swap! reads inc)})}
+            #(is (= [:fresh-current-sh03-reader-source]
+                    (:missing-fields (thrown-data load-owner))))))
+        (with-bindings {owner (atom nil)}
+          (is (= 7 (:build (load-owner)))))
+        (is (= 8 (:build (load-owner))))
+        (is (= 9 (:build (load-owner))))))))
+
 (deftest sh03-current-reader-plan-checks-keep-historical-priority
   ;; Supplied-plan validation units, not historical reader admission. The
   ;; current plan is derived by the original source-selected constructor.
