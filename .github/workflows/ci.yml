@@ -40,7 +40,19 @@ jobs:
       darwin-unsupported: ${{ steps.selection.outputs.darwin-unsupported }}
       static-tools-required: ${{ steps.selection.outputs.static-tools-required }}
       checked-js-owner-required: ${{ steps.selection.outputs.checked-js-owner-required }}
-      selection-valid: ${{ steps.selection.outputs.selection-valid }}
+      # Only a complete set of booleans can narrow the PR matrix.
+      selection-valid: >-
+        ${{ steps.selection.outputs.selection-valid == 'true' &&
+            steps.selection.outputs.static == 'true' && steps.selection.outputs.contracts == 'true' &&
+            (steps.selection.outputs.bootstrap == 'true' || steps.selection.outputs.bootstrap == 'false') &&
+            (steps.selection.outputs.macro == 'true' || steps.selection.outputs.macro == 'false') &&
+            (steps.selection.outputs.resolution == 'true' || steps.selection.outputs.resolution == 'false') &&
+            (steps.selection.outputs.checked-core-runtime == 'true' || steps.selection.outputs.checked-core-runtime == 'false') &&
+            (steps.selection.outputs.leaves-portable == 'true' || steps.selection.outputs.leaves-portable == 'false') &&
+            (steps.selection.outputs.leaves-darwin == 'true' || steps.selection.outputs.leaves-darwin == 'false') &&
+            (steps.selection.outputs.darwin-unsupported == 'true' || steps.selection.outputs.darwin-unsupported == 'false') &&
+            (steps.selection.outputs.static-tools-required == 'true' || steps.selection.outputs.static-tools-required == 'false') &&
+            (steps.selection.outputs.checked-js-owner-required == 'true' || steps.selection.outputs.checked-js-owner-required == 'false') }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -64,52 +76,39 @@ jobs:
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
     # Leave time after the sequential child watchdogs for setup, cleanup and upload.
-    timeout-minutes: ${{ matrix.timeout }}
+    timeout-minutes: ${{ matrix.mode == 'checked-core-runtime' && 85 || matrix.mode == 'macro' && 50 || 20 }}
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        include:
-          - mode: static
-            timeout: 20
-          - mode: contracts
-            timeout: 20
-          - mode: bootstrap
-            timeout: 20
-          - mode: macro
-            timeout: 50
-          - mode: checked-core-runtime
-            timeout: 85
+        mode: [static, contracts, bootstrap, macro, checked-core-runtime]
+        selected-pr: &selected-pr
+          - ${{ github.event_name == 'pull_request' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' }}
+        exclude:
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.bootstrap == 'false' && 'bootstrap' || '' }}
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.macro == 'false' && 'macro' || '' }}
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.checked-core-runtime == 'false' && 'checked-core-runtime' || '' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Selected and fail-closed compiler jobs retain full history because
-          # their suites materialize pinned historical git-show sources.  An
-          # unselected matrix job only records its checked-out tree and can
-          # use a single commit.
-          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' && 1 || 0 }}
+          # Compiler suites materialize pinned historical git-show sources.
+          fetch-depth: 0
           persist-credentials: false
       - name: Install Node.js 20 for checked JavaScript tests
-        if: ${{ always() && !cancelled() && matrix.mode == 'checked-core-runtime' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.checked-js-owner-required != 'false') }}
+        if: ${{ !cancelled() && matrix.mode == 'checked-core-runtime' && (!matrix.selected-pr || needs.select.outputs.checked-js-owner-required != 'false') }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 20.20.2
       - uses: ./.github/actions/clojure
-        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
+        if: ${{ !cancelled() }}
         with:
-          install-static-tools: ${{ matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
-      - name: Retain unselected CI status
-        id: record-skip
-        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' }}
-        env:
-          CI_MODE: ${{ matrix.mode }}
-        run: |
-          mkdir -p target/ci
-          printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
-          echo "CI mode $CI_MODE skipped by the shared path selection; required matrix job retained"
+          install-static-tools: ${{ matrix.mode == 'static' && (!matrix.selected-pr || needs.select.outputs.static-tools-required != 'false') }}
       - name: Install workflow syntax checker
         id: setup-workflow-checker
-        if: ${{ always() && !cancelled() && matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
+        if: ${{ !cancelled() && matrix.mode == 'static' && (!matrix.selected-pr || needs.select.outputs.static-tools-required != 'false') }}
         run: |
           mkdir -p "$RUNNER_TEMP/actionlint"
           curl --fail --location --retry 3 --max-time 60 \
@@ -120,9 +119,10 @@ jobs:
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
       - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
         id: run-checks
-        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
+        if: ${{ !cancelled() }}
         env:
           CI_MODE: ${{ matrix.mode }}
+          CI_FORCE_FULL: ${{ !matrix.selected-pr || needs.select.outputs[matrix.mode] != 'true' }}
           CI_BASE_SHA: ${{ github.event.before }}
           CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
@@ -153,7 +153,7 @@ jobs:
   resolution:
     name: ${{ matrix.mode }}
     needs: select
-    if: ${{ always() && !cancelled() }}
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
     runs-on: ubuntu-24.04
     # The three independent Resolution modes can overlap. resolution-pipeline
     # still owns two sequential fresh children, each with an independent
@@ -169,26 +169,16 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Resolution selection retains the logical stage output while each
-          # matrix child records its own mode and fresh checkout.
-          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs.resolution == 'false' && 1 || 0 }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/clojure
-        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
-      - name: Retain unselected resolution status
-        id: record-skip
-        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs.resolution == 'false' }}
-        env:
-          CI_MODE: ${{ matrix.mode }}
-        run: |
-          mkdir -p target/ci
-          printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
-          echo "CI mode $CI_MODE skipped by the shared resolution selection; required matrix job retained"
+        if: ${{ !cancelled() }}
       - name: Run selected resolution check in a fresh child process
         id: run-checks
-        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
+        if: ${{ !cancelled() }}
         env:
           CI_MODE: ${{ matrix.mode }}
+          CI_FORCE_FULL: ${{ github.event_name != 'pull_request' || needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'true' }}
           CI_BASE_SHA: ${{ github.event.before }}
           CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
@@ -217,73 +207,51 @@ jobs:
           if-no-files-found: error
 
   leaves:
-    name: ${{ matrix.check }}
+    name: ${{ matrix.mode == 'leaves-portable' && 'fresh-leaf-regressions / portable' || matrix.mode == 'leaves-darwin' && 'fresh-leaf-regressions / darwin' || 'darwin-unsupported-host' }}
     needs: select
-    if: ${{ always() && !cancelled() }}
-    # A Darwin check may use Ubuntu only after the selector completed
-    # successfully and explicitly verified that the check is unaffected.
-    # Any selected, full, missing, malformed, or failed selection keeps the
-    # platform-specific runner required by the matrix.
-    runs-on: ${{ matrix.platform != 'portable' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 'ubuntu-24.04' || matrix.runner }}
+    # GitHub evaluates this condition before expanding the matrix.
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.leaves-portable != 'false' || needs.select.outputs.leaves-darwin != 'false' || needs.select.outputs.darwin-unsupported != 'false') }}
+    runs-on: ${{ matrix.mode == 'leaves-portable' && 'ubuntu-24.04' || matrix.mode == 'leaves-darwin' && 'macos-26' || 'macos-15' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        include:
-          - platform: portable
-            check: fresh-leaf-regressions / portable
-            runner: ubuntu-24.04
-            java: 21.0.8+9.0.LTS
-            selection-key: leaves-portable
-          - platform: darwin
-            check: fresh-leaf-regressions / darwin
-            runner: macos-26
-            java: 26.0.1+8
-            selection-key: leaves-darwin
-          - platform: unsupported
-            check: darwin-unsupported-host
-            runner: macos-15
-            java: 26.0.1+8
-            selection-key: darwin-unsupported
+        mode: [leaves-portable, leaves-darwin, darwin-unsupported]
+        selected-pr: *selected-pr
+        exclude:
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.leaves-portable == 'false' && 'leaves-portable' || '' }}
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.leaves-darwin == 'false' && 'leaves-darwin' || '' }}
+          - selected-pr: true
+            mode: ${{ needs.select.outputs.darwin-unsupported == 'false' && 'darwin-unsupported' || '' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Selected and fail-closed leaf suites retain full history because
-          # their tests materialize pinned historical git-show sources.  An
-          # unselected leaf job only records its checked-out tree and can use
-          # a single commit.
-          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 1 || 0 }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/clojure
-        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
+        if: ${{ !cancelled() }}
         with:
-          java-version: ${{ matrix.java }}
-          private-temp: ${{ matrix.platform == 'portable' }}
-      - name: Retain unselected leaf status
-        id: record-skip
-        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' }}
-        env:
-          CHECK_NAME: ${{ matrix.check }}
-        run: |
-          mkdir -p target/ci
-          printf '{:status :skipped :reason :unaffected-shared-selection}\n' > target/ci/leaf-summary.edn
-          echo "CI check $CHECK_NAME skipped by the shared path selection; required matrix job retained"
+          java-version: ${{ matrix.mode == 'leaves-portable' && '21.0.8+9.0.LTS' || '26.0.1+8' }}
+          private-temp: ${{ matrix.mode == 'leaves-portable' }}
       - name: Diagnose actual Darwin host and descriptor ABI
         id: darwin-probe
-        if: ${{ always() && !cancelled() && matrix.platform == 'darwin' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
+        if: ${{ !cancelled() && matrix.mode == 'leaves-darwin' }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh path-aware catalog selection
         id: run-checks
-        if: ${{ always() && !cancelled() && matrix.platform != 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
+        if: ${{ !cancelled() && matrix.mode != 'darwin-unsupported' }}
         env:
-          LEAF_PLATFORM: ${{ matrix.platform }}
+          CI_MODE: ${{ matrix.mode }}
+          CI_FORCE_FULL: ${{ !matrix.selected-pr || needs.select.outputs[matrix.mode] != 'true' }}
           CI_BASE_SHA: ${{ github.event.before }}
           CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
+        run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
       - name: Actual unsupported-kernel refusal before publication I/O
         id: run-unsupported-check
-        if: ${{ always() && !cancelled() && matrix.platform == 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
+        if: ${{ !cancelled() && matrix.mode == 'darwin-unsupported' }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-unsupported
       - name: Preserve failure receipts
         id: retain-provenance
@@ -304,7 +272,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: ci-leaves-${{ matrix.platform }}-${{ github.sha }}-${{ github.run_attempt }}
+          name: ci-${{ matrix.mode == 'darwin-unsupported' && 'leaves-unsupported' || matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}
           path: target/ci/
           retention-days: 14
           if-no-files-found: error

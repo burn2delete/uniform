@@ -551,7 +551,7 @@
             engine (.. (org.apache.commons.jexl3.JexlBuilder.)
                        (features (.arrayReferenceExpr (org.apache.commons.jexl3.JexlFeatures/createNone) true))
                        (arithmetic arithmetic) (booleanLogical false) (strict false) create)
-            interpolation #"\$\{\{\s*(.*?)\s*\}\}"
+            interpolation #"(?s)\$\{\{\s*(.*?)\s*\}\}"
             tokens #"('(?:[^']|'')*')|(?i:\b(always|success|failure|cancelled)\s*\(\s*\))|\.([A-Za-z_][\w-]*-[\w-]+)"]
         (mapv (fn [[value conditional? status context]]
                 (let [statuses {"status_always" true
@@ -598,34 +598,41 @@
     (first matches)))
 
 (defn- workflow-rows [job]
-  (let [matrix (get-in job ["strategy" "matrix"])]
-    (or (get matrix "include") (mapv #(hash-map "mode" %) (get matrix "mode")))))
+  (mapv #(hash-map "mode" %) (get-in job ["strategy" "matrix" "mode"])))
 
 (defn- workflow-selection-fields [job-id job context status]
   (let [step (partial workflow-step job "id")
         checkout (workflow-action job "actions/checkout")
         setup (workflow-step job "uses" "./.github/actions/clojure")
         upload (workflow-action job "actions/upload-artifact")
+        strategy (get-in job ["strategy" "matrix"])
         field (fn [value] [value false :success context])
-        step-status (if (= :cancelled status) :cancelled :success)
-        condition (fn [step] [(get step "if") true step-status context])
+        before-matrix (fn [value] [value false :success (dissoc context "matrix")])
+        condition (fn [step] [(get step "if") true :success context])
         after-failure (fn [step] [(get step "if") true :failure context])]
-    (merge {:job [(get job "if") true status context]
+    (merge {:job [(get job "if") true status (dissoc context "matrix")]
+            :selected-pr (before-matrix (first (get strategy "selected-pr")))
             :checkout (condition checkout)
             :checkout-depth (field (get-in checkout ["with" "fetch-depth"]))
+            :name (field (get job "name"))
             :runner (field (get job "runs-on"))
             :clojure (condition setup)
             :run (condition (step "run-checks"))
-            :skip (condition (step "record-skip"))
+            :force-full (field (get-in (step "run-checks") ["env" "CI_FORCE_FULL"]))
             :provenance (after-failure (step "retain-provenance"))
             :upload (after-failure upload)
             :upload-name (field (get-in upload ["with" "name"]))}
+           (into {} (for [[index exclusion] (map-indexed vector (get strategy "exclude"))
+                          [key expression] exclusion]
+                      [[:exclude index key] (before-matrix expression)]))
            (case job-id
              "checks" {:node (condition (workflow-action job "actions/setup-node"))
                        :static-tools (field (get-in setup ["with" "install-static-tools"]))
                        :workflow-checker (condition (step "setup-workflow-checker"))}
              "leaves" {:darwin-probe (condition (step "darwin-probe"))
-                       :unsupported-probe (condition (step "run-unsupported-check"))}
+                       :unsupported-probe (condition (step "run-unsupported-check"))
+                       :java (field (get-in setup ["with" "java-version"]))
+                       :private-temp (field (get-in setup ["with" "private-temp"]))}
              {}))))
 
 (defn- evaluate-workflow-requests! [requests]
@@ -634,116 +641,178 @@
 (defn- selector-output-map [selection]
   (into {} (map #(str/split % #"=" 2)) (ci/selection-output-lines selection)))
 
-(defn- selector-workflow-scenarios [selection-key]
-  (let [disabled {"selection-valid" "true" selection-key "false"
-                  "static-tools-required" "false" "checked-js-owner-required" "false"}
-        enabled (assoc disabled selection-key "true")]
-    [{:id :full :outputs (selector-output-map {:kind :full}) :runs? true :tools? true}
-     {:id :docs-only :outputs (selector-output-map {:kind :docs-only})
-      :runs? (contains? #{"static" "contracts"} selection-key) :tools? false}
-     {:id :unselected :outputs disabled :runs? false :tools? false}
-     {:id :unselected-case-insensitive
-      :outputs (assoc disabled "selection-valid" "TrUe" selection-key "FaLsE")
-      :runs? false :tools? false}
-     {:id :selection-outputs-absent :runs? true :tools? true}
-     {:id :mode-absent :outputs {"selection-valid" "true"} :runs? true :tools? true}
-     {:id :mode-malformed :outputs {"selection-valid" "true" selection-key "unknown"}
-      :runs? true :tools? true}
-     {:id :validity-absent :outputs (dissoc disabled "selection-valid") :runs? true :tools? true}
-     {:id :validity-malformed :outputs (assoc disabled "selection-valid" "unknown") :runs? true :tools? true}
-     {:id :selector-failed :status :failure :outputs disabled :runs? true :tools? true}
-     {:id :selector-skipped :status :skipped :outputs disabled :runs? true :tools? true}
-     {:id :selector-status-malformed :status :unknown :outputs disabled :runs? true :tools? true}
-     {:id :selected-without-optional-tools :outputs enabled :runs? true :tools? false}
-     {:id :selected-with-node-only :outputs (assoc enabled "checked-js-owner-required" "true")
-      :runs? true :tools? false :node? true}
-     {:id :selected-with-malformed-tool-outputs
-      :outputs (assoc enabled "static-tools-required" "unknown" "checked-js-owner-required" "unknown")
-      :runs? true :tools? true}
-     {:id :cancelled :status :cancelled :outputs disabled :runs? false :tools? false}]))
+(deftest shared-selector-schedules-only-platforms-with-leaf-work
+  (let [catalog (ci/load-leaf-catalog)
+        entry (fn [id] (some #(when (= id (:id %)) %) catalog))
+        portable (:test-path (entry "c2-reader-scalar-spans"))
+        darwin (:test-path (entry "darwin-publication"))
+        select (fn [paths]
+                 (let [changes (mapv (fn [path] {:path path :status "M" :old-mode "100644" :new-mode "100644"}) paths)]
+                   (selector-output-map (assoc (ci/stage-selection changes) :changes changes))))
+        platforms (fn [outputs] (mapv outputs ["leaves-portable" "leaves-darwin" "darwin-unsupported"]))]
+    (doseq [[paths expected] [[[portable] ["true" "false" "true"]]
+                              [[darwin] ["false" "true" "true"]]
+                              [[portable darwin] ["true" "true" "true"]]
+                              [[ci/c7-source-path] ["false" "false" "true"]]
+                              [[ci/b6-source-path portable] ["true" "false" "true"]]
+                              [["unknown/new-file.clj"] ["true" "true" "true"]]]]
+      (is (= expected (platforms (select paths))) paths))
+    (with-redefs [ci/leaf-require-closure (fn [_] (throw (ex-info "closure unavailable" {})))]
+      (is (= ["true" "true" "true"] (platforms (select [portable])))))
+    (doseq [invalid [nil {:kind :other} {:kind :selected} {:kind :selected :modes #{}}]]
+      (is (= (selector-output-map {:kind :full}) (selector-output-map invalid)) invalid))))
+
+(deftest failed-shared-selection-executes-full-checks-with-authenticated-lint-inputs
+  (let [path "bootstrap/clojure/src/gravity/backend/jvm.clj"
+        changes [{:path path :status "M" :old-mode "100644" :new-mode "100644"}]
+        selection (assoc (ci/stage-selection changes)
+                         :base (apply str (repeat 40 "a")) :clojure-paths [path] :changes changes)
+        broad (ci/execution-selection selection true)
+        failed (ci/execution-selection (assoc selection :selection-error "invalid diff") true)
+        ids (fn [mode] (mapv first (ci/commands-for-selection mode broad)))]
+    (is (= selection (ci/execution-selection selection false)))
+    (is (= {:kind :full :reason :shared-selection-unavailable :base (:base selection) :clojure-paths [path]}
+           broad))
+    (is (every? (set (ids "static")) ["workflow-lint" "changed-clojure-lint"]))
+    (is (some #{"jvm-backend-regression"} (ids "contracts")))
+    (is (some #{"checked-js-b6-owner-regression"} (ids "checked-core-runtime")))
+    (doseq [mode ["leaves-portable" "leaves-darwin"]]
+      (is (= :full (:kind (ci/leaf-selection-for-mode mode broad)))))
+    (is (= :failed (:status (ci/selection-error-result "static" failed))))))
 
 (deftest workflow-selector-fails-closed-for-missing-or-malformed-outputs
   (let [jobs (get @ci-workflow "jobs")
         sha (apply str (repeat 40 "a"))
-        leaf-selection-keys {"portable" "leaves-portable" "darwin" "leaves-darwin"
-                             "unsupported" "darwin-unsupported"}
-        leaf-runners {"portable" "ubuntu-24.04" "darwin" "macos-26" "unsupported" "macos-15"}
+        full (selector-output-map {:kind :full})
+        docs (selector-output-map {:kind :docs-only})
+        required #{"static" "contracts"}
+        leaf-hosts {"leaves-portable" ["fresh-leaf-regressions / portable" "ubuntu-24.04" "21.0.8+9.0.LTS"]
+                    "leaves-darwin" ["fresh-leaf-regressions / darwin" "macos-26" "26.0.1+8"]
+                    "darwin-unsupported" ["darwin-unsupported-host" "macos-15" "26.0.1+8"]}
+        all-modes (into #{"static" "contracts" "bootstrap" "macro" "checked-core-runtime"
+                          "resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"}
+                        (keys leaf-hosts))
+        scenarios [{:id :full :outputs full :modes all-modes :trusted? true :tools? true :node? true}
+                   {:id :docs :outputs docs :modes required :trusted? true}
+                   {:id :case-insensitive :outputs (update-vals docs str/upper-case) :modes required :trusted? true}
+                   {:id :portable-only :outputs (assoc docs "leaves-portable" "true")
+                    :modes (conj required "leaves-portable") :trusted? true}
+                   {:id :darwin-only :outputs (assoc docs "leaves-darwin" "true")
+                    :modes (conj required "leaves-darwin") :trusted? true}
+                   {:id :node-only :outputs (assoc docs "checked-core-runtime" "true"
+                                                   "checked-js-owner-required" "true")
+                    :modes (conj required "checked-core-runtime") :trusted? true :node? true}
+                   {:id :lint :outputs (assoc docs "static-tools-required" "true" "darwin-unsupported" "true")
+                    :modes (conj required "darwin-unsupported") :trusted? true :tools? true}
+                   {:id :resolution :outputs (assoc docs "resolution" "true") :trusted? true
+                    :modes (into required ["resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"])}
+                   {:id :missing-outputs}
+                   {:id :missing-marker :outputs (dissoc docs "selection-valid")}
+                   {:id :malformed-marker :outputs (assoc docs "selection-valid" "unknown")}
+                   {:id :selector-failed :status :failure :outputs docs}
+                   {:id :selector-skipped :status :skipped :outputs docs}
+                   {:id :selector-status-malformed :status :unknown :outputs docs}
+                   {:id :push :event "push" :outputs docs}
+                   {:id :manual :event "workflow_dispatch" :outputs docs}
+                   {:id :weekly :event "schedule" :outputs docs}
+                   {:id :cancelled :status :cancelled :outputs docs :modes #{}}]
         rows (for [job-id ["checks" "resolution" "leaves"]
                    :let [job (get jobs job-id)]
-                   matrix (workflow-rows job)
-                   :let [selection-key (case job-id
-                                         "checks" (get matrix "mode")
-                                         "resolution" "resolution"
-                                         "leaves" (get leaf-selection-keys (get matrix "platform")))]]
-               {:job-id job-id :job job :matrix matrix
-                :scenarios (selector-workflow-scenarios selection-key)})
-        cases (for [{:keys [job-id job matrix scenarios]} rows
-                    {:keys [outputs status] :or {status :success} :as scenario} scenarios
-                    :let [context {"matrix" matrix
-                                   "needs" {"select" (cond-> {"result" (name status)}
-                                                       outputs (assoc "outputs" outputs))}
-                                   "github" {"sha" sha "run_attempt" "7"}}]]
-                (assoc scenario :job-id job-id :matrix matrix :status status
+                   matrix (workflow-rows job)]
+               [job-id job (get matrix "mode")])
+        cases (for [[job-id job mode] rows
+                    {:keys [outputs trusted? status event] :or {status :success event "pull_request"}
+                     :as scenario} scenarios
+                    :let [matrix (cond-> {"mode" mode}
+                                   (not= "resolution" job-id) (assoc "selected-pr" (boolean trusted?)))
+                          context {"matrix" matrix "needs" {"select" {"result" (name status) "outputs" outputs}}
+                                   "github" {"sha" sha "run_attempt" "7" "event_name" event}}]]
+                (assoc scenario :job job :job-id job-id :mode mode :matrix matrix
                        :fields (workflow-selection-fields job-id job context status)))
         observed (evaluate-workflow-requests!
-                  (into {} (mapcat (fn [{:keys [id job-id matrix fields]}]
-                                     (map (fn [[k v]] [[job-id matrix id k] v]) fields)))
+                  (into {} (mapcat (fn [{:keys [id mode fields]}]
+                                     (map (fn [[key field]] [[mode id key] field]) fields)))
                         cases))]
-    (is (= #{"checks" "resolution" "leaves"} (set (map :job-id rows))))
-    (is (= leaf-selection-keys
-           (into {} (map (juxt #(get % "platform") #(get % "selection-key")))
-                 (workflow-rows (get jobs "leaves")))))
+    (is (= all-modes (set (map last rows))))
     (doseq [job-id ["checks" "resolution" "leaves"]
-            :let [needs (get-in jobs [job-id "needs"])]]
-      (is (contains? (set (if (string? needs) [needs] needs)) "select") job-id))
-    (doseq [{:keys [job-id matrix status id runs? tools?] :as scenario} cases
-            :let [value #(get observed [job-id matrix id %])
-                  mode (get matrix "mode")
-                  platform (get matrix "platform")
-                  retained? (not= :cancelled status)
-                  skip? (and retained? (not runs?))]]
-      (test/testing (str job-id " " (or mode platform) " " id)
-        (is (= retained? (value :job)))
-        (is (= retained? (value :checkout)))
-        (is (= (if skip? 1 0) (value :checkout-depth)))
-        (is (= runs? (value :clojure)))
-        (is (= skip? (value :skip)))
-        (is (= (and runs? (not= "unsupported" platform)) (value :run)))
-        (is (true? (value :provenance)) "retain provenance after a failure")
-        (is (true? (value :upload)) "attempt upload after a failure")
-        (is (= (str "ci-" (if platform (str "leaves-" platform) mode) "-" sha "-7")
-               (value :upload-name)))
-        (case job-id
-          "checks" (do
-                     (is (= (and (get scenario :node? tools?) (= "checked-core-runtime" mode)) (value :node)))
-                     (when retained?
-                       (is (= (and tools? (= "static" mode)) (value :static-tools))))
-                     (is (= (and tools? (= "static" mode)) (value :workflow-checker))))
-          "leaves" (do
-                     (is (= (if skip? "ubuntu-24.04" (get leaf-runners platform)) (value :runner)))
-                     (is (= (and runs? (= "darwin" platform)) (value :darwin-probe)))
-                     (is (= (and runs? (= "unsupported" platform)) (value :unsupported-probe))))
-          nil)))))
+            :let [job (get jobs job-id)
+                  matrix (get-in job ["strategy" "matrix"])]]
+      (is (= "select" (get job "needs")))
+      (is (not-any? #(= "record-skip" (get % "id")) (get job "steps")))
+      ;; GitHub applies include after exclusions. No include may recreate a row.
+      (is (= (if (= job-id "resolution") #{"mode"} #{"mode" "selected-pr" "exclude"})
+             (set (keys matrix))) job-id))
+    (doseq [{:keys [id job-id job mode matrix modes trusted? node? tools?] :or {modes all-modes}} cases
+            :let [value #(get observed [mode id %])
+                  exclusions (get-in job ["strategy" "matrix" "exclude"])
+                  excluded? (some (fn [[index clause]]
+                                    (every? #(= (get matrix %) (value [:exclude index %])) (keys clause)))
+                                  (map-indexed vector exclusions))
+                  scheduled? (and (value :job) (not excluded?))
+                  [check runner java] (get leaf-hosts mode [mode "ubuntu-24.04"])
+                  fallback? (not trusted?)]]
+      (test/testing (str mode " " id)
+        (when (contains? matrix "selected-pr")
+          (is (= (get matrix "selected-pr") (value :selected-pr))))
+        (is (= (contains? modes mode) scheduled?) "whether a runner is allocated")
+        (when (= job-id "leaves")
+          (is (= (boolean (some modes (keys leaf-hosts))) (value :job)) "skip an empty matrix before expansion"))
+        (when scheduled?
+          (is (= check (value :name)))
+          (is (= runner (value :runner)))
+          (is (true? (value :checkout)))
+          (is (= 0 (value :checkout-depth)))
+          (is (true? (value :clojure)))
+          (is (= fallback? (value :force-full)))
+          (is (= (not= "darwin-unsupported" mode) (value :run)))
+          (is (true? (value :provenance)))
+          (is (true? (value :upload)))
+          (is (= (str "ci-" (if (= "darwin-unsupported" mode) "leaves-unsupported" mode) "-" sha "-7")
+                 (value :upload-name)))
+          (case job-id
+            "checks" (do
+                       (is (= (and (= "checked-core-runtime" mode) (boolean (or fallback? node?))) (value :node)))
+                       (is (= (and (= "static" mode) (boolean (or fallback? tools?))) (value :static-tools)))
+                       (is (= (value :static-tools) (value :workflow-checker))))
+            "leaves" (do
+                       (is (= java (value :java)))
+                       (is (= (= "leaves-portable" mode) (value :private-temp)))
+                       (is (= (= "leaves-darwin" mode) (value :darwin-probe)))
+                       (is (= (= "darwin-unsupported" mode) (value :unsupported-probe))))
+            nil))))))
 
 (deftest workflow-hands-selector-outputs-and-event-identities-to-consumers
   (let [jobs (get @ci-workflow "jobs")
         select (get jobs "select")
         outputs (get select "outputs")
-        expected (into {} (map (fn [key] [key (str "from-selector-" key)]))
-                       (keys (selector-output-map {:kind :full})))
-        context {"steps" {"selection" {"outputs" expected}}
+        full (selector-output-map {:kind :full})
+        docs (selector-output-map {:kind :docs-only})
+        ;; Distinct values expose miswired output names even when their booleans agree.
+        named (update-vals (zipmap (keys full) (keys full)) #(str "from-selector-" %))
+        context {"steps" {"selection" {"outputs" named}}
                  "github" {"event" {"before" "push-base" "pull_request" {"head" {"sha" "pr-head"}}}}}
-        selectors [(workflow-step select "id" "selection")
-                   (workflow-step (get jobs "checks") "id" "run-checks")
-                   (workflow-step (get jobs "resolution") "id" "run-checks")
-                   (workflow-step (get jobs "leaves") "id" "run-checks")]
-        selection-env ["CI_BASE_SHA" "CI_PR_HEAD_SHA"]
-        fields (concat (vals outputs) (for [step selectors key selection-env]
-                                        (get-in step ["env" key])))
-        results (evaluate-workflow-fields! (mapv #(vector % false :success context) fields))
-        [output-results env-results] (split-at (count outputs) results)]
-    (is (= expected (zipmap (keys outputs) output-results)))
-    (is (= (repeat (count selectors) ["push-base" "pr-head"]) (partition 2 env-results)))))
+        selectors (cons (workflow-step select "id" "selection")
+                        (map #(workflow-step (get jobs %) "id" "run-checks") ["checks" "resolution" "leaves"]))
+        validity (get outputs "selection-valid")
+        invalid (concat (for [key (keys docs)] (dissoc docs key))
+                        (for [key (keys docs)] (assoc docs key "unknown"))
+                        [(assoc docs "static" "false") (assoc docs "contracts" "false")])
+        requests (merge
+                  (into {} (for [[key expression] (dissoc outputs "selection-valid")]
+                             [[:output key] [expression false :success context]]))
+                  (into {} (for [[index step] (map-indexed vector selectors) key ["CI_BASE_SHA" "CI_PR_HEAD_SHA"]]
+                             [[:env index key] [(get-in step ["env" key]) false :success context]]))
+                  (into {} (for [data (concat [full docs] invalid)]
+                             [[:valid data] [validity false :success (assoc-in context ["steps" "selection" "outputs"] data)]])))
+        observed (evaluate-workflow-requests! requests)]
+    (is (= (set (keys full)) (set (keys outputs))))
+    (doseq [[key value] (dissoc named "selection-valid")]
+      (is (= value (get observed [:output key])) key))
+    (doseq [data (concat [full docs] invalid)]
+      (is (= (or (= data full) (= data docs)) (get observed [:valid data])) data))
+    (doseq [index (range (count selectors))]
+      (is (= "push-base" (get observed [:env index "CI_BASE_SHA"])))
+      (is (= "pr-head" (get observed [:env index "CI_PR_HEAD_SHA"]))))))
 
 (deftest workflow-checkout-and-node-setup-use-explicit-inputs
   (let [jobs (get @ci-workflow "jobs")
@@ -760,25 +829,23 @@
       (is (< (.indexOf ^java.util.List steps node)
              (.indexOf ^java.util.List steps (workflow-step (get jobs "checks") "id" "run-checks")))))))
 
-(deftest workflow-retains-skipped-checks-and-failure-receipts-in-upload
+(deftest workflow-retains-selected-failure-receipts-in-upload
   (let [jobs (get @ci-workflow "jobs")
-        cases (for [[job-id matrix-key matrix-value summary command-mode]
-                    [["checks" "mode" "macro" "macro-summary.edn" "macro"]
-                     ["resolution" "mode" "resolution-pipeline" "resolution-pipeline-summary.edn" "resolution-pipeline"]
-                     ["leaves" "platform" "darwin" "leaf-summary.edn" "leaves-darwin"]
-                     ["leaves" "platform" "unsupported" "leaf-summary.edn" "darwin-unsupported"]]
+        cases (for [[job-id command-mode]
+                    [["checks" "macro"]
+                     ["resolution" "resolution-pipeline"]
+                     ["leaves" "leaves-darwin"]
+                     ["leaves" "darwin-unsupported"]]
                     :let [job (get jobs job-id)
-                          matrix (some #(when (= matrix-value (get % matrix-key)) %) (workflow-rows job))]]
-                {:job job :matrix matrix :summary summary :command-mode command-mode
-                 :skip-step (workflow-step job "id" "record-skip")
-                 :run-step (workflow-step job "id" (if (= matrix-value "unsupported")
+                          matrix (some #(when (= command-mode (get % "mode")) %) (workflow-rows job))]]
+                {:job job :matrix matrix :command-mode command-mode
+                 :run-step (workflow-step job "id" (if (= command-mode "darwin-unsupported")
                                                      "run-unsupported-check" "run-checks"))})
-        env-requests (into {} (for [{:keys [command-mode matrix skip-step run-step]} cases
-                                    step [skip-step run-step]
-                                    [k v] (get step "env")]
-                                [[command-mode (get step "id") k] [v false :success {"matrix" matrix}]]))
+        env-requests (into {} (for [{:keys [command-mode matrix run-step]} cases
+                                    [k v] (get run-step "env")]
+                                [[command-mode k] [v false :success {"matrix" matrix}]]))
         env-results (evaluate-workflow-requests! env-requests)]
-    (doseq [{:keys [job matrix summary command-mode skip-step run-step]} cases]
+    (doseq [{:keys [job command-mode run-step]} cases]
       (test/testing command-mode
         (let [provenance (workflow-step job "id" "retain-provenance")
               upload (get (workflow-action job "actions/upload-artifact") "with")
@@ -790,26 +857,21 @@
                           (let [env-args (map (fn [[k v]] (str k "=" v)) environment)
                                 argv (into ["env"] (concat env-args ["bash" "-e" "-o" "pipefail" "-c" script]))]
                             (fixture-tool! root argv "" allowed-exits log-dir)))
-              step-env (fn [step]
-                         (into {} (map (fn [k] [k (get env-results [command-mode (get step "id") k])]))
-                               (keys (get step "env"))))]
+              step-env (into {} (map (fn [k] [k (get env-results [command-mode k])]))
+                             (keys (get run-step "env")))]
           (try
             (.mkdirs log-dir)
             (initialize-git-fixture! root)
             (write-fixture-file! root "tracked.txt" "checked source\n")
             (write-fixture-file! root ".gitignore" "/fixture-logs/\n/target/\n")
             (let [commit (commit-fixture! root "workflow receipt fixture")
-                  tree (str/trim (git-fixture! root ["rev-parse" "HEAD^{tree}"]))
-                  expected-skip (cond-> {:status :skipped :reason :unaffected-shared-selection}
-                                  (get matrix "mode") (assoc :mode (get matrix "mode")))]
+                  tree (str/trim (git-fixture! root ["rev-parse" "HEAD^{tree}"]))]
               (is (= "target/ci/" (get upload "path")))
               (is (= "error" (get upload "if-no-files-found")))
-              (run-step! (get skip-step "run") (step-env skip-step) #{0})
               (let [artifact-dir (io/file root (get upload "path"))]
-                (is (= expected-skip (edn/read-string (slurp (io/file artifact-dir summary)))))
                 (let [stub "clojure() { printf '%s\\n' \"$@\"; return 7; }\n"]
                   (is (= ["-Srepro" "-M" "tools/ci/run.clj" command-mode]
-                         (str/split-lines (run-step! (str stub (get run-step "run")) (step-env run-step) #{7})))))
+                         (str/split-lines (run-step! (str stub (get run-step "run")) step-env #{7})))))
                 (write-fixture-file! root "target/ci/command.edn" "{:status :failed :exit-code 7}\n")
                 (run-step! (get provenance "run") {"RUNNER_TEMP" (.getPath root)
                                                    "GITHUB_SERVER_URL" "https://example.invalid"
@@ -821,7 +883,7 @@
                 (is (= {:status :failed :exit-code 7}
                        (edn/read-string (slurp (io/file artifact-dir "command.edn")))))
                 (let [verified (fixture-tool! artifact-dir ["shasum" "-a" "256" "-c" "SHA256SUMS"] "" #{0} log-dir)]
-                  (doseq [file [summary "checkout.txt" "run-url.txt" "command.edn"]]
+                  (doseq [file ["checkout.txt" "run-url.txt" "command.edn"]]
                     (is (some #{(str "./" file ": OK")} (str/split-lines verified)) file)))))
             (finally (delete-fixture-tree! root))))))))
 
@@ -3108,28 +3170,12 @@
           (finally
             (delete-fixture-tree! root)))))))
 
-(defn- matrix-timeout-minutes [timeout row]
-  (if (integer? timeout)
-    timeout
-    (let [[_ dot-field bracket-field]
-          (when (string? timeout)
-            (re-matches #"\$\{\{\s*matrix(?:\.([\w-]+)|\[\s*'([^']+)'\s*\])\s*\}\}"
-                        (str/trim timeout)))]
-      (when-let [field (or dot-field bracket-field)]
-        (get row field)))))
-
-(deftest hosted-timeout-expression-uses-the-complete-value
-  (let [row {"limit" 90}]
-    (is (= 80 (matrix-timeout-minutes 80 row)))
-    (is (= 90 (matrix-timeout-minutes "${{ matrix.limit }}" row)))
-    (is (= 90 (matrix-timeout-minutes "${{ matrix['limit'] }}" row)))
-    (is (nil? (matrix-timeout-minutes "${{ matrix.limit }} + 1" row)))))
-
 (deftest hosted-envelope-leaves-setup-and-cleanup-time-after-child-watchdogs
   (let [checks (get-in @ci-workflow ["jobs" "checks"])
         timeout (get checks "timeout-minutes")
         rows (workflow-rows checks)
-        minutes-by-mode (into {} (map (juxt #(get % "mode") #(matrix-timeout-minutes timeout %))) rows)
+        minutes-by-mode (zipmap (map #(get % "mode") rows)
+                                (evaluate-workflow-fields! (mapv #(vector timeout false :success {"matrix" %}) rows)))
         change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
         all-checked-consumers
@@ -3200,18 +3246,19 @@
                  ci/resolution-pipeline-final-test))))
 
 (deftest resolution-workflow-allows-three-independent-jobs-to-overlap
-  (let [jobs (get @ci-workflow "jobs")
+  (let [triggers (get @ci-workflow "on")
+        jobs (get @ci-workflow "jobs")
         resolution (get jobs "resolution")
         publish (get jobs "publish")
-        skip-step (workflow-step resolution "id" "record-skip")
         provenance-step (workflow-step resolution "id" "retain-provenance")
         upload (workflow-action resolution "actions/upload-artifact")
         publish-condition (get publish "if")]
+    (is (= #{"pull_request" "push" "workflow_dispatch" "schedule"} (set (keys triggers))))
+    (is (= ["main"] (get-in triggers ["push" "branches"])))
+    (is (= [{"cron" "23 5 * * 1"}] (get triggers "schedule")))
     (is (= ["resolution-pipeline" "resolution-unmetered" "resolution-invocation-selection"]
            (mapv #(get % "mode") (workflow-rows resolution))))
     (is (= 3 (get-in resolution ["strategy" "max-parallel"])))
-    (is (str/includes? (get skip-step "if")
-                       "needs.select.outputs.resolution == 'false'"))
     (is (str/includes? (get provenance-step "run") "git rev-parse HEAD 'HEAD^{tree}'"))
     (is (str/includes? (get provenance-step "run") "git status --porcelain"))
     (is (str/includes? (get provenance-step "run") "target/ci/SHA256SUMS"))
@@ -3220,13 +3267,14 @@
     (doseq [job ["checks" "leaves"]]
       (is (< 1 (get-in jobs [job "strategy" "max-parallel"] 0)) job))
     (is (= #{"checks" "resolution" "leaves" "snapshot"} (set (get publish "needs"))))
-    (is (= [true false false false]
+    (is (= [true false false false false]
            (evaluate-workflow-fields!
             (mapv (fn [[event ref status]]
                     [publish-condition true status {"github" {"event_name" event "ref" ref}}])
                   [["workflow_dispatch" "refs/heads/main" :success]
                    ["workflow_dispatch" "refs/heads/feature" :success]
                    ["push" "refs/heads/main" :success]
+                   ["schedule" "refs/heads/main" :success]
                    ["workflow_dispatch" "refs/heads/main" :failure]]))))))
 
 (deftest advance-status-selection-covers-every-eligible-subset-and-retains-controls
@@ -3502,6 +3550,47 @@
                       "resolution-invocation-selection"]]
           (is (ci/skip-for-stage-selection? mode checked-selection) mode)))
       (is (not (ci/skip-for-stage-selection? "contracts" resolution-selection))))))
+
+(deftest bootstrap-selection-runs-exact-reader-plan-hash-regression
+  (let [select (fn [path]
+                 (ci/stage-selection [{:old-mode "100644" :new-mode "100644"
+                                       :status "M" :path path}]))
+        regression (fn [selection]
+                     (filterv #(= "reader-plan-hash-regression" (first %))
+                              (ci/commands-for-selection "bootstrap" selection)))
+        full (regression {:kind :full :reason :non-pull-request})
+        expected ["gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority"]]
+    (is (= 1 (count full)))
+    (let [{:keys [exact selected]} (dev-test-command-selection (peek (first full)))]
+      (is (= expected exact selected)))
+    (is (= full (regression nil)))
+    (is (= full (regression {:kind :full :reason :path-discovery-failed})))
+    (doseq [path ["bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+                  "bootstrap/clojure/src/gravity/reader_primitives.clj"
+                  "bootstrap/clojure/src/gravity/reader_cursor.clj"
+                  "bootstrap/clojure/src/gravity/reader_host_oracle.clj"
+                  "bootstrap/clojure/src/gravity/reader_namespace.clj"
+                  "bootstrap/clojure/src/gravity/c2_reader_diagnostics.clj"
+                  "bootstrap/clojure/src/gravity/c2_reader_diagnostics/payload.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj"]
+            :let [selection (select path)]]
+      (is (= :selected (:kind selection)) path)
+      (is (= "true" (get (selector-output-map selection) "bootstrap")) path)
+      (is (= full (regression selection)) path))
+    (doseq [path ["bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00809-sh03-reader-plan-instruction-summary.clj"
+                  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00811-sh03-reader-plan-validate.clj"
+                  "bootstrap/clojure/src/gravity/c2_artifact_identity.clj"]
+            :let [selection (select path)]]
+      (is (= :full (:kind selection)) path)
+      (is (= "true" (get (selector-output-map selection) "bootstrap")) path)
+      (is (= full (regression selection)) path))
+    (doseq [path ["bootstrap/gravity/src/gravity/reader.gravity"
+                  "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+                  "bootstrap/clojure/src/gravity/reader.clj"
+                  "bootstrap/clojure/src/gravity/syntax.clj"
+                  "tools/advance/README.md"]]
+      (is (empty? (regression (select path))) path))
+    (is (empty? (regression {:kind :docs-only :paths ["README.md"]})))))
 
 (deftest checked-owner-selection-runs-existing-behavioral-consumers
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
