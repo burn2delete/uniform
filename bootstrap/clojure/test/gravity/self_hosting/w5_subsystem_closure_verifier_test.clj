@@ -342,6 +342,10 @@
                       ["x" ".gravity"])))
   (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
                       ["x" "xx"])))
+  (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
+                      [:not-a-path ".gravity"])))
+  (is (false? (invoke engine-plan 'w5-sc-path-ends-with?
+                      ["x.gravity" :not-a-suffix])))
   (is (true? (invoke engine-plan 'w5-sc-source-fixture-path?
                      ["x.qst"])))
   (is (false? (invoke engine-plan 'w5-sc-source-fixture-path?
@@ -361,6 +365,68 @@
     (is (not (str/includes? (pr-str (:identity-input right)) "/checkout-b")))
     (is (str/includes? (pr-str (:provenance left)) "/checkout-a"))
     (is (str/includes? (pr-str (:provenance right)) "/checkout-b"))))
+
+(deftest w5-subsystem-closure-preserves-long-provenance-paths
+  (let [long-root (str "/" (apply str (repeat 4096 "x")))]
+    (doseq [[plan extension other-extension]
+            [[accepted-gravity-plan ".gravity" ".qst"]
+             [accepted-qst-plan ".qst" ".gravity"]]]
+      (testing extension
+        (let [short-request (request-for-source plan "/checkout-a" extension)
+              long-request (request-for-source plan long-root extension)
+              short-result
+              (invoke engine-plan 'w5-subsystem-closure [short-request])
+              long-result
+              (invoke engine-plan 'w5-subsystem-closure [long-request])
+              source-path
+              (nested-get long-request :source-span :actual-source-path)]
+          (is (= :accepted (:status short-result)))
+          (is (= :accepted (:status long-result)))
+          (is (= :incomplete (:closure-status long-result)))
+          (is (= :non-authority (:authority long-result)))
+          (is (= long-root
+                 (nested-get long-result :provenance :repository-root)))
+          (is (= (str long-root "/fixtures/incomplete-subsystem-closure" extension)
+                 source-path
+                 (nested-get long-result :provenance :source-span-path)))
+          (is (= (:identity-input short-result) (:identity-input long-result)))
+          (testing "a mismatched top span suffix"
+            (let [mismatched-path
+                  (str/replace source-path #"\.(gravity|qst)$" other-extension)
+                  invalid
+                  (assoc-in long-request [:source-span :actual-source-path]
+                            mismatched-path)
+                  result (invoke engine-plan 'w5-subsystem-closure [invalid])
+                  diagnostic (first (:diagnostics result))]
+              (is (= :rejected (:status result)))
+              (is (= "W5-SC-PROVENANCE" (:rule diagnostic)))
+              (is (= :source-span (:field diagnostic)))))
+          (testing "a different path in the package-build provenance record"
+            (let [invalid
+                  (assoc-in long-request [:provenance 2 :actual-provenance-path]
+                            (str long-root "/provenance/another-package.edn"))
+                  result (invoke engine-plan 'w5-subsystem-closure [invalid])
+                  diagnostic (first (:diagnostics result))]
+              (is (= :rejected (:status result)))
+              (is (= "W5-SC-PROVENANCE" (:rule diagnostic)))
+              (is (= :provenance (:field diagnostic))))))))))
+
+(deftest w5-subsystem-closure-accepts-a-long-source-root-id
+  (let [base (request-for-source accepted-gravity-plan "/checkout-a" ".gravity")
+        source-root-id (apply str (repeat 4097 "x"))
+        request (assoc-in base [:repository :source-root-id] source-root-id)
+        result (invoke engine-plan 'w5-subsystem-closure [request])]
+    (is (= :accepted (:status result)))
+    (is (= source-root-id (nested-get result :identity-input :source-root-id)))))
+
+(deftest w5-subsystem-closure-rejects-an-empty-repository-root
+  (let [base (request-for-source accepted-gravity-plan "/checkout-a" ".gravity")
+        invalid (assoc-in base [:repository :actual-repository-root] "")
+        result (invoke engine-plan 'w5-subsystem-closure [invalid])
+        diagnostic (first (:diagnostics result))]
+    (is (= :rejected (:status result)))
+    (is (= "W5-SC-SCHEMA" (:rule diagnostic)))
+    (is (= :repository (:field diagnostic)))))
 
 (deftest w5-subsystem-closure-rejected-fixture-covers-diagnostic-families
   (doseq [[accepted-plan rejected-plan extension]

@@ -283,9 +283,7 @@
 
 (defn w5-sc-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 4096)
-      false)
+    (> (count value) 0)
     false))
 
 (defn w5-sc-id? [value]
@@ -296,6 +294,11 @@
 (defn w5-sc-nonnegative-integer? [value]
   (if (integer? value)
     (>= value 0)
+    false))
+
+(defn positive-integer? [value]
+  (if (integer? value)
+    (>= value 1)
     false))
 
 (defn w5-sc-path? [value]
@@ -309,8 +312,11 @@
         (w5-sc-suffix-match? value suffix (+ index 1)) false))))
 
 (defn w5-sc-path-ends-with? [value suffix]
-  (if (and (string? value) (string? suffix))
-    (w5-sc-suffix-match? value suffix 0) false))
+  (if (string? value)
+    (if (string? suffix)
+      (w5-sc-suffix-match? value suffix 0)
+      false)
+    false))
 
 (defn w5-sc-source-fixture-path? [value]
   (if (w5-sc-path-ends-with? value ".gravity") true
@@ -334,10 +340,8 @@
       (if (w5-sc-nonnegative-integer? (get span :start-byte))
         (if (w5-sc-nonnegative-integer? (get span :end-byte))
           (if (<= (get span :start-byte) (get span :end-byte))
-            (if (and (integer? (get span :line))
-                     (>= (get span :line) 1))
-              (if (and (integer? (get span :column))
-                       (>= (get span :column) 1))
+            (if (positive-integer? (get span :line))
+              (if (positive-integer? (get span :column))
                 (w5-sc-path? (get span :actual-source-path))
                 false)
               false)
@@ -445,13 +449,13 @@
                             (if (= :pending (get record :execution-status))
                               (if (w5-sc-source-span-valid?
                                    (get record :source-span))
-                                (if (and
-                                     (= (get (get record :source-span)
-                                             :actual-source-path)
-                                        (get record :actual-source-path))
-                                     (w5-sc-path-ends-with?
-                                      (get record :actual-source-path)
-                                      ".gravity"))
+                                (if (if (= (get (get record :source-span)
+                                                :actual-source-path)
+                                           (get record :actual-source-path))
+                                      (w5-sc-path-ends-with?
+                                       (get record :actual-source-path)
+                                       ".gravity")
+                                      false)
                                   (if (w5-sc-path?
                                        (get record :actual-executable-path))
                                     (if (w5-sc-path-ends-with?
@@ -897,6 +901,11 @@
       false)
     false))
 
+(defn descriptor-vector-size? [value size]
+  (if (vector? value)
+    (= size (count value))
+    false))
+
 (defn w5-sc-build-input-crosslinks-valid? [request]
   (let [recipes (get request :build-recipes)
         provenance (get request :provenance)
@@ -908,26 +917,30 @@
         toolchain (get toolchains 0)
         environment-id (get environment :environment-id)
         lock-id (get lock :lock-id)
-        toolchain-id (get toolchain :toolchain-id)]
-    (if (and (vector? recipes)
-             (= 3 (count recipes))
-             (vector? provenance)
-             (= 3 (count provenance))
-             (vector? environments)
-             (= 1 (count environments))
-             (vector? locks)
-             (= 1 (count locks))
-             (vector? toolchains)
-             (= 1 (count toolchains))
-             (= :hermetic-environment environment-id)
-             (= :dependency-lock lock-id)
-             (= :llvm-toolchain toolchain-id))
+        toolchain-id (get toolchain :toolchain-id)
+        inputs-valid?
+        (if (descriptor-vector-size? recipes 3)
+          (if (descriptor-vector-size? provenance 3)
+            (if (descriptor-vector-size? environments 1)
+              (if (descriptor-vector-size? locks 1)
+                (if (descriptor-vector-size? toolchains 1)
+                  (if (= :hermetic-environment environment-id)
+                    (if (= :dependency-lock lock-id)
+                      (= :llvm-toolchain toolchain-id)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)]
+    (if inputs-valid?
       (loop [index 0]
         (if (= 3 index)
           true
           (let [recipe (get recipes index)
                 record (get provenance index)]
-            (if (and (map? recipe) (map? record))
+            (if (if (map? recipe) (map? record) false)
               (if (= environment-id (get recipe :environment-id))
                 (if (= lock-id (get recipe :lock-id))
                   (if (= toolchain-id (get recipe :toolchain-id))
@@ -944,31 +957,30 @@
               false))))
       false)))
 
+(defn provenance-identities-match? [record subsystem]
+  (if (= (get record :provenance-id) (get subsystem :provenance-id))
+    (if (= (get record :source-id) (get subsystem :source-id))
+      (= (get record :conformance-id) (get subsystem :conformance-id))
+      false)
+    false))
+
 (defn w5-sc-provenance-links-subsystems? [records subsystems]
-  (and (= (get (get records 0) :provenance-id)
-          (get (get subsystems :runtime) :provenance-id))
-       (= (get (get records 0) :source-id)
-          (get (get subsystems :runtime) :source-id))
-       (= (get (get records 0) :conformance-id)
-          (get (get subsystems :runtime) :conformance-id))
-       (= (get (get records 1) :provenance-id)
-          (get (get subsystems :standard-library) :provenance-id))
-       (= (get (get records 1) :source-id)
-          (get (get subsystems :standard-library) :source-id))
-       (= (get (get records 1) :conformance-id)
-          (get (get subsystems :standard-library) :conformance-id))
-       (= (get (get records 2) :provenance-id)
-          (get (get subsystems :package-build) :provenance-id))
-       (= (get (get records 2) :source-id)
-          (get (get subsystems :package-build) :source-id))
-       (= (get (get records 2) :conformance-id)
-          (get (get subsystems :package-build) :conformance-id))
-       (= (get (get records 0) :actual-provenance-path)
-          (get (get subsystems :runtime) :actual-provenance-path))
-       (= (get (get records 1) :actual-provenance-path)
-          (get (get subsystems :standard-library) :actual-provenance-path))
-       (= (get (get records 2) :actual-provenance-path)
-          (get (get subsystems :package-build) :actual-provenance-path))))
+  (if (provenance-identities-match? (get records 0) (get subsystems :runtime))
+    (if (provenance-identities-match? (get records 1)
+                                      (get subsystems :standard-library))
+      (if (provenance-identities-match? (get records 2)
+                                        (get subsystems :package-build))
+        (if (= (get (get records 0) :actual-provenance-path)
+               (get (get subsystems :runtime) :actual-provenance-path))
+          (if (= (get (get records 1) :actual-provenance-path)
+                 (get (get subsystems :standard-library) :actual-provenance-path))
+            (= (get (get records 2) :actual-provenance-path)
+               (get (get subsystems :package-build) :actual-provenance-path))
+            false)
+          false)
+        false)
+      false)
+    false))
 
 (defn w5-subsystem-closure-evidence-valid? [request]
   (if (w5-subsystem-closure-transcripts-valid?
@@ -1557,7 +1569,7 @@
 
 (defn w5-subsystem-closure [request]
   (let [diagnostic (w5-sc-invalid-diagnostic request)]
-    (if (nil? diagnostic)
+    (if (= nil diagnostic)
       (w5-sc-accepted-result request)
       {:artifact :gravity/w5-subsystem-closure-result
        :schema-version 1

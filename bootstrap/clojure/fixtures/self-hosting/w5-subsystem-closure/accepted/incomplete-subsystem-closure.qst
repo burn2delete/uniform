@@ -44,7 +44,7 @@
    :column 1
    :actual-source-path (w5-sc-path root suffix)})
 
-(defn w5-sc-subsystem [name source executable conformance provenance root]
+(defn w5-sc-subsystem [name source executable conformance provenance root suffix]
   {:subsystem name
    :source-id source
    :executable-id executable
@@ -62,7 +62,8 @@
    :actual-source-path (w5-sc-path root "/sources/subsystem.gravity")
    :actual-executable-path (w5-sc-path root "/executables/subsystem")
    :actual-conformance-path (w5-sc-path root "/conformance/subsystem.edn")
-   :actual-provenance-path (w5-sc-path root "/provenance/subsystem.edn")})
+   :actual-provenance-path
+   (w5-sc-path root (str "/provenance/" suffix ".edn"))})
 
 (defn w5-sc-compiler [root]
   {:compiler-id :compiler-stage2-seed
@@ -180,16 +181,16 @@
 (defn w5-sc-request [root source-extension]
   (let [runtime
         (w5-sc-subsystem :runtime :runtime-source :runtime-executable
-                         :runtime-conformance :runtime-provenance root)
+                         :runtime-conformance :runtime-provenance root "runtime")
         standard-library
         (w5-sc-subsystem :standard-library :standard-library-source
                          :standard-library-executable
                          :standard-library-conformance
-                         :standard-library-provenance root)
+                         :standard-library-provenance root "standard-library")
         package-build
         (w5-sc-subsystem :package-build :package-build-source
                          :package-build-executable :package-build-conformance
-                         :package-build-provenance root)]
+                         :package-build-provenance root "package-build")]
     {:artifact :gravity/w5-subsystem-closure-request
      :schema-version 1
      :claimed-status :incomplete
@@ -261,11 +262,11 @@
                  (str "/fixtures/incomplete-subsystem-closure"
                       source-extension))}))
 
-(def w5-subsystem-closure-request
+(defn w5-subsystem-closure-request []
   (w5-sc-request w5-sc-root ".gravity"))
 
 (defn w5-subsystem-closure-request-for-source [root source-extension]
   (w5-sc-request root source-extension))
 
-(def w5-subsystem-closure-alternate-path-request
+(defn w5-subsystem-closure-alternate-path-request []
   (w5-sc-request "/checkout-b" ".gravity"))
