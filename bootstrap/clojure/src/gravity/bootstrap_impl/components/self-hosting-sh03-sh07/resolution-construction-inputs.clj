@@ -36,14 +36,17 @@
 
 (defn- resolution-construction-dependencies [source-path invocation]
   (sh03-reader-authenticated-envelope-options source-path invocation)
-  (let [dependencies
+  (let [macro-source-mode (or (:macro-source-mode *sh06-resolution-operation-binding*)
+                              :pinned)
+        dependencies
         {:reader-source (dissoc (sh03-reader-read-selected-source-bytes!
                                 source-path (:reader-source-path invocation)) :bytes)
          :reader (resolution-construction-binding-view
                   (:binding (sh03-reader-verification-invocation! source-path invocation)))
          :syntax (resolution-construction-binding-view
                   (sh04-syntax-current-binding! source-path invocation))
-         :macro (resolution-construction-binding-view (sh05-macro-current-binding! source-path))
+         :macro (resolution-construction-binding-view
+                 (sh05-macro-current-binding! source-path invocation macro-source-mode))
          :resolver (resolution-construction-binding-view (sh06-resolution-current-binding! source-path))
          :resolver-inputs (sh06-resolution-current-source-key)
          :envelope-source (resolution-construction-envelope-source source-path)}]

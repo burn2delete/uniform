@@ -162,6 +162,62 @@
     (is (zero? @calls))
     (is (false? @observed?))))
 
+(deftest construction-observation-carries-selected-macro-mode-and-invocation
+  (let [source-path "examples/hello.gravity"
+        current-invocation (assoc invocation
+                                  :syntax-source-selection
+                                  {:schema :gravity/sh04-development-syntax-selection-v1
+                                   :source-path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+                                  :macro-source-mode :development-current)
+        reader-invocation (dissoc current-invocation :macro-source-mode)
+        selected (atom [])
+        macro-current-var (implementation 'sh05-macro-current-binding!)
+        macro-current (var-get macro-current-var)
+        with-reader-invocation (implementation 'sh06-resolution-with-reader-invocation)
+        reader-invocation* (implementation 'sh06-resolution-reader-invocation)
+        observe (implementation 'resolution-construction-observe)
+        overrides
+        {(implementation 'sh03-reader-authenticated-envelope-options)
+         (fn [& _] {:source :development-current})
+         (implementation 'sh03-reader-read-selected-source-bytes!)
+         (fn [& _] {:source-path source-path :byte-count 1 :bytes-hash "sha256:source"})
+         (implementation 'sh03-reader-verification-invocation!)
+         (fn [& _] {:binding {:artifact :reader}})
+         (implementation 'sh04-syntax-current-binding!)
+         (fn [& _] {:artifact :syntax})
+         macro-current-var
+         (fn [request-source received-invocation source-mode]
+           (swap! selected conj [request-source received-invocation source-mode])
+           (macro-current request-source received-invocation source-mode))
+         (implementation 'sh06-resolution-current-binding!)
+         (fn [& _] {:artifact :resolver})
+         (implementation 'sh06-resolution-current-source-key)
+         (fn [] {:artifact :resolver-inputs})
+         (implementation 'resolution-construction-envelope-source)
+         (fn [& _] {:canonical-path source-path :byte-count 1 :bytes-hash "sha256:source"})
+         (implementation 'p15-s23-trusted-carrier-validation)
+         (fn [& _] {:status :passed})}
+        run-observation (fn [supplied-invocation]
+                          (with-reader-invocation
+                            source-path supplied-invocation
+                            #(observe source-path (reader-invocation*))))]
+    (with-redefs-fn overrides
+      (fn []
+        (let [current (run-observation current-invocation)
+              pinned (run-observation reader-invocation)]
+          (is (= :development-current (get-in current [:macro :source-mode])))
+          (is (= :development-unadmitted (get-in current [:macro :revision-status])))
+          (is (= :development-current (get-in current [:macro :source-authority])))
+          (is (string? (get-in current [:macro :source-content-hash])))
+          ;; The default remains pinned. In this checkout its historical source
+          ;; identity is stale, so the optional observation falls back; a
+          ;; matching pin may instead produce its ordinary pinned binding.
+          (is (or (= (keyword "gravity.bootstrap" "unavailable") pinned)
+                  (= :pinned (get-in pinned [:macro :source-mode]))))
+          (is (= [[source-path reader-invocation :development-current]
+                  [source-path reader-invocation :pinned]]
+                 @selected)))))))
+
 (deftest historical-and-outer-transaction-paths-do-not-optimize
   (let [eligible (implementation 'resolution-construction-eligible?)
         operation (implementation '*sh06-resolution-operation-binding*)
