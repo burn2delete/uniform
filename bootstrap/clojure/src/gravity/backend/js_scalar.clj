@@ -202,42 +202,54 @@
 
 (def ^:private base64-digits "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
-(defn- vlq [number]
-  (loop [value (if (neg? number) (inc (* -2 number)) (* 2 number)) result ""]
-    (let [digit (bit-and value 31) remainder (unsigned-bit-shift-right value 5)]
-      (if (zero? remainder)
-        (str result (.charAt ^String base64-digits digit))
-        (recur remainder (str result (.charAt ^String base64-digits (bit-or digit 32))))))))
+(defn- append-vlq! [^StringBuilder mappings number]
+  (loop [value (if (neg? number) (inc (* -2 number)) (* 2 number))]
+    (let [digit (bit-and value 31)
+          remainder (unsigned-bit-shift-right value 5)
+          more? (not (zero? remainder))]
+      (.append mappings (.charAt ^String base64-digits (if more? (bit-or digit 32) digit)))
+      (when more?
+        (recur remainder)))))
 
 (defn source-map-source [program source-text emitted]
-  (let [source-lines (str/split source-text #"\r\n|\r|\n" -1)
-        origins (keep-indexed
-                 (fn [index {:keys [text origin]}]
-                   (when origin
-                     (let [line (get source-lines (dec (:sourceLine origin)))
-                           column (:sourceColumn origin)
-                           ;; C2 columns count Unicode scalar values. Source
-                           ;; Map v3 original columns count UTF-16 code units.
-                           column (if (= :unicode-scalar (or (get-in origin [:sourceSpan :start :column-unit])
-                                                           (get-in origin [:sourceSpan :column-unit])))
-                                    (.offsetByCodePoints ^String line 0 column) column)]
-                       (assoc origin :generatedLine (inc index)
-                                     :generatedColumn (- (count text) (count (str/triml text)))
-                                     :sourceColumn column :sourceColumnUnit "utf16-code-unit"))))
-                 (:lines emitted))
-        by-line (into {} (map (juxt :generatedLine identity)) origins)
-        mappings (loop [line 1 source-line 0 source-column 0 result []]
-                   (if (> line (inc (count (:lines emitted)))) (str/join ";" result)
-                     (if-let [origin (get by-line line)]
-                       (let [next-line (dec (:sourceLine origin)) next-column (:sourceColumn origin)]
-                         (recur (inc line) next-line next-column
-                                (conj result (str (vlq (:generatedColumn origin)) "A"
-                                                  (vlq (- next-line source-line))
-                                                  (vlq (- next-column source-column))))))
-                       (recur (inc line) source-line source-column (conj result "")))))]
+  (let [lines (:lines emitted)
+        source-lines (str/split source-text #"\r\n|\r|\n" -1)
+        origins (into []
+                      (keep-indexed
+                       (fn [index {:keys [text origin]}]
+                         (when origin
+                           (let [line (get source-lines (dec (:sourceLine origin)))
+                                 column (:sourceColumn origin)
+                                 ;; C2 columns count Unicode scalar values. Source
+                                 ;; Map v3 original columns count UTF-16 code units.
+                                 column (if (= :unicode-scalar (or (get-in origin [:sourceSpan :start :column-unit])
+                                                                 (get-in origin [:sourceSpan :column-unit])))
+                                          (.offsetByCodePoints ^String line 0 column) column)]
+                             (assoc origin :generatedLine (inc index)
+                                           :generatedColumn (- (count text) (count (str/triml text)))
+                                           :sourceColumn column :sourceColumnUnit "utf16-code-unit")))))
+                      lines)
+        ;; The printer terminates its output with a newline, leaving a final empty line.
+        final-line (inc (count lines))
+        result (StringBuilder.)
+        mappings (loop [remaining (seq origins) previous-generated-line 1 source-line 0 source-column 0]
+                   (let [origin (first remaining)
+                         generated-line (or (:generatedLine origin) final-line)]
+                     ;; Each separator advances one generated line. Only segments change source deltas.
+                     (dotimes [_ (- generated-line previous-generated-line)]
+                       (.append result \;))
+                     (if origin
+                       (let [next-source-line (dec (:sourceLine origin))
+                             next-source-column (:sourceColumn origin)]
+                         (append-vlq! result (:generatedColumn origin))
+                         (.append result \A)
+                         (append-vlq! result (- next-source-line source-line))
+                         (append-vlq! result (- next-source-column source-column))
+                         (recur (next remaining) generated-line next-source-line next-source-column))
+                       (str result))))]
     (str (json-source
           {:version 3 :file "program.mjs" :sources [(get-in program [:source :path])]
            :sourcesContent [source-text] :names [] :mappings mappings
            :x_gravity {:coverage "functions-operations-guards-and-terminators"
                        :sourceContentHash (get-in program [:source :content-hash])
-                       :perFormOriginPreserved true :generatedOrigins (vec origins)}}) "\n")))
+                       :perFormOriginPreserved true :generatedOrigins origins}}) "\n")))

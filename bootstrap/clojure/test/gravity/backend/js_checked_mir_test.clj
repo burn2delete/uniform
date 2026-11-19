@@ -7,6 +7,7 @@
             [gravity.backend.js :as js]
             [gravity.backend.js-checked-guard-test :as guard]
             [gravity.backend.js-checked-mir :as backend]
+            [gravity.backend.js-scalar :as printer]
             [gravity.bootstrap :as bootstrap]
             [gravity.bootstrap-free-leaf-test-runner :as json]
             [gravity.compiler.application :as application])
@@ -242,6 +243,61 @@
                   result))])
            (str/split mappings #";" -1)))))
 
+(deftest scalar-source-map-preserves-ordered-origins-and-gaps
+  (let [source-text "ab\r\n\uD835\uDC99cd\n"
+        program {:source {:path "fixture.gravity" :content-hash "fixture-hash"}}
+        later-origin {:sourceLine 2 :sourceColumn 2
+                      :sourceSpan {:start {:line 2 :column 3 :column-unit :unicode-scalar}}
+                      :functionId "fn" :mirInstructionId "guard" :coreNodeId "add"
+                      :originChain [{:kind :macro :id "expansion"}]
+                      :syntaxId "syntax" :originId "origin"}
+        earlier-origin (assoc later-origin :sourceLine 1 :sourceColumn 0
+                              :sourceSpan {:start {:line 1 :column 1 :column-unit :unicode-scalar}}
+                              :mirInstructionId "return")
+        utf16-origin (assoc later-origin :sourceColumn 4
+                            :sourceSpan {:start {:line 2 :column 5 :column-unit :utf16-code-unit}})
+        lines [{:text "// preamble"}
+               {:text "  first" :origin later-origin}
+               {:text "second" :origin later-origin}
+               {:text ""}
+               {:text "// unmapped"}
+               {:text "    third" :origin earlier-origin}
+               {:text "fourth" :origin utf16-origin}
+               {:text "//# sourceMappingURL=program.mjs.map"}]
+        expected-map {:version 3 :file "program.mjs" :sources ["fixture.gravity"]
+                      :sourcesContent [source-text] :names []
+                      :x_gravity {:coverage "functions-operations-guards-and-terminators"
+                                  :sourceContentHash "fixture-hash"
+                                  :perFormOriginPreserved true :generatedOrigins []}}]
+    (testing "Mapped lines preserve exact VLQ deltas and all origin metadata"
+      (let [converted-origin (assoc later-origin :sourceColumn 3 :sourceColumnUnit "utf16-code-unit")
+            origins [(assoc converted-origin :generatedLine 2 :generatedColumn 2)
+                     (assoc converted-origin :generatedLine 3 :generatedColumn 0)
+                     (assoc earlier-origin :generatedLine 6 :generatedColumn 4
+                            :sourceColumnUnit "utf16-code-unit")
+                     (assoc utf16-origin :generatedLine 7 :generatedColumn 0
+                            :sourceColumnUnit "utf16-code-unit")]
+            expected (-> expected-map
+                         (assoc :mappings ";EACG;AAAA;;;IADH;AACI;;")
+                         (assoc-in [:x_gravity :generatedOrigins] origins))]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text {:lines lines})))))
+    (testing "A sole mapped printer line has one trailing separator and no leading gap"
+      (let [origin (assoc later-origin :sourceSpan {:line 2 :column 3 :column-unit :unicode-scalar})
+            expected-origin (assoc origin :generatedLine 1 :generatedColumn 16
+                                   :sourceColumn 3 :sourceColumnUnit "utf16-code-unit")
+            expected (-> expected-map
+                         (assoc :mappings "gBACG;")
+                         (assoc-in [:x_gravity :generatedOrigins] [expected-origin]))]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text
+                                          {:lines [{:text "                only" :origin origin}]})))))
+    (testing "Unmapped output still includes the final empty line"
+      (let [expected (assoc expected-map :mappings ";;;;;;;;")]
+        (is (= (str (printer/json-source expected) "\n")
+               (printer/source-map-source program source-text
+                                          {:lines (mapv #(dissoc % :origin) lines)})))))))
+
 (def ^:private scalar-execution-script
   (str "const inputs = [[true,3n,7n],[false,7n,3n],"
        "[true,9007199254740993n,9007199254740994n],"
@@ -302,6 +358,7 @@
     (is (not= "source-unit-only" (get-in source-map ["x_gravity" "coverage"])))
     (let [origins (get-in source-map ["x_gravity" "generatedOrigins"])
           decoded (decoded-source-map (get source-map "mappings"))
+          final-line (count (str/split (slurp (:javascript paths)) #"\n" -1))
           core-ids (set (map :node-id (get-in application [:checked-core :core-nodes])))
           function-ids (set (map :fn-id (vals (get-in application [:mir-module :functions]))))
           addition (first (filter #(= :integer-add (:opcode %))
@@ -311,18 +368,22 @@
       (is (seq addition-origins) "A numeric failure maps to its original addition")
       (is (every? #(= 10 (get % "sourceLine")) addition-origins))
       (is (> (count (set (map #(get % "sourceLine") origins))) 1))
+      (is (= final-line (count decoded)))
+      (is (= [] (get decoded final-line)) "The final generated line is unmapped")
+      (is (= (for [origin origins]
+               {:generated-line (get origin "generatedLine")
+                :generated-column (get origin "generatedColumn")
+                :source 0 :source-line (get origin "sourceLine")
+                :source-column (get origin "sourceColumn")})
+             (for [[line segments] (sort-by key decoded)
+                   segment segments]
+               (assoc segment :generated-line line)))
+          "Standard v3 mappings agree with the complete ordered list of generated origins")
       (doseq [origin origins]
         (is (vector? (get origin "originChain")))
         (is (contains? core-ids (get origin "coreNodeId")))
         (is (contains? function-ids (get origin "functionId")))
-        (is (content-id? (get origin "syntaxId")))
-        (is (some #{(select-keys
-                     {:generated-column (get origin "generatedColumn")
-                      :source 0 :source-line (get origin "sourceLine")
-                      :source-column (get origin "sourceColumn")}
-                     [:generated-column :source :source-line :source-column])}
-                  (get decoded (get origin "generatedLine")))
-            "Generated-origin coordinates agree with the actual standard v3 mappings")))
+        (is (content-id? (get origin "syntaxId")))))
     (is (str/includes? (slurp (:typescript-declarations paths)) "bigint"))
     (is (str/includes? (slurp (:typescript-declarations paths)) "boolean"))
     (is (str/includes? (slurp (:typescript-declarations paths)) "score"))
