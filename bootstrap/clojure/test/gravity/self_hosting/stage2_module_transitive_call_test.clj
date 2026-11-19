@@ -118,8 +118,102 @@
           (with-redefs [bootstrap/p15-s23-stage2-module-source #(get conflict (:artifact-id %))]
             (is (= :source-emitter-or-dependency-set (reason #(build [bp cp])))))))
       (is (= :independent-raw-plan-mismatch (reason #(build [(assoc bp :route-index {}) cp]))))
-      (with-redefs [bootstrap/p15-s23-stage2-module-routes (fn [& _] (vec (repeat 65537 ra)))]
-        (is (= :module-route-limit (reason #(build [bp cp]))))))))
+      (with-redefs [bootstrap/p15-s23-stage2-module-routes (fn [& _] [ra ra])]
+        (is (= :duplicate-callsite-route (reason #(build [bp cp]))))))))
+
+(deftest stage2-module-bundle-former-cardinality-ceilings-development-kernel
+  ;; Normalized compiler/source callbacks isolate bundle construction and
+  ;; reconstruction while retaining the real DATA, topology and plan checks.
+  (let [module-count 258
+        root-path "example.module1"
+        children (mapv #(artifact % []) (range 2 (inc module-count)))
+        root (assoc (artifact 1 children) :provenance {:source-path root-path})
+        sources
+        (into {}
+              (map-indexed
+               (fn [index c5]
+                 (let [path (str "example.module" (inc index))]
+                   [(:artifact-id c5)
+                    {:artifact c5 :module-id (:artifact-id c5) :source-path path :source-text path
+                     :module {:namespace (symbol path)} :request {:imports []} :functions {}}]))
+               (cons root children)))
+        emitter {:fixture :large-module-bundle}
+        raw (fn raw
+              ([selected-emitter path text route-index]
+               (raw selected-emitter path text route-index nil))
+              ([_selected-emitter path _text route-index _map-order]
+               (let [route-index (not-empty route-index)]
+                 {:plan-id (bootstrap/reader-canonical-hash [path route-index])
+                  :module {:module (symbol path)} :functions {} :route-index route-index})))
+        dependency-plans
+        (mapv (fn [c5]
+                (let [source (get sources (:artifact-id c5))]
+                  (raw emitter (:source-path source) (:source-text source) nil)))
+              children)
+        inputs {:caller-resolution-artifact root :dependency-plans dependency-plans}
+        build (fn [selected-inputs]
+                (bootstrap/p15-s23-stage2-module-bundle
+                 emitter root-path root-path selected-inputs))]
+    (with-redefs [bootstrap/p15-s23-stage2-module-source
+                  (fn
+                    ([c5] (get sources (:artifact-id c5)))
+                    ([c5 _reader-invocation] (get sources (:artifact-id c5))))
+                  bootstrap/p15-s23-stage2-module-shadowing-check! (fn [& _])
+                  bootstrap/c-backend-stage2-plan-emitter-source-rule! (fn [& _] {:emitter emitter})
+                  bootstrap/p15-s23-stage2-module-routes (fn [& _] [])
+                  bootstrap/p15-s23-stage2-module-exports (fn [_] [])
+                  bootstrap/p15-s23-stage2-compiler-artifact-plan-raw raw
+                  bootstrap/c2-reader-artifact-source-text (fn [path _] path)]
+      (let [bundle (build inputs)]
+        (is (= module-count (count (:modules bundle))))
+        (is (= (dec module-count) (count (:dependency-plans inputs))))
+        (is (identical? bundle (bootstrap/p15-s23-stage2-module-validate-bundle! bundle)))
+        (is (= :source-emitter-or-dependency-set
+               (reason #(build (update inputs :dependency-plans conj (first dependency-plans)))))))))
+  (let [root-path "example.large-route-root"
+        root (assoc (artifact 1000 []) :provenance {:source-path root-path})
+        emitter {:fixture :large-route-bundle}
+        route-count 65537
+        routes (mapv (fn [index]
+                       {:caller-module-id (:artifact-id root) :caller-function 'main
+                        :callsite-path [index] :route-id (str "route-" index)})
+                     (range route-count))
+        source {:artifact root :module-id (:artifact-id root) :source-path root-path
+                :source-text root-path :module {:namespace 'example.large-route-root}
+                :request {:imports []} :functions {}}
+        raw (fn raw
+              ([selected-emitter path text route-index]
+               (raw selected-emitter path text route-index nil))
+              ([_selected-emitter path _text route-index _map-order]
+               (let [route-index (not-empty route-index)]
+                 {:plan-id (bootstrap/reader-canonical-hash [path route-index])
+                  :module {:module (symbol path)} :functions {} :route-index route-index})))
+        inputs {:caller-resolution-artifact root :dependency-plans []}
+        build (fn []
+                (bootstrap/p15-s23-stage2-module-bundle
+                 emitter root-path root-path inputs))]
+    (with-redefs [bootstrap/p15-s23-stage2-module-source
+                  (fn
+                    ([c5] (when (= (:artifact-id c5) (:artifact-id root)) source))
+                    ([c5 _reader-invocation]
+                     (when (= (:artifact-id c5) (:artifact-id root)) source)))
+                  bootstrap/p15-s23-stage2-module-shadowing-check! (fn [& _])
+                  bootstrap/c-backend-stage2-plan-emitter-source-rule! (fn [& _] {:emitter emitter})
+                  bootstrap/p15-s23-stage2-module-routes (fn [& _] routes)
+                  bootstrap/p15-s23-stage2-module-exports (fn [_] [])
+                  bootstrap/p15-s23-stage2-compiler-artifact-plan-raw raw
+                  bootstrap/c2-reader-artifact-source-text (fn [path _] path)]
+      (let [bundle (build)]
+        (is (= route-count (count (:routes bundle))))
+        (is (= route-count (count (get-in bundle [:modules 0 :plan :route-index]))))
+        (is (identical? bundle (bootstrap/p15-s23-stage2-module-validate-bundle! bundle)))
+        (let [changed (update-in bundle [:routes 0 :route-id] str "-tampered")
+              identity (bootstrap/p15-s23-stage2-module-identity
+                        emitter (:root-module-id changed) (:modules changed) (:routes changed))
+              forged (assoc changed :identity-input identity
+                            :bundle-id (bootstrap/reader-canonical-hash identity))]
+          (is (= :module-bundle-reconstruction-mismatch
+                 (reason #(bootstrap/p15-s23-stage2-module-validate-bundle! forged)))))))))
 
 (deftest stage2-module-transitive-authenticated-composition
   ;; One genuine G chain; Q bytes/parser parity above is not typed/execution credit.
