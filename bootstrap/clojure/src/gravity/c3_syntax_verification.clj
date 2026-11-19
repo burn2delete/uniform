@@ -78,6 +78,54 @@
       transaction-serialization
       (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
+(defn- origin-has-producer-and-span? [origin]
+  (and (:producer origin)
+       (or (:span origin) (:generated-span origin))))
+
+(defn- source-origin-inputs-empty? [origin]
+  (and (= [] (:input-syntax-ids origin []))
+       (= [] (:inputs origin []))))
+
+(defn- generated-origin-valid? [prior-ids hosted-source? c2-artifact origin]
+  (and (origin-has-producer-and-span? origin)
+       (let [input-fields (select-keys origin [:input-syntax-ids :inputs])
+             abbreviation? (and hosted-source?
+                                (= {:kind :reader
+                                    :name 'gravity.stage0/reader-abbreviation
+                                    :version "stage0"}
+                                   (:producer origin)))]
+         (and (seq input-fields)
+              (every? (fn [[field ids]]
+                        (if (and abbreviation? (= :inputs field))
+                          ;; Hosted Reader authentication reconstructs this C2 seed link.
+                          (and c2-artifact (vector? ids)
+                               (= 1 (count ids)) (some? (first ids)))
+                          (and (coll? ids) (seq ids) (every? prior-ids ids))))
+                      input-fields)))))
+
+(defn- generated-origins-valid? [syntax-stream c2-artifact gravity-boundary]
+  (loop [remaining (seq syntax-stream) prior-ids #{}]
+    (if remaining
+      (let [{:keys [form] origins :origin syntax-id :syntax/id} (first remaining)
+            generated-form? (= :generated-form (:kind form))
+            entries (if generated-form?
+                      origins
+                      (filter #(#{:source :generated} (:kind %)) origins))
+            available (disj prior-ids syntax-id)
+            hosted-source? (and (nil? gravity-boundary) (not generated-form?))]
+        (if (and (sequential? origins)
+                 (or (not generated-form?)
+                     (and (origin-has-producer-and-span? (first origins))
+                          (some #(not= :source (:kind %)) origins)))
+                 (every? (fn [entry]
+                           (if (= :source (:kind entry))
+                             (source-origin-inputs-empty? entry)
+                             (generated-origin-valid? available hosted-source? c2-artifact entry)))
+                         entries))
+          (recur (next remaining) (conj prior-ids syntax-id))
+          false))
+      true)))
+
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
    (c3-syntax-verification-report syntax-stream serialization nil nil))
@@ -98,13 +146,7 @@
             :source-spans-resolve?
             (every? #(invoke :c3-resolvable-span? (:span %)) syntax-stream)
             :generated-origins-valid?
-            (every? #(and (get-in % [:origin 0 :producer])
-                          (seq (or (get-in % [:origin 0 :input-syntax-ids])
-                                   (get-in % [:origin 0 :inputs])))
-                          (or (get-in % [:origin 0 :span])
-                              (get-in % [:origin 0 :generated-span])))
-                    (filter #(= :generated-form (get-in % [:form :kind]))
-                            syntax-stream))
+            (generated-origins-valid? syntax-stream c2-artifact gravity-boundary)
             :hygiene-visible? (every? #(map? (:hygiene %)) syntax-stream)
             :metadata-valid? (every? #(map? (:metadata %)) syntax-stream)
             :namespace-context-valid?
@@ -179,10 +221,9 @@
                     (count (set (map :syntax/id syntax-stream))))))
            :source-and-generated-origins?
            (boolean
-            (and (every? #(some (comp #{:source} :kind) (:origin %))
-                         (remove #(= :generated-form
-                                      (get-in % [:form :kind]))
-                                 syntax-stream))
+            (and (true? (:generated-origins-valid? fresh-verifier))
+                 (every? #(some (comp #{:source} :kind) (:origin %))
+                         source-syntax)
                  (seq (:generated generated-report))))
            :hygiene-propagated?
            (boolean

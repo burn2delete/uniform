@@ -97,6 +97,27 @@ Done when (yes/no): Round-trip all required form kinds and generated graphs, inc
 Apply the [complete syntax source criteria](plan.md#complete-syntax-source-criteria) within this existing task. Preserve its original status, accepted evidence scope and historical criteria.
 
 Complete C3 verification and serialization criterion (Open): Before expansion or analysis, execute the real verifier for required fields, stable semantic ids, spans resolving to actual source units, valid generated producers/origin references, scoped hygiene/declared capture, metadata shape, structurally valid namespace context, allowed phase transitions and actual serialization round-trip. Reconstruct every required source/generated form and shared-origin graph with the same semantic identity and preserved fields; stable serialization serves actual incremental and self-hosting comparison without forcing every representation to share a physical encoding. Reject malformed, substituted, stale, disconnected or non-round-tripping products and prevent downstream use. Exercise all nine C3 diagnostics against actual bad subjects; a projected payload round-trip, fixture-requested failure or passed report alone does not verify the full syntax artifact. Preserve legitimate graph sharing, semantic validation, source authentication and actual host restrictions without project node/depth/width/byte/work quotas or mandatory replacement proof admission.
+
+The controller checked the hosted C3 link fixtures on candidate
+`ed1eb059e8fc4b29d6567fc9c960a11ab362bdae`. Shared links passed and broken
+links reached `C3-ORIGIN` with current serialization. Review requested a
+repair for hosted Reader abbreviations. All three controller checks passed
+on that repair, candidate `9938a8f8f0fae2108d32f74124b9136b199705ac`.
+Review found that a bare leading source origin on a generated form passed
+the hosted origin check. All three controller checks passed on the leading
+producer and span repair, candidate `072dec774bd3040f342a41fb3111eeedbd168ba3`.
+Review then found that a source entry could carry an unresolved input. All
+three controller checks passed on the source-input repair, candidate
+`ca827e6af247e26dc11a35835d1a1bfa3dcb16e3`. With current serialization,
+the empty-input control passed validation and all three nonempty source-input
+cases failed the origin check with `C3-ORIGIN`. Review requested changes for
+a mixed chain supplied as a set. The hosted verifier now requires a sequential
+chain. All three controller checks passed on candidate
+`0417791292b27265648afc88cc3c492a1655fd03`. Review found that retagging
+the unresolved entry as `:source` on a non-generated form bypassed the input
+check. The verifier now checks source entries on both form kinds. Controller
+checks for this repair and independent acceptance are pending. Syntax/4 remains open.
+[Reports, diagnostics and repair scope](evidence.md#hosted-generated-origin-inputs).
 <!-- syntax-source-verification:end -->
 
 - [ ] `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers` syntax/5: Integrate consumers
