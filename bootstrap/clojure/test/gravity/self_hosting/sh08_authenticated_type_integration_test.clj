@@ -261,9 +261,12 @@
      (path "bootstrap/gravity/p15_s23/emitter.gravity"))))
 
 (defn- with-frontend-operation [operation]
-  ;; Share compilation within one fixture. The envelope owner still
-  ;; reauthenticates its source before each lookup and replays verification.
-  (binding [bootstrap/*p15-s23-stage2-compiler-artifact-binding* @current-emitter]
+  ;; Reuse compiled owners within one fixture. Reader and envelope lookups
+  ;; still authenticate current source, and SH-07 verification still replays.
+  (with-bindings {#'bootstrap/*p15-s23-stage2-compiler-artifact-binding*
+                  @current-emitter
+                  (ns-resolve 'gravity.bootstrap '*application-reader-owner*)
+                  (atom nil)}
     ((ns-resolve 'gravity.bootstrap 'p15-s23-with-stage2-plan-emission-context)
      operation)))
 
