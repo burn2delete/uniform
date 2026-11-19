@@ -16,8 +16,6 @@ inputs:
       deps.edn
       tools/ci/run.clj
       tools/ci/lint_facade_test.clj
-      tools/ci/workflow_yaml_tool_deps.edn
-      tools/ci/workflow_expression_tool_deps.edn
       .github/actions/clojure/action.yml
   private-temp:
     description: Use an owned Java temporary directory for portable cache tests
@@ -43,7 +41,9 @@ runs:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
         cache: maven
-        cache-dependency-path: ${{ inputs.dependency-cache-files }}
+        cache-dependency-path: |
+          ${{ inputs.dependency-cache-files }}
+          ${{ inputs.install-static-tools == 'true' && 'tools/ci/workflow_*_tool_deps.edn' || '' }}
     - uses: DeLaGuardo/setup-clojure@3fe9b3ae632c6758d0b7757b0838606ef4287b08 # 13.4
       with:
         cli: 1.12.5.1654

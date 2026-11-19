@@ -32,8 +32,8 @@
     (throw (ex-info "Invalid Clojure dependency alias" {:alias alias})))
   ["clojure" "-Srepro" "-P" (if (str/blank? alias) "-M" (str "-M:" alias))])
 
-(defn prefetch-manifest-command
-  "Build an isolated -Srepro prefetch command from a pinned EDN dependency manifest."
+(defn isolated-tool-basis
+  "Resolve the manifest's pinned workflow tooling coordinates from Maven Central."
   [manifest]
   (let [basis (edn/read-string (slurp manifest))
         dependencies (:deps basis)]
@@ -48,7 +48,10 @@
                            dependencies))
       (throw (ex-info "Invalid isolated Maven dependency manifest"
                       {:manifest (str manifest)})))
-    ["clojure" "-Srepro" "-P" "-Sdeps" (pr-str basis) "-M"]))
+    (assoc basis :mvn/repos {"central" {:url "https://repo.maven.apache.org/maven2/"}})))
+
+(defn prefetch-manifest-command [manifest]
+  ["clojure" "-Srepro" "-P" "-Sdeps" (pr-str (isolated-tool-basis manifest)) "-M"])
 
 (defn- result-output
   [{:keys [out err]}]

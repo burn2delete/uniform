@@ -489,7 +489,7 @@
   (let [manifest (get isolated-workflow-tool-manifests id)]
     (when-not manifest
       (throw (ex-info "Unknown isolated workflow tool" {:id id})))
-    (let [dependencies (edn/read-string (slurp manifest))]
+    (let [dependencies (maven/isolated-tool-basis manifest)]
       ["clojure" "-J-Xmx128m" "-Srepro" "-Sdeps" (pr-str dependencies)
        "-M" "-e" (pr-str form)])))
 
@@ -619,7 +619,8 @@
             :name (field (get job "name"))
             :runner (field (get job "runs-on"))
             :clojure (condition setup)
-            :run (condition (step "run-checks"))
+            :run [(get (step "run-checks") "if") true :success
+                  (assoc-in context ["steps" "toolchain" "outcome"] "success")]
             :force-full (field (get-in (step "run-checks") ["env" "CI_FORCE_FULL"]))
             :provenance (after-failure (step "retain-provenance"))
             :upload (after-failure upload)
@@ -999,8 +1000,8 @@
 (deftest isolated-workflow-tools-use-prefetched-reproducible-manifests
   (let [yaml-path (get isolated-workflow-tool-manifests "read-workflow")
         expression-path (get isolated-workflow-tool-manifests "evaluate-workflow-fields")
-        yaml-deps (edn/read-string (slurp yaml-path))
-        expression-deps (edn/read-string (slurp expression-path))
+        yaml-deps (maven/isolated-tool-basis yaml-path)
+        expression-deps (maven/isolated-tool-basis expression-path)
         yaml-command (isolated-workflow-tool-command "read-workflow" '(identity nil))
         expression-command (isolated-workflow-tool-command "evaluate-workflow-fields" '(identity nil))
         action @clojure-toolchain-action
@@ -1009,6 +1010,10 @@
         prefetch-script (get prefetch-step "run")
         cache-inputs (set (str/split-lines
                            (get-in action ["inputs" "dependency-cache-files" "default"])))
+        cache-patterns (str/split-lines
+                        (some #(when (str/starts-with? (get % "uses" "") "actions/setup-java@")
+                                 (get-in % ["with" "cache-dependency-path"]))
+                              (get-in action ["runs" "steps"])))
         workflow @ci-workflow
         toolchain-step (fn [job]
                          (some #(when (= "./.github/actions/clojure" (get % "uses")) %)
@@ -1017,6 +1022,7 @@
         resolution-toolchain (toolchain-step (get-in workflow ["jobs" "resolution"]))
         leaves-toolchain (toolchain-step (get-in workflow ["jobs" "leaves"]))
         static-tool-gate (get-in checks-toolchain ["with" "install-static-tools"])
+        static-run-condition (get (workflow-step (get-in workflow ["jobs" "checks"]) "id" "run-checks") "if")
         static-tool-gate-results
         (evaluate-workflow-fields!
          (mapv (fn [mode]
@@ -1026,12 +1032,14 @@
                                       "outputs" {"selection-valid" "true"
                                                  "static-tools-required" "true"}}}}])
                ["static" "macro"]))]
-    (is (= {:deps {'org.clojure/clojure {:mvn/version "1.12.5"}
-                   'org.snakeyaml/snakeyaml-engine {:mvn/version "2.10"}}}
-           yaml-deps))
-    (is (= {:deps {'org.clojure/clojure {:mvn/version "1.12.5"}
-                   'org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}}
-           expression-deps))
+    (is (= {'org.clojure/clojure {:mvn/version "1.12.5"}
+            'org.snakeyaml/snakeyaml-engine {:mvn/version "2.10"}}
+           (:deps yaml-deps)))
+    (is (= {'org.clojure/clojure {:mvn/version "1.12.5"}
+            'org.apache.commons/commons-jexl3 {:mvn/version "3.7.1"}}
+           (:deps expression-deps)))
+    (is (= {"central" {:url "https://repo.maven.apache.org/maven2/"}}
+           (:mvn/repos yaml-deps) (:mvn/repos expression-deps)))
     (doseq [[path dependencies] [[yaml-path yaml-deps]
                                  [expression-path expression-deps]]]
       (let [command (maven/prefetch-manifest-command path)]
@@ -1046,8 +1054,10 @@
     (is (not (contains? (:deps yaml-deps) 'org.apache.commons/commons-jexl3)))
     (is (not (contains? (:deps expression-deps) 'org.snakeyaml/snakeyaml-engine)))
     (is (= "composite" (get-in action ["runs" "using"])))
-    (is (contains? cache-inputs yaml-path))
-    (is (contains? cache-inputs expression-path))
+    (is (not-any? cache-inputs [yaml-path expression-path]))
+    (is (= ["${{ inputs.dependency-cache-files }}"
+            "${{ inputs.install-static-tools == 'true' && 'tools/ci/workflow_*_tool_deps.edn' || '' }}"]
+           cache-patterns))
     (is (some? prefetch-step))
     (is (str/includes? prefetch-script "--manifest tools/ci/workflow_yaml_tool_deps.edn"))
     (is (str/includes? prefetch-script "--manifest tools/ci/workflow_expression_tool_deps.edn"))
@@ -1057,6 +1067,13 @@
     (is (some? leaves-toolchain))
     (is (str/includes? static-tool-gate "matrix.mode == 'static'"))
     (is (= [true false] static-tool-gate-results))
+    (is (= "toolchain" (get checks-toolchain "id")))
+    (is (= [true false]
+           (evaluate-workflow-fields!
+            (mapv (fn [outcome]
+                    [static-run-condition true :success
+                     {"matrix" {"mode" "static"} "steps" {"toolchain" {"outcome" outcome}}}])
+                  ["success" "failure"]))))
     (is (nil? (get-in resolution-toolchain ["with" "install-static-tools"])))
     (is (nil? (get-in leaves-toolchain ["with" "install-static-tools"])))
     (is (= 3 (get-in workflow ["jobs" "resolution" "strategy" "max-parallel"])))
@@ -1087,9 +1104,9 @@
       (is (str/includes? workflow "permissions:\n  contents: read"))
       (is (not (str/includes? workflow "pull_request_target"))))
     (is (str/includes? toolchain "cache: maven"))
-    (is (str/includes? toolchain "cache-dependency-path: ${{ inputs.dependency-cache-files }}"))
+    (is (str/includes? toolchain "${{ inputs.dependency-cache-files }}"))
     (is (str/includes? toolchain
-                       "deps.edn\n      tools/ci/run.clj\n      tools/ci/lint_facade_test.clj\n      tools/ci/workflow_yaml_tool_deps.edn\n      tools/ci/workflow_expression_tool_deps.edn\n      .github/actions/clojure/action.yml"))
+                       "deps.edn\n      tools/ci/run.clj\n      tools/ci/lint_facade_test.clj\n      .github/actions/clojure/action.yml"))
     (is (str/includes? toolchain "-m ci.maven-dependencies"))
     (is (str/includes? toolchain "java -cp"))
     (is (< (.indexOf ci "uses: ./.github/actions/clojure")
