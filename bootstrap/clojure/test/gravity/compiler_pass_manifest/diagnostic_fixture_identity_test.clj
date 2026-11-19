@@ -73,6 +73,23 @@
           (is (not (contains? diagnostic :facts)))
           (is (not (str/includes? (pr-str result) fact-marker))))))))
 
+(deftest duplicate-malformed-diagnostic-identity-is-redacted
+  (let [id-marker "DIAGNOSTIC_FIXTURE_PRIVATE_ID_MARKER"
+        malformed-id {:facts {:private-detail id-marker}}
+        fixtures (mapv #(assoc % :diagnostic-id malformed-id) (repeated-rule-fixtures))]
+    (doseq [[boundary operation] (boundary-operations {:diagnostic-fixtures fixtures})]
+      (testing (name boundary)
+        (let [{:keys [diagnostic] :as result} (capture-outcome operation)]
+          (is (not (contains? result :value)))
+          (is (= {:id "C15-ID"
+                  :schema-field :diagnostic-id
+                  :reason :duplicate
+                  :fixture-index 1
+                  :offending-diagnostic-id nil}
+                 (select-keys diagnostic [:id :schema-field :reason :fixture-index
+                                          :offending-diagnostic-id])))
+          (is (not (str/includes? (pr-str result) id-marker))))))))
+
 (deftest existing-fixture-failures-precede-duplicate-identity
   (let [fixtures (repeated-rule-fixtures)
         duplicate-fixtures (assoc-in fixtures [1 :diagnostic-id]

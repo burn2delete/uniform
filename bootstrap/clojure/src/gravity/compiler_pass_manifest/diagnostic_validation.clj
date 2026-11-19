@@ -68,7 +68,7 @@
              {:schema-field :diagnostic-id
               :reason :duplicate
               :fixture-index fixture-index
-              :offending-diagnostic-id diagnostic-id
+              :offending-diagnostic-id (when (string? diagnostic-id) diagnostic-id)
               :artifact-id (or (:artifact-id diagnostic)
                                (get-in diagnostic [:primary :artifact])
                                (:artifact diagnostic))
