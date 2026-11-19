@@ -477,9 +477,16 @@
                  (get-in execution [:provenance :source-span])))
           (is (= expected
                  (invoke bridge-plan 'sh22-bridge-sh13-valid?
-                         [module arguments execution verification]))))))
-    (testing "rejects an empty origin chain at the bridge"
-      (is (false? (invoke bridge-plan 'sh22-bridge-origins-valid? [[]]))))))
+                         [module arguments execution verification])))
+          (when expected
+            (testing "rejects a substituted empty execution origin chain"
+              (let [empty-execution (assoc-in execution [:provenance :origin-chain] [])
+                    replay (invoke sh13-plan 'sh13-verify-execution
+                                   [module arguments empty-execution])]
+                (is (= :rejected (:status replay)))
+                (is (= "C11-VERIFY" (get-in replay [:diagnostics 0 :rule])))
+                (is (false? (invoke bridge-plan 'sh22-bridge-sh13-valid?
+                                    [module arguments empty-execution verification])))))))))))
 
 (deftest sh22-authenticated-bridge-validation-has-no-project-quotas
   (let [products (upstream-products)
