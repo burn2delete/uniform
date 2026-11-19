@@ -155,6 +155,22 @@
      (bootstrap/p15-s23-c11-mir-digest
       (get (:functions plan) verifier))}))
 
+(defn- require-pinned-c11-source! []
+  (let [expected
+        (select-keys
+         (invoke bridge-plan 'sh12-expected-c11-revision [])
+         [:source-byte-count :source-content-hash])
+        source-path (path c11-source)
+        source-text (slurp source-path)
+        observed {:source-byte-count (byte-count source-text)
+                  :source-content-hash (source-hash source-text)}]
+    (when-not (= expected observed)
+      (throw (ex-info "SH-12 requires the pinned C11 source for this integration fixture"
+                      {:id "SH12-AUTH-C11-SOURCE-REVISION"
+                       :source-path source-path
+                       :expected expected
+                       :observed observed})))))
+
 (defn- sh08-products [extension]
   @(sh11-value
     (if (= extension ".gravity")
@@ -172,10 +188,8 @@
        'gravity.self-hosting.sh11-authenticated-safety-integration-test
        'prepared-request products :unsafe-overflow actual-path))))
 
-(defn- verified-sh11 [extension outcome actual-path]
-  (let [prepared
-        (prepared-sh11 extension outcome actual-path)
-        run
+(defn- verified-sh11 [prepared]
+  (let [run
         (call-private
          'gravity.self-hosting.sh11-authenticated-safety-integration-test
          'run-bridge prepared)
@@ -199,9 +213,10 @@
      [[extension outcome]
       (delay
         (verified-sh11
-         extension outcome
-         (str "/checkout-a/sh11-input" extension
-              "/" (name outcome))))])))
+         (prepared-sh11
+          extension outcome
+          (str "/checkout-a/sh11-input" extension
+               "/" (name outcome)))))])))
 
 (defn- authentic-product [extension outcome]
   @(get authentic-product-delays [extension outcome]))
@@ -216,13 +231,14 @@
 (defn- sh12-request
   [products extension outcome actual-path]
   (let [safe-core (:safe-core products)
+        c11-revision (c11-source-revision)
         semantic
         {:safe-artifact-id (:artifact-id safe-core)
          :outcome outcome}
         checked-core-identity
         {:safe-artifact-id (:artifact-id safe-core)
          :safe-outcome (:outcome safe-core)
-         :c11-revision (c11-source-revision)
+         :c11-revision c11-revision
          :typed-artifact-id (:typed-artifact-id safe-core)
          :effect-artifact-id (:effect-artifact-id safe-core)
          :ownership-artifact-id
@@ -241,7 +257,7 @@
       :gravity/sh12-authenticated-mir-v1
       {:source-safe-core (:artifact-id safe-core)
        :checked-core checked-core-identity})
-     :c11-revision (c11-source-revision)
+     :c11-revision c11-revision
      :entrypoint 'gravity.self-hosting.sh12/main
      :module-id 'gravity.self-hosting.sh12.fixture
      :actual-source-path actual-path}))
@@ -339,6 +355,7 @@
     (is (some #{:sh12-completion} (:pending policy)))))
 
 (deftest sh12-builds-c11-mir-for-both-source-extensions
+  (require-pinned-c11-source!)
   (doseq [extension [".gravity" ".qst"]
           outcome [:proven-safe :unsafe-island]]
     (testing (str extension " " outcome)
@@ -414,6 +431,9 @@
                (str "/checkout-a/sh12-input"
                     extension "/" (name outcome))))))))
 
+(def ^:private unsafe-audit-prefix (apply str (repeat 256 "a")))
+(def ^:private complete-unsafe-audit-text (str unsafe-audit-prefix "b"))
+
 (deftest sh12-outcome-products-validate-each-safe1-classification
   (let [test-id
         (fn [value]
@@ -435,19 +455,17 @@
          :runtime-check-id (test-id :runtime-check)
          :unsafe-audit-id (test-id :unsafe-audit)
          :unsafe-review-id (test-id :unsafe-review)}]
-    (doseq [[operation expected]
+    (doseq [[operation expected field]
             [[:proven-overflow :proven-safe]
              [:runtime-division :runtime-checked]
-             [:unsafe-overflow :unsafe-island]]]
-      (testing (name expected)
-        (let [request
-              (call-private
-               'gravity.self-hosting.sh11-authenticated-safety-integration-test
-               'safety-operation operation links)
-              products
-              (call-private
-               'gravity.self-hosting.sh11-authenticated-safety-integration-test
-               'c10-products request)
+             [:unsafe-overflow :unsafe-island]
+             [:unsafe-overflow :unsafe-island :owner]
+             [:unsafe-overflow :unsafe-island :safe-wrapper]]]
+      (testing (if field (str expected " " field) (name expected))
+        (let [request (cond-> ((sh11-value 'safety-operation) operation links)
+                        field (assoc-in [:unsafe-audit field]
+                                        complete-unsafe-audit-text))
+              products ((sh11-value 'c10-products) request)
               safety-result (:safety-result products)
               selected (:outcome safety-result)
               accepted
@@ -466,7 +484,77 @@
                  (:status (:safety-verification products))))
           (is (= expected selected))
           (is (true? accepted))
-          (is (false? rejected)))))))
+          (is (false? rejected))
+          (when field
+            (let [audit (:unsafe-audit request)]
+              (is (= [audit] (:unsafe-islands safety-result)))
+              (is (= audit (get-in safety-result [:outcomes 0 :unsafe-audit])))
+              (doseq [invalid ["" :nonstring]]
+                (testing (pr-str invalid)
+                  (let [invalid-audit (assoc audit field invalid)
+                        malformed
+                        (-> safety-result
+                            (assoc-in [:identity-input :request :unsafe-audit]
+                                      invalid-audit)
+                            (assoc-in [:unsafe-islands 0] invalid-audit)
+                            (assoc-in [:outcomes 0 :unsafe-audit] invalid-audit))]
+                    (is (false?
+                         (invoke bridge-plan 'sh12-outcome-products-valid?
+                                 [:unsafe-island malformed])))))))))))))
+
+(deftest sh12-preserves-complete-unsafe-audit-text
+  (require-pinned-c11-source!)
+  (let [actual-path "/checkout-a/sh12-unsafe-audit.gravity"
+        upstream ((sh11-value 'upstream-products)
+                  (sh08-products ".gravity") actual-path)
+        links ((sh11-value 'fact-links) upstream)
+        operation :unsafe-overflow
+        base-operation ((sh11-value 'safety-operation) operation links)]
+    (doseq [field [:owner :safe-wrapper]]
+      (testing (name field)
+        (let [safety-operation
+              (assoc-in base-operation [:unsafe-audit field] complete-unsafe-audit-text)
+              audit (:unsafe-audit safety-operation)
+              c10 ((sh11-value 'c10-products) safety-operation)
+              safety-result (:safety-result c10)
+              descriptor
+              ((sh11-value 'descriptor)
+               upstream safety-operation c10 operation links actual-path)
+              envelope
+              ((sh11-value 'authenticated-envelope)
+               descriptor
+               (get-in upstream [:effect :verification])
+               (get-in upstream [:ownership :verification]))
+              sh11-request
+              ((sh11-value 'request)
+               upstream safety-operation c10 operation descriptor
+               envelope actual-path)
+              products (verified-sh11 {:request sh11-request})
+              request
+              (sh12-request products ".gravity" :unsafe-island actual-path)
+              checked-core
+              (invoke bridge-plan 'sh12-build-checked-core [request])
+              literal-id (get-in checked-core [:core-nodes 0 :node-id])
+              safety (get-in checked-core [:safety-facts literal-id])
+              altered-request
+              (assoc-in request
+                        [:safe-core :safety-result :outcomes 0 :unsafe-audit field]
+                        (str unsafe-audit-prefix "c"))
+              rejected
+              (invoke bridge-plan 'sh12-build-checked-core [altered-request])]
+          (is (= :passed (get-in c10 [:safety-verification :status])))
+          (is (= :unsafe-island (:outcome safety-result)))
+          (is (= [audit] (:unsafe-islands safety-result)))
+          (is (= :passed (get-in products [:verification :status])))
+          (is (= :accepted (:status checked-core)))
+          (is (= :unsafe-island (:outcome safety)))
+          (is (= audit (:unsafe-audit safety)))
+          (is (= audit (get-in safety [:source-safety-outcome :unsafe-audit])))
+          (is (= :rejected (:status rejected)))
+          (is (= "STD12-BRIDGE-LINEAGE"
+                 (get-in rejected [:diagnostics 0 :rule])))
+          (is (= :invalid-sh11-product
+                 (get-in rejected [:diagnostics 0 :facts :reason]))))))))
 
 (deftest sh12-rejects-self-consistent-malformed-outcome-products
   (let [proven-products
