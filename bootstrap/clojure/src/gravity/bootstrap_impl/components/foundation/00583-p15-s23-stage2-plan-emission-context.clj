@@ -6,3 +6,7 @@
 ;; and authenticated before every lookup, and no binding survives this dynamic
 ;; scope.
 (def ^:private ^:dynamic *p15-s23-stage2-plan-emission-context* nil)
+
+;; Only the source-to-verified-MIR application opens this scope. It holds
+;; its current compiled Reader owner, never a program or verifier result.
+(def ^:private ^:dynamic *application-reader-owner* nil)
