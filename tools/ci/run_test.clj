@@ -461,6 +461,7 @@
             "darwin-unsupported=true"
             "static-tools-required=true"
             "checked-js-owner-required=true"
+            "stage2-module-tests-required=false"
             "selection-valid=true"]
            (ci/selection-output-lines full)))
     (is (= ["static=true"
@@ -474,6 +475,7 @@
             "darwin-unsupported=false"
             "static-tools-required=false"
             "checked-js-owner-required=false"
+            "stage2-module-tests-required=false"
             "selection-valid=true"]
            (ci/selection-output-lines docs-only)))
     (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
@@ -624,6 +626,17 @@
 (defn- selector-output-map [selection]
   (into {} (map #(str/split % #"=" 2)) (ci/selection-output-lines selection)))
 
+(defn- regular-modification [path]
+  {:path path :status "M" :old-mode "100644" :new-mode "100644"})
+
+(defn- stage2-test-edit [name]
+  (regular-modification
+   (str "bootstrap/clojure/test/gravity/self_hosting/stage2_module_"
+        (str/replace name "-" "_") "_test.clj")))
+
+(defn- stage2-test-selection [changes]
+  (assoc (ci/stage-selection changes) :changes changes))
+
 (deftest shared-selector-schedules-only-platforms-with-leaf-work
   (let [catalog (ci/load-leaf-catalog)
         entry (fn [id] (some #(when (= id (:id %)) %) catalog))
@@ -668,6 +681,10 @@
         sha (apply str (repeat 40 "a"))
         full (selector-output-map {:kind :full})
         docs (selector-output-map {:kind :docs-only})
+        stage2 (selector-output-map (stage2-test-selection [(stage2-test-edit "map-order")]))
+        mixed-stage2 (selector-output-map
+                      (stage2-test-selection [(stage2-test-edit "map-order")
+                                              (regular-modification "unknown/new-file.clj")]))
         required #{"static" "contracts"}
         leaf-hosts {"leaves-portable" ["fresh-leaf-regressions / portable" "ubuntu-24.04" "21.0.8+9.0.LTS"]
                     "leaves-darwin" ["fresh-leaf-regressions / darwin" "macos-26" "26.0.1+8"]
@@ -677,6 +694,10 @@
                         (keys leaf-hosts))
         scenarios [{:id :full :outputs full :modes all-modes :trusted? true :tools? true :node? true}
                    {:id :docs :outputs docs :modes required :trusted? true}
+                   {:id :stage2-only :outputs stage2 :modes (conj required "bootstrap") :trusted? true :tools? true}
+                   {:id :stage2-mixed :outputs mixed-stage2 :modes all-modes :trusted? true :tools? true :node? true}
+                   {:id :stage2-output-invalid
+                    :outputs (assoc stage2 "stage2-module-tests-required" "unknown" "selection-valid" "false")}
                    {:id :case-insensitive :outputs (update-vals docs str/upper-case) :modes required :trusted? true}
                    {:id :portable-only :outputs (assoc docs "leaves-portable" "true")
                     :modes (conj required "leaves-portable") :trusted? true}
@@ -1074,6 +1095,132 @@
     (assoc options :selected
            (mapv :qualified-name
                  (select-dev-test-vars (dev-test-source-records (distinct (:namespaces options))) options)))))
+
+(deftest stage2-module-test-edits-run-full-namespaces-and-their-consumers
+  (let [names ["lexical-call" "loop-call" "transitive-call" "vector-call"
+               "map-order" "map-call" "literal-map-key"]
+        consumers {"map-order" ["map-call" "literal-map-key"]
+                   "map-call" ["literal-map-key"]}
+        catalog (edn/read-string (slurp "contracts/stage0-incremental-test-dependencies.edn"))
+        by-path (into {} (map (juxt :path identity)) (:standalone-tests catalog))
+        bootstrap-gates ["cold-bootstrap-load" "language-boundary" "catalog-controls" "ownership-inventory"]]
+    (doseq [test-name names
+            :let [change (stage2-test-edit test-name)
+                  selection (stage2-test-selection [change])
+                  commands (ci/commands-for-selection "bootstrap" selection)
+                  required (mapv #(get by-path (:path (stage2-test-edit %)))
+                                 (cons test-name (get consumers test-name)))]]
+      (test/testing test-name
+        (is (= :stage2-module-tests-only (:reason selection)))
+        (is (= #{"static" "contracts" "bootstrap"} (:modes selection)))
+        (is (= "true" (get (selector-output-map selection) "stage2-module-tests-required")))
+        (is (= ["whitespace" "changed-clojure-lint"]
+               (mapv first (ci/commands-for-selection "static" selection))))
+        (is (= (:path change) (peek (nth (last (ci/commands-for-selection "static" selection)) 2))))
+        (is (= (ci/contract-commands) (ci/commands-for-selection "contracts" selection)))
+        (is (= (into bootstrap-gates (map :jvm-group) required) (mapv first commands)))
+        (doseq [[{:keys [namespace path jvm-group]} [id timeout argv]] (map vector required (drop 4 commands))]
+          (let [source-tests (binding [*read-eval* false] (source-deftest-names path))]
+            (is (= jvm-group id))
+            (is (= 2700 timeout))
+            (is (= (ci/command "2g" "-M:dev-test" "--progress" "--namespace" (str namespace)) argv))
+            (is (seq source-tests))
+            (is (= source-tests (selected-names-in-namespace argv source-tests (str namespace))))))))
+    (let [selection (stage2-test-selection
+                     (mapv #(assoc (stage2-test-edit %) :status "A" :old-mode "000000") names))]
+      (is (= :stage2-module-tests-only (:reason selection)))
+      (is (= (mapv #(str "stage2-module-" %) names)
+             (mapv first (drop 4 (ci/commands-for-selection "bootstrap" selection)))))
+      (doseq [mode ["leaves-portable" "leaves-darwin"]]
+        (let [leaf (ci/leaf-selection-for-mode mode selection)]
+          (is (= :selected (:kind leaf)))
+          (is (empty? (:entries leaf))))))))
+
+(deftest stage2-module-test-selection-preserves-full-fallback
+  (let [known (stage2-test-edit "map-order")
+        git-deletion (assoc known :status "D" :new-mode "000000")
+        git-type-change (assoc known :status "T" :new-mode "120000")
+        git-mode-change (assoc known :new-mode "100755")
+        ordinary-bootstrap (ci/commands-for-selection "bootstrap" {:kind :full})
+        selected-bootstrap (fn [selection] (ci/commands-for-selection "bootstrap" selection))
+        affected (mapv #(str "stage2-module-" %) ["map-order" "map-call" "literal-map-key"])
+        full-with-tests (into (mapv first ordinary-bootstrap) affected)
+        tests-required (fn [selection] (get (selector-output-map selection) "stage2-module-tests-required"))]
+    (doseq [changes [[known (regular-modification "unknown/new-file.clj")]
+                     [known (regular-modification "README.md")]
+                     [known (regular-modification "bootstrap/clojure/src/gravity/reader.clj")]
+                     [known (regular-modification "contracts/stage0-incremental-test-dependencies.edn")]
+                     [known (assoc (stage2-test-edit "vector-call") :status "D" :new-mode "000000")]
+                     [known known]]
+            :let [selection (stage2-test-selection changes)]]
+      (is (= :full (:kind selection)) changes)
+      (is (= "true" (tests-required selection)) changes)
+      (is (= full-with-tests (mapv first (selected-bootstrap selection))) changes)
+      (doseq [mode ["leaves-portable" "leaves-darwin"]]
+        (is (= :full (:kind (ci/leaf-selection-for-mode mode selection))) changes)))
+    (doseq [changes [[git-deletion] [git-mode-change] [git-type-change] []]
+            :let [selection (stage2-test-selection changes)]]
+      (is (= :full (:kind selection)) changes)
+      (is (= "false" (tests-required selection)) changes)
+      (is (= ordinary-bootstrap (selected-bootstrap selection)) changes))
+    (let [selection (ci/execution-selection (stage2-test-selection [known]) true)]
+      (is (= :full (:kind selection)))
+      (is (= full-with-tests (mapv first (selected-bootstrap selection))))
+      (doseq [mode ["leaves-portable" "leaves-darwin"]]
+        (is (= :full (:kind (ci/leaf-selection-for-mode mode selection))))))))
+
+(deftest stage2-module-test-catalog-refuses-missing-and-malformed-identities
+  (let [root (.toFile (java.nio.file.Files/createTempDirectory
+                       "uniform-stage2-test-catalog-"
+                       (make-array java.nio.file.attribute.FileAttribute 0)))
+        catalog-file (io/file root "catalog.edn")
+        catalog-source (slurp "contracts/stage0-incremental-test-dependencies.edn")
+        contract-var (ns-resolve 'ci.run 'stage2-module-test-contract)
+        changes [(stage2-test-edit "map-order")]]
+    (try
+      (with-redefs-fn {contract-var (.getPath catalog-file)}
+        (fn []
+          (doseq [[case-name contents] [["missing" nil]
+                                        ["malformed EDN" "{:standalone-tests ["]
+                                        ["trailing EDN" (str catalog-source "\n{}")]
+                                        ["missing test" (str/replace catalog-source ":test-id \"stage2-module-map-order\""
+                                                                     ":test-id \"unreviewed-map-order\"")]
+                                        ["foreign namespace" (str/replace catalog-source "gravity.self-hosting.stage2-module-map-order-test"
+                                                                          "gravity.self-hosting.stage2-module-loop-call-test")]
+                                        ["conflicting receipt id" (str/replace catalog-source ":jvm-group \"stage2-module-map-order\""
+                                                                               ":jvm-group \"language-boundary\"")]]]
+            (when contents (spit catalog-file contents))
+            (let [selection (stage2-test-selection changes)]
+              (is (= :full (:kind selection)) case-name)
+              (is (= :stage2-module-test-catalog-invalid (:reason selection)) case-name)
+              (is (= :missing-or-malformed-catalog
+                     (:reason (ci/selection-error-result "bootstrap" (ci/execution-selection selection true))))
+                  case-name)))))
+      (finally (delete-fixture-tree! root)))))
+
+(deftest stage2-module-child-timeout-fails-bootstrap-and-retains-later-results
+  (let [selection (stage2-test-selection [(stage2-test-edit "map-order")
+                                          (regular-modification "unknown/new-file.clj")])
+        planned (ci/commands-for-selection "bootstrap" selection)
+        root (.toFile (java.nio.file.Files/createTempDirectory
+                       "uniform-stage2-test-receipts-"
+                       (make-array java.nio.file.attribute.FileAttribute 0)))
+        calls (atom [])]
+    (try
+      (with-redefs [ci/output (.getPath root)
+                    ci/pull-request-selection (constantly selection)
+                    ci/execute! (fn [id seconds argv]
+                                  (swap! calls conj [id seconds argv])
+                                  {:id id :timeout-seconds seconds
+                                   :status (if (= id "stage2-module-map-order") :timeout :passed)})]
+        (is (= 1 (ci/run-mode! "bootstrap"))))
+      (is (= planned @calls))
+      (let [results (edn/read-string (slurp (io/file root "bootstrap-summary.edn")))]
+        (is (= [{:id "stage2-module-map-order" :timeout-seconds 2700 :status :timeout}
+                {:id "stage2-module-map-call" :timeout-seconds 2700 :status :passed}
+                {:id "stage2-module-literal-map-key" :timeout-seconds 2700 :status :passed}]
+               (take-last 3 results))))
+      (finally (delete-fixture-tree! root)))))
 
 (def expected-contract-command-ids
   ["docs" "roadmap" "roadmap-negative-controls" "dependency-controls"
@@ -3097,6 +3244,33 @@
       (is (and (integer? minutes)
                (<= (+ (reduce + watchdogs) overhead-seconds) (* 60 minutes)))
           (str mode " must leave five minutes for setup, cleanup and upload")))))
+
+(deftest stage2-bootstrap-hosted-envelope-fits-all-child-watchdogs
+  (let [timeout (get-in @ci-workflow ["jobs" "checks" "timeout-minutes"])
+        changes (mapv stage2-test-edit ["lexical-call" "loop-call" "transitive-call" "vector-call"
+                                        "map-order" "map-call" "literal-map-key"])
+        selected (stage2-test-selection changes)
+        mixed (stage2-test-selection (conj changes (regular-modification "unknown/new-file.clj")))
+        full (selector-output-map {:kind :full})
+        selected-outputs (selector-output-map selected)
+        requests (for [[outputs result] [[full "success"]
+                                         [selected-outputs "success"]
+                                         [(selector-output-map mixed) "success"]
+                                         [(dissoc full "stage2-module-tests-required") "success"]
+                                         [(assoc full "stage2-module-tests-required" "unknown") "success"]
+                                         [(assoc full "selection-valid" "false") "success"]
+                                         [full "failure"]
+                                         [nil "failure"]]]
+                   [timeout false :success
+                    {"matrix" {"mode" "bootstrap"} "needs" {"select" {"result" result "outputs" outputs}}}])
+        [ordinary focused fallback & failures] (evaluate-workflow-fields! requests)]
+    (is (= 20 ordinary))
+    (is (= 355 focused fallback))
+    (is (every? #(= 355 %) failures))
+    (doseq [[selection minutes] [[selected focused] [mixed fallback] [(ci/execution-selection selected true) fallback]]]
+      (let [watchdogs (mapv second (ci/commands-for-selection "bootstrap" selection))]
+        (is (= 7 (count (filter #{2700} watchdogs))))
+        (is (<= (+ (reduce + watchdogs) (* 5 60)) (* 60 minutes) (* 60 360)))))))
 
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"

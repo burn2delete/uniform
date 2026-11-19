@@ -1,7 +1,8 @@
 (ns ci.run
   "CI orchestration only. Receipts are observations, never compiler authority."
   (:refer-clojure :exclude [run! descendants])
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.process-supervision :as process-supervision]))
 
@@ -569,24 +570,82 @@
          (every? regular-added-or-modified? changes)
          (every? seedless-test-paths paths))))
 
+(def ^:private stage2-module-test-order
+  ["stage2-module-lexical-call"
+   "stage2-module-loop-call"
+   "stage2-module-transitive-call"
+   "stage2-module-vector-call"
+   "stage2-module-map-order"
+   "stage2-module-map-call"
+   "stage2-module-literal-map-key"])
+
+;; Each consumer requires fixtures or helpers from its predecessor. Apply the
+;; edges in this order to include transitive consumers of an edited namespace.
+(def ^:private stage2-module-test-consumers
+  [["stage2-module-map-order" "stage2-module-map-call"]
+   ["stage2-module-map-call" "stage2-module-literal-map-key"]])
+
+(def ^:private stage2-module-test-contract
+  "contracts/stage0-incremental-test-dependencies.edn")
+
+(defn- valid-stage2-module-test? [{:keys [test-id path namespace jvm-group]}]
+  (and (= test-id jvm-group)
+       (= namespace (symbol (str "gravity.self-hosting." test-id "-test")))
+       (= path (str "bootstrap/clojure/test/gravity/self_hosting/"
+                    (str/replace test-id "-" "_") "_test.clj"))))
+
+(defn- load-stage2-module-tests []
+  (try
+    (with-open [reader (java.io.PushbackReader. (io/reader stage2-module-test-contract :encoding "UTF-8"))]
+      (let [eof (Object.)
+            catalog (edn/read {:eof eof} reader)
+            ids (set stage2-module-test-order)
+            entries (filterv #(contains? ids (:test-id %)) (:standalone-tests catalog))]
+        (when (and (identical? eof (edn/read {:eof eof} reader))
+                   (= :gravity/stage0-incremental-test-dependencies-v2 (:schema catalog))
+                   (vector? (:standalone-tests catalog))
+                   (= (count ids) (count entries))
+                   (= ids (set (map :test-id entries)))
+                   (every? valid-stage2-module-test? entries))
+          (mapv (into {} (map (juxt :test-id identity)) entries) stage2-module-test-order))))
+    (catch Exception _ nil)))
+
+(defn- stage2-module-test-selection [changes]
+  (when-let [catalog (load-stage2-module-tests)]
+    (let [paths (into #{} (comp (filter regular-added-or-modified?) (map :path)) changes)
+          changed (into #{} (comp (filter #(contains? paths (:path %))) (map :test-id)) catalog)
+          affected (reduce (fn [ids [dependency consumer]]
+                             (cond-> ids (contains? ids dependency) (conj consumer)))
+                           changed stage2-module-test-consumers)]
+      {:test-only? (and (seq changed) (= (count changes) (count changed)))
+       :entries (filterv #(contains? affected (:test-id %)) catalog)})))
+
 (defn stage-selection [changes]
   (let [changes (vec changes)
         paths (mapv :path changes)
+        stage2 (stage2-module-test-selection changes)
         stages (keep stage-owner paths)
         unknown-path? (some (fn [path]
                               (and (not (docs-only-path? path))
                                    (or (nil? (stage-owner path))
                                        (str/ends-with? path ".md"))))
-                            paths)]
+                            paths)
+        full (fn [reason]
+               (cond-> {:kind :full :reason reason :paths paths}
+                 (seq (:entries stage2)) (assoc :stage2-module-tests (:entries stage2))
+                 (nil? stage2) (assoc :stage2-module-test-catalog-invalid? true)))]
     (cond
       (empty? changes)
-      {:kind :full :reason :no-changes :paths paths}
+      (full :no-changes)
+
+      (nil? stage2)
+      (full :stage2-module-test-catalog-invalid)
 
       (some #(not (regular-added-or-modified? %)) changes)
-      {:kind :full :reason :non-regular-change :paths paths}
+      (full :non-regular-change)
 
       (some contract-or-spec-path? paths)
-      {:kind :full :reason :contract-or-spec-change :paths paths}
+      (full :contract-or-spec-change)
 
       (seedless-tests-only? changes)
       {:kind :selected
@@ -594,6 +653,14 @@
        :paths paths
        :stages []
        :modes always-pr-modes}
+
+      (:test-only? stage2)
+      {:kind :selected
+       :reason :stage2-module-tests-only
+       :paths paths
+       :stages []
+       :modes (conj always-pr-modes "bootstrap")
+       :stage2-module-tests (:entries stage2)}
 
       (advance-status-only? changes)
       {:kind :selected
@@ -617,10 +684,10 @@
        :modes always-pr-modes}
 
       (some cross-cutting-path? paths)
-      {:kind :full :reason :cross-cutting-change :paths paths}
+      (full :cross-cutting-change)
 
-      unknown-path?
-      {:kind :full :reason :unknown-or-cross-stage-path :paths paths}
+      (or unknown-path? (seq (:entries stage2)))
+      (full :unknown-or-cross-stage-path)
 
       :else
       {:kind :selected
@@ -683,11 +750,18 @@
          (not (contains? (:modes selection) logical-mode)))))
 
 (defn selection-error-result [mode selection]
-  (when (and (= "static" mode) (:selection-error selection))
+  (cond
+    (and (= "static" mode) (:selection-error selection))
     {:id "static-selection-discovery"
      :status :failed
      :reason :path-discovery-failed
-     :selection-error (:selection-error selection)}))
+     :selection-error (:selection-error selection)}
+
+    (and (= "bootstrap" mode) (:stage2-module-test-catalog-invalid? selection))
+    {:id "stage2-module-test-catalog"
+     :status :failed
+     :reason :missing-or-malformed-catalog
+     :path stage2-module-test-contract}))
 
 (defn public-conformance-command []
   ["public-release-subset" 900
@@ -702,6 +776,9 @@
   ["language-boundary" 90
    (command "512m" "-M:test" "--namespace"
             "gravity.self-hosting.sh01-language-boundary-test")])
+
+(defn- stage2-module-test-command [{:keys [namespace jvm-group]}]
+  [jvm-group 2700 (command "2g" "-M:dev-test" "--progress" "--namespace" (str namespace))])
 
 (defn- jvm-backend-regression-command []
   ["jvm-backend-regression" 180
@@ -877,7 +954,8 @@
 
 (defn- catalog-leaf-selection [catalog changes]
   (let [changes (vec changes)
-        paths (mapv :path changes)]
+        paths (mapv :path changes)
+        stage2 (stage2-module-test-selection changes)]
     (cond
       (empty? changes)
       {:kind :full :reason :no-changes :paths paths :entries catalog}
@@ -894,8 +972,14 @@
       (jvm-backend-only? changes)
       {:kind :selected :reason :jvm-backend-only :paths paths :entries []}
 
+      (:test-only? stage2)
+      {:kind :selected :reason :stage2-module-tests-only :paths paths :entries []}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries catalog}
+
+      (or (nil? stage2) (seq (:entries stage2)))
+      {:kind :full :reason :unknown-or-unowned-leaf-path :paths paths :entries catalog}
 
       (every? docs-only-record? changes)
       {:kind :docs-only :reason :known-documentation-only :paths paths :entries []}
@@ -951,7 +1035,8 @@
 (defn- scheduled-leaf-modes [selection]
   (cond
     (or (= :docs-only (:kind selection))
-        (contains? #{:jvm-backend-only :lint-tooling-only :seedless-tests-only} (:reason selection)))
+        (contains? #{:jvm-backend-only :lint-tooling-only :seedless-tests-only :stage2-module-tests-only}
+                   (:reason selection)))
     #{}
 
     (seq (:changes selection))
@@ -977,13 +1062,15 @@
                 semantic-modes)
         modes (cond-> (into modes (scheduled-leaf-modes selection))
                 (and (not= :docs-only (:kind selection))
-                     (not= :jvm-backend-only (:reason selection)))
+                     (not (contains? #{:jvm-backend-only :stage2-module-tests-only} (:reason selection))))
                 (conj "darwin-unsupported"))]
     (into (mapv #(str % "=" (contains? modes %))
                 ["static" "contracts" "bootstrap" "macro" "resolution"
                  "checked-core-runtime" "leaves-portable" "leaves-darwin" "darwin-unsupported"])
           [(str "static-tools-required=" (not= :docs-only (:kind selection)))
            (str "checked-js-owner-required=" (checked-js-owner-required? selection))
+           (str "stage2-module-tests-required="
+                (boolean (or (:selection-error selection) (seq (:stage2-module-tests selection)))))
            "selection-valid=true"])))
 
 (defn select! []
@@ -1075,6 +1162,8 @@
                  (case (:reason selection)
                    :lint-tooling-only (every? static-control-selector-paths paths)
                    :jvm-backend-only (every? jvm-backend-paths paths)
+                   :stage2-module-tests-only
+                   (every? (set (map :path (:stage2-module-tests selection))) paths)
                    (every? #(some? (stage-owner %)) paths)))
         (vec paths)))))
 
@@ -1143,48 +1232,52 @@
                   (conj (contract-commands) (jvm-backend-regression-command)))
     "public-release" [(public-conformance-command)]
     "bootstrap"
-    (cond-> [["cold-bootstrap-load" 120
-              (command "1g" "-M" "-e"
-                       "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
-             ["reader-regression" 120
-              (command "1g" "-M:dev-test"
-                       "--namespace" "gravity.reader.artifact-test"
-                       "--namespace" "gravity.reader.tokenizer-test"
-                       "--namespace" "gravity.reader.forms-test"
-                       "--namespace" "gravity.reader.literals-test"
-                       "--namespace" "gravity.reader.legacy-parser-test"
-                       "--namespace" "gravity.source-span-test"
-                       "--namespace" "gravity.reader-primitives-test"
-                       "--namespace" "gravity.c3-reader-expansions-test"
-                       "--namespace" "gravity.cli.launcher-test"
-                       "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
-             ["syntax-regression" 600
-              (command "2g" "-M:dev-test"
-                       "--namespace" "gravity.syntax.pipeline-test"
-                       "--namespace" "gravity.syntax.owner-calls-test"
-                       "--namespace" "gravity.bootstrap-compatibility.c3-test"
-                       "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
-                       "--namespace" "gravity.self-hosting.sh04-form-index-test"
-                       "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
-      (reader-plan-hash-required? selection)
-      (conj ["reader-plan-hash-regression" 120
-             (command "2g" "-M:dev-test"
-                      "--namespace" "gravity.self-hosting.sh03-reader-adapter-test"
-                      "--exact" "gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority"
-                      "--fail-fast")])
-      (bootstrap-input-controls-required? selection)
-      (conj ["bootstrap-input-controls" 600
-             (command "2g" "-M:dev-test"
-                      "--namespace" "gravity.bootstrap.rebuild.inputs-test"
-                      "--namespace" "gravity.bootstrap.rebuild.component-test")])
-      true
-      (into [(language-boundary-command)
-             ["catalog-controls" 120
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
-             ["ownership-inventory" 90
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-ownership-test")]]))
+    (let [stage2-only? (= :stage2-module-tests-only (:reason selection))]
+      (cond-> [["cold-bootstrap-load" 120
+                (command "1g" "-M" "-e"
+                         "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]]
+        (not stage2-only?)
+        (into [["reader-regression" 120
+                (command "1g" "-M:dev-test"
+                         "--namespace" "gravity.reader.artifact-test"
+                         "--namespace" "gravity.reader.tokenizer-test"
+                         "--namespace" "gravity.reader.forms-test"
+                         "--namespace" "gravity.reader.literals-test"
+                         "--namespace" "gravity.reader.legacy-parser-test"
+                         "--namespace" "gravity.source-span-test"
+                         "--namespace" "gravity.reader-primitives-test"
+                         "--namespace" "gravity.c3-reader-expansions-test"
+                         "--namespace" "gravity.cli.launcher-test"
+                         "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
+               ["syntax-regression" 600
+                (command "2g" "-M:dev-test"
+                         "--namespace" "gravity.syntax.pipeline-test"
+                         "--namespace" "gravity.syntax.owner-calls-test"
+                         "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                         "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                         "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                         "--namespace" "gravity.self-hosting.sh04-literal-index-test")]])
+        (and (not stage2-only?) (reader-plan-hash-required? selection))
+        (conj ["reader-plan-hash-regression" 120
+               (command "2g" "-M:dev-test"
+                        "--namespace" "gravity.self-hosting.sh03-reader-adapter-test"
+                        "--exact" "gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority"
+                        "--fail-fast")])
+        (and (not stage2-only?) (bootstrap-input-controls-required? selection))
+        (conj ["bootstrap-input-controls" 600
+               (command "2g" "-M:dev-test"
+                        "--namespace" "gravity.bootstrap.rebuild.inputs-test"
+                        "--namespace" "gravity.bootstrap.rebuild.component-test")])
+        true
+        (into [(language-boundary-command)
+               ["catalog-controls" 120
+                (command "512m" "-M:test" "--namespace"
+                         "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
+               ["ownership-inventory" 90
+                (command "512m" "-M:test" "--namespace"
+                         "gravity.self-hosting.sh01-ownership-test")]])
+        true
+        (into (map stage2-module-test-command) (:stage2-module-tests selection))))
     "macro" [["macro-pipeline-cohort" 900
               (command "2g" "-M:dev-test"
                        "--progress"
@@ -1312,9 +1405,10 @@
 
 (defn execution-selection [selection force-full?]
   (if (and force-full? (not= :non-pull-request (:reason selection)))
-    ;; Keep the independently verified base and lint paths. Dropping the PR
-    ;; narrowing inputs also forces the full platform catalog and owner tests.
-    (assoc (select-keys selection [:base :clojure-paths :selection-error])
+    ;; Keep verified changed-file lint and additive test commands. Dropping
+    ;; narrowing inputs forces the full platform catalog and owner checks.
+    (assoc (select-keys selection [:base :clojure-paths :selection-error
+                                   :stage2-module-tests :stage2-module-test-catalog-invalid?])
            :kind :full :reason :shared-selection-unavailable)
     selection))
 

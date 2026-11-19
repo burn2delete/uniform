@@ -34,7 +34,7 @@ use the explicit CLI route for focused execution.
 | --- | --- | --- | --- |
 | static | Always. Git whitespace only for changes limited to reviewed explanatory docs. | Always | actionlint 1.7.12 workflow syntax, clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling, cljfmt 0.13.4 on CI tooling, Git whitespace, and harness failure controls. |
 | contracts (projections) | Always. Reviewed explanatory docs select document and roadmap validation. Reviewed JVM backend changes select the language boundary and JVM pipeline. | Always | Full CI runs the canonical 240-document validator, the full-language roadmap validator and its negative fixtures, acceptance dependency controls, native and type-inference suites, and the JVM pipeline. |
-| bootstrap | Stage selection | Always | Cold Bootstrap load, Reader and Syntax regressions, language boundary, catalog controls and ownership inventory. Reader changes and full runs also check the plan hash. |
+| bootstrap | Stage selection | Always | Cold Bootstrap load, Reader and Syntax regressions, language boundary, catalog controls and ownership inventory. Reader changes and full runs also check the plan hash. Edits to reviewed Stage2 module tests run the affected full namespaces in separate fresh JVMs. |
 | macro | Stage selection | Always | Three fresh processes run the ordinary pipeline tests, the receipt and artifact verification controls, and the Bootstrap C4 compatibility namespace. |
 | checked-core-runtime | Stage selection | Always | Checked-Core pipeline, current-binding and projection-kernel regressions. The Node 20 checks cover B6 scalar execution, checked-add guard identity and the public CLI smoke test as described below. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Stage selection | Always | Three independent Resolution matrix jobs may overlap and retain separate logs and receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog. The other two modes run one fresh child each. |
@@ -82,6 +82,25 @@ falls back to the full semantic matrix. If changed-path discovery is missing
 or malformed, the selector also falls back to the full matrix, while `static`
 records an explicit failed selection result so an untrusted diff cannot pass
 without changed-file lint.
+
+Regular additions or modifications limited to the seven Stage2 module tests
+in `contracts/stage0-incremental-test-dependencies.edn` allocate runners for
+`static`, `contracts`, and `bootstrap`. Static lints the changed Clojure files.
+Bootstrap runs the cold load, language boundary, catalog controls, ownership
+inventory, and the affected standalone test namespaces. A `map-order` edit
+also runs `map-call` and `literal-map-key`. A `map-call` edit also runs
+`literal-map-key`. These downstream namespaces import helpers from their
+predecessors.
+
+Mixed or structural diffs run full CI and add the affected Stage2 namespaces
+for any known regular test edits. If the selector cannot validate the seven
+catalog entries, it runs the full matrix and Bootstrap records a failed
+catalog check. Each Stage2 child runs its entire namespace with a
+2,700-second process watchdog and keeps its own log and receipt. The
+Bootstrap job uses a 355-minute envelope when Stage2 tests are required or the
+selector outputs are unavailable or invalid. This covers seven sequential
+watchdogs and the full Bootstrap controls within the hosted job time limit.
+[GitHub Actions limits](https://docs.github.com/en/actions/reference/limits#existing-system-limits).
 
 The JVM route applies when an authenticated PR diff contains only regular
 additions or modifications to the enumerated JVM owner, its two dedicated
