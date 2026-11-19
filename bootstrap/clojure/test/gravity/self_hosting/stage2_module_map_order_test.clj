@@ -121,20 +121,35 @@
   ;; Only G constructs actual C5/bundles; Q has parser parity above.
   (let [leaf-path (fixture "module-map-order-leaf" ".gravity") leaf-text (slurp leaf-path)
         path (fixture "module-map-order-root" ".gravity") text (slurp path)
+        invocation (assoc (bootstrap/stage2-runtime-current-reader-invocation)
+                          :macro-source-mode :development-current)
+        reader-path (:reader-source-path invocation)
+        reader-hash (str "sha256:" (bootstrap/sha256-hex (slurp reader-path :encoding "UTF-8")))
+        resolve-module (fn [source-path source-text module-artifacts]
+                         (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path source-text
+                          {:artifact :gravity/sh06-module-inputs :schema-version 1
+                           :module-artifacts module-artifacts}
+                          reader-path invocation))
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
-        _ (println :map-order-phase :leaf-c5) leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
+        _ (println :map-order-phase :leaf-c5) leaf (resolve-module leaf-path leaf-text [])
         _ (println :map-order-phase :root-c5)
-        caller (bootstrap/compiler-c5-resolution-file-artifact path {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]})
+        caller (resolve-module path text [leaf])
         _ (println :map-order-phase :leaf-bundle)
         leaf-bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path leaf-text
-                     {:caller-resolution-artifact leaf :dependency-plans []})
+                     {:caller-resolution-artifact leaf :dependency-plans []} invocation)
         independent (:plan (first (:modules leaf-bundle)))
         legacy (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path leaf-text)
         inputs {:caller-resolution-artifact caller :dependency-plans [independent]}
         _ (println :map-order-phase :root-bundle)
-        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text inputs)
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text inputs invocation)
         root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))]
     (is (= :accepted (:status leaf) (:status caller)))
+    (doseq [artifact [leaf caller]]
+      (is (= reader-hash
+             (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                               :c2-reader-artifact :sh03-reader-authentication :reader-source-revision
+                               :source-content-hash]))))
     (is (= [] (:routes leaf-bundle)))
     (is (not= independent legacy))
     (is (= independent (:plan (first (filter #(= (:artifact-id leaf) (:module-id %)) (:modules bundle))))))
@@ -142,13 +157,13 @@
     (is (= :not-checked (get-in bundle [:boundary :effects])))
     (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in root [:plan :source :sha256])))
     (let [result (atom nil) _ (println :map-order-phase :runtime)
-          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-runtime-execute-function
-                                               {:engine :map-order-test} bundle 'main [])))]
+          output (with-out-str (reset! result (bootstrap/p15-s23-stage2-module-execute-function
+                                               {:engine :map-order-test} bundle 'main [] invocation)))]
       (is (= [:v :z :a '{:inert (println "NEVER") :private (leaf/hidden :data)}] @result))
       (is (= "leaf-z\nleaf-b\nleaf-y\nleaf-a\nleaf-x\nleaf-c\nleaf-w\nleaf-d\nleaf-v\nroot-z\nroot-a\n" output)))
     (is (= :independent-raw-plan-mismatch
            (get-in (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path text
-                                (assoc inputs :dependency-plans [legacy]))) [:facts :reason])))
+                                (assoc inputs :dependency-plans [legacy]) invocation)) [:facts :reason])))
     (let [entry-index (first (keep-indexed #(when (= (:artifact-id leaf) (:module-id %2)) %1) (:modules bundle)))
           plan-path [:modules entry-index :plan] plan (get-in bundle plan-path)
           instructions (get-in plan [:functions 'packet :instructions])
@@ -159,8 +174,8 @@
           changed (assoc-in bundle plan-path changed-plan)
           identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id bundle) (:modules changed) (:routes changed))
           forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
-          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function
-                                                                              {:engine :map-order-test} forged 'main []))))]
+          failure (atom nil) output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                                              {:engine :map-order-test} forged 'main [] invocation))))]
       (is (seq instructions))
       (is (= :map-literal (get-in plan (conj map-path :op))))
       (is (not= (:plan-id plan) (:plan-id changed-plan)))

@@ -14,10 +14,11 @@
       (recur (.getParentFile root)))))
 (defn- diagnostic [operation]
   (try (operation) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
-(defn- invoke [bundle entry]
+(defn- invoke [bundle entry reader-invocation]
   (let [value (atom nil)
         output (with-out-str
-                 (reset! value (bootstrap/p15-s23-stage2-runtime-execute-function runtime bundle entry [])))]
+                 (reset! value (bootstrap/p15-s23-stage2-module-execute-function
+                                runtime bundle entry [] reader-invocation)))]
     {:value @value :output output}))
 
 (deftest stage2-module-let-fixture-parity
@@ -85,47 +86,70 @@
   ;; G is the actual compiler/execution case. Q byte/parser parity is separate;
   ;; this does not claim fresh Q C5 or bundle execution.
   (let [leaf-path (fixture "modules" "module-let-leaf" ".gravity")
-                 caller-path (fixture "modules" "module-let-caller" ".gravity")
-                 text (slurp caller-path)
-                 emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
-                 leaf (bootstrap/compiler-c5-resolution-file-artifact leaf-path)
-                 module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [leaf]}
-                 caller (bootstrap/compiler-c5-resolution-file-artifact caller-path module-inputs)
-                 dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path))
-                 inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
-                 bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path text inputs)
-                 root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))
-                 routes (:routes bundle)]
-             (is (= :accepted (:status leaf) (:status caller)))
-             (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
-             (is (= :not-checked (get-in bundle [:boundary :effects])))
-             (is (false? (get-in bundle [:boundary :self-hosted?])))
-             (is (= #{'main} (set (map :name (:exports root)))))
-             (is (= #{['main [0 1 3]] ['main [0 1 5 2]] ['main [0 2 1 5]] ['main [0 2 1 7]] ['quoted-data [0 2]]}
-                    (set (map (juxt :caller-function :callsite-path) routes))))
-             (is (= 5 (count routes) (count (set (map :route-id routes)))))
-             (is (= #{'leaf/identity} (set (map :symbol routes))))
-             (is (= (mapv :syntax-id (filter #(= 'leaf/identity (:symbol %))
-                                            (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :references])))
-                    (mapv :reference-syntax-id routes)))
-             (is (= #{(:artifact-id leaf)} (set (map :callee-module-id routes))))
-             (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in root [:plan :source :sha256])))
-             (is (= {:value ["outer" '(leaf/hidden :data)] :output "first\nsecond\ninner\n"} (invoke bundle 'main)))
+        caller-path (fixture "modules" "module-let-caller" ".gravity")
+        text (slurp caller-path)
+        invocation (assoc (bootstrap/stage2-runtime-current-reader-invocation)
+                          :macro-source-mode :development-current)
+        reader-path (:reader-source-path invocation)
+        reader-hash (str "sha256:" (bootstrap/sha256-hex (slurp reader-path :encoding "UTF-8")))
+        resolve-module (fn [source-path source-text module-artifacts]
+                         (bootstrap/compiler-c5-resolution-source-artifact
+                          source-path source-text
+                          {:artifact :gravity/sh06-module-inputs :schema-version 1
+                           :module-artifacts module-artifacts}
+                          reader-path invocation))
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! caller-path :jvm))
+        leaf (resolve-module leaf-path (slurp leaf-path) [])
+        caller (resolve-module caller-path text [leaf])
+        dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter leaf-path (slurp leaf-path))
+        inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
+        bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path text inputs invocation)
+        root (first (filter #(= (:root-module-id bundle) (:module-id %)) (:modules bundle)))
+        routes (:routes bundle)]
+    (is (= :accepted (:status leaf) (:status caller)))
+    (doseq [artifact [leaf caller]]
+      (is (= reader-hash
+             (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                               :c2-reader-artifact :sh03-reader-authentication :reader-source-revision
+                               :source-content-hash]))))
+    (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+    (is (= :not-checked (get-in bundle [:boundary :effects])))
+    (is (false? (get-in bundle [:boundary :self-hosted?])))
+    (is (= #{'main} (set (map :name (:exports root)))))
+    (is (= #{['main [0 1 3]] ['main [0 1 5 2]] ['main [0 2 1 5]] ['main [0 2 1 7]] ['quoted-data [0 2]]}
+           (set (map (juxt :caller-function :callsite-path) routes))))
+    (is (= 5 (count routes) (count (set (map :route-id routes)))))
+    (is (= #{'leaf/identity} (set (map :symbol routes))))
+    (is (= (mapv :syntax-id (filter #(= 'leaf/identity (:symbol %))
+                                    (get-in caller [:gravity-resolution-boundary :authenticated-resolution-request :references])))
+           (mapv :reference-syntax-id routes)))
+    (is (= #{(:artifact-id leaf)} (set (map :callee-module-id routes))))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in root [:plan :source :sha256])))
+    (is (= {:value ["outer" '(leaf/hidden :data)] :output "first\nsecond\ninner\n"}
+           (invoke bundle 'main invocation)))
     (let [path (fixture "rejected" "module-let-private-import" ".gravity")
-          failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact path module-inputs))]
+          failure (diagnostic #(resolve-module path (slurp path) [leaf]))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (map? (:source-span failure))))
     (let [changed (str/replace-first text "(leaf/identity x)" "(leaf/identity x x)")
-          artifact (bootstrap/compiler-c5-resolution-source-artifact caller-path changed module-inputs)]
-      (is (= :accepted (:status artifact)))
-      (is (= "L2-FUNCTION-ARITY"
-             (:id (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
-                                 emitter caller-path changed (assoc inputs :caller-resolution-artifact artifact)))))))
+          temporary (java.io.File/createTempFile "uniform-stage2-lexical-negative-" ".gravity")]
+      (try
+        (spit temporary changed)
+        (let [changed-path (.getCanonicalPath temporary)
+              artifact (resolve-module changed-path changed [leaf])
+              failure (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
+                                    emitter changed-path changed
+                                    (assoc inputs :caller-resolution-artifact artifact) invocation))]
+          (is (= :accepted (:status artifact)))
+          (is (= "L2-FUNCTION-ARITY" (:id failure)))
+          (is (= changed-path (get-in failure [:source-span :primary :source]))))
+        (finally (.delete temporary))))
       (let [changed (assoc-in bundle [:routes 0 :callsite-path] [999])
             identity (bootstrap/p15-s23-stage2-module-identity emitter (:root-module-id changed) (:modules changed) (:routes changed))
             forged (assoc changed :identity-input identity :bundle-id (bootstrap/reader-canonical-hash identity))
             failure (atom nil)
-            output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-execute-function runtime forged 'main []))))]
+            output (with-out-str (reset! failure (diagnostic #(bootstrap/p15-s23-stage2-module-execute-function
+                                                               runtime forged 'main [] invocation))))]
         (is (= (:bundle-id forged) (bootstrap/reader-canonical-hash (:identity-input forged))))
         (is (= :module-bundle-reconstruction-mismatch (get-in @failure [:facts :reason])))
         (is (= "" output)))))
