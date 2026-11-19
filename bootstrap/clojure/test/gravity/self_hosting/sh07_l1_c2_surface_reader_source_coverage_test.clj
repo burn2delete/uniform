@@ -357,7 +357,9 @@
         (doseq [[mutation changed-records]
                 [["duplicate tag" (assoc records 1 (first records))]
                  ["missing tag" (pop records)]
-                 ["reordered tags" (vec (reverse records))]]]
+                 ["reordered tags" (vec (reverse records))]
+                 ["list tag codepoints"
+                  (update-in records [0 :tag-codepoints] #(apply list %))]]]
           (testing mutation
             (let [template (assoc (:semantic-reader-template reader-result)
                                   :reader-extension-record-count

@@ -514,9 +514,12 @@
     (= (count records) 0)
     (let [record (first records)]
       (if (map? record)
-        (if (= (get record :tag-codepoints) (first tags))
-          (reader-extension-tags-match? (rest records) (rest tags))
-          false)
+        (let [tag (get record :tag-codepoints)]
+          (if (vector? tag)
+            (if (= tag (first tags))
+              (reader-extension-tags-match? (rest records) (rest tags))
+              false)
+            false))
         false))))
 
 (defn l1-c2-reader-result-products-valid? [reader-result reader-policy]
