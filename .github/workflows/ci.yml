@@ -82,7 +82,7 @@ jobs:
     timeout-minutes: >-
       ${{ matrix.mode == 'checked-core-runtime' && 85 ||
           matrix.mode == 'macro' && 50 ||
-          matrix.mode == 'bootstrap' && (needs.select.result != 'success' ||
+          matrix.mode == 'bootstrap' && github.event_name == 'pull_request' && (needs.select.result != 'success' ||
           needs.select.outputs.selection-valid != 'true' ||
           needs.select.outputs.stage2-module-tests-required != 'false') && 355 || 20 }}
     strategy:

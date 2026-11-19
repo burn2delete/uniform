@@ -99,8 +99,9 @@ for any known regular test edits. If the selector cannot validate the seven
 catalog entries, it runs the full matrix and Bootstrap records a failed
 catalog check. Each Stage2 child runs its entire namespace with a
 2,700-second process watchdog and keeps its own log and receipt. The
-Bootstrap job uses a 355-minute envelope when Stage2 tests are required or the
-selector outputs are unavailable or invalid. This covers seven sequential
+Bootstrap job uses a 20-minute timeout for pushes, schedules, and manual
+runs. Pull requests use a 355-minute envelope when Stage2 tests are required
+or selector outputs are unavailable or invalid. This covers seven sequential
 watchdogs and the full Bootstrap controls within the hosted job time limit.
 [GitHub Actions limits](https://docs.github.com/en/actions/reference/limits#existing-system-limits).
 

@@ -3273,9 +3273,15 @@
                                          [full "failure"]
                                          [nil "failure"]]]
                    [timeout false :success
-                    {"matrix" {"mode" "bootstrap"} "needs" {"select" {"result" result "outputs" outputs}}}])
+                    {"github" {"event_name" "pull_request"} "matrix" {"mode" "bootstrap"}
+                     "needs" {"select" {"result" result "outputs" outputs}}}])
         [ordinary focused fallback & failures] (evaluate-workflow-fields! requests)]
     (is (= 20 ordinary))
+    (is (= [20 20 20]
+           (evaluate-workflow-fields!
+            (for [event ["push" "schedule" "workflow_dispatch"]]
+              [timeout false :success {"github" {"event_name" event} "matrix" {"mode" "bootstrap"}
+                                       "needs" {"select" {"result" "skipped"}}}]))))
     (is (= 355 focused fallback))
     (is (every? #(= 355 %) failures))
     (doseq [[selection minutes] [[selected focused] [mixed fallback] [(ci/execution-selection selected true) fallback]]]
