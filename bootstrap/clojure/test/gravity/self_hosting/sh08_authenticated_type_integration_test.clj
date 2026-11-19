@@ -841,42 +841,45 @@
   (let [products
         (products
          (path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"))
+        canonical-core (core (:sh07-artifact products))
+        {:keys [type-template type-verification]} products
         short-path "/checkout-a/type-input.gravity"
         ;; Captured provenance is data. Only the fixture above is read from disk.
         long-path (str "/" (apply str (repeat 4096 \x)))
         descriptor-a (descriptor products short-path)
-        descriptor-b (descriptor products long-path)
+        descriptor-b (assoc-in descriptor-a [:actual-path-provenance :source-path]
+                               long-path)
         authenticated-a (authenticated-envelope descriptor-a)
         authenticated-b (authenticated-envelope descriptor-b)
         request-a (request products descriptor-a authenticated-a short-path)
         request-b (request products descriptor-b authenticated-b long-path)
-        run-a (run-bridge request-a)
-        run-b (run-bridge request-b)
-        result-a (:result run-a)
-        result-b (:result run-b)]
+        ;; C7 has already run and replayed on this exact Core in products.
+        ;; Both path-specific requests still pass through bridge binding and replay.
+        [result-a result-b]
+        (mapv
+         (fn [[bridge-request authenticated]]
+           (let [c7-request
+                 (invoke bridge-plan 'sh08-build-authenticated-type-request
+                         [bridge-request])
+                 result
+                 (invoke bridge-plan 'sh08-bind-authenticated-type-result
+                         [bridge-request c7-request type-template type-verification])]
+             (is (= :accepted (:status c7-request)))
+             (is (= canonical-core (:core-artifact c7-request)))
+             (is (= :accepted (:status result)))
+             (is (= {:actual-source-path (:actual-source-path bridge-request)
+                     :provenance-binding-id (:provenance-root authenticated)}
+                    (:provenance result)))
+             (is (= :passed
+                    (:status
+                     (invoke bridge-plan 'sh08-verify-authenticated-type-result
+                             [bridge-request c7-request type-template
+                              type-verification result]))))
+             result))
+         [[request-a authenticated-a] [request-b authenticated-b]])]
     (is (= 4097 (count long-path)))
-    (doseq [[bridge-request authenticated run]
-            [[request-a authenticated-a run-a]
-             [request-b authenticated-b run-b]]]
-      (let [result (:result run)]
-        (is (= :accepted (get-in run [:c7-request :status])))
-        (is (= (core (:sh07-artifact products))
-               (get-in run [:c7-request :core-artifact])))
-        (is (= :accepted (get-in run [:type-template :status])))
-        (is (= :passed (get-in run [:type-verification :status])))
-        (is (= :accepted (:status result)))
-        (is (= {:actual-source-path (:actual-source-path bridge-request)
-                :provenance-binding-id (:provenance-root authenticated)}
-               (:provenance result)))
-        (is (= :passed
-               (:status
-                (invoke
-                 bridge-plan 'sh08-verify-authenticated-type-result
-                 [bridge-request
-                  (:c7-request run)
-                  (:type-template run)
-                  (:type-verification run)
-                  result]))))))
+    (is (= :accepted (:status type-template)))
+    (is (= :passed (:status type-verification)))
     (is (= (:semantic-root authenticated-a)
            (:semantic-root authenticated-b)))
     (is (= (:identity-input result-a)
