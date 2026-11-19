@@ -1,6 +1,7 @@
 (ns gravity.c5-name-resolution-test
   (:require [clojure.set :as set]
             [clojure.test :refer [deftest is]]
+            [clojure.walk :as walk]
             [gravity.c5-name-resolution :as c5]))
 
 (def module
@@ -8,8 +9,8 @@
    :source-path "demo.gravity"
    :profile :hosted
    :target :jvm
-   :effects #{}
-   :capabilities #{}
+   :effects #{:io/write}
+   :capabilities #{:io/stdout}
    :safety :safe
    :exports ['main 'value]
    :requires [{:kind :require :module 'shared.core :alias 'shared
@@ -26,8 +27,13 @@
     :form '(def value 1)
     :span {:source "demo.gravity" :form-index 1}}
    {:syntax-id "syntax-2"
-    :form '(defn main [x] (let [y x] (do y shared/checksum demo.main/value I64 m +)))
-    :span {:source "demo.gravity" :form-index 2}}])
+    :form '(defn main [x]
+             (let [y x helper x]
+               (do y shared/checksum demo.main/value I64 m + helper demo.main/helper)))
+    :span {:source "demo.gravity" :form-index 2}}
+   {:syntax-id "syntax-3"
+    :form '(defn helper [] (println "helper"))
+    :span {:source "demo.gravity" :form-index 3}}])
 
 (def c4-artifact
   {:kind :gravity/stage0-c4-macro-expansion-artifact
@@ -45,7 +51,10 @@
                   :latent-effects #{} :required-capabilities []}
                  {:name 'main :kind :function :visibility :public
                   :source-span {:source "demo.gravity" :form-index 2}
-                  :latent-effects #{} :required-capabilities []}]})
+                  :latent-effects #{} :required-capabilities []}
+                 {:name 'helper :kind :function :visibility :private
+                  :source-span {:source "demo.gravity" :form-index 3}
+                  :latent-effects #{:io/write} :required-capabilities [:io/stdout]}]})
 
 (def records
   (mapv (fn [syntax] {:form (:form syntax)}) syntax-stream))
@@ -169,7 +178,7 @@
                    injected-operations
                    #(c5/compiler-c5-resolution-source-artifact
                      "demo.gravity" "ignored"))
-        records (:bindings (:binding-table artifact))
+        {:keys [namespace-bindings local-bindings] records :bindings} (:binding-table artifact)
         orders (set (map :resolution-order records))]
     (is (= :gravity/stage0-c5-name-resolution-artifact (:kind artifact)))
     (is (= #{:local :namespace :alias-qualified :fully-qualified
@@ -183,13 +192,99 @@
     (is (some #(= :alias-qualified (:resolution-order %)) records))
     (is (some #(= :fully-qualified (:resolution-order %)) records))
     (is (some #(= :type-position (:resolution-order %)) records))
-    (is (some #(= :macro (:kind %))
-              (:namespace-bindings (:binding-table artifact))))
+    (is (some #(= :macro (:kind %)) namespace-bindings))
+    (let [helper (first (filter #(= 'helper (:name %)) namespace-bindings))
+          local-helper (first (filter #(= 'helper (:name %)) local-bindings))
+          qualified-helper (first (filter #(= 'demo.main/helper (:symbol %)) records))
+          unqualified-helper (last (filter #(and (= "syntax-2" (:syntax-id %))
+                                                  (= 'helper (:symbol %)))
+                                           records))
+          value (first (filter #(= 'value (:name %)) namespace-bindings))
+          qualified-value (first (filter #(= 'demo.main/value (:symbol %)) records))
+          binding-fields [:binding-id :visibility :kind :effects :capabilities]]
+      (is (= :fully-qualified (:resolution-order qualified-helper)))
+      (is (= "syntax-2" (:syntax-id qualified-helper)))
+      (is (= (:span (nth syntax-stream 2)) (:source-span helper)))
+      (is (= (:artifact-id c4-artifact) (:artifact helper)))
+      (is (= (:binding-id helper) (:binding-id qualified-helper)))
+      (is (= {:binding-id (:binding-id helper) :visibility :private :kind :function
+              :effects #{:io/write} :capabilities [:io/stdout]}
+             (select-keys helper binding-fields)
+             (select-keys (:binding qualified-helper) binding-fields)))
+      (is (= :local (:resolution-order unqualified-helper)))
+      (is (= (:binding-id local-helper) (:binding-id unqualified-helper)))
+      (is (= :fully-qualified (:resolution-order qualified-value)))
+      (is (= (:binding-id value) (:binding-id qualified-value))))
     (is (= :complete (get-in artifact [:namespace-analysis :status])))
     (is (= :complete (get-in artifact [:dependency-graph :status])))
     (is (= :stable (get-in artifact [:incremental-invalidation-keys :status])))
     (is (= :passed (get-in artifact [:resolution-verification-report :status])))
     (is (= :complete (:status (:capability-based-proof artifact))))))
+
+(deftest self-qualified-member-uses-interposed-resolver
+  (let [observed (atom [])
+        artifact (c5/with-operations
+                   (assoc injected-operations
+                          :c5-resolve-qualified-symbol
+                          (fn [module aliases dependencies sym]
+                            (let [result (c5/c5-resolve-qualified-symbol
+                                          module aliases dependencies sym)]
+                              (when (= 'demo.main/helper sym)
+                                (swap! observed conj (:binding result)))
+                              result)))
+                   #(c5/compiler-c5-resolution-source-artifact "demo.gravity" "ignored"))
+        table (:binding-table artifact)
+        declaration (some #(when (= 'helper (:name %)) %) (:namespace-bindings table))
+        use (some #(when (= 'demo.main/helper (:symbol %)) %) (:bindings table))]
+    (is (some? declaration))
+    (is (= [declaration] @observed))
+    (is (= :fully-qualified (:resolution-order use)))
+    (is (= (:binding-id declaration) (:binding-id use)))))
+
+(deftest ambiguous-self-qualified-member-reports-distinct-declarations
+  (let [use-site (nth syntax-stream 1)
+        helper (peek (:definitions module-artifact))
+        other-helper (assoc-in helper [:source-span :form-index] 4)
+        declarations [helper other-helper]
+        candidates (->> declarations
+                        (map #(c5/c5-definition-binding module % (:artifact-id c4-artifact)))
+                        (sort-by :binding-id)
+                        vec)
+        expected {:id "C5-AMBIGUOUS" :symbol 'demo.main/helper
+                  :syntax-id (:syntax-id use-site) :source-span (:span use-site)
+                  :candidate-bindings candidates}]
+    (doseq [ordered-declarations [(conj declarations helper) (reverse declarations)]]
+      (let [input (update module-artifact :definitions
+                          #(into (pop %) ordered-declarations))
+            diagnostic (try
+                         (c5/with-operations
+                           (assoc injected-operations :module-source-artifact (constantly input))
+                           #(c5/compiler-c5-resolution-source-artifact "demo.gravity" "ignored"))
+                         (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+        (is (= expected (select-keys diagnostic (keys expected))))))))
+
+(deftest missing-self-qualified-member-is-rejected-unless-quoted
+  (let [use-site (nth syntax-stream 1)
+        missing 'demo.main/y
+        resolve-member
+        (fn [replacement]
+          (let [form (walk/postwalk-replace {'demo.main/helper replacement} (:form use-site))
+                stream (assoc-in syntax-stream [1 :form] form)]
+            (c5/with-operations
+              (assoc injected-operations
+                     :read-source-form-records (constantly (mapv #(select-keys % [:form]) stream))
+                     :compiler-c4-macro-source-artifact
+                     (constantly (assoc c4-artifact :expanded-syntax-stream stream)))
+              #(c5/compiler-c5-resolution-source-artifact "demo.gravity" "ignored"))))
+        diagnostic (try
+                     (resolve-member missing)
+                     (catch clojure.lang.ExceptionInfo error (ex-data error)))
+        quoted (resolve-member (list 'quote missing))]
+    (is (= {:id "C5-UNRESOLVED" :symbol missing
+            :syntax-id (:syntax-id use-site) :source-span (:span use-site)}
+           (select-keys diagnostic [:id :symbol :syntax-id :source-span])))
+    (is (= :complete (get-in quoted [:binding-table :status])))
+    (is (not-any? #(= missing (:symbol %)) (get-in quoted [:binding-table :bindings])))))
 
 (deftest cross-profile-report-preserves-precedence-and-graph-edges
   (let [requesting-module (assoc module
