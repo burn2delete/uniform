@@ -26,8 +26,12 @@
    (jvm-backend-java-source plan)
    module-source
    jvm-backend-module-source
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? packet)
    source-map
-   (jvm-backend-source-map source-text java-source)
+   (cond-> (jvm-backend-source-map source-text java-source)
+     current-runtime-development?
+     (update :origin-chain #(filterv (complement #{:stage2-compiler-driver}) %)))
    plan-hash
    (c4-artifact-id
     (c-backend-canonical-value
@@ -37,13 +41,13 @@
    compiler-record
    (:stage2-compiler-artifact-record packet)
    closed-plan-runtime
-   (if (c-backend-current-runtime-development-packet? packet)
+   (if current-runtime-development?
      (current-runtime-development-target-record-from-authenticated-packet
       packet)
      (p15-s23-closed-runtime-target-record packet))
    _
    (when-not
-    (if (c-backend-current-runtime-development-packet? packet)
+    (if current-runtime-development?
       (= :gravity/current-runtime-development-target-record
          (:artifact closed-plan-runtime))
       (p15-s23-closed-runtime-target-record-authentic?
