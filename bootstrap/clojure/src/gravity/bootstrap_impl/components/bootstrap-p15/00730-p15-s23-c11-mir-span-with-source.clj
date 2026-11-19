@@ -62,8 +62,7 @@
 
 (defn p15-s23-c11-mir-safe-related
   [source-path related]
-  (when (and (vector? related) (<= (count related) 16)
-             (every? map? related))
+  (when (and (vector? related) (every? map? related))
     (mapv
      (fn [record]
        (when (map? record)

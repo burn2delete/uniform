@@ -100,6 +100,7 @@
             (= primary safe-primary)
             (and (string? primary-artifact)
                  (re-matches #"sha256:[0-9a-f]{64}" primary-artifact))
+            (vector? safe-related)
             (= (:related data) safe-related)
             (= (:origin-chain data) safe-origin-chain)
             (= (:involved-artifacts data) safe-involved)
