@@ -138,7 +138,7 @@
    (p15-s23-stage2-module-bundle emitter source-path source-text inputs nil))
   ([emitter source-path source-text inputs reader-invocation]
    (when-not (and (map? inputs) (= #{:caller-resolution-artifact :dependency-plans} (set (keys inputs)))
-                  (vector? (:dependency-plans inputs)) (<= (count (:dependency-plans inputs)) 256))
+                  (vector? (:dependency-plans inputs)))
      (p15-s23-stage2-module-fail! :closed-module-inputs-required {}))
    (let [artifacts (p15-s23-stage2-module-closure (:caller-resolution-artifact inputs))
          plans (:dependency-plans inputs)
@@ -158,10 +158,7 @@
     (doseq [source sources] (p15-s23-stage2-module-shadowing-check! source emitter))
     (let [by-id (into {} (map (juxt :module-id identity) sources))
           routes (reduce (fn [result source]
-                           (let [next-routes (p15-s23-stage2-module-routes source by-id)]
-                             (when (> (+ (count result) (count next-routes)) 65536)
-                               (p15-s23-stage2-module-fail! :module-route-limit {}))
-                             (into result next-routes))) [] sources)
+                           (into result (p15-s23-stage2-module-routes source by-id))) [] sources)
           indexes (into {} (map (fn [source]
                                   [(:module-id source)
                                    (p15-s23-stage2-module-route-index
@@ -190,8 +187,8 @@
   (when-not (and (map? bundle) (= #{:kind :schema-version :root-module-id :emitter :modules :routes :identity-input :bundle-id :boundary}
                                  (set (keys bundle)))
                  (= :gravity/stage2-compiler-artifact-module-bundle (:kind bundle)) (= 1 (:schema-version bundle))
-                 (vector? (:modules bundle)) (<= 1 (count (:modules bundle)) 257)
-                 (vector? (:routes bundle)) (<= (count (:routes bundle)) 65536)
+                 (vector? (:modules bundle)) (<= 1 (count (:modules bundle)))
+                 (vector? (:routes bundle))
                  (every? #(and (map? %) (= #{:module-id :resolution-artifact :plan :exports} (set (keys %)))) (:modules bundle)))
     (p15-s23-stage2-module-fail! :closed-module-bundle-required {}))
   (let [root (p15-s23-stage2-module-one! (filterv #(= (:module-id %) (:root-module-id bundle)) (:modules bundle)) :root-module)
