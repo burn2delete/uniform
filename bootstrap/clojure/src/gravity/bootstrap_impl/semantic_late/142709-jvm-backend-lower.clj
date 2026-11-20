@@ -1,6 +1,13 @@
 ; Semantic decomposition of committed HEAD reader line 142709.
 ; Loaded into gravity.bootstrap; intentionally no ns form.
 
+(clojure.core/defn-
+ jvm-backend-source-map-for-route
+ [source-text java-source current-runtime-development?]
+ (cond-> (jvm-backend-source-map source-text java-source)
+   current-runtime-development?
+   (update :origin-chain #(filterv (complement #{:stage2-compiler-driver}) %))))
+
 (clojure.core/defn
  semantic-late-jvm-backend-source-artifact-lower
  [state]
@@ -26,8 +33,8 @@
    (jvm-backend-java-source plan)
    module-source
    jvm-backend-module-source
-   source-map
-   (jvm-backend-source-map source-text java-source)
+   current-runtime-development?
+   (c-backend-current-runtime-development-packet? packet)
    plan-hash
    (c4-artifact-id
     (c-backend-canonical-value
@@ -37,13 +44,13 @@
    compiler-record
    (:stage2-compiler-artifact-record packet)
    closed-plan-runtime
-   (if (c-backend-current-runtime-development-packet? packet)
+   (if current-runtime-development?
      (current-runtime-development-target-record-from-authenticated-packet
       packet)
      (p15-s23-closed-runtime-target-record packet))
    _
    (when-not
-    (if (c-backend-current-runtime-development-packet? packet)
+    (if current-runtime-development?
       (= :gravity/current-runtime-development-target-record
          (:artifact closed-plan-runtime))
       (p15-s23-closed-runtime-target-record-authentic?
@@ -62,7 +69,7 @@
    :module-source
    module-source
    :source-map
-   source-map
+   (jvm-backend-source-map-for-route source-text java-source current-runtime-development?)
    :plan-hash
    plan-hash
    :source-hash
