@@ -136,8 +136,6 @@
   {:artifact :gravity/sh28-trust-provenance-policy
    :schema-version 1
    :governing-documents [:D9 :PKG7 :PKG10 :PKG12 :BOOT6 :BOOT8]
-   :maximum-lineage-nodes 64
-   :maximum-parents-per-node 8
    :maximum-carrier-nodes 65536
    :maximum-carrier-depth 96
    :maximum-container-width 2048
@@ -559,13 +557,11 @@
                        (get node :dependency-graph-id))
                     (if (sh28-nonempty-string? (get node :toolchain-id))
                       (if (vector? (get node :rebuild-parent-ids))
-                        (if (<= (count (get node :rebuild-parent-ids)) 8)
-                          (if (integer? (get node :topological-ordinal))
-                            (if (sh28-nonempty-string?
-                                 (get node :content-hash))
-                              (sh28-nonempty-string?
-                               (get node :actual-artifact-path))
-                              false)
+                        (if (integer? (get node :topological-ordinal))
+                          (if (sh28-nonempty-string?
+                               (get node :content-hash))
+                            (sh28-nonempty-string?
+                             (get node :actual-artifact-path))
                             false)
                           false)
                         false)
@@ -626,50 +622,31 @@
 (defn sh28-node-by-id [nodes artifact-id]
   (sh28-node-by-id-from nodes artifact-id 0))
 
-(defn sh28-add-parent-ids-from [parents frontier index]
-  (if (= index (count parents))
-    frontier
-    (sh28-add-parent-ids-from
-     parents (conj frontier (get parents index)) (+ index 1))))
-
-(defn sh28-reachable-node-ids [nodes root-id]
-  (loop [frontier [root-id] visited [] steps 0]
-    (if (= (count frontier) 0)
-      visited
-      (if (> steps 1024)
-        []
-        (let [current-id (first frontier)
-              remaining (vec (rest frontier))]
-          (if (sh28-member? visited current-id)
-            (recur remaining visited (+ steps 1))
-            (let [node (sh28-node-by-id nodes current-id)]
-              (if (= node nil)
-                []
-                (recur
-                 (sh28-add-parent-ids-from
-                  (get node :rebuild-parent-ids) remaining 0)
-                 (conj visited current-id)
-                 (+ steps 1))))))))))
-
-(defn sh28-all-node-ids-reachable?
-  [nodes reachable index]
-  (if (= index (count nodes))
-    true
-    (if (sh28-member?
-         reachable (get (get nodes index) :artifact-id))
-      (sh28-all-node-ids-reachable? nodes reachable (+ index 1))
-      false)))
+(defn sh28-all-node-ids-reachable? [nodes root-id]
+  ;; Every parent precedes its children in the validated lineage. By the time
+  ;; this reverse scan reaches a node, all reachable children have marked it.
+  (loop [index (- (count nodes) 1) reachable (assoc {} root-id true)]
+    (if (< index 0)
+      true
+      (let [node (get nodes index)]
+        (if (contains? reachable (get node :artifact-id))
+          (let [parents (get node :rebuild-parent-ids)
+                marked (loop [parent-index 0 result reachable]
+                         (if (= parent-index (count parents))
+                           result
+                           (recur (+ parent-index 1)
+                                  (assoc result (get parents parent-index)
+                                         true))))]
+            (recur (- index 1) marked))
+          false)))))
 
 (defn sh28-lineage-valid? [nodes root-id]
   (if (vector? nodes)
     (if (> (count nodes) 0)
-      (if (<= (count nodes) 64)
-        (if (sh28-lineage-ordered-from? nodes 0)
-          (if (= root-id
-                 (get (get nodes (- (count nodes) 1)) :artifact-id))
-            (sh28-all-node-ids-reachable?
-             nodes (sh28-reachable-node-ids nodes root-id) 0)
-            false)
+      (if (sh28-lineage-ordered-from? nodes 0)
+        (if (= root-id
+               (get (get nodes (- (count nodes) 1)) :artifact-id))
+          (sh28-all-node-ids-reachable? nodes root-id)
           false)
         false)
       false)
