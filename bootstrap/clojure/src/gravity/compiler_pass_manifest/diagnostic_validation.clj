@@ -5,6 +5,12 @@
             [gravity.compiler-pass-manifest.failures :as failures]
             [gravity.compiler-pass-manifest.support :as support]))
 
+(defn- context-keyword [value]
+  (when (keyword? value) value))
+
+(defn- artifact-identifier? [value]
+  (or (keyword? value) (and (string? value) (seq value))))
+
 (defn compiler-pass-validate-diagnostics!
   [source-path manifest suite]
   (let [schema (:diagnostic-schema suite)
@@ -57,5 +63,27 @@
     (when-not (= fixtures (sort-by :ordering-key fixtures))
       (failures/compiler-pass-fail! "C15-ORDER" source-path manifest
                            {:stage :diagnostic-stream}
-                           {:remediation "Diagnostic streams must be deterministically ordered by stable semantic keys."})))
+                           {:remediation "Diagnostic streams must be deterministically ordered by stable semantic keys."}))
+    (loop [remaining (map-indexed vector fixtures)
+           seen-ids #{}]
+      (when-let [[fixture-index diagnostic] (first remaining)]
+        (let [diagnostic-id (:diagnostic-id diagnostic)]
+          (when (and (some? diagnostic-id) (contains? seen-ids diagnostic-id))
+            (failures/compiler-pass-fail!
+             "C15-ID" source-path
+             {:profile (context-keyword (:profile manifest))
+              :target (context-keyword (:target manifest))}
+             {:stage (context-keyword (:stage diagnostic))
+              :profile (context-keyword (:profile diagnostic))
+              :target (context-keyword (:target diagnostic))}
+             {:schema-field :diagnostic-id
+              :reason :duplicate
+              :fixture-index fixture-index
+              :offending-diagnostic-id (when (string? diagnostic-id) diagnostic-id)
+              :artifact-id (first (filter artifact-identifier?
+                                          [(:artifact-id diagnostic)
+                                           (get-in diagnostic [:primary :artifact])
+                                           (:artifact diagnostic)]))
+              :remediation "Diagnostic records in a stream must have unique diagnostic ids."}))
+          (recur (next remaining) (conj seen-ids diagnostic-id))))))
   :complete)
