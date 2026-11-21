@@ -528,6 +528,29 @@
            (invoke [{:op :literal :value (list 1)}
                     {:op :literal :value (list 2)}])))))
 
+(deftest gravity-runtime-even-predicate-preserves-integer-domain-and-arity-refusal
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [arguments]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-evaluate-closed-instruction
+                  [{:op :builtin-call :function 'even? :args arguments} {} ""]))]
+    (doseq [[value expected] [[0 true] [2 true] [-2 true] [3 false] [-3 false]]]
+      (is (= [expected "" :normal]
+             (invoke [{:op :literal :value value}]))))
+    (doseq [value ["2" 3/2 2.5M]]
+      (is (= [{:diagnostic "P15S23X002"
+               :operation :builtin-call
+               :reason :integer-even-predicate-domain-required}
+              "" :rejected]
+             (invoke [{:op :literal :value value}]))))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :invalid-local-runtime-instruction}
+            "" :rejected]
+           (invoke [{:op :literal :value 2}
+                    {:op :literal :value 4}])))))
+
 (defn- builtin-operations []
   (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
 
