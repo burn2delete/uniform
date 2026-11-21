@@ -5990,36 +5990,43 @@
     (c6-sh07-exception-diagnostic
      request "C6-VERIFY" :entry-request-shape-invalid nil)))
 
+; These constructors are internal source-execution compatibility leaves.  Their
+; :gravity/c6-core-node and :gravity/c6-desugaring-trace records are not the
+; canonical C6 artifact interface, and they are not wired into the hosted C6
+; lowering path by this slice.
 (defn build-c6-core-node
   [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]
-  (quote {:artifact :gravity/c6-core-node
-          :node-id node-id
-          :form form
-          :children children
-          :source {:syntax-id syntax-id
-                   :span source-span
-                   :origin-chain origin-chain}
-          :binding-context binding-context
-          :profile profile
-          :target target
-          :metadata metadata
-          :facts facts
-          :generated? generated?
-          :contract c6-core-node-contract}))
+  {:artifact :gravity/c6-core-node
+   :node-id node-id
+   :form form
+   :children children
+   :source {:syntax-id syntax-id
+            :span source-span
+            :origin-chain origin-chain}
+   :binding-context binding-context
+   :profile profile
+   :target target
+   :metadata metadata
+   :facts facts
+   :generated? generated?
+   :contract c6-core-node-contract})
 
 (defn build-c6-desugaring-trace
   [surface-syntax surface-kind core-root introduced-forms preserved introduced-origin evaluation-order]
-  (quote {:artifact :gravity/c6-desugaring-trace
-          :surface-syntax surface-syntax
-          :surface-kind surface-kind
-          :core-root core-root
-          :introduced-forms introduced-forms
-          :preserved preserved
-          :introduced-origin introduced-origin
-          :evaluation-order evaluation-order
-          :diagnostics []
-          :contract c6-lowering-rule-contract}))
+  {:artifact :gravity/c6-desugaring-trace
+   :surface-syntax surface-syntax
+   :surface-kind surface-kind
+   :core-root core-root
+   :introduced-forms introduced-forms
+   :preserved preserved
+   :introduced-origin introduced-origin
+   :evaluation-order evaluation-order
+   :diagnostics []
+   :contract c6-lowering-rule-contract})
 
+; This verifier remains the original quoted stage1 template.  It is retained
+; as an unmigrated contract surface and must not be read as executable proof
+; or canonical acceptance of the internal constructor records above.
 (defn verify-c6-core-lowering [core-lowering-artifact]
   (quote {:status :stage1-source-owned
           :core-lowering-artifact core-lowering-artifact
