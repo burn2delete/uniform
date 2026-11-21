@@ -6,6 +6,7 @@
         accepted (:accepted-ai-fixtures artifact)
         rejected (:rejected-ai-fixtures artifact)
         conformance (:ai-conformance-evidence artifact)
+        evaluation (:evaluation-report artifact)
         diagnostics (set (map :diagnostic
                               (get-in artifact
                                       [:ai-diagnostic-stream
@@ -74,10 +75,25 @@
                  (get-in artifact [:policy-manifest :taint :ai-output]))
       (p11-ai-fail! "A8004" source-path (:policy-manifest artifact)
                     {:missing-fields [:taint-policy]}))
-    (when-not (= :passed
-                 (get-in artifact [:evaluation-report :release-gate]))
-      (p11-ai-fail! "A9001" source-path (:evaluation-report artifact)
+    (when-not (= :passed (:release-gate evaluation))
+      (p11-ai-fail! "A9001" source-path evaluation
                     {:missing-fields [:eval-gate]}))
+    (doseq [[metric {:keys [direction threshold observed] :as comparison}]
+            (:metrics evaluation)]
+      (when-not (and (number? threshold)
+                     (number? observed)
+                     (case direction
+                       :equals (== observed threshold)
+                       :min (<= threshold observed)
+                       false))
+        (p11-ai-fail! "A9004" source-path evaluation
+                      (merge {:metric metric
+                              :missing-fact :metric_threshold
+                              :provider-id (get-in artifact
+                                                   [:model-manifest :provider-id])}
+                             (select-keys evaluation
+                                          [:eval-id :subject-hash :dataset :release-gate])
+                             (select-keys comparison [:direction :threshold :observed])))))
     (when-not (= :canonical-action-payload
                  (get-in artifact
                          [:human-review-manifest :payload-hash-rule]))
