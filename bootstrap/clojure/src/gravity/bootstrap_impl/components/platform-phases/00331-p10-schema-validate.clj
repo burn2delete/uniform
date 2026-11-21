@@ -67,6 +67,20 @@
               :numeric-policy (:numeric-policy serializer)
               :string-policy (:string-policy serializer)
               :remediation "Keep external JSON untrusted until validation succeeds at the intended boundary."})))))
+    (let [canonical-format (:canonical-format artifact)]
+      (doseq [[field expected-rule] [[:map-order :lexicographic-encoded-key]
+                                    [:set-order :lexicographic-encoded-value]]
+              :when (not= expected-rule (get canonical-format field))]
+        (p10-schema-fail!
+         "S3-ORDER" source-path
+         (assoc canonical-format :source-span
+                (or (:source-span canonical-format)
+                    (first (get-in artifact [:source-schema-ir :source-spans]))))
+         {:field-path [:canonical-format field]
+          :expected-rule expected-rule
+          :format-version (:format-version canonical-format)
+          :remediation (str "Set " field " to " expected-rule
+                            " in the canonical format manifest.")})))
     (doseq [document p10-schema-documents
             :let [record (get documents document)
                   summary (p10-document-summaries document)
