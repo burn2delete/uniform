@@ -1,0 +1,134 @@
+(ns gravity.c6-core-lowering.source-adapter
+  "Opt-in bridge from the current Gravity C6 source to the hosted operation map.
+
+   This namespace deliberately accepts the existing compiler and runtime
+   functions instead of requiring gravity.bootstrap.  The dependency stays
+   one-way: a development caller supplies the current-source plan machinery,
+   while the normal hosted Clojure operation remains the default route."
+  (:require [clojure.java.io :as io]))
+
+(def source-relative-path
+  "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")
+
+(def source-function 'c6-form->core-form)
+
+(def evaluation-order-source-function 'c6-eval-order)
+
+(def ^:private source-engine
+  :gravity-c6-core-lowering-source-classifier)
+
+(defn- fail! [id message data]
+  (throw (ex-info message (assoc (or data {}) :id id))))
+
+(defn- repository-file [repository-root]
+  (if (instance? java.nio.file.Path repository-root)
+    (.toFile ^java.nio.file.Path repository-root)
+    (io/file repository-root)))
+
+(defn source-path
+  "Return the canonical path for the current Gravity C6 source."
+  [repository-root]
+  (.getCanonicalPath (io/file (repository-file repository-root)
+                              source-relative-path)))
+
+(defn- validate-source-plan! [source-path plan]
+  (when-not (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+    (fail! "C6-SOURCE-CLASSIFIER-PLAN"
+           "Current C6 source did not produce a stage2 compiler plan"
+           {:source-path source-path :kind (:kind plan)}))
+  (let [definition (get-in plan [:functions source-function])]
+    (when-not (and (map? definition)
+                   (= :def-fn (:definition-form definition))
+                   (= 1 (:arity definition))
+                   (= ['form] (:params definition)))
+      (fail! "C6-SOURCE-CLASSIFIER-ABI"
+             "Current C6 source classifier has an unexpected ABI"
+             {:source-path source-path
+              :function source-function
+              :definition (select-keys definition
+                                       [:name :params :arity :definition-form])})))
+  (let [definition (get-in plan [:functions evaluation-order-source-function])]
+    (when-not (and (map? definition)
+                   (= :def-fn (:definition-form definition))
+                   (= 2 (:arity definition))
+                   (= ['form 'child-count] (:params definition)))
+      (fail! "C6-SOURCE-EVAL-ORDER-ABI"
+             "Current C6 source evaluation-order operation has an unexpected ABI"
+             {:source-path source-path
+              :function evaluation-order-source-function
+              :definition (select-keys definition
+                                       [:name :params :arity :definition-form])})))
+  plan)
+
+(defn current-source-plan
+  "Compile the current C6 source through supplied existing stage2 functions.
+
+   The plan is intentionally explicit and uncached.  Callers may retain it for
+   one development invocation, but this adapter does not establish a second
+   source cache or modify the default hosted bootstrap route."
+  [repository-root compiler-api]
+  (let [{:keys [c-backend-stage2-plan-emitter-source-rule!
+                p15-s23-stage2-compiler-artifact-plan]}
+        compiler-api
+        source-file (io/file (repository-file repository-root)
+                             source-relative-path)
+        source-path (.getCanonicalPath source-file)]
+    (when-not (and (fn? c-backend-stage2-plan-emitter-source-rule!)
+                   (fn? p15-s23-stage2-compiler-artifact-plan))
+      (fail! "C6-SOURCE-CLASSIFIER-COMPILER-API"
+             "Current C6 source adapter requires existing compiler functions"
+             {:source-path source-path
+              :required [:c-backend-stage2-plan-emitter-source-rule!
+                         :p15-s23-stage2-compiler-artifact-plan]}))
+    (when-not (.isFile source-file)
+      (fail! "C6-SOURCE-CLASSIFIER-SOURCE"
+             "Current C6 source classifier file is missing"
+             {:source-path source-path
+              :source-relative-path source-relative-path}))
+    (let [source (slurp source-file :encoding "UTF-8")
+          emitter-result
+          (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
+          emitter (:emitter emitter-result)]
+      (when-not (map? emitter)
+        (fail! "C6-SOURCE-CLASSIFIER-EMITTER"
+               "Current C6 source adapter did not receive an emitter"
+               {:source-path source-path
+                :emitter-result (select-keys emitter-result [:kind :target])}))
+      (validate-source-plan!
+       source-path
+       (p15-s23-stage2-compiler-artifact-plan emitter source-path source)))))
+
+(defn c6-form->core-form-operation
+  "Build one operation that executes the current source classifier."
+  [runtime-execute-function plan]
+  (when-not (fn? runtime-execute-function)
+    (fail! "C6-SOURCE-CLASSIFIER-RUNTIME-API"
+           "Current C6 source adapter requires the existing runtime function"
+           {:required :p15-s23-stage2-runtime-execute-function}))
+  (validate-source-plan! (get-in plan [:source :path]) plan)
+  (fn [form]
+    (runtime-execute-function
+     {:engine source-engine :compiler-artifact-plan? true}
+     plan source-function [form])))
+
+(defn c6-eval-order-operation
+  "Build one operation that executes the current source evaluation-order leaf."
+  [runtime-execute-function plan]
+  (when-not (fn? runtime-execute-function)
+    (fail! "C6-SOURCE-EVAL-ORDER-RUNTIME-API"
+           "Current C6 source adapter requires the existing runtime function"
+           {:required :p15-s23-stage2-runtime-execute-function}))
+  (validate-source-plan! (get-in plan [:source :path]) plan)
+  (fn [form child-count]
+    (runtime-execute-function
+     {:engine :gravity-c6-core-lowering-source-evaluation-order
+      :compiler-artifact-plan? true}
+     plan evaluation-order-source-function [form child-count])))
+
+(defn source-operations
+  "Return the explicit operation override for hosted C6 lowering."
+  [runtime-execute-function plan]
+  {:c6-form->core-form
+   (c6-form->core-form-operation runtime-execute-function plan)
+   :c6-eval-order
+   (c6-eval-order-operation runtime-execute-function plan)})
